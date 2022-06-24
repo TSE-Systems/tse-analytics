@@ -1,0 +1,7 @@
+# Contains requirements common to all environments
+
+openpyxl
+psutil
+pyqtgraph
+PySide6
+tse-datatools

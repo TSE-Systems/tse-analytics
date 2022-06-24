@@ -1,0 +1,40 @@
+<RCC>
+    <qresource prefix="/">
+        <file>style.qss</file>
+        <file>icons/app.icns</file>
+        <file>icons/app.ico</file>
+        <file>icons/grid.png</file>
+        <file>icons/exit.png</file>
+        <file>icons/icons8-add-file-16.png</file>
+        <file>icons/icons8-add-new-16.png</file>
+        <file>icons/icons8-cancel.svg</file>
+        <file>icons/icons8-eukaryotic-cells-16.png</file>
+        <file>icons/icons8-eukaryotic-cells-96.png</file>
+        <file>icons/icons8-save-16.png</file>
+        <file>icons/icons8-save-as-16.png</file>
+        <file>icons/icons8-switch-16.png</file>
+        <file>icons/icons8-sheets-16.png</file>
+        <file>icons/icons8-film-roll-16.png</file>
+        <file>icons/icons8-compact-camera-16.png</file>
+        <file>icons/icons8-medium-icons-16.png</file>
+        <file>icons/icons8-import-16.png</file>
+        <file>icons/icons8-opened-folder-16.png</file>
+        <file>icons/icons8-about-16.png</file>
+        <file>icons/icons8-ruler-16.png</file>
+        <file>icons/icons8-data-sheet-16.png</file>
+        <file>icons/icons8-scatter-plot-16.png</file>
+        <file>icons/icons8-group-objects-16.png</file>
+        <file>icons/icons8-ungroup-objects-16.png</file>
+        <file>icons/icons8-add-16.png</file>
+        <file>icons/icons8-minus-16.png</file>
+        <file>icons/icons8-edit-16.png</file>
+        <file>icons/icons8-time-span-16.png</file>
+        <file>icons/icons8-scales-16.png</file>
+        <file>icons/icons8-bar-chart-16.png</file>
+        <file>icons/icons8-statistics-16.png</file>
+        <file>icons/icons8-export-16.png</file>
+        <file>icons/icons8-rat-silhouette-16.png</file>
+        <file>icons/icons8-line-chart-16.png</file>
+        <file>icons/icons8-approval-16.png</file>
+    </qresource>
+</RCC>

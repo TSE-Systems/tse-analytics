@@ -1,0 +1,7 @@
+# Specifies only dev-specific requirements, but imports the common ones too
+
+-r common.txt
+
+PyInstaller
+pytest
+flake8
