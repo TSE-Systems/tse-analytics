@@ -1,6 +1,7 @@
 # Contains requirements common to all environments
 
 openpyxl
+pingouin
 psutil
 pyqtgraph
 PySide6

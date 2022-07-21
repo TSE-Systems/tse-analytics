@@ -1,17 +1,18 @@
 from typing import Optional
 
 import pandas as pd
+import pingouin as pg
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
-from statsmodels.stats.multicomp import pairwise_tukeyhsd
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit
+from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 from tse_analytics.core.manager import Manager
+from tse_analytics.css import style
 
 
-class PairwiseComparisonWidget(QWidget):
+class AnovaWidget(QWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.layout = QVBoxLayout(self)
@@ -29,14 +30,14 @@ class PairwiseComparisonWidget(QWidget):
 
         self.canvas = FigureCanvas(Figure(figsize=(5.0, 4.0), dpi=100))
         self.ax = self.canvas.figure.subplots()
-
-        # self.toolbar = NavigationToolbar(self.canvas, self)
-        # self.layout.addWidget(self.toolbar)
         self.layout.addWidget(self.canvas)
 
     def analyze(self, df: pd.DataFrame, variable: str):
         if len(Manager.data.selected_groups) == 0:
             return
+
+        homoscedasticity = pg.homoscedasticity(data=df, dv=variable, group="Group")
+        anova = pg.anova(data=df, dv=variable, between="Group", detailed=True)
 
         # pt = pg.pairwise_tukey(dv=variable, between='Group', data=df)
         # self.webView.setHtml(pt.to_html())
@@ -45,11 +46,34 @@ class PairwiseComparisonWidget(QWidget):
                                   groups=df["Group"],  # Groups
                                   alpha=0.05)  # Significance level
 
-        self.webView.setHtml(tukey.summary().as_html())
+        html_template = '''
+        <html>
+          <head>
+            <title>HTML Pandas Dataframe with CSS</title>
+            {style}
+          </head>
+          <body>
+            <h3>Test for equality of variances between groups</h3>
+            {homoscedasticity}
+            <h3>One-way ANOVA</h3>
+            {anova}
+            <h3>Pairwise Comparison</h3>
+            {tukey}
+          </body>
+        </html>
+        '''
+
+        html = html_template.format(
+            style=style,
+            homoscedasticity=homoscedasticity.to_html(classes='mystyle'),
+            anova=anova.to_html(classes='mystyle'),
+            tukey=tukey.summary().as_html(),
+        )
+        self.webView.setHtml(html)
 
         self.ax.clear()
-        tukey.plot_simultaneous(ax=self.ax, figsize=self.canvas.figure.get_size_inches())  # Plot group confidence intervals
-        # self.ax.vlines(x=2.57, ymin=-0.5, ymax=4.5, color="red")
+        tukey.plot_simultaneous(ax=self.ax,
+                                figsize=self.canvas.figure.get_size_inches())  # Plot group confidence intervals
         self.canvas.figure.tight_layout()
         self.canvas.draw()
 

@@ -9,16 +9,17 @@ from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import DatasetRemovedMessage, DatasetUnloadedMessage, \
     DatasetComponentChangedMessage
-from tse_analytics.views.anova.distribution_widget import DistributionWidget
-from tse_analytics.views.anova.normality_widget import NormalityWidget
-from tse_analytics.views.anova.pairwise_comparison_widget import PairwiseComparisonWidget
+from tse_analytics.views.analysis.anova_widget import AnovaWidget
+from tse_analytics.views.analysis.correlation_widget import CorrelationWidget
+from tse_analytics.views.analysis.distribution_widget import DistributionWidget
+from tse_analytics.views.analysis.normality_widget import NormalityWidget
 
 
-class AnovaWidget(QWidget, MessengerListener):
+class AnalysisWidget(QWidget, MessengerListener):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
-        MessengerListener.__init__(self)
 
+        MessengerListener.__init__(self)
         self.register_to_messenger(Manager.messenger)
 
         self.tabWidget = QTabWidget(self)
@@ -26,11 +27,11 @@ class AnovaWidget(QWidget, MessengerListener):
         self.variables = list()
         self.variable = ""
 
-        self.verticalLayout = QVBoxLayout(self)
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout.setSpacing(0)
-        self.verticalLayout.addWidget(self.toolbar)
-        self.verticalLayout.addWidget(self.tabWidget)
+        self.layout = QVBoxLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
+        self.layout.addWidget(self.toolbar)
+        self.layout.addWidget(self.tabWidget)
 
         self.distribution_widget = DistributionWidget()
         self.tabWidget.addTab(self.distribution_widget, QIcon(":/icons/icons8-bar-chart-16.png"), "Distribution")
@@ -38,8 +39,11 @@ class AnovaWidget(QWidget, MessengerListener):
         self.normality_widget = NormalityWidget()
         self.tabWidget.addTab(self.normality_widget, QIcon(":/icons/icons8-approval-16.png"), "Normality Check")
 
-        self.pairwise_comparison_widget = PairwiseComparisonWidget()
-        self.tabWidget.addTab(self.pairwise_comparison_widget, QIcon(":/icons/icons8-scales-16.png"), "Pairwise Comparison")
+        self.anova_widget = AnovaWidget()
+        self.tabWidget.addTab(self.anova_widget, QIcon(":/icons/icons8-scales-16.png"), "ANOVA")
+
+        self.correlation_widget = CorrelationWidget()
+        self.tabWidget.addTab(self.correlation_widget, QIcon(":/icons/icons8-scales-16.png"), "Correlation")
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetComponentChangedMessage, self._on_dataset_component_changed)
@@ -49,9 +53,11 @@ class AnovaWidget(QWidget, MessengerListener):
     def clear(self):
         self.variables.clear()
         self.variable_combo_box.clear()
+
         self.distribution_widget.clear()
         self.normality_widget.clear()
-        self.pairwise_comparison_widget.clear()
+        self.anova_widget.clear()
+        self.correlation_widget.clear()
 
     def _on_dataset_component_changed(self, message: DatasetComponentChangedMessage):
         self.variables.clear()
@@ -61,6 +67,8 @@ class AnovaWidget(QWidget, MessengerListener):
         self.variable_combo_box.clear()
         self.variable_combo_box.addItems(self.variables)
         self.variable_combo_box.setCurrentText("")
+
+        self.correlation_widget.update_variables(self.variables)
 
     def _on_dataset_removed(self, message: DatasetRemovedMessage):
         self.clear()
@@ -79,7 +87,7 @@ class AnovaWidget(QWidget, MessengerListener):
 
         self.distribution_widget.analyze(df, self.variable)
         self.normality_widget.analyze(df, self.variable)
-        self.pairwise_comparison_widget.analyze(df, self.variable)
+        self.anova_widget.analyze(df, self.variable)
 
     @property
     def toolbar(self) -> QToolBar:

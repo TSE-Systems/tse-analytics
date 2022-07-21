@@ -13,7 +13,8 @@ from PySide6.QtWidgets import (
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import ViewModeChangedMessage
 from tse_analytics.core.view_mode import ViewMode
-from tse_analytics.views.anova.anova_widget import AnovaWidget
+from tse_analytics.views.ancova.ancova_widget import AncovaWidget
+from tse_analytics.views.analysis.analysis_widget import AnalysisWidget
 from tse_analytics.views.charts.aggregation_plot_view_widget import AggregationPlotViewWidget
 from tse_analytics.views.charts.plot_view_widget import PlotViewWidget
 from tse_analytics.views.groups.groups_view_widget import GroupsViewWidget
@@ -68,8 +69,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.aggregation_plot_view_widget = AggregationPlotViewWidget()
         self.tabWidget.addTab(self.aggregation_plot_view_widget, QIcon(":/icons/icons8-bar-chart-16.png"), "Aggregation")
 
-        self.anova_widget = AnovaWidget()
-        self.tabWidget.addTab(self.anova_widget, QIcon(":/icons/icons8-statistics-16.png"), "ANOVA")
+        self.analysis_widget = AnalysisWidget()
+        self.tabWidget.addTab(self.analysis_widget, QIcon(":/icons/icons8-statistics-16.png"), "Analysis")
+
+        self.ancova_widget = AncovaWidget()
+        self.tabWidget.addTab(self.ancova_widget, QIcon(":/icons/icons8-statistics-16.png"), "ANCOVA")
 
         self.tiles_view_widget = TilesViewWidget()
         self.tabWidget.addTab(self.tiles_view_widget, QIcon(":/icons/icons8-medium-icons-16.png"), "Tiles")

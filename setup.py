@@ -7,6 +7,7 @@ from setuptools.command.sdist import sdist
 
 install_requires = [
     'openpyxl'
+    'pingouin',
     'PySide6',
     'psutil',
     'pyqtgraph',

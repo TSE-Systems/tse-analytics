@@ -15,8 +15,6 @@ class DistributionWidget(QWidget):
         super().__init__(parent)
         self.layout = QVBoxLayout(self)
 
-        sns.set_theme(style="whitegrid")
-
         self.canvas = FigureCanvas(Figure(figsize=(5.0, 4.0), dpi=100))
         self.ax = self.canvas.figure.subplots()
 
@@ -30,8 +28,10 @@ class DistributionWidget(QWidget):
             return
 
         self.ax.clear()
+
         sns.boxplot(x='Group', y=variable, data=df, color='#99c2a2', ax=self.ax)
         sns.swarmplot(x="Group", y=variable, data=df, color='#7d0013', ax=self.ax, size=2)
+
         self.canvas.figure.tight_layout()
         self.canvas.draw()
 
