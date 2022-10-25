@@ -8,11 +8,12 @@ style = '''
                 border-collapse: collapse;
                 border: 1px solid silver;
             }
-            .mystyle td, th {
+            .mystyle th {
                 padding: 5px;
-            }
-            .mystyle tr:nth-child(even) {
                 background: #E0E0E0;
+            }
+            .mystyle td {
+                padding: 5px;
             }
             .mystyle tr:hover {
                 background: silver;

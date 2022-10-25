@@ -1,6 +1,7 @@
 from typing import Optional
 
 import pandas as pd
+import pingouin as pg
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
@@ -33,7 +34,8 @@ class NormalityWidget(QWidget):
         nrows = len(unique_groups) // 2 + (len(unique_groups) % 2 > 0)
         for index, group in enumerate(unique_groups):
             ax = self.canvas.figure.add_subplot(nrows, ncols, index+1)
-            stats.probplot(df[df['Group'] == group][variable], dist="norm", plot=ax)
+            # stats.probplot(df[df['Group'] == group][variable], dist="norm", plot=ax)
+            pg.qqplot(df[df['Group'] == group][variable], dist='norm', ax=ax)
             ax.set_title(group)
 
         self.canvas.figure.tight_layout()

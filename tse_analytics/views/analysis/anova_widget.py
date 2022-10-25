@@ -37,9 +37,15 @@ class AnovaWidget(QWidget):
             return
 
         homoscedasticity = pg.homoscedasticity(data=df, dv=variable, group="Group")
-        anova = pg.anova(data=df, dv=variable, between="Group", detailed=True)
 
-        # pt = pg.pairwise_tukey(dv=variable, between='Group', data=df)
+        if homoscedasticity["equal_var"].values[0]:
+            anova_header = "Classic one-way ANOVA"
+            anova = pg.anova(data=df, dv=variable, between="Group", detailed=True)
+        else:
+            anova_header = "Welch one-way ANOVA"
+            anova = pg.welch_anova(data=df, dv=variable, between="Group")
+
+        pt = pg.pairwise_tukey(dv=variable, between='Group', data=df)
         # self.webView.setHtml(pt.to_html())
 
         tukey = pairwise_tukeyhsd(endog=df[variable],  # Data
@@ -49,13 +55,12 @@ class AnovaWidget(QWidget):
         html_template = '''
         <html>
           <head>
-            <title>HTML Pandas Dataframe with CSS</title>
             {style}
           </head>
           <body>
             <h3>Test for equality of variances between groups</h3>
             {homoscedasticity}
-            <h3>One-way ANOVA</h3>
+            <h3>{anova_header}</h3>
             {anova}
             <h3>Pairwise Comparison</h3>
             {tukey}
@@ -66,8 +71,9 @@ class AnovaWidget(QWidget):
         html = html_template.format(
             style=style,
             homoscedasticity=homoscedasticity.to_html(classes='mystyle'),
+            anova_header=anova_header,
             anova=anova.to_html(classes='mystyle'),
-            tukey=tukey.summary().as_html(),
+            tukey=pt.to_html(classes='mystyle'),
         )
         self.webView.setHtml(html)
 

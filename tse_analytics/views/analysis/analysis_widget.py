@@ -9,6 +9,7 @@ from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import DatasetRemovedMessage, DatasetUnloadedMessage, \
     DatasetComponentChangedMessage
+from tse_analytics.views.analysis.ancova_widget import AncovaWidget
 from tse_analytics.views.analysis.anova_widget import AnovaWidget
 from tse_analytics.views.analysis.correlation_widget import CorrelationWidget
 from tse_analytics.views.analysis.distribution_widget import DistributionWidget
@@ -39,11 +40,14 @@ class AnalysisWidget(QWidget, MessengerListener):
         self.normality_widget = NormalityWidget()
         self.tabWidget.addTab(self.normality_widget, QIcon(":/icons/icons8-approval-16.png"), "Normality Check")
 
+        self.correlation_widget = CorrelationWidget()
+        self.tabWidget.addTab(self.correlation_widget, QIcon(":/icons/icons8-scales-16.png"), "Correlation")
+
         self.anova_widget = AnovaWidget()
         self.tabWidget.addTab(self.anova_widget, QIcon(":/icons/icons8-scales-16.png"), "ANOVA")
 
-        self.correlation_widget = CorrelationWidget()
-        self.tabWidget.addTab(self.correlation_widget, QIcon(":/icons/icons8-scales-16.png"), "Correlation")
+        self.ancova_widget = AncovaWidget()
+        self.tabWidget.addTab(self.ancova_widget, QIcon(":/icons/icons8-scales-16.png"), "ANCOVA")
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetComponentChangedMessage, self._on_dataset_component_changed)
@@ -56,8 +60,9 @@ class AnalysisWidget(QWidget, MessengerListener):
 
         self.distribution_widget.clear()
         self.normality_widget.clear()
-        self.anova_widget.clear()
         self.correlation_widget.clear()
+        self.anova_widget.clear()
+        self.ancova_widget.clear()
 
     def _on_dataset_component_changed(self, message: DatasetComponentChangedMessage):
         self.variables.clear()
@@ -69,6 +74,7 @@ class AnalysisWidget(QWidget, MessengerListener):
         self.variable_combo_box.setCurrentText("")
 
         self.correlation_widget.update_variables(self.variables)
+        self.ancova_widget.update_variables(self.variables)
 
     def _on_dataset_removed(self, message: DatasetRemovedMessage):
         self.clear()
