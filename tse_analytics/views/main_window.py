@@ -21,9 +21,7 @@ from tse_analytics.views.tables.table_view_widget import TableViewWidget
 from tse_analytics.views.animals.animals_view_widget import AnimalsViewWidget
 from tse_analytics.views.info.info_widget import InfoWidget
 from tse_analytics.views.main_window_ui import Ui_MainWindow
-from tse_analytics.views.charts.chart_view_widget import ChartViewWidget
 from tse_analytics.views.settings.settings_widget import SettingsWidget
-from tse_analytics.views.tiles.tiles_view_widget import TilesViewWidget
 from tse_analytics.views.datasets.datasets_tree_view import DatasetsTreeView
 
 
@@ -59,8 +57,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.table_view_widget = TableViewWidget()
         self.tabWidget.addTab(self.table_view_widget, QIcon(":/icons/icons8-data-sheet-16.png"), "Table")
 
-        self.plot_view_widget = ChartViewWidget()
-        self.tabWidget.addTab(self.plot_view_widget, QIcon(":/icons/icons8-scatter-plot-16.png"), "Plot")
+        # self.plot_view_widget = ChartViewWidget()
+        # self.tabWidget.addTab(self.plot_view_widget, QIcon(":/icons/icons8-scatter-plot-16.png"), "Plot")
 
         self.plot_view_widget2 = PlotViewWidget()
         self.tabWidget.addTab(self.plot_view_widget2, QIcon(":/icons/icons8-line-chart-16.png"), "Timeline")
@@ -71,8 +69,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.analysis_widget = AnalysisWidget()
         self.tabWidget.addTab(self.analysis_widget, QIcon(":/icons/icons8-statistics-16.png"), "Analysis")
 
-        self.tiles_view_widget = TilesViewWidget()
-        self.tabWidget.addTab(self.tiles_view_widget, QIcon(":/icons/icons8-medium-icons-16.png"), "Tiles")
+        # self.tiles_view_widget = TilesViewWidget()
+        # self.tabWidget.addTab(self.tiles_view_widget, QIcon(":/icons/icons8-medium-icons-16.png"), "Tiles")
 
         self.settings_widget = SettingsWidget()
         self.verticalLayoutSettings.addWidget(self.settings_widget)

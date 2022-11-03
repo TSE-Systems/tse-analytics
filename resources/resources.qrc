@@ -36,5 +36,6 @@
         <file>icons/icons8-rat-silhouette-16.png</file>
         <file>icons/icons8-line-chart-16.png</file>
         <file>icons/icons8-approval-16.png</file>
+        <file>icons/icons8-sorting-16.png</file>
     </qresource>
 </RCC>

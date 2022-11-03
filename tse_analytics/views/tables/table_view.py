@@ -20,17 +20,15 @@ class TableView(QTableView):
         self.verticalHeader().setDefaultSectionSize(10)
         self.setSelectionBehavior(QTableView.SelectRows)
         self.setEditTriggers(QTableView.NoEditTriggers)
-        self.sortByColumn(0, Qt.AscendingOrder)
-        self.setSortingEnabled(True)
-        self.selectionModel().selectionChanged.connect(self._on_selection_changed)
 
+        self._sorting: bool = False
         self._data: Optional[DatasetComponent] = None
         self._animal_ids: Optional[list[int]] = None
 
     def set_data(self, data: DatasetComponent):
         self._data = data
         model = PandasModel(data.df)
-        self.model().setSourceModel(model)
+        self._set_source_model(model)
 
     def set_animal_data(self, animals: list[Animal]):
         self._animal_ids = [animal.id for animal in animals]
@@ -38,7 +36,7 @@ class TableView(QTableView):
             df = self._data.df
             df = df[df['AnimalNo'].isin(self._animal_ids)]
             model = PandasModel(df)
-            self.model().setSourceModel(model)
+            self._set_source_model(model)
 
     def clear(self):
         self.model().setSourceModel(None)
@@ -67,21 +65,15 @@ class TableView(QTableView):
             result = df.resample(rule, on='DateTime').sum()
 
         model = PandasModel(result)
+        self._set_source_model(model)
+
+    def _set_source_model(self, model: PandasModel):
+        self.horizontalHeader().setSortIndicator(-1, Qt.AscendingOrder)
+        self.setSortingEnabled(False)
         self.model().setSourceModel(model)
+        self.setSortingEnabled(self._sorting)
 
-
-    def _on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
-        # proxy_model: QSortFilterProxyModel = self.model()
-        # model = proxy_model.sourceModel()
-        # selected_animals: Set[str] = set()
-        # for index in self.selectedIndexes():
-        #     if index.column() != 0:
-        #         continue
-        #     if index.isValid():
-        #         source_index = proxy_model.mapToSource(index)
-        #         row = source_index.row()
-        #         channel = model.channels[row]
-        #         selected_animals.add(channel[1])
-        # if len(selected_animals) < 7:
-        #     Manager.messenger.broadcast(SelectedAnimalsChangedMessage(self, selected_animals))
-        pass
+    def set_sorting(self, state: bool):
+        self._sorting = state
+        self.horizontalHeader().setSortIndicator(-1, Qt.AscendingOrder)
+        self.setSortingEnabled(self._sorting)

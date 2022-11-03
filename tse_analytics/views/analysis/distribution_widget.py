@@ -30,7 +30,7 @@ class DistributionWidget(QWidget):
         self.ax.clear()
 
         sns.boxplot(x='Group', y=variable, data=df, color='#99c2a2', ax=self.ax)
-        sns.swarmplot(x="Group", y=variable, data=df, color='#7d0013', ax=self.ax, size=2)
+        # sns.swarmplot(x="Group", y=variable, data=df, color='#7d0013', ax=self.ax, size=2)
 
         self.canvas.figure.tight_layout()
         self.canvas.draw()
