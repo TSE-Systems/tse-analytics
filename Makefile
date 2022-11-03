@@ -5,6 +5,9 @@ SOURCE_DIR = tse_analytics
 init:
 	pip install -r requirements/dev.txt
 
+freeze:
+	pip freeze > requirements/requirements.frozen.txt
+
 clean: ## remove all build, test, coverage and Python artifacts
 	rm -fr build/
 	rm -fr dist/
@@ -23,11 +26,11 @@ coverage: ## check code coverage
 	pytest --cov=$(SOURCE_DIR) tests/
 
 build_ui:
-	pyside6-uic tse_analytics/views/main_window.ui -o tse_analytics/views/main_window_ui.py
+	pyside6-uic tse_analytics/views/main_window.ui -o tse_analytics/views/main_window_ui.py --from-imports
 	pyside6-uic tse_analytics/views/groups_dialog.ui -o tse_analytics/views/groups_dialog_ui.py
 
 build_resources:
-	pyside6-rcc resources/resources.qrc -o tse_analytics/resources_rc.py
+	pyside6-rcc resources/resources.qrc -o tse_analytics/views/resources_rc.py
 
 build:
 	python setup.py build_res

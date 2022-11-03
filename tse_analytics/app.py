@@ -8,8 +8,6 @@ from pyqtgraph import setConfigOptions
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.main_window import MainWindow
 
-import tse_analytics.resources_rc
-
 # Global PyQtGraph settings
 setConfigOptions(
     imageAxisOrder="row-major",
