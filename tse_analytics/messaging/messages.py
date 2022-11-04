@@ -2,7 +2,6 @@ from typing import Literal
 
 from tse_datatools.data.animal import Animal
 from tse_datatools.data.dataset import Dataset
-from tse_datatools.data.dataset_component import DatasetComponent
 from tse_datatools.data.group import Group
 
 from tse_analytics.core.view_mode import ViewMode
@@ -75,13 +74,6 @@ class SelectedGroupsChangedMessage(Message):
 class DatasetChangedMessage(Message):
     """ Indicates that selected dataset is changed """
     def __init__(self, sender, data: Dataset, tag=None):
-        super().__init__(sender, tag=tag)
-        self.data = data
-
-
-class DatasetComponentChangedMessage(Message):
-    """ Indicates that selected dataset component is changed """
-    def __init__(self, sender, data: DatasetComponent, tag=None):
         super().__init__(sender, tag=tag)
         self.data = data
 

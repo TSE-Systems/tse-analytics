@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import DatasetRemovedMessage, DatasetUnloadedMessage, DatasetComponentChangedMessage, \
+from tse_analytics.messaging.messages import DatasetRemovedMessage, DatasetUnloadedMessage, DatasetChangedMessage, \
     BinningAppliedMessage, AnimalDataChangedMessage
 from tse_analytics.views.tables.table_view import TableView
 
@@ -28,7 +28,7 @@ class TableViewWidget(QWidget, MessengerListener):
         self.verticalLayout.addWidget(self.table_view)
 
     def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetComponentChangedMessage, self._on_dataset_component_changed)
+        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
         messenger.subscribe(self, AnimalDataChangedMessage, self._on_animal_data_changed)
         messenger.subscribe(self, DatasetRemovedMessage, self._on_dataset_removed)
         messenger.subscribe(self, DatasetUnloadedMessage, self._on_dataset_unloaded)
@@ -37,7 +37,7 @@ class TableViewWidget(QWidget, MessengerListener):
     def clear(self):
         self.table_view.clear()
 
-    def _on_dataset_component_changed(self, message: DatasetComponentChangedMessage):
+    def _on_dataset_changed(self, message: DatasetChangedMessage):
         self.table_view.set_data(message.data)
 
     def _on_animal_data_changed(self, message: AnimalDataChangedMessage):

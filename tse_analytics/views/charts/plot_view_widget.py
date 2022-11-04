@@ -7,7 +7,7 @@ from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import DatasetRemovedMessage, DatasetUnloadedMessage, AnimalDataChangedMessage, \
-    DatasetComponentChangedMessage
+    DatasetChangedMessage
 from tse_analytics.views.charts.plot_view import PlotView
 
 
@@ -29,7 +29,7 @@ class PlotViewWidget(QWidget, MessengerListener):
         self.verticalLayout.addWidget(self.plot_view)
 
     def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetComponentChangedMessage, self._on_dataset_component_changed)
+        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
         messenger.subscribe(self, AnimalDataChangedMessage, self._on_animal_data_changed)
         messenger.subscribe(self, DatasetRemovedMessage, self._on_dataset_removed)
         messenger.subscribe(self, DatasetUnloadedMessage, self._on_dataset_unloaded)
@@ -39,10 +39,10 @@ class PlotViewWidget(QWidget, MessengerListener):
         self.variables.clear()
         self.variable_combo_box.clear()
 
-    def _on_dataset_component_changed(self, message: DatasetComponentChangedMessage):
+    def _on_dataset_changed(self, message: DatasetChangedMessage):
         self.variables.clear()
-        for param in message.data.meta.get("Parameters"):
-            self.variables.append(param.get("Name"))
+        for var in message.data.variables:
+            self.variables.append(var)
         self.variable_combo_box.clear()
         self.variable_combo_box.addItems(self.variables)
         self.variable_combo_box.setCurrentText('')

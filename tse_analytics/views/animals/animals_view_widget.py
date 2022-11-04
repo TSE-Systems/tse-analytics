@@ -38,5 +38,4 @@ class AnimalsViewWidget(QWidget, MessengerListener):
         self.clear()
 
     def _on_dataset_changed(self, message: DatasetChangedMessage):
-        if message.data.loaded:
-            self.table_view.set_data(message.data.animals)
+        self.table_view.set_data(message.data.animals)

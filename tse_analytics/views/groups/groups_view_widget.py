@@ -45,8 +45,7 @@ class GroupsViewWidget(QWidget, MessengerListener):
         self.clear()
 
     def _on_dataset_changed(self, message: DatasetChangedMessage):
-        if message.data.loaded:
-            self.table_view.set_data(message.data.groups)
+        self.table_view.set_data(message.data.groups)
 
     def edit_groups(self):
         dlg = GroupsDialog(self)

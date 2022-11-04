@@ -8,7 +8,7 @@ from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import DatasetRemovedMessage, DatasetUnloadedMessage, \
-    DatasetComponentChangedMessage
+    DatasetChangedMessage
 from tse_analytics.views.analysis.ancova_widget import AncovaWidget
 from tse_analytics.views.analysis.anova_widget import AnovaWidget
 from tse_analytics.views.analysis.correlation_widget import CorrelationWidget
@@ -50,7 +50,7 @@ class AnalysisWidget(QWidget, MessengerListener):
         self.tabWidget.addTab(self.ancova_widget, QIcon(":/icons/icons8-scales-16.png"), "ANCOVA")
 
     def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetComponentChangedMessage, self._on_dataset_component_changed)
+        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
         messenger.subscribe(self, DatasetRemovedMessage, self._on_dataset_removed)
         messenger.subscribe(self, DatasetUnloadedMessage, self._on_dataset_unloaded)
 
@@ -64,11 +64,11 @@ class AnalysisWidget(QWidget, MessengerListener):
         self.anova_widget.clear()
         self.ancova_widget.clear()
 
-    def _on_dataset_component_changed(self, message: DatasetComponentChangedMessage):
+    def _on_dataset_changed(self, message: DatasetChangedMessage):
         self.variables.clear()
         self.variable = ""
-        for param in message.data.meta.get("Parameters"):
-            self.variables.append(param.get("Name"))
+        for var in message.data.variables:
+            self.variables.append(var)
         self.variable_combo_box.clear()
         self.variable_combo_box.addItems(self.variables)
         self.variable_combo_box.setCurrentText("")
@@ -86,10 +86,10 @@ class AnalysisWidget(QWidget, MessengerListener):
         self.variable = variable
 
     def _analyze(self):
-        if Manager.data.selected_dataset_component is None:
+        if Manager.data.selected_dataset is None:
             return
 
-        df = Manager.data.selected_dataset_component.filter_by_groups(Manager.data.selected_groups)
+        df = Manager.data.selected_dataset.filter_by_groups(Manager.data.selected_groups)
 
         self.distribution_widget.analyze(df, self.variable)
         self.normality_widget.analyze(df, self.variable)

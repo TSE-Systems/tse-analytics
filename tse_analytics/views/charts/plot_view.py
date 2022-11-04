@@ -6,14 +6,14 @@ import pyqtgraph as pg
 
 from PySide6.QtWidgets import QWidget
 from tse_datatools.data.animal import Animal
-from tse_datatools.data.dataset_component import DatasetComponent
+from tse_datatools.data.dataset import Dataset
 
 
 class PlotView(pg.GraphicsLayoutWidget):
     def __init__(self, parent: QWidget, title="Plot"):
         super().__init__(parent, title=title)
 
-        self._data: Optional[DatasetComponent] = None
+        self._data: Optional[Dataset] = None
         self._animals: Optional[list[Animal]] = None
         self._variable: Optional[str] = None
 
@@ -90,7 +90,7 @@ class PlotView(pg.GraphicsLayoutWidget):
                 self.vLine.setPos(mousePoint.x())
                 self.hLine.setPos(mousePoint.y())
 
-    def set_data(self, data: DatasetComponent):
+    def set_data(self, data: Dataset):
         self._data = data
         self.__update_plot()
 

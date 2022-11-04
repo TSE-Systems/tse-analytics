@@ -6,9 +6,9 @@ from matplotlib.figure import Figure
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 from tse_datatools.analysis.processor import apply_time_binning
 from tse_datatools.data.animal import Animal
-from tse_datatools.data.dataset_component import DatasetComponent
 
 from tse_analytics.messaging.messages import BinningAppliedMessage
+from tse_datatools.data.dataset import Dataset
 
 
 class AggregationPlotView(QWidget):
@@ -23,7 +23,7 @@ class AggregationPlotView(QWidget):
         self.layout.addWidget(self.toolbar)
         self.layout.addWidget(self.canvas)
 
-        self._data: Optional[DatasetComponent] = None
+        self._data: Optional[Dataset] = None
         self._animal_ids: Optional[list[int]] = None
         self._variable: Optional[str] = None
 
@@ -40,7 +40,7 @@ class AggregationPlotView(QWidget):
         self.canvas.figure.tight_layout()
         self.canvas.draw()
 
-    def set_data(self, data: DatasetComponent):
+    def set_data(self, data: Dataset):
         self._data = data
 
     def set_animal_data(self, animals: list[Animal]):

@@ -3,11 +3,9 @@ from functools import partial
 from PySide6.QtCore import Qt, QModelIndex, QItemSelection
 from PySide6.QtWidgets import QTreeView, QWidget, QAbstractItemView, QMenu
 
-from tse_analytics.messaging.messages import SelectedTreeNodeChangedMessage, DatasetComponentChangedMessage, \
-    DatasetChangedMessage
+from tse_analytics.messaging.messages import SelectedTreeNodeChangedMessage, DatasetChangedMessage
 from tse_analytics.core.manager import Manager
 from tse_analytics.models.dataset_tree_item import DatasetTreeItem
-from tse_analytics.models.dataset_component_tree_item import DatasetComponentTreeItem
 
 
 class DatasetsTreeView(QTreeView):
@@ -64,8 +62,6 @@ class DatasetsTreeView(QTreeView):
             Manager.messenger.broadcast(SelectedTreeNodeChangedMessage(self, item))
             if isinstance(item, DatasetTreeItem):
                 Manager.messenger.broadcast(DatasetChangedMessage(self, item.dataset))
-            elif isinstance(item, DatasetComponentTreeItem):
-                Manager.messenger.broadcast(DatasetComponentChangedMessage(self, item.dataset_component))
 
     def _treeview_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
         indexes = selected.indexes()
@@ -73,5 +69,5 @@ class DatasetsTreeView(QTreeView):
     def _treeview_double_clicked(self, index: QModelIndex):
         if index.isValid():
             item = index.model().getItem(index)
-            if isinstance(item, DatasetTreeItem) and not item.loaded:
-                self._load([index])
+            # if isinstance(item, DatasetTreeItem) and not item.loaded:
+            #     self._load([index])

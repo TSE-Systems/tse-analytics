@@ -129,7 +129,6 @@ class WorkspaceModel(QAbstractItemModel):
             self.workspace = pickle.load(file)
             self.workspace_tree_item = WorkspaceTreeItem(self.workspace)
             for dataset in self.workspace.datasets:
-                dataset.loaded = False
                 dataset_tree_item = DatasetTreeItem(dataset)
                 self.workspace_tree_item.add_child(dataset_tree_item)
         self.workspace.path = path
@@ -142,9 +141,7 @@ class WorkspaceModel(QAbstractItemModel):
 
     def export_to_excel(self, path: str):
         with pd.ExcelWriter(path) as writer:
-            self.workspace.datasets[0].calorimetry.df.to_excel(writer, sheet_name='Calorimetry')
-            self.workspace.datasets[0].actimot.df.to_excel(writer, sheet_name='Actimot')
-            self.workspace.datasets[0].drinkfeed.df.to_excel(writer, sheet_name='DrinkFeed')
+            self.workspace.datasets[0].df.to_excel(writer, sheet_name='Data')
 
     def add_dataset(self, dataset: Dataset):
         self.workspace.datasets.append(dataset)

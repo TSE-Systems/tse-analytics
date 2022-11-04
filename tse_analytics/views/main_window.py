@@ -143,10 +143,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def import_dataset_dialog(self):
         options = QFileDialog.Options()
-        path = QFileDialog.getExistingDirectory(
+        file_ext = "*.csv"
+        path, _ = QFileDialog.getOpenFileName(
             self,
-            "Select dataset folder",
-            options=options
+            "Import dataset",
+            "",
+            "Dataset Files ({})".format(file_ext),
+            options=options,
         )
         if path:
             self.import_dataset(path)

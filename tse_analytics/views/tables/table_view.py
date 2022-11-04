@@ -3,10 +3,10 @@ from typing import Optional
 from PySide6.QtCore import Qt, QSortFilterProxyModel, QItemSelection
 from PySide6.QtWidgets import QWidget, QTableView, QHeaderView
 from tse_datatools.data.animal import Animal
-from tse_datatools.data.dataset_component import DatasetComponent
 
 from tse_analytics.messaging.messages import BinningAppliedMessage
 from tse_analytics.models.pandas_model import PandasModel
+from tse_datatools.data.dataset import Dataset
 
 
 class TableView(QTableView):
@@ -22,10 +22,10 @@ class TableView(QTableView):
         self.setEditTriggers(QTableView.NoEditTriggers)
 
         self._sorting: bool = False
-        self._data: Optional[DatasetComponent] = None
+        self._data: Optional[Dataset] = None
         self._animal_ids: Optional[list[int]] = None
 
-    def set_data(self, data: DatasetComponent):
+    def set_data(self, data: Dataset):
         self._data = data
         model = PandasModel(data.df)
         self._set_source_model(model)

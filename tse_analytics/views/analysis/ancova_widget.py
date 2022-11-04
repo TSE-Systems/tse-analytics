@@ -58,7 +58,7 @@ class AncovaWidget(QWidget):
         if len(Manager.data.selected_groups) == 0:
             return
 
-        df = Manager.data.selected_dataset_component.filter_by_groups(Manager.data.selected_groups)
+        df = Manager.data.selected_dataset.filter_by_groups(Manager.data.selected_groups)
 
         ancova = pg.ancova(data=df, dv=self.response, covar=self.covariate, between="Group")
 
