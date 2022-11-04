@@ -5,4 +5,10 @@ pingouin
 psutil
 pyqtgraph
 PySide6
-tse-datatools
+
+# tse-datatools
+matplotlib
+pandas
+scipy
+seaborn
+statsmodels

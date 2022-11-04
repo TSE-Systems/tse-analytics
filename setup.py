@@ -11,7 +11,7 @@ install_requires = [
     'PySide6',
     'psutil',
     'pyqtgraph',
-    'tse-datatools',
+    # 'tse-datatools',
 ]
 
 dependency_links = [

@@ -29,8 +29,8 @@ class DistributionWidget(QWidget):
 
         self.ax.clear()
 
-        sns.boxplot(x='Group', y=variable, data=df, color='#99c2a2', ax=self.ax)
-        # sns.swarmplot(x="Group", y=variable, data=df, color='#7d0013', ax=self.ax, size=2)
+        # sns.boxplot(data=df, x='Group', y=variable, ax=self.ax)
+        sns.violinplot(data=df, x="Group", y=variable, ax=self.ax)
 
         self.canvas.figure.tight_layout()
         self.canvas.draw()
