@@ -3,6 +3,7 @@ import gc
 
 from PySide6.QtCore import QModelIndex
 from PySide6.QtGui import QPixmapCache
+from PySide6.QtWidgets import QInputDialog, QLineEdit
 from pyqtgraph import BusyCursor
 from tse_datatools.data.animal import Animal
 from tse_datatools.data.dataset import Dataset
@@ -98,3 +99,10 @@ class DataHub(MessengerListener):
         self.workspace_model.remove_dataset(indexes)
         self.messenger.broadcast(DatasetRemovedMessage(self))
         self.clear()
+
+    @catch_error("Could not adjust dataset time")
+    def adjust_dataset_time(self, indexes: [QModelIndex], delta: str) -> None:
+        with BusyCursor():
+            if self.selected_dataset is not None:
+                self.selected_dataset.adjust_time(delta)
+                self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))

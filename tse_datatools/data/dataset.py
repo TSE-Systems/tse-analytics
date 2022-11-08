@@ -1,6 +1,8 @@
+from datetime import timedelta
 from typing import Literal
 
 import pandas as pd
+from pandas import Timedelta
 
 from tse_datatools.data.animal import Animal
 from tse_datatools.data.box import Box
@@ -57,6 +59,10 @@ class Dataset:
         df["Group"].replace(animal_group_map, inplace=True)
         df = df.dropna()
         return df
+
+    def adjust_time(self, delta: str) -> pd.DataFrame:
+        self.df['DateTime'] = self.df['DateTime'] + Timedelta(delta)
+        return self.df
 
     def __getstate__(self):
         state = self.__dict__.copy()

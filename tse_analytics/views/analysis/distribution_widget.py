@@ -1,10 +1,10 @@
 from typing import Optional
 
-import pandas as pd
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-from matplotlib.figure import Figure
 from PySide6.QtWidgets import QWidget, QVBoxLayout
+
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
+from matplotlib.figure import Figure
+import pandas as pd
 import seaborn as sns
 
 from tse_analytics.core.manager import Manager
@@ -15,10 +15,11 @@ class DistributionWidget(QWidget):
         super().__init__(parent)
         self.layout = QVBoxLayout(self)
 
-        self.canvas = FigureCanvas(Figure(figsize=(5.0, 4.0), dpi=100))
-        self.ax = self.canvas.figure.subplots()
+        figure = Figure(figsize=(5.0, 4.0), dpi=100)
+        self.ax = figure.subplots()
+        self.canvas = FigureCanvasQTAgg(figure)
 
-        self.toolbar = NavigationToolbar(self.canvas, self)
+        self.toolbar = NavigationToolbar2QT(self.canvas, self)
 
         self.layout.addWidget(self.toolbar)
         self.layout.addWidget(self.canvas)
@@ -29,7 +30,7 @@ class DistributionWidget(QWidget):
 
         self.ax.clear()
 
-        # sns.boxplot(data=df, x='Group', y=variable, ax=self.ax)
+        sns.boxplot(data=df, x='Group', y=variable, ax=self.ax, color='green')
         sns.violinplot(data=df, x="Group", y=variable, ax=self.ax)
 
         self.canvas.figure.tight_layout()

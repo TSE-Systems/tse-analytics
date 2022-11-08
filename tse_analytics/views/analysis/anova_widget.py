@@ -2,7 +2,7 @@ from typing import Optional
 
 import pandas as pd
 import pingouin as pg
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit
@@ -28,8 +28,9 @@ class AnovaWidget(QWidget):
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, True)
         self.layout.addWidget(self.webView)
 
-        self.canvas = FigureCanvas(Figure(figsize=(5.0, 4.0), dpi=100))
-        self.ax = self.canvas.figure.subplots()
+        figure = Figure(figsize=(5.0, 4.0), dpi=100)
+        self.ax = figure.subplots()
+        self.canvas = FigureCanvasQTAgg(figure)
         self.layout.addWidget(self.canvas)
 
     def analyze(self, df: pd.DataFrame, variable: str):

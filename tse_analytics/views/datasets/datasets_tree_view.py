@@ -1,7 +1,7 @@
 from functools import partial
 
 from PySide6.QtCore import Qt, QModelIndex, QItemSelection
-from PySide6.QtWidgets import QTreeView, QWidget, QAbstractItemView, QMenu
+from PySide6.QtWidgets import QTreeView, QWidget, QAbstractItemView, QMenu, QInputDialog, QLineEdit
 
 from tse_analytics.messaging.messages import SelectedTreeNodeChangedMessage, DatasetChangedMessage
 from tse_analytics.core.manager import Manager
@@ -35,25 +35,29 @@ class DatasetsTreeView(QTreeView):
         menu = QMenu(self)
 
         if level == 1:
-            action = menu.addAction("Load")
-            action.triggered.connect(partial(self._load, indexes))
+            action = menu.addAction("Adjust time...")
+            action.triggered.connect(partial(self._adjust_dataset_time, indexes))
 
-            action = menu.addAction("Close")
-            action.triggered.connect(partial(self._close, indexes))
+            action = menu.addAction("Merge datasets")
+            action.triggered.connect(partial(self._merge_datasets, indexes))
 
             action = menu.addAction("Remove")
             action.triggered.connect(partial(self._remove, indexes))
 
         menu.exec_(self.viewport().mapToGlobal(position))
 
-    def _close(self, indexes: [QModelIndex]):
-        Manager.data.close_dataset(indexes)
+    def _merge_datasets(self, indexes: [QModelIndex]):
+        # Manager.data.close_dataset(indexes)
+        items = self.model().workspace_tree_item.child_items
+        for item in items:
+            print(item.checked)
 
-    def _load(self, indexes: [QModelIndex]):
-        Manager.data.load_dataset(indexes)
+    def _adjust_dataset_time(self, indexes: [QModelIndex]):
+        delta, ok = QInputDialog.getText(self, "Enter time delta", "Delta", QLineEdit.EchoMode.Normal, "1 d")
+        if ok:
+            Manager.data.adjust_dataset_time(indexes, delta)
 
     def _remove(self, indexes: [QModelIndex]):
-        self._close(indexes)
         Manager.data.remove_dataset(indexes)
 
     def _treeview_current_changed(self, current: QModelIndex, previous: QModelIndex):

@@ -1,7 +1,7 @@
 from typing import Optional
 
 import pandas as pd
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 import pingouin as pg
 import seaborn as sns
 from PySide6.QtCore import Qt
@@ -38,8 +38,9 @@ class AncovaWidget(QWidget):
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, True)
         self.layout.addWidget(self.webView)
 
-        self.canvas = FigureCanvas(Figure(figsize=(5.0, 4.0), dpi=100))
-        self.ax = self.canvas.figure.subplots()
+        figure = Figure(figsize=(5.0, 4.0), dpi=100)
+        self.ax = figure.subplots()
+        self.canvas = FigureCanvasQTAgg(figure)
         self.layout.addWidget(self.canvas)
 
     def update_variables(self, variables: list):

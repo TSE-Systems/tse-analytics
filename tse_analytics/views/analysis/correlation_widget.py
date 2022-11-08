@@ -1,7 +1,7 @@
 from typing import Optional
 
 import pandas as pd
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 import pingouin as pg
 import seaborn as sns
 from PySide6.QtCore import Qt
@@ -41,7 +41,7 @@ class CorrelationWidget(QWidget):
         self.layout.addWidget(self.webView)
 
         self.figure = None
-        self.canvas = FigureCanvas(self.figure)
+        self.canvas = FigureCanvasQTAgg(self.figure)
         self.layout.addWidget(self.canvas)
 
     def update_variables(self, variables: list):

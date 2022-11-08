@@ -1,11 +1,10 @@
 from typing import Optional
 
+from PySide6.QtWidgets import QWidget, QVBoxLayout
 import pandas as pd
 import pingouin as pg
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
 from matplotlib.figure import Figure
-from PySide6.QtWidgets import QWidget, QVBoxLayout
 import scipy.stats as stats
 
 from tse_analytics.core.manager import Manager
@@ -16,9 +15,10 @@ class NormalityWidget(QWidget):
         super().__init__(parent)
         self.layout = QVBoxLayout(self)
 
-        self.canvas = FigureCanvas(Figure(figsize=(5.0, 4.0), dpi=100))
+        figure = Figure(figsize=(5.0, 4.0), dpi=100)
+        self.canvas = FigureCanvasQTAgg(figure)
 
-        self.toolbar = NavigationToolbar(self.canvas, self)
+        self.toolbar = NavigationToolbar2QT(self.canvas, self)
 
         self.layout.addWidget(self.toolbar)
         self.layout.addWidget(self.canvas)
