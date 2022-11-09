@@ -60,7 +60,6 @@ class AggregationPlotViewWidget(QWidget, MessengerListener):
 
     def _on_binning_applied(self, message: BinningAppliedMessage):
         self.plot_view.apply_binning(message)
-        pass
 
     def _variable_current_text_changed(self, variable: str):
         self.plot_view.set_variable(variable)

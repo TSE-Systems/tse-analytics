@@ -5,6 +5,9 @@ import pandas as pd
 import pyqtgraph as pg
 
 from PySide6.QtWidgets import QWidget
+
+from tse_analytics.messaging.messages import BinningAppliedMessage
+from tse_datatools.analysis.processor import apply_time_binning
 from tse_datatools.data.animal import Animal
 from tse_datatools.data.dataset import Dataset
 
@@ -13,7 +16,7 @@ class PlotView(pg.GraphicsLayoutWidget):
     def __init__(self, parent: QWidget, title="Plot"):
         super().__init__(parent, title=title)
 
-        self._data: Optional[Dataset] = None
+        self._df: Optional[pd.DataFrame] = None
         self._animals: Optional[list[Animal]] = None
         self._variable: Optional[str] = None
 
@@ -91,7 +94,7 @@ class PlotView(pg.GraphicsLayoutWidget):
                 self.hLine.setPos(mousePoint.y())
 
     def set_data(self, data: Dataset):
-        self._data = data
+        self._df = data.df
         self.__update_plot()
 
     def set_animal_data(self, animals: list[Animal]):
@@ -102,17 +105,21 @@ class PlotView(pg.GraphicsLayoutWidget):
         self._variable = variable
         self.__update_plot()
 
+    def apply_binning(self, message: BinningAppliedMessage):
+        self._df = apply_time_binning(self._df, message.delta, message.unit, message.mode)
+        self.__update_plot()
+
     def __update_plot(self):
         self.plot_data_items.clear()
         self.p1.clearPlots()
         self.p2.clearPlots()
         self.legend.clear()
 
-        if self._data is None or self._variable is None or self._animals is None or len(self._animals) == 0 or self._variable not in self._data.df:
+        if self._df is None or self._variable is None or self._animals is None or len(self._animals) == 0 or self._variable not in self._df:
             return
 
         for i, animal in enumerate(self._animals):
-            filtered_data = self._data.df[self._data.df['AnimalNo'] == animal.id]
+            filtered_data = self._df[self._df['Animal'] == animal.id]
 
             x = filtered_data["DateTime"]
             x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
@@ -140,7 +147,7 @@ class PlotView(pg.GraphicsLayoutWidget):
         self.p2.clearPlots()
         self.legend.clear()
 
-        self._data = None
+        self._df = None
         self._animals = None
         self._variable = None
         self.start_datetime = None

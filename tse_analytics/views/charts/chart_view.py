@@ -51,7 +51,7 @@ class ChartView(QChartView):
         y_min = None
         y_max = None
         for animal in self._animals:
-            filtered_data = self._data.df[self._data.df['AnimalNo'] == animal.id]
+            filtered_data = self._data.df[self._data.df['Animal'] == animal.id]
 
             series = QLineSeries()
             series.setName(f'Animal {animal.id}')

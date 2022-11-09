@@ -6,7 +6,8 @@ from setuptools import setup, find_packages, Command
 from setuptools.command.sdist import sdist
 
 install_requires = [
-    'openpyxl'
+    'openpyxl',
+    'pandas',
     'pingouin',
     'PySide6',
     'psutil',

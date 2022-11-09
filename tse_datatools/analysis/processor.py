@@ -9,6 +9,9 @@ def apply_time_binning(
     unit_name: Literal["day", "hour", "minute"],
     mode: Literal["sum", "mean", "median"]
 ) -> pd.DataFrame:
+    # Store initial column order
+    cols = df.columns
+
     unit = "H"
     if unit_name == "day":
         unit = "D"
@@ -16,14 +19,23 @@ def apply_time_binning(
         unit = "H"
     elif unit_name == "minute":
         unit = "min"
-    rule = f'{delta}{unit}'
+
+    timedelta = pd.Timedelta(f'{delta}{unit}')
+
+    result = df.groupby(['Animal', 'Box']).resample(timedelta, on='DateTime')
 
     if mode == "mean":
-        result = df.resample(rule, on='DateTime', origin="start").mean()
+        result = result.mean(numeric_only=True)
     elif mode == "median":
-        result = df.resample(rule, on='DateTime', origin="start").median()
+        result = result.median(numeric_only=True)
     else:
-        result = df.resample(rule, on='DateTime', origin="start").sum()
+        result = result.sum(numeric_only=True)
 
-    result["Order"] = result.index - result.index[0]
+    # the inverse of groupby, reset_index
+    result.sort_values(by=['DateTime', 'Box'], inplace=True)
+    result = result.reset_index().reindex(cols, axis=1)
+
+    start_date_time = result['DateTime'][0]
+    result["Timedelta"] = result['DateTime'] - start_date_time
+    result["Bin"] = (result["Timedelta"] / timedelta).round().astype(int)
     return result

@@ -3,7 +3,6 @@ import gc
 
 from PySide6.QtCore import QModelIndex
 from PySide6.QtGui import QPixmapCache
-from PySide6.QtWidgets import QInputDialog, QLineEdit
 from pyqtgraph import BusyCursor
 from tse_datatools.data.animal import Animal
 from tse_datatools.data.dataset import Dataset

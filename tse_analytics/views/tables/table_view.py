@@ -1,7 +1,9 @@
 from typing import Optional
 
-from PySide6.QtCore import Qt, QSortFilterProxyModel, QItemSelection
+from PySide6.QtCore import Qt, QSortFilterProxyModel
 from PySide6.QtWidgets import QWidget, QTableView, QHeaderView
+
+from tse_datatools.analysis.processor import apply_time_binning
 from tse_datatools.data.animal import Animal
 
 from tse_analytics.messaging.messages import BinningAppliedMessage
@@ -34,7 +36,7 @@ class TableView(QTableView):
         self._animal_ids = [animal.id for animal in animals]
         if self._data:
             df = self._data.df
-            df = df[df['AnimalNo'].isin(self._animal_ids)]
+            df = df[df['Animal'].isin(self._animal_ids)]
             model = PandasModel(df)
             self._set_source_model(model)
 
@@ -45,24 +47,8 @@ class TableView(QTableView):
 
     def apply_binning(self, message: BinningAppliedMessage):
         df = self._data.df
-        df = df[df['AnimalNo'].isin(self._animal_ids)]
-        df = df.set_index('DateTime', drop=False)
 
-        unit = "H"
-        if message.unit == "Day":
-            unit = "D"
-        elif message.unit == "Hour":
-            unit = "H"
-        elif message.unit == "Minute":
-            unit = "min"
-        rule = f'{message.delta}{unit}'
-
-        if message.mode == "Mean":
-            result = df.resample(rule, on='DateTime').mean()
-        elif message.mode == "Median":
-            result = df.resample(rule, on='DateTime').median()
-        else:
-            result = df.resample(rule, on='DateTime').sum()
+        result = apply_time_binning(df, message.delta, message.unit, message.mode)
 
         model = PandasModel(result)
         self._set_source_model(model)

@@ -10,8 +10,8 @@ from tse_datatools.data.dataset import Dataset
 from tse_datatools.data.variable import Variable
 
 
-delimiter = ';'
-decimal = '.'
+DELIMITER = ';'
+DECIMAL = '.'
 
 
 class DatasetLoader:
@@ -28,7 +28,7 @@ class DatasetLoader:
         with open(path, "r") as f:
             lines = f.readlines()
 
-        lines = [line.strip().rstrip(delimiter) for line in lines]
+        lines = [line.strip().rstrip(DELIMITER) for line in lines]
 
         header = [lines[0], lines[1]]
 
@@ -45,7 +45,7 @@ class DatasetLoader:
         variables: dict[str, Variable] = {}
 
         for line in animal_section:
-            elements = line.split(delimiter)
+            elements = line.split(DELIMITER)
             animal = Animal(
                 id=int(elements[1]),
                 box_id=int(elements[0]),
@@ -60,42 +60,66 @@ class DatasetLoader:
             boxes[box.id] = box
 
         data_header = lines[data_section_start]
-        columns = data_header.split(delimiter)
+        columns = data_header.split(DELIMITER)
         data_unit_header = lines[data_section_start + 1]
         data_section = lines[data_section_start + 2:len(lines)]
 
-        for i, item in enumerate(data_unit_header.split(delimiter)):
+        for i, item in enumerate(data_unit_header.split(DELIMITER)):
             if item == '':
                 continue
             variable = Variable(name=columns[i], unit=item)
             variables[variable.name] = variable
 
         csv = '\n'.join(data_section)
-        df = pd.read_csv(StringIO(csv), delimiter=delimiter, decimal=decimal, na_values=['-'], names=columns, parse_dates=[['Date', 'Time']],
-                         infer_datetime_format=True)
+
+        # noinspection PyTypeChecker
+        df = pd.read_csv(
+            StringIO(csv),
+            delimiter=DELIMITER,
+            decimal=DECIMAL,
+            na_values=['-'],
+            names=columns,
+            parse_dates=[['Date', 'Time']],
+            infer_datetime_format=True
+        )
+
+        # Rename table columns
         df.rename(columns={
             "Date_Time": "DateTime",
-            "Animal No.": "AnimalNo"
+            "Animal No.": "Animal"
         }, inplace=True)
+
+        # Apply categorical types
+        df['Animal'] = df['Animal'].astype('category')
+        df['Box'] = df['Box'].astype('category')
+
+        timedelta = df['DateTime'][1] - df['DateTime'][0]
 
         # Sort dataframe
         df.sort_values(by=['DateTime', 'Box'], inplace=True)
         df.reset_index(drop=True, inplace=True)
 
         # Calculate cumulative values
-        df['DrinkK'] = df.groupby('Box')['Drink'].transform(pd.Series.cumsum)
-        var = Variable(name='DrinkK', unit=variables['Drink'].unit)
-        variables[var.name] = var
+        if 'Drink' in df.columns:
+            df['DrinkK'] = df.groupby('Box')['Drink'].transform(pd.Series.cumsum)
+            var = Variable(name='DrinkK', unit=variables['Drink'].unit)
+            variables[var.name] = var
 
-        df['FeedK'] = df.groupby('Box')['Feed'].transform(pd.Series.cumsum)
-        var = Variable(name='FeedK', unit=variables['Feed'].unit)
-        variables[var.name] = var
+        if 'Feed' in df.columns:
+            df['FeedK'] = df.groupby('Box')['Feed'].transform(pd.Series.cumsum)
+            var = Variable(name='FeedK', unit=variables['Feed'].unit)
+            variables[var.name] = var
 
+        start_date_time = df['DateTime'][0]
+        df.insert(loc=1, column='Timedelta', value=df['DateTime'] - start_date_time)
+        df.insert(loc=2, column='Bin', value=(df["Timedelta"] / timedelta).round().astype(int))
+
+        # Sort variables by name
         variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))
 
-        name = header[0].split(delimiter)[0]
-        description = header[0].split(delimiter)[1]
-        version = header[1].split(delimiter)[1]
+        name = header[0].split(DELIMITER)[0]
+        description = header[0].split(DELIMITER)[1]
+        version = header[1].split(DELIMITER)[1]
 
         meta = {
             "Name": name,

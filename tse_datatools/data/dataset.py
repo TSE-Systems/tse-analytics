@@ -1,8 +1,6 @@
-from datetime import timedelta
 from typing import Literal
 
 import pandas as pd
-from pandas import Timedelta
 
 from tse_datatools.data.animal import Animal
 from tse_datatools.data.box import Box
@@ -20,6 +18,7 @@ class Dataset:
         self.boxes = boxes
         self.animals = animals
         self.variables = variables
+
         self.df = df
 
         self.groups: dict[str, Group] = {}
@@ -40,14 +39,18 @@ class Dataset:
         return groups
 
     def filter_by_animals(self, animal_ids: list[int]) -> pd.DataFrame:
-        df = self.df[self.df['AnimalNo'].isin(animal_ids)]
+        df = self.df[self.df['Animal'].isin(animal_ids)]
+        return df
+
+    def filter_by_boxes(self, box_ids: list[int]) -> pd.DataFrame:
+        df = self.df[self.df['Box'].isin(box_ids)]
         return df
 
     def filter_by_groups(self, groups: list[Group]) -> pd.DataFrame:
         df = self.df.copy()
 
         animal_group_map = {}
-        animal_ids = df["AnimalNo"].unique()
+        animal_ids = df["Animal"].unique()
         for animal_id in animal_ids:
             animal_group_map[animal_id] = None
 
@@ -55,13 +58,13 @@ class Dataset:
             for animal_id in group.animal_ids:
                 animal_group_map[animal_id] = group.name
 
-        df["Group"] = df["AnimalNo"]
+        df["Group"] = df["Animal"]
         df["Group"].replace(animal_group_map, inplace=True)
         df = df.dropna()
         return df
 
     def adjust_time(self, delta: str) -> pd.DataFrame:
-        self.df['DateTime'] = self.df['DateTime'] + Timedelta(delta)
+        self.df['DateTime'] = self.df['DateTime'] + pd.Timedelta(delta)
         return self.df
 
     def __getstate__(self):

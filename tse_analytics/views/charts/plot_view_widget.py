@@ -7,7 +7,7 @@ from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import DatasetRemovedMessage, DatasetUnloadedMessage, AnimalDataChangedMessage, \
-    DatasetChangedMessage
+    DatasetChangedMessage, BinningAppliedMessage
 from tse_analytics.views.charts.plot_view import PlotView
 
 
@@ -33,6 +33,7 @@ class PlotViewWidget(QWidget, MessengerListener):
         messenger.subscribe(self, AnimalDataChangedMessage, self._on_animal_data_changed)
         messenger.subscribe(self, DatasetRemovedMessage, self._on_dataset_removed)
         messenger.subscribe(self, DatasetUnloadedMessage, self._on_dataset_unloaded)
+        messenger.subscribe(self, BinningAppliedMessage, self._on_binning_applied)
 
     def clear(self):
         self.plot_view.clear()
@@ -59,6 +60,9 @@ class PlotViewWidget(QWidget, MessengerListener):
 
     def _variable_current_text_changed(self, variable: str):
         self.plot_view.set_variable(variable)
+
+    def _on_binning_applied(self, message: BinningAppliedMessage):
+        self.plot_view.apply_binning(message)
 
     @property
     def toolbar(self) -> QToolBar:

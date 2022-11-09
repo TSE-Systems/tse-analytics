@@ -29,13 +29,13 @@ class AggregationPlotView(QWidget):
 
     def apply_binning(self, message: BinningAppliedMessage):
         df = self._data.df
-        df = df[df['AnimalNo'].isin(self._animal_ids)]
+        df = df[df['Animal'].isin(self._animal_ids)]
         df = df.set_index('DateTime', drop=False)
 
         result = apply_time_binning(df, message.delta, message.unit, message.mode)
 
         self.ax.clear()
-        result.set_index("Order", inplace=True)
+        result.set_index("Bin", inplace=True)
         result.plot(y=self._variable, kind='bar', ax=self.ax)
         self.canvas.figure.tight_layout()
         self.canvas.draw()
