@@ -7,8 +7,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QComboBox,
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import DatasetRemovedMessage, DatasetUnloadedMessage, \
-    DatasetChangedMessage
+from tse_analytics.messaging.messages import DatasetRemovedMessage, DatasetChangedMessage
 from tse_analytics.views.analysis.ancova_widget import AncovaWidget
 from tse_analytics.views.analysis.anova_widget import AnovaWidget
 from tse_analytics.views.analysis.correlation_widget import CorrelationWidget
@@ -52,7 +51,6 @@ class AnalysisWidget(QWidget, MessengerListener):
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
         messenger.subscribe(self, DatasetRemovedMessage, self._on_dataset_removed)
-        messenger.subscribe(self, DatasetUnloadedMessage, self._on_dataset_unloaded)
 
     def clear(self):
         self.variables.clear()
@@ -77,9 +75,6 @@ class AnalysisWidget(QWidget, MessengerListener):
         self.ancova_widget.update_variables(self.variables)
 
     def _on_dataset_removed(self, message: DatasetRemovedMessage):
-        self.clear()
-
-    def _on_dataset_unloaded(self, message: DatasetUnloadedMessage):
         self.clear()
 
     def _variable_current_text_changed(self, variable: str):

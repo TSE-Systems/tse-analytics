@@ -1,22 +1,18 @@
 from typing import Optional
 
+import pandas as pd
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QComboBox
 
-from tse_analytics.messaging.messenger import Messenger
-from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import DatasetRemovedMessage, DatasetUnloadedMessage, AnimalDataChangedMessage, \
-    DatasetChangedMessage, BinningAppliedMessage
-from tse_analytics.views.charts.plot_view import PlotView
+from tse_analytics.views.data.plot_view import PlotView
+from tse_datatools.data.animal import Animal
+from tse_datatools.data.variable import Variable
 
 
-class PlotViewWidget(QWidget, MessengerListener):
+class PlotViewWidget(QWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
-        MessengerListener.__init__(self)
-
-        self.register_to_messenger(Manager.messenger)
 
         self.plot_view = PlotView(self)
         self.variable_combo_box = QComboBox(self)
@@ -28,41 +24,31 @@ class PlotViewWidget(QWidget, MessengerListener):
         self.verticalLayout.addWidget(self.toolbar)
         self.verticalLayout.addWidget(self.plot_view)
 
-    def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
-        messenger.subscribe(self, AnimalDataChangedMessage, self._on_animal_data_changed)
-        messenger.subscribe(self, DatasetRemovedMessage, self._on_dataset_removed)
-        messenger.subscribe(self, DatasetUnloadedMessage, self._on_dataset_unloaded)
-        messenger.subscribe(self, BinningAppliedMessage, self._on_binning_applied)
-
     def clear(self):
         self.plot_view.clear()
         self.variables.clear()
         self.variable_combo_box.clear()
 
-    def _on_dataset_changed(self, message: DatasetChangedMessage):
+    def set_data(self, df: pd.DataFrame):
+        self.plot_view.set_data(df)
+
+    def set_variables(self, variables: dict[str, Variable]):
         self.variables.clear()
-        for var in message.data.variables:
+        for var in variables:
             self.variables.append(var)
         self.variable_combo_box.clear()
         self.variable_combo_box.addItems(self.variables)
         self.variable_combo_box.setCurrentText('')
-        self.plot_view.set_data(message.data)
 
-    def _on_animal_data_changed(self, message: AnimalDataChangedMessage):
-        self.plot_view.set_animal_data(message.animals)
+    def clear_selection(self):
+        # self.plot_view.clear()
+        self.plot_view.set_data(Manager.data.selected_dataset.df)
 
-    def _on_dataset_removed(self, message: DatasetRemovedMessage):
-        self.clear()
-
-    def _on_dataset_unloaded(self, message: DatasetUnloadedMessage):
-        self.clear()
+    def filter_animals(self, animals: list[Animal]):
+        self.plot_view.filter_animals(animals)
 
     def _variable_current_text_changed(self, variable: str):
         self.plot_view.set_variable(variable)
-
-    def _on_binning_applied(self, message: BinningAppliedMessage):
-        self.plot_view.apply_binning(message)
 
     @property
     def toolbar(self) -> QToolBar:

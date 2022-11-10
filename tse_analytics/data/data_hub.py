@@ -11,7 +11,7 @@ from tse_datatools.data.group import Group
 from tse_analytics.core.decorators import catch_error
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
-from tse_analytics.messaging.messages import DatasetImportedMessage, DatasetLoadedMessage, DatasetUnloadedMessage, DatasetRemovedMessage, \
+from tse_analytics.messaging.messages import DatasetImportedMessage, DatasetLoadedMessage, DatasetRemovedMessage, \
     SelectedAnimalsChangedMessage, AnimalDataChangedMessage, DatasetChangedMessage, SelectedGroupsChangedMessage
 from tse_analytics.models.workspace_model import WorkspaceModel
 from tse_datatools.loaders.dataset_loader import DatasetLoader
@@ -85,13 +85,6 @@ class DataHub(MessengerListener):
         with BusyCursor():
             self.workspace_model.load_dataset(indexes)
             self.messenger.broadcast(DatasetLoadedMessage(self))
-
-    @catch_error("Could not close dataset")
-    def close_dataset(self, indexes: [QModelIndex]) -> None:
-        with BusyCursor():
-            self.workspace_model.close_dataset(indexes)
-            self.messenger.broadcast(DatasetUnloadedMessage(self))
-            self.clear()
 
     @catch_error("Could not remove dataset")
     def remove_dataset(self, indexes: [QModelIndex]) -> None:

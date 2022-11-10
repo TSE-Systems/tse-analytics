@@ -4,7 +4,7 @@ from tse_datatools.data.group import Group
 
 class GroupsModel(QAbstractTableModel):
 
-    header = ('Name', 'Animals')
+    header = ('Name', 'Animals in group')
 
     def __init__(self, items: list[Group], parent=None):
         super().__init__(parent)

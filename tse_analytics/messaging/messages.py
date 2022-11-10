@@ -93,21 +93,9 @@ class DatasetLoadedMessage(Message):
     pass
 
 
-class DatasetUnloadedMessage(Message):
-    """ Indicates that the dataset has been unloaded """
-    pass
-
-
 class ViewModeChangedMessage(Message):
     """ Indicates that current view mode is changed """
     def __init__(self, sender, mode: ViewMode, tag=None):
-        super().__init__(sender, tag=tag)
-        self.mode = mode
-
-
-class BlendModeChangedMessage(Message):
-    """ Indicates that current blend mode is changed """
-    def __init__(self, sender, mode: str, tag=None):
         super().__init__(sender, tag=tag)
         self.mode = mode
 

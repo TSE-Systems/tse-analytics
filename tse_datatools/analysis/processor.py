@@ -38,4 +38,5 @@ def apply_time_binning(
     start_date_time = result['DateTime'][0]
     result["Timedelta"] = result['DateTime'] - start_date_time
     result["Bin"] = (result["Timedelta"] / timedelta).round().astype(int)
+    result['Bin'] = result['Bin'].astype('category')
     return result

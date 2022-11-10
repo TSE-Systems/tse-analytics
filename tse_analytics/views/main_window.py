@@ -8,16 +8,13 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QLabel,
     QApplication,
-    QDialog, QComboBox)
+    QDialog
+)
 
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import ViewModeChangedMessage
-from tse_analytics.core.view_mode import ViewMode
 from tse_analytics.views.analysis.analysis_widget import AnalysisWidget
-from tse_analytics.views.charts.aggregation_plot_view_widget import AggregationPlotViewWidget
-from tse_analytics.views.charts.plot_view_widget import PlotViewWidget
+from tse_analytics.views.data.data_widget import DataWidget
 from tse_analytics.views.groups.groups_view_widget import GroupsViewWidget
-from tse_analytics.views.tables.table_view_widget import TableViewWidget
 from tse_analytics.views.animals.animals_view_widget import AnimalsViewWidget
 from tse_analytics.views.info.info_widget import InfoWidget
 from tse_analytics.views.main_window_ui import Ui_MainWindow
@@ -54,23 +51,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.groups_view_widget = GroupsViewWidget()
         self.tabWidgetSelection.addTab(self.groups_view_widget, QIcon(":/icons/icons8-group-objects-16.png"), "Groups")
 
-        self.table_view_widget = TableViewWidget()
-        self.tabWidget.addTab(self.table_view_widget, QIcon(":/icons/icons8-data-sheet-16.png"), "Table")
-
-        # self.plot_view_widget = ChartViewWidget()
-        # self.tabWidget.addTab(self.plot_view_widget, QIcon(":/icons/icons8-scatter-plot-16.png"), "Plot")
-
-        self.plot_view_widget2 = PlotViewWidget()
-        self.tabWidget.addTab(self.plot_view_widget2, QIcon(":/icons/icons8-line-chart-16.png"), "Timeline")
-
-        self.aggregation_plot_view_widget = AggregationPlotViewWidget()
-        self.tabWidget.addTab(self.aggregation_plot_view_widget, QIcon(":/icons/icons8-bar-chart-16.png"), "Aggregation")
+        self.data_widget = DataWidget()
+        self.tabWidget.addTab(self.data_widget, QIcon(":/icons/icons8-data-sheet-16.png"), "Data")
 
         self.analysis_widget = AnalysisWidget()
         self.tabWidget.addTab(self.analysis_widget, QIcon(":/icons/icons8-statistics-16.png"), "Analysis")
-
-        # self.tiles_view_widget = TilesViewWidget()
-        # self.tabWidget.addTab(self.tiles_view_widget, QIcon(":/icons/icons8-medium-icons-16.png"), "Tiles")
 
         self.settings_widget = SettingsWidget()
         self.verticalLayoutSettings.addWidget(self.settings_widget)
@@ -80,13 +65,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionSaveWorkspace.triggered.connect(self.save_workspace_dialog)
         self.actionExportExcel.triggered.connect(self.export_excel_dialog)
         self.actionExit.triggered.connect(lambda: QApplication.exit())
-
-        self.toolBar.addWidget(QLabel("Mode: "))
-
-        mode_combo_box = QComboBox()
-        mode_combo_box.addItems([e.value for e in ViewMode])
-        mode_combo_box.currentTextChanged.connect(self._mode_current_text_changed)
-        self.toolBar.addWidget(mode_combo_box)
 
         self.load_settings()
 
@@ -161,6 +139,3 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def closeEvent(self, event):
         if self.okToQuit:
             self.save_settings()
-
-    def _mode_current_text_changed(self, text: str):
-        Manager.messenger.broadcast(ViewModeChangedMessage(self, ViewMode(text)))

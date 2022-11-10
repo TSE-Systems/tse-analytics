@@ -9,7 +9,6 @@ from PySide6.QtWidgets import QWidget
 from tse_analytics.messaging.messages import BinningAppliedMessage
 from tse_datatools.analysis.processor import apply_time_binning
 from tse_datatools.data.animal import Animal
-from tse_datatools.data.dataset import Dataset
 
 
 class PlotView(pg.GraphicsLayoutWidget):
@@ -93,11 +92,11 @@ class PlotView(pg.GraphicsLayoutWidget):
                 self.vLine.setPos(mousePoint.x())
                 self.hLine.setPos(mousePoint.y())
 
-    def set_data(self, data: Dataset):
-        self._df = data.df
+    def set_data(self, df: pd.DataFrame):
+        self._df = df
         self.__update_plot()
 
-    def set_animal_data(self, animals: list[Animal]):
+    def filter_animals(self, animals: list[Animal]):
         self._animals = animals
         self.__update_plot()
 
@@ -115,7 +114,7 @@ class PlotView(pg.GraphicsLayoutWidget):
         self.p2.clearPlots()
         self.legend.clear()
 
-        if self._df is None or self._variable is None or self._animals is None or len(self._animals) == 0 or self._variable not in self._df:
+        if self._df is None or self._variable is None or self._animals is None or len(self._animals) == 0:
             return
 
         for i, animal in enumerate(self._animals):

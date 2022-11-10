@@ -8,7 +8,7 @@ from tse_datatools.data.group import Group
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
-from tse_analytics.messaging.messages import DatasetRemovedMessage, DatasetUnloadedMessage, DatasetChangedMessage
+from tse_analytics.messaging.messages import DatasetRemovedMessage, DatasetChangedMessage
 from tse_analytics.views.groups.groups_table_view import GroupsTableView
 from tse_analytics.views.groups_dialog import GroupsDialog
 
@@ -33,15 +33,11 @@ class GroupsViewWidget(QWidget, MessengerListener):
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
         messenger.subscribe(self, DatasetRemovedMessage, self._on_dataset_removed)
-        messenger.subscribe(self, DatasetUnloadedMessage, self._on_dataset_unloaded)
 
     def clear(self):
         self.table_view.clear()
 
     def _on_dataset_removed(self, message: DatasetRemovedMessage):
-        self.clear()
-
-    def _on_dataset_unloaded(self, message: DatasetUnloadedMessage):
         self.clear()
 
     def _on_dataset_changed(self, message: DatasetChangedMessage):
@@ -54,13 +50,15 @@ class GroupsViewWidget(QWidget, MessengerListener):
             groups: dict[str, Group] = {}
             for group in dlg.groups:
                 groups[group.name] = group
-            Manager.data.selected_dataset.groups = groups
+            Manager.data.selected_dataset.set_groups(groups)
             self.table_view.set_data(Manager.data.selected_dataset.groups)
+            Manager.messenger.broadcast(DatasetChangedMessage(self, Manager.data.selected_dataset))
 
     def extract_groups(self):
         groups = Manager.data.selected_dataset.extract_groups_from_field(field=self.extract_field)
-        Manager.data.selected_dataset.groups = groups
+        Manager.data.selected_dataset.set_groups(groups)
         self.table_view.set_data(Manager.data.selected_dataset.groups)
+        Manager.messenger.broadcast(DatasetChangedMessage(self, Manager.data.selected_dataset))
 
     def _field_current_text_changed(self, text: str):
         self.extract_field = text

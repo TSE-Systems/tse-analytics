@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QComboBox
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import DatasetRemovedMessage, DatasetUnloadedMessage, AnimalDataChangedMessage, \
+from tse_analytics.messaging.messages import DatasetRemovedMessage, AnimalDataChangedMessage, \
     DatasetChangedMessage, BinningAppliedMessage
 from tse_analytics.views.charts.aggregation_plot_view import AggregationPlotView
 
@@ -32,7 +32,6 @@ class AggregationPlotViewWidget(QWidget, MessengerListener):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
         messenger.subscribe(self, AnimalDataChangedMessage, self._on_animal_data_changed)
         messenger.subscribe(self, DatasetRemovedMessage, self._on_dataset_removed)
-        messenger.subscribe(self, DatasetUnloadedMessage, self._on_dataset_unloaded)
         messenger.subscribe(self, BinningAppliedMessage, self._on_binning_applied)
 
     def clear(self):
@@ -53,9 +52,6 @@ class AggregationPlotViewWidget(QWidget, MessengerListener):
         self.plot_view.set_animal_data(message.animals)
 
     def _on_dataset_removed(self, message: DatasetRemovedMessage):
-        self.clear()
-
-    def _on_dataset_unloaded(self, message: DatasetUnloadedMessage):
         self.clear()
 
     def _on_binning_applied(self, message: BinningAppliedMessage):

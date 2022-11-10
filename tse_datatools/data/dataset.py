@@ -1,5 +1,6 @@
 from typing import Literal
 
+import numpy as np
 import pandas as pd
 
 from tse_datatools.data.animal import Animal
@@ -47,25 +48,41 @@ class Dataset:
         return df
 
     def filter_by_groups(self, groups: list[Group]) -> pd.DataFrame:
+        group_ids = [group.name for group in groups]
+        df = self.df[self.df['Group'].isin(group_ids)]
+        df = df.dropna()
+        return df
+
+    def calculate_groups_data(self) -> pd.DataFrame:
         df = self.df.copy()
+        result = df.groupby(by='Group', dropna=True).mean()
+        result = result.reset_index()
+        return result
+
+    def adjust_time(self, delta: str) -> pd.DataFrame:
+        self.df['DateTime'] = self.df['DateTime'] + pd.Timedelta(delta)
+        return self.df
+
+    def set_groups(self, groups: dict[str, Group]):
+        self.groups = groups
+
+        # TODO: should be copy?
+        df = self.df
 
         animal_group_map = {}
         animal_ids = df["Animal"].unique()
         for animal_id in animal_ids:
-            animal_group_map[animal_id] = None
+            animal_group_map[animal_id] = np.NaN
 
-        for group in groups:
+        for group in groups.values():
             for animal_id in group.animal_ids:
                 animal_group_map[animal_id] = group.name
 
         df["Group"] = df["Animal"]
         df["Group"].replace(animal_group_map, inplace=True)
-        df = df.dropna()
-        return df
+        df["Group"] = df["Group"].astype('category')
 
-    def adjust_time(self, delta: str) -> pd.DataFrame:
-        self.df['DateTime'] = self.df['DateTime'] + pd.Timedelta(delta)
-        return self.df
+        self.df = df
 
     def __getstate__(self):
         state = self.__dict__.copy()

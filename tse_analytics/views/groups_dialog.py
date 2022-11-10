@@ -54,6 +54,13 @@ class GroupsDialog(QDialog, Ui_GroupsDialog):
                     item.setCheckState(Qt.Checked)
                 else:
                     item.setCheckState(Qt.Unchecked)
+
+                for group in self.groups:
+                    if group != self.selected_group:
+                        if animal.id in group.animal_ids:
+                            item.setFlags(~Qt.ItemIsEnabled)
+                            break
+
                 self.listWidgetAnimals.addItem(item)
 
     def animal_item_changed(self, item: QListWidgetItem):

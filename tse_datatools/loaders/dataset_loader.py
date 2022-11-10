@@ -2,6 +2,7 @@ from io import StringIO
 from pathlib import Path
 from typing import Optional
 
+import numpy as np
 import pandas as pd
 
 from tse_datatools.data.animal import Animal
@@ -113,6 +114,10 @@ class DatasetLoader:
         start_date_time = df['DateTime'][0]
         df.insert(loc=1, column='Timedelta', value=df['DateTime'] - start_date_time)
         df.insert(loc=2, column='Bin', value=(df["Timedelta"] / timedelta).round().astype(int))
+        df['Bin'] = df['Bin'].astype('category')
+
+        df.insert(loc=5, column='Group', value=np.NaN)
+        df["Group"] = df["Group"].astype('category')
 
         # Sort variables by name
         variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))
