@@ -15,7 +15,7 @@ class DatasetsTreeView(QTreeView):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.setSelectionMode(QAbstractItemView.SingleSelection)
         self.setSelectionBehavior(QAbstractItemView.SelectItems)
-        self.setModel(Manager.data.workspace_model)
+        self.setModel(Manager.workspace.workspace_model)
         self.customContextMenuRequested.connect(self._open_menu)
         self.selectionModel().selectionChanged.connect(self._treeview_selection_changed)
         self.selectionModel().currentChanged.connect(self._treeview_current_changed)
@@ -58,7 +58,7 @@ class DatasetsTreeView(QTreeView):
             Manager.data.adjust_dataset_time(indexes, delta)
 
     def _remove(self, indexes: [QModelIndex]):
-        Manager.data.remove_dataset(indexes)
+        Manager.workspace.remove_dataset(indexes)
 
     def _treeview_current_changed(self, current: QModelIndex, previous: QModelIndex):
         if current.isValid():

@@ -80,14 +80,16 @@ class SelectedGroupsChangedMessage(Message):
 
 class DatasetChangedMessage(Message):
     """ Indicates that selected dataset is changed """
-    def __init__(self, sender, data: Dataset, tag=None):
+    def __init__(self, sender, dataset: Dataset, tag=None):
         super().__init__(sender, tag=tag)
-        self.data = data
+        self.data = dataset
 
 
 class DatasetImportedMessage(Message):
     """ Indicates that the dataset has been imported """
-    pass
+    def __init__(self, sender, dataset: Dataset, tag=None):
+        super().__init__(sender, tag=tag)
+        self.dataset = dataset
 
 
 class DatasetRemovedMessage(Message):
@@ -95,8 +97,8 @@ class DatasetRemovedMessage(Message):
     pass
 
 
-class DatasetLoadedMessage(Message):
-    """ Indicates that the dataset has been loaded """
+class WorkspaceLoadedMessage(Message):
+    """ Indicates that the workspace has been loaded """
     pass
 
 
@@ -109,7 +111,14 @@ class ViewModeChangedMessage(Message):
 
 class BinningAppliedMessage(Message):
     """ Indicates that binning is applied """
-    def __init__(self, sender, unit: Literal["day", "hour", "minute"], delta: int, mode: Literal["sum", "mean", "median"], tag=None):
+    def __init__(
+        self,
+        sender,
+        unit: Literal["day", "hour", "minute"],
+        delta: int,
+        mode: Literal["sum", "mean", "median"],
+        tag=None
+    ):
         super().__init__(sender, tag=tag)
         self.unit = unit
         self.delta = delta

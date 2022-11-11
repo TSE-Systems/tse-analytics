@@ -93,6 +93,10 @@ class Dataset:
 
         self.df = df
 
+    def export_to_excel(self, path: str):
+        with pd.ExcelWriter(path) as writer:
+            self.df.to_excel(writer, sheet_name='Data')
+
     def __getstate__(self):
         state = self.__dict__.copy()
         return state

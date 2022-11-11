@@ -26,7 +26,7 @@ class PlotViewWidget(QWidget):
         self.verticalLayout.addWidget(self.plot_view)
 
     def clear(self):
-        self.plot_view.clear()
+        self.plot_view.clear_plot()
         self.variables.clear()
         self.variable_combo_box.clear()
 

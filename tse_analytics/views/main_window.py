@@ -89,7 +89,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             options=options,
         )
         if file_path:
-            Manager.data.load_workspace(file_path)
+            Manager.workspace.load_workspace(file_path)
 
     def save_workspace_dialog(self):
         file_ext = "*.workspace"
@@ -99,7 +99,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         dialog.setWindowTitle("Save Workspace")
         dialog.setNameFilter("Workspace Files ({})".format(file_ext))
         if dialog.exec() == QDialog.Accepted:
-            Manager.data.save_workspace(dialog.selectedFiles()[0])
+            Manager.workspace.save_workspace(dialog.selectedFiles()[0])
 
     def export_excel_dialog(self):
         file_ext = "*.xlsx"
@@ -117,7 +117,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.memory_usage_label.setText(f"Memory usage: {mem:.2f} Mb")
 
     def import_dataset(self, path: str):
-        Manager.data.import_dataset(path)
+        Manager.workspace.import_dataset(path)
 
     def import_dataset_dialog(self):
         options = QFileDialog.Options()

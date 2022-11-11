@@ -3,7 +3,6 @@ import gc
 
 from PySide6.QtCore import QModelIndex
 from PySide6.QtGui import QPixmapCache
-from pyqtgraph import BusyCursor
 from tse_datatools.data.animal import Animal
 from tse_datatools.data.dataset import Dataset
 from tse_datatools.data.group import Group
@@ -11,11 +10,15 @@ from tse_datatools.data.group import Group
 from tse_analytics.core.decorators import catch_error
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
-from tse_analytics.messaging.messages import DatasetImportedMessage, DatasetLoadedMessage, DatasetRemovedMessage, \
-    SelectedAnimalsChangedMessage, AnimalDataChangedMessage, DatasetChangedMessage, SelectedGroupsChangedMessage, \
+from tse_analytics.messaging.messages import (
+    WorkspaceLoadedMessage,
+    DatasetRemovedMessage,
+    SelectedAnimalsChangedMessage,
+    AnimalDataChangedMessage,
+    DatasetChangedMessage,
+    SelectedGroupsChangedMessage,
     GroupDataChangedMessage
-from tse_analytics.models.workspace_model import WorkspaceModel
-from tse_datatools.loaders.dataset_loader import DatasetLoader
+)
 
 
 class DataHub(MessengerListener):
@@ -25,15 +28,14 @@ class DataHub(MessengerListener):
         self.messenger = messenger
         self.register_to_messenger(self.messenger)
 
-        self.workspace_model = WorkspaceModel()
-
         self.selected_dataset: Optional[Dataset] = None
-
         self.selected_animals: list[Animal] = []
         self.selected_groups: list[Group] = []
 
     def register_to_messenger(self, messenger: Messenger):
+        messenger.subscribe(self, WorkspaceLoadedMessage, self._on_workspace_loaded)
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
+        messenger.subscribe(self, DatasetRemovedMessage, self._on_dataset_removed)
         messenger.subscribe(self, SelectedAnimalsChangedMessage, self._on_selected_animals_changed)
         messenger.subscribe(self, SelectedGroupsChangedMessage, self._on_selected_groups_changed)
 
@@ -44,61 +46,42 @@ class DataHub(MessengerListener):
         QPixmapCache.clear()
         gc.collect()
 
-    def broadcast_animal_data_changed(self):
-        self.messenger.broadcast(AnimalDataChangedMessage(self, self.selected_animals))
-
-    def broadcast_group_data_changed(self):
-        self.messenger.broadcast(GroupDataChangedMessage(self, self.selected_groups))
+    def _on_workspace_loaded(self, message: WorkspaceLoadedMessage) -> None:
+        self.clear()
+        self._broadcast_animal_data_changed()
 
     def _on_dataset_changed(self, message: DatasetChangedMessage) -> None:
         if self.selected_dataset is message.data:
             return
         self.selected_dataset = message.data
-        self.broadcast_animal_data_changed()
+        self.selected_animals.clear()
+        self.selected_groups.clear()
+        self._broadcast_animal_data_changed()
+
+    def _on_dataset_removed(self, message: DatasetRemovedMessage) -> None:
+        self.clear()
+        self._broadcast_animal_data_changed()
 
     def _on_selected_animals_changed(self, message: SelectedAnimalsChangedMessage) -> None:
         self.selected_animals = message.animals
-        self.broadcast_animal_data_changed()
+        self._broadcast_animal_data_changed()
 
     def _on_selected_groups_changed(self, message: SelectedGroupsChangedMessage) -> None:
         self.selected_groups = message.groups
-        self.broadcast_group_data_changed()
+        self._broadcast_group_data_changed()
 
-    def load_workspace(self, path: str) -> None:
-        with BusyCursor():
-            self.clear()
-            self.workspace_model.load_workspace(path)
+    def _broadcast_animal_data_changed(self):
+        self.messenger.broadcast(AnimalDataChangedMessage(self, self.selected_animals))
 
-    def save_workspace(self, path: str) -> None:
-        with BusyCursor():
-            self.workspace_model.save_workspace(path)
-
-    def export_to_excel(self, path: str) -> None:
-        with BusyCursor():
-            self.workspace_model.export_to_excel(path)
-
-    @catch_error("Could not import dataset")
-    def import_dataset(self, path: str) -> None:
-        with BusyCursor():
-            dataset = DatasetLoader.load(path)
-            self.workspace_model.add_dataset(dataset)
-            self.messenger.broadcast(DatasetImportedMessage(self))
-
-    @catch_error("Could not load dataset")
-    def load_dataset(self, indexes: [QModelIndex]) -> None:
-        with BusyCursor():
-            self.workspace_model.load_dataset(indexes)
-            self.messenger.broadcast(DatasetLoadedMessage(self))
-
-    @catch_error("Could not remove dataset")
-    def remove_dataset(self, indexes: [QModelIndex]) -> None:
-        self.workspace_model.remove_dataset(indexes)
-        self.messenger.broadcast(DatasetRemovedMessage(self))
-        self.clear()
+    def _broadcast_group_data_changed(self):
+        self.messenger.broadcast(GroupDataChangedMessage(self, self.selected_groups))
 
     @catch_error("Could not adjust dataset time")
     def adjust_dataset_time(self, indexes: [QModelIndex], delta: str) -> None:
-        with BusyCursor():
-            if self.selected_dataset is not None:
-                self.selected_dataset.adjust_time(delta)
-                self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
+        if self.selected_dataset is not None:
+            self.selected_dataset.adjust_time(delta)
+            self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
+
+    def export_to_excel(self, path: str) -> None:
+        if self.selected_dataset is not None:
+            self.selected_dataset.export_to_excel(path)

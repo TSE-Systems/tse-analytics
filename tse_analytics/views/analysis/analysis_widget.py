@@ -84,7 +84,7 @@ class AnalysisWidget(QWidget, MessengerListener):
         if Manager.data.selected_dataset is None:
             return
 
-        df = Manager.data.selected_dataset.filter_by_groups(Manager.data.selected_groups)
+        df = Manager.data.selected_dataset.df
 
         self.distribution_widget.analyze(df, self.variable)
         self.normality_widget.analyze(df, self.variable)

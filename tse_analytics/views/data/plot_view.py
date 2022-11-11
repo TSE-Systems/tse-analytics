@@ -173,7 +173,7 @@ class PlotView(pg.GraphicsLayoutWidget):
         self.timedelta = pd.Timedelta(datetime.datetime.fromtimestamp(x[1]) - datetime.datetime.fromtimestamp(x[0]))
         self.update()
 
-    def clear(self):
+    def clear_plot(self):
         self.plot_data_items.clear()
         self.p1.clearPlots()
         self.p2.clearPlots()

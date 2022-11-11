@@ -25,7 +25,7 @@ class DistributionWidget(QWidget):
         self.layout.addWidget(self.canvas)
 
     def analyze(self, df: pd.DataFrame, variable: str):
-        if len(Manager.data.selected_groups) == 0:
+        if len(Manager.data.selected_dataset.groups) == 0:
             return
 
         self.ax.clear()

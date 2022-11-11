@@ -56,10 +56,10 @@ class AncovaWidget(QWidget):
         self.response_combo_box.setCurrentText("")
 
     def _analyze(self):
-        if len(Manager.data.selected_groups) == 0:
+        if len(Manager.data.selected_dataset.groups) == 0:
             return
 
-        df = Manager.data.selected_dataset.filter_by_groups(Manager.data.selected_groups)
+        df = Manager.data.selected_dataset.df
 
         ancova = pg.ancova(data=df, dv=self.response, covar=self.covariate, between="Group")
 
