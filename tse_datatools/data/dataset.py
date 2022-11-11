@@ -10,7 +10,16 @@ from tse_datatools.data.variable import Variable
 
 
 class Dataset:
-    def __init__(self, name: str, path: str, meta: dict, boxes: dict[int, Box], animals: dict[int, Animal], variables: dict[str, Variable], df: pd.DataFrame):
+    def __init__(
+        self,
+        name: str,
+        path: str,
+        meta: dict,
+        boxes: dict[int, Box],
+        animals: dict[int, Animal],
+        variables: dict[str, Variable],
+        df: pd.DataFrame
+    ):
         self.name = name
         self.path = path
 

@@ -9,7 +9,7 @@ from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import DatasetRemovedMessage, DatasetChangedMessage, ViewModeChangedMessage, \
-    BinningAppliedMessage, AnimalDataChangedMessage
+    BinningAppliedMessage, AnimalDataChangedMessage, GroupDataChangedMessage
 from tse_analytics.views.data.plot_view_widget import PlotViewWidget
 from tse_analytics.views.data.table_view_widget import TableViewWidget
 from tse_datatools.analysis.processor import apply_time_binning
@@ -41,6 +41,7 @@ class DataWidget(QWidget, MessengerListener):
         messenger.subscribe(self, DatasetRemovedMessage, self._on_dataset_removed)
         messenger.subscribe(self, BinningAppliedMessage, self._on_binning_applied)
         messenger.subscribe(self, AnimalDataChangedMessage, self._on_animal_data_changed)
+        messenger.subscribe(self, GroupDataChangedMessage, self._on_group_data_changed)
 
     def clear(self):
         self.table_view_widget.clear()
@@ -62,15 +63,23 @@ class DataWidget(QWidget, MessengerListener):
         self.table_view_widget.filter_animals(message.animals)
         self.plot_view_widget.filter_animals(message.animals)
 
+    def _on_group_data_changed(self, message: GroupDataChangedMessage):
+        self.table_view_widget.filter_groups(message.groups)
+        self.plot_view_widget.filter_groups(message.groups)
+
     def _on_dataset_removed(self, message: DatasetRemovedMessage):
         self.clear()
 
     def _mode_current_text_changed(self, text: str):
         mode = ViewMode(text)
         if mode == ViewMode.GROUPS and len(Manager.data.selected_dataset.groups) > 0:
-            result = Manager.data.selected_dataset.calculate_groups_data()
-            self.table_view_widget.set_data(result)
-            self.plot_view_widget.set_data(result)
+            df = Manager.data.selected_dataset.calculate_groups_data()
+            self.table_view_widget.set_data(df)
+            self.plot_view_widget.set_data(df)
+        elif mode == ViewMode.ANIMALS and len(Manager.data.selected_dataset.animals) > 0:
+            df = Manager.data.selected_dataset.df
+            self.table_view_widget.set_data(df)
+            self.plot_view_widget.set_data(df)
         Manager.messenger.broadcast(ViewModeChangedMessage(self, mode))
 
     def _clear_selection(self):

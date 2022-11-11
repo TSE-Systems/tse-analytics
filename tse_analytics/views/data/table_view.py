@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QWidget, QTableView, QHeaderView
 
 from tse_analytics.models.pandas_model import PandasModel
 from tse_datatools.data.animal import Animal
+from tse_datatools.data.group import Group
 
 
 class TableView(QTableView):
@@ -28,9 +29,21 @@ class TableView(QTableView):
         self._set_source_model(df)
 
     def filter_animals(self, animals: list[Animal]):
-        animal_ids = [animal.id for animal in animals]
         df = self._df
-        df = df[df['Animal'].isin(animal_ids)]
+        if df is None:
+            return
+        if len(animals) > 0:
+            animal_ids = [animal.id for animal in animals]
+            df = df[df['Animal'].isin(animal_ids)]
+        self._set_source_model(df)
+
+    def filter_groups(self, groups: list[Group]):
+        df = self._df
+        if df is None:
+            return
+        if len(groups) > 0:
+            group_names = [group.name for group in groups]
+            df = df[df['Group'].isin(group_names)]
         self._set_source_model(df)
 
     def clear(self):

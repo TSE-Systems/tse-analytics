@@ -12,7 +12,8 @@ from tse_analytics.core.decorators import catch_error
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.messaging.messages import DatasetImportedMessage, DatasetLoadedMessage, DatasetRemovedMessage, \
-    SelectedAnimalsChangedMessage, AnimalDataChangedMessage, DatasetChangedMessage, SelectedGroupsChangedMessage
+    SelectedAnimalsChangedMessage, AnimalDataChangedMessage, DatasetChangedMessage, SelectedGroupsChangedMessage, \
+    GroupDataChangedMessage
 from tse_analytics.models.workspace_model import WorkspaceModel
 from tse_datatools.loaders.dataset_loader import DatasetLoader
 
@@ -44,8 +45,10 @@ class DataHub(MessengerListener):
         gc.collect()
 
     def broadcast_animal_data_changed(self):
-        if len(self.selected_animals) > 0:
-            self.messenger.broadcast(AnimalDataChangedMessage(self, self.selected_animals))
+        self.messenger.broadcast(AnimalDataChangedMessage(self, self.selected_animals))
+
+    def broadcast_group_data_changed(self):
+        self.messenger.broadcast(GroupDataChangedMessage(self, self.selected_groups))
 
     def _on_dataset_changed(self, message: DatasetChangedMessage) -> None:
         if self.selected_dataset is message.data:
@@ -59,6 +62,7 @@ class DataHub(MessengerListener):
 
     def _on_selected_groups_changed(self, message: SelectedGroupsChangedMessage) -> None:
         self.selected_groups = message.groups
+        self.broadcast_group_data_changed()
 
     def load_workspace(self, path: str) -> None:
         with BusyCursor():

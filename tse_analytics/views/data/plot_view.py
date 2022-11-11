@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 import datetime
 
 import pandas as pd
@@ -6,9 +6,11 @@ import pyqtgraph as pg
 
 from PySide6.QtWidgets import QWidget
 
+from tse_analytics.core.view_mode import ViewMode
 from tse_analytics.messaging.messages import BinningAppliedMessage
 from tse_datatools.analysis.processor import apply_time_binning
 from tse_datatools.data.animal import Animal
+from tse_datatools.data.group import Group
 
 
 class PlotView(pg.GraphicsLayoutWidget):
@@ -17,14 +19,16 @@ class PlotView(pg.GraphicsLayoutWidget):
 
         self._df: Optional[pd.DataFrame] = None
         self._animals: Optional[list[Animal]] = None
-        self._variable: Optional[str] = None
+        self._groups: Optional[list[Group]] = None
+        self._variable: str = ''
+        self._view_mode: ViewMode = ViewMode.ANIMALS
 
         # Set layout proportions
         self.ci.layout.setRowStretchFactor(0, 2)
 
         self.label = self.addLabel(row=0, col=0, justify='right')
 
-        self.plot_data_items: dict[int, pg.PlotDataItem] = {}
+        self.plot_data_items: dict[Union[int, str], pg.PlotDataItem] = {}
 
         self.p1: pg.PlotItem = self.addPlot(row=0, col=0)
         # customize the averaged curve that can be activated from the context menu:
@@ -83,7 +87,7 @@ class PlotView(pg.GraphicsLayoutWidget):
             index = (dt - self.start_datetime) // self.timedelta  # Convert to POSIX timestamp
             index = int(index)
             keys = list(self.plot_data_items.keys())
-            if 0 < index < len(self.plot_data_items[keys[0]].yData) and len(keys) > 0:
+            if len(keys) > 0 and (0 < index < len(self.plot_data_items[keys[0]].yData)):
                 spans = ""
                 for animal in self._animals:
                     spans = spans + f',  <span>Animal {animal.id}={self.plot_data_items[animal.id].yData[index]}</span>'
@@ -97,7 +101,13 @@ class PlotView(pg.GraphicsLayoutWidget):
         self.__update_plot()
 
     def filter_animals(self, animals: list[Animal]):
+        self._view_mode = ViewMode.ANIMALS
         self._animals = animals
+        self.__update_plot()
+
+    def filter_groups(self, groups: list[Group]):
+        self._view_mode = ViewMode.GROUPS
+        self._groups = groups
         self.__update_plot()
 
     def set_variable(self, variable: str):
@@ -114,23 +124,46 @@ class PlotView(pg.GraphicsLayoutWidget):
         self.p2.clearPlots()
         self.legend.clear()
 
-        if self._df is None or self._variable is None or self._animals is None or len(self._animals) == 0:
+        if self._df is None or self._variable == '':
             return
 
-        for i, animal in enumerate(self._animals):
-            filtered_data = self._df[self._df['Animal'] == animal.id]
+        if self._view_mode == ViewMode.ANIMALS:
+            if self._animals is None or len(self._animals) == 0:
+                return
+        elif self._view_mode == ViewMode.GROUPS:
+            if self._groups is None or len(self._groups) == 0:
+                return
 
-            x = filtered_data["DateTime"]
-            x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
-            x = x.to_numpy()
-            y = filtered_data[self._variable].to_numpy()
-            pen = (i, len(self._animals))
+        if self._view_mode == ViewMode.ANIMALS:
+            for i, animal in enumerate(self._animals):
+                filtered_data = self._df[self._df['Animal'] == animal.id]
 
-            p1d = self.p1.plot(x, y, pen=pen)
-            self.plot_data_items[animal.id] = p1d
-            self.legend.addItem(p1d, f'Animal {animal.id}')
+                x = filtered_data["DateTime"]
+                x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
+                x = x.to_numpy()
+                y = filtered_data[self._variable].to_numpy()
+                pen = (i, len(self._animals))
 
-            p2d: pg.PlotDataItem = self.p2.plot(x, y, pen=pen)
+                p1d = self.p1.plot(x, y, pen=pen)
+                self.plot_data_items[animal.id] = p1d
+                self.legend.addItem(p1d, f'Animal {animal.id}')
+
+                p2d: pg.PlotDataItem = self.p2.plot(x, y, pen=pen)
+        elif self._view_mode == ViewMode.GROUPS:
+            for i, group in enumerate(self._groups):
+                filtered_data = self._df[self._df['Group'] == group.name]
+
+                x = filtered_data["DateTime"]
+                x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
+                x = x.to_numpy()
+                y = filtered_data[self._variable].to_numpy()
+                pen = (i, len(self._groups))
+
+                p1d = self.p1.plot(x, y, pen=pen)
+                self.plot_data_items[group.name] = p1d
+                self.legend.addItem(p1d, f'Group {group.name}')
+
+                p2d: pg.PlotDataItem = self.p2.plot(x, y, pen=pen)
 
         # bound the LinearRegionItem to the plotted data
         self.region.setClipItem(p2d)

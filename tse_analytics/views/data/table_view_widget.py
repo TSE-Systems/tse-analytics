@@ -9,6 +9,7 @@ from tse_analytics.core.workers.worker import Worker
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.data.table_view import TableView
 from tse_datatools.data.animal import Animal
+from tse_datatools.data.group import Group
 
 
 class TableViewWidget(QWidget):
@@ -34,6 +35,9 @@ class TableViewWidget(QWidget):
 
     def filter_animals(self, animals: list[Animal]):
         self.table_view.filter_animals(animals)
+
+    def filter_groups(self, groups: list[Group]):
+        self.table_view.filter_groups(groups)
 
     def _enable_sorting(self, state: bool):
         self.table_view.set_sorting(state)

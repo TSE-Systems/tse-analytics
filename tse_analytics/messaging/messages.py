@@ -64,6 +64,13 @@ class SelectedAnimalsChangedMessage(Message):
         self.animals = animals
 
 
+class GroupDataChangedMessage(Message):
+    """ Indicates that selected group data changed """
+    def __init__(self, sender, groups: list[Group], tag=None):
+        super().__init__(sender, tag=tag)
+        self.groups = groups
+
+
 class SelectedGroupsChangedMessage(Message):
     """ Indicates that selected groups are changed """
     def __init__(self, sender, groups: list[Group], tag=None):

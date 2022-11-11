@@ -7,6 +7,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QComboBox
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.data.plot_view import PlotView
 from tse_datatools.data.animal import Animal
+from tse_datatools.data.group import Group
 from tse_datatools.data.variable import Variable
 
 
@@ -46,6 +47,9 @@ class PlotViewWidget(QWidget):
 
     def filter_animals(self, animals: list[Animal]):
         self.plot_view.filter_animals(animals)
+
+    def filter_groups(self, groups: list[Group]):
+        self.plot_view.filter_groups(groups)
 
     def _variable_current_text_changed(self, variable: str):
         self.plot_view.set_variable(variable)
