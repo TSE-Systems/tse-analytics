@@ -1,32 +1,20 @@
-from typing import Literal
-
 import pandas as pd
+
+from tse_datatools.analysis.binning_params import BinningParams
 
 
 def apply_time_binning(
     df: pd.DataFrame,
-    delta: int,
-    unit_name: Literal["day", "hour", "minute"],
-    mode: Literal["sum", "mean", "median"]
+    params: BinningParams
 ) -> pd.DataFrame:
     # Store initial column order
     cols = df.columns
 
-    unit = "H"
-    if unit_name == "day":
-        unit = "D"
-    elif unit_name == "hour":
-        unit = "H"
-    elif unit_name == "minute":
-        unit = "min"
+    result = df.groupby(['Animal', 'Box']).resample(params.timedelta, on='DateTime')
 
-    timedelta = pd.Timedelta(f'{delta}{unit}')
-
-    result = df.groupby(['Animal', 'Box']).resample(timedelta, on='DateTime')
-
-    if mode == "mean":
+    if params.operation == "mean":
         result = result.mean(numeric_only=True)
-    elif mode == "median":
+    elif params.operation == "median":
         result = result.median(numeric_only=True)
     else:
         result = result.sum(numeric_only=True)
@@ -37,6 +25,6 @@ def apply_time_binning(
 
     start_date_time = result['DateTime'][0]
     result["Timedelta"] = result['DateTime'] - start_date_time
-    result["Bin"] = (result["Timedelta"] / timedelta).round().astype(int)
+    result["Bin"] = (result["Timedelta"] / params.timedelta).round().astype(int)
     result['Bin'] = result['Bin'].astype('category')
     return result

@@ -55,7 +55,7 @@ class DataWidget(QWidget, MessengerListener):
 
     def _on_binning_applied(self, message: BinningAppliedMessage):
         df = Manager.data.selected_dataset.df.copy()
-        result = apply_time_binning(df, message.delta, message.unit, message.mode)
+        result = apply_time_binning(df, message.params)
         self.table_view_widget.set_data(result)
         self.plot_view_widget.set_data(result)
 
@@ -72,8 +72,9 @@ class DataWidget(QWidget, MessengerListener):
 
     def _mode_current_text_changed(self, text: str):
         mode = ViewMode(text)
+        Manager.data.view_mode = mode
         if mode == ViewMode.GROUPS and len(Manager.data.selected_dataset.groups) > 0:
-            df = Manager.data.selected_dataset.calculate_groups_data()
+            df = Manager.data.selected_dataset.calculate_groups_data(Manager.data.binning_params)
             self.table_view_widget.set_data(df)
             self.plot_view_widget.set_data(df)
         elif mode == ViewMode.ANIMALS and len(Manager.data.selected_dataset.animals) > 0:

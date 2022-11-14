@@ -32,7 +32,7 @@ class AggregationPlotView(QWidget):
         df = df[df['Animal'].isin(self._animal_ids)]
         df = df.set_index('DateTime', drop=False)
 
-        result = apply_time_binning(df, message.delta, message.unit, message.mode)
+        result = apply_time_binning(df, message.params)
 
         self.ax.clear()
         result.set_index("Bin", inplace=True)

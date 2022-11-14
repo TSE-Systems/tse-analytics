@@ -1,8 +1,12 @@
 from typing import Optional
 import gc
 
+import pandas as pd
 from PySide6.QtCore import QModelIndex
 from PySide6.QtGui import QPixmapCache
+
+from tse_analytics.core.view_mode import ViewMode
+from tse_datatools.analysis.binning_params import BinningParams
 from tse_datatools.data.animal import Animal
 from tse_datatools.data.dataset import Dataset
 from tse_datatools.data.group import Group
@@ -31,6 +35,9 @@ class DataHub(MessengerListener):
         self.selected_dataset: Optional[Dataset] = None
         self.selected_animals: list[Animal] = []
         self.selected_groups: list[Group] = []
+
+        self.view_mode = ViewMode.ANIMALS
+        self.binning_params = BinningParams(pd.Timedelta('1H'), 'mean')
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, WorkspaceLoadedMessage, self._on_workspace_loaded)

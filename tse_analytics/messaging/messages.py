@@ -1,5 +1,6 @@
 from typing import Literal
 
+from tse_datatools.analysis.binning_params import BinningParams
 from tse_datatools.data.animal import Animal
 from tse_datatools.data.dataset import Dataset
 from tse_datatools.data.group import Group
@@ -114,12 +115,8 @@ class BinningAppliedMessage(Message):
     def __init__(
         self,
         sender,
-        unit: Literal["day", "hour", "minute"],
-        delta: int,
-        mode: Literal["sum", "mean", "median"],
+        params: BinningParams,
         tag=None
     ):
         super().__init__(sender, tag=tag)
-        self.unit = unit
-        self.delta = delta
-        self.mode = mode
+        self.params = params

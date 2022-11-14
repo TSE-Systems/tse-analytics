@@ -34,13 +34,13 @@ class PlotView(pg.GraphicsLayoutWidget):
         # customize the averaged curve that can be activated from the context menu:
         self.p1.avgPen = pg.mkPen('#FFFFFF')
         self.p1.avgShadowPen = pg.mkPen('#8080DD', width=10)
-        self.p1.setAxisItems({'bottom': pg.DateAxisItem()})
+        # self.p1.setAxisItems({'bottom': pg.DateAxisItem()})
         self.p1.showGrid(x=True, y=True)
 
         self.legend = self.p1.addLegend((10, 10))
 
         self.p2: pg.PlotItem = self.addPlot(row=1, col=0)
-        self.p2.setAxisItems({'bottom': pg.DateAxisItem()})
+        # self.p2.setAxisItems({'bottom': pg.DateAxisItem()})
         self.p2.showGrid(x=True, y=True)
 
         self.region = pg.LinearRegionItem()
@@ -81,20 +81,20 @@ class PlotView(pg.GraphicsLayoutWidget):
 
     def mouseMoved(self, evt):
         pos = evt[0]  # using signal proxy turns original arguments into a tuple
-        if self.start_datetime is not None and self.p1.sceneBoundingRect().contains(pos):
-            mousePoint = self.view_box.mapSceneToView(pos)
-            dt = datetime.datetime.fromtimestamp(mousePoint.x())
-            index = (dt - self.start_datetime) // self.timedelta  # Convert to POSIX timestamp
-            index = int(index)
-            keys = list(self.plot_data_items.keys())
-            if len(keys) > 0 and (0 < index < len(self.plot_data_items[keys[0]].yData)):
-                spans = ""
-                for animal in self._animals:
-                    spans = spans + f',  <span>Animal {animal.id}={self.plot_data_items[animal.id].yData[index]}</span>'
-                text = f'<span style="font-size: 8pt">x={datetime.datetime.fromtimestamp(self.plot_data_items[animal.id].xData[index])}{spans}</span>'
-                self.label.setText(text)
-                self.vLine.setPos(mousePoint.x())
-                self.hLine.setPos(mousePoint.y())
+        # if self.start_datetime is not None and self.p1.sceneBoundingRect().contains(pos):
+        #     mousePoint = self.view_box.mapSceneToView(pos)
+        #     dt = datetime.datetime.fromtimestamp(mousePoint.x())
+        #     index = (dt - self.start_datetime) // self.timedelta  # Convert to POSIX timestamp
+        #     index = int(index)
+        #     keys = list(self.plot_data_items.keys())
+        #     if len(keys) > 0 and (0 < index < len(self.plot_data_items[keys[0]].yData)):
+        #         spans = ""
+        #         for animal in self._animals:
+        #             spans = spans + f',  <span>Animal {animal.id}={self.plot_data_items[animal.id].yData[index]}</span>'
+        #         text = f'<span style="font-size: 8pt">x={datetime.datetime.fromtimestamp(self.plot_data_items[animal.id].xData[index])}{spans}</span>'
+        #         self.label.setText(text)
+        #         self.vLine.setPos(mousePoint.x())
+        #         self.hLine.setPos(mousePoint.y())
 
     def set_data(self, df: pd.DataFrame):
         self._df = df
@@ -115,7 +115,7 @@ class PlotView(pg.GraphicsLayoutWidget):
         self.__update_plot()
 
     def apply_binning(self, message: BinningAppliedMessage):
-        self._df = apply_time_binning(self._df, message.delta, message.unit, message.mode)
+        self._df = apply_time_binning(self._df, message.params)
         self.__update_plot()
 
     def __update_plot(self):
@@ -138,8 +138,9 @@ class PlotView(pg.GraphicsLayoutWidget):
             for i, animal in enumerate(self._animals):
                 filtered_data = self._df[self._df['Animal'] == animal.id]
 
-                x = filtered_data["DateTime"]
-                x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
+                # x = filtered_data["DateTime"]
+                # x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
+                x = filtered_data["Bin"]
                 x = x.to_numpy()
                 y = filtered_data[self._variable].to_numpy()
                 pen = (i, len(self._animals))
@@ -153,8 +154,9 @@ class PlotView(pg.GraphicsLayoutWidget):
             for i, group in enumerate(self._groups):
                 filtered_data = self._df[self._df['Group'] == group.name]
 
-                x = filtered_data["DateTime"]
-                x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
+                # x = filtered_data["DateTime"]
+                # x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
+                x = filtered_data["Bin"]
                 x = x.to_numpy()
                 y = filtered_data[self._variable].to_numpy()
                 pen = (i, len(self._groups))

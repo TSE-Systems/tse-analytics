@@ -3,6 +3,7 @@ from typing import Literal
 import numpy as np
 import pandas as pd
 
+from tse_datatools.analysis.binning_params import BinningParams
 from tse_datatools.data.animal import Animal
 from tse_datatools.data.box import Box
 from tse_datatools.data.group import Group
@@ -18,7 +19,8 @@ class Dataset:
         boxes: dict[int, Box],
         animals: dict[int, Animal],
         variables: dict[str, Variable],
-        df: pd.DataFrame
+        df: pd.DataFrame,
+        sampling_interval: pd.Timedelta
     ):
         self.name = name
         self.path = path
@@ -30,6 +32,7 @@ class Dataset:
         self.variables = variables
 
         self.df = df
+        self.sampling_interval = sampling_interval
 
         self.groups: dict[str, Group] = {}
 
@@ -62,10 +65,31 @@ class Dataset:
         df = df.dropna()
         return df
 
-    def calculate_groups_data(self) -> pd.DataFrame:
+    def calculate_groups_data(self, binning_params: BinningParams) -> pd.DataFrame:
         df = self.df.copy()
-        result = df.groupby(by='Group', dropna=True).mean()
-        result = result.reset_index()
+
+        # Store initial column order
+        cols = df.columns
+
+        result = df.groupby('Group', dropna=True).resample(binning_params.timedelta, on='DateTime')
+
+        if binning_params.operation == "mean":
+            result = result.mean(numeric_only=True)
+        elif binning_params.operation == "median":
+            result = result.median(numeric_only=True)
+        else:
+            result = result.sum(numeric_only=True)
+
+        # the inverse of groupby, reset_index
+        result.sort_values(by=['DateTime', 'Group'], inplace=True)
+        result = result.reset_index().reindex(cols, axis=1)
+        # Hide empty columns
+        result.drop(columns=['Animal', 'Box'], inplace=True)
+
+        start_date_time = result['DateTime'][0]
+        result["Timedelta"] = result['DateTime'] - start_date_time
+        result["Bin"] = (result["Timedelta"] / binning_params.timedelta).round().astype(int)
+        result['Bin'] = result['Bin'].astype('category')
         return result
 
     def adjust_time(self, delta: str) -> pd.DataFrame:

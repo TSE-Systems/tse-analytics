@@ -64,11 +64,13 @@ class DatasetLoader:
         columns = data_header.split(DELIMITER)
         data_unit_header = lines[data_section_start + 1]
         data_section = lines[data_section_start + 2:len(lines)]
+        columns_unit = data_unit_header.split(DELIMITER)
 
-        for i, item in enumerate(data_unit_header.split(DELIMITER)):
-            if item == '':
+        for i, item in enumerate(columns):
+            # Skip first 'Date', 'Time', 'Animal No.' and 'Box' columns
+            if i < 4:
                 continue
-            variable = Variable(name=columns[i], unit=item)
+            variable = Variable(name=item, unit=columns_unit[i])
             variables[variable.name] = variable
 
         csv = '\n'.join(data_section)
@@ -133,10 +135,11 @@ class DatasetLoader:
             "Path": str(path),
             "Boxes": [v.get_dict() for i, (k, v) in enumerate(boxes.items())],
             "Animals": [v.get_dict() for i, (k, v) in enumerate(animals.items())],
-            "Variables": [v.get_dict() for i, (k, v) in enumerate(variables.items())]
+            "Variables": [v.get_dict() for i, (k, v) in enumerate(variables.items())],
+            "Sampling Interval": str(timedelta)
         }
 
-        dataset = Dataset(name, str(path), meta, boxes, animals, variables, df)
+        dataset = Dataset(name, str(path), meta, boxes, animals, variables, df, timedelta)
         return dataset
 
 
