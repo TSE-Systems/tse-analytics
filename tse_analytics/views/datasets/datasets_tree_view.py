@@ -3,7 +3,7 @@ from functools import partial
 from PySide6.QtCore import Qt, QModelIndex, QItemSelection
 from PySide6.QtWidgets import QTreeView, QWidget, QAbstractItemView, QMenu, QInputDialog, QLineEdit
 
-from tse_analytics.messaging.messages import SelectedTreeNodeChangedMessage, DatasetChangedMessage
+from tse_analytics.messaging.messages import SelectedTreeNodeChangedMessage
 from tse_analytics.core.manager import Manager
 from tse_analytics.models.dataset_tree_item import DatasetTreeItem
 
@@ -65,7 +65,7 @@ class DatasetsTreeView(QTreeView):
             item = current.model().getItem(current)
             Manager.messenger.broadcast(SelectedTreeNodeChangedMessage(self, item))
             if isinstance(item, DatasetTreeItem):
-                Manager.messenger.broadcast(DatasetChangedMessage(self, item.dataset))
+                Manager.data.set_selected_dataset(item.dataset)
 
     def _treeview_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
         indexes = selected.indexes()

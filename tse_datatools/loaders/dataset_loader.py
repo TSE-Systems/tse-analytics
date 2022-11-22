@@ -70,7 +70,7 @@ class DatasetLoader:
             # Skip first 'Date', 'Time', 'Animal No.' and 'Box' columns
             if i < 4:
                 continue
-            variable = Variable(name=item, unit=columns_unit[i])
+            variable = Variable(name=item, unit=columns_unit[i], description='')
             variables[variable.name] = variable
 
         csv = '\n'.join(data_section)
@@ -105,12 +105,12 @@ class DatasetLoader:
         # Calculate cumulative values
         if 'Drink' in df.columns:
             df['DrinkK'] = df.groupby('Box')['Drink'].transform(pd.Series.cumsum)
-            var = Variable(name='DrinkK', unit=variables['Drink'].unit)
+            var = Variable(name='DrinkK', unit=variables['Drink'].unit, description='')
             variables[var.name] = var
 
         if 'Feed' in df.columns:
             df['FeedK'] = df.groupby('Box')['Feed'].transform(pd.Series.cumsum)
-            var = Variable(name='FeedK', unit=variables['Feed'].unit)
+            var = Variable(name='FeedK', unit=variables['Feed'].unit, description='')
             variables[var.name] = var
 
         start_date_time = df['DateTime'][0]

@@ -60,7 +60,7 @@ class CorrelationWidget(QWidget):
         if len(Manager.data.selected_dataset.groups) == 0:
             return
 
-        df = Manager.data.selected_dataset.df
+        df = Manager.data.selected_dataset.original_df
 
         multivariate_normality = pg.multivariate_normality(df[[self.x, self.y]])
         corr = pg.pairwise_corr(data=df, columns=[self.x, self.y], method='pearson')

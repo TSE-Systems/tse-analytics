@@ -8,8 +8,6 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.data.table_view import TableView
-from tse_datatools.data.animal import Animal
-from tse_datatools.data.group import Group
 
 
 class TableViewWidget(QWidget):
@@ -31,13 +29,7 @@ class TableViewWidget(QWidget):
         self.table_view.set_data(df)
 
     def clear_selection(self):
-        self.table_view.set_data(Manager.data.selected_dataset.df)
-
-    def filter_animals(self, animals: list[Animal]):
-        self.table_view.filter_animals(animals)
-
-    def filter_groups(self, groups: list[Group]):
-        self.table_view.filter_groups(groups)
+        self.table_view.set_data(Manager.data.selected_dataset.original_df)
 
     def _enable_sorting(self, state: bool):
         self.table_view.set_sorting(state)

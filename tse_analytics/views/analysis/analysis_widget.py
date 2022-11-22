@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QComboBox,
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import DatasetRemovedMessage, DatasetChangedMessage
+from tse_analytics.messaging.messages import ClearDataMessage, DatasetChangedMessage
 from tse_analytics.views.analysis.ancova_widget import AncovaWidget
 from tse_analytics.views.analysis.anova_widget import AnovaWidget
 from tse_analytics.views.analysis.correlation_widget import CorrelationWidget
@@ -50,7 +50,7 @@ class AnalysisWidget(QWidget, MessengerListener):
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
-        messenger.subscribe(self, DatasetRemovedMessage, self._on_dataset_removed)
+        messenger.subscribe(self, ClearDataMessage, self._on_clear_data)
 
     def clear(self):
         self.variables.clear()
@@ -74,7 +74,7 @@ class AnalysisWidget(QWidget, MessengerListener):
         self.correlation_widget.update_variables(self.variables)
         self.ancova_widget.update_variables(self.variables)
 
-    def _on_dataset_removed(self, message: DatasetRemovedMessage):
+    def _on_clear_data(self, message: ClearDataMessage):
         self.clear()
 
     def _variable_current_text_changed(self, variable: str):
@@ -84,7 +84,7 @@ class AnalysisWidget(QWidget, MessengerListener):
         if Manager.data.selected_dataset is None:
             return
 
-        df = Manager.data.selected_dataset.df
+        df = Manager.data.selected_dataset.original_df
 
         self.distribution_widget.analyze(df, self.variable)
         self.normality_widget.analyze(df, self.variable)

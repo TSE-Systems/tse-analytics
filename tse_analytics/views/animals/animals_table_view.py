@@ -3,7 +3,6 @@ from PySide6.QtWidgets import QTableView, QHeaderView
 from tse_datatools.data.animal import Animal
 
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import SelectedAnimalsChangedMessage
 from tse_analytics.models.animals_model import AnimalsModel
 
 
@@ -41,4 +40,4 @@ class AnimalsTableView(QTableView):
                 row = source_index.row()
                 animal = model.items[row]
                 selected_animals.append(animal)
-        Manager.messenger.broadcast(SelectedAnimalsChangedMessage(self, selected_animals))
+        Manager.data.set_selected_animals(selected_animals)

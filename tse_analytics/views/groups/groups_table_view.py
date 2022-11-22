@@ -3,7 +3,6 @@ from PySide6.QtWidgets import QTableView, QHeaderView
 from tse_datatools.data.group import Group
 
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import SelectedGroupsChangedMessage
 from tse_analytics.models.groups_model import GroupsModel
 
 
@@ -41,4 +40,4 @@ class GroupsTableView(QTableView):
                 row = source_index.row()
                 group = model.items[row]
                 selected_groups.append(group)
-        Manager.messenger.broadcast(SelectedGroupsChangedMessage(self, selected_groups))
+        Manager.data.set_selected_groups(selected_groups)

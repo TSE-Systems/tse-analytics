@@ -1,6 +1,7 @@
 import pandas as pd
 from PySide6 import QtCore
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QComboBox, QLabel, QSpinBox, QPushButton
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QComboBox, QLabel, QSpinBox, QPushButton, QCheckBox
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import BinningAppliedMessage
@@ -19,25 +20,47 @@ class BinningWidget(QWidget):
         self.unit_combobox = QComboBox()
         self.unit_combobox.addItems(["day", "hour", "minute"])
         self.unit_combobox.setCurrentText("hour")
+        self.unit_combobox.currentTextChanged.connect(self._binning_unit_changed)
         layout.addWidget(self.unit_combobox)
 
         layout.addWidget(QLabel("Delta:"))
         self.delta_spinbox = QSpinBox()
         self.delta_spinbox.setValue(1)
+        self.delta_spinbox.valueChanged.connect(self._binning_delta_changed)
         layout.addWidget(self.delta_spinbox)
 
         layout.addWidget(QLabel("Operation:"))
-        self.mode_combobox = QComboBox()
-        self.mode_combobox.addItems(["sum", "mean", "median"])
-        self.mode_combobox.setCurrentText('mean')
-        layout.addWidget(self.mode_combobox)
+        self.operation_combobox = QComboBox()
+        self.operation_combobox.addItems(["sum", "mean", "median"])
+        self.operation_combobox.setCurrentText('mean')
+        self.operation_combobox.currentTextChanged.connect(self._binning_operation_changed)
+        layout.addWidget(self.operation_combobox)
+
+        self.apply_binning_checkbox = QCheckBox("Apply Binning")
+        self.apply_binning_checkbox.stateChanged.connect(self._apply_binning_changed)
+        layout.addWidget(self.apply_binning_checkbox)
 
         self.apply_binning = QPushButton("Apply")
-        self.apply_binning.pressed.connect(self._on_apply_binning_pressed)
+        self.apply_binning.pressed.connect(self._apply_binning_pressed)
         layout.addWidget(self.apply_binning)
 
-    @QtCore.Slot()
-    def _on_apply_binning_pressed(self):
+    @QtCore.Slot(str)
+    def _binning_unit_changed(self, value: str):
+        self._binning_params_changed()
+
+    @QtCore.Slot(int)
+    def _binning_delta_changed(self, value: int):
+        self._binning_params_changed()
+
+    @QtCore.Slot(str)
+    def _binning_operation_changed(self, value: str):
+        self._binning_params_changed()
+
+    @QtCore.Slot(bool)
+    def _apply_binning_changed(self, value: bool):
+        Manager.data.apply_binning = True if value == 2 else False
+
+    def _binning_params_changed(self):
         unit = "H"
         unit_value = self.unit_combobox.currentText()
         if unit_value == "day":
@@ -51,6 +74,9 @@ class BinningWidget(QWidget):
 
         timedelta = pd.Timedelta(f'{binning_delta}{unit}')
 
-        binning_params = BinningParams(timedelta, self.mode_combobox.currentText())
+        binning_params = BinningParams(timedelta, self.operation_combobox.currentText())
         Manager.data.binning_params = binning_params
-        Manager.messenger.broadcast(BinningAppliedMessage(self, binning_params))
+
+    @QtCore.Slot()
+    def _apply_binning_pressed(self):
+        Manager.messenger.broadcast(BinningAppliedMessage(self, Manager.data.binning_params))

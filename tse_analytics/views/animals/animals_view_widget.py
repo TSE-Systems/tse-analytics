@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
-from tse_analytics.messaging.messages import DatasetRemovedMessage, DatasetChangedMessage
+from tse_analytics.messaging.messages import ClearDataMessage, DatasetChangedMessage
 from tse_analytics.views.animals.animals_table_view import AnimalsTableView
 
 
@@ -25,12 +25,12 @@ class AnimalsViewWidget(QWidget, MessengerListener):
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
-        messenger.subscribe(self, DatasetRemovedMessage, self._on_dataset_removed)
+        messenger.subscribe(self, ClearDataMessage, self._on_clear_data)
 
     def clear(self):
         self.table_view.clear()
 
-    def _on_dataset_removed(self, message: DatasetRemovedMessage):
+    def _on_clear_data(self, message: ClearDataMessage):
         self.clear()
 
     def _on_dataset_changed(self, message: DatasetChangedMessage):

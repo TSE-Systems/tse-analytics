@@ -89,7 +89,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             options=options,
         )
         if file_path:
-            Manager.workspace.load_workspace(file_path)
+            Manager.load_workspace(file_path)
 
     def save_workspace_dialog(self):
         file_ext = "*.workspace"

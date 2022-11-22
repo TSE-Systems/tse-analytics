@@ -1,5 +1,3 @@
-from typing import Literal
-
 from tse_datatools.analysis.binning_params import BinningParams
 from tse_datatools.data.animal import Animal
 from tse_datatools.data.dataset import Dataset
@@ -58,22 +56,8 @@ class AnimalDataChangedMessage(Message):
         self.animals = animals
 
 
-class SelectedAnimalsChangedMessage(Message):
-    """ Indicates that animal selection had changed """
-    def __init__(self, sender, animals: list[Animal], tag=None):
-        super().__init__(sender, tag=tag)
-        self.animals = animals
-
-
 class GroupDataChangedMessage(Message):
     """ Indicates that selected group data changed """
-    def __init__(self, sender, groups: list[Group], tag=None):
-        super().__init__(sender, tag=tag)
-        self.groups = groups
-
-
-class SelectedGroupsChangedMessage(Message):
-    """ Indicates that selected groups are changed """
     def __init__(self, sender, groups: list[Group], tag=None):
         super().__init__(sender, tag=tag)
         self.groups = groups
@@ -86,28 +70,9 @@ class DatasetChangedMessage(Message):
         self.data = dataset
 
 
-class DatasetImportedMessage(Message):
-    """ Indicates that the dataset has been imported """
-    def __init__(self, sender, dataset: Dataset, tag=None):
-        super().__init__(sender, tag=tag)
-        self.dataset = dataset
-
-
-class DatasetRemovedMessage(Message):
-    """ Indicates that the dataset has been removed """
+class ClearDataMessage(Message):
+    """ Clear data """
     pass
-
-
-class WorkspaceLoadedMessage(Message):
-    """ Indicates that the workspace has been loaded """
-    pass
-
-
-class ViewModeChangedMessage(Message):
-    """ Indicates that current view mode is changed """
-    def __init__(self, sender, mode: ViewMode, tag=None):
-        super().__init__(sender, tag=tag)
-        self.mode = mode
 
 
 class BinningAppliedMessage(Message):

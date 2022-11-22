@@ -6,11 +6,8 @@ import pyqtgraph as pg
 
 from PySide6.QtWidgets import QWidget
 
+from tse_analytics.core.manager import Manager
 from tse_analytics.core.view_mode import ViewMode
-from tse_analytics.messaging.messages import BinningAppliedMessage
-from tse_datatools.analysis.processor import apply_time_binning
-from tse_datatools.data.animal import Animal
-from tse_datatools.data.group import Group
 
 
 class PlotView(pg.GraphicsLayoutWidget):
@@ -18,10 +15,10 @@ class PlotView(pg.GraphicsLayoutWidget):
         super().__init__(parent, title=title)
 
         self._df: Optional[pd.DataFrame] = None
-        self._animals: Optional[list[Animal]] = None
-        self._groups: Optional[list[Group]] = None
         self._variable: str = ''
-        self._view_mode: ViewMode = ViewMode.ANIMALS
+
+        self._start_datetime = None
+        self._timedelta = None
 
         # Set layout proportions
         self.ci.layout.setRowStretchFactor(0, 2)
@@ -51,14 +48,9 @@ class PlotView(pg.GraphicsLayoutWidget):
 
         self.p1.setAutoVisible(y=True)
 
-        self.start_datetime = None
-        self.timedelta = None
-
         self.region.sigRegionChanged.connect(self.update)
 
         self.p1.sigRangeChanged.connect(self.updateRegion)
-
-        # self.region.setRegion([1000, 2000])
 
         # Crosshair
         self.vLine = pg.InfiniteLine(angle=90, movable=False)
@@ -100,22 +92,8 @@ class PlotView(pg.GraphicsLayoutWidget):
         self._df = df
         self.__update_plot()
 
-    def filter_animals(self, animals: list[Animal]):
-        self._view_mode = ViewMode.ANIMALS
-        self._animals = animals
-        self.__update_plot()
-
-    def filter_groups(self, groups: list[Group]):
-        self._view_mode = ViewMode.GROUPS
-        self._groups = groups
-        self.__update_plot()
-
     def set_variable(self, variable: str):
         self._variable = variable
-        self.__update_plot()
-
-    def apply_binning(self, message: BinningAppliedMessage):
-        self._df = apply_time_binning(self._df, message.params)
         self.__update_plot()
 
     def __update_plot(self):
@@ -127,15 +105,15 @@ class PlotView(pg.GraphicsLayoutWidget):
         if self._df is None or self._variable == '':
             return
 
-        if self._view_mode == ViewMode.ANIMALS:
-            if self._animals is None or len(self._animals) == 0:
+        if Manager.data.view_mode == ViewMode.ANIMALS:
+            if Manager.data.selected_animals is None or len(Manager.data.selected_animals) == 0:
                 return
-        elif self._view_mode == ViewMode.GROUPS:
-            if self._groups is None or len(self._groups) == 0:
+        elif Manager.data.view_mode == ViewMode.GROUPS:
+            if Manager.data.selected_groups is None or len(Manager.data.selected_groups) == 0:
                 return
 
-        if self._view_mode == ViewMode.ANIMALS:
-            for i, animal in enumerate(self._animals):
+        if Manager.data.view_mode == ViewMode.ANIMALS:
+            for i, animal in enumerate(Manager.data.selected_animals):
                 filtered_data = self._df[self._df['Animal'] == animal.id]
 
                 # x = filtered_data["DateTime"]
@@ -143,15 +121,15 @@ class PlotView(pg.GraphicsLayoutWidget):
                 x = filtered_data["Bin"]
                 x = x.to_numpy()
                 y = filtered_data[self._variable].to_numpy()
-                pen = (i, len(self._animals))
+                pen = (i, len(Manager.data.selected_animals))
 
                 p1d = self.p1.plot(x, y, pen=pen)
                 self.plot_data_items[animal.id] = p1d
                 self.legend.addItem(p1d, f'Animal {animal.id}')
 
                 p2d: pg.PlotDataItem = self.p2.plot(x, y, pen=pen)
-        elif self._view_mode == ViewMode.GROUPS:
-            for i, group in enumerate(self._groups):
+        elif Manager.data.view_mode == ViewMode.GROUPS:
+            for i, group in enumerate(Manager.data.selected_groups):
                 filtered_data = self._df[self._df['Group'] == group.name]
 
                 # x = filtered_data["DateTime"]
@@ -159,7 +137,7 @@ class PlotView(pg.GraphicsLayoutWidget):
                 x = filtered_data["Bin"]
                 x = x.to_numpy()
                 y = filtered_data[self._variable].to_numpy()
-                pen = (i, len(self._groups))
+                pen = (i, len(Manager.data.selected_groups))
 
                 p1d = self.p1.plot(x, y, pen=pen)
                 self.plot_data_items[group.name] = p1d
@@ -171,8 +149,8 @@ class PlotView(pg.GraphicsLayoutWidget):
         self.region.setClipItem(p2d)
         self.region.setRegion([x.min(), x.max()])
 
-        self.start_datetime = datetime.datetime.fromtimestamp(x[0])
-        self.timedelta = pd.Timedelta(datetime.datetime.fromtimestamp(x[1]) - datetime.datetime.fromtimestamp(x[0]))
+        self._start_datetime = datetime.datetime.fromtimestamp(x[0])
+        self._timedelta = pd.Timedelta(datetime.datetime.fromtimestamp(x[1]) - datetime.datetime.fromtimestamp(x[0]))
         self.update()
 
     def clear_plot(self):
@@ -182,7 +160,6 @@ class PlotView(pg.GraphicsLayoutWidget):
         self.legend.clear()
 
         self._df = None
-        self._animals = None
         self._variable = None
-        self.start_datetime = None
-        self.timedelta = None
+        self._start_datetime = None
+        self._timedelta = None
