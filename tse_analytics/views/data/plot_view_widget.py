@@ -2,6 +2,7 @@ from typing import Optional
 
 import pandas as pd
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QComboBox
 
 from tse_analytics.core.manager import Manager
@@ -46,6 +47,9 @@ class PlotViewWidget(QWidget):
     def _variable_current_text_changed(self, variable: str):
         self.plot_view.set_variable(variable)
 
+    def _display_errors(self, state: bool):
+        self.plot_view.set_display_errors(state)
+
     @property
     def toolbar(self) -> QToolBar:
         toolbar = QToolBar(self)
@@ -58,5 +62,10 @@ class PlotViewWidget(QWidget):
         self.variable_combo_box.setCurrentText('')
         self.variable_combo_box.currentTextChanged.connect(self._variable_current_text_changed)
         toolbar.addWidget(self.variable_combo_box)
+
+        display_errors_action = QAction(QIcon(":/icons/icons8-sorting-16.png"), "Display Errors", self)
+        display_errors_action.triggered.connect(self._display_errors)
+        display_errors_action.setCheckable(True)
+        toolbar.addAction(display_errors_action)
 
         return toolbar

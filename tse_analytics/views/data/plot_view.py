@@ -7,7 +7,7 @@ import pyqtgraph as pg
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.manager import Manager
-from tse_analytics.core.view_mode import ViewMode
+from tse_datatools.analysis.grouping_mode import GroupingMode
 
 
 class PlotView(pg.GraphicsLayoutWidget):
@@ -16,6 +16,7 @@ class PlotView(pg.GraphicsLayoutWidget):
 
         self._df: Optional[pd.DataFrame] = None
         self._variable: str = ''
+        self._display_errors = False
 
         self._start_datetime = None
         self._timedelta = None
@@ -96,6 +97,10 @@ class PlotView(pg.GraphicsLayoutWidget):
         self._variable = variable
         self.__update_plot()
 
+    def set_display_errors(self, state: bool):
+        self._display_errors = state
+        self.__update_plot()
+
     def __update_plot(self):
         self.plot_data_items.clear()
         self.p1.clearPlots()
@@ -105,14 +110,14 @@ class PlotView(pg.GraphicsLayoutWidget):
         if self._df is None or self._variable == '':
             return
 
-        if Manager.data.view_mode == ViewMode.ANIMALS:
+        if Manager.data.grouping_mode == GroupingMode.ANIMALS:
             if Manager.data.selected_animals is None or len(Manager.data.selected_animals) == 0:
                 return
-        elif Manager.data.view_mode == ViewMode.GROUPS:
+        elif Manager.data.grouping_mode == GroupingMode.GROUPS:
             if Manager.data.selected_groups is None or len(Manager.data.selected_groups) == 0:
                 return
 
-        if Manager.data.view_mode == ViewMode.ANIMALS:
+        if Manager.data.grouping_mode == GroupingMode.ANIMALS:
             for i, animal in enumerate(Manager.data.selected_animals):
                 filtered_data = self._df[self._df['Animal'] == animal.id]
 
@@ -128,7 +133,7 @@ class PlotView(pg.GraphicsLayoutWidget):
                 self.legend.addItem(p1d, f'Animal {animal.id}')
 
                 p2d: pg.PlotDataItem = self.p2.plot(x, y, pen=pen)
-        elif Manager.data.view_mode == ViewMode.GROUPS:
+        elif Manager.data.grouping_mode == GroupingMode.GROUPS:
             for i, group in enumerate(Manager.data.selected_groups):
                 filtered_data = self._df[self._df['Group'] == group.name]
 
@@ -142,6 +147,23 @@ class PlotView(pg.GraphicsLayoutWidget):
                 p1d = self.p1.plot(x, y, pen=pen)
                 self.plot_data_items[group.name] = p1d
                 self.legend.addItem(p1d, f'Group {group.name}')
+
+                p2d: pg.PlotDataItem = self.p2.plot(x, y, pen=pen)
+        elif Manager.data.grouping_mode == GroupingMode.RUNS:
+            runs = self._df['Run'].unique()
+            for i, run in enumerate(runs):
+                filtered_data = self._df[self._df['Run'] == run]
+
+                # x = filtered_data["DateTime"]
+                # x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
+                x = filtered_data["Bin"]
+                x = x.to_numpy()
+                y = filtered_data[self._variable].to_numpy()
+                pen = (i, len(runs))
+
+                p1d = self.p1.plot(x, y, pen=pen)
+                self.plot_data_items[run] = p1d
+                self.legend.addItem(p1d, f'Run {run}')
 
                 p2d: pg.PlotDataItem = self.p2.plot(x, y, pen=pen)
 

@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QComboBox, QToolB
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.css import style
+from tse_datatools.data.variable import Variable
 
 pd.set_option('colheader_justify', 'center')  # FOR TABLE <th>
 sns.set_theme(style="whitegrid")
@@ -44,7 +45,7 @@ class CorrelationWidget(QWidget):
         self.canvas = FigureCanvasQTAgg(self.figure)
         self.layout.addWidget(self.canvas)
 
-    def update_variables(self, variables: list):
+    def update_variables(self, variables: dict[str, Variable]):
         self.x = ""
         self.y = ""
 

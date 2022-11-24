@@ -1,10 +1,10 @@
 import pandas as pd
 from PySide6 import QtCore
-from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QComboBox, QLabel, QSpinBox, QPushButton, QCheckBox
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import BinningAppliedMessage
+from tse_datatools.analysis.binning_operation import BinningOperation
 from tse_datatools.analysis.binning_params import BinningParams
 
 
@@ -29,16 +29,16 @@ class BinningWidget(QWidget):
         self.delta_spinbox.valueChanged.connect(self._binning_delta_changed)
         layout.addWidget(self.delta_spinbox)
 
-        layout.addWidget(QLabel("Operation:"))
-        self.operation_combobox = QComboBox()
-        self.operation_combobox.addItems(["sum", "mean", "median"])
-        self.operation_combobox.setCurrentText('mean')
-        self.operation_combobox.currentTextChanged.connect(self._binning_operation_changed)
-        layout.addWidget(self.operation_combobox)
-
         self.apply_binning_checkbox = QCheckBox("Apply Binning")
         self.apply_binning_checkbox.stateChanged.connect(self._apply_binning_changed)
         layout.addWidget(self.apply_binning_checkbox)
+
+        layout.addWidget(QLabel("Operation:"))
+        self.operation_combobox = QComboBox()
+        self.operation_combobox.addItems([e.value for e in BinningOperation])
+        self.operation_combobox.setCurrentText('mean')
+        self.operation_combobox.currentTextChanged.connect(self._binning_operation_changed)
+        layout.addWidget(self.operation_combobox)
 
         self.apply_binning = QPushButton("Apply")
         self.apply_binning.pressed.connect(self._apply_binning_pressed)
@@ -74,7 +74,7 @@ class BinningWidget(QWidget):
 
         timedelta = pd.Timedelta(f'{binning_delta}{unit}')
 
-        binning_params = BinningParams(timedelta, self.operation_combobox.currentText())
+        binning_params = BinningParams(timedelta, BinningOperation(self.operation_combobox.currentText()))
         Manager.data.binning_params = binning_params
 
     @QtCore.Slot()

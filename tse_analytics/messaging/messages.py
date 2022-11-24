@@ -1,9 +1,6 @@
 from tse_datatools.analysis.binning_params import BinningParams
-from tse_datatools.data.animal import Animal
 from tse_datatools.data.dataset import Dataset
-from tse_datatools.data.group import Group
 
-from tse_analytics.core.view_mode import ViewMode
 from tse_analytics.models.tree_item import TreeItem
 
 
@@ -49,18 +46,10 @@ class SelectedTreeNodeChangedMessage(Message):
         self.node = node
 
 
-class AnimalDataChangedMessage(Message):
-    """ Indicates that selected animal data changed """
-    def __init__(self, sender, animals: list[Animal], tag=None):
+class DataChangedMessage(Message):
+    """ Indicates that selected data changed """
+    def __init__(self, sender, tag=None):
         super().__init__(sender, tag=tag)
-        self.animals = animals
-
-
-class GroupDataChangedMessage(Message):
-    """ Indicates that selected group data changed """
-    def __init__(self, sender, groups: list[Group], tag=None):
-        super().__init__(sender, tag=tag)
-        self.groups = groups
 
 
 class DatasetChangedMessage(Message):

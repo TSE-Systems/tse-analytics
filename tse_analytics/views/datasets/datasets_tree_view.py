@@ -58,7 +58,7 @@ class DatasetsTreeView(QTreeView):
             Manager.data.adjust_dataset_time(indexes, delta)
 
     def _remove(self, indexes: [QModelIndex]):
-        Manager.workspace.remove_dataset(indexes)
+        Manager.remove_dataset(indexes)
 
     def _treeview_current_changed(self, current: QModelIndex, previous: QModelIndex):
         if current.isValid():
