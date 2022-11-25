@@ -5,6 +5,7 @@ import pandas as pd
 import pyqtgraph as pg
 
 from PySide6.QtWidgets import QWidget
+from pyqtgraph import mkPen
 
 from tse_analytics.core.manager import Manager
 from tse_datatools.analysis.grouping_mode import GroupingMode
@@ -103,7 +104,7 @@ class PlotView(pg.GraphicsLayoutWidget):
 
     def __update_plot(self):
         self.plot_data_items.clear()
-        self.p1.clearPlots()
+        self.p1.clear()
         self.p2.clearPlots()
         self.legend.clear()
 
@@ -123,12 +124,13 @@ class PlotView(pg.GraphicsLayoutWidget):
 
                 # x = filtered_data["DateTime"]
                 # x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
-                x = filtered_data["Bin"]
-                x = x.to_numpy()
+                x = filtered_data["Bin"].to_numpy()
                 y = filtered_data[self._variable].to_numpy()
-                pen = (i, len(Manager.data.selected_animals))
 
+                pen = mkPen(color=(i, len(Manager.data.selected_animals)), width=1)
+                # p1d = self.p1.plot(x, y, symbol='o', symbolSize=2, symbolPen=pen, pen=pen)
                 p1d = self.p1.plot(x, y, pen=pen)
+
                 self.plot_data_items[animal.id] = p1d
                 self.legend.addItem(p1d, f'Animal {animal.id}')
 
@@ -139,14 +141,24 @@ class PlotView(pg.GraphicsLayoutWidget):
 
                 # x = filtered_data["DateTime"]
                 # x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
-                x = filtered_data["Bin"]
-                x = x.to_numpy()
+                x = filtered_data["Bin"].to_numpy()
                 y = filtered_data[self._variable].to_numpy()
-                pen = (i, len(Manager.data.selected_groups))
 
+                # pen = (i, len(Manager.data.selected_groups))
+                pen = mkPen(color=(i, len(Manager.data.selected_groups)), width=1)
+                # p1d = self.p1.plot(x, y, symbol='o', symbolSize=2, symbolPen=pen, pen=pen)
                 p1d = self.p1.plot(x, y, pen=pen)
+
+                if self._display_errors:
+                    # Error bars
+                    error_plot = pg.ErrorBarItem(beam=0.2)
+                    std = filtered_data['Std']
+                    std = std.to_numpy()
+                    error_plot.setData(x=x, y=y, top=std, bottom=std)
+                    self.p1.addItem(error_plot)
+
                 self.plot_data_items[group.name] = p1d
-                self.legend.addItem(p1d, f'Group {group.name}')
+                self.legend.addItem(p1d, f'{group.name}')
 
                 p2d: pg.PlotDataItem = self.p2.plot(x, y, pen=pen)
         elif Manager.data.grouping_mode == GroupingMode.RUNS:
@@ -156,12 +168,13 @@ class PlotView(pg.GraphicsLayoutWidget):
 
                 # x = filtered_data["DateTime"]
                 # x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
-                x = filtered_data["Bin"]
-                x = x.to_numpy()
+                x = filtered_data["Bin"].to_numpy()
                 y = filtered_data[self._variable].to_numpy()
-                pen = (i, len(runs))
 
+                pen = mkPen(color=(i, len(runs)), width=1)
+                # p1d = self.p1.plot(x, y, symbol='o', symbolSize=2, symbolPen=pen, pen=pen)
                 p1d = self.p1.plot(x, y, pen=pen)
+
                 self.plot_data_items[run] = p1d
                 self.legend.addItem(p1d, f'Run {run}')
 
@@ -177,7 +190,7 @@ class PlotView(pg.GraphicsLayoutWidget):
 
     def clear_plot(self):
         self.plot_data_items.clear()
-        self.p1.clearPlots()
+        self.p1.clear()
         self.p2.clearPlots()
         self.legend.clear()
 

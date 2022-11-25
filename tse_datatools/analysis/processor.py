@@ -21,6 +21,8 @@ def calculate_grouped_data(
     elif grouping_mode == GroupingMode.RUNS:
         result = df.groupby(['Run']).resample(timedelta, on='DateTime')
 
+    errors = result.transform('std')['Temp']
+
     if operation == BinningOperation.MEAN:
         result = result.mean(numeric_only=True)
     elif operation == BinningOperation.MEDIAN:
@@ -48,5 +50,6 @@ def calculate_grouped_data(
     result["Timedelta"] = result['DateTime'] - start_date_time
     result["Bin"] = (result["Timedelta"] / timedelta).round().astype(int)
     result['Bin'] = result['Bin'].astype('category')
+    result['Std'] = errors
 
     return result

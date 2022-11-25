@@ -1,9 +1,9 @@
 from typing import Optional
 
 import pingouin as pg
+import seaborn as sns
 from PySide6.QtCore import Qt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
-from matplotlib.figure import Figure
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QPushButton, QToolBar, QLabel, QComboBox
 
@@ -17,10 +17,10 @@ class GlmWidget(QWidget):
         super().__init__(parent)
 
         self.covariate_combo_box = QComboBox(self)
-        self.covariate = ""
+        self.covariate = ''
 
         self.response_combo_box = QComboBox(self)
-        self.response = ""
+        self.response = ''
 
         self.layout = QVBoxLayout(self)
         self.layout.addWidget(self._get_toolbar())
@@ -32,18 +32,15 @@ class GlmWidget(QWidget):
         self.layout.addWidget(description_widget)
 
         self.webView = QWebEngineView(self)
-        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, True)
-        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, True)
+        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
+        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, False)
+        self.webView.setHtml('')
         self.layout.addWidget(self.webView)
 
-        figure = Figure(figsize=(5.0, 4.0), dpi=100)
-        self.ax = figure.subplots()
-        self.canvas = FigureCanvasQTAgg(figure)
-        self.layout.addWidget(self.canvas)
+        self.canvas = None
 
     def clear(self):
-        self.webView.setHtml("")
-        self.ax.clear()
+        self.webView.setHtml('')
 
     def update_variables(self, variables: dict[str, Variable]):
         self.covariate = ''
@@ -64,9 +61,27 @@ class GlmWidget(QWidget):
         self.response = response
 
     def _analyze(self):
-        df = Manager.data.selected_dataset.original_df
+        df = Manager.data.selected_dataset.original_df.copy()
+        # cols = df.columns
+        df = df.groupby(by=['Animal'], as_index=False).agg({self.response: 'mean', 'Group': 'first'})
+        # df = df.reset_index()
 
-        glm = pg.linear_regression(df[[self.covariate]], df[self.response])
+        df['Weight'] = df['Animal'].astype(float)
+        weights = {}
+        for animal in Manager.data.selected_dataset.animals.values():
+            weights[animal.id] = animal.weight
+        df = df.replace({'Weight': weights})
+
+        if self.canvas is not None:
+            self.layout.removeWidget(self.canvas)
+
+        facet_grid = sns.lmplot(x='Weight', y=self.response, hue="Group", robust=False, data=df)
+        self.canvas = FigureCanvasQTAgg(facet_grid.figure)
+        self.canvas.updateGeometry()
+        self.canvas.draw()
+        self.layout.addWidget(self.canvas)
+
+        glm = pg.linear_regression(df[['Weight']], df[self.response])
 
         html_template = '''
                 <html>
@@ -85,8 +100,6 @@ class GlmWidget(QWidget):
             glm=glm.to_html(classes='mystyle'),
         )
         self.webView.setHtml(html)
-
-
 
     def _get_toolbar(self) -> QToolBar:
         toolbar = QToolBar()
