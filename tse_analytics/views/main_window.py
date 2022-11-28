@@ -14,10 +14,11 @@ from PySide6.QtWidgets import (
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.analysis.analysis_widget import AnalysisWidget
 from tse_analytics.views.data.data_widget import DataWidget
-from tse_analytics.views.groups.groups_view_widget import GroupsViewWidget
-from tse_analytics.views.animals.animals_view_widget import AnimalsViewWidget
+from tse_analytics.views.selection.groups.groups_view_widget import GroupsViewWidget
+from tse_analytics.views.selection.animals.animals_view_widget import AnimalsViewWidget
 from tse_analytics.views.info.info_widget import InfoWidget
 from tse_analytics.views.main_window_ui import Ui_MainWindow
+from tse_analytics.views.selection.variables.variables_view_widget import VariablesViewWidget
 from tse_analytics.views.settings.settings_widget import SettingsWidget
 from tse_analytics.views.datasets.datasets_tree_view import DatasetsTreeView
 
@@ -50,6 +51,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.groups_view_widget = GroupsViewWidget()
         self.tabWidgetSelection.addTab(self.groups_view_widget, QIcon(":/icons/icons8-group-objects-16.png"), "Groups")
+
+        self.variables_view_widget = VariablesViewWidget()
+        self.tabWidgetSelection.addTab(self.variables_view_widget, QIcon(":/icons/icons8-group-objects-16.png"), "Variables")
 
         self.data_widget = DataWidget()
         self.tabWidget.addTab(self.data_widget, QIcon(":/icons/icons8-data-sheet-16.png"), "Data")

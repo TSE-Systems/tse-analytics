@@ -1,7 +1,7 @@
 from typing import Optional
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QIcon, QAction
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QTabWidget, QComboBox, QLabel
 
 from tse_datatools.analysis.grouping_mode import GroupingMode
@@ -9,7 +9,7 @@ from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import ClearDataMessage, DatasetChangedMessage, \
-    BinningAppliedMessage, DataChangedMessage
+    BinningAppliedMessage, RevertBinningMessage, DataChangedMessage
 from tse_analytics.views.data.plot_view_widget import PlotViewWidget
 from tse_analytics.views.data.table_view_widget import TableViewWidget
 
@@ -39,6 +39,7 @@ class DataWidget(QWidget, MessengerListener):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
         messenger.subscribe(self, ClearDataMessage, self._on_clear_data)
         messenger.subscribe(self, BinningAppliedMessage, self._on_binning_applied)
+        messenger.subscribe(self, RevertBinningMessage, self._on_revert_binning)
         messenger.subscribe(self, DataChangedMessage, self._on_data_changed)
 
     def clear(self):
@@ -67,7 +68,7 @@ class DataWidget(QWidget, MessengerListener):
         Manager.data.set_grouping_mode(GroupingMode(text))
         self._assign_data()
 
-    def _clear_selection(self):
+    def _on_revert_binning(self, message: RevertBinningMessage):
         self.table_view_widget.clear_selection()
         self.plot_view_widget.clear_selection()
 
@@ -75,10 +76,6 @@ class DataWidget(QWidget, MessengerListener):
     def toolbar(self) -> QToolBar:
         toolbar = QToolBar()
         toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-
-        clear_selection_action = QAction(QIcon(":/icons/icons8-sorting-16.png"), "Clear Selection", self)
-        clear_selection_action.triggered.connect(self._clear_selection)
-        toolbar.addAction(clear_selection_action)
 
         toolbar.addWidget(QLabel("Mode: "))
 

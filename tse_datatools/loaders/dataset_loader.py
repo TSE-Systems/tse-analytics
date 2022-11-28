@@ -96,10 +96,6 @@ class DatasetLoader:
         df['Animal'] = df['Animal'].astype('category')
         df['Box'] = df['Box'].astype('category')
 
-        # Add Run column
-        df['Run'] = 1
-        df['Run'] = df['Run'].astype('category')
-
         timedelta = df['DateTime'][1] - df['DateTime'][0]
 
         # Sort dataframe
@@ -124,6 +120,10 @@ class DatasetLoader:
 
         df.insert(loc=5, column='Group', value=np.NaN)
         df["Group"] = df["Group"].astype('category')
+
+        # Add Run column
+        df.insert(loc=6, column='Run', value=1)
+        df['Run'] = df['Run'].astype('category')
 
         # Sort variables by name
         variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))

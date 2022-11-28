@@ -8,7 +8,8 @@ def calculate_grouped_data(
     df: pd.DataFrame,
     timedelta: pd.Timedelta,
     operation: BinningOperation,
-    grouping_mode: GroupingMode
+    grouping_mode: GroupingMode,
+    selected_variable: str,
 ) -> pd.DataFrame:
     # Store initial column order
     cols = df.columns
@@ -21,7 +22,7 @@ def calculate_grouped_data(
     elif grouping_mode == GroupingMode.RUNS:
         result = df.groupby(['Run']).resample(timedelta, on='DateTime')
 
-    errors = result.transform('std')['Temp']
+    errors = result.transform('std')[selected_variable]
 
     if operation == BinningOperation.MEAN:
         result = result.mean(numeric_only=True)

@@ -9,7 +9,7 @@ from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.messaging.messages import ClearDataMessage, DatasetChangedMessage
-from tse_analytics.views.groups.groups_table_view import GroupsTableView
+from tse_analytics.views.selection.groups.groups_table_view import GroupsTableView
 from tse_analytics.views.groups_dialog import GroupsDialog
 
 

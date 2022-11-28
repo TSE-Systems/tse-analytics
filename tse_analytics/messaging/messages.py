@@ -74,3 +74,8 @@ class BinningAppliedMessage(Message):
     ):
         super().__init__(sender, tag=tag)
         self.params = params
+
+
+class RevertBinningMessage(Message):
+    """ Revert to original data """
+    pass

@@ -45,6 +45,7 @@ class PlotViewWidget(QWidget):
         self.plot_view.set_data(Manager.data.selected_dataset.original_df)
 
     def _variable_current_text_changed(self, variable: str):
+        Manager.data.selected_variable = variable
         self.plot_view.set_variable(variable)
 
     def _display_errors(self, state: bool):

@@ -3,7 +3,7 @@ from PySide6 import QtCore
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QComboBox, QLabel, QSpinBox, QPushButton, QCheckBox
 
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import BinningAppliedMessage
+from tse_analytics.messaging.messages import BinningAppliedMessage, RevertBinningMessage
 from tse_datatools.analysis.binning_operation import BinningOperation
 from tse_datatools.analysis.binning_params import BinningParams
 
@@ -40,9 +40,13 @@ class BinningWidget(QWidget):
         self.operation_combobox.currentTextChanged.connect(self._binning_operation_changed)
         layout.addWidget(self.operation_combobox)
 
-        self.apply_binning = QPushButton("Apply")
-        self.apply_binning.pressed.connect(self._apply_binning_pressed)
-        layout.addWidget(self.apply_binning)
+        apply_binning_button = QPushButton("Apply")
+        apply_binning_button.pressed.connect(self._apply_binning_pressed)
+        layout.addWidget(apply_binning_button)
+
+        revert_binning_button = QPushButton("Revert to Original Data")
+        revert_binning_button.pressed.connect(self._revert_binning_pressed)
+        layout.addWidget(revert_binning_button)
 
     @QtCore.Slot(str)
     def _binning_unit_changed(self, value: str):
@@ -60,6 +64,16 @@ class BinningWidget(QWidget):
     def _apply_binning_changed(self, value: bool):
         Manager.data.apply_binning = True if value == 2 else False
 
+    @QtCore.Slot()
+    def _apply_binning_pressed(self):
+        if Manager.data.selected_dataset is not None:
+            Manager.messenger.broadcast(BinningAppliedMessage(self, Manager.data.binning_params))
+
+    @QtCore.Slot()
+    def _revert_binning_pressed(self):
+        if Manager.data.selected_dataset is not None:
+            Manager.messenger.broadcast(RevertBinningMessage(self))
+
     def _binning_params_changed(self):
         unit = "H"
         unit_value = self.unit_combobox.currentText()
@@ -76,7 +90,3 @@ class BinningWidget(QWidget):
 
         binning_params = BinningParams(timedelta, BinningOperation(self.operation_combobox.currentText()))
         Manager.data.binning_params = binning_params
-
-    @QtCore.Slot()
-    def _apply_binning_pressed(self):
-        Manager.messenger.broadcast(BinningAppliedMessage(self, Manager.data.binning_params))

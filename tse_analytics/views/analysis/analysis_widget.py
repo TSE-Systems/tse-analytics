@@ -12,6 +12,7 @@ from tse_analytics.views.analysis.anova_widget import AnovaWidget
 from tse_analytics.views.analysis.correlation_widget import CorrelationWidget
 from tse_analytics.views.analysis.distribution_widget import DistributionWidget
 from tse_analytics.views.analysis.glm_widget import GlmWidget
+from tse_analytics.views.analysis.histogram_widget import HistogramWidget
 from tse_analytics.views.analysis.normality_widget import NormalityWidget
 
 
@@ -47,6 +48,9 @@ class AnalysisWidget(QWidget, MessengerListener):
         self.glm_widget = GlmWidget()
         self.tabWidget.addTab(self.glm_widget, QIcon(":/icons/icons8-scales-16.png"), "GLM")
 
+        self.histogram_widget = HistogramWidget()
+        self.tabWidget.addTab(self.histogram_widget, QIcon(":/icons/icons8-scales-16.png"), "Histogram")
+
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
         messenger.subscribe(self, ClearDataMessage, self._on_clear_data)
@@ -58,6 +62,7 @@ class AnalysisWidget(QWidget, MessengerListener):
         self.anova_widget.clear()
         self.ancova_widget.clear()
         self.glm_widget.clear()
+        self.histogram_widget.clear()
 
     def _on_dataset_changed(self, message: DatasetChangedMessage):
         self.distribution_widget.update_variables(message.data.variables)

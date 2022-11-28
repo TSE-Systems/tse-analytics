@@ -20,6 +20,7 @@ from tse_analytics.messaging.messages import (
     DataChangedMessage,
     DatasetChangedMessage,
 )
+from tse_datatools.data.variable import Variable
 
 
 class DataHub:
@@ -29,10 +30,13 @@ class DataHub:
         self.selected_dataset: Optional[Dataset] = None
         self.selected_animals: list[Animal] = []
         self.selected_groups: list[Group] = []
+        self.selected_variables: list[Variable] = []
 
         self.grouping_mode = GroupingMode.ANIMALS
         self.apply_binning = False
         self.binning_params = BinningParams(pd.Timedelta('1H'), BinningOperation.MEAN)
+
+        self.selected_variable = ''
 
     def clear(self):
         self.selected_dataset = None
@@ -64,6 +68,10 @@ class DataHub:
         self.selected_groups = groups
         self._broadcast_data_changed()
 
+    def set_selected_variables(self, variables: list[Variable]) -> None:
+        self.selected_variables = variables
+        self._broadcast_data_changed()
+
     def _broadcast_data_changed(self):
         self.messenger.broadcast(DataChangedMessage(self))
 
@@ -83,7 +91,7 @@ class DataHub:
         timedelta = self.selected_dataset.sampling_interval if not self.apply_binning else self.binning_params.timedelta
 
         if self.grouping_mode == GroupingMode.GROUPS and len(self.selected_dataset.groups) > 0:
-            result = calculate_grouped_data(result, timedelta, self.binning_params.operation, self.grouping_mode)
+            result = calculate_grouped_data(result, timedelta, self.binning_params.operation, self.grouping_mode, self.selected_variable)
             if len(self.selected_groups) > 0:
                 group_ids = [group.name for group in self.selected_groups]
                 result = result[result['Group'].isin(group_ids)]
@@ -94,9 +102,9 @@ class DataHub:
                 animal_ids = [animal.id for animal in self.selected_animals]
                 result = result[result['Animal'].isin(animal_ids)]
                 if self.apply_binning:
-                    result = calculate_grouped_data(result, timedelta, self.binning_params.operation, self.grouping_mode)
+                    result = calculate_grouped_data(result, timedelta, self.binning_params.operation, self.grouping_mode, self.selected_variable)
         if self.grouping_mode == GroupingMode.RUNS:
-            result = calculate_grouped_data(result, timedelta, self.binning_params.operation, self.grouping_mode)
+            result = calculate_grouped_data(result, timedelta, self.binning_params.operation, self.grouping_mode, self.selected_variable)
             # TODO: should or should not?
             # result = result.dropna()
 
