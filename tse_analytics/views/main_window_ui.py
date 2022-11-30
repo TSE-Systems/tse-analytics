@@ -16,16 +16,15 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QDockWidget, QMainWindow, QMenu,
-    QMenuBar, QSizePolicy, QStatusBar, QTabWidget,
-    QToolBar, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QMainWindow, QMenu, QMenuBar,
+    QSizePolicy, QStatusBar, QToolBar, QWidget)
 from  . import resources_rc
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1080, 713)
+        MainWindow.resize(1472, 1032)
         self.actionExit = QAction(MainWindow)
         self.actionExit.setObjectName(u"actionExit")
         icon = QIcon()
@@ -59,20 +58,10 @@ class Ui_MainWindow(object):
         self.actionExportExcel.setIcon(icon5)
         self.centralWidget = QWidget(MainWindow)
         self.centralWidget.setObjectName(u"centralWidget")
-        self.verticalLayoutCentral = QVBoxLayout(self.centralWidget)
-        self.verticalLayoutCentral.setObjectName(u"verticalLayoutCentral")
-        self.tabWidget = QTabWidget(self.centralWidget)
-        self.tabWidget.setObjectName(u"tabWidget")
-        self.tabWidget.setDocumentMode(False)
-        self.tabWidget.setMovable(True)
-        self.tabWidget.setTabBarAutoHide(False)
-
-        self.verticalLayoutCentral.addWidget(self.tabWidget)
-
         MainWindow.setCentralWidget(self.centralWidget)
         self.menuBar = QMenuBar(MainWindow)
         self.menuBar.setObjectName(u"menuBar")
-        self.menuBar.setGeometry(QRect(0, 0, 1080, 21))
+        self.menuBar.setGeometry(QRect(0, 0, 1472, 22))
         self.menuFile = QMenu(self.menuBar)
         self.menuFile.setObjectName(u"menuFile")
         self.menuHelp = QMenu(self.menuBar)
@@ -85,47 +74,6 @@ class Ui_MainWindow(object):
         self.toolBar.setObjectName(u"toolBar")
         self.toolBar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         MainWindow.addToolBar(Qt.TopToolBarArea, self.toolBar)
-        self.dockWidgetDatasets = QDockWidget(MainWindow)
-        self.dockWidgetDatasets.setObjectName(u"dockWidgetDatasets")
-        self.widgetDatasets = QWidget()
-        self.widgetDatasets.setObjectName(u"widgetDatasets")
-        self.verticalLayoutOverview = QVBoxLayout(self.widgetDatasets)
-        self.verticalLayoutOverview.setObjectName(u"verticalLayoutOverview")
-        self.dockWidgetDatasets.setWidget(self.widgetDatasets)
-        MainWindow.addDockWidget(Qt.LeftDockWidgetArea, self.dockWidgetDatasets)
-        self.dockWidgetSelection = QDockWidget(MainWindow)
-        self.dockWidgetSelection.setObjectName(u"dockWidgetSelection")
-        self.widgetSelection = QWidget()
-        self.widgetSelection.setObjectName(u"widgetSelection")
-        self.verticalLayoutSelection = QVBoxLayout(self.widgetSelection)
-        self.verticalLayoutSelection.setObjectName(u"verticalLayoutSelection")
-        self.tabWidgetSelection = QTabWidget(self.widgetSelection)
-        self.tabWidgetSelection.setObjectName(u"tabWidgetSelection")
-        self.tabWidgetSelection.setMovable(True)
-
-        self.verticalLayoutSelection.addWidget(self.tabWidgetSelection)
-
-        self.dockWidgetSelection.setWidget(self.widgetSelection)
-        MainWindow.addDockWidget(Qt.RightDockWidgetArea, self.dockWidgetSelection)
-        self.dockWidgetInfo = QDockWidget(MainWindow)
-        self.dockWidgetInfo.setObjectName(u"dockWidgetInfo")
-        self.widgetInfo = QWidget()
-        self.widgetInfo.setObjectName(u"widgetInfo")
-        self.verticalLayoutInfo = QVBoxLayout(self.widgetInfo)
-        self.verticalLayoutInfo.setObjectName(u"verticalLayoutInfo")
-        self.dockWidgetInfo.setWidget(self.widgetInfo)
-        MainWindow.addDockWidget(Qt.LeftDockWidgetArea, self.dockWidgetInfo)
-        self.dockWidgetSettings = QDockWidget(MainWindow)
-        self.dockWidgetSettings.setObjectName(u"dockWidgetSettings")
-        self.widgetSettings = QWidget()
-        self.widgetSettings.setObjectName(u"widgetSettings")
-        self.verticalLayoutSettings = QVBoxLayout(self.widgetSettings)
-        self.verticalLayoutSettings.setObjectName(u"verticalLayoutSettings")
-        self.dockWidgetSettings.setWidget(self.widgetSettings)
-        MainWindow.addDockWidget(Qt.RightDockWidgetArea, self.dockWidgetSettings)
-        self.dockWidgetSelection.raise_()
-        self.dockWidgetInfo.raise_()
-        self.dockWidgetSettings.raise_()
 
         self.menuBar.addAction(self.menuFile.menuAction())
         self.menuBar.addAction(self.menuHelp.menuAction())
@@ -144,9 +92,6 @@ class Ui_MainWindow(object):
         self.toolBar.addSeparator()
 
         self.retranslateUi(MainWindow)
-
-        self.tabWidget.setCurrentIndex(-1)
-
 
         QMetaObject.connectSlotsByName(MainWindow)
     # setupUi
@@ -174,9 +119,5 @@ class Ui_MainWindow(object):
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"&File", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"&Help", None))
         self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"ToolBar", None))
-        self.dockWidgetDatasets.setWindowTitle(QCoreApplication.translate("MainWindow", u"Datasets", None))
-        self.dockWidgetSelection.setWindowTitle(QCoreApplication.translate("MainWindow", u"Selection", None))
-        self.dockWidgetInfo.setWindowTitle(QCoreApplication.translate("MainWindow", u"Info", None))
-        self.dockWidgetSettings.setWindowTitle(QCoreApplication.translate("MainWindow", u"Settings", None))
     # retranslateUi
 

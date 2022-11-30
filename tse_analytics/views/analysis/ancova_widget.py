@@ -9,10 +9,11 @@ from matplotlib.figure import Figure
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.css import style
+from tse_analytics.views.analysis.analysis_widget import AnalysisWidget
 from tse_datatools.data.variable import Variable
 
 
-class AncovaWidget(QWidget):
+class AncovaWidget(AnalysisWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.layout = QVBoxLayout(self)

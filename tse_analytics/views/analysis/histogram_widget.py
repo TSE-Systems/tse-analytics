@@ -7,9 +7,10 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolb
 from matplotlib.figure import Figure
 
 from tse_analytics.core.manager import Manager
+from tse_analytics.views.analysis.analysis_widget import AnalysisWidget
 
 
-class HistogramWidget(QWidget):
+class HistogramWidget(AnalysisWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
@@ -28,6 +29,9 @@ class HistogramWidget(QWidget):
     def clear(self):
         self.ax.clear()
 
+    def dataset_changed(self):
+        pass
+
     def _get_plot_layout(self, number_of_elements: int):
         if number_of_elements == 1:
             return None
@@ -39,7 +43,7 @@ class HistogramWidget(QWidget):
             return round(number_of_elements / 3) + 1, 3
 
     def _analyze(self):
-        if Manager.data.selected_dataset is None:
+        if Manager.data.selected_dataset is None or len(Manager.data.selected_variables) == 0:
             return
 
         self.ax.clear()

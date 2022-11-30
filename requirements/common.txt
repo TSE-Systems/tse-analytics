@@ -5,6 +5,7 @@ pingouin
 psutil
 pyqtgraph
 PySide6
+PySide6-QtAds
 
 # tse-datatools
 matplotlib

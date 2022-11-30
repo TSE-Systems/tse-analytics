@@ -1,7 +1,8 @@
 import os
+
 import psutil
 
-from PySide6.QtCore import Qt, QTimer, QSettings, QByteArray
+from PySide6.QtCore import Qt, QTimer, QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QMainWindow,
@@ -10,17 +11,30 @@ from PySide6.QtWidgets import (
     QApplication,
     QDialog
 )
+import PySide6QtAds
 
 from tse_analytics.core.manager import Manager
-from tse_analytics.views.analysis.analysis_widget import AnalysisWidget
+from tse_analytics.views.analysis.ancova_widget import AncovaWidget
+from tse_analytics.views.analysis.anova_widget import AnovaWidget
+from tse_analytics.views.analysis.correlation_widget import CorrelationWidget
+from tse_analytics.views.analysis.distribution_widget import DistributionWidget
+from tse_analytics.views.analysis.glm_widget import GlmWidget
+from tse_analytics.views.analysis.histogram_widget import HistogramWidget
+from tse_analytics.views.analysis.normality_widget import NormalityWidget
 from tse_analytics.views.data.data_widget import DataWidget
 from tse_analytics.views.selection.groups.groups_view_widget import GroupsViewWidget
 from tse_analytics.views.selection.animals.animals_view_widget import AnimalsViewWidget
 from tse_analytics.views.info.info_widget import InfoWidget
 from tse_analytics.views.main_window_ui import Ui_MainWindow
 from tse_analytics.views.selection.variables.variables_view_widget import VariablesViewWidget
-from tse_analytics.views.settings.settings_widget import SettingsWidget
+from tse_analytics.views.settings.binning_widget import BinningWidget
 from tse_analytics.views.datasets.datasets_tree_view import DatasetsTreeView
+
+
+PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.ActiveTabHasCloseButton, False)
+PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.DockAreaHasCloseButton, False)
+PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.DockAreaDynamicTabsMenuButtonVisibility, True)
+PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.FloatingContainerHasWidgetIcon, True)
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -40,29 +54,79 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.memory_usage_label = QLabel()
         self.statusBar.addPermanentWidget(self.memory_usage_label)
 
-        self.workspace_tree_view = DatasetsTreeView()
-        self.verticalLayoutOverview.addWidget(self.workspace_tree_view)
+        # Create the dock manager. Because the parent parameter is a QMainWindow
+        # the dock manager registers itself as the central widget.
+        self.dock_manager = PySide6QtAds.CDockManager(self)
 
-        self.info_widget = InfoWidget()
-        self.verticalLayoutInfo.addWidget(self.info_widget)
+        data_dock_widget = PySide6QtAds.CDockWidget('Data')
+        data_dock_widget.setWidget(DataWidget())
+        data_dock_widget.setIcon(QIcon(":/icons/icons8-data-sheet-16.png"))
+        self.dock_manager.addDockWidgetTab(PySide6QtAds.AllDockAreas, data_dock_widget)
 
-        self.animals_view_widget = AnimalsViewWidget()
-        self.tabWidgetSelection.addTab(self.animals_view_widget, QIcon(":/icons/icons8-rat-silhouette-16.png"), "Animals")
+        histogram_dock_widget = PySide6QtAds.CDockWidget('Histogram')
+        histogram_dock_widget.setIcon(QIcon(":/icons/icons8-scales-16.png"))
+        histogram_dock_widget.setWidget(HistogramWidget())
+        self.dock_manager.addDockWidgetTab(PySide6QtAds.AllDockAreas, histogram_dock_widget)
 
-        self.groups_view_widget = GroupsViewWidget()
-        self.tabWidgetSelection.addTab(self.groups_view_widget, QIcon(":/icons/icons8-group-objects-16.png"), "Groups")
+        distribution_dock_widget = PySide6QtAds.CDockWidget('Distribution')
+        distribution_dock_widget.setIcon(QIcon(":/icons/icons8-bar-chart-16.png"))
+        distribution_dock_widget.setWidget(DistributionWidget())
+        self.dock_manager.addDockWidgetTab(PySide6QtAds.AllDockAreas, distribution_dock_widget)
 
-        self.variables_view_widget = VariablesViewWidget()
-        self.tabWidgetSelection.addTab(self.variables_view_widget, QIcon(":/icons/icons8-group-objects-16.png"), "Variables")
+        normality_dock_widget = PySide6QtAds.CDockWidget('Normality')
+        normality_dock_widget.setIcon(QIcon(":/icons/icons8-approval-16.png"))
+        normality_dock_widget.setWidget(NormalityWidget())
+        self.dock_manager.addDockWidgetTab(PySide6QtAds.AllDockAreas, normality_dock_widget)
 
-        self.data_widget = DataWidget()
-        self.tabWidget.addTab(self.data_widget, QIcon(":/icons/icons8-data-sheet-16.png"), "Data")
+        correlation_dock_widget = PySide6QtAds.CDockWidget('Correlation')
+        correlation_dock_widget.setIcon(QIcon(":/icons/icons8-scales-16.png"))
+        correlation_dock_widget.setWidget(CorrelationWidget())
+        self.dock_manager.addDockWidgetTab(PySide6QtAds.AllDockAreas, correlation_dock_widget)
 
-        self.analysis_widget = AnalysisWidget()
-        self.tabWidget.addTab(self.analysis_widget, QIcon(":/icons/icons8-statistics-16.png"), "Analysis")
+        anova_dock_widget = PySide6QtAds.CDockWidget('ANOVA')
+        anova_dock_widget.setIcon(QIcon(":/icons/icons8-scales-16.png"))
+        anova_dock_widget.setWidget(AnovaWidget())
+        self.dock_manager.addDockWidgetTab(PySide6QtAds.AllDockAreas, anova_dock_widget)
 
-        self.settings_widget = SettingsWidget()
-        self.verticalLayoutSettings.addWidget(self.settings_widget)
+        ancova_dock_widget = PySide6QtAds.CDockWidget('ANCOVA')
+        ancova_dock_widget.setIcon(QIcon(":/icons/icons8-scales-16.png"))
+        ancova_dock_widget.setWidget(AncovaWidget())
+        self.dock_manager.addDockWidgetTab(PySide6QtAds.AllDockAreas, ancova_dock_widget)
+
+        glm_dock_widget = PySide6QtAds.CDockWidget('GLM')
+        glm_dock_widget.setIcon(QIcon(":/icons/icons8-scales-16.png"))
+        glm_dock_widget.setWidget(GlmWidget())
+        self.dock_manager.addDockWidgetTab(PySide6QtAds.AllDockAreas, glm_dock_widget)
+
+        datasets_dock_widget = PySide6QtAds.CDockWidget('Datasets')
+        datasets_dock_widget.setWidget(DatasetsTreeView())
+        datasets_dock_widget.setIcon(QIcon(":/icons/icons8-data-sheet-16.png"))
+        datasets_dock_area = self.dock_manager.addDockWidget(PySide6QtAds.LeftDockWidgetArea, datasets_dock_widget)
+
+        info_dock_widget = PySide6QtAds.CDockWidget('Info')
+        info_dock_widget.setWidget(InfoWidget())
+        info_dock_widget.setIcon(QIcon(":/icons/icons8-data-sheet-16.png"))
+        self.dock_manager.addDockWidget(PySide6QtAds.BottomDockWidgetArea, info_dock_widget, datasets_dock_area)
+
+        animals_dock_widget = PySide6QtAds.CDockWidget('Animals')
+        animals_dock_widget.setWidget(AnimalsViewWidget())
+        animals_dock_widget.setIcon(QIcon(":/icons/icons8-rat-silhouette-16.png"))
+        selector_dock_area = self.dock_manager.addDockWidgetTab(PySide6QtAds.RightDockWidgetArea, animals_dock_widget)
+
+        groups_dock_widget = PySide6QtAds.CDockWidget('Groups')
+        groups_dock_widget.setWidget(GroupsViewWidget())
+        groups_dock_widget.setIcon(QIcon(":/icons/icons8-group-objects-16.png"))
+        self.dock_manager.addDockWidgetTab(PySide6QtAds.RightDockWidgetArea, groups_dock_widget)
+
+        variables_dock_widget = PySide6QtAds.CDockWidget('Variables')
+        variables_dock_widget.setWidget(VariablesViewWidget())
+        variables_dock_widget.setIcon(QIcon(":/icons/icons8-group-objects-16.png"))
+        self.dock_manager.addDockWidgetTab(PySide6QtAds.RightDockWidgetArea, variables_dock_widget)
+
+        binning_dock_widget = PySide6QtAds.CDockWidget('Binning')
+        binning_dock_widget.setWidget(BinningWidget())
+        binning_dock_widget.setIcon(QIcon(":/icons/icons8-time-span-16.png"))
+        self.dock_manager.addDockWidget(PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area)
 
         self.actionImportDataset.triggered.connect(self.import_dataset_dialog)
         self.actionOpenWorkspace.triggered.connect(self.load_workspace_dialog)
@@ -74,13 +138,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def load_settings(self):
         settings = QSettings()
-        self.restoreGeometry(settings.value("MainWindow/Geometry", QByteArray()))
-        self.restoreState(settings.value("MainWindow/State", QByteArray()))
+        self.restoreGeometry(settings.value("MainWindow/Geometry"))
+        self.restoreState(settings.value("MainWindow/State"))
+
+        # state = settings.value("MainWindow/DockingState")
+        # if state is not None:
+        #     self.dock_manager.restoreState(state)
 
     def save_settings(self):
         settings = QSettings()
         settings.setValue("MainWindow/Geometry", self.saveGeometry())
         settings.setValue("MainWindow/State", self.saveState())
+        settings.setValue("MainWindow/DockingState", self.dock_manager.saveState())
 
     def load_workspace_dialog(self):
         options = QFileDialog.Options()

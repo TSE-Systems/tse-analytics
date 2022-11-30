@@ -8,10 +8,11 @@ from matplotlib.figure import Figure
 import seaborn as sns
 
 from tse_analytics.core.manager import Manager
+from tse_analytics.views.analysis.analysis_widget import AnalysisWidget
 from tse_datatools.data.variable import Variable
 
 
-class DistributionWidget(QWidget):
+class DistributionWidget(AnalysisWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
 

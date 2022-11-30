@@ -8,10 +8,11 @@ from matplotlib.figure import Figure
 import scipy.stats as stats
 
 from tse_analytics.core.manager import Manager
+from tse_analytics.views.analysis.analysis_widget import AnalysisWidget
 from tse_datatools.data.variable import Variable
 
 
-class NormalityWidget(QWidget):
+class NormalityWidget(AnalysisWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
 

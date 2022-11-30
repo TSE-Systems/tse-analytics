@@ -6,40 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1080</width>
-    <height>713</height>
+    <width>1472</width>
+    <height>1032</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>TSE Analytics</string>
   </property>
-  <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayoutCentral">
-    <item>
-     <widget class="QTabWidget" name="tabWidget">
-      <property name="currentIndex">
-       <number>-1</number>
-      </property>
-      <property name="documentMode">
-       <bool>false</bool>
-      </property>
-      <property name="movable">
-       <bool>true</bool>
-      </property>
-      <property name="tabBarAutoHide">
-       <bool>false</bool>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
+  <widget class="QWidget" name="centralWidget"/>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1080</width>
-     <height>21</height>
+     <width>1472</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -82,58 +63,6 @@
    <addaction name="separator"/>
    <addaction name="actionImportDataset"/>
    <addaction name="separator"/>
-  </widget>
-  <widget class="QDockWidget" name="dockWidgetDatasets">
-   <property name="windowTitle">
-    <string>Datasets</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>1</number>
-   </attribute>
-   <widget class="QWidget" name="widgetDatasets">
-    <layout class="QVBoxLayout" name="verticalLayoutOverview"/>
-   </widget>
-  </widget>
-  <widget class="QDockWidget" name="dockWidgetSelection">
-   <property name="windowTitle">
-    <string>Selection</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>2</number>
-   </attribute>
-   <widget class="QWidget" name="widgetSelection">
-    <layout class="QVBoxLayout" name="verticalLayoutSelection">
-     <item>
-      <widget class="QTabWidget" name="tabWidgetSelection">
-       <property name="movable">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-  </widget>
-  <widget class="QDockWidget" name="dockWidgetInfo">
-   <property name="windowTitle">
-    <string>Info</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>1</number>
-   </attribute>
-   <widget class="QWidget" name="widgetInfo">
-    <layout class="QVBoxLayout" name="verticalLayoutInfo"/>
-   </widget>
-  </widget>
-  <widget class="QDockWidget" name="dockWidgetSettings">
-   <property name="windowTitle">
-    <string>Settings</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>2</number>
-   </attribute>
-   <widget class="QWidget" name="widgetSettings">
-    <layout class="QVBoxLayout" name="verticalLayoutSettings"/>
-   </widget>
   </widget>
   <action name="actionExit">
    <property name="icon">
