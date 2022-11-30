@@ -1,5 +1,6 @@
 import pandas as pd
 from PySide6 import QtCore
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QComboBox, QLabel, QSpinBox, QPushButton, QCheckBox
 
 from tse_analytics.core.manager import Manager
@@ -61,7 +62,7 @@ class BinningWidget(QWidget):
         self._binning_params_changed()
 
     @QtCore.Slot(bool)
-    def _apply_binning_changed(self, value: bool):
+    def _apply_binning_changed(self, value: int):
         Manager.data.apply_binning = True if value == 2 else False
 
     @QtCore.Slot()
@@ -72,6 +73,7 @@ class BinningWidget(QWidget):
     @QtCore.Slot()
     def _revert_binning_pressed(self):
         if Manager.data.selected_dataset is not None:
+            self.apply_binning_checkbox.setCheckState(Qt.CheckState.Unchecked)
             Manager.messenger.broadcast(RevertBinningMessage(self))
 
     def _binning_params_changed(self):

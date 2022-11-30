@@ -43,6 +43,7 @@ class DataHub:
         # self.apply_binning = False
         self.selected_animals.clear()
         self.selected_groups.clear()
+        self.selected_variables.clear()
         QPixmapCache.clear()
         gc.collect()
 
@@ -57,6 +58,7 @@ class DataHub:
         self.selected_dataset = dataset
         self.selected_animals.clear()
         self.selected_groups.clear()
+        self.selected_variables.clear()
 
         self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
 
