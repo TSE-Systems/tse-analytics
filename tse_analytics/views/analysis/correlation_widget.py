@@ -1,7 +1,7 @@
 from typing import Optional
 
 import pandas as pd
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 import pingouin as pg
 import seaborn as sns
 from PySide6.QtCore import Qt
@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QComboBox, QToolB
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.css import style
+from tse_datatools.data.variable import Variable
 
 pd.set_option('colheader_justify', 'center')  # FOR TABLE <th>
 sns.set_theme(style="whitegrid")
@@ -36,15 +37,16 @@ class CorrelationWidget(QWidget):
         self.layout.addWidget(description_widget)
 
         self.webView = QWebEngineView(self)
-        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, True)
-        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, True)
+        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
+        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, False)
+        self.webView.setHtml('')
         self.layout.addWidget(self.webView)
 
         self.figure = None
-        self.canvas = FigureCanvas(self.figure)
+        self.canvas = FigureCanvasQTAgg(self.figure)
         self.layout.addWidget(self.canvas)
 
-    def update_variables(self, variables: list):
+    def update_variables(self, variables: dict[str, Variable]):
         self.x = ""
         self.y = ""
 
@@ -57,10 +59,10 @@ class CorrelationWidget(QWidget):
         self.y_combo_box.setCurrentText("")
 
     def _analyze(self):
-        if len(Manager.data.selected_groups) == 0:
+        if len(Manager.data.selected_dataset.groups) == 0:
             return
 
-        df = Manager.data.selected_dataset_component.filter_by_groups(Manager.data.selected_groups)
+        df = Manager.data.selected_dataset.original_df
 
         multivariate_normality = pg.multivariate_normality(df[[self.x, self.y]])
         corr = pg.pairwise_corr(data=df, columns=[self.x, self.y], method='pearson')

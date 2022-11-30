@@ -1,22 +1,17 @@
 from typing import Optional
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QPushButton, QLabel, QComboBox
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QPushButton
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
 from matplotlib.figure import Figure
-import seaborn as sns
 
 from tse_analytics.core.manager import Manager
-from tse_datatools.data.variable import Variable
 
 
-class DistributionWidget(QWidget):
+class HistogramWidget(QWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
-
-        self.variable_combo_box = QComboBox(self)
-        self.variable = ''
 
         self.layout = QVBoxLayout(self)
         self.layout.addWidget(self._get_toolbar())
@@ -31,28 +26,36 @@ class DistributionWidget(QWidget):
         self.layout.addWidget(self.canvas)
 
     def clear(self):
-        self.variable_combo_box.clear()
         self.ax.clear()
 
-    def update_variables(self, variables: dict[str, Variable]):
-        self.variable = ''
-        self.variable_combo_box.clear()
-        self.variable_combo_box.addItems(variables)
-        self.variable_combo_box.setCurrentText(self.variable)
-
-    def _variable_changed(self, variable: str):
-        self.variable = variable
+    def _get_plot_layout(self, number_of_elements: int):
+        if number_of_elements == 1:
+            return None
+        elif number_of_elements <= 3:
+            return number_of_elements, 1
+        elif number_of_elements == 4:
+            return 2, 2
+        else:
+            return round(number_of_elements / 3) + 1, 3
 
     def _analyze(self):
         if Manager.data.selected_dataset is None:
             return
 
-        df = Manager.data.selected_dataset.original_df
-
         self.ax.clear()
 
-        sns.boxplot(data=df, x='Group', y=self.variable, ax=self.ax, color='green')
-        sns.violinplot(data=df, x="Group", y=self.variable, ax=self.ax)
+        df = Manager.data.selected_dataset.original_df
+        selected_variables = Manager.data.selected_variables
+        columns = [item.name for item in selected_variables]
+
+        df.hist(
+            column=columns,
+            bins=50,
+            sharex=False,
+            sharey=False,
+            layout=self._get_plot_layout(len(selected_variables)),
+            ax=self.ax
+        )
 
         self.canvas.figure.tight_layout()
         self.canvas.draw()
@@ -60,12 +63,6 @@ class DistributionWidget(QWidget):
     def _get_toolbar(self) -> QToolBar:
         toolbar = QToolBar()
         toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-
-        label = QLabel("Variable: ")
-        toolbar.addWidget(label)
-
-        self.variable_combo_box.currentTextChanged.connect(self._variable_changed)
-        toolbar.addWidget(self.variable_combo_box)
 
         pushButtonAnalyze = QPushButton("Analyze")
         pushButtonAnalyze.clicked.connect(self._analyze)

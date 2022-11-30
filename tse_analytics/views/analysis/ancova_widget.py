@@ -1,9 +1,7 @@
 from typing import Optional
 
-import pandas as pd
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 import pingouin as pg
-import seaborn as sns
 from PySide6.QtCore import Qt
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QComboBox, QToolBar, QLabel, QPushButton
@@ -11,6 +9,7 @@ from matplotlib.figure import Figure
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.css import style
+from tse_datatools.data.variable import Variable
 
 
 class AncovaWidget(QWidget):
@@ -34,31 +33,30 @@ class AncovaWidget(QWidget):
         self.layout.addWidget(description_widget)
 
         self.webView = QWebEngineView(self)
-        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, True)
-        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, True)
+        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
+        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, False)
+        self.webView.setHtml('')
         self.layout.addWidget(self.webView)
 
-        self.canvas = FigureCanvas(Figure(figsize=(5.0, 4.0), dpi=100))
-        self.ax = self.canvas.figure.subplots()
+        figure = Figure(figsize=(5.0, 4.0), dpi=100)
+        self.ax = figure.subplots()
+        self.canvas = FigureCanvasQTAgg(figure)
         self.layout.addWidget(self.canvas)
 
-    def update_variables(self, variables: list):
-        self.covariate = ""
-        self.response = ""
+    def update_variables(self, variables: dict[str, Variable]):
+        self.covariate = ''
+        self.response = ''
 
         self.covariate_combo_box.clear()
         self.covariate_combo_box.addItems(variables)
-        self.covariate_combo_box.setCurrentText("")
+        self.covariate_combo_box.setCurrentText(self.covariate)
 
         self.response_combo_box.clear()
         self.response_combo_box.addItems(variables)
-        self.response_combo_box.setCurrentText("")
+        self.response_combo_box.setCurrentText(self.response)
 
     def _analyze(self):
-        if len(Manager.data.selected_groups) == 0:
-            return
-
-        df = Manager.data.selected_dataset_component.filter_by_groups(Manager.data.selected_groups)
+        df = Manager.data.selected_dataset.original_df
 
         ancova = pg.ancova(data=df, dv=self.response, covar=self.covariate, between="Group")
 
@@ -83,7 +81,7 @@ class AncovaWidget(QWidget):
     def clear(self):
         self.covariate_combo_box.clear()
         self.response_combo_box.clear()
-        self.webView.setHtml("")
+        self.webView.setHtml('')
         self.ax.clear()
 
     def _covariate_current_text_changed(self, covariate: str):

@@ -2,6 +2,7 @@ from enum import Enum, unique
 
 
 @unique
-class ViewMode(Enum):
+class GroupingMode(Enum):
     ANIMALS = 'Animals'
     GROUPS = 'Groups'
+    RUNS = 'Runs'

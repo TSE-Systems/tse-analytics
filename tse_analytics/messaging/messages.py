@@ -1,11 +1,6 @@
-from typing import Literal
-
-from tse_datatools.data.animal import Animal
+from tse_datatools.analysis.binning_params import BinningParams
 from tse_datatools.data.dataset import Dataset
-from tse_datatools.data.dataset_component import DatasetComponent
-from tse_datatools.data.group import Group
 
-from tse_analytics.core.view_mode import ViewMode
 from tse_analytics.models.tree_item import TreeItem
 
 
@@ -51,79 +46,36 @@ class SelectedTreeNodeChangedMessage(Message):
         self.node = node
 
 
-class AnimalDataChangedMessage(Message):
-    """ Indicates that selected animal data changed """
-    def __init__(self, sender, animals: list[Animal], tag=None):
+class DataChangedMessage(Message):
+    """ Indicates that selected data changed """
+    def __init__(self, sender, tag=None):
         super().__init__(sender, tag=tag)
-        self.animals = animals
-
-
-class SelectedAnimalsChangedMessage(Message):
-    """ Indicates that animal selection had changed """
-    def __init__(self, sender, animals: list[Animal], tag=None):
-        super().__init__(sender, tag=tag)
-        self.animals = animals
-
-
-class SelectedGroupsChangedMessage(Message):
-    """ Indicates that selected groups are changed """
-    def __init__(self, sender, groups: list[Group], tag=None):
-        super().__init__(sender, tag=tag)
-        self.groups = groups
 
 
 class DatasetChangedMessage(Message):
     """ Indicates that selected dataset is changed """
-    def __init__(self, sender, data: Dataset, tag=None):
+    def __init__(self, sender, dataset: Dataset, tag=None):
         super().__init__(sender, tag=tag)
-        self.data = data
+        self.data = dataset
 
 
-class DatasetComponentChangedMessage(Message):
-    """ Indicates that selected dataset component is changed """
-    def __init__(self, sender, data: DatasetComponent, tag=None):
-        super().__init__(sender, tag=tag)
-        self.data = data
-
-
-class DatasetImportedMessage(Message):
-    """ Indicates that the dataset has been imported """
+class ClearDataMessage(Message):
+    """ Clear data """
     pass
-
-
-class DatasetRemovedMessage(Message):
-    """ Indicates that the dataset has been removed """
-    pass
-
-
-class DatasetLoadedMessage(Message):
-    """ Indicates that the dataset has been loaded """
-    pass
-
-
-class DatasetUnloadedMessage(Message):
-    """ Indicates that the dataset has been unloaded """
-    pass
-
-
-class ViewModeChangedMessage(Message):
-    """ Indicates that current view mode is changed """
-    def __init__(self, sender, mode: ViewMode, tag=None):
-        super().__init__(sender, tag=tag)
-        self.mode = mode
-
-
-class BlendModeChangedMessage(Message):
-    """ Indicates that current blend mode is changed """
-    def __init__(self, sender, mode: str, tag=None):
-        super().__init__(sender, tag=tag)
-        self.mode = mode
 
 
 class BinningAppliedMessage(Message):
     """ Indicates that binning is applied """
-    def __init__(self, sender, unit: Literal["day", "hour", "minute"], delta: int, mode: Literal["sum", "mean", "median"], tag=None):
+    def __init__(
+        self,
+        sender,
+        params: BinningParams,
+        tag=None
+    ):
         super().__init__(sender, tag=tag)
-        self.unit = unit
-        self.delta = delta
-        self.mode = mode
+        self.params = params
+
+
+class RevertBinningMessage(Message):
+    """ Revert to original data """
+    pass

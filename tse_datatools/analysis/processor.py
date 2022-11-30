@@ -1,29 +1,56 @@
-from typing import Literal
-
 import pandas as pd
 
+from tse_datatools.analysis.grouping_mode import GroupingMode
+from tse_datatools.analysis.binning_operation import BinningOperation
 
-def apply_time_binning(
+
+def calculate_grouped_data(
     df: pd.DataFrame,
-    delta: int,
-    unit_name: Literal["day", "hour", "minute"],
-    mode: Literal["sum", "mean", "median"]
+    timedelta: pd.Timedelta,
+    operation: BinningOperation,
+    grouping_mode: GroupingMode,
+    selected_variable: str,
 ) -> pd.DataFrame:
-    unit = "H"
-    if unit_name == "day":
-        unit = "D"
-    elif unit_name == "hour":
-        unit = "H"
-    elif unit_name == "minute":
-        unit = "min"
-    rule = f'{delta}{unit}'
+    # Store initial column order
+    cols = df.columns
 
-    if mode == "mean":
-        result = df.resample(rule, on='DateTime', origin="start").mean()
-    elif mode == "median":
-        result = df.resample(rule, on='DateTime', origin="start").median()
+    result = None
+    if grouping_mode == GroupingMode.GROUPS:
+        result = df.groupby('Group').resample(timedelta, on='DateTime')
+    elif grouping_mode == GroupingMode.ANIMALS:
+        result = df.groupby(['Animal', 'Box']).resample(timedelta, on='DateTime')
+    elif grouping_mode == GroupingMode.RUNS:
+        result = df.groupby(['Run']).resample(timedelta, on='DateTime')
+
+    errors = result.transform('std')[selected_variable]
+
+    if operation == BinningOperation.MEAN:
+        result = result.mean(numeric_only=True)
+    elif operation == BinningOperation.MEDIAN:
+        result = result.median(numeric_only=True)
     else:
-        result = df.resample(rule, on='DateTime', origin="start").sum()
+        result = result.sum(numeric_only=True)
 
-    result["Order"] = result.index - result.index[0]
+    if grouping_mode == GroupingMode.GROUPS:
+        result.sort_values(by=['DateTime', 'Group'], inplace=True)
+    elif grouping_mode == GroupingMode.ANIMALS:
+        result.sort_values(by=['DateTime', 'Box'], inplace=True)
+    elif grouping_mode == GroupingMode.RUNS:
+        result.sort_values(by=['DateTime', 'Run'], inplace=True)
+
+    # the inverse of groupby, reset_index
+    result = result.reset_index().reindex(cols, axis=1)
+
+    # Hide empty columns
+    if grouping_mode == GroupingMode.GROUPS:
+        result.drop(columns=['Animal', 'Box'], inplace=True)
+    elif grouping_mode == GroupingMode.RUNS:
+        result.drop(columns=['Animal', 'Box', 'Group'], inplace=True)
+
+    start_date_time = result['DateTime'][0]
+    result["Timedelta"] = result['DateTime'] - start_date_time
+    result["Bin"] = (result["Timedelta"] / timedelta).round().astype(int)
+    result['Bin'] = result['Bin'].astype('category')
+    result['Std'] = errors
+
     return result

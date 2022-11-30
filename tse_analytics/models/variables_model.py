@@ -1,12 +1,14 @@
+from typing import Sequence
+
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
-from tse_datatools.data.group import Group
+from tse_datatools.data.variable import Variable
 
 
-class GroupsModel(QAbstractTableModel):
+class VariablesModel(QAbstractTableModel):
 
-    header = ('Name', 'Animals in group')
+    header = ('Name', 'Unit', 'Description')
 
-    def __init__(self, items: list[Group], parent=None):
+    def __init__(self, items: Sequence[Variable], parent=None):
         super().__init__(parent)
 
         self.items = items
@@ -17,7 +19,7 @@ class GroupsModel(QAbstractTableModel):
         elif role != Qt.DisplayRole:
             return None
         item = self.items[index.row()]
-        values = (item.name, len(item.animal_ids))
+        values = (item.name, item.unit, item.description)
         return values[index.column()]
 
     def headerData(self, col: int, orientation: int, role: int):

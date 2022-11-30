@@ -1,28 +1,39 @@
-from typing import Optional, Literal
+from typing import Literal
 
-from tse_datatools.data.actimot_data import ActimotData
+import numpy as np
+import pandas as pd
+
 from tse_datatools.data.animal import Animal
 from tse_datatools.data.box import Box
-from tse_datatools.data.calorimetry_data import CalorimetryData
-from tse_datatools.data.drinkfeed_data import DrinkFeedData
 from tse_datatools.data.group import Group
+from tse_datatools.data.variable import Variable
 
 
 class Dataset:
-    def __init__(self, name: str, path: str):
+    def __init__(
+        self,
+        name: str,
+        path: str,
+        meta: dict,
+        boxes: dict[int, Box],
+        animals: dict[int, Animal],
+        variables: dict[str, Variable],
+        df: pd.DataFrame,
+        sampling_interval: pd.Timedelta
+    ):
         self.name = name
         self.path = path
-        self.loaded: bool = False
 
-        self.meta: Optional[dict] = None
+        self.meta = meta
 
-        self.boxes: dict[int, Box] = {}
-        self.animals: dict[int, Animal] = {}
+        self.boxes = boxes
+        self.animals = animals
+        self.variables = variables
+
+        self.original_df = df
+        self.sampling_interval = sampling_interval
+
         self.groups: dict[str, Group] = {}
-
-        self.calorimetry: Optional[CalorimetryData] = None
-        self.actimot: Optional[ActimotData] = None
-        self.drinkfeed: Optional[DrinkFeedData] = None
 
     def extract_groups_from_field(self, field: Literal["text1", "text2", "text3"] = "text1") -> dict[str, Group]:
         """Extract groups assignment from Text1, Text2 or Text3 field"""
@@ -39,68 +50,49 @@ class Dataset:
             groups[group.name] = group
         return groups
 
-    def load(self, extract_groups=False):
-        """Load raw data."""
-        from tse_datatools.loaders.dataset_loader import DatasetLoader
-        DatasetLoader.load(self)
+    def filter_by_animals(self, animal_ids: list[int]) -> pd.DataFrame:
+        df = self.original_df[self.original_df['Animal'].isin(animal_ids)]
+        return df
 
-        if self.meta is not None:
-            items = self.meta.get("Boxes")
-            if items is not None:
-                self.animals.clear()
-                self.boxes.clear()
-                for item in items:
-                    animal = Animal(
-                        item.get("AnimalNo"),
-                        item.get("BoxNo"),
-                        item.get("Weight"),
-                        item.get("Text1"),
-                        item.get("Text2"),
-                        item.get("Text3")
-                    )
-                    self.animals[animal.id] = animal
+    def filter_by_boxes(self, box_ids: list[int]) -> pd.DataFrame:
+        df = self.original_df[self.original_df['Box'].isin(box_ids)]
+        return df
 
-                    box = Box(animal.box_id, animal.id)
-                    self.boxes[box.id] = box
+    def filter_by_groups(self, groups: list[Group]) -> pd.DataFrame:
+        group_ids = [group.name for group in groups]
+        df = self.original_df[self.original_df['Group'].isin(group_ids)]
+        df = df.dropna()
+        return df
 
-        if extract_groups:
-            self.groups = self.extract_groups_from_field()
+    def adjust_time(self, delta: str) -> pd.DataFrame:
+        self.original_df['DateTime'] = self.original_df['DateTime'] + pd.Timedelta(delta)
+        return self.original_df
 
-    def unload(self):
-        """Dispose raw data in order to free memory."""
-        self.meta = None
+    def set_groups(self, groups: dict[str, Group]):
+        self.groups = groups
 
-        self.boxes = []
-        self.animals = []
-        self.groups = []
+        # TODO: should be copy?
+        df = self.original_df
 
-        self.calorimetry = None
-        self.actimot = None
-        self.drinkfeed = None
+        animal_group_map = {}
+        animal_ids = df["Animal"].unique()
+        for animal_id in animal_ids:
+            animal_group_map[animal_id] = np.NaN
 
-        self.loaded = False
+        for group in groups.values():
+            for animal_id in group.animal_ids:
+                animal_group_map[animal_id] = group.name
+
+        df["Group"] = df["Animal"]
+        df["Group"].replace(animal_group_map, inplace=True)
+        df["Group"] = df["Group"].astype('category')
+
+        self.original_df = df
+
+    def export_to_excel(self, path: str):
+        with pd.ExcelWriter(path) as writer:
+            self.original_df.to_excel(writer, sheet_name='Data')
 
     def __getstate__(self):
         state = self.__dict__.copy()
-        state['loaded'] = False
-        state['meta'] = None
-        state['calorimetry'] = None
-        state['actimot'] = None
-        state['drinkfeed'] = None
         return state
-
-
-if __name__ == "__main__":
-    import timeit
-    from tse_datatools.analysis.processor import apply_time_binning
-
-    tic = timeit.default_timer()
-    # dataset = Dataset("Test Dataset", "C:\\Users\\anton\\Downloads\\20220404.22001.Ferran")
-    # dataset = Dataset("Test Dataset", "C:\\Users\\anton\\Downloads\\Diagnostic-run20220519")
-    dataset = Dataset("Test Dataset", "C:\\Users\\anton\\Downloads\\Diagnostic-run20220519.Zip")
-    dataset.load(extract_groups=True)
-    df_by_groups = dataset.drinkfeed.filter_by_groups([dataset.groups["EcN-Con+CD"]])
-    df_by_animals = dataset.drinkfeed.filter_by_animals([37, 48])
-
-    result = apply_time_binning(dataset.drinkfeed.df, 1, "hour", "sum")
-    print(timeit.default_timer() - tic)

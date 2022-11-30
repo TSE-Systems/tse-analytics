@@ -1,7 +1,6 @@
 import pickle
 
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt, Signal
-import pandas as pd
 from tse_datatools.data.dataset import Dataset
 from tse_datatools.data.workspace import Workspace
 
@@ -129,44 +128,19 @@ class WorkspaceModel(QAbstractItemModel):
             self.workspace = pickle.load(file)
             self.workspace_tree_item = WorkspaceTreeItem(self.workspace)
             for dataset in self.workspace.datasets:
-                dataset.loaded = False
                 dataset_tree_item = DatasetTreeItem(dataset)
                 self.workspace_tree_item.add_child(dataset_tree_item)
-        self.workspace.path = path
         self.endResetModel()
 
     def save_workspace(self, path: str):
-        self.workspace.path = path
         with open(path, 'wb') as file:
             pickle.dump(self.workspace, file)
-
-    def export_to_excel(self, path: str):
-        with pd.ExcelWriter(path) as writer:
-            self.workspace.datasets[0].calorimetry.df.to_excel(writer, sheet_name='Calorimetry')
-            self.workspace.datasets[0].actimot.df.to_excel(writer, sheet_name='Actimot')
-            self.workspace.datasets[0].drinkfeed.df.to_excel(writer, sheet_name='DrinkFeed')
 
     def add_dataset(self, dataset: Dataset):
         self.workspace.datasets.append(dataset)
         dataset_tree_item = DatasetTreeItem(dataset)
         self.beginResetModel()
         self.workspace_tree_item.add_child(dataset_tree_item)
-        self.endResetModel()
-
-    def load_dataset(self, indexes: [QModelIndex]):
-        self.beginResetModel()
-        for index in indexes:
-            if index.isValid():
-                dataset_tree_item = index.model().getItem(index)
-                dataset_tree_item.load()
-        self.endResetModel()
-
-    def close_dataset(self, indexes: [QModelIndex]):
-        self.beginResetModel()
-        for index in indexes:
-            if index.isValid():
-                item = index.model().getItem(index)
-                item.close()
         self.endResetModel()
 
     def remove_dataset(self, indexes: [QModelIndex]):

@@ -1,90 +1,156 @@
-import os
-import glob
-import json
+from io import StringIO
 from pathlib import Path
-from tempfile import TemporaryDirectory
-from zipfile import ZipFile
+from typing import Optional
 
-from tse_datatools.data.actimot_data import ActimotData
-from tse_datatools.data.calorimetry_data import CalorimetryData
+import numpy as np
+import pandas as pd
+
+from tse_datatools.data.animal import Animal
+from tse_datatools.data.box import Box
 from tse_datatools.data.dataset import Dataset
-from tse_datatools.data.drinkfeed_data import DrinkFeedData
 from tse_datatools.data.variable import Variable
-from tse_datatools.loaders.actimot_data_loader import ActimotDataLoader
-from tse_datatools.loaders.calorimetry_data_loader import CalorimetryDataLoader
-from tse_datatools.loaders.drinkfeed_data_loader import DrinkFeedDataLoader
+
+
+DELIMITER = ';'
+DECIMAL = '.'
 
 
 class DatasetLoader:
 
     @staticmethod
-    def load(dataset: Dataset):
-
-        path = Path(dataset.path)
-        if path.is_file() and path.suffix.lower() == ".zip":
-            with TemporaryDirectory() as tmp_folder:
-                with ZipFile(path, "r") as zip:
-                    zip.extractall(tmp_folder)
-                DatasetLoader.__load_from_folder(tmp_folder, dataset)
-        else:
-            DatasetLoader.__load_from_folder(dataset.path, dataset)
+    def load(filename: str) -> Optional[Dataset]:
+        path = Path(filename)
+        if path.is_file() and path.suffix.lower() == ".csv":
+            return DatasetLoader.__load_from_csv(path)
+        return None
 
     @staticmethod
-    def __load_from_folder(folder_path: str, dataset: Dataset):
-        DatasetLoader.__load_metadata(folder_path, dataset)
-        DatasetLoader.__load_calorimetry_data(folder_path, dataset)
-        DatasetLoader.__load_actimot_data(folder_path, dataset)
-        DatasetLoader.__load_drinkfeed_data(folder_path, dataset)
+    def __load_from_csv(path: Path):
+        with open(path, "r") as f:
+            lines = f.readlines()
 
-        dataset.loaded = True
+        lines = [line.strip().rstrip(DELIMITER) for line in lines]
 
-    @staticmethod
-    def __load_metadata(folder_path: str, dataset: Dataset):
-        files = glob.glob(os.path.join(folder_path, "Content.json"), recursive=False)
-        if len(files) > 0:
-            with open(files[0], "rt") as f:
-                meta = json.load(f)
-                dataset.meta = meta
+        header = [lines[0], lines[1]]
 
-    @staticmethod
-    def __load_calorimetry_data(folder_path: str, dataset: Dataset):
-        files = glob.glob(os.path.join(folder_path, "Calorimetry.csv"), recursive=False)
-        if len(files) > 0:
-            path = files[0]
-            df = CalorimetryDataLoader.load(path)
-            meta = next((table for table in dataset.meta.get("Tables") if table.get("TableName") == "Calorimetry"),
-                        None)
-            variables = DatasetLoader.__get_variables(meta)
-            dataset.calorimetry = CalorimetryData("Calorimetry", path=path, meta=meta, df=df, variables=variables)
+        data_section_start = None
+        for num, line in enumerate(lines, 2):
+            if line == "":
+                data_section_start = num - 1
+                break
 
-    @staticmethod
-    def __load_actimot_data(folder_path: str, dataset: Dataset):
-        files = glob.glob(os.path.join(folder_path, "ActiMot.csv"), recursive=False)
-        if len(files) > 0:
-            path = files[0]
-            df = ActimotDataLoader.load(path)
-            meta = next((table for table in dataset.meta.get("Tables") if table.get("TableName") == "ActiMot"),
-                        None)
-            variables = DatasetLoader.__get_variables(meta)
-            dataset.actimot = ActimotData("ActiMot", path=path, meta=meta, df=df, variables=variables)
+        animal_section = lines[3:data_section_start - 1]
 
-    @staticmethod
-    def __load_drinkfeed_data(folder_path: str, dataset: Dataset):
-        files = glob.glob(os.path.join(folder_path, "DrinkFeed.csv"), recursive=False)
-        if len(files) > 0:
-            path = files[0]
-            df = DrinkFeedDataLoader.load(path)
-            meta = next((table for table in dataset.meta.get("Tables") if table.get("TableName") == "DrinkFeed"),
-                        None)
-            variables = DatasetLoader.__get_variables(meta)
-            dataset.drinkfeed = DrinkFeedData("DrinkFeed", path=path, meta=meta, df=df, variables=variables)
-
-    @staticmethod
-    def __get_variables(meta: dict) -> dict[str, Variable]:
+        boxes: dict[int, Box] = {}
+        animals: dict[int, Animal] = {}
         variables: dict[str, Variable] = {}
-        parameters = meta.get("Parameters")
-        if parameters is not None:
-            for parameter in parameters:
-                variable = Variable(parameter.get("Name"), parameter.get("OriginalName"), parameter.get("Unit"), parameter.get("OriginalUnit"))
-                variables[variable.name] = variable
-        return variables
+
+        for line in animal_section:
+            elements = line.split(DELIMITER)
+            animal = Animal(
+                id=int(elements[1]),
+                box_id=int(elements[0]),
+                weight=float(elements[2]),
+                text1=elements[3],
+                text2=elements[4],
+                text3=elements[5]
+            )
+            animals[animal.id] = animal
+
+            box = Box(animal.box_id, animal.id)
+            boxes[box.id] = box
+
+        data_header = lines[data_section_start]
+        columns = data_header.split(DELIMITER)
+        data_unit_header = lines[data_section_start + 1]
+        data_section = lines[data_section_start + 2:len(lines)]
+        columns_unit = data_unit_header.split(DELIMITER)
+
+        for i, item in enumerate(columns):
+            # Skip first 'Date', 'Time', 'Animal No.' and 'Box' columns
+            if i < 4:
+                continue
+            variable = Variable(name=item, unit=columns_unit[i], description='')
+            variables[variable.name] = variable
+
+        csv = '\n'.join(data_section)
+
+        # noinspection PyTypeChecker
+        df = pd.read_csv(
+            StringIO(csv),
+            delimiter=DELIMITER,
+            decimal=DECIMAL,
+            na_values=['-'],
+            names=columns,
+            parse_dates=[['Date', 'Time']],
+            infer_datetime_format=True
+        )
+
+        # Rename table columns
+        df.rename(columns={
+            "Date_Time": "DateTime",
+            "Animal No.": "Animal"
+        }, inplace=True)
+
+        # Apply categorical types
+        df['Animal'] = df['Animal'].astype('category')
+        df['Box'] = df['Box'].astype('category')
+
+        timedelta = df['DateTime'][1] - df['DateTime'][0]
+
+        # Sort dataframe
+        df.sort_values(by=['DateTime', 'Box'], inplace=True)
+        df.reset_index(drop=True, inplace=True)
+
+        # Calculate cumulative values
+        if 'Drink' in df.columns:
+            df['DrinkK'] = df.groupby('Box')['Drink'].transform(pd.Series.cumsum)
+            var = Variable(name='DrinkK', unit=variables['Drink'].unit, description='')
+            variables[var.name] = var
+
+        if 'Feed' in df.columns:
+            df['FeedK'] = df.groupby('Box')['Feed'].transform(pd.Series.cumsum)
+            var = Variable(name='FeedK', unit=variables['Feed'].unit, description='')
+            variables[var.name] = var
+
+        start_date_time = df['DateTime'][0]
+        df.insert(loc=1, column='Timedelta', value=df['DateTime'] - start_date_time)
+        df.insert(loc=2, column='Bin', value=(df["Timedelta"] / timedelta).round().astype(int))
+        df['Bin'] = df['Bin'].astype('category')
+
+        df.insert(loc=5, column='Group', value=np.NaN)
+        df["Group"] = df["Group"].astype('category')
+
+        # Add Run column
+        df.insert(loc=6, column='Run', value=1)
+        df['Run'] = df['Run'].astype('category')
+
+        # Sort variables by name
+        variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))
+
+        name = header[0].split(DELIMITER)[0]
+        description = header[0].split(DELIMITER)[1]
+        version = header[1].split(DELIMITER)[1]
+
+        meta = {
+            "Name": name,
+            "Description": description,
+            "Version": version,
+            "Path": str(path),
+            "Boxes": [v.get_dict() for i, (k, v) in enumerate(boxes.items())],
+            "Animals": [v.get_dict() for i, (k, v) in enumerate(animals.items())],
+            "Variables": [v.get_dict() for i, (k, v) in enumerate(variables.items())],
+            "Sampling Interval": str(timedelta)
+        }
+
+        dataset = Dataset(name, str(path), meta, boxes, animals, variables, df, timedelta)
+        return dataset
+
+
+if __name__ == "__main__":
+    import timeit
+
+    tic = timeit.default_timer()
+    # dataset = DatasetLoader.load("C:\\Data\\tse-analytics\\20221018_ANIPHY test new logiciel PM_CalR.csv")
+    dataset = DatasetLoader.load("C:\\Users\\anton\\OneDrive\\Desktop\\20221018_ANIPHY test new logiciel PM.csv")
+    print(timeit.default_timer() - tic)

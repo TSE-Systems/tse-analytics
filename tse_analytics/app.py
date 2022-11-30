@@ -5,8 +5,14 @@ from PySide6.QtGui import QIcon, QPixmapCache
 from PySide6.QtWidgets import QApplication
 from pyqtgraph import setConfigOptions
 
+# import PySide6 before matplotlib
+import matplotlib
+
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.main_window import MainWindow
+
+
+matplotlib.use("QtAgg")
 
 # Global PyQtGraph settings
 setConfigOptions(

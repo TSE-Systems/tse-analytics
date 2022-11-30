@@ -7,7 +7,6 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import AnimalDataChangedMessage, DatasetRemovedMessage, DatasetUnloadedMessage
 from tse_analytics.views.tiles.tiles_view import TilesView
 
 
@@ -27,21 +26,10 @@ class TilesViewWidget(QWidget, MessengerListener):
         self.verticalLayout.addWidget(self.tiles_view)
 
     def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, AnimalDataChangedMessage, self._on_channel_images_changed)
-        messenger.subscribe(self, DatasetRemovedMessage, self._on_slide_removed)
-        messenger.subscribe(self, DatasetUnloadedMessage, self._on_slide_unloaded)
+        pass
 
     def clear(self):
         self.tiles_view.clear()
-
-    def _on_slide_removed(self, message: DatasetRemovedMessage):
-        self.clear()
-
-    def _on_slide_unloaded(self, message: DatasetUnloadedMessage):
-        self.clear()
-
-    def _on_channel_images_changed(self, message: AnimalDataChangedMessage):
-        self.tiles_view.set_data(message.animals)
 
     def fit_all_tiles(self):
         self.tiles_view.fit_all_tiles()

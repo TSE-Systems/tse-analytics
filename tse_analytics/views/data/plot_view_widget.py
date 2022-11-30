@@ -1,22 +1,18 @@
 from typing import Optional
 
+import pandas as pd
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QComboBox
 
-from tse_analytics.messaging.messenger import Messenger
-from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import DatasetRemovedMessage, DatasetUnloadedMessage, AnimalDataChangedMessage, \
-    DatasetComponentChangedMessage
-from tse_analytics.views.charts.plot_view import PlotView
+from tse_analytics.views.data.plot_view import PlotView
+from tse_datatools.data.variable import Variable
 
 
-class PlotViewWidget(QWidget, MessengerListener):
+class PlotViewWidget(QWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
-        MessengerListener.__init__(self)
-
-        self.register_to_messenger(Manager.messenger)
 
         self.plot_view = PlotView(self)
         self.variable_combo_box = QComboBox(self)
@@ -28,37 +24,32 @@ class PlotViewWidget(QWidget, MessengerListener):
         self.verticalLayout.addWidget(self.toolbar)
         self.verticalLayout.addWidget(self.plot_view)
 
-    def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetComponentChangedMessage, self._on_dataset_component_changed)
-        messenger.subscribe(self, AnimalDataChangedMessage, self._on_animal_data_changed)
-        messenger.subscribe(self, DatasetRemovedMessage, self._on_dataset_removed)
-        messenger.subscribe(self, DatasetUnloadedMessage, self._on_dataset_unloaded)
-
     def clear(self):
-        self.plot_view.clear()
+        self.plot_view.clear_plot()
         self.variables.clear()
         self.variable_combo_box.clear()
 
-    def _on_dataset_component_changed(self, message: DatasetComponentChangedMessage):
+    def set_data(self, df: pd.DataFrame):
+        self.plot_view.set_data(df)
+
+    def set_variables(self, variables: dict[str, Variable]):
         self.variables.clear()
-        for param in message.data.meta.get("Parameters"):
-            self.variables.append(param.get("Name"))
+        for var in variables:
+            self.variables.append(var)
         self.variable_combo_box.clear()
         self.variable_combo_box.addItems(self.variables)
         self.variable_combo_box.setCurrentText('')
-        self.plot_view.set_data(message.data)
 
-    def _on_animal_data_changed(self, message: AnimalDataChangedMessage):
-        self.plot_view.set_animal_data(message.animals)
-
-    def _on_dataset_removed(self, message: DatasetRemovedMessage):
-        self.clear()
-
-    def _on_dataset_unloaded(self, message: DatasetUnloadedMessage):
-        self.clear()
+    def clear_selection(self):
+        # self.plot_view.clear()
+        self.plot_view.set_data(Manager.data.selected_dataset.original_df)
 
     def _variable_current_text_changed(self, variable: str):
+        Manager.data.selected_variable = variable
         self.plot_view.set_variable(variable)
+
+    def _display_errors(self, state: bool):
+        self.plot_view.set_display_errors(state)
 
     @property
     def toolbar(self) -> QToolBar:
@@ -72,5 +63,10 @@ class PlotViewWidget(QWidget, MessengerListener):
         self.variable_combo_box.setCurrentText('')
         self.variable_combo_box.currentTextChanged.connect(self._variable_current_text_changed)
         toolbar.addWidget(self.variable_combo_box)
+
+        display_errors_action = QAction(QIcon(":/icons/icons8-sorting-16.png"), "Display Errors", self)
+        display_errors_action.triggered.connect(self._display_errors)
+        display_errors_action.setCheckable(True)
+        toolbar.addAction(display_errors_action)
 
         return toolbar

@@ -1,13 +1,12 @@
 from PySide6.QtCore import QSortFilterProxyModel, QItemSelection, Qt
 from PySide6.QtWidgets import QTableView, QHeaderView
-from tse_datatools.data.group import Group
+from tse_datatools.data.animal import Animal
 
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import SelectedGroupsChangedMessage
-from tse_analytics.models.groups_model import GroupsModel
+from tse_analytics.models.animals_model import AnimalsModel
 
 
-class GroupsTableView(QTableView):
+class AnimalsTableView(QTableView):
     def __init__(self, parent):
         super().__init__(parent)
 
@@ -25,20 +24,20 @@ class GroupsTableView(QTableView):
     def clear(self):
         self.model().setSourceModel(None)
 
-    def set_data(self, groups: dict[str, Group]):
-        model = GroupsModel(list(groups.values()))
+    def set_data(self, animals: dict[int, Animal]):
+        model = AnimalsModel(list(animals.values()))
         self.model().setSourceModel(model)
 
     def _on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
         proxy_model: QSortFilterProxyModel = self.model()
         model = proxy_model.sourceModel()
-        selected_groups: list[Group] = []
+        selected_animals: list[Animal] = []
         for index in self.selectedIndexes():
             if index.column() != 0:
                 continue
             if index.isValid():
                 source_index = proxy_model.mapToSource(index)
                 row = source_index.row()
-                group = model.items[row]
-                selected_groups.append(group)
-        Manager.messenger.broadcast(SelectedGroupsChangedMessage(self, selected_groups))
+                animal = model.items[row]
+                selected_animals.append(animal)
+        Manager.data.set_selected_animals(selected_animals)
