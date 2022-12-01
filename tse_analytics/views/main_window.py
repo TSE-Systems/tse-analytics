@@ -21,7 +21,11 @@ from tse_analytics.views.analysis.distribution_widget import DistributionWidget
 from tse_analytics.views.analysis.glm_widget import GlmWidget
 from tse_analytics.views.analysis.histogram_widget import HistogramWidget
 from tse_analytics.views.analysis.normality_widget import NormalityWidget
-from tse_analytics.views.data.data_widget import DataWidget
+from tse_analytics.views.analysis.pca_widget import PcaWidget
+
+from tse_analytics.views.analysis.scatter_matrix_widget import ScatterMatrixWidget
+from tse_analytics.views.data.plot_view_widget import PlotViewWidget
+from tse_analytics.views.data.table_view_widget import TableViewWidget
 from tse_analytics.views.selection.groups.groups_view_widget import GroupsViewWidget
 from tse_analytics.views.selection.animals.animals_view_widget import AnimalsViewWidget
 from tse_analytics.views.info.info_widget import InfoWidget
@@ -29,7 +33,7 @@ from tse_analytics.views.main_window_ui import Ui_MainWindow
 from tse_analytics.views.selection.variables.variables_view_widget import VariablesViewWidget
 from tse_analytics.views.settings.binning_widget import BinningWidget
 from tse_analytics.views.datasets.datasets_tree_view import DatasetsTreeView
-
+from tse_analytics.workspace.layout import LAYOUT_VERSION
 
 PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.ActiveTabHasCloseButton, False)
 PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.DockAreaHasCloseButton, False)
@@ -58,10 +62,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # the dock manager registers itself as the central widget.
         self.dock_manager = PySide6QtAds.CDockManager(self)
 
-        data_dock_widget = PySide6QtAds.CDockWidget('Data')
-        data_dock_widget.setWidget(DataWidget())
-        data_dock_widget.setIcon(QIcon(":/icons/icons8-data-sheet-16.png"))
-        self.dock_manager.addDockWidgetTab(PySide6QtAds.AllDockAreas, data_dock_widget)
+        data_table_dock_widget = PySide6QtAds.CDockWidget('Data')
+        data_table_dock_widget.setWidget(TableViewWidget())
+        data_table_dock_widget.setIcon(QIcon(":/icons/icons8-data-sheet-16.png"))
+        self.dock_manager.addDockWidgetTab(PySide6QtAds.AllDockAreas, data_table_dock_widget)
+
+        plot_table_dock_widget = PySide6QtAds.CDockWidget('Plot')
+        plot_table_dock_widget.setWidget(PlotViewWidget())
+        plot_table_dock_widget.setIcon(QIcon(":/icons/icons8-line-chart-16.png"))
+        self.dock_manager.addDockWidgetTab(PySide6QtAds.AllDockAreas, plot_table_dock_widget)
 
         histogram_dock_widget = PySide6QtAds.CDockWidget('Histogram')
         histogram_dock_widget.setIcon(QIcon(":/icons/icons8-scales-16.png"))
@@ -97,6 +106,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         glm_dock_widget.setIcon(QIcon(":/icons/icons8-scales-16.png"))
         glm_dock_widget.setWidget(GlmWidget())
         self.dock_manager.addDockWidgetTab(PySide6QtAds.AllDockAreas, glm_dock_widget)
+
+        matrix_dock_widget = PySide6QtAds.CDockWidget('Matrix')
+        matrix_dock_widget.setIcon(QIcon(":/icons/icons8-scales-16.png"))
+        matrix_dock_widget.setWidget(ScatterMatrixWidget())
+        self.dock_manager.addDockWidgetTab(PySide6QtAds.AllDockAreas, matrix_dock_widget)
+
+        pca_dock_widget = PySide6QtAds.CDockWidget('PCA')
+        pca_dock_widget.setIcon(QIcon(":/icons/icons8-scales-16.png"))
+        pca_dock_widget.setWidget(PcaWidget())
+        self.dock_manager.addDockWidgetTab(PySide6QtAds.AllDockAreas, pca_dock_widget)
 
         datasets_dock_widget = PySide6QtAds.CDockWidget('Datasets')
         datasets_dock_widget.setWidget(DatasetsTreeView())
@@ -141,15 +160,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.restoreGeometry(settings.value("MainWindow/Geometry"))
         self.restoreState(settings.value("MainWindow/State"))
 
-        # state = settings.value("MainWindow/DockingState")
-        # if state is not None:
-        #     self.dock_manager.restoreState(state)
+        state = settings.value("MainWindow/DockingState")
+        if state is not None:
+            self.dock_manager.restoreState(state, LAYOUT_VERSION)
 
     def save_settings(self):
         settings = QSettings()
         settings.setValue("MainWindow/Geometry", self.saveGeometry())
         settings.setValue("MainWindow/State", self.saveState())
-        settings.setValue("MainWindow/DockingState", self.dock_manager.saveState())
+        settings.setValue("MainWindow/DockingState", self.dock_manager.saveState(LAYOUT_VERSION))
 
     def load_workspace_dialog(self):
         options = QFileDialog.Options()

@@ -1,0 +1,50 @@
+from typing import Optional
+
+import plotly.express as px
+from PySide6.QtCore import Qt
+from PySide6.QtWebEngineWidgets import QWebEngineView
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QPushButton
+
+from tse_analytics.core.manager import Manager
+from tse_analytics.views.analysis.analysis_widget import AnalysisWidget
+
+
+class ScatterMatrixWidget(AnalysisWidget):
+    def __init__(self, parent: Optional[QWidget] = None):
+        super().__init__(parent)
+        self.layout = QVBoxLayout(self)
+
+        self.layout.addWidget(self._get_toolbar())
+
+        self.webView = QWebEngineView(self)
+        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
+        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, False)
+        self.webView.setHtml('')
+        self.layout.addWidget(self.webView)
+
+    def _analyze(self):
+        df = Manager.data.selected_dataset.original_df
+        selected_variables = Manager.data.selected_variables
+        features = [item.name for item in selected_variables]
+
+        fig = px.scatter_matrix(
+            df,
+            dimensions=features,
+            color="Group"
+        )
+        fig.update_traces(diagonal_visible=False)
+
+        self.webView.setHtml(fig.to_html(include_plotlyjs='cdn'))
+
+    def clear(self):
+        self.webView.setHtml('')
+
+    def _get_toolbar(self) -> QToolBar:
+        toolbar = QToolBar()
+        toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+
+        pushButtonAnalyze = QPushButton("Analyze")
+        pushButtonAnalyze.clicked.connect(self._analyze)
+        toolbar.addWidget(pushButtonAnalyze)
+
+        return toolbar

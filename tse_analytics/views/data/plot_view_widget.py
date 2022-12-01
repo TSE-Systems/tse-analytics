@@ -1,16 +1,16 @@
 from typing import Optional
 
-import pandas as pd
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QComboBox
 
 from tse_analytics.core.manager import Manager
+from tse_analytics.views.data.data_widget import DataWidget
 from tse_analytics.views.data.plot_view import PlotView
 from tse_datatools.data.variable import Variable
 
 
-class PlotViewWidget(QWidget):
+class PlotViewWidget(DataWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
@@ -29,7 +29,8 @@ class PlotViewWidget(QWidget):
         self.variables.clear()
         self.variable_combo_box.clear()
 
-    def set_data(self, df: pd.DataFrame):
+    def assign_data(self):
+        df = Manager.data.get_current_df()
         self.plot_view.set_data(df)
 
     def set_variables(self, variables: dict[str, Variable]):

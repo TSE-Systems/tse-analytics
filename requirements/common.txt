@@ -2,6 +2,7 @@
 
 openpyxl
 pingouin
+plotly
 psutil
 pyqtgraph
 PySide6
