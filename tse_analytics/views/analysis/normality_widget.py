@@ -1,11 +1,10 @@
+import os.path
 from typing import Optional
 
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QPushButton, QComboBox
+from PySide6.QtWidgets import QWidget, QToolBar, QLabel, QPushButton, QComboBox
 import pingouin as pg
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
 from matplotlib.figure import Figure
-import scipy.stats as stats
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.analysis.analysis_widget import AnalysisWidget
@@ -19,7 +18,6 @@ class NormalityWidget(AnalysisWidget):
         self.variable_combo_box = QComboBox(self)
         self.variable = ''
 
-        self.layout = QVBoxLayout(self)
         self.layout.addWidget(self._get_toolbar())
 
         figure = Figure(figsize=(5.0, 4.0), dpi=100)
@@ -62,9 +60,15 @@ class NormalityWidget(AnalysisWidget):
         self.canvas.figure.tight_layout()
         self.canvas.draw()
 
+    @property
+    def help_content(self) -> Optional[str]:
+        path = 'docs/normality.md'
+        if os.path.exists(path):
+            with open(path, 'r') as file:
+                return file.read().rstrip()
+
     def _get_toolbar(self) -> QToolBar:
-        toolbar = QToolBar()
-        toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        toolbar = super()._get_toolbar()
 
         label = QLabel("Variable: ")
         toolbar.addWidget(label)

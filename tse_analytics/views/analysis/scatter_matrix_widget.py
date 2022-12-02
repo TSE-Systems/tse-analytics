@@ -1,9 +1,9 @@
+import os.path
 from typing import Optional
 
 import plotly.express as px
-from PySide6.QtCore import Qt
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QPushButton
+from PySide6.QtWidgets import QWidget, QToolBar, QPushButton
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.analysis.analysis_widget import AnalysisWidget
@@ -12,7 +12,6 @@ from tse_analytics.views.analysis.analysis_widget import AnalysisWidget
 class ScatterMatrixWidget(AnalysisWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
-        self.layout = QVBoxLayout(self)
 
         self.layout.addWidget(self._get_toolbar())
 
@@ -39,9 +38,15 @@ class ScatterMatrixWidget(AnalysisWidget):
     def clear(self):
         self.webView.setHtml('')
 
+    @property
+    def help_content(self) -> Optional[str]:
+        path = 'docs/scatter-matrix.md'
+        if os.path.exists(path):
+            with open(path, 'r') as file:
+                return file.read().rstrip()
+
     def _get_toolbar(self) -> QToolBar:
-        toolbar = QToolBar()
-        toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        toolbar = super()._get_toolbar()
 
         pushButtonAnalyze = QPushButton("Analyze")
         pushButtonAnalyze.clicked.connect(self._analyze)

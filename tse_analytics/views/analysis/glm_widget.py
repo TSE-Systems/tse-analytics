@@ -1,11 +1,11 @@
 from typing import Optional
+import os.path
 
 import pingouin as pg
 import seaborn as sns
-from PySide6.QtCore import Qt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QPushButton, QToolBar, QLabel, QComboBox
+from PySide6.QtWidgets import QWidget, QPushButton, QToolBar, QLabel, QComboBox
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.css import style
@@ -23,14 +23,7 @@ class GlmWidget(AnalysisWidget):
         self.response_combo_box = QComboBox(self)
         self.response = ''
 
-        self.layout = QVBoxLayout(self)
         self.layout.addWidget(self._get_toolbar())
-
-        description_widget = QTextEdit(
-            "The output of the Tukey test shows the average difference, a confidence interval as well as whether you should reject the null hypothesis for each pair of groups at the given significance level. In this case, the test suggests we reject the null hypothesis for 3 pairs, with each pair including the ""white"" category. This suggests the white group is likely different from the others. The 95% confidence interval plot reinforces the results visually: only 1 other group's confidence interval overlaps the white group's confidence interval.")
-        description_widget.setFixedHeight(100)
-        description_widget.setReadOnly(True)
-        self.layout.addWidget(description_widget)
 
         self.webView = QWebEngineView(self)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
@@ -61,7 +54,7 @@ class GlmWidget(AnalysisWidget):
     def _response_changed(self, response: str):
         self.response = response
 
-    def _analyze(self):
+    def __analyze(self):
         df = Manager.data.selected_dataset.original_df.copy()
         # cols = df.columns
         df = df.groupby(by=['Animal'], as_index=False).agg({self.response: 'mean', 'Group': 'first'})
@@ -102,9 +95,15 @@ class GlmWidget(AnalysisWidget):
         )
         self.webView.setHtml(html)
 
+    @property
+    def help_content(self) -> Optional[str]:
+        path = 'docs/glm.md'
+        if os.path.exists(path):
+            with open(path, 'r') as file:
+                return file.read().rstrip()
+
     def _get_toolbar(self) -> QToolBar:
-        toolbar = QToolBar()
-        toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        toolbar = super()._get_toolbar()
 
         toolbar.addWidget(QLabel("Covariate: "))
         self.covariate_combo_box.currentTextChanged.connect(self._covariate_changed)
@@ -115,7 +114,7 @@ class GlmWidget(AnalysisWidget):
         toolbar.addWidget(self.response_combo_box)
 
         pushButtonAnalyze = QPushButton("Analyze")
-        pushButtonAnalyze.clicked.connect(self._analyze)
+        pushButtonAnalyze.clicked.connect(self.__analyze)
         toolbar.addWidget(pushButtonAnalyze)
 
         return toolbar

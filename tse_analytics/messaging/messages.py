@@ -87,3 +87,10 @@ class GroupingModeChangedMessage(Message):
     def __init__(self, sender, mode: GroupingMode, tag=None):
         super().__init__(sender, tag=tag)
         self.mode = mode
+
+
+class ShowHelpMessage(Message):
+    """ Request to display help content """
+    def __init__(self, sender, content: str, tag=None):
+        super().__init__(sender, tag=tag)
+        self.content = content

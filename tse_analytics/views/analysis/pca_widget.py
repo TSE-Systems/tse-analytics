@@ -1,9 +1,9 @@
+import os.path
 from typing import Optional
 
 import plotly.express as px
-from PySide6.QtCore import Qt
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QPushButton, QLabel, QComboBox
+from PySide6.QtWidgets import QWidget, QToolBar, QPushButton, QLabel, QComboBox
 from sklearn.decomposition import PCA
 
 from tse_analytics.core.manager import Manager
@@ -18,7 +18,6 @@ class PcaWidget(AnalysisWidget):
         self.components_combo_box.addItems(['2D', '3D'])
         self.components_combo_box.setCurrentText('2D')
 
-        self.layout = QVBoxLayout(self)
         self.layout.addWidget(self._get_toolbar())
 
         self.webView = QWebEngineView(self)
@@ -63,9 +62,15 @@ class PcaWidget(AnalysisWidget):
     def clear(self):
         self.webView.setHtml('')
 
+    @property
+    def help_content(self) -> Optional[str]:
+        path = 'docs/pca.md'
+        if os.path.exists(path):
+            with open(path, 'r') as file:
+                return file.read().rstrip()
+
     def _get_toolbar(self) -> QToolBar:
-        toolbar = QToolBar()
-        toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        toolbar = super()._get_toolbar()
 
         label = QLabel("Dimensions: ")
         toolbar.addWidget(label)

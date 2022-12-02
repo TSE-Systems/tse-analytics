@@ -1,11 +1,11 @@
+import os.path
 from typing import Optional
 
 import pingouin as pg
-from PySide6.QtCore import Qt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QPushButton, QToolBar, QLabel, QComboBox
+from PySide6.QtWidgets import QWidget, QPushButton, QToolBar, QLabel, QComboBox
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 from tse_analytics.core.manager import Manager
@@ -21,14 +21,7 @@ class AnovaWidget(AnalysisWidget):
         self.variable_combo_box = QComboBox(self)
         self.variable = ''
 
-        self.layout = QVBoxLayout(self)
         self.layout.addWidget(self._get_toolbar())
-
-        description_widget = QTextEdit(
-            "The output of the Tukey test shows the average difference, a confidence interval as well as whether you should reject the null hypothesis for each pair of groups at the given significance level. In this case, the test suggests we reject the null hypothesis for 3 pairs, with each pair including the ""white"" category. This suggests the white group is likely different from the others. The 95% confidence interval plot reinforces the results visually: only 1 other group's confidence interval overlaps the white group's confidence interval.")
-        description_widget.setFixedHeight(100)
-        description_widget.setReadOnly(True)
-        self.layout.addWidget(description_widget)
 
         self.webView = QWebEngineView(self)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
@@ -54,7 +47,7 @@ class AnovaWidget(AnalysisWidget):
     def _variable_changed(self, variable: str):
         self.variable = variable
 
-    def _analyze(self):
+    def __analyze(self):
         if Manager.data.selected_dataset is None:
             return
 
@@ -109,11 +102,15 @@ class AnovaWidget(AnalysisWidget):
         self.canvas.figure.tight_layout()
         self.canvas.draw()
 
-
+    @property
+    def help_content(self) -> Optional[str]:
+        path = 'docs/anova.md'
+        if os.path.exists(path):
+            with open(path, 'r') as file:
+                return file.read().rstrip()
 
     def _get_toolbar(self) -> QToolBar:
-        toolbar = QToolBar()
-        toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        toolbar = super()._get_toolbar()
 
         label = QLabel("Variable: ")
         toolbar.addWidget(label)
@@ -122,7 +119,7 @@ class AnovaWidget(AnalysisWidget):
         toolbar.addWidget(self.variable_combo_box)
 
         pushButtonAnalyze = QPushButton("Analyze")
-        pushButtonAnalyze.clicked.connect(self._analyze)
+        pushButtonAnalyze.clicked.connect(self.__analyze)
         toolbar.addWidget(pushButtonAnalyze)
 
         return toolbar
