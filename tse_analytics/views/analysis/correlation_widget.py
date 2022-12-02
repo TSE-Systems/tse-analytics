@@ -1,25 +1,25 @@
+import os.path
 from typing import Optional
 
 import pandas as pd
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 import pingouin as pg
 import seaborn as sns
-from PySide6.QtCore import Qt
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QComboBox, QToolBar, QLabel, QPushButton
+from PySide6.QtWidgets import QWidget, QComboBox, QToolBar, QLabel, QPushButton
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.css import style
+from tse_analytics.views.analysis.analysis_widget import AnalysisWidget
 from tse_datatools.data.variable import Variable
 
 pd.set_option('colheader_justify', 'center')  # FOR TABLE <th>
 sns.set_theme(style="whitegrid")
 
 
-class CorrelationWidget(QWidget):
+class CorrelationWidget(AnalysisWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
-        self.layout = QVBoxLayout(self)
 
         self.x_combo_box = QComboBox(self)
         self.x = ""
@@ -27,14 +27,7 @@ class CorrelationWidget(QWidget):
         self.y_combo_box = QComboBox(self)
         self.y = ""
 
-        self.layout.addWidget(self.toolbar)
-
-        description_widget = QTextEdit(
-            "hz: The Henze-Zirkler test statistic <br/>pval: P-value <br/>normal: True if input comes from a multivariate normal distribution"
-        )
-        description_widget.setFixedHeight(100)
-        description_widget.setReadOnly(True)
-        self.layout.addWidget(description_widget)
+        self.layout.addWidget(self._get_toolbar())
 
         self.webView = QWebEngineView(self)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
@@ -107,9 +100,14 @@ class CorrelationWidget(QWidget):
         self.y = y
 
     @property
-    def toolbar(self) -> QToolBar:
-        toolbar = QToolBar()
-        toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+    def help_content(self) -> Optional[str]:
+        path = 'docs/correlation.md'
+        if os.path.exists(path):
+            with open(path, 'r') as file:
+                return file.read().rstrip()
+
+    def _get_toolbar(self) -> QToolBar:
+        toolbar = super()._get_toolbar()
 
         toolbar.addWidget(QLabel("X: "))
         self.x_combo_box.currentTextChanged.connect(self._x_current_text_changed)

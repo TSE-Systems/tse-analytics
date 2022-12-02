@@ -1,19 +1,19 @@
+import os.path
 from typing import Optional
 
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QPushButton
+from PySide6.QtWidgets import QWidget, QToolBar, QPushButton
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
 from matplotlib.figure import Figure
 
 from tse_analytics.core.manager import Manager
+from tse_analytics.views.analysis.analysis_widget import AnalysisWidget
 
 
-class HistogramWidget(QWidget):
+class HistogramWidget(AnalysisWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
-        self.layout = QVBoxLayout(self)
         self.layout.addWidget(self._get_toolbar())
 
         figure = Figure(figsize=(5.0, 4.0), dpi=100)
@@ -28,6 +28,9 @@ class HistogramWidget(QWidget):
     def clear(self):
         self.ax.clear()
 
+    def dataset_changed(self):
+        pass
+
     def _get_plot_layout(self, number_of_elements: int):
         if number_of_elements == 1:
             return None
@@ -39,7 +42,7 @@ class HistogramWidget(QWidget):
             return round(number_of_elements / 3) + 1, 3
 
     def _analyze(self):
-        if Manager.data.selected_dataset is None:
+        if Manager.data.selected_dataset is None or len(Manager.data.selected_variables) == 0:
             return
 
         self.ax.clear()
@@ -60,9 +63,15 @@ class HistogramWidget(QWidget):
         self.canvas.figure.tight_layout()
         self.canvas.draw()
 
+    @property
+    def help_content(self) -> Optional[str]:
+        path = 'docs/histogram.md'
+        if os.path.exists(path):
+            with open(path, 'r') as file:
+                return file.read().rstrip()
+
     def _get_toolbar(self) -> QToolBar:
-        toolbar = QToolBar()
-        toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        toolbar = super()._get_toolbar()
 
         pushButtonAnalyze = QPushButton("Analyze")
         pushButtonAnalyze.clicked.connect(self._analyze)

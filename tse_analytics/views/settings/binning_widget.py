@@ -1,3 +1,5 @@
+from typing import Optional
+
 import pandas as pd
 from PySide6 import QtCore
 from PySide6.QtCore import Qt
@@ -7,10 +9,11 @@ from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import BinningAppliedMessage, RevertBinningMessage
 from tse_datatools.analysis.binning_operation import BinningOperation
 from tse_datatools.analysis.binning_params import BinningParams
+from tse_datatools.analysis.grouping_mode import GroupingMode
 
 
 class BinningWidget(QWidget):
-    def __init__(self, parent):
+    def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
         layout = QVBoxLayout(self)
@@ -45,6 +48,13 @@ class BinningWidget(QWidget):
         apply_binning_button.pressed.connect(self._apply_binning_pressed)
         layout.addWidget(apply_binning_button)
 
+        layout.addWidget(QLabel("Grouping Mode: "))
+
+        grouping_mode_combo_box = QComboBox()
+        grouping_mode_combo_box.addItems([e.value for e in GroupingMode])
+        grouping_mode_combo_box.currentTextChanged.connect(self._grouping_mode_changed)
+        layout.addWidget(grouping_mode_combo_box)
+
         revert_binning_button = QPushButton("Revert to Original Data")
         revert_binning_button.pressed.connect(self._revert_binning_pressed)
         layout.addWidget(revert_binning_button)
@@ -64,6 +74,10 @@ class BinningWidget(QWidget):
     @QtCore.Slot(bool)
     def _apply_binning_changed(self, value: int):
         Manager.data.apply_binning = True if value == 2 else False
+
+    @QtCore.Slot(str)
+    def _grouping_mode_changed(self, text: str):
+        Manager.data.set_grouping_mode(GroupingMode(text))
 
     @QtCore.Slot()
     def _apply_binning_pressed(self):

@@ -2,9 +2,11 @@
 
 openpyxl
 pingouin
+plotly
 psutil
 pyqtgraph
 PySide6
+PySide6-QtAds
 
 # tse-datatools
 matplotlib

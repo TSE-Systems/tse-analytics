@@ -18,7 +18,7 @@ from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messages import (
     ClearDataMessage,
     DataChangedMessage,
-    DatasetChangedMessage,
+    DatasetChangedMessage, GroupingModeChangedMessage,
 )
 from tse_datatools.data.variable import Variable
 
@@ -51,6 +51,7 @@ class DataHub:
 
     def set_grouping_mode(self, mode: GroupingMode):
         self.grouping_mode = mode
+        self.messenger.broadcast(GroupingModeChangedMessage(self, self.grouping_mode))
 
     def set_selected_dataset(self, dataset: Dataset) -> None:
         if self.selected_dataset is dataset:

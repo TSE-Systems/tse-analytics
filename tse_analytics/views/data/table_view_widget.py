@@ -1,16 +1,16 @@
 from typing import Optional
 
-import pandas as pd
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar
 
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.core.manager import Manager
+from tse_analytics.views.data.data_widget import DataWidget
 from tse_analytics.views.data.table_view import TableView
 
 
-class TableViewWidget(QWidget):
+class TableViewWidget(DataWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
@@ -25,11 +25,13 @@ class TableViewWidget(QWidget):
     def clear(self):
         self.table_view.clear()
 
-    def set_data(self, df: pd.DataFrame):
+    def assign_data(self):
+        df = Manager.data.get_current_df()
         self.table_view.set_data(df)
 
     def clear_selection(self):
-        self.table_view.set_data(Manager.data.selected_dataset.original_df)
+        df = Manager.data.selected_dataset.original_df
+        self.table_view.set_data(df)
 
     def _enable_sorting(self, state: bool):
         self.table_view.set_sorting(state)
