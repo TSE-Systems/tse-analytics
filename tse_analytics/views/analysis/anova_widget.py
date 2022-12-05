@@ -24,9 +24,8 @@ class AnovaWidget(AnalysisWidget):
         self.layout.addWidget(self._get_toolbar())
 
         self.webView = QWebEngineView(self)
-        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
-        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, False)
-        self.webView.setHtml('')
+        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, True)
+        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, True)
         self.layout.addWidget(self.webView)
 
         figure = Figure(figsize=(5.0, 4.0), dpi=100)

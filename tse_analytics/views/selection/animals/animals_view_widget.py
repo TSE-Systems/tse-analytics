@@ -1,5 +1,6 @@
 from typing import Optional
 
+from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 
 from tse_analytics.core.manager import Manager
@@ -35,3 +36,6 @@ class AnimalsViewWidget(QWidget, MessengerListener):
 
     def _on_dataset_changed(self, message: DatasetChangedMessage):
         self.table_view.set_data(message.data.animals)
+
+    def minimumSizeHint(self):
+        return QSize(200, 40)

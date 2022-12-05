@@ -2,7 +2,7 @@ from typing import Optional
 
 import pandas as pd
 from PySide6 import QtCore
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QSize
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QComboBox, QLabel, QSpinBox, QPushButton, QCheckBox
 
 from tse_analytics.core.manager import Manager
@@ -106,3 +106,6 @@ class BinningWidget(QWidget):
 
         binning_params = BinningParams(timedelta, BinningOperation(self.operation_combobox.currentText()))
         Manager.data.binning_params = binning_params
+
+    def minimumSizeHint(self):
+        return QSize(200, 40)

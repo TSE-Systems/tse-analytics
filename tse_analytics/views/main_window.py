@@ -62,6 +62,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Create the dock manager. Because the parent parameter is a QMainWindow
         # the dock manager registers itself as the central widget.
         self.dock_manager = PySide6QtAds.CDockManager(self)
+        self.default_docking_state = None
 
         data_table_dock_widget = PySide6QtAds.CDockWidget('Data')
         data_table_dock_widget.setWidget(TableViewWidget())
@@ -121,6 +122,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         datasets_dock_widget = PySide6QtAds.CDockWidget('Datasets')
         datasets_dock_widget.setWidget(DatasetsTreeView())
         datasets_dock_widget.setIcon(QIcon(":/icons/icons8-data-sheet-16.png"))
+        datasets_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
         datasets_dock_area = self.dock_manager.addDockWidget(PySide6QtAds.LeftDockWidgetArea, datasets_dock_widget)
 
         info_dock_widget = PySide6QtAds.CDockWidget('Info')
@@ -136,6 +138,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         animals_dock_widget = PySide6QtAds.CDockWidget('Animals')
         animals_dock_widget.setWidget(AnimalsViewWidget())
         animals_dock_widget.setIcon(QIcon(":/icons/icons8-rat-silhouette-16.png"))
+        animals_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
         selector_dock_area = self.dock_manager.addDockWidget(PySide6QtAds.RightDockWidgetArea, animals_dock_widget)
 
         groups_dock_widget = PySide6QtAds.CDockWidget('Groups')
@@ -151,13 +154,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         binning_dock_widget = PySide6QtAds.CDockWidget('Binning')
         binning_dock_widget.setWidget(BinningWidget())
         binning_dock_widget.setIcon(QIcon(":/icons/icons8-time-span-16.png"))
+        binning_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
         self.dock_manager.addDockWidget(PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area)
 
         self.actionImportDataset.triggered.connect(self.import_dataset_dialog)
         self.actionOpenWorkspace.triggered.connect(self.load_workspace_dialog)
         self.actionSaveWorkspace.triggered.connect(self.save_workspace_dialog)
         self.actionExportExcel.triggered.connect(self.export_excel_dialog)
+        self.actionResetLayout.triggered.connect(self.__reset_layout)
         self.actionExit.triggered.connect(lambda: QApplication.exit())
+
+        self.default_docking_state = self.dock_manager.saveState(LAYOUT_VERSION)
 
         self.load_settings()
 
@@ -174,7 +181,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         settings = QSettings()
         settings.setValue("MainWindow/Geometry", self.saveGeometry())
         settings.setValue("MainWindow/State", self.saveState())
-        # settings.setValue("MainWindow/DockingState", self.dock_manager.saveState(LAYOUT_VERSION))
+        settings.setValue("MainWindow/DockingState", self.dock_manager.saveState(LAYOUT_VERSION))
 
     def load_workspace_dialog(self):
         options = QFileDialog.Options()
@@ -216,6 +223,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def import_dataset(self, path: str):
         Manager.import_dataset(path)
+
+    def __reset_layout(self):
+        self.dock_manager.restoreState(self.default_docking_state, LAYOUT_VERSION)
 
     def import_dataset_dialog(self):
         options = QFileDialog.Options()

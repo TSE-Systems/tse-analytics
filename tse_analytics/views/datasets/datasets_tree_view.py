@@ -1,6 +1,6 @@
 from functools import partial
 
-from PySide6.QtCore import Qt, QModelIndex, QItemSelection
+from PySide6.QtCore import Qt, QModelIndex, QItemSelection, QSize
 from PySide6.QtWidgets import QTreeView, QWidget, QAbstractItemView, QMenu, QInputDialog, QLineEdit
 
 from tse_analytics.messaging.messages import SelectedTreeNodeChangedMessage
@@ -75,3 +75,7 @@ class DatasetsTreeView(QTreeView):
             item = index.model().getItem(index)
             # if isinstance(item, DatasetTreeItem) and not item.loaded:
             #     self._load([index])
+
+    def minimumSizeHint(self):
+        return QSize(200, 40)
+
