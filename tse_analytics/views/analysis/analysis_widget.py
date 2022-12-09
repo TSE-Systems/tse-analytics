@@ -19,6 +19,8 @@ class AnalysisWidget(QWidget, MessengerListener):
         self.register_to_messenger(Manager.messenger)
 
         self.layout = QVBoxLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)

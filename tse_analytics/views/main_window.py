@@ -164,6 +164,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionResetLayout.triggered.connect(self.__reset_layout)
         self.actionExit.triggered.connect(lambda: QApplication.exit())
 
+        # self.dock_manager.setDockWidgetFocused(animals_dock_widget)
+
         self.default_docking_state = self.dock_manager.saveState(LAYOUT_VERSION)
 
         self.load_settings()
