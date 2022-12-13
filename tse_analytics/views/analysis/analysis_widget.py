@@ -53,7 +53,7 @@ class AnalysisWidget(QWidget, MessengerListener):
 
         help_button = QToolButton()
         help_button.setToolButtonStyle(Qt.ToolButtonIconOnly)
-        help_button.setToolTip('Show help')
+        help_button.setToolTip("Show help")
         help_button.setIcon(QIcon(":/icons/icons8-help-16.png"))
         help_button.clicked.connect(self.__show_help)
         toolbar.addWidget(help_button)

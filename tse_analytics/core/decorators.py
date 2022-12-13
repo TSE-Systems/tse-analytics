@@ -49,7 +49,7 @@ def clear_cache(func):
 
 
 def memoize_attr_check(attr):
-    """ Memoize a method call, cached both on arguments and given attribute
+    """Memoize a method call, cached both on arguments and given attribute
     of first argument (which is presumably self)
 
     Has the effect of re-calculating results if a specific attribute changes
@@ -82,6 +82,7 @@ def singleton(cls):
         if cls not in instances:
             instances[cls] = cls()
         return instances[cls]
+
     return getinstance
 
 
@@ -96,5 +97,7 @@ def catch_error(msg):
                 detail = str(traceback.format_exc())
                 self = args[0]
                 report_error(m, detail)
+
         return wrapper
+
     return decorator

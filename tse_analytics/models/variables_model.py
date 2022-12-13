@@ -6,7 +6,7 @@ from tse_datatools.data.variable import Variable
 
 class VariablesModel(QAbstractTableModel):
 
-    header = ('Name', 'Unit', 'Description')
+    header = ("Name", "Unit", "Description")
 
     def __init__(self, items: Sequence[Variable], parent=None):
         super().__init__(parent)

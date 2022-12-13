@@ -64,7 +64,10 @@ class GroupsDialog(QDialog, Ui_GroupsDialog):
                 self.listWidgetAnimals.addItem(item)
 
     def animal_item_changed(self, item: QListWidgetItem):
-        animal_id = next((animal.id for animal in Manager.data.selected_dataset.animals.values() if animal.id == int(item.text())), None)
+        animal_id = next(
+            (animal.id for animal in Manager.data.selected_dataset.animals.values() if animal.id == int(item.text())),
+            None,
+        )
         if animal_id:
             if item.checkState() == Qt.Checked:
                 self.selected_group.animal_ids.append(animal_id)

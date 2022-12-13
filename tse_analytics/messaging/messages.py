@@ -30,67 +30,69 @@ class Message:
         self.tag = tag
 
     def __str__(self):
-        return '%s: %s\n\t Sent from: %s' % (type(self).__name__,
-                                             self.tag or '',
-                                             self.sender)
+        return "%s: %s\n\t Sent from: %s" % (type(self).__name__, self.tag or "", self.sender)
 
 
 class ErrorMessage(Message):
-    """ Used to send general purpose error messages """
+    """Used to send general purpose error messages"""
+
     pass
 
 
 class SelectedTreeNodeChangedMessage(Message):
-    """ Indicates that the selected TreeView node has changed """
+    """Indicates that the selected TreeView node has changed"""
+
     def __init__(self, sender, node: TreeItem, tag=None):
         super().__init__(sender, tag=tag)
         self.node = node
 
 
 class DataChangedMessage(Message):
-    """ Indicates that selected data changed """
+    """Indicates that selected data changed"""
+
     def __init__(self, sender, tag=None):
         super().__init__(sender, tag=tag)
 
 
 class DatasetChangedMessage(Message):
-    """ Indicates that selected dataset is changed """
+    """Indicates that selected dataset is changed"""
+
     def __init__(self, sender, dataset: Dataset, tag=None):
         super().__init__(sender, tag=tag)
         self.data = dataset
 
 
 class ClearDataMessage(Message):
-    """ Clear data """
+    """Clear data"""
+
     pass
 
 
 class BinningAppliedMessage(Message):
-    """ Indicates that binning is applied """
-    def __init__(
-        self,
-        sender,
-        params: BinningParams,
-        tag=None
-    ):
+    """Indicates that binning is applied"""
+
+    def __init__(self, sender, params: BinningParams, tag=None):
         super().__init__(sender, tag=tag)
         self.params = params
 
 
 class RevertBinningMessage(Message):
-    """ Revert to original data """
+    """Revert to original data"""
+
     pass
 
 
 class GroupingModeChangedMessage(Message):
-    """ Indicates that the grouping mode is changed """
+    """Indicates that the grouping mode is changed"""
+
     def __init__(self, sender, mode: GroupingMode, tag=None):
         super().__init__(sender, tag=tag)
         self.mode = mode
 
 
 class ShowHelpMessage(Message):
-    """ Request to display help content """
+    """Request to display help content"""
+
     def __init__(self, sender, content: str, tag=None):
         super().__init__(sender, tag=tag)
         self.content = content

@@ -13,7 +13,7 @@ from tse_analytics.css import style
 from tse_analytics.views.analysis.analysis_widget import AnalysisWidget
 from tse_datatools.data.variable import Variable
 
-pd.set_option('colheader_justify', 'center')  # FOR TABLE <th>
+pd.set_option("colheader_justify", "center")  # FOR TABLE <th>
 sns.set_theme(style="whitegrid")
 
 
@@ -32,7 +32,7 @@ class CorrelationWidget(AnalysisWidget):
         self.webView = QWebEngineView(self)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, False)
-        self.webView.setHtml('')
+        self.webView.setHtml("")
         self.layout.addWidget(self.webView)
 
         self.figure = None
@@ -58,9 +58,9 @@ class CorrelationWidget(AnalysisWidget):
         df = Manager.data.selected_dataset.original_df
 
         multivariate_normality = pg.multivariate_normality(df[[self.x, self.y]])
-        corr = pg.pairwise_corr(data=df, columns=[self.x, self.y], method='pearson')
+        corr = pg.pairwise_corr(data=df, columns=[self.x, self.y], method="pearson")
 
-        html_template = '''
+        html_template = """
                 <html>
                   <head>
                     <title>HTML Pandas Dataframe with CSS</title>
@@ -73,12 +73,12 @@ class CorrelationWidget(AnalysisWidget):
                     {corr}
                   </body>
                 </html>
-                '''
+                """
 
         html = html_template.format(
             style=style,
             multivariate_normality=multivariate_normality,
-            corr=corr.to_html(classes='mystyle'),
+            corr=corr.to_html(classes="mystyle"),
         )
         self.webView.setHtml(html)
 
@@ -101,9 +101,9 @@ class CorrelationWidget(AnalysisWidget):
 
     @property
     def help_content(self) -> Optional[str]:
-        path = 'docs/correlation.md'
+        path = "docs/correlation.md"
         if os.path.exists(path):
-            with open(path, 'r') as file:
+            with open(path, "r") as file:
                 return file.read().rstrip()
 
     def _get_toolbar(self) -> QToolBar:

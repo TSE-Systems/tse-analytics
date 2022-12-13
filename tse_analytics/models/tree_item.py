@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt
 
 
 class TreeItem:
-    column_names = ['Name']
+    column_names = ["Name"]
     column_flags = [Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsUserCheckable]
 
     def __init__(self, name: str, meta: Optional[dict] = None):

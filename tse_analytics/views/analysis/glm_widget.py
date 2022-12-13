@@ -18,27 +18,27 @@ class GlmWidget(AnalysisWidget):
         super().__init__(parent)
 
         self.covariate_combo_box = QComboBox(self)
-        self.covariate = ''
+        self.covariate = ""
 
         self.response_combo_box = QComboBox(self)
-        self.response = ''
+        self.response = ""
 
         self.layout.addWidget(self._get_toolbar())
 
         self.webView = QWebEngineView(self)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, False)
-        self.webView.setHtml('')
+        self.webView.setHtml("")
         self.layout.addWidget(self.webView)
 
         self.canvas = None
 
     def clear(self):
-        self.webView.setHtml('')
+        self.webView.setHtml("")
 
     def update_variables(self, variables: dict[str, Variable]):
-        self.covariate = ''
-        self.response = ''
+        self.covariate = ""
+        self.response = ""
 
         self.covariate_combo_box.clear()
         self.covariate_combo_box.addItems(variables)
@@ -57,27 +57,27 @@ class GlmWidget(AnalysisWidget):
     def __analyze(self):
         df = Manager.data.selected_dataset.original_df.copy()
         # cols = df.columns
-        df = df.groupby(by=['Animal'], as_index=False).agg({self.response: 'mean', 'Group': 'first'})
+        df = df.groupby(by=["Animal"], as_index=False).agg({self.response: "mean", "Group": "first"})
         # df = df.reset_index()
 
-        df['Weight'] = df['Animal'].astype(float)
+        df["Weight"] = df["Animal"].astype(float)
         weights = {}
         for animal in Manager.data.selected_dataset.animals.values():
             weights[animal.id] = animal.weight
-        df = df.replace({'Weight': weights})
+        df = df.replace({"Weight": weights})
 
         if self.canvas is not None:
             self.layout.removeWidget(self.canvas)
 
-        facet_grid = sns.lmplot(x='Weight', y=self.response, hue="Group", robust=False, data=df)
+        facet_grid = sns.lmplot(x="Weight", y=self.response, hue="Group", robust=False, data=df)
         self.canvas = FigureCanvasQTAgg(facet_grid.figure)
         self.canvas.updateGeometry()
         self.canvas.draw()
         self.layout.addWidget(self.canvas)
 
-        glm = pg.linear_regression(df[['Weight']], df[self.response])
+        glm = pg.linear_regression(df[["Weight"]], df[self.response])
 
-        html_template = '''
+        html_template = """
                 <html>
                   <head>
                     {style}
@@ -87,19 +87,19 @@ class GlmWidget(AnalysisWidget):
                     {glm}
                   </body>
                 </html>
-                '''
+                """
 
         html = html_template.format(
             style=style,
-            glm=glm.to_html(classes='mystyle'),
+            glm=glm.to_html(classes="mystyle"),
         )
         self.webView.setHtml(html)
 
     @property
     def help_content(self) -> Optional[str]:
-        path = 'docs/glm.md'
+        path = "docs/glm.md"
         if os.path.exists(path):
-            with open(path, 'r') as file:
+            with open(path, "r") as file:
                 return file.read().rstrip()
 
     def _get_toolbar(self) -> QToolBar:

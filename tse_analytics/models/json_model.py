@@ -6,7 +6,7 @@ from tse_analytics.models.json_tree_item import TreeItem
 
 
 class JsonModel(QAbstractItemModel):
-    """ An editable model of Json data """
+    """An editable model of Json data"""
 
     def __init__(self, parent: QObject = None):
         super().__init__(parent)
@@ -15,7 +15,7 @@ class JsonModel(QAbstractItemModel):
         self._headers = ("key", "value")
 
     def clear(self):
-        """ Clear data from the model """
+        """Clear data from the model"""
         self.load({})
 
     def load(self, document: dict):
@@ -25,9 +25,9 @@ class JsonModel(QAbstractItemModel):
             document (dict): JSON-compatible dictionary
         """
 
-        assert isinstance(
-            document, (dict, list, tuple)
-        ), "`document` must be of dict, list or tuple, " f"not {type(document)}"
+        assert isinstance(document, (dict, list, tuple)), (
+            "`document` must be of dict, list or tuple, " f"not {type(document)}"
+        )
 
         self.beginResetModel()
 
@@ -86,9 +86,7 @@ class JsonModel(QAbstractItemModel):
 
         return False
 
-    def headerData(
-        self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole
-    ):
+    def headerData(self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
         """Override from QAbstractItemModel
 
         For the JsonModel, it returns only data for columns (orientation = Horizontal)

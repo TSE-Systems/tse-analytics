@@ -81,8 +81,7 @@ class Messenger:
         """
         if not isinstance(subscriber, MessengerListener):
             raise InvalidSubscriber("Subscriber must be a MessengerListener: %s" % type(subscriber))
-        if not isinstance(message_class, type) or \
-                not issubclass(message_class, Message):
+        if not isinstance(message_class, type) or not issubclass(message_class, Message):
             raise InvalidMessage("message class must be a subclass of Message: %s" % type(message_class))
         logging.getLogger(__name__).info("Subscribing %s to %s", subscriber, message_class.__name__)
 
@@ -106,8 +105,7 @@ class Messenger:
             True if the subscriber/message pair have been subscribed to the messenger
 
         """
-        return (subscriber in self._subscriptions and
-                message in self._subscriptions[subscriber])
+        return subscriber in self._subscriptions and message in self._subscriptions[subscriber]
 
     def get_handler(self, subscriber, message):
         if subscriber is None:
@@ -136,8 +134,7 @@ class Messenger:
             self._subscriptions.pop(subscriber)
 
     def _find_handlers(self, message):
-        """Yields all (subscriber, handler) pairs that should receive a message
-        """
+        """Yields all (subscriber, handler) pairs that should receive a message"""
         # self._subscriptions:
         # subscriber => { message type => (filter, handler)}
 
@@ -145,8 +142,7 @@ class Messenger:
         for subscriber, subscriptions in list(self._subscriptions.items()):
 
             # subscriptions to message or its superclasses
-            messages = [msg for msg in subscriptions.keys() if
-                        issubclass(type(message), msg)]
+            messages = [msg for msg in subscriptions.keys() if issubclass(type(message), msg)]
 
             if len(messages) == 0:
                 continue
@@ -194,22 +190,22 @@ class Messenger:
                 handler(message)
 
     def __getstate__(self):
-        """ Return a picklable representation of the messenger
+        """Return a picklable representation of the messenger
 
         Note: Only objects in glue.core are currently supported
         as pickleable. Thus, any subscriptions from objects outside
         glue.core will note be saved or restored
         """
         result = self.__dict__.copy()
-        result['_subscriptions'] = self._subscriptions.copy()
+        result["_subscriptions"] = self._subscriptions.copy()
         for s in self._subscriptions:
             try:
                 module = s.__module__
             except AttributeError:
-                module = ''
-            if not module.startswith('glue.core'):
-                print('Pickle warning: Messenger removing subscription to %s' % s)
-                result['_subscriptions'].pop(s)
+                module = ""
+            if not module.startswith("glue.core"):
+                print("Pickle warning: Messenger removing subscription to %s" % s)
+                result["_subscriptions"].pop(s)
         return result
 
 

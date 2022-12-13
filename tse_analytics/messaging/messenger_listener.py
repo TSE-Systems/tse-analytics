@@ -9,7 +9,7 @@ class MessengerListener:
         raise NotImplementedError
 
     def unregister(self, messenger: "Messenger"):
-        """ Default unregistration action. Calls messenger.unsubscribe_all on self"""
+        """Default unregistration action. Calls messenger.unsubscribe_all on self"""
         messenger.unsubscribe_all(self)
 
     def notify(self, message):

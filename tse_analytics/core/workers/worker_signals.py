@@ -20,6 +20,7 @@ class WorkerSignals(QObject):
         `int` indicating % progress
 
     """
+
     finished = Signal()
     error = Signal(tuple)
     result = Signal(object)

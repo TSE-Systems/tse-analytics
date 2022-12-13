@@ -14,15 +14,13 @@ def register_plugin(func):
 def __getattr__(name):
     """Return a named plugin"""
     try:
-        return PLUGINS[name]        # 1) Try to return plugin
+        return PLUGINS[name]  # 1) Try to return plugin
     except KeyError:
-        _import_plugins()           # 2) Import all plugins
+        _import_plugins()  # 2) Import all plugins
         if name in PLUGINS:
-            return PLUGINS[name]    # 3) Try to return plugin again
+            return PLUGINS[name]  # 3) Try to return plugin again
         else:
-            raise AttributeError(   # 4) Raise error
-                f"module {__name__!r} has no attribute {name!r}"
-            ) from None
+            raise AttributeError(f"module {__name__!r} has no attribute {name!r}") from None  # 4) Raise error
 
 
 def __dir__():

@@ -39,7 +39,7 @@ class PlotViewWidget(DataWidget):
             self.variables.append(var)
         self.variable_combo_box.clear()
         self.variable_combo_box.addItems(self.variables)
-        self.variable_combo_box.setCurrentText('')
+        self.variable_combo_box.setCurrentText("")
 
     def clear_selection(self):
         # self.plot_view.clear()
@@ -61,7 +61,7 @@ class PlotViewWidget(DataWidget):
         toolbar.addWidget(label)
 
         self.variable_combo_box.addItems(self.variables)
-        self.variable_combo_box.setCurrentText('')
+        self.variable_combo_box.setCurrentText("")
         self.variable_combo_box.currentTextChanged.connect(self._variable_current_text_changed)
         toolbar.addWidget(self.variable_combo_box)
 

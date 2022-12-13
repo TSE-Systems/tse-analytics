@@ -40,7 +40,7 @@ class BinningWidget(QWidget):
         layout.addWidget(QLabel("Operation:"))
         self.operation_combobox = QComboBox()
         self.operation_combobox.addItems([e.value for e in BinningOperation])
-        self.operation_combobox.setCurrentText('mean')
+        self.operation_combobox.setCurrentText("mean")
         self.operation_combobox.currentTextChanged.connect(self._binning_operation_changed)
         layout.addWidget(self.operation_combobox)
 
@@ -102,7 +102,7 @@ class BinningWidget(QWidget):
 
         binning_delta = self.delta_spinbox.value()
 
-        timedelta = pd.Timedelta(f'{binning_delta}{unit}')
+        timedelta = pd.Timedelta(f"{binning_delta}{unit}")
 
         binning_params = BinningParams(timedelta, BinningOperation(self.operation_combobox.currentText()))
         Manager.data.binning_params = binning_params

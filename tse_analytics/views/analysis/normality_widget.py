@@ -16,7 +16,7 @@ class NormalityWidget(AnalysisWidget):
         super().__init__(parent)
 
         self.variable_combo_box = QComboBox(self)
-        self.variable = ''
+        self.variable = ""
 
         self.layout.addWidget(self._get_toolbar())
 
@@ -32,7 +32,7 @@ class NormalityWidget(AnalysisWidget):
         self.canvas.figure.clear()
 
     def update_variables(self, variables: dict[str, Variable]):
-        self.variable = ''
+        self.variable = ""
         self.variable_combo_box.clear()
         self.variable_combo_box.addItems(variables)
         self.variable_combo_box.setCurrentText(self.variable)
@@ -48,13 +48,13 @@ class NormalityWidget(AnalysisWidget):
 
         self.clear()
 
-        unique_groups = df['Group'].unique()
+        unique_groups = df["Group"].unique()
         ncols = 2
         nrows = len(unique_groups) // 2 + (len(unique_groups) % 2 > 0)
         for index, group in enumerate(unique_groups):
             ax = self.canvas.figure.add_subplot(nrows, ncols, index + 1)
             # stats.probplot(df[df['Group'] == group][variable], dist="norm", plot=ax)
-            pg.qqplot(df[df['Group'] == group][self.variable], dist='norm', ax=ax)
+            pg.qqplot(df[df["Group"] == group][self.variable], dist="norm", ax=ax)
             ax.set_title(group)
 
         self.canvas.figure.tight_layout()
@@ -62,9 +62,9 @@ class NormalityWidget(AnalysisWidget):
 
     @property
     def help_content(self) -> Optional[str]:
-        path = 'docs/normality.md'
+        path = "docs/normality.md"
         if os.path.exists(path):
-            with open(path, 'r') as file:
+            with open(path, "r") as file:
                 return file.read().rstrip()
 
     def _get_toolbar(self) -> QToolBar:

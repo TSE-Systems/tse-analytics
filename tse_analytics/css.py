@@ -1,4 +1,4 @@
-style = '''
+style = """
         <style>
             body {
                 font-family: Arial;
@@ -20,4 +20,4 @@ style = '''
                 cursor: pointer;
             }
           </style>
-        '''
+        """

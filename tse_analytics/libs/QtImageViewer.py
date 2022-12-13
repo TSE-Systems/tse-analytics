@@ -10,11 +10,11 @@ from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QFileDialog
 
 
 __author__ = "Marcel Goldschen-Ohm <marcel.goldschen@gmail.com>"
-__version__ = '0.9.0'
+__version__ = "0.9.0"
 
 
 class QtImageViewer(QGraphicsView):
-    """ PyQt image viewer widget for a QPixmap in a QGraphicsView scene with mouse zooming and panning.
+    """PyQt image viewer widget for a QPixmap in a QGraphicsView scene with mouse zooming and panning.
 
     Displays a QImage or QPixmap (QImage is internally converted to a QPixmap).
     To display any other image format, you must first convert it to a QImage or QPixmap.
@@ -74,19 +74,17 @@ class QtImageViewer(QGraphicsView):
         self.zoom_value = 1.0
 
     def hasImage(self):
-        """ Returns whether or not the scene contains an image pixmap.
-        """
+        """Returns whether or not the scene contains an image pixmap."""
         return self._pixmapHandle is not None
 
     def clearImage(self):
-        """ Removes the current image pixmap from the scene if it exists.
-        """
+        """Removes the current image pixmap from the scene if it exists."""
         if self.hasImage():
             self.scene.removeItem(self._pixmapHandle)
             self._pixmapHandle = None
 
     def pixmap(self):
-        """ Returns the scene's current image pixmap as a QPixmap, or else None if no image exists.
+        """Returns the scene's current image pixmap as a QPixmap, or else None if no image exists.
         :rtype: QPixmap | None
         """
         if self.hasImage():
@@ -94,7 +92,7 @@ class QtImageViewer(QGraphicsView):
         return None
 
     def image(self):
-        """ Returns the scene's current image pixmap as a QImage, or else None if no image exists.
+        """Returns the scene's current image pixmap as a QImage, or else None if no image exists.
         :rtype: QImage | None
         """
         if self.hasImage():
@@ -102,7 +100,7 @@ class QtImageViewer(QGraphicsView):
         return None
 
     def setImage(self, image):
-        """ Set the scene's current image pixmap to the input QImage or QPixmap.
+        """Set the scene's current image pixmap to the input QImage or QPixmap.
         Raises a RuntimeError if the input image has type other than QImage or QPixmap.
         :type image: QImage | QPixmap
         """
@@ -120,7 +118,7 @@ class QtImageViewer(QGraphicsView):
         self.updateViewer()
 
     def loadImageFromFile(self, fileName=""):
-        """ Load an image from file.
+        """Load an image from file.
         Without any arguments, loadImageFromFile() will popup a file dialog to choose the image file.
         With a fileName argument, loadImageFromFile(fileName) will attempt to load the specified image file directly.
         """
@@ -131,8 +129,7 @@ class QtImageViewer(QGraphicsView):
             self.setImage(image)
 
     def updateViewer(self):
-        """ Show current zoom (if showing entire image, apply current aspect ratio mode).
-        """
+        """Show current zoom (if showing entire image, apply current aspect ratio mode)."""
         if not self.hasImage():
             return
         if len(self.zoomStack) and self.sceneRect().contains(self.zoomStack[-1]):
@@ -142,13 +139,11 @@ class QtImageViewer(QGraphicsView):
             self.fitInView(self.sceneRect(), self.aspectRatioMode)  # Show entire image (use current aspect ratio mode).
 
     def resizeEvent(self, event):
-        """ Maintain current zoom on resize.
-        """
+        """Maintain current zoom on resize."""
         self.updateViewer()
 
     def mousePressEvent(self, event):
-        """ Start mouse pan or zoom mode.
-        """
+        """Start mouse pan or zoom mode."""
         scenePos = self.mapToScene(event.pos())
         if event.button() == Qt.LeftButton:
             if self.canPan:
@@ -161,8 +156,7 @@ class QtImageViewer(QGraphicsView):
         QGraphicsView.mousePressEvent(self, event)
 
     def mouseReleaseEvent(self, event):
-        """ Stop mouse pan or zoom mode (apply zoom if valid).
-        """
+        """Stop mouse pan or zoom mode (apply zoom if valid)."""
         QGraphicsView.mouseReleaseEvent(self, event)
         scenePos = self.mapToScene(event.pos())
         if event.button() == Qt.LeftButton:
@@ -180,8 +174,7 @@ class QtImageViewer(QGraphicsView):
             self.rightMouseButtonReleased.emit(scenePos.x(), scenePos.y())
 
     def mouseDoubleClickEvent(self, event):
-        """ Show entire image.
-        """
+        """Show entire image."""
         scenePos = self.mapToScene(event.pos())
         if event.button() == Qt.LeftButton:
             self.leftMouseButtonDoubleClicked.emit(scenePos.x(), scenePos.y())
@@ -193,16 +186,17 @@ class QtImageViewer(QGraphicsView):
         QGraphicsView.mouseDoubleClickEvent(self, event)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
     from PySide6.QtWidgets import QApplication
     from PySide6.QtCore import __version__
-    print('Using Qt ' + __version__)
+
+    print("Using Qt " + __version__)
 
     def handleLeftClick(x, y):
         row = int(y)
         column = int(x)
-        print("Clicked on image pixel (row="+str(row)+", column="+str(column)+")")
+        print("Clicked on image pixel (row=" + str(row) + ", column=" + str(column) + ")")
 
     # Create the application.
     app = QApplication(sys.argv)

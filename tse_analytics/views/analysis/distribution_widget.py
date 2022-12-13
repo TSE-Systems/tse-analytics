@@ -17,7 +17,7 @@ class DistributionWidget(AnalysisWidget):
         super().__init__(parent)
 
         self.variable_combo_box = QComboBox(self)
-        self.variable = ''
+        self.variable = ""
 
         self.layout.addWidget(self._get_toolbar())
 
@@ -35,7 +35,7 @@ class DistributionWidget(AnalysisWidget):
         self.ax.clear()
 
     def update_variables(self, variables: dict[str, Variable]):
-        self.variable = ''
+        self.variable = ""
         self.variable_combo_box.clear()
         self.variable_combo_box.addItems(variables)
         self.variable_combo_box.setCurrentText(self.variable)
@@ -51,7 +51,7 @@ class DistributionWidget(AnalysisWidget):
 
         self.ax.clear()
 
-        sns.boxplot(data=df, x='Group', y=self.variable, ax=self.ax, color='green')
+        sns.boxplot(data=df, x="Group", y=self.variable, ax=self.ax, color="green")
         sns.violinplot(data=df, x="Group", y=self.variable, ax=self.ax)
 
         self.canvas.figure.tight_layout()
@@ -59,9 +59,9 @@ class DistributionWidget(AnalysisWidget):
 
     @property
     def help_content(self) -> Optional[str]:
-        path = 'docs/distribution.md'
+        path = "docs/distribution.md"
         if os.path.exists(path):
-            with open(path, 'r') as file:
+            with open(path, "r") as file:
                 return file.read().rstrip()
 
     def _get_toolbar(self) -> QToolBar:

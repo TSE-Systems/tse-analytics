@@ -124,7 +124,7 @@ class WorkspaceModel(QAbstractItemModel):
 
     def load_workspace(self, path: str):
         self.beginResetModel()
-        with open(path, 'rb') as file:
+        with open(path, "rb") as file:
             self.workspace = pickle.load(file)
             self.workspace_tree_item = WorkspaceTreeItem(self.workspace)
             for dataset in self.workspace.datasets:
@@ -133,7 +133,7 @@ class WorkspaceModel(QAbstractItemModel):
         self.endResetModel()
 
     def save_workspace(self, path: str):
-        with open(path, 'wb') as file:
+        with open(path, "wb") as file:
             pickle.dump(self.workspace, file)
 
     def add_dataset(self, dataset: Dataset):

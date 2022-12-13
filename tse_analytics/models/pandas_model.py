@@ -4,14 +4,14 @@ from PySide6.QtCore import QAbstractTableModel, Qt, QModelIndex
 
 
 class PandasModel(QAbstractTableModel):
-    """A model to interface a Qt view with pandas dataframe """
+    """A model to interface a Qt view with pandas dataframe"""
 
     def __init__(self, dataframe: pd.DataFrame, parent=None):
         QAbstractTableModel.__init__(self, parent)
         self._dataframe = dataframe
 
     def rowCount(self, parent=QModelIndex()) -> int:
-        """ Override method from QAbstractTableModel
+        """Override method from QAbstractTableModel
 
         Return row count of the pandas DataFrame
         """

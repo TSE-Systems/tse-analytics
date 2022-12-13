@@ -16,7 +16,7 @@ class PlotView(pg.GraphicsLayoutWidget):
         super().__init__(parent, title=title)
 
         self._df: Optional[pd.DataFrame] = None
-        self._variable: str = ''
+        self._variable: str = ""
         self._display_errors = False
 
         self._start_datetime = None
@@ -25,14 +25,14 @@ class PlotView(pg.GraphicsLayoutWidget):
         # Set layout proportions
         self.ci.layout.setRowStretchFactor(0, 2)
 
-        self.label = self.addLabel(row=0, col=0, justify='right')
+        self.label = self.addLabel(row=0, col=0, justify="right")
 
         self.plot_data_items: dict[Union[int, str], pg.PlotDataItem] = {}
 
         self.p1: pg.PlotItem = self.addPlot(row=0, col=0)
         # customize the averaged curve that can be activated from the context menu:
-        self.p1.avgPen = pg.mkPen('#FFFFFF')
-        self.p1.avgShadowPen = pg.mkPen('#8080DD', width=10)
+        self.p1.avgPen = pg.mkPen("#FFFFFF")
+        self.p1.avgShadowPen = pg.mkPen("#8080DD", width=10)
         # self.p1.setAxisItems({'bottom': pg.DateAxisItem()})
         self.p1.showGrid(x=True, y=True)
 
@@ -108,7 +108,7 @@ class PlotView(pg.GraphicsLayoutWidget):
         self.p2.clearPlots()
         self.legend.clear()
 
-        if self._df is None or self._variable == '':
+        if self._df is None or self._variable == "":
             return
 
         if Manager.data.grouping_mode == GroupingMode.ANIMALS:
@@ -120,7 +120,7 @@ class PlotView(pg.GraphicsLayoutWidget):
 
         if Manager.data.grouping_mode == GroupingMode.ANIMALS:
             for i, animal in enumerate(Manager.data.selected_animals):
-                filtered_data = self._df[self._df['Animal'] == animal.id]
+                filtered_data = self._df[self._df["Animal"] == animal.id]
 
                 # x = filtered_data["DateTime"]
                 # x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
@@ -132,12 +132,12 @@ class PlotView(pg.GraphicsLayoutWidget):
                 p1d = self.p1.plot(x, y, pen=pen)
 
                 self.plot_data_items[animal.id] = p1d
-                self.legend.addItem(p1d, f'Animal {animal.id}')
+                self.legend.addItem(p1d, f"Animal {animal.id}")
 
                 p2d: pg.PlotDataItem = self.p2.plot(x, y, pen=pen)
         elif Manager.data.grouping_mode == GroupingMode.GROUPS:
             for i, group in enumerate(Manager.data.selected_groups):
-                filtered_data = self._df[self._df['Group'] == group.name]
+                filtered_data = self._df[self._df["Group"] == group.name]
 
                 # x = filtered_data["DateTime"]
                 # x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
@@ -152,19 +152,19 @@ class PlotView(pg.GraphicsLayoutWidget):
                 if self._display_errors:
                     # Error bars
                     error_plot = pg.ErrorBarItem(beam=0.2)
-                    std = filtered_data['Std']
+                    std = filtered_data["Std"]
                     std = std.to_numpy()
                     error_plot.setData(x=x, y=y, top=std, bottom=std)
                     self.p1.addItem(error_plot)
 
                 self.plot_data_items[group.name] = p1d
-                self.legend.addItem(p1d, f'{group.name}')
+                self.legend.addItem(p1d, f"{group.name}")
 
                 p2d: pg.PlotDataItem = self.p2.plot(x, y, pen=pen)
         elif Manager.data.grouping_mode == GroupingMode.RUNS:
-            runs = self._df['Run'].unique()
+            runs = self._df["Run"].unique()
             for i, run in enumerate(runs):
-                filtered_data = self._df[self._df['Run'] == run]
+                filtered_data = self._df[self._df["Run"] == run]
 
                 # x = filtered_data["DateTime"]
                 # x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
@@ -176,7 +176,7 @@ class PlotView(pg.GraphicsLayoutWidget):
                 p1d = self.p1.plot(x, y, pen=pen)
 
                 self.plot_data_items[run] = p1d
-                self.legend.addItem(p1d, f'Run {run}')
+                self.legend.addItem(p1d, f"Run {run}")
 
                 p2d: pg.PlotDataItem = self.p2.plot(x, y, pen=pen)
 

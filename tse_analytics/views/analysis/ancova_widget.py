@@ -28,7 +28,7 @@ class AncovaWidget(AnalysisWidget):
         self.webView = QWebEngineView(self)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, False)
-        self.webView.setHtml('')
+        self.webView.setHtml("")
         self.layout.addWidget(self.webView)
 
         figure = Figure(figsize=(5.0, 4.0), dpi=100)
@@ -37,8 +37,8 @@ class AncovaWidget(AnalysisWidget):
         self.layout.addWidget(self.canvas)
 
     def update_variables(self, variables: dict[str, Variable]):
-        self.covariate = ''
-        self.response = ''
+        self.covariate = ""
+        self.response = ""
 
         self.covariate_combo_box.clear()
         self.covariate_combo_box.addItems(variables)
@@ -53,7 +53,7 @@ class AncovaWidget(AnalysisWidget):
 
         ancova = pg.ancova(data=df, dv=self.response, covar=self.covariate, between="Group")
 
-        html_template = '''
+        html_template = """
                 <html>
                   <head>
                     {style}
@@ -63,18 +63,18 @@ class AncovaWidget(AnalysisWidget):
                     {ancova}
                   </body>
                 </html>
-                '''
+                """
 
         html = html_template.format(
             style=style,
-            ancova=ancova.to_html(classes='mystyle'),
+            ancova=ancova.to_html(classes="mystyle"),
         )
         self.webView.setHtml(html)
 
     def clear(self):
         self.covariate_combo_box.clear()
         self.response_combo_box.clear()
-        self.webView.setHtml('')
+        self.webView.setHtml("")
         self.ax.clear()
 
     def _covariate_current_text_changed(self, covariate: str):
@@ -85,9 +85,9 @@ class AncovaWidget(AnalysisWidget):
 
     @property
     def help_content(self) -> Optional[str]:
-        path = 'docs/ancova.md'
+        path = "docs/ancova.md"
         if os.path.exists(path):
-            with open(path, 'r') as file:
+            with open(path, "r") as file:
                 return file.read().rstrip()
 
     def _get_toolbar(self) -> QToolBar:

@@ -28,13 +28,13 @@ setConfigOptions(
 class App(QApplication):
     def __init__(self, args):
         QApplication.__init__(self, args)
-        self.setStyle('Fusion')
+        self.setStyle("Fusion")
         self.setOrganizationName("TSE Systems")
         self.setOrganizationDomain("http://www.tse-systems.com")
         self.setApplicationName("TSE Analytics")
         self.setWindowIcon(QIcon(":/icons/icons8-eukaryotic-cells-96.png"))
 
-        cache_size_in_kb = 700 * 10 ** 3
+        cache_size_in_kb = 700 * 10**3
         QPixmapCache.setCacheLimit(cache_size_in_kb)
 
         f = QFile(":/style.qss")

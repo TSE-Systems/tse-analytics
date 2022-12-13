@@ -19,14 +19,14 @@ class AnovaWidget(AnalysisWidget):
         super().__init__(parent)
 
         self.variable_combo_box = QComboBox(self)
-        self.variable = ''
+        self.variable = ""
 
         self.layout.addWidget(self._get_toolbar())
 
         self.webView = QWebEngineView(self)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, False)
-        self.webView.setHtml('')
+        self.webView.setHtml("")
         self.layout.addWidget(self.webView)
 
         figure = Figure(figsize=(5.0, 4.0), dpi=100)
@@ -39,7 +39,7 @@ class AnovaWidget(AnalysisWidget):
         self.ax.clear()
 
     def update_variables(self, variables: dict[str, Variable]):
-        self.variable = ''
+        self.variable = ""
         self.variable_combo_box.clear()
         self.variable_combo_box.addItems(variables)
         self.variable_combo_box.setCurrentText(self.variable)
@@ -64,14 +64,14 @@ class AnovaWidget(AnalysisWidget):
             anova_header = "Welch one-way ANOVA"
             anova = pg.welch_anova(data=df, dv=self.variable, between="Group")
 
-        pt = pg.pairwise_tukey(dv=self.variable, between='Group', data=df)
+        pt = pg.pairwise_tukey(dv=self.variable, between="Group", data=df)
         # self.webView.setHtml(pt.to_html())
 
-        tukey = pairwise_tukeyhsd(endog=df[self.variable],  # Data
-                                  groups=df["Group"],  # Groups
-                                  alpha=0.05)  # Significance level
+        tukey = pairwise_tukeyhsd(
+            endog=df[self.variable], groups=df["Group"], alpha=0.05  # Data  # Groups
+        )  # Significance level
 
-        html_template = '''
+        html_template = """
                 <html>
                   <head>
                     {style}
@@ -85,28 +85,29 @@ class AnovaWidget(AnalysisWidget):
                     {tukey}
                   </body>
                 </html>
-                '''
+                """
 
         html = html_template.format(
             style=style,
-            homoscedasticity=homoscedasticity.to_html(classes='mystyle'),
+            homoscedasticity=homoscedasticity.to_html(classes="mystyle"),
             anova_header=anova_header,
-            anova=anova.to_html(classes='mystyle'),
-            tukey=pt.to_html(classes='mystyle'),
+            anova=anova.to_html(classes="mystyle"),
+            tukey=pt.to_html(classes="mystyle"),
         )
         self.webView.setHtml(html)
 
         self.ax.clear()
-        tukey.plot_simultaneous(ax=self.ax,
-                                figsize=self.canvas.figure.get_size_inches())  # Plot group confidence intervals
+        tukey.plot_simultaneous(
+            ax=self.ax, figsize=self.canvas.figure.get_size_inches()
+        )  # Plot group confidence intervals
         self.canvas.figure.tight_layout()
         self.canvas.draw()
 
     @property
     def help_content(self) -> Optional[str]:
-        path = 'docs/anova.md'
+        path = "docs/anova.md"
         if os.path.exists(path):
-            with open(path, 'r') as file:
+            with open(path, "r") as file:
                 return file.read().rstrip()
 
     def _get_toolbar(self) -> QToolBar:

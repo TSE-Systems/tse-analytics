@@ -18,7 +18,7 @@ class ScatterMatrixWidget(AnalysisWidget):
         self.webView = QWebEngineView(self)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, False)
-        self.webView.setHtml('')
+        self.webView.setHtml("")
         self.layout.addWidget(self.webView)
 
     def _analyze(self):
@@ -26,23 +26,19 @@ class ScatterMatrixWidget(AnalysisWidget):
         selected_variables = Manager.data.selected_variables
         features = [item.name for item in selected_variables]
 
-        fig = px.scatter_matrix(
-            df,
-            dimensions=features,
-            color="Group"
-        )
+        fig = px.scatter_matrix(df, dimensions=features, color="Group")
         fig.update_traces(diagonal_visible=False)
 
-        self.webView.setHtml(fig.to_html(include_plotlyjs='cdn'))
+        self.webView.setHtml(fig.to_html(include_plotlyjs="cdn"))
 
     def clear(self):
-        self.webView.setHtml('')
+        self.webView.setHtml("")
 
     @property
     def help_content(self) -> Optional[str]:
-        path = 'docs/scatter-matrix.md'
+        path = "docs/scatter-matrix.md"
         if os.path.exists(path):
-            with open(path, 'r') as file:
+            with open(path, "r") as file:
                 return file.read().rstrip()
 
     def _get_toolbar(self) -> QToolBar:

@@ -57,7 +57,7 @@ class HistogramWidget(AnalysisWidget):
             sharex=False,
             sharey=False,
             layout=self._get_plot_layout(len(selected_variables)),
-            ax=self.ax
+            ax=self.ax,
         )
 
         self.canvas.figure.tight_layout()
@@ -65,9 +65,9 @@ class HistogramWidget(AnalysisWidget):
 
     @property
     def help_content(self) -> Optional[str]:
-        path = 'docs/histogram.md'
+        path = "docs/histogram.md"
         if os.path.exists(path):
-            with open(path, 'r') as file:
+            with open(path, "r") as file:
                 return file.read().rstrip()
 
     def _get_toolbar(self) -> QToolBar:

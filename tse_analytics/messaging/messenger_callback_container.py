@@ -35,8 +35,7 @@ class MessengerCallbackContainer:
             # persistent, so instead we store a reference to the function
             # and instance.
 
-            value = (weakref.ref(handler.__func__),
-                     weakref.ref(handler.__self__, self._auto_remove))
+            value = (weakref.ref(handler.__func__), weakref.ref(handler.__self__, self._auto_remove))
 
         else:
 
@@ -48,8 +47,7 @@ class MessengerCallbackContainer:
             # persistent, so instead we store a reference to the function
             # and instance.
 
-            value += (weakref.ref(filter.__func__),
-                      weakref.ref(filter.__self__, self._auto_remove))
+            value += (weakref.ref(filter.__func__), weakref.ref(filter.__self__, self._auto_remove))
 
         else:
 
@@ -103,7 +101,7 @@ class MessengerCallbackContainer:
 
     @staticmethod
     def is_bound_method(func):
-        return hasattr(func, '__func__') and getattr(func, '__self__', None) is not None
+        return hasattr(func, "__func__") and getattr(func, "__self__", None) is not None
 
     def __setitem__(self, message_class, value):
         handler, filter = value

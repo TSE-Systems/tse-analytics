@@ -15,22 +15,22 @@ class PcaWidget(AnalysisWidget):
         super().__init__(parent)
 
         self.components_combo_box = QComboBox(self)
-        self.components_combo_box.addItems(['2D', '3D'])
-        self.components_combo_box.setCurrentText('2D')
+        self.components_combo_box.addItems(["2D", "3D"])
+        self.components_combo_box.setCurrentText("2D")
 
         self.layout.addWidget(self._get_toolbar())
 
         self.webView = QWebEngineView(self)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, False)
-        self.webView.setHtml('')
+        self.webView.setHtml("")
         self.layout.addWidget(self.webView)
 
     def _analyze(self):
         df = Manager.data.selected_dataset.original_df.dropna()
         selected_variables = Manager.data.selected_variables
         features = [item.name for item in selected_variables]
-        n_components = 2 if self.components_combo_box.currentText() == '2D' else 3
+        n_components = 2 if self.components_combo_box.currentText() == "2D" else 3
 
         pca = PCA(n_components=n_components)
         components = pca.fit_transform(df[features])
@@ -42,31 +42,31 @@ class PcaWidget(AnalysisWidget):
                 components,
                 x=0,
                 y=1,
-                color=df['Group'],
-                title=f'Total Explained Variance: {total_var:.2f}%',
-                labels={'0': 'PC 1', '1': 'PC 2'}
+                color=df["Group"],
+                title=f"Total Explained Variance: {total_var:.2f}%",
+                labels={"0": "PC 1", "1": "PC 2"},
             )
-            self.webView.setHtml(fig.to_html(include_plotlyjs='cdn'))
+            self.webView.setHtml(fig.to_html(include_plotlyjs="cdn"))
         elif n_components == 3:
             fig = px.scatter_3d(
                 components,
                 x=0,
                 y=1,
                 z=2,
-                color=df['Group'],
-                title=f'Total Explained Variance: {total_var:.2f}%',
-                labels={'0': 'PC 1', '1': 'PC 2', '2': 'PC 3'}
+                color=df["Group"],
+                title=f"Total Explained Variance: {total_var:.2f}%",
+                labels={"0": "PC 1", "1": "PC 2", "2": "PC 3"},
             )
-            self.webView.setHtml(fig.to_html(include_plotlyjs='cdn'))
+            self.webView.setHtml(fig.to_html(include_plotlyjs="cdn"))
 
     def clear(self):
-        self.webView.setHtml('')
+        self.webView.setHtml("")
 
     @property
     def help_content(self) -> Optional[str]:
-        path = 'docs/pca.md'
+        path = "docs/pca.md"
         if os.path.exists(path):
-            with open(path, 'r') as file:
+            with open(path, "r") as file:
                 return file.read().rstrip()
 
     def _get_toolbar(self) -> QToolBar:
