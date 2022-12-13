@@ -1,5 +1,4 @@
-from importlib import import_module
-from importlib import resources
+from importlib import import_module, resources
 
 PLUGINS = dict()
 

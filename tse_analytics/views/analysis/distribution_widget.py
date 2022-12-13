@@ -1,11 +1,10 @@
 import os.path
 from typing import Optional
 
-from PySide6.QtWidgets import QWidget, QToolBar, QPushButton, QLabel, QComboBox
-
+import seaborn as sns
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
 from matplotlib.figure import Figure
-import seaborn as sns
+from PySide6.QtWidgets import QComboBox, QLabel, QPushButton, QToolBar, QWidget
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.analysis.analysis_widget import AnalysisWidget

@@ -3,7 +3,7 @@ from typing import Optional
 
 import plotly.express as px
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QWidget, QToolBar, QPushButton, QLabel, QComboBox
+from PySide6.QtWidgets import QComboBox, QLabel, QPushButton, QToolBar, QWidget
 from sklearn.decomposition import PCA
 
 from tse_analytics.core.manager import Manager

@@ -1,6 +1,5 @@
-from tse_datatools.data.workspace import Workspace
-
 from tse_analytics.models.tree_item import TreeItem
+from tse_datatools.data.workspace import Workspace
 
 
 class WorkspaceTreeItem(TreeItem):

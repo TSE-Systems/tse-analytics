@@ -1,8 +1,8 @@
+from pyqtgraph import GraphicsLayout, GraphicsView
 from PySide6.QtWidgets import QWidget
-from pyqtgraph import GraphicsView, GraphicsLayout
-from tse_datatools.data.animal import Animal
 
 from tse_analytics.views.tiles.tile_view import TileView
+from tse_datatools.data.animal import Animal
 
 
 class TilesView(GraphicsView):

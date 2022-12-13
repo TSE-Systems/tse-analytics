@@ -1,9 +1,9 @@
-from PySide6.QtCore import QSortFilterProxyModel, QItemSelection, Qt
-from PySide6.QtWidgets import QTableView, QHeaderView
-from tse_datatools.data.group import Group
+from PySide6.QtCore import QItemSelection, QSortFilterProxyModel, Qt
+from PySide6.QtWidgets import QHeaderView, QTableView
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.models.groups_model import GroupsModel
+from tse_datatools.data.group import Group
 
 
 class GroupsTableView(QTableView):

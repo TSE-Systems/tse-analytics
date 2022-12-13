@@ -1,11 +1,11 @@
 from typing import Optional
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QIcon, QAction
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar
+from PySide6.QtGui import QAction, QIcon
+from PySide6.QtWidgets import QToolBar, QVBoxLayout, QWidget
 
-from tse_analytics.core.workers.worker import Worker
 from tse_analytics.core.manager import Manager
+from tse_analytics.core.workers.worker import Worker
 from tse_analytics.views.data.data_widget import DataWidget
 from tse_analytics.views.data.table_view import TableView
 

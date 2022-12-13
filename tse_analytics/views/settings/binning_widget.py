@@ -2,8 +2,16 @@ from typing import Optional
 
 import pandas as pd
 from PySide6 import QtCore
-from PySide6.QtCore import Qt, QSize
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QComboBox, QLabel, QSpinBox, QPushButton, QCheckBox
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QLabel,
+    QPushButton,
+    QSpinBox,
+    QVBoxLayout,
+    QWidget,
+)
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import BinningAppliedMessage, RevertBinningMessage

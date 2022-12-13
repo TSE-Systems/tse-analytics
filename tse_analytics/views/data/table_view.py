@@ -1,6 +1,6 @@
 import pandas as pd
-from PySide6.QtCore import Qt, QSortFilterProxyModel
-from PySide6.QtWidgets import QWidget, QTableView, QHeaderView
+from PySide6.QtCore import QSortFilterProxyModel, Qt
+from PySide6.QtWidgets import QHeaderView, QTableView, QWidget
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.models.pandas_model import PandasModel

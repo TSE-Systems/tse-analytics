@@ -1,8 +1,7 @@
+from tse_analytics.models.tree_item import TreeItem
 from tse_datatools.analysis.binning_params import BinningParams
 from tse_datatools.analysis.grouping_mode import GroupingMode
 from tse_datatools.data.dataset import Dataset
-
-from tse_analytics.models.tree_item import TreeItem
 
 
 class Message:

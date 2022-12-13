@@ -1,12 +1,15 @@
 from typing import Optional
 
-from PySide6.QtWidgets import QTreeView, QWidget
 from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QTreeView, QWidget
 
 from tse_analytics.core.manager import Manager
+from tse_analytics.messaging.messages import (
+    ClearDataMessage,
+    SelectedTreeNodeChangedMessage,
+)
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
-from tse_analytics.messaging.messages import SelectedTreeNodeChangedMessage, ClearDataMessage
 from tse_analytics.models.json_model import JsonModel
 
 

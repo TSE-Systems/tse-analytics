@@ -1,6 +1,6 @@
 from typing import Optional
 
-from PySide6.QtWidgets import QWidget, QTextEdit
+from PySide6.QtWidgets import QTextEdit, QWidget
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import ShowHelpMessage

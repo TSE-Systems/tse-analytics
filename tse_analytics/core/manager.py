@@ -1,4 +1,4 @@
-from PySide6.QtCore import QThreadPool, QModelIndex
+from PySide6.QtCore import QModelIndex, QThreadPool
 
 from tse_analytics.data.data_hub import DataHub
 from tse_analytics.messaging.messenger import Messenger
@@ -13,7 +13,7 @@ class Manager:
     threadpool = QThreadPool()
 
     def __init__(self):
-        print("Multithreading with maximum %d threads" % Manager.threadpool.maxThreadCount())
+        print(f"Multithreading with maximum {Manager.threadpool.maxThreadCount()} threads")
 
     @classmethod
     def load_workspace(cls, path: str) -> None:
@@ -27,7 +27,8 @@ class Manager:
     @classmethod
     def import_dataset(cls, path: str) -> None:
         dataset = DatasetLoader.load(path)
-        cls.workspace.add_dataset(dataset)
+        if dataset is not None:
+            cls.workspace.add_dataset(dataset)
 
     @classmethod
     def remove_dataset(cls, indexes: [QModelIndex]) -> None:

@@ -2,12 +2,16 @@ from typing import Optional
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QToolButton, QToolBar, QVBoxLayout
+from PySide6.QtWidgets import QToolBar, QToolButton, QVBoxLayout, QWidget
 
+from tse_analytics.core.manager import Manager
+from tse_analytics.messaging.messages import (
+    ClearDataMessage,
+    DatasetChangedMessage,
+    ShowHelpMessage,
+)
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
-from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import ClearDataMessage, DatasetChangedMessage, ShowHelpMessage
 from tse_datatools.data.variable import Variable
 
 
@@ -18,7 +22,7 @@ class AnalysisWidget(QWidget, MessengerListener):
         MessengerListener.__init__(self)
         self.register_to_messenger(Manager.messenger)
 
-        self.layout = QVBoxLayout(self)
+        self.layout: QVBoxLayout = QVBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
 

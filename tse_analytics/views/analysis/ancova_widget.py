@@ -1,11 +1,11 @@
 import os.path
 from typing import Optional
 
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 import pingouin as pg
-from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QWidget, QComboBox, QToolBar, QLabel, QPushButton
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
+from PySide6.QtWebEngineWidgets import QWebEngineView
+from PySide6.QtWidgets import QComboBox, QLabel, QPushButton, QToolBar, QWidget
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.css import style

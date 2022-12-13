@@ -5,7 +5,7 @@ import pingouin as pg
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QWidget, QPushButton, QToolBar, QLabel, QComboBox
+from PySide6.QtWidgets import QComboBox, QLabel, QPushButton, QToolBar, QWidget
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 from tse_analytics.core.manager import Manager

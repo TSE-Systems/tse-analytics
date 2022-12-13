@@ -1,11 +1,11 @@
 from typing import Optional
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QDialog, QWidget, QListWidgetItem, QInputDialog
-from tse_datatools.data.group import Group
+from PySide6.QtWidgets import QDialog, QInputDialog, QListWidgetItem, QWidget
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.groups_dialog_ui import Ui_GroupsDialog
+from tse_datatools.data.group import Group
 
 
 class GroupsDialog(QDialog, Ui_GroupsDialog):

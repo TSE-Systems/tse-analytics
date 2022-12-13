@@ -1,12 +1,14 @@
 from typing import Optional
 
-from PySide6.QtWidgets import QWidget, QVBoxLayout
+from PySide6.QtWidgets import QVBoxLayout, QWidget
 
 from tse_analytics.core.manager import Manager
+from tse_analytics.messaging.messages import ClearDataMessage, DatasetChangedMessage
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
-from tse_analytics.messaging.messages import ClearDataMessage, DatasetChangedMessage
-from tse_analytics.views.selection.variables.variables_table_view import VariablesTableView
+from tse_analytics.views.selection.variables.variables_table_view import (
+    VariablesTableView,
+)
 
 
 class VariablesViewWidget(QWidget, MessengerListener):

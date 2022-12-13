@@ -1,10 +1,17 @@
 from functools import partial
 
-from PySide6.QtCore import Qt, QModelIndex, QItemSelection, QSize
-from PySide6.QtWidgets import QTreeView, QWidget, QAbstractItemView, QMenu, QInputDialog, QLineEdit
+from PySide6.QtCore import QItemSelection, QModelIndex, QSize, Qt
+from PySide6.QtWidgets import (
+    QAbstractItemView,
+    QInputDialog,
+    QLineEdit,
+    QMenu,
+    QTreeView,
+    QWidget,
+)
 
-from tse_analytics.messaging.messages import SelectedTreeNodeChangedMessage
 from tse_analytics.core.manager import Manager
+from tse_analytics.messaging.messages import SelectedTreeNodeChangedMessage
 from tse_analytics.models.dataset_tree_item import DatasetTreeItem
 
 

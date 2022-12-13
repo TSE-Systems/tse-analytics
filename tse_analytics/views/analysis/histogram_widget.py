@@ -1,10 +1,9 @@
 import os.path
 from typing import Optional
 
-from PySide6.QtWidgets import QWidget, QToolBar, QPushButton
-
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
 from matplotlib.figure import Figure
+from PySide6.QtWidgets import QPushButton, QToolBar, QWidget
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.analysis.analysis_widget import AnalysisWidget

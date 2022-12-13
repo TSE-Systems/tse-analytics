@@ -1,11 +1,10 @@
-from typing import Optional, Union
 import datetime
+from typing import Optional, Union
 
 import pandas as pd
 import pyqtgraph as pg
-
-from PySide6.QtWidgets import QWidget
 from pyqtgraph import mkPen
+from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.manager import Manager
 from tse_datatools.analysis.grouping_mode import GroupingMode

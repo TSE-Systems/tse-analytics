@@ -1,16 +1,16 @@
 from typing import Optional
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QIcon, QAction
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QDialog, QComboBox
-from tse_datatools.data.group import Group
+from PySide6.QtGui import QAction, QIcon
+from PySide6.QtWidgets import QComboBox, QDialog, QToolBar, QVBoxLayout, QWidget
 
 from tse_analytics.core.manager import Manager
+from tse_analytics.messaging.messages import ClearDataMessage, DatasetChangedMessage
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
-from tse_analytics.messaging.messages import ClearDataMessage, DatasetChangedMessage
-from tse_analytics.views.selection.groups.groups_table_view import GroupsTableView
 from tse_analytics.views.groups_dialog import GroupsDialog
+from tse_analytics.views.selection.groups.groups_table_view import GroupsTableView
+from tse_datatools.data.group import Group
 
 
 class GroupsViewWidget(QWidget, MessengerListener):

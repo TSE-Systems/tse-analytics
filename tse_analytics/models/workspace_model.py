@@ -1,12 +1,12 @@
 import pickle
 
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt, Signal
-from tse_datatools.data.dataset import Dataset
-from tse_datatools.data.workspace import Workspace
 
 from tse_analytics.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.models.tree_item import TreeItem
 from tse_analytics.models.workspace_tree_item import WorkspaceTreeItem
+from tse_datatools.data.dataset import Dataset
+from tse_datatools.data.workspace import Workspace
 
 
 class WorkspaceModel(QAbstractItemModel):

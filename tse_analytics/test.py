@@ -1,9 +1,6 @@
 import pandas as pd
-import scipy.stats as stats
 import pingouin as pg
-import statsmodels.api as sm
-from statsmodels.formula.api import ols
-
+import scipy.stats as stats
 
 df = pd.read_csv("C:\\Users\\anton\\Downloads\\20220404.22001.Ferran\\DrinkFeed.csv", sep="\t")
 

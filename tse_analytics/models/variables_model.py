@@ -1,6 +1,7 @@
 from typing import Sequence
 
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
+
 from tse_datatools.data.variable import Variable
 
 

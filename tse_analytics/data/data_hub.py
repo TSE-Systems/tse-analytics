@@ -1,26 +1,25 @@
-from typing import Optional
 import gc
+from typing import Optional
 
 import pandas as pd
 from PySide6.QtCore import QModelIndex
 from PySide6.QtGui import QPixmapCache
 
-from tse_datatools.analysis.grouping_mode import GroupingMode
-from tse_datatools.analysis.binning_operation import BinningOperation
-from tse_datatools.analysis.binning_params import BinningParams
-from tse_datatools.analysis.processor import calculate_grouped_data
-from tse_datatools.data.animal import Animal
-from tse_datatools.data.dataset import Dataset
-from tse_datatools.data.group import Group
-
 from tse_analytics.core.decorators import catch_error
-from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messages import (
     ClearDataMessage,
     DataChangedMessage,
     DatasetChangedMessage,
     GroupingModeChangedMessage,
 )
+from tse_analytics.messaging.messenger import Messenger
+from tse_datatools.analysis.binning_operation import BinningOperation
+from tse_datatools.analysis.binning_params import BinningParams
+from tse_datatools.analysis.grouping_mode import GroupingMode
+from tse_datatools.analysis.processor import calculate_grouped_data
+from tse_datatools.data.animal import Animal
+from tse_datatools.data.dataset import Dataset
+from tse_datatools.data.group import Group
 from tse_datatools.data.variable import Variable
 
 

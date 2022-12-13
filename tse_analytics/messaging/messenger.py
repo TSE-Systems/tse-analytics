@@ -1,13 +1,15 @@
 import logging
-from contextlib import contextmanager
-from weakref import WeakKeyDictionary
 from collections import Counter
+from contextlib import contextmanager
 from inspect import getmro
+from weakref import WeakKeyDictionary
 
-from tse_analytics.core.exceptions import InvalidSubscriber, InvalidMessage
-from tse_analytics.messaging.messenger_callback_container import MessengerCallbackContainer
-from tse_analytics.messaging.messenger_listener import MessengerListener
+from tse_analytics.core.exceptions import InvalidMessage, InvalidSubscriber
 from tse_analytics.messaging.messages import Message
+from tse_analytics.messaging.messenger_callback_container import (
+    MessengerCallbackContainer,
+)
+from tse_analytics.messaging.messenger_listener import MessengerListener
 
 
 class Messenger:

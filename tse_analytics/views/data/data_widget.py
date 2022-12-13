@@ -2,17 +2,17 @@ from typing import Optional
 
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.messaging.messenger import Messenger
-from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import (
-    ClearDataMessage,
-    DatasetChangedMessage,
     BinningAppliedMessage,
-    RevertBinningMessage,
+    ClearDataMessage,
     DataChangedMessage,
+    DatasetChangedMessage,
     GroupingModeChangedMessage,
+    RevertBinningMessage,
 )
+from tse_analytics.messaging.messenger import Messenger
+from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_datatools.data.variable import Variable
 
 

@@ -1,11 +1,10 @@
 import os
 
 import psutil
-
-from PySide6.QtCore import Qt, QTimer, QSettings
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QMainWindow, QFileDialog, QLabel, QApplication, QDialog
 import PySide6QtAds
+from PySide6.QtCore import QSettings, Qt, QTimer
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.analysis.ancova_widget import AncovaWidget
@@ -16,18 +15,19 @@ from tse_analytics.views.analysis.glm_widget import GlmWidget
 from tse_analytics.views.analysis.histogram_widget import HistogramWidget
 from tse_analytics.views.analysis.normality_widget import NormalityWidget
 from tse_analytics.views.analysis.pca_widget import PcaWidget
-
 from tse_analytics.views.analysis.scatter_matrix_widget import ScatterMatrixWidget
 from tse_analytics.views.data.plot_view_widget import PlotViewWidget
 from tse_analytics.views.data.table_view_widget import TableViewWidget
+from tse_analytics.views.datasets.datasets_tree_view import DatasetsTreeView
 from tse_analytics.views.help.help_widget import HelpWidget
-from tse_analytics.views.selection.groups.groups_view_widget import GroupsViewWidget
-from tse_analytics.views.selection.animals.animals_view_widget import AnimalsViewWidget
 from tse_analytics.views.info.info_widget import InfoWidget
 from tse_analytics.views.main_window_ui import Ui_MainWindow
-from tse_analytics.views.selection.variables.variables_view_widget import VariablesViewWidget
+from tse_analytics.views.selection.animals.animals_view_widget import AnimalsViewWidget
+from tse_analytics.views.selection.groups.groups_view_widget import GroupsViewWidget
+from tse_analytics.views.selection.variables.variables_view_widget import (
+    VariablesViewWidget,
+)
 from tse_analytics.views.settings.binning_widget import BinningWidget
-from tse_analytics.views.datasets.datasets_tree_view import DatasetsTreeView
 from tse_analytics.workspace.layout import LAYOUT_VERSION
 
 PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.ActiveTabHasCloseButton, False)

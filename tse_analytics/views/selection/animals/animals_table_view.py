@@ -1,9 +1,9 @@
-from PySide6.QtCore import QSortFilterProxyModel, QItemSelection, Qt
-from PySide6.QtWidgets import QTableView, QHeaderView
-from tse_datatools.data.animal import Animal
+from PySide6.QtCore import QItemSelection, QSortFilterProxyModel, Qt
+from PySide6.QtWidgets import QHeaderView, QTableView
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.models.animals_model import AnimalsModel
+from tse_datatools.data.animal import Animal
 
 
 class AnimalsTableView(QTableView):
