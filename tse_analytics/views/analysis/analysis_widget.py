@@ -22,9 +22,10 @@ class AnalysisWidget(QWidget, MessengerListener):
         MessengerListener.__init__(self)
         self.register_to_messenger(Manager.messenger)
 
-        self.layout: QVBoxLayout = QVBoxLayout(self)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(0)
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        self.setLayout(layout)
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
@@ -51,12 +52,12 @@ class AnalysisWidget(QWidget, MessengerListener):
         if content is not None:
             Manager.messenger.broadcast(ShowHelpMessage(self, content))
 
-    def _get_toolbar(self) -> Optional[QToolBar]:
+    def _get_toolbar(self) -> QToolBar:
         toolbar = QToolBar()
-        toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
 
         help_button = QToolButton()
-        help_button.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        help_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
         help_button.setToolTip("Show help")
         help_button.setIcon(QIcon(":/icons/icons8-help-16.png"))
         help_button.clicked.connect(self.__show_help)

@@ -5,12 +5,13 @@ import pingouin as pg
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QComboBox, QLabel, QPushButton, QToolBar, QWidget
+from PySide6.QtWidgets import QLabel, QPushButton, QToolBar, QWidget
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.css import style
 from tse_analytics.views.analysis.analysis_widget import AnalysisWidget
+from tse_analytics.views.misc.variable_selector import VariableSelector
 from tse_datatools.data.variable import Variable
 
 
@@ -18,33 +19,32 @@ class AnovaWidget(AnalysisWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
-        self.variable_combo_box = QComboBox(self)
+        self.variable_selector = VariableSelector()
+        self.variable_selector.currentTextChanged.connect(self.__variable_changed)
         self.variable = ""
 
-        self.layout.addWidget(self._get_toolbar())
+        self.layout().addWidget(self._get_toolbar())
 
         self.webView = QWebEngineView(self)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, False)
         self.webView.setHtml("")
-        self.layout.addWidget(self.webView)
+        self.layout().addWidget(self.webView)
 
         figure = Figure(figsize=(5.0, 4.0), dpi=100)
         self.ax = figure.subplots()
         self.canvas = FigureCanvasQTAgg(figure)
-        self.layout.addWidget(self.canvas)
+        self.layout().addWidget(self.canvas)
 
     def clear(self):
+        self.variable_selector.clear()
         self.webView.setHtml("")
         self.ax.clear()
 
     def update_variables(self, variables: dict[str, Variable]):
-        self.variable = ""
-        self.variable_combo_box.clear()
-        self.variable_combo_box.addItems(variables)
-        self.variable_combo_box.setCurrentText(self.variable)
+        self.variable_selector.set_data(variables)
 
-    def _variable_changed(self, variable: str):
+    def __variable_changed(self, variable: str):
         self.variable = variable
 
     def __analyze(self):
@@ -109,18 +109,16 @@ class AnovaWidget(AnalysisWidget):
         if os.path.exists(path):
             with open(path, "r") as file:
                 return file.read().rstrip()
+        return None
 
     def _get_toolbar(self) -> QToolBar:
         toolbar = super()._get_toolbar()
 
-        label = QLabel("Variable: ")
-        toolbar.addWidget(label)
+        toolbar.addWidget(QLabel("Variable: "))
+        toolbar.addWidget(self.variable_selector)
 
-        self.variable_combo_box.currentTextChanged.connect(self._variable_changed)
-        toolbar.addWidget(self.variable_combo_box)
-
-        pushButtonAnalyze = QPushButton("Analyze")
-        pushButtonAnalyze.clicked.connect(self.__analyze)
-        toolbar.addWidget(pushButtonAnalyze)
+        button = QPushButton("Analyze")
+        button.clicked.connect(self.__analyze)
+        toolbar.addWidget(button)
 
         return toolbar

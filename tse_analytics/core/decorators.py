@@ -1,7 +1,4 @@
-import traceback
 from functools import wraps
-
-from tse_analytics.core.helpers import report_error
 
 
 def _make_key(args, kwargs):
@@ -68,36 +65,5 @@ def memoize_attr_check(attr):
             return func(*args[1:], **kwargs)
 
         return result
-
-    return decorator
-
-
-def singleton(cls):
-    """Turn a class into a singleton, such that new objects
-    in this class share the same instance"""
-    instances = dict()
-
-    @wraps(cls)
-    def getinstance():
-        if cls not in instances:
-            instances[cls] = cls()
-        return instances[cls]
-
-    return getinstance
-
-
-def catch_error(msg):
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            try:
-                return func(*args, **kwargs)
-            except Exception as e:
-                m = "%s\n%s" % (msg, str(e))
-                detail = str(traceback.format_exc())
-                self = args[0]
-                report_error(m, detail)
-
-        return wrapper
 
     return decorator

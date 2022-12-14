@@ -11,12 +11,12 @@ class TableView(QTableView):
         super().__init__(parent)
 
         proxy_model = QSortFilterProxyModel()
-        proxy_model.setSortCaseSensitivity(Qt.CaseInsensitive)
+        proxy_model.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.setModel(proxy_model)
-        self.horizontalHeader().ResizeMode(QHeaderView.ResizeToContents)
+        self.horizontalHeader().ResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.verticalHeader().setDefaultSectionSize(10)
-        self.setSelectionBehavior(QTableView.SelectRows)
-        self.setEditTriggers(QTableView.NoEditTriggers)
+        self.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
+        self.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
 
         self._sorting: bool = False
 
@@ -32,7 +32,7 @@ class TableView(QTableView):
         df = df.drop(columns=drop_columns)
 
         model = PandasModel(df)
-        self.horizontalHeader().setSortIndicator(-1, Qt.AscendingOrder)
+        self.horizontalHeader().setSortIndicator(-1, Qt.SortOrder.AscendingOrder)
         self.setSortingEnabled(False)
         self.model().setSourceModel(model)
         self.setSortingEnabled(self._sorting)
@@ -42,7 +42,7 @@ class TableView(QTableView):
 
     def set_sorting(self, state: bool):
         self._sorting = state
-        self.horizontalHeader().setSortIndicator(-1, Qt.AscendingOrder)
+        self.horizontalHeader().setSortIndicator(-1, Qt.SortOrder.AscendingOrder)
         self.setSortingEnabled(self._sorting)
 
     def resize_columns_width(self):

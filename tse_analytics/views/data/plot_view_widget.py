@@ -2,7 +2,7 @@ from typing import Optional
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QIcon
-from PySide6.QtWidgets import QComboBox, QLabel, QToolBar, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QComboBox, QLabel, QToolBar, QWidget
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.data.data_widget import DataWidget
@@ -14,15 +14,13 @@ class PlotViewWidget(DataWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
-        self.plot_view = PlotView(self)
         self.variable_combo_box = QComboBox(self)
         self.variables = []
 
-        self.verticalLayout = QVBoxLayout(self)
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout.setSpacing(0)
-        self.verticalLayout.addWidget(self.toolbar)
-        self.verticalLayout.addWidget(self.plot_view)
+        self.plot_view = PlotView(self)
+
+        self.layout().addWidget(self.toolbar)
+        self.layout().addWidget(self.plot_view)
 
     def clear(self):
         self.plot_view.clear_plot()
@@ -55,7 +53,7 @@ class PlotViewWidget(DataWidget):
     @property
     def toolbar(self) -> QToolBar:
         toolbar = QToolBar(self)
-        toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
 
         label = QLabel("Variable: ")
         toolbar.addWidget(label)

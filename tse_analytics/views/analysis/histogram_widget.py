@@ -13,7 +13,7 @@ class HistogramWidget(AnalysisWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
-        self.layout.addWidget(self._get_toolbar())
+        self.layout().addWidget(self._get_toolbar())
 
         figure = Figure(figsize=(5.0, 4.0), dpi=100)
         self.ax = figure.subplots()
@@ -21,8 +21,8 @@ class HistogramWidget(AnalysisWidget):
 
         self.toolbar = NavigationToolbar2QT(self.canvas, self)
 
-        self.layout.addWidget(self.toolbar)
-        self.layout.addWidget(self.canvas)
+        self.layout().addWidget(self.toolbar)
+        self.layout().addWidget(self.canvas)
 
     def clear(self):
         self.ax.clear()
@@ -40,7 +40,7 @@ class HistogramWidget(AnalysisWidget):
         else:
             return round(number_of_elements / 3) + 1, 3
 
-    def _analyze(self):
+    def __analyze(self):
         if Manager.data.selected_dataset is None or len(Manager.data.selected_variables) == 0:
             return
 
@@ -68,12 +68,13 @@ class HistogramWidget(AnalysisWidget):
         if os.path.exists(path):
             with open(path, "r") as file:
                 return file.read().rstrip()
+        return None
 
     def _get_toolbar(self) -> QToolBar:
         toolbar = super()._get_toolbar()
 
-        pushButtonAnalyze = QPushButton("Analyze")
-        pushButtonAnalyze.clicked.connect(self._analyze)
-        toolbar.addWidget(pushButtonAnalyze)
+        button = QPushButton("Analyze")
+        button.clicked.connect(self.__analyze)
+        toolbar.addWidget(button)
 
         return toolbar

@@ -31,6 +31,6 @@ class Manager:
             cls.workspace.add_dataset(dataset)
 
     @classmethod
-    def remove_dataset(cls, indexes: [QModelIndex]) -> None:
+    def remove_dataset(cls, indexes: list[QModelIndex]) -> None:
         cls.workspace.remove_dataset(indexes)
         cls.data.clear()

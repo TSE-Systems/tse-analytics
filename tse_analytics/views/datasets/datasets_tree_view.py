@@ -19,10 +19,11 @@ class DatasetsTreeView(QTreeView):
     def __init__(self, parent: QWidget = None):
         super().__init__(parent)
 
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.setSelectionBehavior(QAbstractItemView.SelectItems)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectItems)
         self.setModel(Manager.workspace.workspace_model)
+
         self.customContextMenuRequested.connect(self._open_menu)
         self.selectionModel().selectionChanged.connect(self._treeview_selection_changed)
         self.selectionModel().currentChanged.connect(self._treeview_current_changed)
@@ -53,18 +54,18 @@ class DatasetsTreeView(QTreeView):
 
         menu.exec_(self.viewport().mapToGlobal(position))
 
-    def _merge_datasets(self, indexes: [QModelIndex]):
+    def _merge_datasets(self, indexes: list[QModelIndex]):
         # Manager.data.close_dataset(indexes)
         items = self.model().workspace_tree_item.child_items
         for item in items:
             print(item.checked)
 
-    def _adjust_dataset_time(self, indexes: [QModelIndex]):
+    def _adjust_dataset_time(self, indexes: list[QModelIndex]):
         delta, ok = QInputDialog.getText(self, "Enter time delta", "Delta", QLineEdit.EchoMode.Normal, "1 d")
         if ok:
             Manager.data.adjust_dataset_time(indexes, delta)
 
-    def _remove(self, indexes: [QModelIndex]):
+    def _remove(self, indexes: list[QModelIndex]):
         Manager.remove_dataset(indexes)
 
     def _treeview_current_changed(self, current: QModelIndex, previous: QModelIndex):

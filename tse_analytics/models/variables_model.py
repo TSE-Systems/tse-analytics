@@ -14,17 +14,17 @@ class VariablesModel(QAbstractTableModel):
 
         self.items = items
 
-    def data(self, index: QModelIndex, role: int):
+    def data(self, index: QModelIndex, role: Qt.ItemDataRole):
         if not index.isValid():
             return None
-        elif role != Qt.DisplayRole:
+        elif role != Qt.ItemDataRole.DisplayRole:
             return None
         item = self.items[index.row()]
         values = (item.name, item.unit, item.description)
         return values[index.column()]
 
-    def headerData(self, col: int, orientation: int, role: int):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+    def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
+        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             return self.header[col]
         return None
 

@@ -18,17 +18,20 @@ class PcaWidget(AnalysisWidget):
         self.components_combo_box.addItems(["2D", "3D"])
         self.components_combo_box.setCurrentText("2D")
 
-        self.layout.addWidget(self._get_toolbar())
+        self.layout().addWidget(self._get_toolbar())
 
         self.webView = QWebEngineView(self)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, False)
         self.webView.setHtml("")
-        self.layout.addWidget(self.webView)
+        self.layout().addWidget(self.webView)
 
-    def _analyze(self):
-        df = Manager.data.selected_dataset.original_df.dropna()
+    def __analyze(self):
         selected_variables = Manager.data.selected_variables
+        if len(selected_variables) < 3:
+            return
+
+        df = Manager.data.selected_dataset.original_df.dropna()
         features = [item.name for item in selected_variables]
         n_components = 2 if self.components_combo_box.currentText() == "2D" else 3
 
@@ -68,16 +71,16 @@ class PcaWidget(AnalysisWidget):
         if os.path.exists(path):
             with open(path, "r") as file:
                 return file.read().rstrip()
+        return None
 
     def _get_toolbar(self) -> QToolBar:
         toolbar = super()._get_toolbar()
 
-        label = QLabel("Dimensions: ")
-        toolbar.addWidget(label)
+        toolbar.addWidget( QLabel("Dimensions: "))
         toolbar.addWidget(self.components_combo_box)
 
-        pushButtonAnalyze = QPushButton("Analyze")
-        pushButtonAnalyze.clicked.connect(self._analyze)
-        toolbar.addWidget(pushButtonAnalyze)
+        button = QPushButton("Analyze")
+        button.clicked.connect(self.__analyze)
+        toolbar.addWidget(button)
 
         return toolbar

@@ -20,10 +20,11 @@ class VariablesViewWidget(QWidget, MessengerListener):
 
         self.table_view = VariablesTableView(self)
 
-        self.verticalLayout = QVBoxLayout(self)
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout.setSpacing(0)
-        self.verticalLayout.addWidget(self.table_view)
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addWidget(self.table_view)
+        self.setLayout(layout)
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)

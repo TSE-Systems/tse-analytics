@@ -17,5 +17,5 @@ class WorkspaceManager:
     def add_dataset(self, dataset: Dataset) -> None:
         self.workspace_model.add_dataset(dataset)
 
-    def remove_dataset(self, indexes: [QModelIndex]) -> None:
+    def remove_dataset(self, indexes: list[QModelIndex]) -> None:
         self.workspace_model.remove_dataset(indexes)

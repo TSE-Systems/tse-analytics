@@ -22,11 +22,12 @@ class GroupsViewWidget(QWidget, MessengerListener):
 
         self.table_view = GroupsTableView(self)
 
-        self.verticalLayout = QVBoxLayout(self)
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout.setSpacing(0)
-        self.verticalLayout.addWidget(self.toolbar)
-        self.verticalLayout.addWidget(self.table_view)
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addWidget(self.toolbar)
+        layout.addWidget(self.table_view)
+        self.setLayout(layout)
 
         self.extract_field = "text1"
 
@@ -64,7 +65,7 @@ class GroupsViewWidget(QWidget, MessengerListener):
     @property
     def toolbar(self) -> QToolBar:
         toolbar = QToolBar(self)
-        toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
 
         edit_groups_action = QAction(QIcon(":/icons/icons8-edit-16.png"), "Edit Groups", toolbar)
         edit_groups_action.triggered.connect(self.edit_groups)

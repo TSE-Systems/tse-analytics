@@ -13,10 +13,10 @@ class VariablesTableView(QTableView):
         proxy_model = QSortFilterProxyModel()
         proxy_model.setSortCaseSensitivity(Qt.CaseInsensitive)
         self.setModel(proxy_model)
-        self.horizontalHeader().ResizeMode(QHeaderView.ResizeToContents)
+        self.horizontalHeader().ResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.verticalHeader().setDefaultSectionSize(10)
-        self.setSelectionBehavior(QTableView.SelectRows)
-        self.setEditTriggers(QTableView.NoEditTriggers)
+        self.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
+        self.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
         self.sortByColumn(0, Qt.AscendingOrder)
         self.setSortingEnabled(True)
         self.selectionModel().selectionChanged.connect(self._on_selection_changed)
@@ -24,7 +24,7 @@ class VariablesTableView(QTableView):
     def clear(self):
         self.model().setSourceModel(None)
 
-    def set_data(self, variables: dict[int, Variable]):
+    def set_data(self, variables: dict[str, Variable]):
         model = VariablesModel(list(variables.values()))
         self.model().setSourceModel(model)
 

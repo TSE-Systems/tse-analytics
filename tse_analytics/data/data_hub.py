@@ -5,7 +5,6 @@ import pandas as pd
 from PySide6.QtCore import QModelIndex
 from PySide6.QtGui import QPixmapCache
 
-from tse_analytics.core.decorators import catch_error
 from tse_analytics.messaging.messages import (
     ClearDataMessage,
     DataChangedMessage,
@@ -78,8 +77,7 @@ class DataHub:
     def _broadcast_data_changed(self):
         self.messenger.broadcast(DataChangedMessage(self))
 
-    @catch_error("Could not adjust dataset time")
-    def adjust_dataset_time(self, indexes: [QModelIndex], delta: str) -> None:
+    def adjust_dataset_time(self, indexes: list[QModelIndex], delta: str) -> None:
         if self.selected_dataset is not None:
             self.selected_dataset.adjust_time(delta)
             self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))

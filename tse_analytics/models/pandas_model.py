@@ -28,7 +28,7 @@ class PandasModel(QAbstractTableModel):
             return len(self._dataframe.columns)
         return 0
 
-    def data(self, index: QModelIndex, role=Qt.ItemDataRole):
+    def data(self, index: QModelIndex, role: Qt.ItemDataRole):
         """Override method from QAbstractTableModel
 
         Return data cell from the pandas DataFrame
@@ -36,7 +36,7 @@ class PandasModel(QAbstractTableModel):
         if not index.isValid():
             return None
 
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             return str(self._dataframe.iloc[index.row(), index.column()])
 
         return None
@@ -46,11 +46,11 @@ class PandasModel(QAbstractTableModel):
 
         Return dataframe index as vertical header data and columns as horizontal header data.
         """
-        if role == Qt.DisplayRole:
-            if orientation == Qt.Horizontal:
+        if role == Qt.ItemDataRole.DisplayRole:
+            if orientation == Qt.Orientation.Horizontal:
                 return str(self._dataframe.columns[section])
 
-            if orientation == Qt.Vertical:
+            if orientation == Qt.Orientation.Vertical:
                 return str(self._dataframe.index[section])
 
         return None

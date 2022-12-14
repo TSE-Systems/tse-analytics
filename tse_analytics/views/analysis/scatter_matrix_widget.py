@@ -13,15 +13,15 @@ class ScatterMatrixWidget(AnalysisWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
-        self.layout.addWidget(self._get_toolbar())
+        self.layout().addWidget(self._get_toolbar())
 
         self.webView = QWebEngineView(self)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, False)
         self.webView.setHtml("")
-        self.layout.addWidget(self.webView)
+        self.layout().addWidget(self.webView)
 
-    def _analyze(self):
+    def __analyze(self):
         df = Manager.data.selected_dataset.original_df
         selected_variables = Manager.data.selected_variables
         features = [item.name for item in selected_variables]
@@ -40,12 +40,13 @@ class ScatterMatrixWidget(AnalysisWidget):
         if os.path.exists(path):
             with open(path, "r") as file:
                 return file.read().rstrip()
+        return None
 
     def _get_toolbar(self) -> QToolBar:
         toolbar = super()._get_toolbar()
 
-        pushButtonAnalyze = QPushButton("Analyze")
-        pushButtonAnalyze.clicked.connect(self._analyze)
-        toolbar.addWidget(pushButtonAnalyze)
+        button = QPushButton("Analyze")
+        button.clicked.connect(self.__analyze)
+        toolbar.addWidget(button)
 
         return toolbar

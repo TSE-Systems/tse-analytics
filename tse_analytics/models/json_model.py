@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, QObject, Qt
 
@@ -8,7 +8,7 @@ from tse_analytics.models.json_tree_item import TreeItem
 class JsonModel(QAbstractItemModel):
     """An editable model of Json data"""
 
-    def __init__(self, parent: QObject = None):
+    def __init__(self, parent: Optional[QObject] = None):
         super().__init__(parent)
 
         self._rootItem = TreeItem()
@@ -49,14 +49,14 @@ class JsonModel(QAbstractItemModel):
 
         item = index.internalPointer()
 
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             if index.column() == 0:
                 return item.key
 
             if index.column() == 1:
                 return item.value
 
-        elif role == Qt.EditRole:
+        elif role == Qt.ItemDataRole.EditRole:
             if index.column() == 1:
                 return item.value
 
@@ -71,7 +71,7 @@ class JsonModel(QAbstractItemModel):
             role (Qt.ItemDataRole)
 
         """
-        if role == Qt.EditRole:
+        if role == Qt.ItemDataRole.EditRole:
             if index.column() == 1:
                 item = index.internalPointer()
                 item.value = str(value)
@@ -92,10 +92,10 @@ class JsonModel(QAbstractItemModel):
         For the JsonModel, it returns only data for columns (orientation = Horizontal)
 
         """
-        if role != Qt.DisplayRole:
+        if role != Qt.ItemDataRole.DisplayRole:
             return None
 
-        if orientation == Qt.Horizontal:
+        if orientation == Qt.Orientation.Horizontal:
             return self._headers[section]
 
     def index(self, row: int, column: int, parent=QModelIndex()) -> QModelIndex:
@@ -166,7 +166,7 @@ class JsonModel(QAbstractItemModel):
         flags = super(JsonModel, self).flags(index)
 
         if index.column() == 1:
-            return Qt.ItemIsEditable | flags
+            return Qt.ItemFlag.ItemIsEditable | flags
         else:
             return flags
 

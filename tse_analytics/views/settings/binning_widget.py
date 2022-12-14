@@ -24,9 +24,8 @@ class BinningWidget(QWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
-        layout = QVBoxLayout(self)
-        layout.setAlignment(QtCore.Qt.AlignTop)
-        self.setLayout(layout)
+        layout = QVBoxLayout()
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         layout.addWidget(QLabel("Unit:"))
         self.unit_combobox = QComboBox()
@@ -66,6 +65,8 @@ class BinningWidget(QWidget):
         revert_binning_button = QPushButton("Revert to Original Data")
         revert_binning_button.pressed.connect(self._revert_binning_pressed)
         layout.addWidget(revert_binning_button)
+
+        self.setLayout(layout)
 
     @QtCore.Slot(str)
     def _binning_unit_changed(self, value: str):

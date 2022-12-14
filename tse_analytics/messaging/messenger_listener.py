@@ -5,12 +5,12 @@ class MessengerListener:
     This interface defines a single method, notify, that receives messages.
     """
 
-    def register_to_messenger(self, messenger: "Messenger"):
+    def register_to_messenger(self, messenger):
         raise NotImplementedError
 
-    def unregister(self, messenger: "Messenger"):
+    def unregister(self, messenger):
         """Default unregistration action. Calls messenger.unsubscribe_all on self"""
         messenger.unsubscribe_all(self)
 
     def notify(self, message):
-        raise NotImplementedError("Message has no handler: %s" % message)
+        raise NotImplementedError(f"Message has no handler: {message}")

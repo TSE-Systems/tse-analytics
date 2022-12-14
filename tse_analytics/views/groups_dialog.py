@@ -49,16 +49,16 @@ class GroupsDialog(QDialog, Ui_GroupsDialog):
         if self.selected_group is not None:
             for animal in Manager.data.selected_dataset.animals.values():
                 item = QListWidgetItem(str(animal.id))
-                item.setFlags(item.flags() | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
+                item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled)
                 if animal.id in self.selected_group.animal_ids:
-                    item.setCheckState(Qt.Checked)
+                    item.setCheckState(Qt.CheckState.Checked)
                 else:
-                    item.setCheckState(Qt.Unchecked)
+                    item.setCheckState(Qt.CheckState.Unchecked)
 
                 for group in self.groups:
                     if group != self.selected_group:
                         if animal.id in group.animal_ids:
-                            item.setFlags(~Qt.ItemIsEnabled)
+                            item.setFlags(~Qt.ItemFlag.ItemIsEnabled)
                             break
 
                 self.listWidgetAnimals.addItem(item)
@@ -69,7 +69,7 @@ class GroupsDialog(QDialog, Ui_GroupsDialog):
             None,
         )
         if animal_id:
-            if item.checkState() == Qt.Checked:
+            if item.checkState() == Qt.CheckState.Checked:
                 self.selected_group.animal_ids.append(animal_id)
             else:
                 self.selected_group.animal_ids.remove(animal_id)

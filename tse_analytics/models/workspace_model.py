@@ -1,4 +1,5 @@
 import pickle
+from typing import Optional
 
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt, Signal
 
@@ -24,14 +25,14 @@ class WorkspaceModel(QAbstractItemModel):
             return index.internalPointer().child_count()
         return self.workspace_tree_item.child_count()
 
-    def addChild(self, node, parent: QModelIndex = None):
+    def addChild(self, node, parent: Optional[QModelIndex] = None):
         if not parent or not parent.isValid():
             parent = self.workspace_tree_item
         else:
             parent = parent.internalPointer()
         parent.add_child(node)
 
-    def removeRow(self, row: int, parent: QModelIndex = None):
+    def removeRow(self, row: int, parent: Optional[QModelIndex] = None):
         if not parent or not parent.isValid():
             # parent is not valid when it is the root node, since the "parent"
             # method returns an empty QModelIndex
@@ -48,7 +49,7 @@ class WorkspaceModel(QAbstractItemModel):
 
         return self.workspace_tree_item
 
-    def index(self, row, column, parent: QModelIndex = QModelIndex()):
+    def index(self, row, column, parent=QModelIndex()):
         if parent.isValid() and parent.column() != 0:
             return QModelIndex()
 
@@ -71,39 +72,39 @@ class WorkspaceModel(QAbstractItemModel):
             return index.internalPointer().column_count()
         return self.workspace_tree_item.column_count()
 
-    def data(self, index: QModelIndex, role: int = None):
+    def data(self, index: QModelIndex, role: Qt.ItemDataRole = None):
         if not index.isValid():
             return None
 
         item = self.getItem(index)
 
-        if role == Qt.ToolTipRole:
+        if role == Qt.ItemDataRole.ToolTipRole:
             if index.column() == 0:
                 return item.tooltip
 
-        if role == Qt.DecorationRole:
+        if role == Qt.ItemDataRole.DecorationRole:
             if index.column() == 0:
                 return item.icon
 
-        if role == Qt.ForegroundRole:
+        if role == Qt.ItemDataRole.ForegroundRole:
             if index.column() == 0:
                 return item.foreground
 
-        if role == Qt.CheckStateRole:
+        if role == Qt.ItemDataRole.CheckStateRole:
             if index.column() == 0:
-                return Qt.Checked if item.checked else Qt.Unchecked
+                return Qt.CheckState.Checked if item.checked else Qt.CheckState.Unchecked
 
-        if role == Qt.DisplayRole or role == Qt.EditRole:
+        if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
             if index.column() != 1:
                 return item.data(index.column())
 
         return None
 
-    def setData(self, index: QModelIndex, value, role=Qt.EditRole):
+    def setData(self, index: QModelIndex, value, role=Qt.ItemDataRole.EditRole):
         if not index.isValid():
             return False
         item = self.getItem(index)
-        if role == Qt.CheckStateRole:
+        if role == Qt.ItemDataRole.CheckStateRole:
             item.checked = not item.checked
             self.checked_item_changed.emit(item)
             return True
@@ -116,8 +117,8 @@ class WorkspaceModel(QAbstractItemModel):
         item = index.internalPointer()
         return item.flags(index.column())
 
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+    def headerData(self, section, orientation: Qt.Orientation, role=Qt.ItemDataRole.DisplayRole):
+        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             return self.workspace_tree_item.column_names[section]
 
         return None
@@ -143,7 +144,7 @@ class WorkspaceModel(QAbstractItemModel):
         self.workspace_tree_item.add_child(dataset_tree_item)
         self.endResetModel()
 
-    def remove_dataset(self, indexes: [QModelIndex]):
+    def remove_dataset(self, indexes: list[QModelIndex]):
         self.beginResetModel()
         for index in indexes:
             row = index.row()

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QVBoxLayout
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import (
@@ -19,6 +19,11 @@ from tse_datatools.data.variable import Variable
 class DataWidget(QWidget, MessengerListener):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        self.setLayout(layout)
 
         MessengerListener.__init__(self)
         self.register_to_messenger(Manager.messenger)

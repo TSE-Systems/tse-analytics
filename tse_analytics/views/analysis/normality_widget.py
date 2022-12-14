@@ -4,10 +4,11 @@ from typing import Optional
 import pingouin as pg
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
 from matplotlib.figure import Figure
-from PySide6.QtWidgets import QComboBox, QLabel, QPushButton, QToolBar, QWidget
+from PySide6.QtWidgets import QLabel, QPushButton, QToolBar, QWidget
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.analysis.analysis_widget import AnalysisWidget
+from tse_analytics.views.misc.variable_selector import VariableSelector
 from tse_datatools.data.variable import Variable
 
 
@@ -15,32 +16,30 @@ class NormalityWidget(AnalysisWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
-        self.variable_combo_box = QComboBox(self)
+        self.variable_selector = VariableSelector()
+        self.variable_selector.currentTextChanged.connect(self.__variable_changed)
         self.variable = ""
 
-        self.layout.addWidget(self._get_toolbar())
+        self.layout().addWidget(self._get_toolbar())
 
         figure = Figure(figsize=(5.0, 4.0), dpi=100)
         self.canvas = FigureCanvasQTAgg(figure)
 
         self.toolbar = NavigationToolbar2QT(self.canvas, self)
 
-        self.layout.addWidget(self.toolbar)
-        self.layout.addWidget(self.canvas)
+        self.layout().addWidget(self.toolbar)
+        self.layout().addWidget(self.canvas)
 
     def clear(self):
         self.canvas.figure.clear()
 
     def update_variables(self, variables: dict[str, Variable]):
-        self.variable = ""
-        self.variable_combo_box.clear()
-        self.variable_combo_box.addItems(variables)
-        self.variable_combo_box.setCurrentText(self.variable)
+        self.variable_selector.set_data(variables)
 
-    def _variable_changed(self, variable: str):
+    def __variable_changed(self, variable: str):
         self.variable = variable
 
-    def _analyze(self):
+    def __analyze(self):
         if Manager.data.selected_dataset is None:
             return
 
@@ -66,18 +65,16 @@ class NormalityWidget(AnalysisWidget):
         if os.path.exists(path):
             with open(path, "r") as file:
                 return file.read().rstrip()
+        return None
 
     def _get_toolbar(self) -> QToolBar:
         toolbar = super()._get_toolbar()
 
-        label = QLabel("Variable: ")
-        toolbar.addWidget(label)
+        toolbar.addWidget(QLabel("Variable: "))
+        toolbar.addWidget(self.variable_selector)
 
-        self.variable_combo_box.currentTextChanged.connect(self._variable_changed)
-        toolbar.addWidget(self.variable_combo_box)
-
-        pushButtonAnalyze = QPushButton("Analyze")
-        pushButtonAnalyze.clicked.connect(self._analyze)
-        toolbar.addWidget(pushButtonAnalyze)
+        button = QPushButton("Analyze")
+        button.clicked.connect(self.__analyze)
+        toolbar.addWidget(button)
 
         return toolbar

@@ -2,7 +2,7 @@ from typing import Optional
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QIcon
-from PySide6.QtWidgets import QToolBar, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QToolBar, QWidget
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.workers.worker import Worker
@@ -16,11 +16,8 @@ class TableViewWidget(DataWidget):
 
         self.table_view = TableView(self)
 
-        self.verticalLayout = QVBoxLayout(self)
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout.setSpacing(0)
-        self.verticalLayout.addWidget(self.toolbar)
-        self.verticalLayout.addWidget(self.table_view)
+        self.layout().addWidget(self.toolbar)
+        self.layout().addWidget(self.table_view)
 
     def clear(self):
         self.table_view.clear()
@@ -45,7 +42,7 @@ class TableViewWidget(DataWidget):
     @property
     def toolbar(self) -> QToolBar:
         toolbar = QToolBar(self)
-        toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
 
         enable_sorting_action = QAction(QIcon(":/icons/icons8-sorting-16.png"), "Enable Sorting", self)
         enable_sorting_action.triggered.connect(self._enable_sorting)
