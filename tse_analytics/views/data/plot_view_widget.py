@@ -2,11 +2,12 @@ from typing import Optional
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QIcon
-from PySide6.QtWidgets import QComboBox, QLabel, QToolBar, QWidget
+from PySide6.QtWidgets import QLabel, QToolBar, QWidget
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.data.data_widget import DataWidget
 from tse_analytics.views.data.plot_view import PlotView
+from tse_analytics.views.misc.variable_selector import VariableSelector
 from tse_datatools.data.variable import Variable
 
 
@@ -14,8 +15,8 @@ class PlotViewWidget(DataWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
-        self.variable_combo_box = QComboBox(self)
-        self.variables = []
+        self.variable_selector = VariableSelector()
+        self.variable_selector.currentTextChanged.connect(self.__variable_changed)
 
         self.plot_view = PlotView(self)
 
@@ -23,27 +24,21 @@ class PlotViewWidget(DataWidget):
         self.layout().addWidget(self.plot_view)
 
     def clear(self):
+        self.variable_selector.clear()
         self.plot_view.clear_plot()
-        self.variables.clear()
-        self.variable_combo_box.clear()
 
     def assign_data(self):
         df = Manager.data.get_current_df()
         self.plot_view.set_data(df)
 
     def set_variables(self, variables: dict[str, Variable]):
-        self.variables.clear()
-        for var in variables:
-            self.variables.append(var)
-        self.variable_combo_box.clear()
-        self.variable_combo_box.addItems(self.variables)
-        self.variable_combo_box.setCurrentText("")
+        self.variable_selector.set_data(variables)
 
     def clear_selection(self):
         # self.plot_view.clear()
         self.plot_view.set_data(Manager.data.selected_dataset.original_df)
 
-    def _variable_current_text_changed(self, variable: str):
+    def __variable_changed(self, variable: str):
         Manager.data.selected_variable = variable
         self.plot_view.set_variable(variable)
 
@@ -55,13 +50,8 @@ class PlotViewWidget(DataWidget):
         toolbar = QToolBar(self)
         toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
 
-        label = QLabel("Variable: ")
-        toolbar.addWidget(label)
-
-        self.variable_combo_box.addItems(self.variables)
-        self.variable_combo_box.setCurrentText("")
-        self.variable_combo_box.currentTextChanged.connect(self._variable_current_text_changed)
-        toolbar.addWidget(self.variable_combo_box)
+        toolbar.addWidget(QLabel("Variable: "))
+        toolbar.addWidget(self.variable_selector)
 
         display_errors_action = QAction(QIcon(":/icons/icons8-sorting-16.png"), "Display Errors", self)
         display_errors_action.triggered.connect(self._display_errors)

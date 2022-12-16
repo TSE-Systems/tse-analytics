@@ -53,6 +53,7 @@ class AnovaWidget(AnalysisWidget):
 
         df = Manager.data.selected_dataset.original_df
         # Drop NaN rows
+        # df = df[df["Group"].notna()]
         df = df[df[self.variable].notna()]
 
         homoscedasticity = pg.homoscedasticity(data=df, dv=self.variable, group="Group")

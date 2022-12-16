@@ -1,9 +1,10 @@
 import os
+from functools import partial
 
 import psutil
 import PySide6QtAds
 from PySide6.QtCore import QSettings, Qt, QTimer
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QAction
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow
 
 from tse_analytics.core.manager import Manager
@@ -36,6 +37,9 @@ PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.DockAreaDynami
 PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.FloatingContainerHasWidgetIcon, True)
 
 
+MAX_RECENT_FILES = 10
+
+
 class MainWindow(QMainWindow, Ui_MainWindow):
     """Main Window."""
 
@@ -52,6 +56,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.memory_usage_label = QLabel()
         self.statusBar.addPermanentWidget(self.memory_usage_label)
+
+        self.menuOpenRecent.aboutToShow.connect(self.populate_open_recent)
 
         # Create the dock manager. Because the parent parameter is a QMainWindow
         # the dock manager registers itself as the central widget.
@@ -166,6 +172,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.load_settings()
 
+    def populate_open_recent(self):
+        # Step 1. Remove the old options from the menu
+        self.menuOpenRecent.clear()
+        # Step 2. Dynamically create the actions
+        actions = []
+        settings = QSettings()
+        filenames = list(settings.value('recentFilesList', []))
+        for filename in filenames:
+            action = QAction(filename, self)
+            action.triggered.connect(partial(self.load_workspace, filename))
+            actions.append(action)
+        # Step 3. Add the actions to the menu
+        self.menuOpenRecent.addActions(actions)
+
+    def load_workspace(self, filename: str):
+        settings = QSettings()
+        filenames = list(settings.value('recentFilesList', []))
+        try:
+            filenames.remove(filename)
+        except ValueError:
+            pass
+
+        try:
+            Manager.load_workspace(filename)
+            filenames.insert(0, filename)
+            del filenames[MAX_RECENT_FILES:]
+        finally:
+            settings.setValue("recentFilesList", filenames)
+
     def load_settings(self):
         settings = QSettings()
         self.restoreGeometry(settings.value("MainWindow/Geometry"))
@@ -192,7 +227,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             options=options,
         )
         if file_path:
-            Manager.load_workspace(file_path)
+            self.load_workspace(file_path)
 
     def save_workspace_dialog(self):
         file_ext = "*.workspace"

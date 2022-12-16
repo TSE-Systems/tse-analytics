@@ -8,109 +8,78 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import (
-    QCoreApplication,
-    QDate,
-    QDateTime,
-    QLocale,
-    QMetaObject,
-    QObject,
-    QPoint,
-    QRect,
-    QSize,
-    Qt,
-    QTime,
-    QUrl,
-)
-from PySide6.QtGui import (
-    QAction,
-    QBrush,
-    QColor,
-    QConicalGradient,
-    QCursor,
-    QFont,
-    QFontDatabase,
-    QGradient,
-    QIcon,
-    QImage,
-    QKeySequence,
-    QLinearGradient,
-    QPainter,
-    QPalette,
-    QPixmap,
-    QRadialGradient,
-    QTransform,
-)
-from PySide6.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QMenu,
-    QMenuBar,
-    QSizePolicy,
-    QStatusBar,
-    QToolBar,
-    QWidget,
-)
-
-from . import resources_rc
-
+from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
+    QMetaObject, QObject, QPoint, QRect,
+    QSize, QTime, QUrl, Qt)
+from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
+    QCursor, QFont, QFontDatabase, QGradient,
+    QIcon, QImage, QKeySequence, QLinearGradient,
+    QPainter, QPalette, QPixmap, QRadialGradient,
+    QTransform)
+from PySide6.QtWidgets import (QApplication, QMainWindow, QMenu, QMenuBar,
+    QSizePolicy, QStatusBar, QToolBar, QWidget)
+from  . import resources_rc
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
-            MainWindow.setObjectName("MainWindow")
+            MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(1472, 1032)
         self.actionExit = QAction(MainWindow)
-        self.actionExit.setObjectName("actionExit")
+        self.actionExit.setObjectName(u"actionExit")
         icon = QIcon()
-        icon.addFile(":/icons/exit.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u":/icons/exit.png", QSize(), QIcon.Normal, QIcon.Off)
         self.actionExit.setIcon(icon)
         self.actionExit.setShortcutVisibleInContextMenu(False)
         self.actionAbout = QAction(MainWindow)
-        self.actionAbout.setObjectName("actionAbout")
+        self.actionAbout.setObjectName(u"actionAbout")
         icon1 = QIcon()
-        icon1.addFile(":/icons/icons8-about-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon1.addFile(u":/icons/icons8-about-16.png", QSize(), QIcon.Normal, QIcon.Off)
         self.actionAbout.setIcon(icon1)
         self.actionImportDataset = QAction(MainWindow)
-        self.actionImportDataset.setObjectName("actionImportDataset")
+        self.actionImportDataset.setObjectName(u"actionImportDataset")
         icon2 = QIcon()
-        icon2.addFile(":/icons/icons8-import-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon2.addFile(u":/icons/icons8-import-16.png", QSize(), QIcon.Normal, QIcon.Off)
         self.actionImportDataset.setIcon(icon2)
         self.actionOpenWorkspace = QAction(MainWindow)
-        self.actionOpenWorkspace.setObjectName("actionOpenWorkspace")
+        self.actionOpenWorkspace.setObjectName(u"actionOpenWorkspace")
         icon3 = QIcon()
-        icon3.addFile(":/icons/icons8-opened-folder-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon3.addFile(u":/icons/icons8-opened-folder-16.png", QSize(), QIcon.Normal, QIcon.Off)
         self.actionOpenWorkspace.setIcon(icon3)
         self.actionSaveWorkspace = QAction(MainWindow)
-        self.actionSaveWorkspace.setObjectName("actionSaveWorkspace")
+        self.actionSaveWorkspace.setObjectName(u"actionSaveWorkspace")
         icon4 = QIcon()
-        icon4.addFile(":/icons/icons8-save-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon4.addFile(u":/icons/icons8-save-16.png", QSize(), QIcon.Normal, QIcon.Off)
         self.actionSaveWorkspace.setIcon(icon4)
         self.actionExportExcel = QAction(MainWindow)
-        self.actionExportExcel.setObjectName("actionExportExcel")
+        self.actionExportExcel.setObjectName(u"actionExportExcel")
         icon5 = QIcon()
-        icon5.addFile(":/icons/icons8-export-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon5.addFile(u":/icons/icons8-export-16.png", QSize(), QIcon.Normal, QIcon.Off)
         self.actionExportExcel.setIcon(icon5)
         self.actionResetLayout = QAction(MainWindow)
-        self.actionResetLayout.setObjectName("actionResetLayout")
+        self.actionResetLayout.setObjectName(u"actionResetLayout")
+        self.actionewfw = QAction(MainWindow)
+        self.actionewfw.setObjectName(u"actionewfw")
         self.centralWidget = QWidget(MainWindow)
-        self.centralWidget.setObjectName("centralWidget")
+        self.centralWidget.setObjectName(u"centralWidget")
         MainWindow.setCentralWidget(self.centralWidget)
         self.menuBar = QMenuBar(MainWindow)
-        self.menuBar.setObjectName("menuBar")
+        self.menuBar.setObjectName(u"menuBar")
         self.menuBar.setGeometry(QRect(0, 0, 1472, 22))
         self.menuFile = QMenu(self.menuBar)
-        self.menuFile.setObjectName("menuFile")
+        self.menuFile.setObjectName(u"menuFile")
+        self.menuOpenRecent = QMenu(self.menuFile)
+        self.menuOpenRecent.setObjectName(u"menuOpenRecent")
         self.menuHelp = QMenu(self.menuBar)
-        self.menuHelp.setObjectName("menuHelp")
+        self.menuHelp.setObjectName(u"menuHelp")
         self.menuView = QMenu(self.menuBar)
-        self.menuView.setObjectName("menuView")
+        self.menuView.setObjectName(u"menuView")
         MainWindow.setMenuBar(self.menuBar)
         self.statusBar = QStatusBar(MainWindow)
-        self.statusBar.setObjectName("statusBar")
+        self.statusBar.setObjectName(u"statusBar")
         MainWindow.setStatusBar(self.statusBar)
         self.toolBar = QToolBar(MainWindow)
-        self.toolBar.setObjectName("toolBar")
+        self.toolBar.setObjectName(u"toolBar")
         self.toolBar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         MainWindow.addToolBar(Qt.TopToolBarArea, self.toolBar)
 
@@ -118,6 +87,7 @@ class Ui_MainWindow(object):
         self.menuBar.addAction(self.menuView.menuAction())
         self.menuBar.addAction(self.menuHelp.menuAction())
         self.menuFile.addAction(self.actionOpenWorkspace)
+        self.menuFile.addAction(self.menuOpenRecent.menuAction())
         self.menuFile.addAction(self.actionSaveWorkspace)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionImportDataset)
@@ -135,33 +105,34 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
 
         QMetaObject.connectSlotsByName(MainWindow)
-
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", "TSE Analytics", None))
-        self.actionExit.setText(QCoreApplication.translate("MainWindow", "E&xit", None))
-        self.actionAbout.setText(QCoreApplication.translate("MainWindow", "About", None))
-        self.actionImportDataset.setText(QCoreApplication.translate("MainWindow", "Import Dataset", None))
-        # if QT_CONFIG(tooltip)
-        self.actionImportDataset.setToolTip(QCoreApplication.translate("MainWindow", "Import dataset...", None))
-        # endif // QT_CONFIG(tooltip)
-        self.actionOpenWorkspace.setText(QCoreApplication.translate("MainWindow", "Open Workspace", None))
-        # if QT_CONFIG(tooltip)
-        self.actionOpenWorkspace.setToolTip(QCoreApplication.translate("MainWindow", "Open workspace...", None))
-        # endif // QT_CONFIG(tooltip)
-        self.actionSaveWorkspace.setText(QCoreApplication.translate("MainWindow", "Save Workspace", None))
-        # if QT_CONFIG(tooltip)
-        self.actionSaveWorkspace.setToolTip(QCoreApplication.translate("MainWindow", "Save workspace...", None))
-        # endif // QT_CONFIG(tooltip)
-        self.actionExportExcel.setText(QCoreApplication.translate("MainWindow", "Export to Excel", None))
-        # if QT_CONFIG(tooltip)
-        self.actionExportExcel.setToolTip(QCoreApplication.translate("MainWindow", "Export to Excel...", None))
-        # endif // QT_CONFIG(tooltip)
-        self.actionResetLayout.setText(QCoreApplication.translate("MainWindow", "Reset Layout", None))
-        self.menuFile.setTitle(QCoreApplication.translate("MainWindow", "&File", None))
-        self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", "&Help", None))
-        self.menuView.setTitle(QCoreApplication.translate("MainWindow", "&View", None))
-        self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", "ToolBar", None))
-
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"TSE Analytics", None))
+        self.actionExit.setText(QCoreApplication.translate("MainWindow", u"E&xit", None))
+        self.actionAbout.setText(QCoreApplication.translate("MainWindow", u"About", None))
+        self.actionImportDataset.setText(QCoreApplication.translate("MainWindow", u"Import Dataset", None))
+#if QT_CONFIG(tooltip)
+        self.actionImportDataset.setToolTip(QCoreApplication.translate("MainWindow", u"Import dataset...", None))
+#endif // QT_CONFIG(tooltip)
+        self.actionOpenWorkspace.setText(QCoreApplication.translate("MainWindow", u"Open Workspace", None))
+#if QT_CONFIG(tooltip)
+        self.actionOpenWorkspace.setToolTip(QCoreApplication.translate("MainWindow", u"Open workspace...", None))
+#endif // QT_CONFIG(tooltip)
+        self.actionSaveWorkspace.setText(QCoreApplication.translate("MainWindow", u"Save Workspace", None))
+#if QT_CONFIG(tooltip)
+        self.actionSaveWorkspace.setToolTip(QCoreApplication.translate("MainWindow", u"Save workspace...", None))
+#endif // QT_CONFIG(tooltip)
+        self.actionExportExcel.setText(QCoreApplication.translate("MainWindow", u"Export to Excel", None))
+#if QT_CONFIG(tooltip)
+        self.actionExportExcel.setToolTip(QCoreApplication.translate("MainWindow", u"Export to Excel...", None))
+#endif // QT_CONFIG(tooltip)
+        self.actionResetLayout.setText(QCoreApplication.translate("MainWindow", u"Reset Layout", None))
+        self.actionewfw.setText(QCoreApplication.translate("MainWindow", u"ewfw", None))
+        self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"&File", None))
+        self.menuOpenRecent.setTitle(QCoreApplication.translate("MainWindow", u"Open Recent", None))
+        self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"&Help", None))
+        self.menuView.setTitle(QCoreApplication.translate("MainWindow", u"&View", None))
+        self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"ToolBar", None))
     # retranslateUi
+

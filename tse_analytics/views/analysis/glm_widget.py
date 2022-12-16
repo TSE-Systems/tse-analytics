@@ -1,6 +1,7 @@
 import os.path
 from typing import Optional
 
+import numpy as np
 import pingouin as pg
 import seaborn as sns
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
@@ -28,21 +29,23 @@ class GlmWidget(AnalysisWidget):
 
         self.layout().addWidget(self._get_toolbar())
 
-        self.webView = QWebEngineView(self)
-        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
-        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, False)
-        self.webView.setHtml("")
-        self.layout().addWidget(self.webView)
+        self.web_view = QWebEngineView()
+        self.web_view.settings().setAttribute(self.web_view.settings().WebAttribute.PluginsEnabled, False)
+        self.web_view.settings().setAttribute(self.web_view.settings().WebAttribute.PdfViewerEnabled, False)
+        self.web_view.setHtml("")
+        self.layout().addWidget(self.web_view)
 
         self.canvas = None
 
     def clear(self):
         self.covariate_combo_box.clear()
         self.response_combo_box.clear()
-        self.webView.setHtml("")
+        self.web_view.setHtml("")
 
     def update_variables(self, variables: dict[str, Variable]):
-        self.covariate_combo_box.set_data(variables)
+        covariate_variables = variables.copy()
+        covariate_variables["Weight"] = Variable("Weight", "[g]", "Animal weight")
+        self.covariate_combo_box.set_data(covariate_variables)
         self.response_combo_box.set_data(variables)
 
     def _covariate_changed(self, covariate: str):
@@ -53,26 +56,25 @@ class GlmWidget(AnalysisWidget):
 
     def __analyze(self):
         df = Manager.data.selected_dataset.original_df.copy()
-        # cols = df.columns
         df = df.groupby(by=["Animal"], as_index=False).agg({self.response: "mean", "Group": "first"})
-        # df = df.reset_index()
 
-        df["Weight"] = df["Animal"].astype(float)
-        weights = {}
-        for animal in Manager.data.selected_dataset.animals.values():
-            weights[animal.id] = animal.weight
-        df = df.replace({"Weight": weights})
+        if self.covariate == "Weight":
+            df["Weight"] = df["Animal"].astype(float)
+            weights = {}
+            for animal in Manager.data.selected_dataset.animals.values():
+                weights[animal.id] = animal.weight
+            df = df.replace({"Weight": weights})
 
         if self.canvas is not None:
             self.layout().removeWidget(self.canvas)
 
-        facet_grid = sns.lmplot(x="Weight", y=self.response, hue="Group", robust=False, data=df)
+        facet_grid = sns.lmplot(data=df, x=self.covariate, y=self.response, hue="Group", robust=False)
         self.canvas = FigureCanvasQTAgg(facet_grid.figure)
         self.canvas.updateGeometry()
         self.canvas.draw()
         self.layout().addWidget(self.canvas)
 
-        glm = pg.linear_regression(df[["Weight"]], df[self.response])
+        glm = pg.linear_regression(df[[self.covariate]], df[self.response])
 
         html_template = """
                 <html>
@@ -90,7 +92,7 @@ class GlmWidget(AnalysisWidget):
             style=style,
             glm=glm.to_html(classes="mystyle"),
         )
-        self.webView.setHtml(html)
+        self.web_view.setHtml(html)
 
     @property
     def help_content(self) -> Optional[str]:
