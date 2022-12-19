@@ -1,9 +1,8 @@
-import os.path
 from typing import Optional
 
 import plotly.express as px
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QComboBox, QLabel, QPushButton, QToolBar, QWidget
+from PySide6.QtWidgets import QComboBox, QLabel, QWidget
 from sklearn.decomposition import PCA
 
 from tse_analytics.core.manager import Manager
@@ -14,11 +13,13 @@ class PcaWidget(AnalysisWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
+        self.help_path = "docs/pca.md"
+
         self.components_combo_box = QComboBox(self)
         self.components_combo_box.addItems(["2D", "3D"])
         self.components_combo_box.setCurrentText("2D")
-
-        self.layout().addWidget(self._get_toolbar())
+        self.toolbar.addWidget(QLabel("Dimensions: "))
+        self.toolbar.addWidget(self.components_combo_box)
 
         self.webView = QWebEngineView(self)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
@@ -26,7 +27,7 @@ class PcaWidget(AnalysisWidget):
         self.webView.setHtml("")
         self.layout().addWidget(self.webView)
 
-    def __analyze(self):
+    def _analyze(self):
         selected_variables = Manager.data.selected_variables
         if len(selected_variables) < 3:
             return
@@ -64,23 +65,3 @@ class PcaWidget(AnalysisWidget):
 
     def clear(self):
         self.webView.setHtml("")
-
-    @property
-    def help_content(self) -> Optional[str]:
-        path = "docs/pca.md"
-        if os.path.exists(path):
-            with open(path, "r") as file:
-                return file.read().rstrip()
-        return None
-
-    def _get_toolbar(self) -> QToolBar:
-        toolbar = super()._get_toolbar()
-
-        toolbar.addWidget( QLabel("Dimensions: "))
-        toolbar.addWidget(self.components_combo_box)
-
-        button = QPushButton("Analyze")
-        button.clicked.connect(self.__analyze)
-        toolbar.addWidget(button)
-
-        return toolbar

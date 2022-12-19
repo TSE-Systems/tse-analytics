@@ -1,11 +1,10 @@
-import os.path
 from typing import Optional
 
 import pingouin as pg
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QLabel, QPushButton, QToolBar, QWidget
+from PySide6.QtWidgets import QLabel, QWidget
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.css import style
@@ -18,15 +17,19 @@ class AncovaWidget(AnalysisWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
+        self.help_path = "docs/ancova.md"
+
+        self.covariate = ""
         self.covariate_combo_box = VariableSelector()
         self.covariate_combo_box.currentTextChanged.connect(self._covariate_current_text_changed)
-        self.covariate = ""
+        self.toolbar.addWidget(QLabel("Covariate: "))
+        self.toolbar.addWidget(self.covariate_combo_box)
 
+        self.response = ""
         self.response_combo_box = VariableSelector()
         self.response_combo_box.currentTextChanged.connect(self._response_current_text_changed)
-        self.response = ""
-
-        self.layout().addWidget(self._get_toolbar())
+        self.toolbar.addWidget(QLabel("Response: "))
+        self.toolbar.addWidget(self.response_combo_box)
 
         self.webView = QWebEngineView(self)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
@@ -43,7 +46,7 @@ class AncovaWidget(AnalysisWidget):
         self.covariate_combo_box.set_data(variables)
         self.response_combo_box.set_data(variables)
 
-    def __analyze(self):
+    def _analyze(self):
         df = Manager.data.selected_dataset.original_df
 
         ancova = pg.ancova(data=df, dv=self.response, covar=self.covariate, between="Group")
@@ -77,26 +80,3 @@ class AncovaWidget(AnalysisWidget):
 
     def _response_current_text_changed(self, response: str):
         self.response = response
-
-    @property
-    def help_content(self) -> Optional[str]:
-        path = "docs/ancova.md"
-        if os.path.exists(path):
-            with open(path, "r") as file:
-                return file.read().rstrip()
-        return None
-
-    def _get_toolbar(self) -> QToolBar:
-        toolbar = super()._get_toolbar()
-
-        toolbar.addWidget(QLabel("Covariate: "))
-        toolbar.addWidget(self.covariate_combo_box)
-
-        toolbar.addWidget(QLabel("Response: "))
-        toolbar.addWidget(self.response_combo_box)
-
-        button = QPushButton("Analyze")
-        button.clicked.connect(self.__analyze)
-        toolbar.addWidget(button)
-
-        return toolbar

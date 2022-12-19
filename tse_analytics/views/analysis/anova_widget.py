@@ -1,11 +1,10 @@
-import os.path
 from typing import Optional
 
 import pingouin as pg
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QLabel, QPushButton, QToolBar, QWidget
+from PySide6.QtWidgets import QLabel, QWidget
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 from tse_analytics.core.manager import Manager
@@ -19,11 +18,13 @@ class AnovaWidget(AnalysisWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
+        self.help_path = "docs/anova.md"
+
+        self.variable = ""
         self.variable_selector = VariableSelector()
         self.variable_selector.currentTextChanged.connect(self.__variable_changed)
-        self.variable = ""
-
-        self.layout().addWidget(self._get_toolbar())
+        self.toolbar.addWidget(QLabel("Variable: "))
+        self.toolbar.addWidget(self.variable_selector)
 
         self.webView = QWebEngineView(self)
         self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
@@ -47,7 +48,7 @@ class AnovaWidget(AnalysisWidget):
     def __variable_changed(self, variable: str):
         self.variable = variable
 
-    def __analyze(self):
+    def _analyze(self):
         if Manager.data.selected_dataset is None:
             return
 
@@ -103,23 +104,3 @@ class AnovaWidget(AnalysisWidget):
         )  # Plot group confidence intervals
         self.canvas.figure.tight_layout()
         self.canvas.draw()
-
-    @property
-    def help_content(self) -> Optional[str]:
-        path = "docs/anova.md"
-        if os.path.exists(path):
-            with open(path, "r") as file:
-                return file.read().rstrip()
-        return None
-
-    def _get_toolbar(self) -> QToolBar:
-        toolbar = super()._get_toolbar()
-
-        toolbar.addWidget(QLabel("Variable: "))
-        toolbar.addWidget(self.variable_selector)
-
-        button = QPushButton("Analyze")
-        button.clicked.connect(self.__analyze)
-        toolbar.addWidget(button)
-
-        return toolbar

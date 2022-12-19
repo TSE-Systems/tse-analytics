@@ -1,12 +1,10 @@
-import os.path
 from typing import Optional
 
-import numpy as np
 import pingouin as pg
 import seaborn as sns
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QLabel, QPushButton, QToolBar, QWidget
+from PySide6.QtWidgets import QLabel, QWidget
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.css import style
@@ -19,15 +17,19 @@ class GlmWidget(AnalysisWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
+        self.help_path = "docs/glm.md"
+
+        self.covariate = ""
         self.covariate_combo_box = VariableSelector()
         self.covariate_combo_box.currentTextChanged.connect(self._covariate_changed)
-        self.covariate = ""
+        self.toolbar.addWidget(QLabel("Covariate: "))
+        self.toolbar.addWidget(self.covariate_combo_box)
 
+        self.response = ""
         self.response_combo_box = VariableSelector()
         self.response_combo_box.currentTextChanged.connect(self._response_changed)
-        self.response = ""
-
-        self.layout().addWidget(self._get_toolbar())
+        self.toolbar.addWidget(QLabel("Response: "))
+        self.toolbar.addWidget(self.response_combo_box)
 
         self.web_view = QWebEngineView()
         self.web_view.settings().setAttribute(self.web_view.settings().WebAttribute.PluginsEnabled, False)
@@ -54,9 +56,12 @@ class GlmWidget(AnalysisWidget):
     def _response_changed(self, response: str):
         self.response = response
 
-    def __analyze(self):
+    def _analyze(self):
         df = Manager.data.selected_dataset.original_df.copy()
-        df = df.groupby(by=["Animal"], as_index=False).agg({self.response: "mean", "Group": "first"})
+        if self.covariate == "Weight":
+            df = df.groupby(by=["Animal"], as_index=False).agg({self.response: "mean", "Group": "first"})
+        else:
+            df = df.groupby(by=["Animal"], as_index=False).agg({self.covariate: "mean", self.response: "mean", "Group": "first"})
 
         if self.covariate == "Weight":
             df["Weight"] = df["Animal"].astype(float)
@@ -93,26 +98,3 @@ class GlmWidget(AnalysisWidget):
             glm=glm.to_html(classes="mystyle"),
         )
         self.web_view.setHtml(html)
-
-    @property
-    def help_content(self) -> Optional[str]:
-        path = "docs/glm.md"
-        if os.path.exists(path):
-            with open(path, "r") as file:
-                return file.read().rstrip()
-        return None
-
-    def _get_toolbar(self) -> QToolBar:
-        toolbar = super()._get_toolbar()
-
-        toolbar.addWidget(QLabel("Covariate: "))
-        toolbar.addWidget(self.covariate_combo_box)
-
-        toolbar.addWidget(QLabel("Response: "))
-        toolbar.addWidget(self.response_combo_box)
-
-        button = QPushButton("Analyze")
-        button.clicked.connect(self.__analyze)
-        toolbar.addWidget(button)
-
-        return toolbar

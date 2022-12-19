@@ -1,12 +1,12 @@
-import os.path
 from typing import Optional
 
 import pandas as pd
 import pingouin as pg
 import seaborn as sns
+from PySide6.QtCore import Qt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QLabel, QPushButton, QToolBar, QWidget
+from PySide6.QtWidgets import QLabel, QWidget, QSplitter
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.css import style
@@ -22,31 +22,38 @@ class CorrelationWidget(AnalysisWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
+        self.help_path = "docs/correlation.md"
+
+        self.x_var = ""
         self.x_combo_box = VariableSelector()
         self.x_combo_box.currentTextChanged.connect(self._x_current_text_changed)
-        self.x_var = ""
+        self.toolbar.addWidget(QLabel("X: "))
+        self.toolbar.addWidget(self.x_combo_box)
 
+        self.y_var = ""
         self.y_combo_box = VariableSelector()
         self.y_combo_box.currentTextChanged.connect(self._y_current_text_changed)
-        self.y_var = ""
+        self.toolbar.addWidget(QLabel("Y: "))
+        self.toolbar.addWidget(self.y_combo_box)
 
-        self.layout().addWidget(self._get_toolbar())
+        self.splitter = QSplitter(Qt.Orientation.Vertical)
+        self.layout().addWidget(self.splitter)
 
-        self.webView = QWebEngineView(self)
-        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
-        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, False)
-        self.webView.setHtml("")
-        self.layout().addWidget(self.webView)
+        self.splitter.addWidget(FigureCanvasQTAgg(None))
 
-        self.figure = None
-        self.canvas = FigureCanvasQTAgg(self.figure)
-        self.layout().addWidget(self.canvas)
+        self.web_view = QWebEngineView()
+        self.web_view.settings().setAttribute(self.web_view.settings().WebAttribute.PluginsEnabled, False)
+        self.web_view.settings().setAttribute(self.web_view.settings().WebAttribute.PdfViewerEnabled, False)
+        self.web_view.setHtml("")
+        self.splitter.addWidget(self.web_view)
+
+        self.splitter.setSizes([2, 1])
 
     def update_variables(self, variables: dict[str, Variable]):
         self.x_combo_box.set_data(variables)
         self.y_combo_box.set_data(variables)
 
-    def __analyze(self):
+    def _analyze(self):
         if len(Manager.data.selected_dataset.groups) == 0:
             return
 
@@ -54,6 +61,12 @@ class CorrelationWidget(AnalysisWidget):
 
         multivariate_normality = pg.multivariate_normality(df[[self.x_var, self.y_var]])
         corr = pg.pairwise_corr(data=df, columns=[self.x_var, self.y_var], method="pearson")
+
+        joint_grid = sns.jointplot(data=df, x=self.x_var, y=self.y_var, hue="Group")
+        canvas = FigureCanvasQTAgg(joint_grid.figure)
+        canvas.updateGeometry()
+        canvas.draw()
+        self.splitter.replaceWidget(0, canvas)
 
         html_template = """
                 <html>
@@ -75,44 +88,15 @@ class CorrelationWidget(AnalysisWidget):
             multivariate_normality=multivariate_normality,
             corr=corr.to_html(classes="mystyle"),
         )
-        self.webView.setHtml(html)
-
-        g = sns.jointplot(data=df, x=self.x_var, y=self.y_var, hue="Group")
-        self.figure = g.figure
-        self.canvas.figure = self.figure
-        self.canvas.figure.tight_layout()
-        self.canvas.draw()
+        self.web_view.setHtml(html)
 
     def clear(self):
         self.x_combo_box.clear()
         self.y_combo_box.clear()
-        self.webView.setHtml("")
+        self.web_view.setHtml("")
 
     def _x_current_text_changed(self, x: str):
         self.x_var = x
 
     def _y_current_text_changed(self, y: str):
         self.y_var = y
-
-    @property
-    def help_content(self) -> Optional[str]:
-        path = "docs/correlation.md"
-        if os.path.exists(path):
-            with open(path, "r") as file:
-                return file.read().rstrip()
-        return None
-
-    def _get_toolbar(self) -> QToolBar:
-        toolbar = super()._get_toolbar()
-
-        toolbar.addWidget(QLabel("X: "))
-        toolbar.addWidget(self.x_combo_box)
-
-        toolbar.addWidget(QLabel("Y: "))
-        toolbar.addWidget(self.y_combo_box)
-
-        button = QPushButton("Analyze")
-        button.clicked.connect(self.__analyze)
-        toolbar.addWidget(button)
-
-        return toolbar
