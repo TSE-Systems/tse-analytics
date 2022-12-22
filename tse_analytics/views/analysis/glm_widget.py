@@ -2,9 +2,10 @@ from typing import Optional
 
 import pingouin as pg
 import seaborn as sns
+from PySide6.QtCore import Qt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QLabel, QWidget
+from PySide6.QtWidgets import QLabel, QWidget, QSplitter
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.css import style
@@ -31,13 +32,18 @@ class GlmWidget(AnalysisWidget):
         self.toolbar.addWidget(QLabel("Response: "))
         self.toolbar.addWidget(self.response_combo_box)
 
+        self.splitter = QSplitter(Qt.Orientation.Vertical)
+        self.layout().addWidget(self.splitter)
+
+        self.splitter.addWidget(FigureCanvasQTAgg(None))
+
         self.web_view = QWebEngineView()
         self.web_view.settings().setAttribute(self.web_view.settings().WebAttribute.PluginsEnabled, False)
         self.web_view.settings().setAttribute(self.web_view.settings().WebAttribute.PdfViewerEnabled, False)
         self.web_view.setHtml("")
-        self.layout().addWidget(self.web_view)
+        self.splitter.addWidget(self.web_view)
 
-        self.canvas = None
+        self.splitter.setSizes([2, 1])
 
     def clear(self):
         self.covariate_combo_box.clear()
@@ -70,14 +76,11 @@ class GlmWidget(AnalysisWidget):
                 weights[animal.id] = animal.weight
             df = df.replace({"Weight": weights})
 
-        if self.canvas is not None:
-            self.layout().removeWidget(self.canvas)
-
         facet_grid = sns.lmplot(data=df, x=self.covariate, y=self.response, hue="Group", robust=False)
-        self.canvas = FigureCanvasQTAgg(facet_grid.figure)
-        self.canvas.updateGeometry()
-        self.canvas.draw()
-        self.layout().addWidget(self.canvas)
+        canvas = FigureCanvasQTAgg(facet_grid.figure)
+        canvas.updateGeometry()
+        canvas.draw()
+        self.splitter.replaceWidget(0, canvas)
 
         glm = pg.linear_regression(df[[self.covariate]], df[self.response])
 

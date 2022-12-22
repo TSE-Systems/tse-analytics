@@ -1,10 +1,11 @@
 from typing import Optional
 
 import pingouin as pg
+from PySide6.QtCore import Qt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QLabel, QWidget
+from PySide6.QtWidgets import QLabel, QWidget, QSplitter
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.css import style
@@ -31,16 +32,21 @@ class AncovaWidget(AnalysisWidget):
         self.toolbar.addWidget(QLabel("Response: "))
         self.toolbar.addWidget(self.response_combo_box)
 
-        self.webView = QWebEngineView(self)
-        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
-        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, False)
-        self.webView.setHtml("")
-        self.layout().addWidget(self.webView)
+        self.splitter = QSplitter(Qt.Orientation.Vertical)
+        self.layout().addWidget(self.splitter)
 
         figure = Figure(figsize=(5.0, 4.0), dpi=100)
         self.ax = figure.subplots()
         self.canvas = FigureCanvasQTAgg(figure)
-        self.layout().addWidget(self.canvas)
+        self.splitter.addWidget(self.canvas)
+
+        self.web_view = QWebEngineView(self)
+        self.web_view.settings().setAttribute(self.web_view.settings().WebAttribute.PluginsEnabled, False)
+        self.web_view.settings().setAttribute(self.web_view.settings().WebAttribute.PdfViewerEnabled, False)
+        self.web_view.setHtml("")
+        self.splitter.addWidget(self.web_view)
+
+        self.splitter.setSizes([2, 1])
 
     def update_variables(self, variables: dict[str, Variable]):
         self.covariate_combo_box.set_data(variables)
@@ -67,12 +73,12 @@ class AncovaWidget(AnalysisWidget):
             style=style,
             ancova=ancova.to_html(classes="mystyle"),
         )
-        self.webView.setHtml(html)
+        self.web_view.setHtml(html)
 
     def clear(self):
         self.covariate_combo_box.clear()
         self.response_combo_box.clear()
-        self.webView.setHtml("")
+        self.web_view.setHtml("")
         self.ax.clear()
 
     def _covariate_current_text_changed(self, covariate: str):

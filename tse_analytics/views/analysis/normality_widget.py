@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QLabel, QWidget
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.analysis.analysis_widget import AnalysisWidget
 from tse_analytics.views.misc.variable_selector import VariableSelector
+from tse_datatools.analysis.grouping_mode import GroupingMode
 from tse_datatools.data.variable import Variable
 
 
@@ -46,14 +47,42 @@ class NormalityWidget(AnalysisWidget):
 
         self.clear()
 
-        unique_groups = df["Group"].unique()
-        ncols = 2
-        nrows = len(unique_groups) // 2 + (len(unique_groups) % 2 > 0)
-        for index, group in enumerate(unique_groups):
-            ax = self.canvas.figure.add_subplot(nrows, ncols, index + 1)
-            # stats.probplot(df[df['Group'] == group][variable], dist="norm", plot=ax)
-            pg.qqplot(df[df["Group"] == group][self.variable], dist="norm", ax=ax)
-            ax.set_title(group)
+        if Manager.data.grouping_mode == GroupingMode.GROUPS:
+            if len(Manager.data.selected_dataset.groups) == 0:
+                self.canvas.figure.suptitle("Please assign animals to groups first")
+                self.canvas.draw()
+                return
 
-        self.canvas.figure.tight_layout()
-        self.canvas.draw()
+            groups = df["Group"].unique()
+            nrows, ncols = self.__get_cells(len(groups))
+            for index, group in enumerate(groups):
+                ax = self.canvas.figure.add_subplot(nrows, ncols, index + 1)
+                # stats.probplot(df[df['Group'] == group][variable], dist="norm", plot=ax)
+                pg.qqplot(df[df["Group"] == group][self.variable], dist="norm", ax=ax)
+                ax.set_title(group)
+
+            self.canvas.figure.tight_layout()
+            self.canvas.draw()
+        else:
+            animals = Manager.data.selected_animals
+            nrows, ncols = self.__get_cells(len(animals))
+            for index, animal in enumerate(animals):
+                ax = self.canvas.figure.add_subplot(nrows, ncols, index + 1)
+                # stats.probplot(df[df['Group'] == group][variable], dist="norm", plot=ax)
+                pg.qqplot(df[df["Animal"] == animal.id][self.variable], dist="norm", ax=ax)
+                ax.set_title(animal.id)
+
+            self.canvas.figure.tight_layout()
+            self.canvas.draw()
+
+    def __get_cells(self, count: int):
+        if count == 1:
+            return 1, 1
+        elif count == 2:
+            return 1, 2
+        elif count <= 4:
+            return 2, 2
+        else:
+            nrows = count // 2 + (count % 2 > 0)
+            ncols = 2
+            return nrows, ncols

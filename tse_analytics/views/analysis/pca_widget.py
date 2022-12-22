@@ -1,6 +1,7 @@
 from typing import Optional
 
 import plotly.express as px
+from PySide6.QtCore import QTemporaryFile, QDir, QUrl
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import QComboBox, QLabel, QWidget
 from sklearn.decomposition import PCA
@@ -21,11 +22,11 @@ class PcaWidget(AnalysisWidget):
         self.toolbar.addWidget(QLabel("Dimensions: "))
         self.toolbar.addWidget(self.components_combo_box)
 
-        self.webView = QWebEngineView(self)
-        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
-        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, False)
-        self.webView.setHtml("")
-        self.layout().addWidget(self.webView)
+        self.web_view = QWebEngineView(self)
+        self.web_view.settings().setAttribute(self.web_view.settings().WebAttribute.PluginsEnabled, False)
+        self.web_view.settings().setAttribute(self.web_view.settings().WebAttribute.PdfViewerEnabled, False)
+        self.web_view.setHtml("")
+        self.layout().addWidget(self.web_view)
 
     def _analyze(self):
         selected_variables = Manager.data.selected_variables
@@ -50,7 +51,7 @@ class PcaWidget(AnalysisWidget):
                 title=f"Total Explained Variance: {total_var:.2f}%",
                 labels={"0": "PC 1", "1": "PC 2"},
             )
-            self.webView.setHtml(fig.to_html(include_plotlyjs="cdn"))
+            self.web_view.setHtml(fig.to_html(include_plotlyjs="cdn"))
         elif n_components == 3:
             fig = px.scatter_3d(
                 components,
@@ -61,7 +62,11 @@ class PcaWidget(AnalysisWidget):
                 title=f"Total Explained Variance: {total_var:.2f}%",
                 labels={"0": "PC 1", "1": "PC 2", "2": "PC 3"},
             )
-            self.webView.setHtml(fig.to_html(include_plotlyjs="cdn"))
+
+            file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.html", self)
+            if file.open():
+                fig.write_html(file.fileName(), include_plotlyjs=True)
+                self.web_view.load(QUrl.fromLocalFile(file.fileName()))
 
     def clear(self):
-        self.webView.setHtml("")
+        self.web_view.setHtml("")

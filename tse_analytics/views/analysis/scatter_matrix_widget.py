@@ -2,7 +2,7 @@ import tempfile
 from typing import Optional
 
 import plotly.express as px
-from PySide6.QtCore import QUrl
+from PySide6.QtCore import QUrl, QTemporaryFile, QDir
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import QWidget
 
@@ -30,12 +30,10 @@ class ScatterMatrixWidget(AnalysisWidget):
         fig = px.scatter_matrix(df, dimensions=features, color="Group")
         fig.update_traces(diagonal_visible=False)
 
-        tmp = tempfile.NamedTemporaryFile(suffix='.html', delete=False)
-        fig.write_html(tmp.name, include_plotlyjs=True)
-        try:
-            self.web_view.load(QUrl.fromLocalFile(tmp.name))
-        finally:
-            pass
+        file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.html", self)
+        if file.open():
+            fig.write_html(file.fileName(), include_plotlyjs=True)
+            self.web_view.load(QUrl.fromLocalFile(file.fileName()))
 
     def clear(self):
         self.web_view.setHtml("")

@@ -12,6 +12,7 @@ from tse_analytics.core.manager import Manager
 from tse_analytics.css import style
 from tse_analytics.views.analysis.analysis_widget import AnalysisWidget
 from tse_analytics.views.misc.variable_selector import VariableSelector
+from tse_datatools.analysis.grouping_mode import GroupingMode
 from tse_datatools.data.variable import Variable
 
 pd.set_option("colheader_justify", "center")  # FOR TABLE <th>
@@ -54,38 +55,37 @@ class CorrelationWidget(AnalysisWidget):
         self.y_combo_box.set_data(variables)
 
     def _analyze(self):
-        if len(Manager.data.selected_dataset.groups) == 0:
-            return
-
         df = Manager.data.selected_dataset.original_df
 
-        multivariate_normality = pg.multivariate_normality(df[[self.x_var, self.y_var]])
-        corr = pg.pairwise_corr(data=df, columns=[self.x_var, self.y_var], method="pearson")
-
-        joint_grid = sns.jointplot(data=df, x=self.x_var, y=self.y_var, hue="Group")
+        grouping_mode = "Group" if Manager.data.grouping_mode == GroupingMode.GROUPS else "Animal"
+        joint_grid = sns.jointplot(data=df, x=self.x_var, y=self.y_var, hue=grouping_mode)
+        joint_grid.fig.suptitle(f"Correlation between {self.x_var} and {self.y_var}")
         canvas = FigureCanvasQTAgg(joint_grid.figure)
         canvas.updateGeometry()
         canvas.draw()
         self.splitter.replaceWidget(0, canvas)
 
+        t_test = pg.ttest(df[self.x_var], df[self.y_var])
+        corr = pg.pairwise_corr(data=df, columns=[self.x_var, self.y_var], method="pearson")
+
         html_template = """
-                <html>
-                  <head>
-                    <title>HTML Pandas Dataframe with CSS</title>
-                    {style}
-                  </head>
-                  <body>
-                    <h3>Test for bivariate normality (Henze-Zirkler)</h3>
-                    {multivariate_normality}
-                    <h3>Pearson correlation</h3>
-                    {corr}
-                  </body>
-                </html>
-                """
+            <html>
+              <head>
+                <title>HTML Pandas Dataframe with CSS</title>
+                {style}
+              </head>
+              <body>
+                <h3>t-test</h3>
+                {t_test}
+                <h3>Pearson correlation</h3>
+                {corr}
+              </body>
+            </html>
+            """
 
         html = html_template.format(
             style=style,
-            multivariate_normality=multivariate_normality,
+            t_test=t_test.to_html(classes="mystyle"),
             corr=corr.to_html(classes="mystyle"),
         )
         self.web_view.setHtml(html)

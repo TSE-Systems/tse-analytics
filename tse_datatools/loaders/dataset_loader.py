@@ -53,7 +53,7 @@ class DatasetLoader:
                 weight=float(elements[2]),
                 text1=elements[3],
                 text2=elements[4],
-                text3=elements[5]
+                text3=elements[5] if len(elements) == 6 else ""
             )
             animals[animal.id] = animal
 

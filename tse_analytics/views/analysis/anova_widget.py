@@ -1,10 +1,11 @@
 from typing import Optional
 
 import pingouin as pg
+from PySide6.QtCore import Qt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QLabel, QWidget
+from PySide6.QtWidgets import QLabel, QWidget, QSplitter
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 from tse_analytics.core.manager import Manager
@@ -26,20 +27,25 @@ class AnovaWidget(AnalysisWidget):
         self.toolbar.addWidget(QLabel("Variable: "))
         self.toolbar.addWidget(self.variable_selector)
 
-        self.webView = QWebEngineView(self)
-        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PluginsEnabled, False)
-        self.webView.settings().setAttribute(self.webView.settings().WebAttribute.PdfViewerEnabled, False)
-        self.webView.setHtml("")
-        self.layout().addWidget(self.webView)
+        self.splitter = QSplitter(Qt.Orientation.Vertical)
+        self.layout().addWidget(self.splitter)
 
         figure = Figure(figsize=(5.0, 4.0), dpi=100)
         self.ax = figure.subplots()
         self.canvas = FigureCanvasQTAgg(figure)
-        self.layout().addWidget(self.canvas)
+        self.splitter.addWidget(self.canvas)
+
+        self.web_view = QWebEngineView(self)
+        self.web_view.settings().setAttribute(self.web_view.settings().WebAttribute.PluginsEnabled, False)
+        self.web_view.settings().setAttribute(self.web_view.settings().WebAttribute.PdfViewerEnabled, False)
+        self.web_view.setHtml("")
+        self.splitter.addWidget(self.web_view)
+
+        self.splitter.setSizes([2, 1])
 
     def clear(self):
         self.variable_selector.clear()
-        self.webView.setHtml("")
+        self.web_view.setHtml("")
         self.ax.clear()
 
     def update_variables(self, variables: dict[str, Variable]):
@@ -96,7 +102,7 @@ class AnovaWidget(AnalysisWidget):
             anova=anova.to_html(classes="mystyle"),
             tukey=pt.to_html(classes="mystyle"),
         )
-        self.webView.setHtml(html)
+        self.web_view.setHtml(html)
 
         self.ax.clear()
         tukey.plot_simultaneous(
