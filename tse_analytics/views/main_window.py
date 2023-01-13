@@ -163,6 +163,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionOpenWorkspace.triggered.connect(self.load_workspace_dialog)
         self.actionSaveWorkspace.triggered.connect(self.save_workspace_dialog)
         self.actionExportExcel.triggered.connect(self.export_excel_dialog)
+        self.actionExportCsv.triggered.connect(self.export_csv_dialog)
         self.actionResetLayout.triggered.connect(self.__reset_layout)
         self.actionExit.triggered.connect(lambda: QApplication.exit())
 
@@ -248,6 +249,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         dialog.setNameFilter("Excel Files ({})".format(file_ext))
         if dialog.exec() == QDialog.Accepted:
             Manager.data.export_to_excel(dialog.selectedFiles()[0])
+
+    def export_csv_dialog(self):
+        file_ext = "*.csv"
+        dialog = QFileDialog(self)
+        dialog.setDefaultSuffix(".csv")
+        dialog.setAcceptMode(QFileDialog.AcceptSave)
+        dialog.setWindowTitle("Export to CSV")
+        dialog.setNameFilter("CSV Files ({})".format(file_ext))
+        if dialog.exec() == QDialog.Accepted:
+            Manager.data.export_to_csv(dialog.selectedFiles()[0])
 
     def update_memory_usage(self):
         # return the memory usage in MB

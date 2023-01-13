@@ -1,6 +1,7 @@
 from functools import partial
 
 from PySide6.QtCore import QItemSelection, QModelIndex, QSize, Qt
+from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QInputDialog,
@@ -19,9 +20,14 @@ class DatasetsTreeView(QTreeView):
     def __init__(self, parent: QWidget = None):
         super().__init__(parent)
 
+        pal = self.palette()
+        pal.setColor(QPalette.Inactive, QPalette.Highlight, pal.color(QPalette.Active, QPalette.Highlight))
+        pal.setColor(QPalette.Inactive, QPalette.HighlightedText, pal.color(QPalette.Active, QPalette.HighlightedText))
+        self.setPalette(pal)
+
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-        self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectItems)
+        self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.setModel(Manager.workspace.workspace_model)
 
         self.customContextMenuRequested.connect(self._open_menu)

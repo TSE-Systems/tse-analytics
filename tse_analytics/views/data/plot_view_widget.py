@@ -28,7 +28,7 @@ class PlotViewWidget(DataWidget):
         self.plot_view.clear_plot()
 
     def assign_data(self):
-        df = Manager.data.get_current_df()
+        df = Manager.data.get_current_df(calculate_error=True)
         self.plot_view.set_data(df)
 
     def set_variables(self, variables: dict[str, Variable]):

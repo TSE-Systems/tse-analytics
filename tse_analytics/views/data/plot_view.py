@@ -111,14 +111,8 @@ class PlotView(pg.GraphicsLayoutWidget):
             return
 
         if Manager.data.grouping_mode == GroupingMode.ANIMALS:
-            if Manager.data.selected_animals is None or len(Manager.data.selected_animals) == 0:
-                return
-        elif Manager.data.grouping_mode == GroupingMode.GROUPS:
-            if Manager.data.selected_groups is None or len(Manager.data.selected_groups) == 0:
-                return
-
-        if Manager.data.grouping_mode == GroupingMode.ANIMALS:
-            for i, animal in enumerate(Manager.data.selected_animals):
+            animals = Manager.data.selected_animals if len(Manager.data.selected_animals) > 0 else Manager.data.selected_dataset.animals.values()
+            for i, animal in enumerate(animals):
                 filtered_data = self._df[self._df["Animal"] == animal.id]
 
                 # x = filtered_data["DateTime"]
@@ -126,16 +120,25 @@ class PlotView(pg.GraphicsLayoutWidget):
                 x = filtered_data["Bin"].to_numpy()
                 y = filtered_data[self._variable].to_numpy()
 
-                pen = mkPen(color=(i, len(Manager.data.selected_animals)), width=1)
+                pen = mkPen(color=(i, len(animals)), width=1)
                 # p1d = self.p1.plot(x, y, symbol='o', symbolSize=2, symbolPen=pen, pen=pen)
                 p1d = self.p1.plot(x, y, pen=pen)
+
+                if self._display_errors:
+                    # Error bars
+                    error_plot = pg.ErrorBarItem(beam=0.2)
+                    std = filtered_data["Std"]
+                    std = std.to_numpy()
+                    error_plot.setData(x=x, y=y, top=std, bottom=std)
+                    self.p1.addItem(error_plot)
 
                 self.plot_data_items[animal.id] = p1d
                 self.legend.addItem(p1d, f"Animal {animal.id}")
 
                 p2d: pg.PlotDataItem = self.p2.plot(x, y, pen=pen)
         elif Manager.data.grouping_mode == GroupingMode.GROUPS:
-            for i, group in enumerate(Manager.data.selected_groups):
+            groups = Manager.data.selected_groups if len(Manager.data.selected_groups) > 0 else Manager.data.selected_dataset.groups.values()
+            for i, group in enumerate(groups):
                 filtered_data = self._df[self._df["Group"] == group.name]
 
                 # x = filtered_data["DateTime"]
@@ -144,7 +147,7 @@ class PlotView(pg.GraphicsLayoutWidget):
                 y = filtered_data[self._variable].to_numpy()
 
                 # pen = (i, len(Manager.data.selected_groups))
-                pen = mkPen(color=(i, len(Manager.data.selected_groups)), width=1)
+                pen = mkPen(color=(i, len(groups)), width=1)
                 # p1d = self.p1.plot(x, y, symbol='o', symbolSize=2, symbolPen=pen, pen=pen)
                 p1d = self.p1.plot(x, y, pen=pen)
 
@@ -181,10 +184,11 @@ class PlotView(pg.GraphicsLayoutWidget):
 
         # bound the LinearRegionItem to the plotted data
         self.region.setClipItem(p2d)
-        self.region.setRegion([x.min(), x.max()])
+        if len(x) > 0:
+            self.region.setRegion([x.min(), x.max()])
+            self._start_datetime = datetime.datetime.fromtimestamp(x[0])
+            self._timedelta = pd.Timedelta(datetime.datetime.fromtimestamp(x[1]) - datetime.datetime.fromtimestamp(x[0]))
 
-        self._start_datetime = datetime.datetime.fromtimestamp(x[0])
-        self._timedelta = pd.Timedelta(datetime.datetime.fromtimestamp(x[1]) - datetime.datetime.fromtimestamp(x[0]))
         self.update()
 
     def clear_plot(self):

@@ -37,7 +37,9 @@
     <addaction name="actionSaveWorkspace"/>
     <addaction name="separator"/>
     <addaction name="actionImportDataset"/>
+    <addaction name="separator"/>
     <addaction name="actionExportExcel"/>
+    <addaction name="actionExportCsv"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -154,6 +156,18 @@
   <action name="actionewfw">
    <property name="text">
     <string>ewfw</string>
+   </property>
+  </action>
+  <action name="actionExportCsv">
+   <property name="icon">
+    <iconset resource="../../resources/resources.qrc">
+     <normaloff>:/icons/icons8-export-16.png</normaloff>:/icons/icons8-export-16.png</iconset>
+   </property>
+   <property name="text">
+    <string>Export to CSV</string>
+   </property>
+   <property name="toolTip">
+    <string>Export to CSV...</string>
    </property>
   </action>
  </widget>

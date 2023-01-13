@@ -1,3 +1,5 @@
+from typing import Optional
+
 import pandas as pd
 
 from tse_datatools.analysis.grouping_mode import GroupingMode
@@ -9,20 +11,20 @@ def calculate_grouped_data(
     timedelta: pd.Timedelta,
     operation: BinningOperation,
     grouping_mode: GroupingMode,
-    selected_variable: str,
+    selected_variable: Optional[str] = None,
 ) -> pd.DataFrame:
     # Store initial column order
     cols = df.columns
 
     result = None
     if grouping_mode == GroupingMode.GROUPS:
-        result = df.groupby('Group').resample(timedelta, on='DateTime')
+        result = df.groupby(['Group', 'Run']).resample(timedelta, on='DateTime')
     elif grouping_mode == GroupingMode.ANIMALS:
-        result = df.groupby(['Animal', 'Box']).resample(timedelta, on='DateTime')
+        result = df.groupby(['Animal', 'Box', 'Group', 'Run']).resample(timedelta, on='DateTime')
     elif grouping_mode == GroupingMode.RUNS:
         result = df.groupby(['Run']).resample(timedelta, on='DateTime')
 
-    errors = result.transform('std')[selected_variable]
+    errors = result.std(numeric_only=True)[selected_variable].to_numpy() if selected_variable is not None else None
 
     if operation == BinningOperation.MEAN:
         result = result.mean(numeric_only=True)
@@ -51,6 +53,8 @@ def calculate_grouped_data(
     result["Timedelta"] = result['DateTime'] - start_date_time
     result["Bin"] = (result["Timedelta"] / timedelta).round().astype(int)
     result['Bin'] = result['Bin'].astype('category')
-    result['Std'] = errors
+
+    if errors is not None:
+        result['Std'] = errors
 
     return result

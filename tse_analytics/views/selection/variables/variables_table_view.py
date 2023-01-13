@@ -1,4 +1,5 @@
 from PySide6.QtCore import QItemSelection, QSortFilterProxyModel, Qt
+from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QHeaderView, QTableView
 
 from tse_analytics.core.manager import Manager
@@ -9,6 +10,11 @@ from tse_datatools.data.variable import Variable
 class VariablesTableView(QTableView):
     def __init__(self, parent):
         super().__init__(parent)
+
+        pal = self.palette()
+        pal.setColor(QPalette.Inactive, QPalette.Highlight, pal.color(QPalette.Active, QPalette.Highlight))
+        pal.setColor(QPalette.Inactive, QPalette.HighlightedText, pal.color(QPalette.Active, QPalette.HighlightedText))
+        self.setPalette(pal)
 
         proxy_model = QSortFilterProxyModel()
         proxy_model.setSortCaseSensitivity(Qt.CaseInsensitive)

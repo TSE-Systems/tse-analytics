@@ -84,16 +84,21 @@ class DataHub:
 
     def export_to_excel(self, path: str) -> None:
         if self.selected_dataset is not None:
-            self.selected_dataset.export_to_excel(path)
+            with pd.ExcelWriter(path) as writer:
+                self.get_current_df().to_excel(writer, sheet_name='Data')
 
-    def get_current_df(self) -> pd.DataFrame:
+    def export_to_csv(self, path: str) -> None:
+        if self.selected_dataset is not None:
+            self.get_current_df().to_csv(path, sep=";", index=False)
+
+    def get_current_df(self, calculate_error=False) -> pd.DataFrame:
         result = self.selected_dataset.original_df.copy()
 
         timedelta = self.selected_dataset.sampling_interval if not self.apply_binning else self.binning_params.timedelta
 
         if self.grouping_mode == GroupingMode.GROUPS and len(self.selected_dataset.groups) > 0:
             result = calculate_grouped_data(
-                result, timedelta, self.binning_params.operation, self.grouping_mode, self.selected_variable
+                result, timedelta, self.binning_params.operation, self.grouping_mode, self.selected_variable if calculate_error else None
             )
             if len(self.selected_groups) > 0:
                 group_ids = [group.name for group in self.selected_groups]
@@ -104,13 +109,13 @@ class DataHub:
             if len(self.selected_animals) > 0:
                 animal_ids = [animal.id for animal in self.selected_animals]
                 result = result[result["Animal"].isin(animal_ids)]
-                if self.apply_binning:
-                    result = calculate_grouped_data(
-                        result, timedelta, self.binning_params.operation, self.grouping_mode, self.selected_variable
-                    )
+            if self.apply_binning:
+                result = calculate_grouped_data(
+                    result, timedelta, self.binning_params.operation, self.grouping_mode, self.selected_variable if calculate_error else None
+                )
         if self.grouping_mode == GroupingMode.RUNS:
             result = calculate_grouped_data(
-                result, timedelta, self.binning_params.operation, self.grouping_mode, self.selected_variable
+                result, timedelta, self.binning_params.operation, self.grouping_mode, self.selected_variable if calculate_error else None
             )
             # TODO: should or should not?
             # result = result.dropna()

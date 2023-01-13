@@ -23,7 +23,7 @@ class TableViewWidget(DataWidget):
         self.table_view.clear()
 
     def assign_data(self):
-        df = Manager.data.get_current_df()
+        df = Manager.data.get_current_df(calculate_error=False)
         self.table_view.set_data(df)
 
     def clear_selection(self):
