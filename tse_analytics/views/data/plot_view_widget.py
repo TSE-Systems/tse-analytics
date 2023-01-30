@@ -35,8 +35,8 @@ class PlotViewWidget(DataWidget):
         self.variable_selector.set_data(variables)
 
     def clear_selection(self):
-        # self.plot_view.clear()
-        self.plot_view.set_data(Manager.data.selected_dataset.original_df)
+        df = Manager.data.get_current_df(calculate_error=True)
+        self.plot_view.set_data(df)
 
     def __variable_changed(self, variable: str):
         Manager.data.selected_variable = variable

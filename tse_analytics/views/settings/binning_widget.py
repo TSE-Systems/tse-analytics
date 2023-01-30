@@ -40,10 +40,6 @@ class BinningWidget(QWidget):
         self.delta_spinbox.valueChanged.connect(self._binning_delta_changed)
         layout.addWidget(self.delta_spinbox)
 
-        self.apply_binning_checkbox = QCheckBox("Apply Binning")
-        self.apply_binning_checkbox.stateChanged.connect(self._apply_binning_changed)
-        layout.addWidget(self.apply_binning_checkbox)
-
         layout.addWidget(QLabel("Operation:"))
         self.operation_combobox = QComboBox()
         self.operation_combobox.addItems([e.value for e in BinningOperation])
@@ -51,9 +47,9 @@ class BinningWidget(QWidget):
         self.operation_combobox.currentTextChanged.connect(self._binning_operation_changed)
         layout.addWidget(self.operation_combobox)
 
-        apply_binning_button = QPushButton("Apply")
-        apply_binning_button.pressed.connect(self._apply_binning_pressed)
-        layout.addWidget(apply_binning_button)
+        self.apply_binning_checkbox = QCheckBox("Apply Binning")
+        self.apply_binning_checkbox.stateChanged.connect(self._apply_binning_changed)
+        layout.addWidget(self.apply_binning_checkbox)
 
         layout.addWidget(QLabel("Grouping Mode: "))
 
@@ -61,10 +57,6 @@ class BinningWidget(QWidget):
         grouping_mode_combo_box.addItems([e.value for e in GroupingMode])
         grouping_mode_combo_box.currentTextChanged.connect(self._grouping_mode_changed)
         layout.addWidget(grouping_mode_combo_box)
-
-        revert_binning_button = QPushButton("Revert to Original Data")
-        revert_binning_button.pressed.connect(self._revert_binning_pressed)
-        layout.addWidget(revert_binning_button)
 
         self.setLayout(layout)
 
@@ -80,24 +72,18 @@ class BinningWidget(QWidget):
     def _binning_operation_changed(self, value: str):
         self._binning_params_changed()
 
-    @QtCore.Slot(bool)
+    @QtCore.Slot(int)
     def _apply_binning_changed(self, value: int):
-        Manager.data.apply_binning = True if value == 2 else False
+        Manager.data.apply_binning = (value == 2)
+        if Manager.data.selected_dataset is not None:
+            if Manager.data.apply_binning:
+                Manager.messenger.broadcast(BinningAppliedMessage(self, Manager.data.binning_params))
+            else:
+                Manager.messenger.broadcast(RevertBinningMessage(self))
 
     @QtCore.Slot(str)
     def _grouping_mode_changed(self, text: str):
         Manager.data.set_grouping_mode(GroupingMode(text))
-
-    @QtCore.Slot()
-    def _apply_binning_pressed(self):
-        if Manager.data.selected_dataset is not None:
-            Manager.messenger.broadcast(BinningAppliedMessage(self, Manager.data.binning_params))
-
-    @QtCore.Slot()
-    def _revert_binning_pressed(self):
-        if Manager.data.selected_dataset is not None:
-            self.apply_binning_checkbox.setCheckState(Qt.CheckState.Unchecked)
-            Manager.messenger.broadcast(RevertBinningMessage(self))
 
     def _binning_params_changed(self):
         unit = "H"
