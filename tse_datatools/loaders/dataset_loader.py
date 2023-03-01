@@ -118,11 +118,8 @@ class DatasetLoader:
         df.insert(loc=2, column='Bin', value=(df["Timedelta"] / timedelta).round().astype(int))
         df['Bin'] = df['Bin'].astype('category')
 
-        df.insert(loc=5, column='Group', value=np.NaN)
-        df["Group"] = df["Group"].astype('category')
-
         # Add Run column
-        df.insert(loc=6, column='Run', value=1)
+        df.insert(loc=5, column='Run', value=1)
         df['Run'] = df['Run'].astype('category')
 
         # Sort variables by name

@@ -33,7 +33,7 @@ class PcaWidget(AnalysisWidget):
         if len(selected_variables) < 3:
             return
 
-        df = Manager.data.selected_dataset.original_df.dropna()
+        df = Manager.data.selected_dataset.active_df.dropna()
         features = [item.name for item in selected_variables]
         n_components = 2 if self.components_combo_box.currentText() == "2D" else 3
 

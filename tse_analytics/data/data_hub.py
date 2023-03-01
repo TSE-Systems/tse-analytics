@@ -18,7 +18,7 @@ from tse_datatools.analysis.grouping_mode import GroupingMode
 from tse_datatools.analysis.processor import calculate_grouped_data
 from tse_datatools.data.animal import Animal
 from tse_datatools.data.dataset import Dataset
-from tse_datatools.data.group import Group
+from tse_datatools.data.factor import Factor
 from tse_datatools.data.variable import Variable
 
 
@@ -28,7 +28,7 @@ class DataHub:
 
         self.selected_dataset: Optional[Dataset] = None
         self.selected_animals: list[Animal] = []
-        self.selected_groups: list[Group] = []
+        self.selected_factors: list[Factor] = []
         self.selected_variables: list[Variable] = []
 
         self.grouping_mode = GroupingMode.ANIMALS
@@ -41,7 +41,7 @@ class DataHub:
         self.selected_dataset = None
         # self.apply_binning = False
         self.selected_animals.clear()
-        self.selected_groups.clear()
+        self.selected_factors.clear()
         self.selected_variables.clear()
         QPixmapCache.clear()
         gc.collect()
@@ -57,7 +57,7 @@ class DataHub:
             return
         self.selected_dataset = dataset
         self.selected_animals.clear()
-        self.selected_groups.clear()
+        self.selected_factors.clear()
         self.selected_variables.clear()
 
         self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
@@ -66,8 +66,8 @@ class DataHub:
         self.selected_animals = animals
         self._broadcast_data_changed()
 
-    def set_selected_groups(self, groups: list[Group]) -> None:
-        self.selected_groups = groups
+    def set_selected_factors(self, factors: list[Factor]) -> None:
+        self.selected_factors = factors
         self._broadcast_data_changed()
 
     def set_selected_variables(self, variables: list[Variable]) -> None:
@@ -92,7 +92,7 @@ class DataHub:
             self.get_current_df().to_csv(path, sep=";", index=False)
 
     def get_current_df(self, calculate_error=False) -> pd.DataFrame:
-        result = self.selected_dataset.original_df.copy()
+        result = self.selected_dataset.active_df.copy()
 
         timedelta = self.selected_dataset.sampling_interval if not self.apply_binning else self.binning_params.timedelta
 
@@ -100,7 +100,7 @@ class DataHub:
             result = calculate_grouped_data(
                 result, timedelta, self.binning_params.operation, self.grouping_mode, self.selected_variable if calculate_error else None
             )
-            if len(self.selected_groups) > 0:
+            if len(self.selected_factors) > 0:
                 group_ids = [group.name for group in self.selected_groups]
                 result = result[result["Group"].isin(group_ids)]
             # TODO: should or should not?

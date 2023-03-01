@@ -43,7 +43,7 @@ class NormalityWidget(AnalysisWidget):
         if Manager.data.selected_dataset is None:
             return
 
-        df = Manager.data.selected_dataset.original_df
+        df = Manager.data.selected_dataset.active_df
 
         self.clear()
 

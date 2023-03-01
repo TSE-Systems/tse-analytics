@@ -1,13 +1,13 @@
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
-from tse_datatools.data.group import Group
+from tse_datatools.data.factor import Factor
 
 
-class GroupsModel(QAbstractTableModel):
+class FactorsModel(QAbstractTableModel):
 
-    header = ("Name", "Animals in group")
+    header = ("Name", "Number of groups")
 
-    def __init__(self, items: list[Group], parent=None):
+    def __init__(self, items: list[Factor], parent=None):
         super().__init__(parent)
 
         self.items = items
@@ -18,7 +18,7 @@ class GroupsModel(QAbstractTableModel):
         elif role != Qt.ItemDataRole.DisplayRole:
             return None
         item = self.items[index.row()]
-        values = (item.name, len(item.animal_ids))
+        values = (item.name, len(item.groups))
         return values[index.column()]
 
     def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):

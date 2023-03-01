@@ -58,7 +58,7 @@ class AnovaWidget(AnalysisWidget):
         if Manager.data.selected_dataset is None:
             return
 
-        df = Manager.data.selected_dataset.original_df
+        df = Manager.data.selected_dataset.active_df
         # Drop NaN rows
         # df = df[df["Group"].notna()]
         df = df[df[self.variable].notna()]

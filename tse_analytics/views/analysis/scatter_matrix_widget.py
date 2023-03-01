@@ -23,7 +23,7 @@ class ScatterMatrixWidget(AnalysisWidget):
         self.layout().addWidget(self.web_view)
 
     def _analyze(self):
-        df = Manager.data.selected_dataset.original_df
+        df = Manager.data.selected_dataset.active_df
         selected_variables = Manager.data.selected_variables
         features = [item.name for item in selected_variables]
 

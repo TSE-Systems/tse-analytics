@@ -3,11 +3,11 @@ from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QHeaderView, QTableView
 
 from tse_analytics.core.manager import Manager
-from tse_analytics.models.groups_model import GroupsModel
-from tse_datatools.data.group import Group
+from tse_analytics.models.factors_model import FactorsModel
+from tse_datatools.data.factor import Factor
 
 
-class GroupsTableView(QTableView):
+class FactorsTableView(QTableView):
     def __init__(self, parent):
         super().__init__(parent)
 
@@ -30,20 +30,20 @@ class GroupsTableView(QTableView):
     def clear(self):
         self.model().setSourceModel(None)
 
-    def set_data(self, groups: dict[str, Group]):
-        model = GroupsModel(list(groups.values()))
+    def set_data(self, factors: dict[str, Factor]):
+        model = FactorsModel(list(factors.values()))
         self.model().setSourceModel(model)
 
     def _on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
         proxy_model: QSortFilterProxyModel = self.model()
         model = proxy_model.sourceModel()
-        selected_groups: list[Group] = []
+        selected_factors: list[Factor] = []
         for index in self.selectedIndexes():
             if index.column() != 0:
                 continue
             if index.isValid():
                 source_index = proxy_model.mapToSource(index)
                 row = source_index.row()
-                group = model.items[row]
-                selected_groups.append(group)
-        Manager.data.set_selected_groups(selected_groups)
+                factor = model.items[row]
+                selected_factors.append(factor)
+        Manager.data.set_selected_factors(selected_factors)

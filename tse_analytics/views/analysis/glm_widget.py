@@ -63,7 +63,7 @@ class GlmWidget(AnalysisWidget):
         self.response = response
 
     def _analyze(self):
-        df = Manager.data.selected_dataset.original_df.copy()
+        df = Manager.data.selected_dataset.active_df.copy()
         if self.covariate == "Weight":
             df = df.groupby(by=["Animal"], as_index=False).agg({self.response: "mean", "Group": "first"})
         else:

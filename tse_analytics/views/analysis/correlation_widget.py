@@ -55,7 +55,7 @@ class CorrelationWidget(AnalysisWidget):
         self.y_combo_box.set_data(variables)
 
     def _analyze(self):
-        df = Manager.data.selected_dataset.original_df
+        df = Manager.data.selected_dataset.active_df
 
         grouping_mode = "Group" if Manager.data.grouping_mode == GroupingMode.GROUPS else "Animal"
         joint_grid = sns.jointplot(data=df, x=self.x_var, y=self.y_var, hue=grouping_mode)
