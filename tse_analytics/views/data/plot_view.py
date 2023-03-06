@@ -107,7 +107,7 @@ class PlotView(pg.GraphicsLayoutWidget):
         self.p2.clearPlots()
         self.legend.clear()
 
-        if self._df is None or self._variable == "":
+        if self._df is None or self._variable == "" or (Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None):
             return
 
         if Manager.data.grouping_mode == GroupingMode.ANIMALS:
@@ -136,10 +136,11 @@ class PlotView(pg.GraphicsLayoutWidget):
                 self.legend.addItem(p1d, f"Animal {animal.id}")
 
                 p2d: pg.PlotDataItem = self.p2.plot(x, y, pen=pen)
-        elif Manager.data.grouping_mode == GroupingMode.GROUPS:
-            groups = Manager.data.selected_groups if len(Manager.data.selected_groups) > 0 else Manager.data.selected_dataset.groups.values()
+        elif Manager.data.grouping_mode == GroupingMode.FACTORS:
+            groups = Manager.data.selected_factor.groups
             for i, group in enumerate(groups):
-                filtered_data = self._df[self._df["Group"] == group.name]
+                factor_name = Manager.data.selected_factor.name
+                filtered_data = self._df[self._df[factor_name] == group.name]
 
                 # x = filtered_data["DateTime"]
                 # x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp

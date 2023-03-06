@@ -27,8 +27,8 @@ class DataHub:
         self.messenger = messenger
 
         self.selected_dataset: Optional[Dataset] = None
+        self.selected_factor: Optional[Factor] = None
         self.selected_animals: list[Animal] = []
-        self.selected_factors: list[Factor] = []
         self.selected_variables: list[Variable] = []
 
         self.grouping_mode = GroupingMode.ANIMALS
@@ -39,9 +39,9 @@ class DataHub:
 
     def clear(self):
         self.selected_dataset = None
+        self.selected_factor = None
         # self.apply_binning = False
         self.selected_animals.clear()
-        self.selected_factors.clear()
         self.selected_variables.clear()
         QPixmapCache.clear()
         gc.collect()
@@ -56,8 +56,8 @@ class DataHub:
         if self.selected_dataset is dataset:
             return
         self.selected_dataset = dataset
+        self.selected_factor = None
         self.selected_animals.clear()
-        self.selected_factors.clear()
         self.selected_variables.clear()
 
         self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
@@ -66,8 +66,8 @@ class DataHub:
         self.selected_animals = animals
         self._broadcast_data_changed()
 
-    def set_selected_factors(self, factors: list[Factor]) -> None:
-        self.selected_factors = factors
+    def set_selected_factor(self, factor: Optional[Factor]) -> None:
+        self.selected_factor = factor
         self._broadcast_data_changed()
 
     def set_selected_variables(self, variables: list[Variable]) -> None:
@@ -96,13 +96,10 @@ class DataHub:
 
         timedelta = self.selected_dataset.sampling_interval if not self.apply_binning else self.binning_params.timedelta
 
-        if self.grouping_mode == GroupingMode.GROUPS and len(self.selected_dataset.groups) > 0:
+        if self.grouping_mode == GroupingMode.FACTORS and self.selected_factor is not None:
             result = calculate_grouped_data(
-                result, timedelta, self.binning_params.operation, self.grouping_mode, self.selected_variable if calculate_error else None
+                result, timedelta, self.binning_params.operation, self.grouping_mode, self.selected_variable if calculate_error else None, self.selected_factor
             )
-            if len(self.selected_factors) > 0:
-                group_ids = [group.name for group in self.selected_groups]
-                result = result[result["Group"].isin(group_ids)]
             # TODO: should or should not?
             # result = result.dropna()
         elif self.grouping_mode == GroupingMode.ANIMALS and len(self.selected_dataset.animals) > 0:
@@ -111,11 +108,11 @@ class DataHub:
                 result = result[result["Animal"].isin(animal_ids)]
             if self.apply_binning:
                 result = calculate_grouped_data(
-                    result, timedelta, self.binning_params.operation, self.grouping_mode, self.selected_variable if calculate_error else None
+                    result, timedelta, self.binning_params.operation, self.grouping_mode, self.selected_variable if calculate_error else None, self.selected_factor
                 )
         if self.grouping_mode == GroupingMode.RUNS:
             result = calculate_grouped_data(
-                result, timedelta, self.binning_params.operation, self.grouping_mode, self.selected_variable if calculate_error else None
+                result, timedelta, self.binning_params.operation, self.grouping_mode, self.selected_variable if calculate_error else None, self.selected_factor
             )
             # TODO: should or should not?
             # result = result.dropna()

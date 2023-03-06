@@ -55,10 +55,14 @@ class CorrelationWidget(AnalysisWidget):
         self.y_combo_box.set_data(variables)
 
     def _analyze(self):
+        if Manager.data.selected_dataset is None or (
+            Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None):
+            return
+
         df = Manager.data.selected_dataset.active_df
 
-        grouping_mode = "Group" if Manager.data.grouping_mode == GroupingMode.GROUPS else "Animal"
-        joint_grid = sns.jointplot(data=df, x=self.x_var, y=self.y_var, hue=grouping_mode)
+        grouping = Manager.data.selected_factor.name if Manager.data.grouping_mode == GroupingMode.FACTORS else "Animal"
+        joint_grid = sns.jointplot(data=df, x=self.x_var, y=self.y_var, hue=grouping)
         joint_grid.fig.suptitle(f"Correlation between {self.x_var} and {self.y_var}")
         canvas = FigureCanvasQTAgg(joint_grid.figure)
         canvas.updateGeometry()

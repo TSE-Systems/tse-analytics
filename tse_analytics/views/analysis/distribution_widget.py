@@ -42,7 +42,8 @@ class DistributionWidget(AnalysisWidget):
         self.variable = variable
 
     def _analyze(self):
-        if Manager.data.selected_dataset is None:
+        if Manager.data.selected_dataset is None or (
+            Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None):
             return
 
         df = Manager.data.selected_dataset.active_df
@@ -50,7 +51,7 @@ class DistributionWidget(AnalysisWidget):
         self.ax.clear()
 
         # sns.boxplot(data=df, x="Group", y=self.variable, ax=self.ax, color="green")
-        x = "Group" if Manager.data.grouping_mode == GroupingMode.GROUPS else "Animal"
+        x = Manager.data.selected_factor.name if Manager.data.grouping_mode == GroupingMode.FACTORS else "Animal"
         sns.violinplot(data=df, x=x, y=self.variable, ax=self.ax)
 
         self.canvas.figure.tight_layout()

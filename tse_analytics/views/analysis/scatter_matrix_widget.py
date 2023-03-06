@@ -23,11 +23,16 @@ class ScatterMatrixWidget(AnalysisWidget):
         self.layout().addWidget(self.web_view)
 
     def _analyze(self):
+        if Manager.data.selected_dataset is None or Manager.data.selected_factor is None:
+            return
+
         df = Manager.data.selected_dataset.active_df
+        factor_name = Manager.data.selected_factor.name
+
         selected_variables = Manager.data.selected_variables
         features = [item.name for item in selected_variables]
 
-        fig = px.scatter_matrix(df, dimensions=features, color="Group")
+        fig = px.scatter_matrix(df, dimensions=features, color=factor_name)
         fig.update_traces(diagonal_visible=False)
 
         file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.html", self)

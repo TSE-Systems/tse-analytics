@@ -21,6 +21,7 @@ class FactorsTableView(QTableView):
         self.setModel(proxy_model)
         self.horizontalHeader().ResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.verticalHeader().setDefaultSectionSize(10)
+        self.setSelectionMode(QTableView.SelectionMode.SingleSelection)
         self.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
         self.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
         self.sortByColumn(0, Qt.AscendingOrder)
@@ -46,4 +47,4 @@ class FactorsTableView(QTableView):
                 row = source_index.row()
                 factor = model.items[row]
                 selected_factors.append(factor)
-        Manager.data.set_selected_factors(selected_factors)
+        Manager.data.set_selected_factor(selected_factors[0] if len(selected_factors) > 0 else None)

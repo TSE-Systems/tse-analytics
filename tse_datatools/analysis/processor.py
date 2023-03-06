@@ -4,6 +4,7 @@ import pandas as pd
 
 from tse_datatools.analysis.grouping_mode import GroupingMode
 from tse_datatools.analysis.binning_operation import BinningOperation
+from tse_datatools.data.factor import Factor
 
 
 def calculate_grouped_data(
@@ -12,13 +13,14 @@ def calculate_grouped_data(
     operation: BinningOperation,
     grouping_mode: GroupingMode,
     selected_variable: Optional[str] = None,
+    selected_factor: Optional[Factor] = None,
 ) -> pd.DataFrame:
     # Store initial column order
     cols = df.columns
 
     result = None
-    if grouping_mode == GroupingMode.GROUPS:
-        result = df.groupby(['Group', 'Run']).resample(timedelta, on='DateTime')
+    if grouping_mode == GroupingMode.FACTORS and selected_factor is not None:
+        result = df.groupby([selected_factor.name, 'Run']).resample(timedelta, on='DateTime')
     elif grouping_mode == GroupingMode.ANIMALS:
         result = df.groupby(['Animal', 'Box', 'Group', 'Run']).resample(timedelta, on='DateTime')
     elif grouping_mode == GroupingMode.RUNS:
@@ -33,8 +35,8 @@ def calculate_grouped_data(
     else:
         result = result.sum(numeric_only=True)
 
-    if grouping_mode == GroupingMode.GROUPS:
-        result.sort_values(by=['DateTime', 'Group'], inplace=True)
+    if grouping_mode == GroupingMode.FACTORS and selected_factor is not None:
+        result.sort_values(by=['DateTime', selected_factor.name], inplace=True)
     elif grouping_mode == GroupingMode.ANIMALS:
         result.sort_values(by=['DateTime', 'Box'], inplace=True)
     elif grouping_mode == GroupingMode.RUNS:
@@ -44,10 +46,10 @@ def calculate_grouped_data(
     result = result.reset_index().reindex(cols, axis=1)
 
     # Hide empty columns
-    if grouping_mode == GroupingMode.GROUPS:
+    if grouping_mode == GroupingMode.FACTORS:
         result.drop(columns=['Animal', 'Box'], inplace=True)
     elif grouping_mode == GroupingMode.RUNS:
-        result.drop(columns=['Animal', 'Box', 'Group'], inplace=True)
+        result.drop(columns=['Animal', 'Box'], inplace=True)
 
     start_date_time = result['DateTime'][0]
     result["Timedelta"] = result['DateTime'] - start_date_time
