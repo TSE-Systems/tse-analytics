@@ -15,6 +15,7 @@ from tse_analytics.messaging.messenger import Messenger
 from tse_datatools.analysis.binning_operation import BinningOperation
 from tse_datatools.analysis.binning_params import BinningParams
 from tse_datatools.analysis.grouping_mode import GroupingMode
+from tse_datatools.analysis.outliers_params import OutliersParams
 from tse_datatools.analysis.processor import calculate_grouped_data
 from tse_datatools.data.animal import Animal
 from tse_datatools.data.dataset import Dataset
@@ -34,6 +35,9 @@ class DataHub:
         self.grouping_mode = GroupingMode.ANIMALS
         self.apply_binning = False
         self.binning_params = BinningParams(pd.Timedelta("1H"), BinningOperation.MEAN)
+
+        self.detect_outliers = False
+        self.outliers_params = OutliersParams(1.5)
 
         self.selected_variable = ""
 

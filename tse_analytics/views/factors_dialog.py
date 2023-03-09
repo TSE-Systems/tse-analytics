@@ -72,7 +72,7 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         selected_field = self.comboBoxFields.currentText()
         if selected_field is not None:
             groups = Manager.data.selected_dataset.extract_groups_from_field(selected_field)
-            self.selected_factor.groups = groups.values()
+            self.selected_factor.groups = list(groups.values())
             self.listWidgetGroups.clear()
             self.listWidgetGroups.addItems([group.name for group in self.selected_factor.groups])
 

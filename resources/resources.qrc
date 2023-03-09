@@ -39,5 +39,6 @@
         <file>icons/icons8-time-span-16.png</file>
         <file>icons/icons8-ungroup-objects-16.png</file>
         <file>icons/icons8-help-16.png</file>
+        <file>icons/icons8-outliers-16.png</file>
     </qresource>
 </RCC>

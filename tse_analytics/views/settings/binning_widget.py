@@ -7,7 +7,6 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QLabel,
-    QPushButton,
     QSpinBox,
     QVBoxLayout,
     QWidget,
