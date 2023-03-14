@@ -2,14 +2,14 @@ from typing import Optional
 
 import pandas as pd
 from PySide6 import QtCore
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, QTime
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QLabel,
     QSpinBox,
     QVBoxLayout,
-    QWidget,
+    QWidget, QTimeEdit, QGroupBox, QScrollArea,
 )
 
 from tse_analytics.core.manager import Manager
@@ -17,6 +17,7 @@ from tse_analytics.messaging.messages import BinningAppliedMessage, RevertBinnin
 from tse_datatools.analysis.binning_operation import BinningOperation
 from tse_datatools.analysis.binning_params import BinningParams
 from tse_datatools.analysis.grouping_mode import GroupingMode
+from tse_datatools.analysis.time_cycles_params import TimeCyclesParams
 
 
 class BinningWidget(QWidget):
@@ -51,11 +52,32 @@ class BinningWidget(QWidget):
         layout.addWidget(self.apply_binning_checkbox)
 
         layout.addWidget(QLabel("Grouping Mode: "))
-
         grouping_mode_combo_box = QComboBox()
         grouping_mode_combo_box.addItems([e.value for e in GroupingMode])
         grouping_mode_combo_box.currentTextChanged.connect(self._grouping_mode_changed)
         layout.addWidget(grouping_mode_combo_box)
+
+        time_cycles_groupbox = QGroupBox("Light/Dark Cycles")
+        time_cycles_layout = QVBoxLayout()
+
+        self.apply_time_cycles_checkbox = QCheckBox("Apply")
+        self.apply_time_cycles_checkbox.stateChanged.connect(self._apply_time_cycles_changed)
+        time_cycles_layout.addWidget(self.apply_time_cycles_checkbox)
+
+        time_cycles_layout.addWidget(QLabel("Light cycle starts:"))
+        self.light_cycle_start_edit = QTimeEdit()
+        self.light_cycle_start_edit.setTime(QTime(7, 0))
+        self.light_cycle_start_edit.editingFinished.connect(self._light_cycle_start_changed)
+        time_cycles_layout.addWidget(self.light_cycle_start_edit)
+
+        time_cycles_layout.addWidget(QLabel("Dark cycle starts:"))
+        self.dark_cycle_start_edit = QTimeEdit()
+        self.dark_cycle_start_edit.setTime(QTime(19, 0))
+        self.dark_cycle_start_edit.editingFinished.connect(self._dark_cycle_start_changed)
+        time_cycles_layout.addWidget(self.dark_cycle_start_edit)
+
+        time_cycles_groupbox.setLayout(time_cycles_layout)
+        layout.addWidget(time_cycles_groupbox)
 
         self.setLayout(layout)
 
@@ -100,6 +122,25 @@ class BinningWidget(QWidget):
 
         binning_params = BinningParams(timedelta, BinningOperation(self.operation_combobox.currentText()))
         Manager.data.binning_params = binning_params
+
+    @QtCore.Slot(int)
+    def _apply_time_cycles_changed(self, value: int):
+        self._time_cycles_params_changed()
+
+    @QtCore.Slot()
+    def _light_cycle_start_changed(self):
+        self._time_cycles_params_changed()
+
+    @QtCore.Slot()
+    def _dark_cycle_start_changed(self):
+        self._time_cycles_params_changed()
+
+    def _time_cycles_params_changed(self):
+        apply = self.apply_time_cycles_checkbox.isChecked()
+        light_cycle_start = self.light_cycle_start_edit.time().toPython()
+        dark_cycle_start = self.dark_cycle_start_edit.time().toPython()
+        params = TimeCyclesParams(apply, light_cycle_start, dark_cycle_start)
+        Manager.data.time_cycles_params = params
 
     def minimumSizeHint(self):
         return QSize(200, 40)

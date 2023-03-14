@@ -1,4 +1,5 @@
 import gc
+from datetime import time
 from typing import Optional
 
 import pandas as pd
@@ -17,6 +18,7 @@ from tse_datatools.analysis.binning_params import BinningParams
 from tse_datatools.analysis.grouping_mode import GroupingMode
 from tse_datatools.analysis.outliers_params import OutliersParams
 from tse_datatools.analysis.processor import calculate_grouped_data
+from tse_datatools.analysis.time_cycles_params import TimeCyclesParams
 from tse_datatools.data.animal import Animal
 from tse_datatools.data.dataset import Dataset
 from tse_datatools.data.factor import Factor
@@ -38,6 +40,8 @@ class DataHub:
 
         self.detect_outliers = False
         self.outliers_params = OutliersParams(1.5)
+
+        self.time_cycles_params = TimeCyclesParams(False, time(7, 0), time(19, 0))
 
         self.selected_variable = ""
 
