@@ -44,7 +44,7 @@ class PandasModel(QAbstractTableModel):
         if role == Qt.ItemDataRole.DisplayRole:
             return str(self._dataframe.iloc[index.row(), index.column()])
 
-        if Manager.data.detect_outliers and role == Qt.ItemDataRole.BackgroundRole:
+        if Manager.data.outliers_params.apply and role == Qt.ItemDataRole.BackgroundRole:
             value = self._dataframe.iloc[index.row()][index.column()]
             if isinstance(value, (int, float)):
                 var_name = str(self._dataframe.columns[index.column()])

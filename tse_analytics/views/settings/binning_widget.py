@@ -20,42 +20,54 @@ from tse_datatools.analysis.grouping_mode import GroupingMode
 from tse_datatools.analysis.time_cycles_params import TimeCyclesParams
 
 
-class BinningWidget(QWidget):
+class BinningWidget(QScrollArea):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
+
+        self.setWidgetResizable(True)
+
+        widget = QWidget(self)
 
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        layout.addWidget(QLabel("Unit:"))
-        self.unit_combobox = QComboBox()
-        self.unit_combobox.addItems(["day", "hour", "minute"])
-        self.unit_combobox.setCurrentText("hour")
-        self.unit_combobox.currentTextChanged.connect(self._binning_unit_changed)
-        layout.addWidget(self.unit_combobox)
-
-        layout.addWidget(QLabel("Delta:"))
-        self.delta_spinbox = QSpinBox()
-        self.delta_spinbox.setValue(1)
-        self.delta_spinbox.valueChanged.connect(self._binning_delta_changed)
-        layout.addWidget(self.delta_spinbox)
-
-        layout.addWidget(QLabel("Operation:"))
-        self.operation_combobox = QComboBox()
-        self.operation_combobox.addItems([e.value for e in BinningOperation])
-        self.operation_combobox.setCurrentText("mean")
-        self.operation_combobox.currentTextChanged.connect(self._binning_operation_changed)
-        layout.addWidget(self.operation_combobox)
-
-        self.apply_binning_checkbox = QCheckBox("Apply Binning")
-        self.apply_binning_checkbox.stateChanged.connect(self._apply_binning_changed)
-        layout.addWidget(self.apply_binning_checkbox)
+        widget.setLayout(layout)
 
         layout.addWidget(QLabel("Grouping Mode: "))
         grouping_mode_combo_box = QComboBox()
         grouping_mode_combo_box.addItems([e.value for e in GroupingMode])
         grouping_mode_combo_box.currentTextChanged.connect(self._grouping_mode_changed)
         layout.addWidget(grouping_mode_combo_box)
+
+        binning_groupbox = QGroupBox("Binning")
+        binning_layout = QVBoxLayout()
+
+        self.apply_binning_checkbox = QCheckBox("Apply")
+        self.apply_binning_checkbox.stateChanged.connect(self._apply_binning_changed)
+        binning_layout.addWidget(self.apply_binning_checkbox)
+
+        binning_layout.addWidget(QLabel("Unit:"))
+        self.unit_combobox = QComboBox()
+        self.unit_combobox.addItems(["day", "hour", "minute"])
+        self.unit_combobox.setCurrentText("hour")
+        self.unit_combobox.currentTextChanged.connect(self._binning_unit_changed)
+        binning_layout.addWidget(self.unit_combobox)
+
+        binning_layout.addWidget(QLabel("Delta:"))
+        self.delta_spinbox = QSpinBox()
+        self.delta_spinbox.setValue(1)
+        self.delta_spinbox.valueChanged.connect(self._binning_delta_changed)
+        binning_layout.addWidget(self.delta_spinbox)
+
+        binning_layout.addWidget(QLabel("Operation:"))
+        self.operation_combobox = QComboBox()
+        self.operation_combobox.addItems([e.value for e in BinningOperation])
+        self.operation_combobox.setCurrentText("mean")
+        self.operation_combobox.currentTextChanged.connect(self._binning_operation_changed)
+        binning_layout.addWidget(self.operation_combobox)
+
+        binning_groupbox.setLayout(binning_layout)
+        layout.addWidget(binning_groupbox)
 
         time_cycles_groupbox = QGroupBox("Light/Dark Cycles")
         time_cycles_layout = QVBoxLayout()
@@ -79,7 +91,7 @@ class BinningWidget(QWidget):
         time_cycles_groupbox.setLayout(time_cycles_layout)
         layout.addWidget(time_cycles_groupbox)
 
-        self.setLayout(layout)
+        self.setWidget(widget)
 
     @QtCore.Slot(str)
     def _binning_unit_changed(self, value: str):
@@ -95,9 +107,9 @@ class BinningWidget(QWidget):
 
     @QtCore.Slot(int)
     def _apply_binning_changed(self, value: int):
-        Manager.data.apply_binning = (value == 2)
+        Manager.data.binning_params.apply = (value == 2)
         if Manager.data.selected_dataset is not None:
-            if Manager.data.apply_binning:
+            if Manager.data.binning_params.apply:
                 Manager.messenger.broadcast(BinningAppliedMessage(self, Manager.data.binning_params))
             else:
                 Manager.messenger.broadcast(RevertBinningMessage(self))
@@ -120,7 +132,11 @@ class BinningWidget(QWidget):
 
         timedelta = pd.Timedelta(f"{binning_delta}{unit}")
 
-        binning_params = BinningParams(timedelta, BinningOperation(self.operation_combobox.currentText()))
+        binning_params = BinningParams(
+            self.apply_binning_checkbox.isChecked(),
+            timedelta,
+            BinningOperation(self.operation_combobox.currentText())
+        )
         Manager.data.binning_params = binning_params
 
     @QtCore.Slot(int)

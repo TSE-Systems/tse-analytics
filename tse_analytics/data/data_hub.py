@@ -35,12 +35,9 @@ class DataHub:
         self.selected_variables: list[Variable] = []
 
         self.grouping_mode = GroupingMode.ANIMALS
-        self.apply_binning = False
-        self.binning_params = BinningParams(pd.Timedelta("1H"), BinningOperation.MEAN)
 
-        self.detect_outliers = False
-        self.outliers_params = OutliersParams(1.5)
-
+        self.binning_params = BinningParams(False, pd.Timedelta("1H"), BinningOperation.MEAN)
+        self.outliers_params = OutliersParams(False, 1.5)
         self.time_cycles_params = TimeCyclesParams(False, time(7, 0), time(19, 0))
 
         self.selected_variable = ""
@@ -102,11 +99,17 @@ class DataHub:
     def get_current_df(self, calculate_error=False) -> pd.DataFrame:
         result = self.selected_dataset.active_df.copy()
 
-        timedelta = self.selected_dataset.sampling_interval if not self.apply_binning else self.binning_params.timedelta
+        if self.time_cycles_params.apply:
+            filter_method = lambda x: 'Light' if (
+                self.time_cycles_params.light_cycle_start <= x.time() < self.time_cycles_params.dark_cycle_start) else 'Dark'
+            result["Cycle"] = result["DateTime"].apply(filter_method).astype("category")
+
+        timedelta = self.selected_dataset.sampling_interval if not self.binning_params.apply else self.binning_params.timedelta
 
         if self.grouping_mode == GroupingMode.FACTORS and self.selected_factor is not None:
             result = calculate_grouped_data(
-                result, timedelta, self.binning_params.operation, self.grouping_mode, self.selected_variable if calculate_error else None, self.selected_factor
+                result, timedelta, self.binning_params.operation, self.grouping_mode,
+                self.selected_variable if calculate_error else None, self.selected_factor
             )
             # TODO: should or should not?
             # result = result.dropna()
@@ -114,13 +117,15 @@ class DataHub:
             if len(self.selected_animals) > 0:
                 animal_ids = [animal.id for animal in self.selected_animals]
                 result = result[result["Animal"].isin(animal_ids)]
-            if self.apply_binning:
+            if self.binning_params.apply:
                 result = calculate_grouped_data(
-                    result, timedelta, self.binning_params.operation, self.grouping_mode, self.selected_variable if calculate_error else None, self.selected_factor
+                    result, timedelta, self.binning_params.operation, self.grouping_mode,
+                    self.selected_variable if calculate_error else None, self.selected_factor
                 )
         if self.grouping_mode == GroupingMode.RUNS:
             result = calculate_grouped_data(
-                result, timedelta, self.binning_params.operation, self.grouping_mode, self.selected_variable if calculate_error else None, self.selected_factor
+                result, timedelta, self.binning_params.operation, self.grouping_mode,
+                self.selected_variable if calculate_error else None, self.selected_factor
             )
             # TODO: should or should not?
             # result = result.dropna()

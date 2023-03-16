@@ -22,7 +22,7 @@ def calculate_grouped_data(
     if grouping_mode == GroupingMode.FACTORS and selected_factor is not None:
         result = df.groupby([selected_factor.name, 'Run']).resample(timedelta, on='DateTime')
     elif grouping_mode == GroupingMode.ANIMALS:
-        result = df.groupby(['Animal', 'Box', 'Group', 'Run']).resample(timedelta, on='DateTime')
+        result = df.groupby(['Animal', 'Box', 'Run']).resample(timedelta, on='DateTime')
     elif grouping_mode == GroupingMode.RUNS:
         result = df.groupby(['Run']).resample(timedelta, on='DateTime')
 
