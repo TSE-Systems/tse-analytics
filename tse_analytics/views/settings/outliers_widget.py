@@ -29,7 +29,7 @@ class OutliersWidget(QScrollArea):
 
         layout.addWidget(QLabel("Coefficient:"))
         self.coefficient_spinbox = QDoubleSpinBox()
-        self.coefficient_spinbox.setValue(1.5)
+        self.coefficient_spinbox.setValue(Manager.data.outliers_params.coefficient)
         self.coefficient_spinbox.valueChanged.connect(self._coefficient_changed)
         layout.addWidget(self.coefficient_spinbox)
 

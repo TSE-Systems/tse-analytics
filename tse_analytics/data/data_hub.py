@@ -37,7 +37,7 @@ class DataHub:
         self.grouping_mode = GroupingMode.ANIMALS
 
         self.binning_params = BinningParams(False, pd.Timedelta("1H"), BinningOperation.MEAN)
-        self.outliers_params = OutliersParams(False, 1.5)
+        self.outliers_params = OutliersParams(False, 3.0)
         self.time_cycles_params = TimeCyclesParams(False, time(7, 0), time(19, 0))
 
         self.selected_variable = ""
