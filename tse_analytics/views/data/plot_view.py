@@ -107,11 +107,19 @@ class PlotView(pg.GraphicsLayoutWidget):
         self.p2.clearPlots()
         self.legend.clear()
 
-        if self._df is None or self._variable == "" or (Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None):
+        if (
+            self._df is None
+            or self._variable == ""
+            or (Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None)
+        ):
             return
 
         if Manager.data.grouping_mode == GroupingMode.ANIMALS:
-            animals = Manager.data.selected_animals if len(Manager.data.selected_animals) > 0 else Manager.data.selected_dataset.animals.values()
+            animals = (
+                Manager.data.selected_animals
+                if len(Manager.data.selected_animals) > 0
+                else Manager.data.selected_dataset.animals.values()
+            )
             for i, animal in enumerate(animals):
                 filtered_data = self._df[self._df["Animal"] == animal.id]
 
@@ -188,7 +196,9 @@ class PlotView(pg.GraphicsLayoutWidget):
         if len(x) > 0:
             self.region.setRegion([x.min(), x.max()])
             self._start_datetime = datetime.datetime.fromtimestamp(x[0])
-            self._timedelta = pd.Timedelta(datetime.datetime.fromtimestamp(x[1]) - datetime.datetime.fromtimestamp(x[0]))
+            self._timedelta = pd.Timedelta(
+                datetime.datetime.fromtimestamp(x[1]) - datetime.datetime.fromtimestamp(x[0])
+            )
 
         self.update()
 

@@ -41,7 +41,8 @@ class NormalityWidget(AnalysisWidget):
 
     def _analyze(self):
         if Manager.data.selected_dataset is None or (
-            Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None):
+            Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None
+        ):
             return
 
         df = Manager.data.selected_dataset.active_df

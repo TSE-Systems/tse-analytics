@@ -20,7 +20,7 @@ class Dataset:
         animals: dict[int, Animal],
         variables: dict[str, Variable],
         df: pd.DataFrame,
-        sampling_interval: pd.Timedelta
+        sampling_interval: pd.Timedelta,
     ):
         self.name = name
         self.path = path
@@ -53,21 +53,21 @@ class Dataset:
         return groups
 
     def filter_by_animals(self, animal_ids: list[int]) -> pd.DataFrame:
-        df = self.active_df[self.active_df['Animal'].isin(animal_ids)]
+        df = self.active_df[self.active_df["Animal"].isin(animal_ids)]
         return df
 
     def filter_by_boxes(self, box_ids: list[int]) -> pd.DataFrame:
-        df = self.active_df[self.active_df['Box'].isin(box_ids)]
+        df = self.active_df[self.active_df["Box"].isin(box_ids)]
         return df
 
     def filter_by_groups(self, groups: list[Group]) -> pd.DataFrame:
         group_ids = [group.name for group in groups]
-        df = self.active_df[self.active_df['Group'].isin(group_ids)]
+        df = self.active_df[self.active_df["Group"].isin(group_ids)]
         df = df.dropna()
         return df
 
     def adjust_time(self, delta: str) -> pd.DataFrame:
-        self.active_df['DateTime'] = self.active_df['DateTime'] + pd.Timedelta(delta)
+        self.active_df["DateTime"] = self.active_df["DateTime"] + pd.Timedelta(delta)
         return self.active_df
 
     def set_factors(self, factors: dict[str, Factor]):
@@ -89,7 +89,7 @@ class Dataset:
 
             df[factor.name] = df["Animal"]
             df[factor.name].replace(animal_factor_map, inplace=True)
-            df[factor.name] = df[factor.name].astype('category')
+            df[factor.name] = df[factor.name].astype("category")
 
         self.active_df = df
 

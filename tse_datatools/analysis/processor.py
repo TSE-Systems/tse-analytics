@@ -12,6 +12,7 @@ def calculate_grouped_data(
     timedelta: pd.Timedelta,
     operation: BinningOperation,
     grouping_mode: GroupingMode,
+    factor_names: list[str],
     selected_variable: Optional[str] = None,
     selected_factor: Optional[Factor] = None,
 ) -> pd.DataFrame:
@@ -20,11 +21,11 @@ def calculate_grouped_data(
 
     result = None
     if grouping_mode == GroupingMode.FACTORS and selected_factor is not None:
-        result = df.groupby([selected_factor.name, 'Run']).resample(timedelta, on='DateTime')
+        result = df.groupby([selected_factor.name, "Run"]).resample(timedelta, on="DateTime")
     elif grouping_mode == GroupingMode.ANIMALS:
-        result = df.groupby(['Animal', 'Box', 'Run']).resample(timedelta, on='DateTime')
+        result = df.groupby(["Animal", "Box", "Run"] + factor_names).resample(timedelta, on="DateTime")
     elif grouping_mode == GroupingMode.RUNS:
-        result = df.groupby(['Run']).resample(timedelta, on='DateTime')
+        result = df.groupby(["Run"]).resample(timedelta, on="DateTime")
 
     errors = result.std(numeric_only=True)[selected_variable].to_numpy() if selected_variable is not None else None
 
@@ -36,28 +37,28 @@ def calculate_grouped_data(
         result = result.sum(numeric_only=True)
 
     if grouping_mode == GroupingMode.FACTORS and selected_factor is not None:
-        result.sort_values(by=['DateTime', selected_factor.name], inplace=True)
+        result.sort_values(by=["DateTime", selected_factor.name], inplace=True)
     elif grouping_mode == GroupingMode.ANIMALS:
-        result.sort_values(by=['DateTime', 'Box'], inplace=True)
+        result.sort_values(by=["DateTime", "Box"], inplace=True)
     elif grouping_mode == GroupingMode.RUNS:
-        result.sort_values(by=['DateTime', 'Run'], inplace=True)
+        result.sort_values(by=["DateTime", "Run"], inplace=True)
 
     # the inverse of groupby, reset_index
     result = result.reset_index().reindex(cols, axis=1)
 
     # Hide empty columns
     if grouping_mode == GroupingMode.FACTORS:
-        result.drop(columns=['Animal', 'Box'], inplace=True)
+        result.drop(columns=["Animal", "Box"], inplace=True)
     elif grouping_mode == GroupingMode.RUNS:
-        result.drop(columns=['Animal', 'Box'], inplace=True)
+        result.drop(columns=["Animal", "Box"], inplace=True)
 
-    start_date_time = result['DateTime'][0]
-    result["Timedelta"] = result['DateTime'] - start_date_time
+    start_date_time = result["DateTime"][0]
+    result["Timedelta"] = result["DateTime"] - start_date_time
     result["Bin"] = (result["Timedelta"] / timedelta).round().astype(int)
-    result['Bin'] = result['Bin'].astype('category')
+    result["Bin"] = result["Bin"].astype("category")
 
     if errors is not None:
-        result['Std'] = errors
+        result["Std"] = errors
 
     return result
 

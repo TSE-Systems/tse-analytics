@@ -7,7 +7,9 @@ from PySide6.QtWidgets import (
     QComboBox,
     QLabel,
     QVBoxLayout,
-    QWidget, QDoubleSpinBox, QScrollArea,
+    QWidget,
+    QDoubleSpinBox,
+    QScrollArea,
 )
 
 from tse_analytics.core.manager import Manager

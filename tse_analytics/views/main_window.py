@@ -158,7 +158,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         binning_dock_widget.setWidget(BinningWidget())
         binning_dock_widget.setIcon(QIcon(":/icons/icons8-time-span-16.png"))
         binning_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
-        settings_dock_area = self.dock_manager.addDockWidget(PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area)
+        settings_dock_area = self.dock_manager.addDockWidget(
+            PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area
+        )
 
         outliers_dock_widget = PySide6QtAds.CDockWidget("Outliers")
         outliers_dock_widget.setWidget(OutliersWidget())
@@ -185,7 +187,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Step 2. Dynamically create the actions
         actions = []
         settings = QSettings()
-        filenames = list(settings.value('recentFilesList', []))
+        filenames = list(settings.value("recentFilesList", []))
         for filename in filenames:
             action = QAction(filename, self)
             action.triggered.connect(partial(self.load_workspace, filename))
@@ -195,7 +197,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def load_workspace(self, filename: str):
         settings = QSettings()
-        filenames = list(settings.value('recentFilesList', []))
+        filenames = list(settings.value("recentFilesList", []))
         try:
             filenames.remove(filename)
         except ValueError:

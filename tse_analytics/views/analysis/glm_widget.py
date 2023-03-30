@@ -72,7 +72,9 @@ class GlmWidget(AnalysisWidget):
         if self.covariate == "Weight":
             df = df.groupby(by=["Animal"], as_index=False).agg({self.response: "mean", factor_name: "first"})
         else:
-            df = df.groupby(by=["Animal"], as_index=False).agg({self.covariate: "mean", self.response: "mean", factor_name: "first"})
+            df = df.groupby(by=["Animal"], as_index=False).agg(
+                {self.covariate: "mean", self.response: "mean", factor_name: "first"}
+            )
 
         if self.covariate == "Weight":
             df["Weight"] = df["Animal"].astype(float)

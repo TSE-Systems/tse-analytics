@@ -30,7 +30,6 @@ class MessengerCallbackContainer:
             raise TypeError("Only callable filters can be stored in CallbackContainer")
 
         if self.is_bound_method(handler):
-
             # We are dealing with a bound method. Method references aren't
             # persistent, so instead we store a reference to the function
             # and instance.
@@ -38,11 +37,9 @@ class MessengerCallbackContainer:
             value = (weakref.ref(handler.__func__), weakref.ref(handler.__self__, self._auto_remove))
 
         else:
-
             value = (handler, None)
 
         if self.is_bound_method(filter):
-
             # We are dealing with a bound method. Method references aren't
             # persistent, so instead we store a reference to the function
             # and instance.
@@ -50,13 +47,11 @@ class MessengerCallbackContainer:
             value += (weakref.ref(filter.__func__), weakref.ref(filter.__self__, self._auto_remove))
 
         else:
-
             value += (filter, None)
 
         return value
 
     def _auto_remove(self, method_instance):
-
         # Called when weakref detects that the instance on which a method was
         # defined has been garbage collected.
         remove = []
@@ -70,7 +65,6 @@ class MessengerCallbackContainer:
         return message_class in self.callbacks
 
     def __getitem__(self, message_class):
-
         callback = self.callbacks[message_class]
 
         if callback[1] is None:

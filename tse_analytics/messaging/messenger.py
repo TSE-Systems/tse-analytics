@@ -142,7 +142,6 @@ class Messenger:
 
         # loop over subscribed objects
         for subscriber, subscriptions in list(self._subscriptions.items()):
-
             # subscriptions to message or its superclasses
             messages = [msg for msg in subscriptions.keys() if issubclass(type(message), msg)]
 

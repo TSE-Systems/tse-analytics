@@ -171,7 +171,6 @@ class JsonModel(QAbstractItemModel):
             return flags
 
     def to_json(self, item=None):
-
         if item is None:
             item = self._rootItem
 

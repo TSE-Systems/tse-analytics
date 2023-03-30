@@ -90,7 +90,7 @@ class DataHub:
     def export_to_excel(self, path: str) -> None:
         if self.selected_dataset is not None:
             with pd.ExcelWriter(path) as writer:
-                self.get_current_df().to_excel(writer, sheet_name='Data')
+                self.get_current_df().to_excel(writer, sheet_name="Data")
 
     def export_to_csv(self, path: str) -> None:
         if self.selected_dataset is not None:
@@ -99,17 +99,29 @@ class DataHub:
     def get_current_df(self, calculate_error=False) -> pd.DataFrame:
         result = self.selected_dataset.active_df.copy()
 
+        factor_names = list(self.selected_dataset.factors.keys())
+
         if self.time_cycles_params.apply:
-            filter_method = lambda x: 'Light' if (
-                self.time_cycles_params.light_cycle_start <= x.time() < self.time_cycles_params.dark_cycle_start) else 'Dark'
+            filter_method = (
+                lambda x: "Light"
+                if (self.time_cycles_params.light_cycle_start <= x.time() < self.time_cycles_params.dark_cycle_start)
+                else "Dark"
+            )
             result["Cycle"] = result["DateTime"].apply(filter_method).astype("category")
 
-        timedelta = self.selected_dataset.sampling_interval if not self.binning_params.apply else self.binning_params.timedelta
+        timedelta = (
+            self.selected_dataset.sampling_interval if not self.binning_params.apply else self.binning_params.timedelta
+        )
 
         if self.grouping_mode == GroupingMode.FACTORS and self.selected_factor is not None:
             result = calculate_grouped_data(
-                result, timedelta, self.binning_params.operation, self.grouping_mode,
-                self.selected_variable if calculate_error else None, self.selected_factor
+                result,
+                timedelta,
+                self.binning_params.operation,
+                self.grouping_mode,
+                factor_names,
+                self.selected_variable if calculate_error else None,
+                self.selected_factor,
             )
             # TODO: should or should not?
             # result = result.dropna()
@@ -119,13 +131,23 @@ class DataHub:
                 result = result[result["Animal"].isin(animal_ids)]
             if self.binning_params.apply:
                 result = calculate_grouped_data(
-                    result, timedelta, self.binning_params.operation, self.grouping_mode,
-                    self.selected_variable if calculate_error else None, self.selected_factor
+                    result,
+                    timedelta,
+                    self.binning_params.operation,
+                    self.grouping_mode,
+                    factor_names,
+                    self.selected_variable if calculate_error else None,
+                    self.selected_factor,
                 )
         if self.grouping_mode == GroupingMode.RUNS:
             result = calculate_grouped_data(
-                result, timedelta, self.binning_params.operation, self.grouping_mode,
-                self.selected_variable if calculate_error else None, self.selected_factor
+                result,
+                timedelta,
+                self.binning_params.operation,
+                self.grouping_mode,
+                factor_names,
+                self.selected_variable if calculate_error else None,
+                self.selected_factor,
             )
             # TODO: should or should not?
             # result = result.dropna()

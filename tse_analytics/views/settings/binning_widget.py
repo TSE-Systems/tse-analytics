@@ -9,7 +9,10 @@ from PySide6.QtWidgets import (
     QLabel,
     QSpinBox,
     QVBoxLayout,
-    QWidget, QTimeEdit, QGroupBox, QScrollArea,
+    QWidget,
+    QTimeEdit,
+    QGroupBox,
+    QScrollArea,
 )
 
 from tse_analytics.core.manager import Manager
@@ -107,7 +110,7 @@ class BinningWidget(QScrollArea):
 
     @QtCore.Slot(int)
     def _apply_binning_changed(self, value: int):
-        Manager.data.binning_params.apply = (value == 2)
+        Manager.data.binning_params.apply = value == 2
         if Manager.data.selected_dataset is not None:
             if Manager.data.binning_params.apply:
                 Manager.messenger.broadcast(BinningAppliedMessage(self, Manager.data.binning_params))
@@ -133,9 +136,7 @@ class BinningWidget(QScrollArea):
         timedelta = pd.Timedelta(f"{binning_delta}{unit}")
 
         binning_params = BinningParams(
-            self.apply_binning_checkbox.isChecked(),
-            timedelta,
-            BinningOperation(self.operation_combobox.currentText())
+            self.apply_binning_checkbox.isChecked(), timedelta, BinningOperation(self.operation_combobox.currentText())
         )
         Manager.data.binning_params = binning_params
 

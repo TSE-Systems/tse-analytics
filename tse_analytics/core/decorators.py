@@ -11,7 +11,6 @@ def memoize(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-
         # Note that here we have two separate try...except statements, because
         # we want to make sure that we catch only TypeError on the first
         # statement, and both TypeError and KeyError on the second.
