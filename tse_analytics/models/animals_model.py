@@ -6,7 +6,6 @@ from tse_datatools.data.animal import Animal
 
 
 class AnimalsModel(QAbstractTableModel):
-
     header = ("Animal", "Box", "Weight", "Text1", "Text2", "Text3")
 
     def __init__(self, items: Sequence[Animal], parent=None):

@@ -55,28 +55,33 @@ class AnovaWidget(AnalysisWidget):
         self.variable = variable
 
     def _analyze(self):
-        if Manager.data.selected_dataset is None:
+        if Manager.data.selected_dataset is None or Manager.data.selected_factor is None:
             return
 
-        df = Manager.data.selected_dataset.original_df
+        factor_name = Manager.data.selected_factor.name
+        df = Manager.data.selected_dataset.active_df[["Animal", factor_name, self.variable]]
+
         # Drop NaN rows
         # df = df[df["Group"].notna()]
         df = df[df[self.variable].notna()]
 
-        homoscedasticity = pg.homoscedasticity(data=df, dv=self.variable, group="Group")
+        homoscedasticity = pg.homoscedasticity(data=df, dv=self.variable, group=factor_name, center="mean")
 
         if homoscedasticity["equal_var"].values[0]:
             anova_header = "Classic one-way ANOVA"
-            anova = pg.anova(data=df, dv=self.variable, between="Group", detailed=True)
+            anova = pg.anova(data=df, dv=self.variable, between=factor_name, detailed=True)
         else:
             anova_header = "Welch one-way ANOVA"
-            anova = pg.welch_anova(data=df, dv=self.variable, between="Group")
+            anova = pg.welch_anova(data=df, dv=self.variable, between=factor_name)
 
-        pt = pg.pairwise_tukey(dv=self.variable, between="Group", data=df)
+        # anova_header = "Repeated measures one-way ANOVA"
+        # anova = pg.rm_anova(data=df, dv=self.variable, within=factor_name, subject='Animal', detailed=True)
+
+        pt = pg.pairwise_tukey(dv=self.variable, between=factor_name, data=df)
         # self.webView.setHtml(pt.to_html())
 
         tukey = pairwise_tukeyhsd(
-            endog=df[self.variable], groups=df["Group"], alpha=0.05  # Data  # Groups
+            endog=df[self.variable], groups=df[factor_name], alpha=0.05  # Data  # Groups
         )  # Significance level
 
         html_template = """

@@ -43,7 +43,7 @@ class HistogramWidget(AnalysisWidget):
 
         self.ax.clear()
 
-        df = Manager.data.selected_dataset.original_df
+        df = Manager.data.selected_dataset.active_df
         selected_variables = Manager.data.selected_variables
         columns = [item.name for item in selected_variables]
 

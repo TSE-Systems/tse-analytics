@@ -27,7 +27,7 @@ class TableViewWidget(DataWidget):
         self.table_view.set_data(df)
 
     def clear_selection(self):
-        df = Manager.data.selected_dataset.original_df
+        df = Manager.data.selected_dataset.active_df
         self.table_view.set_data(df)
 
     def _enable_sorting(self, state: bool):

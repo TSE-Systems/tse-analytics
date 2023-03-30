@@ -63,11 +63,18 @@ class GlmWidget(AnalysisWidget):
         self.response = response
 
     def _analyze(self):
-        df = Manager.data.selected_dataset.original_df.copy()
+        if Manager.data.selected_dataset is None or Manager.data.selected_factor is None:
+            return
+
+        factor_name = Manager.data.selected_factor.name
+
+        df = Manager.data.selected_dataset.active_df.copy()
         if self.covariate == "Weight":
-            df = df.groupby(by=["Animal"], as_index=False).agg({self.response: "mean", "Group": "first"})
+            df = df.groupby(by=["Animal"], as_index=False).agg({self.response: "mean", factor_name: "first"})
         else:
-            df = df.groupby(by=["Animal"], as_index=False).agg({self.covariate: "mean", self.response: "mean", "Group": "first"})
+            df = df.groupby(by=["Animal"], as_index=False).agg(
+                {self.covariate: "mean", self.response: "mean", factor_name: "first"}
+            )
 
         if self.covariate == "Weight":
             df["Weight"] = df["Animal"].astype(float)
@@ -76,7 +83,7 @@ class GlmWidget(AnalysisWidget):
                 weights[animal.id] = animal.weight
             df = df.replace({"Weight": weights})
 
-        facet_grid = sns.lmplot(data=df, x=self.covariate, y=self.response, hue="Group", robust=False)
+        facet_grid = sns.lmplot(data=df, x=self.covariate, y=self.response, hue=factor_name, robust=False)
         canvas = FigureCanvasQTAgg(facet_grid.figure)
         canvas.updateGeometry()
         canvas.draw()

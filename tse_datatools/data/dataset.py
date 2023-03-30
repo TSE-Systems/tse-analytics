@@ -1,10 +1,11 @@
-from typing import Literal
+from typing import Literal, Any
 
 import numpy as np
 import pandas as pd
 
 from tse_datatools.data.animal import Animal
 from tse_datatools.data.box import Box
+from tse_datatools.data.factor import Factor
 from tse_datatools.data.group import Group
 from tse_datatools.data.variable import Variable
 
@@ -19,7 +20,7 @@ class Dataset:
         animals: dict[int, Animal],
         variables: dict[str, Variable],
         df: pd.DataFrame,
-        sampling_interval: pd.Timedelta
+        sampling_interval: pd.Timedelta,
     ):
         self.name = name
         self.path = path
@@ -31,13 +32,14 @@ class Dataset:
         self.variables = variables
 
         self.original_df = df
+        self.active_df = self.original_df.copy()
         self.sampling_interval = sampling_interval
 
-        self.groups: dict[str, Group] = {}
+        self.factors: dict[str, Factor] = {}
 
     def extract_groups_from_field(self, field: Literal["text1", "text2", "text3"] = "text1") -> dict[str, Group]:
         """Extract groups assignment from Text1, Text2 or Text3 field"""
-        groups_dict = {}
+        groups_dict: dict[str, list[int]] = {}
         for animal in self.animals.values():
             group_name = getattr(animal, field)
             if group_name not in groups_dict:
@@ -51,44 +53,51 @@ class Dataset:
         return groups
 
     def filter_by_animals(self, animal_ids: list[int]) -> pd.DataFrame:
-        df = self.original_df[self.original_df['Animal'].isin(animal_ids)]
+        df = self.active_df[self.active_df["Animal"].isin(animal_ids)]
         return df
 
     def filter_by_boxes(self, box_ids: list[int]) -> pd.DataFrame:
-        df = self.original_df[self.original_df['Box'].isin(box_ids)]
+        df = self.active_df[self.active_df["Box"].isin(box_ids)]
         return df
 
     def filter_by_groups(self, groups: list[Group]) -> pd.DataFrame:
         group_ids = [group.name for group in groups]
-        df = self.original_df[self.original_df['Group'].isin(group_ids)]
+        df = self.active_df[self.active_df["Group"].isin(group_ids)]
         df = df.dropna()
         return df
 
     def adjust_time(self, delta: str) -> pd.DataFrame:
-        self.original_df['DateTime'] = self.original_df['DateTime'] + pd.Timedelta(delta)
-        return self.original_df
+        self.active_df["DateTime"] = self.active_df["DateTime"] + pd.Timedelta(delta)
+        return self.active_df
 
-    def set_groups(self, groups: dict[str, Group]):
-        self.groups = groups
+    def set_factors(self, factors: dict[str, Factor]):
+        self.factors = factors
 
         # TODO: should be copy?
-        df = self.original_df
+        df = self.original_df.copy()
 
-        animal_group_map = {}
         animal_ids = df["Animal"].unique()
-        for animal_id in animal_ids:
-            animal_group_map[animal_id] = np.NaN
 
-        for group in groups.values():
-            for animal_id in group.animal_ids:
-                animal_group_map[animal_id] = group.name
+        for factor in self.factors.values():
+            animal_factor_map: dict[int, Any] = {}
+            for animal_id in animal_ids:
+                animal_factor_map[animal_id] = np.NaN
 
-        df["Group"] = df["Animal"]
-        df["Group"].replace(animal_group_map, inplace=True)
-        df["Group"] = df["Group"].astype('category')
+            for group in factor.groups:
+                for animal_id in group.animal_ids:
+                    animal_factor_map[animal_id] = group.name
 
-        self.original_df = df
+            df[factor.name] = df["Animal"]
+            df[factor.name].replace(animal_factor_map, inplace=True)
+            df[factor.name] = df[factor.name].astype("category")
+
+        self.active_df = df
 
     def __getstate__(self):
         state = self.__dict__.copy()
+        del state["active_df"]
         return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.set_factors(self.factors)

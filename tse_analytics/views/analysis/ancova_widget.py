@@ -53,9 +53,14 @@ class AncovaWidget(AnalysisWidget):
         self.response_combo_box.set_data(variables)
 
     def _analyze(self):
-        df = Manager.data.selected_dataset.original_df
+        if Manager.data.selected_dataset is None or Manager.data.selected_factor is None:
+            return
 
-        ancova = pg.ancova(data=df, dv=self.response, covar=self.covariate, between="Group")
+        factor_name = Manager.data.selected_factor.name
+
+        df = Manager.data.selected_dataset.active_df
+
+        ancova = pg.ancova(data=df, dv=self.response, covar=self.covariate, between=factor_name)
 
         html_template = """
                 <html>

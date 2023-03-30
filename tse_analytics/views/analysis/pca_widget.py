@@ -29,11 +29,16 @@ class PcaWidget(AnalysisWidget):
         self.layout().addWidget(self.web_view)
 
     def _analyze(self):
+        if Manager.data.selected_dataset is None or Manager.data.selected_factor is None:
+            return
+
         selected_variables = Manager.data.selected_variables
         if len(selected_variables) < 3:
             return
 
-        df = Manager.data.selected_dataset.original_df.dropna()
+        df = Manager.data.selected_dataset.active_df.dropna()
+        factor_name = Manager.data.selected_factor.name
+
         features = [item.name for item in selected_variables]
         n_components = 2 if self.components_combo_box.currentText() == "2D" else 3
 
@@ -47,7 +52,7 @@ class PcaWidget(AnalysisWidget):
                 components,
                 x=0,
                 y=1,
-                color=df["Group"],
+                color=df[factor_name],
                 title=f"Total Explained Variance: {total_var:.2f}%",
                 labels={"0": "PC 1", "1": "PC 2"},
             )
@@ -58,7 +63,7 @@ class PcaWidget(AnalysisWidget):
                 x=0,
                 y=1,
                 z=2,
-                color=df["Group"],
+                color=df[factor_name],
                 title=f"Total Explained Variance: {total_var:.2f}%",
                 labels={"0": "PC 1", "1": "PC 2", "2": "PC 3"},
             )

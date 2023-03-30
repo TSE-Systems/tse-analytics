@@ -40,25 +40,28 @@ class NormalityWidget(AnalysisWidget):
         self.variable = variable
 
     def _analyze(self):
-        if Manager.data.selected_dataset is None:
+        if Manager.data.selected_dataset is None or (
+            Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None
+        ):
             return
 
-        df = Manager.data.selected_dataset.original_df
+        df = Manager.data.selected_dataset.active_df
 
         self.clear()
 
-        if Manager.data.grouping_mode == GroupingMode.GROUPS:
-            if len(Manager.data.selected_dataset.groups) == 0:
+        if Manager.data.grouping_mode == GroupingMode.FACTORS:
+            if len(Manager.data.selected_factor.groups) == 0:
                 self.canvas.figure.suptitle("Please assign animals to groups first")
                 self.canvas.draw()
                 return
 
-            groups = df["Group"].unique()
+            factor_name = Manager.data.selected_factor.name
+            groups = df[factor_name].unique()
             nrows, ncols = self.__get_cells(len(groups))
             for index, group in enumerate(groups):
                 ax = self.canvas.figure.add_subplot(nrows, ncols, index + 1)
-                # stats.probplot(df[df['Group'] == group][variable], dist="norm", plot=ax)
-                pg.qqplot(df[df["Group"] == group][self.variable], dist="norm", ax=ax)
+                # stats.probplot(df[df[factor_name] == group][variable], dist="norm", plot=ax)
+                pg.qqplot(df[df[factor_name] == group][self.variable], dist="norm", ax=ax)
                 ax.set_title(group)
 
             self.canvas.figure.tight_layout()
@@ -68,7 +71,7 @@ class NormalityWidget(AnalysisWidget):
             nrows, ncols = self.__get_cells(len(animals))
             for index, animal in enumerate(animals):
                 ax = self.canvas.figure.add_subplot(nrows, ncols, index + 1)
-                # stats.probplot(df[df['Group'] == group][variable], dist="norm", plot=ax)
+                # stats.probplot(df[df["Animal"] == group][variable], dist="norm", plot=ax)
                 pg.qqplot(df[df["Animal"] == animal.id][self.variable], dist="norm", ax=ax)
                 ax.set_title(animal.id)
 

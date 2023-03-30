@@ -11,7 +11,6 @@ from tse_datatools.data.workspace import Workspace
 
 
 class WorkspaceModel(QAbstractItemModel):
-
     checked_item_changed = Signal(TreeItem)
 
     def __init__(self, parent=None):

@@ -24,11 +24,12 @@ from tse_analytics.views.help.help_widget import HelpWidget
 from tse_analytics.views.info.info_widget import InfoWidget
 from tse_analytics.views.main_window_ui import Ui_MainWindow
 from tse_analytics.views.selection.animals.animals_view_widget import AnimalsViewWidget
-from tse_analytics.views.selection.groups.groups_view_widget import GroupsViewWidget
+from tse_analytics.views.selection.factors.factors_view_widget import FactorsViewWidget
 from tse_analytics.views.selection.variables.variables_view_widget import (
     VariablesViewWidget,
 )
 from tse_analytics.views.settings.binning_widget import BinningWidget
+from tse_analytics.views.settings.outliers_widget import OutliersWidget
 from tse_analytics.workspace.layout import LAYOUT_VERSION
 
 PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.ActiveTabHasCloseButton, False)
@@ -143,10 +144,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         animals_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
         selector_dock_area = self.dock_manager.addDockWidget(PySide6QtAds.RightDockWidgetArea, animals_dock_widget)
 
-        groups_dock_widget = PySide6QtAds.CDockWidget("Groups")
-        groups_dock_widget.setWidget(GroupsViewWidget())
-        groups_dock_widget.setIcon(QIcon(":/icons/icons8-group-objects-16.png"))
-        self.dock_manager.addDockWidgetTabToArea(groups_dock_widget, selector_dock_area)
+        factors_dock_widget = PySide6QtAds.CDockWidget("Factors")
+        factors_dock_widget.setWidget(FactorsViewWidget())
+        factors_dock_widget.setIcon(QIcon(":/icons/icons8-group-objects-16.png"))
+        self.dock_manager.addDockWidgetTabToArea(factors_dock_widget, selector_dock_area)
 
         variables_dock_widget = PySide6QtAds.CDockWidget("Variables")
         variables_dock_widget.setWidget(VariablesViewWidget())
@@ -157,7 +158,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         binning_dock_widget.setWidget(BinningWidget())
         binning_dock_widget.setIcon(QIcon(":/icons/icons8-time-span-16.png"))
         binning_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
-        self.dock_manager.addDockWidget(PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area)
+        settings_dock_area = self.dock_manager.addDockWidget(
+            PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area
+        )
+
+        outliers_dock_widget = PySide6QtAds.CDockWidget("Outliers")
+        outliers_dock_widget.setWidget(OutliersWidget())
+        outliers_dock_widget.setIcon(QIcon(":/icons/icons8-outliers-16.png"))
+        self.dock_manager.addDockWidgetTabToArea(outliers_dock_widget, settings_dock_area)
 
         self.actionImportDataset.triggered.connect(self.import_dataset_dialog)
         self.actionOpenWorkspace.triggered.connect(self.load_workspace_dialog)
@@ -179,7 +187,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Step 2. Dynamically create the actions
         actions = []
         settings = QSettings()
-        filenames = list(settings.value('recentFilesList', []))
+        filenames = list(settings.value("recentFilesList", []))
         for filename in filenames:
             action = QAction(filename, self)
             action.triggered.connect(partial(self.load_workspace, filename))
@@ -189,7 +197,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def load_workspace(self, filename: str):
         settings = QSettings()
-        filenames = list(settings.value('recentFilesList', []))
+        filenames = list(settings.value("recentFilesList", []))
         try:
             filenames.remove(filename)
         except ValueError:
