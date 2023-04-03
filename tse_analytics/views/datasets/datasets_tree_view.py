@@ -8,13 +8,15 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QMenu,
     QTreeView,
-    QWidget,
+    QWidget, QDialog,
 )
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import SelectedTreeNodeChangedMessage
 from tse_analytics.models.dataset_tree_item import DatasetTreeItem
+from tse_analytics.views.datasets_merge_dialog import DatasetsMergeDialog
 from tse_datatools.data.dataset import Dataset
+from tse_datatools.helpers.dataset_merger import MergingMode
 
 
 class DatasetsTreeView(QTreeView):
@@ -53,10 +55,10 @@ class DatasetsTreeView(QTreeView):
             action = menu.addAction("Adjust time...")
             action.triggered.connect(partial(self._adjust_dataset_time, indexes))
 
-            action = menu.addAction("Merge datasets")
+            action = menu.addAction("Merge datasets...")
             action.triggered.connect(partial(self._merge_datasets, indexes))
 
-            action = menu.addAction("Remove")
+            action = menu.addAction("Remove datasets")
             action.triggered.connect(partial(self._remove, indexes))
 
         menu.exec_(self.viewport().mapToGlobal(position))
@@ -67,7 +69,17 @@ class DatasetsTreeView(QTreeView):
         for item in items:
             if item.checked:
                 checked_datasets.append(item.dataset)
-        Manager.merge_datasets(checked_datasets)
+
+        dlg = DatasetsMergeDialog(self)
+        result = dlg.exec()
+        if result == QDialog.DialogCode.Accepted:
+            new_dataset_name = dlg.lineEditName.text()
+            merging_mode = MergingMode.CONCATENATE if dlg.radioButtonConcatenation.isChecked() else MergingMode.OVERLAP
+            Manager.merge_datasets(new_dataset_name, checked_datasets, merging_mode)
+            # uncheck all datasets
+            items = self.model().workspace_tree_item.child_items
+            for item in items:
+                item.checked = False
 
     def _adjust_dataset_time(self, indexes: list[QModelIndex]):
         delta, ok = QInputDialog.getText(self, "Enter time delta", "Delta", QLineEdit.EchoMode.Normal, "1 d")

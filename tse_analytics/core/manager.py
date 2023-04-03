@@ -38,7 +38,7 @@ class Manager:
         cls.data.clear()
 
     @classmethod
-    def merge_datasets(cls, datasets: list[Dataset]) -> None:
-        result_dataset = merge_datasets("Merged", datasets, MergingMode.CONCATENATE)
+    def merge_datasets(cls, new_dataset_name: str, datasets: list[Dataset], merging_mode: MergingMode) -> None:
+        result_dataset = merge_datasets(new_dataset_name, datasets, merging_mode)
         if result_dataset is not None:
             cls.workspace.add_dataset(result_dataset)

@@ -14,15 +14,27 @@ class MergingMode(Enum):
 
 def merge_datasets(new_dataset_name: str, datasets: list[Dataset], merging_mode: MergingMode) -> Optional[Dataset]:
     if len(datasets) < 2:
-        raise Exception("At least two datasets should be selected")
+        raise Exception("At least two datasets should be present")
 
     # sort datasets by start time
     datasets.sort(key=lambda x: x.start_timestamp)
+
+    # reassign run number
+    for run, dataset in enumerate(datasets):
+        dataset.original_df["Run"] = run + 1
+        dataset.original_df["Run"] = dataset.original_df["Run"].astype("category")
 
     dfs = [x.original_df for x in datasets]
     new_df = None
     if merging_mode is MergingMode.CONCATENATE:
         new_df = pd.concat(dfs, ignore_index=True)
+
+    # reassign bin and timedelta
+    start_date_time = new_df["DateTime"][0]
+    timedelta = datasets[0].sampling_interval
+    new_df["Timedelta"] = new_df["DateTime"] - start_date_time
+    new_df["Bin"] = (new_df["Timedelta"] / timedelta).round().astype(int)
+    new_df["Bin"] = new_df["Bin"].astype("category")
 
     new_path = ""
     new_meta = datasets[0].meta
