@@ -3,6 +3,7 @@ from typing import Optional
 
 import pandas as pd
 
+from tse_analytics.core.notificator import show_notification
 from tse_datatools.data.dataset import Dataset
 
 
@@ -18,6 +19,13 @@ def merge_datasets(new_dataset_name: str, datasets: list[Dataset], merging_mode:
 
     # sort datasets by start time
     datasets.sort(key=lambda x: x.start_timestamp)
+
+    # check sampling intervals compatibility
+    first_sampling_interval = datasets[0].sampling_interval
+    for dataset in datasets:
+        if dataset.sampling_interval != first_sampling_interval:
+            show_notification("Cannot merge datasets!", "Sampling intervals should be the same.")
+            return None
 
     # reassign run number
     for run, dataset in enumerate(datasets):

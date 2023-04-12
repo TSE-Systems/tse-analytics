@@ -82,7 +82,6 @@ class DatasetLoader:
             na_values=["-"],
             names=columns,
             parse_dates=[["Date", "Time"]],
-            infer_datetime_format=True,
         )
 
         # Rename table columns
