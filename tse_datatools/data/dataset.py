@@ -37,6 +37,11 @@ class Dataset:
 
         self.factors: dict[str, Factor] = {}
 
+    @property
+    def start_timestamp(self):
+        first_value = self.original_df["DateTime"].iat[0]
+        return first_value
+
     def extract_groups_from_field(self, field: Literal["text1", "text2", "text3"] = "text1") -> dict[str, Group]:
         """Extract groups assignment from Text1, Text2 or Text3 field"""
         groups_dict: dict[str, list[int]] = {}
