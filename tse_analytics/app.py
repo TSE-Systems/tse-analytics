@@ -25,8 +25,11 @@ setConfigOptions(
 
 class App(QApplication):
     def __init__(self, args):
+        # Force the light mode
+        args += ["-platform", "windows:darkmode=1"]
+
         QApplication.__init__(self, args)
-        self.setStyle("Fusion")
+        self.setStyle("fusion")
         self.setOrganizationName("TSE Systems")
         self.setOrganizationDomain("http://www.tse-systems.com")
         self.setApplicationName("TSE Analytics")
@@ -45,7 +48,7 @@ def main():
     # sys.argv.append("--disable-web-security")
     app = App(sys.argv)
 
-    mw = MainWindow()
-    mw.show()
+    main_window = MainWindow()
+    main_window.show()
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

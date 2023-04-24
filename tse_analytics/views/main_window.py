@@ -33,6 +33,7 @@ from tse_analytics.views.settings.outliers_widget import OutliersWidget
 from tse_analytics.views.settings.time_phases_widget import TimePhasesWidget
 from tse_analytics.workspace.layout import LAYOUT_VERSION
 
+PySide6QtAds.CDockManager.setConfigFlags(PySide6QtAds.CDockManager.DefaultNonOpaqueConfig)
 PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.ActiveTabHasCloseButton, False)
 PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.DockAreaHasCloseButton, False)
 PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.DockAreaDynamicTabsMenuButtonVisibility, True)
@@ -165,7 +166,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         time_phase_dock_widget = PySide6QtAds.CDockWidget("Time phases")
         time_phase_dock_widget.setWidget(TimePhasesWidget())
-        time_phase_dock_widget.setIcon(QIcon(":/icons/icons8-outliers-16.png"))
+        time_phase_dock_widget.setIcon(QIcon(":/icons/icons8-clock-16.png"))
         self.dock_manager.addDockWidgetTabToArea(time_phase_dock_widget, settings_dock_area)
 
         outliers_dock_widget = PySide6QtAds.CDockWidget("Outliers")
@@ -180,8 +181,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionExportCsv.triggered.connect(self.export_csv_dialog)
         self.actionResetLayout.triggered.connect(self.__reset_layout)
         self.actionExit.triggered.connect(lambda: QApplication.exit())
-
-        # self.dock_manager.setDockWidgetFocused(animals_dock_widget)
 
         self.default_docking_state = self.dock_manager.saveState(LAYOUT_VERSION)
 

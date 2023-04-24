@@ -61,7 +61,7 @@ class PlotView(pg.GraphicsLayoutWidget):
 
         self.view_box = self.p1.vb
 
-        self.proxy = pg.SignalProxy(self.p1.scene().sigMouseMoved, rateLimit=60, slot=self.mouseMoved)
+        # self.proxy = pg.SignalProxy(self.p1.scene().sigMouseMoved, rateLimit=60, slot=self.mouseMoved)
 
     def update(self):
         self.region.setZValue(10)
@@ -72,22 +72,22 @@ class PlotView(pg.GraphicsLayoutWidget):
         rgn = viewRange[0]
         self.region.setRegion(rgn)
 
-    def mouseMoved(self, evt):
-        pos = evt[0]  # using signal proxy turns original arguments into a tuple
-        # if self.start_datetime is not None and self.p1.sceneBoundingRect().contains(pos):
-        #     mousePoint = self.view_box.mapSceneToView(pos)
-        #     dt = datetime.datetime.fromtimestamp(mousePoint.x())
-        #     index = (dt - self.start_datetime) // self.timedelta  # Convert to POSIX timestamp
-        #     index = int(index)
-        #     keys = list(self.plot_data_items.keys())
-        #     if len(keys) > 0 and (0 < index < len(self.plot_data_items[keys[0]].yData)):
-        #         spans = ""
-        #         for animal in self._animals:
-        #             spans = spans + f',  <span>Animal {animal.id}={self.plot_data_items[animal.id].yData[index]}</span>'
-        #         text = f'<span style="font-size: 8pt">x={datetime.datetime.fromtimestamp(self.plot_data_items[animal.id].xData[index])}{spans}</span>'
-        #         self.label.setText(text)
-        #         self.vLine.setPos(mousePoint.x())
-        #         self.hLine.setPos(mousePoint.y())
+    # def mouseMoved(self, evt):
+    #     pos = evt[0]  # using signal proxy turns original arguments into a tuple
+    #     if self.start_datetime is not None and self.p1.sceneBoundingRect().contains(pos):
+    #         mousePoint = self.view_box.mapSceneToView(pos)
+    #         dt = datetime.datetime.fromtimestamp(mousePoint.x())
+    #         index = (dt - self.start_datetime) // self.timedelta  # Convert to POSIX timestamp
+    #         index = int(index)
+    #         keys = list(self.plot_data_items.keys())
+    #         if len(keys) > 0 and (0 < index < len(self.plot_data_items[keys[0]].yData)):
+    #             spans = ""
+    #             for animal in self._animals:
+    #                 spans = spans + f",  <span>Animal {animal.id}={self.plot_data_items[animal.id].yData[index]}</span>"
+    #             text = f'<span style="font-size: 8pt">x={datetime.datetime.fromtimestamp(self.plot_data_items[animal.id].xData[index])}{spans}</span>'
+    #             self.label.setText(text)
+    #             self.vLine.setPos(mousePoint.x())
+    #             self.hLine.setPos(mousePoint.y())
 
     def set_data(self, df: pd.DataFrame):
         self._df = df

@@ -1,4 +1,3 @@
-import tempfile
 from typing import Optional
 
 import plotly.express as px

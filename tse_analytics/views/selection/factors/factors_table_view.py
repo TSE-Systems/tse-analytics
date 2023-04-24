@@ -12,10 +12,16 @@ class FactorsTableView(QTableView):
         super().__init__(parent)
 
         pal = self.palette()
-        pal.setColor(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Highlight,
-                     pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Highlight))
-        pal.setColor(QPalette.ColorGroup.Inactive, QPalette.ColorRole.HighlightedText,
-                     pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.HighlightedText))
+        pal.setColor(
+            QPalette.ColorGroup.Inactive,
+            QPalette.ColorRole.Highlight,
+            pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Highlight),
+        )
+        pal.setColor(
+            QPalette.ColorGroup.Inactive,
+            QPalette.ColorRole.HighlightedText,
+            pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.HighlightedText),
+        )
         self.setPalette(pal)
 
         proxy_model = QSortFilterProxyModel()
