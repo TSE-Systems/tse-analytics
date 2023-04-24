@@ -10,7 +10,10 @@ block_cipher = None
 a = Analysis(['../tse_analytics/__main__.py'],
              pathex=[pathex],
              binaries=[],
-             datas=[('../tse_analytics/docs', 'docs')],
+             datas=[
+                ('../tse_analytics/docs', 'docs'),
+                ('../tse_analytics/resources_rc.py', '.')
+             ],
              hiddenimports=[
                 'pywt._extensions._cwt',
                 'pyqtgraph.graphicsItems.ViewBox.axisCtrlTemplate_pyside6',

@@ -24,10 +24,8 @@ from tse_analytics.views.help.help_widget import HelpWidget
 from tse_analytics.views.info.info_widget import InfoWidget
 from tse_analytics.views.main_window_ui import Ui_MainWindow
 from tse_analytics.views.selection.animals.animals_view_widget import AnimalsViewWidget
-from tse_analytics.views.selection.factors.factors_view_widget import FactorsViewWidget
-from tse_analytics.views.selection.variables.variables_view_widget import (
-    VariablesViewWidget,
-)
+from tse_analytics.views.selection.factors.factors_widget import FactorsWidget
+from tse_analytics.views.selection.variables.variables_view_widget import VariablesViewWidget
 from tse_analytics.views.settings.binning_widget import BinningWidget
 from tse_analytics.views.settings.outliers_widget import OutliersWidget
 from tse_analytics.views.settings.time_phases_widget import TimePhasesWidget
@@ -147,7 +145,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         selector_dock_area = self.dock_manager.addDockWidget(PySide6QtAds.RightDockWidgetArea, animals_dock_widget)
 
         factors_dock_widget = PySide6QtAds.CDockWidget("Factors")
-        factors_dock_widget.setWidget(FactorsViewWidget())
+        factors_dock_widget.setWidget(FactorsWidget())
         factors_dock_widget.setIcon(QIcon(":/icons/icons8-group-objects-16.png"))
         self.dock_manager.addDockWidgetTabToArea(factors_dock_widget, selector_dock_area)
 

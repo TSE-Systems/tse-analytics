@@ -33,12 +33,13 @@ coverage: ## check code coverage
 	pytest --cov=$(SOURCE_DIR) tests/
 
 build_ui:
-	pyside6-uic tse_analytics/views/main_window.ui -o tse_analytics/views/main_window_ui.py --from-imports
+	pyside6-uic tse_analytics/views/main_window.ui -o tse_analytics/views/main_window_ui.py
 	pyside6-uic tse_analytics/views/factors_dialog.ui -o tse_analytics/views/factors_dialog_ui.py
 	pyside6-uic tse_analytics/views/datasets_merge_dialog.ui -o tse_analytics/views/datasets_merge_dialog_ui.py
+	pyside6-uic tse_analytics/views/selection/factors/factors_widget.ui -o tse_analytics/views/selection/factors/factors_widget_ui.py
 
 build_resources:
-	pyside6-rcc resources/resources.qrc -o tse_analytics/views/resources_rc.py
+	pyside6-rcc resources/resources.qrc -o tse_analytics/resources_rc.py
 
 create_setup:
 	pyinstaller setup/tse-analytics.spec

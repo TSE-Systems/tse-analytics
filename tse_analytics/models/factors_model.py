@@ -4,7 +4,7 @@ from tse_datatools.data.factor import Factor
 
 
 class FactorsModel(QAbstractTableModel):
-    header = ("Name", "Number of groups")
+    header = ("Name", "Groups")
 
     def __init__(self, items: list[Factor], parent=None):
         super().__init__(parent)
