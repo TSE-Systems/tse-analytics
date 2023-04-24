@@ -30,6 +30,7 @@ from tse_analytics.views.selection.variables.variables_view_widget import (
 )
 from tse_analytics.views.settings.binning_widget import BinningWidget
 from tse_analytics.views.settings.outliers_widget import OutliersWidget
+from tse_analytics.views.settings.time_phases_widget import TimePhasesWidget
 from tse_analytics.workspace.layout import LAYOUT_VERSION
 
 PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.ActiveTabHasCloseButton, False)
@@ -161,6 +162,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         settings_dock_area = self.dock_manager.addDockWidget(
             PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area
         )
+
+        time_phase_dock_widget = PySide6QtAds.CDockWidget("Time phases")
+        time_phase_dock_widget.setWidget(TimePhasesWidget())
+        time_phase_dock_widget.setIcon(QIcon(":/icons/icons8-outliers-16.png"))
+        self.dock_manager.addDockWidgetTabToArea(time_phase_dock_widget, settings_dock_area)
 
         outliers_dock_widget = PySide6QtAds.CDockWidget("Outliers")
         outliers_dock_widget.setWidget(OutliersWidget())
