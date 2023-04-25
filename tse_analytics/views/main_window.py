@@ -1,8 +1,8 @@
 import os
 from functools import partial
 
-import psutil
 import PySide6QtAds
+import psutil
 from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow
@@ -23,9 +23,9 @@ from tse_analytics.views.datasets.datasets_tree_view import DatasetsTreeView
 from tse_analytics.views.help.help_widget import HelpWidget
 from tse_analytics.views.info.info_widget import InfoWidget
 from tse_analytics.views.main_window_ui import Ui_MainWindow
-from tse_analytics.views.selection.animals.animals_view_widget import AnimalsViewWidget
+from tse_analytics.views.selection.animals.animals_widget import AnimalsWidget
 from tse_analytics.views.selection.factors.factors_widget import FactorsWidget
-from tse_analytics.views.selection.variables.variables_view_widget import VariablesViewWidget
+from tse_analytics.views.selection.variables.variables_widget import VariablesWidget
 from tse_analytics.views.settings.binning_widget import BinningWidget
 from tse_analytics.views.settings.outliers_widget import OutliersWidget
 from tse_analytics.views.settings.time_phases_widget import TimePhasesWidget
@@ -139,7 +139,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dock_manager.addDockWidgetTabToArea(help_dock_widget, info_dock_area)
 
         animals_dock_widget = PySide6QtAds.CDockWidget("Animals")
-        animals_dock_widget.setWidget(AnimalsViewWidget())
+        animals_dock_widget.setWidget(AnimalsWidget())
         animals_dock_widget.setIcon(QIcon(":/icons/icons8-rat-silhouette-16.png"))
         animals_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
         selector_dock_area = self.dock_manager.addDockWidget(PySide6QtAds.RightDockWidgetArea, animals_dock_widget)
@@ -150,7 +150,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dock_manager.addDockWidgetTabToArea(factors_dock_widget, selector_dock_area)
 
         variables_dock_widget = PySide6QtAds.CDockWidget("Variables")
-        variables_dock_widget.setWidget(VariablesViewWidget())
+        variables_dock_widget.setWidget(VariablesWidget())
         variables_dock_widget.setIcon(QIcon(":/icons/icons8-group-objects-16.png"))
         self.dock_manager.addDockWidgetTabToArea(variables_dock_widget, selector_dock_area)
 
