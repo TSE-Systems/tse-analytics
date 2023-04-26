@@ -17,8 +17,8 @@ from tse_analytics.views.analysis.histogram_widget import HistogramWidget
 from tse_analytics.views.analysis.normality_widget import NormalityWidget
 from tse_analytics.views.analysis.pca_widget import PcaWidget
 from tse_analytics.views.analysis.scatter_matrix_widget import ScatterMatrixWidget
-from tse_analytics.views.data.plot_view_widget import PlotViewWidget
-from tse_analytics.views.data.table_view_widget import TableViewWidget
+from tse_analytics.views.data.data_plot_widget import DataPlotWidget
+from tse_analytics.views.data.data_table_widget import DataTableWidget
 from tse_analytics.views.datasets.datasets_tree_view import DatasetsTreeView
 from tse_analytics.views.help.help_widget import HelpWidget
 from tse_analytics.views.info.info_widget import InfoWidget
@@ -66,12 +66,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.default_docking_state = None
 
         data_table_dock_widget = PySide6QtAds.CDockWidget("Data")
-        data_table_dock_widget.setWidget(TableViewWidget())
+        data_table_dock_widget.setWidget(DataTableWidget())
         data_table_dock_widget.setIcon(QIcon(":/icons/icons8-data-sheet-16.png"))
         main_area = self.dock_manager.addDockWidget(PySide6QtAds.AllDockAreas, data_table_dock_widget)
 
         plot_table_dock_widget = PySide6QtAds.CDockWidget("Plot")
-        plot_table_dock_widget.setWidget(PlotViewWidget())
+        plot_table_dock_widget.setWidget(DataPlotWidget())
         plot_table_dock_widget.setIcon(QIcon(":/icons/icons8-line-chart-16.png"))
         self.dock_manager.addDockWidgetTabToArea(plot_table_dock_widget, main_area)
 

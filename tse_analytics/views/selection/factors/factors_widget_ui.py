@@ -16,8 +16,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QHBoxLayout, QHeaderView,
-    QPushButton, QSizePolicy, QTableView, QVBoxLayout,
-    QWidget)
+    QSizePolicy, QSpacerItem, QTableView, QToolButton,
+    QVBoxLayout, QWidget)
 import resources_rc
 
 class Ui_FactorsWidget(object):
@@ -29,13 +29,18 @@ class Ui_FactorsWidget(object):
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.pushButtonEditFactors = QPushButton(FactorsWidget)
-        self.pushButtonEditFactors.setObjectName(u"pushButtonEditFactors")
+        self.toolButtonEditFactors = QToolButton(FactorsWidget)
+        self.toolButtonEditFactors.setObjectName(u"toolButtonEditFactors")
         icon = QIcon()
         icon.addFile(u":/icons/icons8-edit-16.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.pushButtonEditFactors.setIcon(icon)
+        self.toolButtonEditFactors.setIcon(icon)
+        self.toolButtonEditFactors.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
-        self.horizontalLayout.addWidget(self.pushButtonEditFactors)
+        self.horizontalLayout.addWidget(self.toolButtonEditFactors)
+
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout.addItem(self.horizontalSpacer)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout)
@@ -58,6 +63,6 @@ class Ui_FactorsWidget(object):
 
     def retranslateUi(self, FactorsWidget):
         FactorsWidget.setWindowTitle(QCoreApplication.translate("FactorsWidget", u"Form", None))
-        self.pushButtonEditFactors.setText(QCoreApplication.translate("FactorsWidget", u"Edit Factors", None))
+        self.toolButtonEditFactors.setText(QCoreApplication.translate("FactorsWidget", u"Edit Factors", None))
     # retranslateUi
 

@@ -39,6 +39,8 @@ build_ui:
 	pyside6-uic tse_analytics/views/selection/factors/factors_widget.ui -o tse_analytics/views/selection/factors/factors_widget_ui.py
 	pyside6-uic tse_analytics/views/selection/animals/animals_widget.ui -o tse_analytics/views/selection/animals/animals_widget_ui.py
 	pyside6-uic tse_analytics/views/selection/variables/variables_widget.ui -o tse_analytics/views/selection/variables/variables_widget_ui.py
+	pyside6-uic tse_analytics/views/data/data_table_widget.ui -o tse_analytics/views/data/data_table_widget_ui.py
+	pyside6-uic tse_analytics/views/data/data_plot_widget.ui -o tse_analytics/views/data/data_table_plot_ui.py
 
 build_resources:
 	pyside6-rcc resources/resources.qrc -o tse_analytics/resources_rc.py

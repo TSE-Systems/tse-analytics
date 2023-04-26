@@ -41,7 +41,7 @@ class FactorsWidget(QWidget, MessengerListener):
         self.ui.tableView.sortByColumn(0, Qt.SortOrder.AscendingOrder)
         self.ui.tableView.selectionModel().selectionChanged.connect(self.__on_selection_changed)
 
-        self.ui.pushButtonEditFactors.clicked.connect(self.__edit_factors)
+        self.ui.toolButtonEditFactors.clicked.connect(self.__edit_factors)
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)

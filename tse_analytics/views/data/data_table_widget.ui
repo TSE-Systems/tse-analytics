@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>FactorsWidget</class>
- <widget class="QWidget" name="FactorsWidget">
+ <class>DataTableWidget</class>
+ <widget class="QWidget" name="DataTableWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -17,13 +17,30 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QToolButton" name="toolButtonEditFactors">
+      <widget class="QToolButton" name="toolButtonEnableSorting">
        <property name="text">
-        <string>Edit Factors</string>
+        <string>Enable Sorting</string>
        </property>
        <property name="icon">
-        <iconset resource="../../../../resources/resources.qrc">
-         <normaloff>:/icons/icons8-edit-16.png</normaloff>:/icons/icons8-edit-16.png</iconset>
+        <iconset resource="../../../resources/resources.qrc">
+         <normaloff>:/icons/icons8-sorting-16.png</normaloff>:/icons/icons8-sorting-16.png</iconset>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonTextBesideIcon</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="toolButtonResizeColumns">
+       <property name="text">
+        <string>Resize Columns</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../../../resources/resources.qrc">
+         <normaloff>:/icons/icons8-resize-horizontal-16.png</normaloff>:/icons/icons8-resize-horizontal-16.png</iconset>
        </property>
        <property name="toolButtonStyle">
         <enum>Qt::ToolButtonTextBesideIcon</enum>
@@ -67,7 +84,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../../../../resources/resources.qrc"/>
+  <include location="../../../resources/resources.qrc"/>
  </resources>
  <connections/>
 </ui>
