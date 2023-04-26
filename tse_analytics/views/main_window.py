@@ -26,9 +26,9 @@ from tse_analytics.views.main_window_ui import Ui_MainWindow
 from tse_analytics.views.selection.animals.animals_widget import AnimalsWidget
 from tse_analytics.views.selection.factors.factors_widget import FactorsWidget
 from tse_analytics.views.selection.variables.variables_widget import VariablesWidget
-from tse_analytics.views.settings.binning_widget import BinningWidget
-from tse_analytics.views.settings.outliers_widget import OutliersWidget
-from tse_analytics.views.settings.time_phases_widget import TimePhasesWidget
+from tse_analytics.views.settings.binning_settings_widget import BinningSettingsWidget
+from tse_analytics.views.settings.outliers_settings_widget import OutliersSettingsWidget
+from tse_analytics.views.settings.time_settings_widget import TimeSettingsWidget
 from tse_analytics.workspace.layout import LAYOUT_VERSION
 
 PySide6QtAds.CDockManager.setConfigFlags(PySide6QtAds.CDockManager.DefaultNonOpaqueConfig)
@@ -155,20 +155,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dock_manager.addDockWidgetTabToArea(variables_dock_widget, selector_dock_area)
 
         binning_dock_widget = PySide6QtAds.CDockWidget("Binning")
-        binning_dock_widget.setWidget(BinningWidget())
+        binning_dock_widget.setWidget(BinningSettingsWidget())
         binning_dock_widget.setIcon(QIcon(":/icons/icons8-time-span-16.png"))
         binning_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
         settings_dock_area = self.dock_manager.addDockWidget(
             PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area
         )
 
-        time_phase_dock_widget = PySide6QtAds.CDockWidget("Time phases")
-        time_phase_dock_widget.setWidget(TimePhasesWidget())
-        time_phase_dock_widget.setIcon(QIcon(":/icons/icons8-clock-16.png"))
-        self.dock_manager.addDockWidgetTabToArea(time_phase_dock_widget, settings_dock_area)
+        time_setings_dock_widget = PySide6QtAds.CDockWidget("Time settings")
+        time_setings_dock_widget.setWidget(TimeSettingsWidget())
+        time_setings_dock_widget.setIcon(QIcon(":/icons/icons8-clock-16.png"))
+        self.dock_manager.addDockWidgetTabToArea(time_setings_dock_widget, settings_dock_area)
 
         outliers_dock_widget = PySide6QtAds.CDockWidget("Outliers")
-        outliers_dock_widget.setWidget(OutliersWidget())
+        outliers_dock_widget.setWidget(OutliersSettingsWidget())
         outliers_dock_widget.setIcon(QIcon(":/icons/icons8-outliers-16.png"))
         self.dock_manager.addDockWidgetTabToArea(outliers_dock_widget, settings_dock_area)
 
