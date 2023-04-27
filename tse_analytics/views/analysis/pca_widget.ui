@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>HistogramWidget</class>
- <widget class="QWidget" name="HistogramWidget">
+ <class>PcaWidget</class>
+ <widget class="QWidget" name="PcaWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -22,6 +22,16 @@
         <string>Analyze</string>
        </property>
       </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelDimensions">
+       <property name="text">
+        <string>Dimensions:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboBoxDimensions"/>
      </item>
      <item>
       <spacer name="horizontalSpacer">
@@ -47,7 +57,7 @@
     </layout>
    </item>
    <item>
-    <widget class="MplCanvas" name="canvas" native="true">
+    <widget class="QWebEngineView" name="webView" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
@@ -60,9 +70,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>MplCanvas</class>
+   <class>QWebEngineView</class>
    <extends>QWidget</extends>
-   <header>tse_analytics.views.misc.MplCanvas</header>
+   <header>PySide6.QtWebEngineWidgets</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

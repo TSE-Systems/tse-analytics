@@ -1,60 +1,59 @@
 from typing import Optional
 
 import pingouin as pg
-from PySide6.QtCore import Qt
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
-from matplotlib.figure import Figure
-from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QLabel, QWidget, QSplitter
+from PySide6.QtWidgets import QWidget
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
+from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.css import style
-from tse_analytics.views.analysis.analysis_widget import AnalysisWidget
-from tse_analytics.views.misc.variable_selector import VariableSelector
-from tse_datatools.data.variable import Variable
+from tse_analytics.messaging.messages import ClearDataMessage, DatasetChangedMessage
+from tse_analytics.messaging.messenger import Messenger
+from tse_analytics.messaging.messenger_listener import MessengerListener
+from tse_analytics.views.analysis.anova_widget_ui import Ui_AnovaWidget
 
 
-class AnovaWidget(AnalysisWidget):
+class AnovaWidget(QWidget, MessengerListener):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
+        self.register_to_messenger(Manager.messenger)
+
+        self.ui = Ui_AnovaWidget()
+        self.ui.setupUi(self)
 
         self.help_path = "docs/anova.md"
+        self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
+        self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
 
         self.variable = ""
-        self.variable_selector = VariableSelector()
-        self.variable_selector.currentTextChanged.connect(self.__variable_changed)
-        self.toolbar.addWidget(QLabel("Variable: "))
-        self.toolbar.addWidget(self.variable_selector)
+        self.ui.variableSelector.currentTextChanged.connect(self.__variable_changed)
 
-        self.splitter = QSplitter(Qt.Orientation.Vertical)
-        self.layout().addWidget(self.splitter)
+        self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PluginsEnabled, False)
+        self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PdfViewerEnabled, False)
+        self.ui.webView.setHtml("")
 
-        figure = Figure(figsize=(5.0, 4.0), dpi=100)
-        self.ax = figure.subplots()
-        self.canvas = FigureCanvasQTAgg(figure)
-        self.splitter.addWidget(self.canvas)
+        self.ui.splitter.setSizes([2, 1])
 
-        self.web_view = QWebEngineView(self)
-        self.web_view.settings().setAttribute(self.web_view.settings().WebAttribute.PluginsEnabled, False)
-        self.web_view.settings().setAttribute(self.web_view.settings().WebAttribute.PdfViewerEnabled, False)
-        self.web_view.setHtml("")
-        self.splitter.addWidget(self.web_view)
+    def register_to_messenger(self, messenger: Messenger):
+        messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
+        messenger.subscribe(self, ClearDataMessage, self.__on_clear_data)
 
-        self.splitter.setSizes([2, 1])
+    def __on_dataset_changed(self, message: DatasetChangedMessage):
+        self.__clear()
+        self.ui.variableSelector.set_data(message.data.variables)
 
-    def clear(self):
-        self.variable_selector.clear()
-        self.web_view.setHtml("")
-        self.ax.clear()
+    def __on_clear_data(self, message: ClearDataMessage):
+        self.__clear()
 
-    def update_variables(self, variables: dict[str, Variable]):
-        self.variable_selector.set_data(variables)
+    def __clear(self):
+        self.ui.variableSelector.clear()
+        self.ui.canvas.clear()
+        self.ui.webView.setHtml("")
 
     def __variable_changed(self, variable: str):
         self.variable = variable
 
-    def _analyze(self):
+    def __analyze(self):
         if Manager.data.selected_dataset is None or Manager.data.selected_factor is None:
             return
 
@@ -81,7 +80,7 @@ class AnovaWidget(AnalysisWidget):
         # self.webView.setHtml(pt.to_html())
 
         tukey = pairwise_tukeyhsd(
-            endog=df[self.variable], groups=df[factor_name], alpha=0.05  # Data  # Groups
+            endog=df[self.variable], groups=df[factor_name], alpha=0.05
         )  # Significance level
 
         html_template = """
@@ -107,11 +106,13 @@ class AnovaWidget(AnalysisWidget):
             anova=anova.to_html(classes="mystyle"),
             tukey=pt.to_html(classes="mystyle"),
         )
-        self.web_view.setHtml(html)
+        self.ui.webView.setHtml(html)
 
-        self.ax.clear()
+        self.ui.canvas.clear(False)
+        ax = self.ui.canvas.figure.add_subplot(111)
         tukey.plot_simultaneous(
-            ax=self.ax, figsize=self.canvas.figure.get_size_inches()
+            ax=ax,
+            figsize=self.ui.canvas.figure.get_size_inches()
         )  # Plot group confidence intervals
-        self.canvas.figure.tight_layout()
-        self.canvas.draw()
+        self.ui.canvas.figure.tight_layout()
+        self.ui.canvas.draw()

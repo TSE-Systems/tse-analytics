@@ -1,58 +1,66 @@
 from typing import Optional
 
 import pingouin as pg
-from PySide6.QtCore import Qt
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
-from matplotlib.figure import Figure
-from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QLabel, QWidget, QSplitter
+from PySide6.QtWidgets import QWidget
 
+from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.css import style
-from tse_analytics.views.analysis.analysis_widget import AnalysisWidget
-from tse_analytics.views.misc.variable_selector import VariableSelector
-from tse_datatools.data.variable import Variable
+from tse_analytics.messaging.messages import DatasetChangedMessage, ClearDataMessage
+from tse_analytics.messaging.messenger import Messenger
+from tse_analytics.messaging.messenger_listener import MessengerListener
+from tse_analytics.views.analysis.ancova_widget_ui import Ui_AncovaWidget
 
 
-class AncovaWidget(AnalysisWidget):
+class AncovaWidget(QWidget, MessengerListener):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
+        self.register_to_messenger(Manager.messenger)
+
+        self.ui = Ui_AncovaWidget()
+        self.ui.setupUi(self)
 
         self.help_path = "docs/ancova.md"
+        self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
+        self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
 
         self.covariate = ""
-        self.covariate_combo_box = VariableSelector()
-        self.covariate_combo_box.currentTextChanged.connect(self._covariate_current_text_changed)
-        self.toolbar.addWidget(QLabel("Covariate: "))
-        self.toolbar.addWidget(self.covariate_combo_box)
+        self.ui.variableSelectorCovariate.currentTextChanged.connect(self.__covariate_current_text_changed)
 
         self.response = ""
-        self.response_combo_box = VariableSelector()
-        self.response_combo_box.currentTextChanged.connect(self._response_current_text_changed)
-        self.toolbar.addWidget(QLabel("Response: "))
-        self.toolbar.addWidget(self.response_combo_box)
+        self.ui.variableSelectorResponse.currentTextChanged.connect(self.__response_current_text_changed)
 
-        self.splitter = QSplitter(Qt.Orientation.Vertical)
-        self.layout().addWidget(self.splitter)
+        self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PluginsEnabled, False)
+        self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PdfViewerEnabled, False)
+        self.ui.webView.setHtml("")
 
-        figure = Figure(figsize=(5.0, 4.0), dpi=100)
-        self.ax = figure.subplots()
-        self.canvas = FigureCanvasQTAgg(figure)
-        self.splitter.addWidget(self.canvas)
+        self.ui.splitter.setSizes([2, 1])
 
-        self.web_view = QWebEngineView(self)
-        self.web_view.settings().setAttribute(self.web_view.settings().WebAttribute.PluginsEnabled, False)
-        self.web_view.settings().setAttribute(self.web_view.settings().WebAttribute.PdfViewerEnabled, False)
-        self.web_view.setHtml("")
-        self.splitter.addWidget(self.web_view)
+    def register_to_messenger(self, messenger: Messenger):
+        messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
+        messenger.subscribe(self, ClearDataMessage, self.__on_clear_data)
 
-        self.splitter.setSizes([2, 1])
+    def __on_dataset_changed(self, message: DatasetChangedMessage):
+        self.__clear()
+        self.ui.variableSelectorCovariate.set_data(message.data.variables)
+        self.ui.variableSelectorResponse.set_data(message.data.variables)
 
-    def update_variables(self, variables: dict[str, Variable]):
-        self.covariate_combo_box.set_data(variables)
-        self.response_combo_box.set_data(variables)
+    def __on_clear_data(self, message: ClearDataMessage):
+        self.__clear()
 
-    def _analyze(self):
+    def __clear(self):
+        self.ui.variableSelectorCovariate.clear()
+        self.ui.variableSelectorResponse.clear()
+        self.ui.webView.setHtml("")
+        self.ui.canvas.clear()
+
+    def __covariate_current_text_changed(self, covariate: str):
+        self.covariate = covariate
+
+    def __response_current_text_changed(self, response: str):
+        self.response = response
+
+    def __analyze(self):
         if Manager.data.selected_dataset is None or Manager.data.selected_factor is None:
             return
 
@@ -78,16 +86,4 @@ class AncovaWidget(AnalysisWidget):
             style=style,
             ancova=ancova.to_html(classes="mystyle"),
         )
-        self.web_view.setHtml(html)
-
-    def clear(self):
-        self.covariate_combo_box.clear()
-        self.response_combo_box.clear()
-        self.web_view.setHtml("")
-        self.ax.clear()
-
-    def _covariate_current_text_changed(self, covariate: str):
-        self.covariate = covariate
-
-    def _response_current_text_changed(self, response: str):
-        self.response = response
+        self.ui.webView.setHtml(html)

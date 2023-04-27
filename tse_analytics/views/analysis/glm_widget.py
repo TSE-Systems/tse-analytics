@@ -2,67 +2,69 @@ from typing import Optional
 
 import pingouin as pg
 import seaborn as sns
-from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QWidget
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
-from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QLabel, QWidget, QSplitter
 
+from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.css import style
-from tse_analytics.views.analysis.analysis_widget import AnalysisWidget
-from tse_analytics.views.misc.variable_selector import VariableSelector
+from tse_analytics.messaging.messages import DatasetChangedMessage, ClearDataMessage
+from tse_analytics.messaging.messenger import Messenger
+from tse_analytics.messaging.messenger_listener import MessengerListener
+from tse_analytics.views.analysis.glm_widget_ui import Ui_GlmWidget
 from tse_datatools.data.variable import Variable
 
 
-class GlmWidget(AnalysisWidget):
+class GlmWidget(QWidget, MessengerListener):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
+        self.register_to_messenger(Manager.messenger)
+
+        self.ui = Ui_GlmWidget()
+        self.ui.setupUi(self)
 
         self.help_path = "docs/glm.md"
+        self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
+        self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
 
         self.covariate = ""
-        self.covariate_combo_box = VariableSelector()
-        self.covariate_combo_box.currentTextChanged.connect(self._covariate_changed)
-        self.toolbar.addWidget(QLabel("Covariate: "))
-        self.toolbar.addWidget(self.covariate_combo_box)
+        self.ui.variableSelectorCovariate.currentTextChanged.connect(self.__covariate_changed)
 
         self.response = ""
-        self.response_combo_box = VariableSelector()
-        self.response_combo_box.currentTextChanged.connect(self._response_changed)
-        self.toolbar.addWidget(QLabel("Response: "))
-        self.toolbar.addWidget(self.response_combo_box)
+        self.ui.variableSelectorResponse.currentTextChanged.connect(self.__response_changed)
 
-        self.splitter = QSplitter(Qt.Orientation.Vertical)
-        self.layout().addWidget(self.splitter)
+        self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PluginsEnabled, False)
+        self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PdfViewerEnabled, False)
+        self.ui.webView.setHtml("")
 
-        self.splitter.addWidget(FigureCanvasQTAgg(None))
+        self.ui.splitter.setSizes([2, 1])
 
-        self.web_view = QWebEngineView()
-        self.web_view.settings().setAttribute(self.web_view.settings().WebAttribute.PluginsEnabled, False)
-        self.web_view.settings().setAttribute(self.web_view.settings().WebAttribute.PdfViewerEnabled, False)
-        self.web_view.setHtml("")
-        self.splitter.addWidget(self.web_view)
+    def register_to_messenger(self, messenger: Messenger):
+        messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
+        messenger.subscribe(self, ClearDataMessage, self.__on_clear_data)
 
-        self.splitter.setSizes([2, 1])
-
-    def clear(self):
-        self.covariate_combo_box.clear()
-        self.response_combo_box.clear()
-        self.web_view.setHtml("")
-
-    def update_variables(self, variables: dict[str, Variable]):
-        covariate_variables = variables.copy()
+    def __on_dataset_changed(self, message: DatasetChangedMessage):
+        self.__clear()
+        covariate_variables = message.data.variables.copy()
         covariate_variables["Weight"] = Variable("Weight", "[g]", "Animal weight")
-        self.covariate_combo_box.set_data(covariate_variables)
-        self.response_combo_box.set_data(variables)
+        self.ui.variableSelectorCovariate.set_data(covariate_variables)
+        self.ui.variableSelectorResponse.set_data(message.data.variables)
 
-    def _covariate_changed(self, covariate: str):
+    def __on_clear_data(self, message: ClearDataMessage):
+        self.__clear()
+
+    def __clear(self):
+        self.ui.variableSelectorCovariate.clear()
+        self.ui.variableSelectorResponse.clear()
+        self.ui.webView.setHtml("")
+
+    def __covariate_changed(self, covariate: str):
         self.covariate = covariate
 
-    def _response_changed(self, response: str):
+    def __response_changed(self, response: str):
         self.response = response
 
-    def _analyze(self):
+    def __analyze(self):
         if Manager.data.selected_dataset is None or Manager.data.selected_factor is None:
             return
 
@@ -87,7 +89,7 @@ class GlmWidget(AnalysisWidget):
         canvas = FigureCanvasQTAgg(facet_grid.figure)
         canvas.updateGeometry()
         canvas.draw()
-        self.splitter.replaceWidget(0, canvas)
+        self.ui.splitter.replaceWidget(0, canvas)
 
         glm = pg.linear_regression(df[[self.covariate]], df[self.response])
 
@@ -107,4 +109,4 @@ class GlmWidget(AnalysisWidget):
             style=style,
             glm=glm.to_html(classes="mystyle"),
         )
-        self.web_view.setHtml(html)
+        self.ui.webView.setHtml(html)

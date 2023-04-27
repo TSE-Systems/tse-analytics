@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>HistogramWidget</class>
- <widget class="QWidget" name="HistogramWidget">
+ <class>DistributionWidget</class>
+ <widget class="QWidget" name="DistributionWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -22,6 +22,16 @@
         <string>Analyze</string>
        </property>
       </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelVariable">
+       <property name="text">
+        <string>Variable:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="VariableSelector" name="variableSelector"/>
      </item>
      <item>
       <spacer name="horizontalSpacer">
@@ -64,6 +74,11 @@
    <extends>QWidget</extends>
    <header>tse_analytics.views.misc.MplCanvas</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>VariableSelector</class>
+   <extends>QComboBox</extends>
+   <header>tse_analytics.views.misc.variable_selector</header>
   </customwidget>
  </customwidgets>
  <resources>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>HistogramWidget</class>
- <widget class="QWidget" name="HistogramWidget">
+ <class>CorrelationWidget</class>
+ <widget class="QWidget" name="CorrelationWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -22,6 +22,26 @@
         <string>Analyze</string>
        </property>
       </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelVariableX">
+       <property name="text">
+        <string>X:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="VariableSelector" name="variableSelectorX"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelVariableY">
+       <property name="text">
+        <string>Y:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="VariableSelector" name="variableSelectorY"/>
      </item>
      <item>
       <spacer name="horizontalSpacer">
@@ -47,13 +67,18 @@
     </layout>
    </item>
    <item>
-    <widget class="MplCanvas" name="canvas" native="true">
+    <widget class="QSplitter" name="splitter">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <widget class="MplCanvas" name="canvas" native="true"/>
+     <widget class="QWebEngineView" name="webView" native="true"/>
     </widget>
    </item>
   </layout>
@@ -63,6 +88,17 @@
    <class>MplCanvas</class>
    <extends>QWidget</extends>
    <header>tse_analytics.views.misc.MplCanvas</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>VariableSelector</class>
+   <extends>QComboBox</extends>
+   <header>tse_analytics.views.misc.variable_selector</header>
+  </customwidget>
+  <customwidget>
+   <class>QWebEngineView</class>
+   <extends>QWidget</extends>
+   <header>PySide6.QtWebEngineWidgets</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

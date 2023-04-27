@@ -16,7 +16,7 @@ from tse_analytics.views.analysis.glm_widget import GlmWidget
 from tse_analytics.views.analysis.histogram_widget import HistogramWidget
 from tse_analytics.views.analysis.normality_widget import NormalityWidget
 from tse_analytics.views.analysis.pca_widget import PcaWidget
-from tse_analytics.views.analysis.scatter_matrix_widget import ScatterMatrixWidget
+from tse_analytics.views.analysis.matrix_widget import MatrixWidget
 from tse_analytics.views.data.data_plot_widget import DataPlotWidget
 from tse_analytics.views.data.data_table_widget import DataTableWidget
 from tse_analytics.views.datasets.datasets_tree_view import DatasetsTreeView
@@ -112,7 +112,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         matrix_dock_widget = PySide6QtAds.CDockWidget("Matrix")
         matrix_dock_widget.setIcon(QIcon(":/icons/icons8-scales-16.png"))
-        matrix_dock_widget.setWidget(ScatterMatrixWidget())
+        matrix_dock_widget.setWidget(MatrixWidget())
         self.dock_manager.addDockWidgetTabToArea(matrix_dock_widget, main_area)
 
         pca_dock_widget = PySide6QtAds.CDockWidget("PCA")
