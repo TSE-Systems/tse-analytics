@@ -16,9 +16,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QFormLayout, QFrame,
-    QGroupBox, QHBoxLayout, QLabel, QListView,
-    QScrollArea, QSizePolicy, QSpacerItem, QTimeEdit,
-    QToolButton, QVBoxLayout, QWidget)
+    QGroupBox, QHBoxLayout, QHeaderView, QLabel,
+    QScrollArea, QSizePolicy, QSpacerItem, QTableView,
+    QTimeEdit, QToolButton, QVBoxLayout, QWidget)
+import resources_rc
 
 class Ui_TimeSettingsWidget(object):
     def setupUi(self, TimeSettingsWidget):
@@ -75,26 +76,33 @@ class Ui_TimeSettingsWidget(object):
 
         self.verticalLayout_3.addWidget(self.groupBoxCycles)
 
-        self.groupBox_2 = QGroupBox(self.scrollAreaWidgetContents)
-        self.groupBox_2.setObjectName(u"groupBox_2")
-        self.verticalLayout_2 = QVBoxLayout(self.groupBox_2)
+        self.groupBoxPhases = QGroupBox(self.scrollAreaWidgetContents)
+        self.groupBoxPhases.setObjectName(u"groupBoxPhases")
+        self.verticalLayout_2 = QVBoxLayout(self.groupBoxPhases)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.listView = QListView(self.groupBox_2)
-        self.listView.setObjectName(u"listView")
+        self.tableViewTimePhases = QTableView(self.groupBoxPhases)
+        self.tableViewTimePhases.setObjectName(u"tableViewTimePhases")
+        self.tableViewTimePhases.verticalHeader().setDefaultSectionSize(20)
 
-        self.verticalLayout_2.addWidget(self.listView)
+        self.verticalLayout_2.addWidget(self.tableViewTimePhases)
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.toolButton_2 = QToolButton(self.groupBox_2)
-        self.toolButton_2.setObjectName(u"toolButton_2")
+        self.toolButtonAddPhase = QToolButton(self.groupBoxPhases)
+        self.toolButtonAddPhase.setObjectName(u"toolButtonAddPhase")
+        icon = QIcon()
+        icon.addFile(u":/icons/icons8-add-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.toolButtonAddPhase.setIcon(icon)
 
-        self.horizontalLayout.addWidget(self.toolButton_2)
+        self.horizontalLayout.addWidget(self.toolButtonAddPhase)
 
-        self.toolButton = QToolButton(self.groupBox_2)
-        self.toolButton.setObjectName(u"toolButton")
+        self.toolButtonDeletePhase = QToolButton(self.groupBoxPhases)
+        self.toolButtonDeletePhase.setObjectName(u"toolButtonDeletePhase")
+        icon1 = QIcon()
+        icon1.addFile(u":/icons/icons8-minus-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.toolButtonDeletePhase.setIcon(icon1)
 
-        self.horizontalLayout.addWidget(self.toolButton)
+        self.horizontalLayout.addWidget(self.toolButtonDeletePhase)
 
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
@@ -104,7 +112,7 @@ class Ui_TimeSettingsWidget(object):
         self.verticalLayout_2.addLayout(self.horizontalLayout)
 
 
-        self.verticalLayout_3.addWidget(self.groupBox_2)
+        self.verticalLayout_3.addWidget(self.groupBoxPhases)
 
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
 
@@ -122,8 +130,12 @@ class Ui_TimeSettingsWidget(object):
         self.labelApply.setText(QCoreApplication.translate("TimeSettingsWidget", u"Apply", None))
         self.labelLightCycleStart.setText(QCoreApplication.translate("TimeSettingsWidget", u"Light cycle start", None))
         self.labelDarkCycleStart.setText(QCoreApplication.translate("TimeSettingsWidget", u"Dark cycle start", None))
-        self.groupBox_2.setTitle(QCoreApplication.translate("TimeSettingsWidget", u"GroupBox", None))
-        self.toolButton_2.setText(QCoreApplication.translate("TimeSettingsWidget", u"...", None))
-        self.toolButton.setText(QCoreApplication.translate("TimeSettingsWidget", u"...", None))
+        self.groupBoxPhases.setTitle(QCoreApplication.translate("TimeSettingsWidget", u"Time Phases", None))
+#if QT_CONFIG(tooltip)
+        self.toolButtonAddPhase.setToolTip(QCoreApplication.translate("TimeSettingsWidget", u"Add time phase", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.toolButtonDeletePhase.setToolTip(QCoreApplication.translate("TimeSettingsWidget", u"Delete selected time phase", None))
+#endif // QT_CONFIG(tooltip)
     # retranslateUi
 

@@ -61,8 +61,7 @@ class AnovaWidget(QWidget, MessengerListener):
         df = Manager.data.selected_dataset.active_df[["Animal", factor_name, self.variable]]
 
         # Drop NaN rows
-        # df = df[df["Group"].notna()]
-        df = df[df[self.variable].notna()]
+        df = df.dropna()
 
         homoscedasticity = pg.homoscedasticity(data=df, dv=self.variable, group=factor_name, center="mean")
 

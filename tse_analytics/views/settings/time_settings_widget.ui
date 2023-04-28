@@ -88,27 +88,39 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox_2">
+        <widget class="QGroupBox" name="groupBoxPhases">
          <property name="title">
-          <string>GroupBox</string>
+          <string>Time Phases</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <widget class="QListView" name="listView"/>
+           <widget class="QTableView" name="tableViewTimePhases">
+            <attribute name="verticalHeaderDefaultSectionSize">
+             <number>20</number>
+            </attribute>
+           </widget>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout">
             <item>
-             <widget class="QToolButton" name="toolButton_2">
-              <property name="text">
-               <string>...</string>
+             <widget class="QToolButton" name="toolButtonAddPhase">
+              <property name="toolTip">
+               <string>Add time phase</string>
+              </property>
+              <property name="icon">
+               <iconset resource="../../../resources/resources.qrc">
+                <normaloff>:/icons/icons8-add-16.png</normaloff>:/icons/icons8-add-16.png</iconset>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QToolButton" name="toolButton">
-              <property name="text">
-               <string>...</string>
+             <widget class="QToolButton" name="toolButtonDeletePhase">
+              <property name="toolTip">
+               <string>Delete selected time phase</string>
+              </property>
+              <property name="icon">
+               <iconset resource="../../../resources/resources.qrc">
+                <normaloff>:/icons/icons8-minus-16.png</normaloff>:/icons/icons8-minus-16.png</iconset>
               </property>
              </widget>
             </item>
@@ -136,6 +148,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../../../resources/resources.qrc"/>
+ </resources>
  <connections/>
 </ui>
