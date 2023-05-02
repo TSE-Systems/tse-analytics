@@ -28,9 +28,9 @@ class PcaWidget(QWidget, MessengerListener):
         self.ui.comboBoxDimensions.addItems(["2D", "3D"])
         self.ui.comboBoxDimensions.setCurrentText("2D")
 
-        self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PluginsEnabled, False)
-        self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PdfViewerEnabled, False)
-        self.ui.webView.setHtml("")
+        # self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PluginsEnabled, False)
+        # self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PdfViewerEnabled, False)
+        # self.ui.webView.setHtml("")
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)

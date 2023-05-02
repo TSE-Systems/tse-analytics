@@ -102,7 +102,8 @@ class Dataset:
 
     def set_time_phases(self, time_phases: list[TimePhase]):
         if len(time_phases) == 0:
-            self.active_df = self.active_df.drop(columns=["Phase"])
+            if "Phase" in self.active_df.columns:
+                self.active_df = self.active_df.drop(columns=["Phase"])
             return
 
         time_phases.sort(key=lambda x: x.start_timestamp)
@@ -126,8 +127,10 @@ class Dataset:
 
     def __setstate__(self, state):
         self.__dict__.update(state)
-        self.set_factors(self.factors)
 
         # New fields checks
         if not hasattr(self, "time_phases"):
             self.time_phases = []
+
+        self.set_factors(self.factors)
+        self.set_time_phases(self.time_phases)

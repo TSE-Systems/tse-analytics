@@ -41,5 +41,11 @@
         <file>icons/icons8-help-16.png</file>
         <file>icons/icons8-outliers-16.png</file>
         <file>icons/icons8-clock-16.png</file>
+        <file>icons/icons8-database-16.png</file>
+        <file>icons/icons8-variable-16.png</file>
+        <file>icons/icons8-dog-tag-16.png</file>
+        <file>icons/icons8-heat-map-16.png</file>
+        <file>icons/icons8-histogram-16.png</file>
+        <file>icons/icons8-info-16.png</file>
     </qresource>
 </RCC>

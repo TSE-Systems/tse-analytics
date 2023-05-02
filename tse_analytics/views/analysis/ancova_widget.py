@@ -30,9 +30,9 @@ class AncovaWidget(QWidget, MessengerListener):
         self.response = ""
         self.ui.variableSelectorResponse.currentTextChanged.connect(self.__response_current_text_changed)
 
-        self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PluginsEnabled, False)
-        self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PdfViewerEnabled, False)
-        self.ui.webView.setHtml("")
+        # self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PluginsEnabled, False)
+        # self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PdfViewerEnabled, False)
+        # self.ui.webView.setHtml("")
 
         self.ui.splitter.setSizes([2, 1])
 
