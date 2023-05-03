@@ -19,29 +19,37 @@ def calculate_grouped_data(
     # Store initial column order
     cols = df.columns
 
-    result = None
-    if grouping_mode == GroupingMode.FACTORS and selected_factor is not None:
-        result = df.groupby([selected_factor.name, "Run"]).resample(timedelta, on="DateTime")
-    elif grouping_mode == GroupingMode.ANIMALS:
-        result = df.groupby(["Animal", "Box", "Run"] + factor_names).resample(timedelta, on="DateTime")
-    elif grouping_mode == GroupingMode.RUNS:
-        result = df.groupby(["Run"]).resample(timedelta, on="DateTime")
+    result: Optional[pd.DataFrameGroupBy] = None
+    match grouping_mode:
+        case GroupingMode.FACTORS:
+            if selected_factor is not None:
+                result = df.groupby([selected_factor.name, "Run"]).resample(timedelta, on="DateTime")
+        case GroupingMode.ANIMALS:
+            result = df.groupby(["Animal", "Box", "Run"] + factor_names).resample(timedelta, on="DateTime")
+        case GroupingMode.RUNS:
+            result = df.groupby(["Run"]).resample(timedelta, on="DateTime")
+
+    if result is None:
+        return None
 
     errors = result.std(numeric_only=True)[selected_variable].to_numpy() if selected_variable is not None else None
 
-    if operation == BinningOperation.MEAN:
-        result = result.mean(numeric_only=True)
-    elif operation == BinningOperation.MEDIAN:
-        result = result.median(numeric_only=True)
-    else:
-        result = result.sum(numeric_only=True)
+    match operation:
+        case BinningOperation.MEAN:
+            result = result.mean(numeric_only=True)
+        case BinningOperation.MEDIAN:
+            result = result.median(numeric_only=True)
+        case _:
+            result = result.sum(numeric_only=True)
 
-    if grouping_mode == GroupingMode.FACTORS and selected_factor is not None:
-        result.sort_values(by=["DateTime", selected_factor.name], inplace=True)
-    elif grouping_mode == GroupingMode.ANIMALS:
-        result.sort_values(by=["DateTime", "Box"], inplace=True)
-    elif grouping_mode == GroupingMode.RUNS:
-        result.sort_values(by=["DateTime", "Run"], inplace=True)
+    match grouping_mode:
+        case GroupingMode.FACTORS:
+            if selected_factor is not None:
+                result.sort_values(by=["DateTime", selected_factor.name], inplace=True)
+        case GroupingMode.ANIMALS:
+            result.sort_values(by=["DateTime", "Box"], inplace=True)
+        case GroupingMode.RUNS:
+            result.sort_values(by=["DateTime", "Run"], inplace=True)
 
     # the inverse of groupby, reset_index
     result = result.reset_index().reindex(cols, axis=1)

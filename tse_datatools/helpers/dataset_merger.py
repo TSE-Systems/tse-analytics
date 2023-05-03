@@ -30,12 +30,13 @@ def merge_datasets(new_dataset_name: str, datasets: list[Dataset], merging_mode:
     # reassign run number
     for run, dataset in enumerate(datasets):
         dataset.original_df["Run"] = run + 1
-        dataset.original_df["Run"] = dataset.original_df["Run"].astype("category")
 
     dfs = [x.original_df for x in datasets]
     new_df = None
     if merging_mode is MergingMode.CONCATENATE:
         new_df = pd.concat(dfs, ignore_index=True)
+
+    new_df["Run"] = new_df["Run"].astype("category")
 
     # reassign bin and timedelta
     start_date_time = new_df["DateTime"][0]
