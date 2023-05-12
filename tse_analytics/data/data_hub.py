@@ -17,8 +17,8 @@ from tse_datatools.analysis.binning_operation import BinningOperation
 from tse_datatools.analysis.binning_params import BinningParams
 from tse_datatools.analysis.grouping_mode import GroupingMode
 from tse_datatools.analysis.outliers_params import OutliersParams
+from tse_datatools.analysis.pipeline.time_cycles_pipe_operator import TimeCyclesPipeOperator, TimeCyclesParams
 from tse_datatools.analysis.processor import calculate_grouped_data
-from tse_datatools.analysis.time_cycles_params import TimeCyclesParams
 from tse_datatools.data.animal import Animal
 from tse_datatools.data.dataset import Dataset
 from tse_datatools.data.factor import Factor
@@ -101,17 +101,12 @@ class DataHub:
 
         factor_names = list(self.selected_dataset.factors.keys())
 
-        if self.time_cycles_params.apply:
-            filter_method = (
-                lambda x: "Light"
-                if (self.time_cycles_params.light_cycle_start <= x.time() < self.time_cycles_params.dark_cycle_start)
-                else "Dark"
-            )
-            result["Cycle"] = result["DateTime"].apply(filter_method).astype("category")
-
         timedelta = (
             self.selected_dataset.sampling_interval if not self.binning_params.apply else self.binning_params.timedelta
         )
+
+        # Apply time cycles if needed
+        result = TimeCyclesPipeOperator(self.time_cycles_params).process(result)
 
         if self.grouping_mode == GroupingMode.FACTORS and self.selected_factor is not None:
             result = calculate_grouped_data(

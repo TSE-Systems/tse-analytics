@@ -2,14 +2,12 @@ from io import StringIO
 from pathlib import Path
 from typing import Optional
 
-import numpy as np
 import pandas as pd
 
 from tse_datatools.data.animal import Animal
 from tse_datatools.data.box import Box
 from tse_datatools.data.dataset import Dataset
 from tse_datatools.data.variable import Variable
-
 
 DELIMITER = ";"
 DECIMAL = "."
@@ -88,8 +86,10 @@ class DatasetLoader:
         df.rename(columns={"Date_Time": "DateTime", "Animal No.": "Animal"}, inplace=True)
 
         # Apply categorical types
-        df["Animal"] = df["Animal"].astype("category")
-        df["Box"] = df["Box"].astype("category")
+        df = df.astype({
+            "Animal": "category",
+            "Box": "category",
+        })
 
         timedelta = df["DateTime"][1] - df["DateTime"][0]
 
@@ -111,11 +111,15 @@ class DatasetLoader:
         start_date_time = df["DateTime"][0]
         df.insert(loc=1, column="Timedelta", value=df["DateTime"] - start_date_time)
         df.insert(loc=2, column="Bin", value=(df["Timedelta"] / timedelta).round().astype(int))
-        df["Bin"] = df["Bin"].astype("category")
 
         # Add Run column
         df.insert(loc=5, column="Run", value=1)
-        df["Run"] = df["Run"].astype("category")
+
+        # convert categorical types
+        df = df.astype({
+            "Bin": "category",
+            "Run": "category",
+        })
 
         # Sort variables by name
         variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))

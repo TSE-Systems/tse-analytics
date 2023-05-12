@@ -36,14 +36,17 @@ def merge_datasets(new_dataset_name: str, datasets: list[Dataset], merging_mode:
     if merging_mode is MergingMode.CONCATENATE:
         new_df = pd.concat(dfs, ignore_index=True)
 
-    new_df["Run"] = new_df["Run"].astype("category")
-
     # reassign bin and timedelta
     start_date_time = new_df["DateTime"][0]
     timedelta = datasets[0].sampling_interval
     new_df["Timedelta"] = new_df["DateTime"] - start_date_time
     new_df["Bin"] = (new_df["Timedelta"] / timedelta).round().astype(int)
-    new_df["Bin"] = new_df["Bin"].astype("category")
+
+    # convert categorical types
+    new_df = new_df.astype({
+        "Bin": "category",
+        "Run": "category",
+    })
 
     new_path = ""
     new_meta = datasets[0].meta

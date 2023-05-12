@@ -10,7 +10,7 @@ from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.models.time_phases_model import TimePhasesModel
 from tse_analytics.views.settings.time_settings_widget_ui import Ui_TimeSettingsWidget
-from tse_datatools.analysis.time_cycles_params import TimeCyclesParams
+from tse_datatools.analysis.pipeline.time_cycles_pipe_operator import TimeCyclesParams
 from tse_datatools.data.time_phase import TimePhase
 
 
