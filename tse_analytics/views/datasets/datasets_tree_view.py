@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
     QMenu,
     QTreeView,
     QWidget,
-    QDialog,
+    QDialog, QFileDialog,
 )
 
 from tse_analytics.core.manager import Manager
@@ -40,7 +40,7 @@ class DatasetsTreeView(QTreeView):
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.setModel(Manager.workspace.workspace_model)
+        self.setModel(Manager.workspace)
 
         self.customContextMenuRequested.connect(self.__open_menu)
         self.selectionModel().selectionChanged.connect(self._treeview_selection_changed)
@@ -61,8 +61,12 @@ class DatasetsTreeView(QTreeView):
         menu = QMenu(self)
 
         if level == 1:
+            if len(indexes) == 1:
+                action = menu.addAction("Import calo details...")
+                action.triggered.connect(partial(self.__import_calo_details, indexes))
+
             action = menu.addAction("Adjust time...")
-            action.triggered.connect(partial(self._adjust_dataset_time, indexes))
+            action.triggered.connect(partial(self.__adjust_dataset_time, indexes))
 
             action = menu.addAction("Merge datasets...")
             items = self.model().workspace_tree_item.child_items
@@ -73,14 +77,14 @@ class DatasetsTreeView(QTreeView):
             if checked_datasets_number < 2:
                 action.setEnabled(False)
             else:
-                action.triggered.connect(partial(self._merge_datasets, indexes))
+                action.triggered.connect(partial(self.__merge_datasets, indexes))
 
             action = menu.addAction("Remove datasets")
-            action.triggered.connect(partial(self._remove, indexes))
+            action.triggered.connect(partial(self.__remove_datasets, indexes))
 
         menu.exec_(self.viewport().mapToGlobal(position))
 
-    def _merge_datasets(self, indexes: list[QModelIndex]):
+    def __merge_datasets(self, indexes: list[QModelIndex]):
         checked_datasets: list[Dataset] = []
         items = self.model().workspace_tree_item.child_items
         for item in items:
@@ -98,12 +102,24 @@ class DatasetsTreeView(QTreeView):
             for item in items:
                 item.checked = False
 
-    def _adjust_dataset_time(self, indexes: list[QModelIndex]):
+    def __import_calo_details(self, indexes: list[QModelIndex]):
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Import calo details",
+            "",
+            "Calo Details Files (*.csv)",
+        )
+        if path:
+            if len(indexes) == 1:
+                selected_dataset_index = indexes[0]
+                Manager.import_calo_details(selected_dataset_index, path)
+
+    def __adjust_dataset_time(self, indexes: list[QModelIndex]):
         delta, ok = QInputDialog.getText(self, "Enter time delta", "Delta", QLineEdit.EchoMode.Normal, "1 d")
         if ok:
             Manager.data.adjust_dataset_time(indexes, delta)
 
-    def _remove(self, indexes: list[QModelIndex]):
+    def __remove_datasets(self, indexes: list[QModelIndex]):
         Manager.remove_dataset(indexes)
 
     def _treeview_current_changed(self, current: QModelIndex, previous: QModelIndex):

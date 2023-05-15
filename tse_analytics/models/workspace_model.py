@@ -3,9 +3,11 @@ from typing import Optional
 
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt, Signal
 
+from tse_analytics.models.calo_details_tree_item import CaloDetailsTreeItem
 from tse_analytics.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.models.tree_item import TreeItem
 from tse_analytics.models.workspace_tree_item import WorkspaceTreeItem
+from tse_datatools.data.calo_details import CaloDetails
 from tse_datatools.data.dataset import Dataset
 from tse_datatools.data.workspace import Workspace
 
@@ -129,6 +131,11 @@ class WorkspaceModel(QAbstractItemModel):
             self.workspace_tree_item = WorkspaceTreeItem(self.workspace)
             for dataset in self.workspace.datasets:
                 dataset_tree_item = DatasetTreeItem(dataset)
+
+                if hasattr(dataset, "calo_details") and dataset.calo_details is not None:
+                    calo_details_tree_item = CaloDetailsTreeItem(dataset.calo_details)
+                    dataset_tree_item.add_child(calo_details_tree_item)
+
                 self.workspace_tree_item.add_child(dataset_tree_item)
         self.endResetModel()
 
@@ -141,6 +148,15 @@ class WorkspaceModel(QAbstractItemModel):
         dataset_tree_item = DatasetTreeItem(dataset)
         self.beginResetModel()
         self.workspace_tree_item.add_child(dataset_tree_item)
+        self.endResetModel()
+
+    def add_calo_details(self, dataset_index: QModelIndex, calo_details: CaloDetails):
+        dataset_tree_item: DatasetTreeItem = self.getItem(dataset_index)
+        calo_details_tree_item = CaloDetailsTreeItem(calo_details)
+        self.beginResetModel()
+        dataset_tree_item.dataset.calo_details = calo_details
+        dataset_tree_item.clear()
+        dataset_tree_item.add_child(calo_details_tree_item)
         self.endResetModel()
 
     def remove_dataset(self, indexes: list[QModelIndex]):

@@ -1,10 +1,11 @@
-from typing import Literal, Any
+from typing import Literal, Any, Optional
 
 import numpy as np
 import pandas as pd
 
 from tse_datatools.data.animal import Animal
 from tse_datatools.data.box import Box
+from tse_datatools.data.calo_details import CaloDetails
 from tse_datatools.data.factor import Factor
 from tse_datatools.data.group import Group
 from tse_datatools.data.time_phase import TimePhase
@@ -38,6 +39,8 @@ class Dataset:
 
         self.factors: dict[str, Factor] = {}
         self.time_phases: list[TimePhase] = []
+
+        self.calo_details: Optional[CaloDetails] = None
 
     @property
     def start_timestamp(self):

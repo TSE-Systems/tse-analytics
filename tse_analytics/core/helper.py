@@ -4,6 +4,9 @@ from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import ShowHelpMessage
 
 
+LAYOUT_VERSION = 3
+
+
 def show_help(sender, path: str):
     if path is not None and os.path.exists(path):
         with open(path, "r", encoding="utf-8") as file:

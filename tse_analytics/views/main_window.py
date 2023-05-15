@@ -7,6 +7,7 @@ from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow
 
+from tse_analytics.core.helper import LAYOUT_VERSION
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.analysis.ancova_widget import AncovaWidget
 from tse_analytics.views.analysis.anova_widget import AnovaWidget
@@ -29,7 +30,6 @@ from tse_analytics.views.selection.variables.variables_widget import VariablesWi
 from tse_analytics.views.settings.binning_settings_widget import BinningSettingsWidget
 from tse_analytics.views.settings.outliers_settings_widget import OutliersSettingsWidget
 from tse_analytics.views.settings.time_settings_widget import TimeSettingsWidget
-from tse_analytics.workspace.layout import LAYOUT_VERSION
 
 PySide6QtAds.CDockManager.setConfigFlags(PySide6QtAds.CDockManager.DefaultNonOpaqueConfig)
 PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.ActiveTabHasCloseButton, False)
@@ -235,7 +235,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self,
             "Load Workspace",
             "",
-            "Workspace Files ({})".format(file_ext),
+            "Workspace Files (*.workspace)",
             options=options,
         )
         if file_path:
@@ -276,9 +276,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         mem = self.process.memory_info()[0] / float(2**20)
         self.memory_usage_label.setText(f"Memory usage: {mem:.2f} Mb")
 
-    def import_dataset(self, path: str):
-        Manager.import_dataset(path)
-
     def __reset_layout(self):
         self.dock_manager.restoreState(self.default_docking_state, LAYOUT_VERSION)
 
@@ -293,7 +290,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             options=options,
         )
         if path:
-            self.import_dataset(path)
+            Manager.import_dataset(path)
 
     @property
     def okToQuit(self):
