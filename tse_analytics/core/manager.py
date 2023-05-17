@@ -5,7 +5,6 @@ from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.models.workspace_model import WorkspaceModel
 from tse_datatools.data.dataset import Dataset
 from tse_datatools.helpers.dataset_merger import merge_datasets, MergingMode
-from tse_datatools.loaders.calo_details_loader import CaloDetailsLoader
 from tse_datatools.loaders.dataset_loader import DatasetLoader
 
 
@@ -35,9 +34,7 @@ class Manager:
 
     @classmethod
     def import_calo_details(cls, dataset_index: QModelIndex, path: str) -> None:
-        calo_details_data = CaloDetailsLoader.load(path)
-        if calo_details_data is not None:
-            cls.workspace.add_calo_details(dataset_index, calo_details_data)
+        cls.workspace.add_calo_details(dataset_index, path)
 
     @classmethod
     def remove_dataset(cls, indexes: list[QModelIndex]) -> None:

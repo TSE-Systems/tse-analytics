@@ -4,6 +4,8 @@ from typing import Optional
 import pandas as pd
 
 from tse_datatools.data.calo_details import CaloDetails
+from tse_datatools.data.dataset import Dataset
+from tse_datatools.data.variable import Variable
 
 DELIMITER = ";"
 DECIMAL = "."
@@ -11,14 +13,15 @@ DECIMAL = "."
 
 class CaloDetailsLoader:
     @staticmethod
-    def load(filename: str) -> Optional[CaloDetails]:
+    def load(filename: str, dataset: Dataset) -> Optional[CaloDetails]:
         path = Path(filename)
         if path.is_file() and path.suffix.lower() == ".csv":
-            return CaloDetailsLoader.__load_from_csv(path)
+            return CaloDetailsLoader.__load_from_csv(path, dataset)
         return None
 
     @staticmethod
-    def __load_from_csv(path: Path):
+    def __load_from_csv(path: Path, dataset: Dataset):
+        columns_line = None
         with open(path, "r") as f:
             lines = f.readlines()
 
@@ -27,6 +30,7 @@ class CaloDetailsLoader:
             for idx, line in enumerate(lines):
                 if header_template in line:
                     header_line_number = idx
+                    columns_line = line
                     break
 
         df = pd.read_csv(
@@ -40,17 +44,33 @@ class CaloDetailsLoader:
             na_values="-",
         )
 
-        df.rename(columns={
-            "O2 [%]": "O2",
-            "CO2 [%]": "CO2",
-            "RER ": "RER",
-            "VO2(3) [ml/h]": "VO2(3)",
-            "VCO2(3) [ml/h]": "VCO2(3)",
-            "H(3) [kcal/h]": "H(3)",
-        }, inplace=True)
+        # Sanitize column names
+        new_column_names = {}
+        for column in df.columns.values:
+            new_column_names[column] = column.split(" ")[0]
+        df.rename(columns=new_column_names, inplace=True)
 
-        calo_details_data = CaloDetails(None, "Calo Details", str(path), None, df, None)
-        return calo_details_data
+        # Extract variables
+        variables: dict[str, Variable] = {}
+        if columns_line is not None:
+            columns = columns_line.split(DELIMITER)
+            for i, item in enumerate(columns):
+                # Skip first 'Date', 'Time', 'Box' and 'Marker' columns
+                if i < 4:
+                    continue
+                elements = item.split(" ")
+                var_name = elements[0]
+                var_unit = ""
+                if len(elements) == 2:
+                    var_unit = elements[1]
+                variable = Variable(name=var_name, unit=var_unit, description="")
+                variables[variable.name] = variable
+
+        # Calo Details sampling interval
+        sampling_interval = df.iloc[1].at["DateTime"] - df.iloc[0].at["DateTime"]
+
+        calo_details = CaloDetails(dataset, "Calo Details", str(path), variables, df, sampling_interval)
+        return calo_details
 
 
 if __name__ == "__main__":

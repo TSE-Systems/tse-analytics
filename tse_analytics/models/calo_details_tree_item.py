@@ -8,10 +8,10 @@ from tse_datatools.data.calo_details import CaloDetails
 
 
 class CaloDetailsTreeItem(TreeItem):
-    def __init__(self, calo_details_data: CaloDetails):
-        super().__init__(calo_details_data.name)
+    def __init__(self, calo_details: CaloDetails):
+        super().__init__(calo_details.name)
 
-        self.calo_details_data = calo_details_data
+        self.calo_details = calo_details
 
     @property
     def icon(self):
@@ -23,4 +23,4 @@ class CaloDetailsTreeItem(TreeItem):
 
     @property
     def tooltip(self):
-        return self.calo_details_data.name
+        return self.calo_details.name

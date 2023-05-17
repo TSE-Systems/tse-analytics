@@ -7,9 +7,9 @@ from tse_analytics.models.calo_details_tree_item import CaloDetailsTreeItem
 from tse_analytics.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.models.tree_item import TreeItem
 from tse_analytics.models.workspace_tree_item import WorkspaceTreeItem
-from tse_datatools.data.calo_details import CaloDetails
 from tse_datatools.data.dataset import Dataset
 from tse_datatools.data.workspace import Workspace
+from tse_datatools.loaders.calo_details_loader import CaloDetailsLoader
 
 
 class WorkspaceModel(QAbstractItemModel):
@@ -150,14 +150,17 @@ class WorkspaceModel(QAbstractItemModel):
         self.workspace_tree_item.add_child(dataset_tree_item)
         self.endResetModel()
 
-    def add_calo_details(self, dataset_index: QModelIndex, calo_details: CaloDetails):
+    def add_calo_details(self, dataset_index: QModelIndex, path: str):
         dataset_tree_item: DatasetTreeItem = self.getItem(dataset_index)
-        calo_details_tree_item = CaloDetailsTreeItem(calo_details)
-        self.beginResetModel()
-        dataset_tree_item.dataset.calo_details = calo_details
-        dataset_tree_item.clear()
-        dataset_tree_item.add_child(calo_details_tree_item)
-        self.endResetModel()
+        if dataset_tree_item is not None and dataset_tree_item.dataset is not None:
+            calo_details = CaloDetailsLoader.load(path, dataset_tree_item.dataset)
+            if calo_details is not None:
+                calo_details_tree_item = CaloDetailsTreeItem(calo_details)
+                self.beginResetModel()
+                dataset_tree_item.dataset.calo_details = calo_details
+                dataset_tree_item.clear()
+                dataset_tree_item.add_child(calo_details_tree_item)
+                self.endResetModel()
 
     def remove_dataset(self, indexes: list[QModelIndex]):
         self.beginResetModel()

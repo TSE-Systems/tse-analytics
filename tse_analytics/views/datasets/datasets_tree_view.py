@@ -14,7 +14,9 @@ from PySide6.QtWidgets import (
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import SelectedTreeNodeChangedMessage
+from tse_analytics.models.calo_details_tree_item import CaloDetailsTreeItem
 from tse_analytics.models.dataset_tree_item import DatasetTreeItem
+from tse_analytics.views.calo_details.calo_details_dialog import CaloDetailsDialog
 from tse_analytics.views.datasets_merge_dialog import DatasetsMergeDialog
 from tse_datatools.data.dataset import Dataset
 from tse_datatools.helpers.dataset_merger import MergingMode
@@ -135,8 +137,11 @@ class DatasetsTreeView(QTreeView):
     def _treeview_double_clicked(self, index: QModelIndex):
         if index.isValid():
             item = index.model().getItem(index)
-            # if isinstance(item, DatasetTreeItem) and not item.loaded:
-            #     self._load([index])
+            if isinstance(item, CaloDetailsTreeItem):
+                dlg = CaloDetailsDialog(item.calo_details, self)
+                result = dlg.exec()
+                if result == QDialog.DialogCode.Accepted:
+                    pass
 
     def minimumSizeHint(self):
         return QSize(200, 40)

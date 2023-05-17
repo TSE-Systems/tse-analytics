@@ -7,7 +7,7 @@ from tse_analytics.messaging.messages import ClearDataMessage, DatasetChangedMes
     RevertBinningMessage, DataChangedMessage, GroupingModeChangedMessage
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
-from tse_analytics.views.data.data_table_plot_ui import Ui_DataPlotWidget
+from tse_analytics.views.data.data_plot_widget_ui import Ui_DataPlotWidget
 
 
 class DataPlotWidget(QWidget, MessengerListener):
