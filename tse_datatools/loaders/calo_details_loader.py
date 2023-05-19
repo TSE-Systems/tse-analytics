@@ -1,7 +1,9 @@
+from datetime import timedelta
 from pathlib import Path
 from typing import Optional
 
 import pandas as pd
+import numpy as np
 
 from tse_datatools.data.calo_details import CaloDetails
 from tse_datatools.data.dataset import Dataset
@@ -68,6 +70,58 @@ class CaloDetailsLoader:
 
         # Calo Details sampling interval
         sampling_interval = df.iloc[1].at["DateTime"] - df.iloc[0].at["DateTime"]
+
+        df = df.sort_values(["Box", "DateTime"])
+
+        # Assign bins
+        previous_timestamp = None
+        previous_box = None
+        bins = []
+        offsets = []
+        timedeltas = []
+        time_delta = sampling_interval + timedelta(seconds=1)
+        for row in df.itertuples():
+            timestamp = row.DateTime
+            box = row.Box
+
+            if box != previous_box:
+                start_timestamp = timestamp
+
+            if previous_timestamp is None:
+                bins = [0]
+            elif timestamp - previous_timestamp > time_delta:
+                bin_number = bins[-1]
+                bin_number = bin_number + 1
+
+                # reset bin number for a new box
+                if box != previous_box:
+                    bin_number = 0
+
+                bins.append(bin_number)
+                start_timestamp = timestamp
+            else:
+                bin_number = bins[-1]
+
+                # reset bin number for a new box
+                if box != previous_box:
+                    bin_number = 0
+
+                bins.append(bin_number)
+
+            if box != previous_box:
+                previous_box = box
+
+            td = timestamp - start_timestamp
+            timedeltas.append(td)
+
+            offset = td.total_seconds()
+            offsets.append(offset)
+
+            previous_timestamp = timestamp
+
+        df.insert(1, "Timedelta", timedeltas)
+        df.insert(2, "Bin", bins)
+        df.insert(3, "Offset", np.array(offsets, dtype=int))
 
         calo_details = CaloDetails(dataset, "Calo Details", str(path), variables, df, sampling_interval)
         return calo_details

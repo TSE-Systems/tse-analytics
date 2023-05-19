@@ -16,11 +16,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QSizePolicy,
-    QSpacerItem, QToolButton, QVBoxLayout, QWidget)
+    QSpacerItem, QVBoxLayout, QWidget)
 
 from tse_analytics.views.calo_details.calo_details_plot_view import CaloDetailsPlotView
 from tse_analytics.views.misc.variable_selector import VariableSelector
-import resources_rc
 
 class Ui_CaloDetailsPlotWidget(object):
     def setupUi(self, CaloDetailsPlotWidget):
@@ -40,16 +39,6 @@ class Ui_CaloDetailsPlotWidget(object):
         self.variableSelector.setObjectName(u"variableSelector")
 
         self.horizontalLayout.addWidget(self.variableSelector)
-
-        self.toolButtonDisplayErrors = QToolButton(CaloDetailsPlotWidget)
-        self.toolButtonDisplayErrors.setObjectName(u"toolButtonDisplayErrors")
-        icon = QIcon()
-        icon.addFile(u":/icons/icons8-sorting-16.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.toolButtonDisplayErrors.setIcon(icon)
-        self.toolButtonDisplayErrors.setCheckable(True)
-        self.toolButtonDisplayErrors.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-
-        self.horizontalLayout.addWidget(self.toolButtonDisplayErrors)
 
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
@@ -77,6 +66,5 @@ class Ui_CaloDetailsPlotWidget(object):
     def retranslateUi(self, CaloDetailsPlotWidget):
         CaloDetailsPlotWidget.setWindowTitle(QCoreApplication.translate("CaloDetailsPlotWidget", u"Form", None))
         self.label.setText(QCoreApplication.translate("CaloDetailsPlotWidget", u"Variable:", None))
-        self.toolButtonDisplayErrors.setText(QCoreApplication.translate("CaloDetailsPlotWidget", u"Display Errors", None))
     # retranslateUi
 

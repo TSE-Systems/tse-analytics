@@ -15,13 +15,9 @@ class CaloDetailsPlotWidget(QWidget):
         self.ui.setupUi(self)
 
         self.ui.variableSelector.currentTextChanged.connect(self.__variable_changed)
-        self.ui.toolButtonDisplayErrors.toggled.connect(self.__display_errors)
 
     def __variable_changed(self, variable: str):
         self.ui.plotView.set_variable(variable)
-
-    def __display_errors(self, state: bool):
-        self.ui.plotView.set_display_errors(state)
 
     def set_variables(self, variables: dict[str, Variable]):
         self.ui.variableSelector.set_data(variables)

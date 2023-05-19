@@ -13,7 +13,6 @@ class CaloDetailsPlotView(pg.GraphicsLayoutWidget):
 
         self._df: Optional[pd.DataFrame] = None
         self._variable: str = ""
-        self._display_errors = False
 
         self._start_datetime = None
         self._timedelta = None
@@ -94,10 +93,6 @@ class CaloDetailsPlotView(pg.GraphicsLayoutWidget):
         self._variable = variable
         self.__update_plot()
 
-    def set_display_errors(self, state: bool):
-        self._display_errors = state
-        self.__update_plot()
-
     def __update_plot(self):
         self.plot_data_items.clear()
         self.p1.clear()
@@ -119,14 +114,6 @@ class CaloDetailsPlotView(pg.GraphicsLayoutWidget):
             pen = mkPen(color=(i, len(box_ids)), width=1)
             # p1d = self.p1.plot(x, y, symbol='o', symbolSize=2, symbolPen=pen, pen=pen)
             p1d = self.p1.plot(x, y, pen=pen)
-
-            if self._display_errors:
-                # Error bars
-                error_plot = pg.ErrorBarItem(beam=0.2)
-                std = filtered_data["Std"]
-                std = std.to_numpy()
-                error_plot.setData(x=x, y=y, top=std, bottom=std)
-                self.p1.addItem(error_plot)
 
             self.plot_data_items[box_id] = p1d
             self.legend.addItem(p1d, f"Box {box_id}")

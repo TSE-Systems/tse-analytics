@@ -24,16 +24,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="labelVariable">
-       <property name="text">
-        <string>Variable:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="VariableSelector" name="variableSelector"/>
-     </item>
-     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -82,7 +72,7 @@
          <x>0</x>
          <y>0</y>
          <width>871</width>
-         <height>744</height>
+         <height>745</height>
         </rect>
        </property>
        <attribute name="label">
@@ -104,13 +94,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>VariableSelector</class>
-   <extends>QComboBox</extends>
-   <header>tse_analytics.views.misc.variable_selector</header>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="../../../resources/resources.qrc"/>
  </resources>

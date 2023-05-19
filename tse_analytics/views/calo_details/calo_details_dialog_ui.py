@@ -16,11 +16,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QDialog, QDialogButtonBox,
-    QHBoxLayout, QLabel, QSizePolicy, QSpacerItem,
-    QSplitter, QTabWidget, QToolBox, QToolButton,
-    QVBoxLayout, QWidget)
-
-from tse_analytics.views.misc.variable_selector import VariableSelector
+    QHBoxLayout, QSizePolicy, QSpacerItem, QSplitter,
+    QTabWidget, QToolBox, QToolButton, QVBoxLayout,
+    QWidget)
 import resources_rc
 
 class Ui_CaloDetailsDialog(object):
@@ -36,16 +34,6 @@ class Ui_CaloDetailsDialog(object):
         self.toolButtonAnalyse.setObjectName(u"toolButtonAnalyse")
 
         self.toolbarLayout.addWidget(self.toolButtonAnalyse)
-
-        self.labelVariable = QLabel(CaloDetailsDialog)
-        self.labelVariable.setObjectName(u"labelVariable")
-
-        self.toolbarLayout.addWidget(self.labelVariable)
-
-        self.variableSelector = VariableSelector(CaloDetailsDialog)
-        self.variableSelector.setObjectName(u"variableSelector")
-
-        self.toolbarLayout.addWidget(self.variableSelector)
 
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
@@ -77,7 +65,7 @@ class Ui_CaloDetailsDialog(object):
         self.toolBox.setObjectName(u"toolBox")
         self.page = QWidget()
         self.page.setObjectName(u"page")
-        self.page.setGeometry(QRect(0, 0, 871, 744))
+        self.page.setGeometry(QRect(0, 0, 871, 745))
         self.toolBox.addItem(self.page, u"Page 1")
         self.splitter.addWidget(self.toolBox)
 
@@ -105,7 +93,6 @@ class Ui_CaloDetailsDialog(object):
     def retranslateUi(self, CaloDetailsDialog):
         CaloDetailsDialog.setWindowTitle(QCoreApplication.translate("CaloDetailsDialog", u"Calo Details", None))
         self.toolButtonAnalyse.setText(QCoreApplication.translate("CaloDetailsDialog", u"Analyze", None))
-        self.labelVariable.setText(QCoreApplication.translate("CaloDetailsDialog", u"Variable:", None))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("CaloDetailsDialog", u"Page 1", None))
     # retranslateUi
 

@@ -4,15 +4,16 @@ from PySide6.QtCore import Qt, QSortFilterProxyModel, QItemSelection
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QWidget, QTableView, QAbstractItemView
 
-from tse_analytics.models.boxes_model import BoxesModel
+from tse_analytics.models.bins_model import BinsModel
 from tse_datatools.data.dataset import Dataset
 
 
-class CaloDetailsBoxSelector(QTableView):
+class CaloDetailsBinSelector(QTableView):
     def __init__(self, callback, parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self.setSortingEnabled(True)
         self.verticalHeader().setDefaultSectionSize(20)
 
@@ -38,15 +39,15 @@ class CaloDetailsBoxSelector(QTableView):
         self.selectionModel().selectionChanged.connect(self.__on_selection_changed)
 
     def set_data(self, dataset: Dataset):
-        boxes = list(dataset.calo_details.raw_df["Box"].unique())
-        model = BoxesModel(boxes)
+        bins = list(dataset.calo_details.raw_df["Bin"].unique())
+        model = BinsModel(bins)
         self.model().setSourceModel(model)
         # self.resizeColumnsToContents()
 
     def __on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
         proxy_model = self.model()
         model = proxy_model.sourceModel()
-        selected_boxes: list[int] = []
+        selected_bins: list[int] = []
         for index in self.selectedIndexes():
             if index.column() != 0:
                 continue
@@ -54,5 +55,5 @@ class CaloDetailsBoxSelector(QTableView):
                 source_index = proxy_model.mapToSource(index)
                 row = source_index.row()
                 box = model.items[row]
-                selected_boxes.append(box)
-        self.callback(selected_boxes)
+                selected_bins.append(box)
+        self.callback(selected_bins)
