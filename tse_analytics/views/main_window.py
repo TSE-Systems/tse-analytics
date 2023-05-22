@@ -1,10 +1,11 @@
 import os
+import sys
 from functools import partial
 
 import PySide6QtAds
 import psutil
 from PySide6.QtCore import QSettings, Qt, QTimer
-from PySide6.QtGui import QIcon, QAction
+from PySide6.QtGui import QIcon, QAction, QCloseEvent
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow
 
 from tse_analytics.core.helper import LAYOUT_VERSION
@@ -23,6 +24,7 @@ from tse_analytics.views.data.data_table_widget import DataTableWidget
 from tse_analytics.views.datasets.datasets_tree_view import DatasetsTreeView
 from tse_analytics.views.help.help_widget import HelpWidget
 from tse_analytics.views.info.info_widget import InfoWidget
+from tse_analytics.views.log_widget import LogWidget
 from tse_analytics.views.main_window_ui import Ui_MainWindow
 from tse_analytics.views.selection.animals.animals_widget import AnimalsWidget
 from tse_analytics.views.selection.factors.factors_widget import FactorsWidget
@@ -137,6 +139,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         help_dock_widget.setWidget(HelpWidget())
         help_dock_widget.setIcon(QIcon(":/icons/icons8-help-16.png"))
         self.dock_manager.addDockWidgetTabToArea(help_dock_widget, info_dock_area)
+
+        log_dock_widget = PySide6QtAds.CDockWidget("Log")
+        log_dock_widget.setWidget(LogWidget())
+        log_dock_widget.setIcon(QIcon(":/icons/icons8-help-16.png"))
+        self.dock_manager.addDockWidgetTabToArea(log_dock_widget, info_dock_area)
 
         animals_dock_widget = PySide6QtAds.CDockWidget("Animals")
         animals_dock_widget.setWidget(AnimalsWidget())
@@ -296,6 +303,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def okToQuit(self):
         return True
 
-    def closeEvent(self, event):
+    def closeEvent(self, event: QCloseEvent) -> None:
         if self.okToQuit:
             self.save_settings()
+            sys.stdout = sys.__stdout__
+            sys.stderr = sys.__stderr__
+            event.accept()

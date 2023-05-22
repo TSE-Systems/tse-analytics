@@ -15,9 +15,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFormLayout,
-    QFrame, QLabel, QScrollArea, QSizePolicy,
+from PySide6.QtWidgets import (QApplication, QDoubleSpinBox, QFormLayout, QFrame,
+    QGroupBox, QLabel, QScrollArea, QSizePolicy,
     QSpinBox, QVBoxLayout, QWidget)
+
+from tse_analytics.views.calo_details.calo_details_gas_settings_widget import CaloDetailsGasSettingsWidget
 
 class Ui_CaloDetailsSettingsWidget(object):
     def setupUi(self, CaloDetailsSettingsWidget):
@@ -33,57 +35,69 @@ class Ui_CaloDetailsSettingsWidget(object):
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
         self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 528, 567))
-        self.formLayout = QFormLayout(self.scrollAreaWidgetContents)
+        self.verticalLayout_2 = QVBoxLayout(self.scrollAreaWidgetContents)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.groupBoxGeneralSettings = QGroupBox(self.scrollAreaWidgetContents)
+        self.groupBoxGeneralSettings.setObjectName(u"groupBoxGeneralSettings")
+        self.formLayout = QFormLayout(self.groupBoxGeneralSettings)
         self.formLayout.setObjectName(u"formLayout")
-        self.groupingModeLabel = QLabel(self.scrollAreaWidgetContents)
-        self.groupingModeLabel.setObjectName(u"groupingModeLabel")
+        self.iterationsLabel = QLabel(self.groupBoxGeneralSettings)
+        self.iterationsLabel.setObjectName(u"iterationsLabel")
 
-        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.groupingModeLabel)
+        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.iterationsLabel)
 
-        self.groupingModeComboBox = QComboBox(self.scrollAreaWidgetContents)
-        self.groupingModeComboBox.setObjectName(u"groupingModeComboBox")
+        self.iterationsSpinBox = QSpinBox(self.groupBoxGeneralSettings)
+        self.iterationsSpinBox.setObjectName(u"iterationsSpinBox")
+        self.iterationsSpinBox.setMaximum(1000000)
+        self.iterationsSpinBox.setValue(10000)
 
-        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.groupingModeComboBox)
+        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.iterationsSpinBox)
 
-        self.applyBinningLabel = QLabel(self.scrollAreaWidgetContents)
-        self.applyBinningLabel.setObjectName(u"applyBinningLabel")
+        self.predictionOffsetLabel = QLabel(self.groupBoxGeneralSettings)
+        self.predictionOffsetLabel.setObjectName(u"predictionOffsetLabel")
 
-        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.applyBinningLabel)
+        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.predictionOffsetLabel)
 
-        self.applyBinningCheckBox = QCheckBox(self.scrollAreaWidgetContents)
-        self.applyBinningCheckBox.setObjectName(u"applyBinningCheckBox")
+        self.predictionOffsetSpinBox = QSpinBox(self.groupBoxGeneralSettings)
+        self.predictionOffsetSpinBox.setObjectName(u"predictionOffsetSpinBox")
+        self.predictionOffsetSpinBox.setValue(90)
 
-        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.applyBinningCheckBox)
+        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.predictionOffsetSpinBox)
 
-        self.unitLabel = QLabel(self.scrollAreaWidgetContents)
-        self.unitLabel.setObjectName(u"unitLabel")
+        self.flowLabel = QLabel(self.groupBoxGeneralSettings)
+        self.flowLabel.setObjectName(u"flowLabel")
 
-        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.unitLabel)
+        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.flowLabel)
 
-        self.unitComboBox = QComboBox(self.scrollAreaWidgetContents)
-        self.unitComboBox.setObjectName(u"unitComboBox")
+        self.flowDoubleSpinBox = QDoubleSpinBox(self.groupBoxGeneralSettings)
+        self.flowDoubleSpinBox.setObjectName(u"flowDoubleSpinBox")
 
-        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.unitComboBox)
+        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.flowDoubleSpinBox)
 
-        self.deltaLabel = QLabel(self.scrollAreaWidgetContents)
-        self.deltaLabel.setObjectName(u"deltaLabel")
 
-        self.formLayout.setWidget(3, QFormLayout.LabelRole, self.deltaLabel)
+        self.verticalLayout_2.addWidget(self.groupBoxGeneralSettings)
 
-        self.deltaSpinBox = QSpinBox(self.scrollAreaWidgetContents)
-        self.deltaSpinBox.setObjectName(u"deltaSpinBox")
+        self.groupBoxGasSettings = QGroupBox(self.scrollAreaWidgetContents)
+        self.groupBoxGasSettings.setObjectName(u"groupBoxGasSettings")
+        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.groupBoxGasSettings.sizePolicy().hasHeightForWidth())
+        self.groupBoxGasSettings.setSizePolicy(sizePolicy)
+        self.verticalLayout_3 = QVBoxLayout(self.groupBoxGasSettings)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.widgetO2Settings = CaloDetailsGasSettingsWidget(self.groupBoxGasSettings)
+        self.widgetO2Settings.setObjectName(u"widgetO2Settings")
 
-        self.formLayout.setWidget(3, QFormLayout.FieldRole, self.deltaSpinBox)
+        self.verticalLayout_3.addWidget(self.widgetO2Settings)
 
-        self.operationLabel = QLabel(self.scrollAreaWidgetContents)
-        self.operationLabel.setObjectName(u"operationLabel")
+        self.widgetCO2Settings = CaloDetailsGasSettingsWidget(self.groupBoxGasSettings)
+        self.widgetCO2Settings.setObjectName(u"widgetCO2Settings")
 
-        self.formLayout.setWidget(4, QFormLayout.LabelRole, self.operationLabel)
+        self.verticalLayout_3.addWidget(self.widgetCO2Settings)
 
-        self.operationComboBox = QComboBox(self.scrollAreaWidgetContents)
-        self.operationComboBox.setObjectName(u"operationComboBox")
 
-        self.formLayout.setWidget(4, QFormLayout.FieldRole, self.operationComboBox)
+        self.verticalLayout_2.addWidget(self.groupBoxGasSettings)
 
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
 
@@ -97,10 +111,10 @@ class Ui_CaloDetailsSettingsWidget(object):
 
     def retranslateUi(self, CaloDetailsSettingsWidget):
         CaloDetailsSettingsWidget.setWindowTitle(QCoreApplication.translate("CaloDetailsSettingsWidget", u"Form", None))
-        self.groupingModeLabel.setText(QCoreApplication.translate("CaloDetailsSettingsWidget", u"Grouping Mode", None))
-        self.applyBinningLabel.setText(QCoreApplication.translate("CaloDetailsSettingsWidget", u"Apply Binning", None))
-        self.unitLabel.setText(QCoreApplication.translate("CaloDetailsSettingsWidget", u"Unit", None))
-        self.deltaLabel.setText(QCoreApplication.translate("CaloDetailsSettingsWidget", u"Delta", None))
-        self.operationLabel.setText(QCoreApplication.translate("CaloDetailsSettingsWidget", u"Operation", None))
+        self.groupBoxGeneralSettings.setTitle(QCoreApplication.translate("CaloDetailsSettingsWidget", u"General", None))
+        self.iterationsLabel.setText(QCoreApplication.translate("CaloDetailsSettingsWidget", u"Iterations", None))
+        self.predictionOffsetLabel.setText(QCoreApplication.translate("CaloDetailsSettingsWidget", u"Prediction Offset", None))
+        self.flowLabel.setText(QCoreApplication.translate("CaloDetailsSettingsWidget", u"Flow [l/min]", None))
+        self.groupBoxGasSettings.setTitle(QCoreApplication.translate("CaloDetailsSettingsWidget", u"Gas Settings", None))
     # retranslateUi
 

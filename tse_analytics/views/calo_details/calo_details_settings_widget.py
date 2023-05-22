@@ -1,15 +1,10 @@
 from typing import Optional
 
-import pandas as pd
-from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import BinningAppliedMessage, RevertBinningMessage
+from tse_analytics.views.calo_details.calo_details_settings import CaloDetailsSettings
 from tse_analytics.views.calo_details.calo_details_settings_widget_ui import Ui_CaloDetailsSettingsWidget
-from tse_datatools.analysis.binning_operation import BinningOperation
-from tse_datatools.analysis.binning_params import BinningParams
-from tse_datatools.analysis.grouping_mode import GroupingMode
+from tse_datatools.data.dataset import Dataset
 
 
 class CaloDetailsSettingsWidget(QWidget):
@@ -19,60 +14,39 @@ class CaloDetailsSettingsWidget(QWidget):
         self.ui = Ui_CaloDetailsSettingsWidget()
         self.ui.setupUi(self)
 
-        self.ui.groupingModeComboBox.addItems([e.value for e in GroupingMode])
-        self.ui.groupingModeComboBox.currentTextChanged.connect(self.__grouping_mode_changed)
-
-        self.ui.applyBinningCheckBox.stateChanged.connect(self.__apply_binning_changed)
-
-
-        self.ui.unitComboBox.addItems(["day", "hour", "minute"])
-        self.ui.unitComboBox.setCurrentText("hour")
-        self.ui.unitComboBox.currentTextChanged.connect(self.__binning_unit_changed)
-
-        self.ui.deltaSpinBox.setValue(1)
-        self.ui.deltaSpinBox.valueChanged.connect(self.__binning_delta_changed)
-
-        self.ui.operationComboBox.addItems([e.value for e in BinningOperation])
-        self.ui.operationComboBox.setCurrentText("mean")
-        self.ui.operationComboBox.currentTextChanged.connect(self.__binning_operation_changed)
-
-    def __binning_unit_changed(self, value: str):
-        self.__binning_params_changed()
-
-    def __binning_delta_changed(self, value: int):
-        self.__binning_params_changed()
-
-    def __binning_operation_changed(self, value: str):
-        self.__binning_params_changed()
-
-    def __apply_binning_changed(self, value: int):
-        Manager.data.binning_params.apply = value == 2
-        if Manager.data.selected_dataset is not None:
-            if Manager.data.binning_params.apply:
-                Manager.messenger.broadcast(BinningAppliedMessage(self, Manager.data.binning_params))
-            else:
-                Manager.messenger.broadcast(RevertBinningMessage(self))
-
-    def __grouping_mode_changed(self, text: str):
-        Manager.data.set_grouping_mode(GroupingMode(text))
-
-    def __binning_params_changed(self):
-        unit = "H"
-        unit_value = self.ui.unitComboBox.currentText()
-        if unit_value == "day":
-            unit = "D"
-        elif unit_value == "hour":
-            unit = "H"
-        elif unit_value == "minute":
-            unit = "min"
-
-        binning_delta = self.ui.deltaSpinBox.value()
-
-        timedelta = pd.Timedelta(f"{binning_delta}{unit}")
-
-        binning_params = BinningParams(
-            self.ui.applyBinningCheckBox.isChecked(),
-            timedelta,
-            BinningOperation(self.ui.operationComboBox.currentText())
+        self.ui.widgetO2Settings.set_data(
+            "O2",
+            ((-3.75e+12, -9.0, 0), (2.389e+12, 0, 25)),
+            ((-3.75e+12, -9.0, 0), (2.389e+12, 0, 25))
         )
-        Manager.data.binning_params = binning_params
+
+        self.ui.widgetCO2Settings.set_data(
+            "CO2",
+            ((-3.75e+12, -9.0, 0), (2.389e+12, 0, 1)),
+            ((-1.381e+12, -8.806, 0), (2.525e+12, 0, 0.1))
+        )
+
+        self.dataset: Optional[Dataset] = None
+
+    def set_data(self, dataset: Dataset):
+        self.dataset = dataset
+        flow_value = 0.5
+        if "Flow" in dataset.original_df.columns:
+            flow_value = dataset.original_df.iloc[1].at["Flow"]
+        self.ui.flowDoubleSpinBox.setValue(flow_value)
+
+    def get_calo_details_settings(self) -> CaloDetailsSettings:
+        iterations = self.ui.iterationsSpinBox.value()
+        prediction_offset = self.ui.predictionOffsetSpinBox.value()
+        flow = self.ui.flowDoubleSpinBox.value()
+
+        o2_gas_settings = self.ui.widgetO2Settings.get_gas_settings()
+        co2_gas_settings = self.ui.widgetCO2Settings.get_gas_settings()
+
+        return CaloDetailsSettings(
+            iterations,
+            prediction_offset,
+            flow,
+            o2_gas_settings,
+            co2_gas_settings
+        )
