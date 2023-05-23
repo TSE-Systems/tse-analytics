@@ -1,4 +1,5 @@
 import sys
+import logging
 
 # import PySide6 before matplotlib
 import matplotlib
@@ -9,6 +10,8 @@ from PySide6.QtWidgets import QApplication
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.main_window import MainWindow
+
+logging.basicConfig(level=logging.INFO)
 
 matplotlib.use("QtAgg")
 
@@ -44,8 +47,14 @@ class App(QApplication):
         Manager()
 
 
+def handle_exception(exc_type, exc_value, exc_traceback):
+    logging.critical("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+
+
 def main():
     # sys.argv.append("--disable-web-security")
+    sys.excepthook = handle_exception
+
     app = App(sys.argv)
 
     main_window = MainWindow()

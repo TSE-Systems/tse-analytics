@@ -4,7 +4,8 @@ from PySide6.QtCore import Qt, QSortFilterProxyModel, QItemSelection
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QWidget, QTableView, QAbstractItemView
 
-from tse_analytics.models.boxes_model import BoxesModel
+from tse_analytics.models.calo_details_boxes_model import CaloDetailsBoxesModel
+from tse_datatools.data.calo_details_box import get_ref_box_number, CaloDetailsBox
 from tse_datatools.data.dataset import Dataset
 
 
@@ -38,15 +39,19 @@ class CaloDetailsBoxSelector(QTableView):
         self.selectionModel().selectionChanged.connect(self.__on_selection_changed)
 
     def set_data(self, dataset: Dataset):
-        boxes = list(dataset.calo_details.raw_df["Box"].unique())
-        model = BoxesModel(boxes)
+        all_box_numbers = list(dataset.calo_details.raw_df["Box"].unique())
+        boxes: list[CaloDetailsBox] = []
+        for box in all_box_numbers:
+            ref_box = get_ref_box_number(box, all_box_numbers)
+            boxes.append(CaloDetailsBox(box, ref_box))
+        model = CaloDetailsBoxesModel(boxes)
         self.model().setSourceModel(model)
         # self.resizeColumnsToContents()
 
     def __on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
         proxy_model = self.model()
         model = proxy_model.sourceModel()
-        selected_boxes: list[int] = []
+        selected_boxes: list[CaloDetailsBox] = []
         for index in self.selectedIndexes():
             if index.column() != 0:
                 continue

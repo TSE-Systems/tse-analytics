@@ -85,7 +85,7 @@ class Messenger:
             raise InvalidSubscriber("Subscriber must be a MessengerListener: %s" % type(subscriber))
         if not isinstance(message_class, type) or not issubclass(message_class, Message):
             raise InvalidMessage("message class must be a subclass of Message: %s" % type(message_class))
-        logging.getLogger(__name__).info("Subscribing %s to %s", subscriber, message_class.__name__)
+        # logging.getLogger(__name__).debug("Subscribing %s to %s", subscriber, message_class.__name__)
 
         if not handler:
             handler = subscriber.notify
@@ -186,7 +186,7 @@ class Messenger:
         elif self._paused:
             self._queue.append(message)
         else:
-            logging.getLogger(__name__).info("Broadcasting %s", message)
+            # logging.getLogger(__name__).debug("Broadcasting %s", message)
             for subscriber, handler in self._find_handlers(message):
                 handler(message)
 
@@ -205,7 +205,7 @@ class Messenger:
             except AttributeError:
                 module = ""
             if not module.startswith("glue.core"):
-                print("Pickle warning: Messenger removing subscription to %s" % s)
+                # logging.getLogger(__name__).debug(f"Pickle warning: Messenger removing subscription to {s}")
                 result["_subscriptions"].pop(s)
         return result
 

@@ -13,8 +13,10 @@ from tse_analytics.views.calo_details.calo_details_plot_widget import CaloDetail
 from tse_analytics.views.calo_details.calo_details_processor import calo_details_calculation_task
 from tse_analytics.views.calo_details.calo_details_settings_widget import CaloDetailsSettingsWidget
 from tse_analytics.views.calo_details.calo_details_table_view import CaloDetailsTableView
+from tse_analytics.views.calo_details.calo_details_test_fit_widget import CaloDetailsTestFitWidget
 from tse_analytics.views.calo_details.fitting_params import FittingParams
 from tse_datatools.data.calo_details import CaloDetails
+from tse_datatools.data.calo_details_box import CaloDetailsBox
 
 
 class CaloDetailsDialog(QDialog):
@@ -53,12 +55,15 @@ class CaloDetailsDialog(QDialog):
         self.calo_details_settings_widget.set_data(self.calo_details.dataset)
         self.ui.toolBox.addItem(self.calo_details_settings_widget, QIcon(":/icons/icons8-dog-tag-16.png"), "Settings")
 
+        self.calo_details_test_fit_widget = CaloDetailsTestFitWidget(self.calo_details_settings_widget)
+        self.ui.tabWidget.addTab(self.calo_details_test_fit_widget, "Test")
+
         self.ui.splitter.setStretchFactor(0, 3)
 
-        self.selected_boxes: list[int] = []
+        self.selected_boxes: list[CaloDetailsBox] = []
         self.selected_bins: list[int] = []
 
-    def __filter_boxes(self, selected_boxes: list[int]):
+    def __filter_boxes(self, selected_boxes: list[CaloDetailsBox]):
         self.selected_boxes = selected_boxes
         self.__filter()
 
@@ -70,30 +75,32 @@ class CaloDetailsDialog(QDialog):
         df = self.calo_details.raw_df
 
         if len(self.selected_boxes) > 0:
-            df = df[df["Box"].isin(self.selected_boxes)]
+            box_numbers = [b.box for b in self.selected_boxes]
+            df = df[df["Box"].isin(box_numbers)]
 
         if len(self.selected_bins) > 0:
             df = df[df["Bin"].isin(self.selected_bins)]
 
         self.calo_details_table_view.set_data(df)
         self.calo_details_plot_widget.set_data(df)
+        self.calo_details_test_fit_widget.set_data(df)
 
     def __analyze(self):
         calo_details_settings = self.calo_details_settings_widget.get_calo_details_settings()
 
         fitting_params_list: list[FittingParams] = []
 
-        for box in self.selected_boxes:
-            # ref_box = int((box - 1) / 6) + 30
-            ref_box = int((box - 1) / 4) + 29
+        for calo_details_box in self.selected_boxes:
+            # skip analysis of reference boxes
+            if calo_details_box.ref_box is None:
+                continue
 
-            general_df = self.calo_details.dataset.active_df[self.calo_details.dataset.active_df["Box"] == box].copy()
-            details_df = self.calo_details.raw_df[self.calo_details.raw_df["Box"] == box].copy()
-            ref_details_df = self.calo_details.raw_df[self.calo_details.raw_df["Box"] == ref_box].copy()
+            general_df = self.calo_details.dataset.active_df[self.calo_details.dataset.active_df["Box"] == calo_details_box.box].copy()
+            details_df = self.calo_details.raw_df[self.calo_details.raw_df["Box"] == calo_details_box.box].copy()
+            ref_details_df = self.calo_details.raw_df[self.calo_details.raw_df["Box"] == calo_details_box.ref_box].copy()
 
             params = FittingParams(
-                box,
-                ref_box,
+                calo_details_box,
                 general_df,
                 details_df,
                 ref_details_df,
@@ -126,5 +133,3 @@ class CaloDetailsDialog(QDialog):
 
         for name in predicted.keys():
             rer_df[name] = predicted[name]
-
-        pass

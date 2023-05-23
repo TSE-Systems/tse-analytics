@@ -57,6 +57,7 @@ build_ui:
 	pyside6-uic tse_analytics/views/calo_details/calo_details_plot_widget.ui -o tse_analytics/views/calo_details/calo_details_plot_widget_ui.py
 	pyside6-uic tse_analytics/views/calo_details/calo_details_settings_widget.ui -o tse_analytics/views/calo_details/calo_details_settings_widget_ui.py
 	pyside6-uic tse_analytics/views/calo_details/calo_details_gas_settings_widget.ui -o tse_analytics/views/calo_details/calo_details_gas_settings_widget_ui.py
+	pyside6-uic tse_analytics/views/calo_details/calo_details_test_fit_widget.ui -o tse_analytics/views/calo_details/calo_details_test_fit_widget_ui.py
 
 build_resources:
 	pyside6-rcc resources/resources.qrc -o tse_analytics/resources_rc.py

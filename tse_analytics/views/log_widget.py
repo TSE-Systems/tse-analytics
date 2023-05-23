@@ -1,42 +1,35 @@
-import sys
+import logging
 from typing import Optional
 
-from PySide6.QtCore import QObject, Signal
-from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QWidget, QTextEdit
 
 
-class StdOutEmittingStream(QObject):
-    text_written = Signal(str)
+class TextEditLogger(logging.Handler):
+    def __init__(self, text_edit: QTextEdit):
+        super().__init__()
+        self.text_edit = text_edit
 
-    def write(self, text):
-        self.text_written.emit(str(text))
-        sys.__stdout__.write(text)
-
-
-class StdErrEmittingStream(QObject):
-    text_written = Signal(str)
-
-    def write(self, text):
-        self.text_written.emit(str(text))
-        sys.__stderr__.write(text)
+    def emit(self, record: logging.LogRecord):
+        match record.levelno:
+            case logging.INFO:
+                color = "black"
+            case logging.DEBUG:
+                color = "grey"
+            case logging.ERROR:
+                color = "red"
+            case logging.CRITICAL:
+                color = "red"
+            case logging.WARNING:
+                color = "blue"
+            case _:
+                color = "black"
+        self.text_edit.setTextColor(color)
+        self.text_edit.append(self.format(record))
 
 
 class LogWidget(QTextEdit):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
-
         self.setReadOnly(True)
-
-        sys.stdout = StdOutEmittingStream()
-        sys.stdout.text_written.connect(self.normal_output_written)
-
-        sys.stderr = StdErrEmittingStream()
-        sys.stderr.text_written.connect(self.normal_output_written)
-
-    def normal_output_written(self, text):
-        cursor = self.textCursor()
-        cursor.movePosition(QTextCursor.End)
-        cursor.insertText(text)
-        self.setTextCursor(cursor)
-        self.ensureCursorVisible()
+        self.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
+        logging.getLogger().addHandler(TextEditLogger(self))

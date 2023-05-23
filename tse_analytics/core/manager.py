@@ -1,3 +1,5 @@
+import logging
+
 from PySide6.QtCore import QModelIndex, QThreadPool
 
 from tse_analytics.data.data_hub import DataHub
@@ -15,7 +17,7 @@ class Manager:
     threadpool = QThreadPool()
 
     def __init__(self):
-        print(f"Multithreading with maximum {Manager.threadpool.maxThreadCount()} threads")
+        logging.info(f"Multithreading with maximum {Manager.threadpool.maxThreadCount()} threads")
 
     @classmethod
     def load_workspace(cls, path: str) -> None:

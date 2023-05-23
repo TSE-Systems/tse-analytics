@@ -1,5 +1,4 @@
 import os
-import sys
 from functools import partial
 
 import PySide6QtAds
@@ -16,9 +15,9 @@ from tse_analytics.views.analysis.correlation_widget import CorrelationWidget
 from tse_analytics.views.analysis.distribution_widget import DistributionWidget
 from tse_analytics.views.analysis.glm_widget import GlmWidget
 from tse_analytics.views.analysis.histogram_widget import HistogramWidget
+from tse_analytics.views.analysis.matrix_widget import MatrixWidget
 from tse_analytics.views.analysis.normality_widget import NormalityWidget
 from tse_analytics.views.analysis.pca_widget import PcaWidget
-from tse_analytics.views.analysis.matrix_widget import MatrixWidget
 from tse_analytics.views.data.data_plot_widget import DataPlotWidget
 from tse_analytics.views.data.data_table_widget import DataTableWidget
 from tse_analytics.views.datasets.datasets_tree_view import DatasetsTreeView
@@ -237,7 +236,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def load_workspace_dialog(self):
         options = QFileDialog.Options()
-        file_ext = "*.workspace"
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Load Workspace",
@@ -288,12 +286,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def import_dataset_dialog(self):
         options = QFileDialog.Options()
-        file_ext = "*.csv"
         path, _ = QFileDialog.getOpenFileName(
             self,
             "Import dataset",
             "",
-            "Dataset Files ({})".format(file_ext),
+            f"Dataset Files (*.csv)",
             options=options,
         )
         if path:
@@ -306,6 +303,3 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def closeEvent(self, event: QCloseEvent) -> None:
         if self.okToQuit:
             self.save_settings()
-            sys.stdout = sys.__stdout__
-            sys.stderr = sys.__stderr__
-            event.accept()

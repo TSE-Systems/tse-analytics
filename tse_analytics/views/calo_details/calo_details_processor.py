@@ -1,4 +1,5 @@
 import os
+import logging
 from datetime import timedelta
 
 import pandas as pd
@@ -9,6 +10,9 @@ from scipy.optimize import curve_fit
 from tse_analytics.views.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
 from tse_analytics.views.calo_details.calo_details_settings import CaloDetailsSettings
 from tse_analytics.views.calo_details.fitting_params import FittingParams
+
+
+logger = logging.getLogger(__name__)
 
 
 output_folder = f'output'
@@ -72,7 +76,7 @@ def process_box(
         x="Bin",
         y="RER",
         kind="line",
-        title=f"RER. Box {params.box_number}",
+        title=f"RER. Box {params.calo_details_box.box}",
         label='Measured'
     )
     df_predicted_measurements.plot(
@@ -95,15 +99,14 @@ def process_box(
         os.makedirs(output_folder, exist_ok=True)
 
     rer_df = pd.DataFrame(data={"Bin": bins, "Measured": measured_rer, "Predicted": predicted_rer})
-    output_name = f'Dataset, Box {params.box_number}, O2 [{params.calo_details_settings.o2_settings.start_offset}-{params.calo_details_settings.o2_settings.end_offset}], CO2 [{params.calo_details_settings.co2_settings.start_offset}-{params.calo_details_settings.co2_settings.end_offset}]'
+    output_name = f'Box {params.calo_details_box.box}'
     rer_df.to_csv(os.path.join(output_folder, f'{output_name}.csv'), index=False, decimal='.', sep=';')
     plt.savefig(os.path.join(output_folder, f'{output_name}.png'))
 
-    print(f"Done! Box: {params.box_number}, Ref box: {params.ref_box_number}, Sample time: {sample_time}, Number of bins: {len(bin_numbers)}, Number of ref bins: {len(ref_bin_numbers)}")
+    logger.info(f"Done! Box: {params.calo_details_box.box}, Ref box: {params.calo_details_box.ref_box}, Sample time: {sample_time}, Number of bins: {len(bin_numbers)}, Number of ref bins: {len(ref_bin_numbers)}")
 
     return CaloDetailsFittingResult(
-        f"Box {params.box_number}",
-        f"Box: {params.box_number}, Ref box: {params.ref_box_number}, Sample time: {sample_time}, Number of bins: {len(bin_numbers)}, Number of ref bins: {len(ref_bin_numbers)}",
+        f"Box {params.calo_details_box.box}",
         params,
         measured_rer,
         predicted_rer
