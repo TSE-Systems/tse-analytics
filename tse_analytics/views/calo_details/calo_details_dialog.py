@@ -1,7 +1,6 @@
-from typing import Optional
 from multiprocessing import Pool
+from typing import Optional
 
-import pandas as pd
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QWidget
 
@@ -11,6 +10,7 @@ from tse_analytics.views.calo_details.calo_details_dialog_ui import Ui_CaloDetai
 from tse_analytics.views.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
 from tse_analytics.views.calo_details.calo_details_plot_widget import CaloDetailsPlotWidget
 from tse_analytics.views.calo_details.calo_details_processor import calo_details_calculation_task
+from tse_analytics.views.calo_details.calo_details_rer_widget import CaloDetailsRerWidget
 from tse_analytics.views.calo_details.calo_details_settings_widget import CaloDetailsSettingsWidget
 from tse_analytics.views.calo_details.calo_details_table_view import CaloDetailsTableView
 from tse_analytics.views.calo_details.calo_details_test_fit_widget import CaloDetailsTestFitWidget
@@ -58,14 +58,23 @@ class CaloDetailsDialog(QDialog):
         self.calo_details_test_fit_widget = CaloDetailsTestFitWidget(self.calo_details_settings_widget)
         self.ui.tabWidget.addTab(self.calo_details_test_fit_widget, "Test")
 
+        self.calo_details_rer_widget = CaloDetailsRerWidget()
+        self.ui.tabWidget.addTab(self.calo_details_rer_widget, "RER")
+
         self.ui.splitter.setStretchFactor(0, 3)
 
         self.selected_boxes: list[CaloDetailsBox] = []
         self.selected_bins: list[int] = []
 
+        self.fitting_results: dict[int, CaloDetailsFittingResult] = {}
+
     def __filter_boxes(self, selected_boxes: list[CaloDetailsBox]):
         self.selected_boxes = selected_boxes
         self.__filter()
+
+        if len(selected_boxes) == 1:
+            if selected_boxes[0].box in self.fitting_results:
+                self.calo_details_rer_widget.set_data(self.fitting_results[selected_boxes[0].box])
 
     def __filter_bins(self, selected_bins: list[int]):
         self.selected_bins = selected_bins
@@ -108,28 +117,10 @@ class CaloDetailsDialog(QDialog):
             )
             fitting_params_list.append(params)
 
-        results: list[CaloDetailsFittingResult] = []
+        self.fitting_results.clear()
         # create the process pool
         with Pool() as pool:
             # call the same function with different data in parallel
             for result in pool.map(calo_details_calculation_task, fitting_params_list):
                 # report the value to show progress
-                results.append(result)
-
-        measured = {}
-        predicted = {}
-        for result in results:
-            name = result.name
-            if name not in measured:
-                measured[name] = []
-            if name not in predicted:
-                predicted[name] = []
-            measured[name].extend(result.measured)
-            predicted[name].extend(result.rer)
-
-        total_measured = measured[list(measured.keys())[0]]
-
-        rer_df = pd.DataFrame(data={"Measured": total_measured})
-
-        for name in predicted.keys():
-            rer_df[name] = predicted[name]
+                self.fitting_results[result.box_number] = result

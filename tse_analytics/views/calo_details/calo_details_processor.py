@@ -95,21 +95,14 @@ def process_box(
     measured_rer = measured_rer.iloc[0:-1]
     predicted_rer = predicted_rer[0:-1]
 
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder, exist_ok=True)
-
     rer_df = pd.DataFrame(data={"Bin": bins, "Measured": measured_rer, "Predicted": predicted_rer})
-    output_name = f'Box {params.calo_details_box.box}'
-    rer_df.to_csv(os.path.join(output_folder, f'{output_name}.csv'), index=False, decimal='.', sep=';')
-    plt.savefig(os.path.join(output_folder, f'{output_name}.png'))
 
     logger.info(f"Done! Box: {params.calo_details_box.box}, Ref box: {params.calo_details_box.ref_box}, Sample time: {sample_time}, Number of bins: {len(bin_numbers)}, Number of ref bins: {len(ref_bin_numbers)}")
 
     return CaloDetailsFittingResult(
-        f"Box {params.calo_details_box.box}",
+        params.calo_details_box.box,
         params,
-        measured_rer,
-        predicted_rer
+        rer_df,
     )
 
 
