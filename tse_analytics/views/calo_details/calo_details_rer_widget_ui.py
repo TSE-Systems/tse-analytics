@@ -15,8 +15,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QHBoxLayout, QSizePolicy, QSpacerItem,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QHBoxLayout, QSizePolicy,
+    QSpacerItem, QVBoxLayout, QWidget)
 
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 
@@ -29,6 +29,11 @@ class Ui_CaloDetailsRerWidget(object):
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.comboBoxVariable = QComboBox(CaloDetailsRerWidget)
+        self.comboBoxVariable.setObjectName(u"comboBoxVariable")
+
+        self.horizontalLayout.addWidget(self.comboBoxVariable)
+
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer)

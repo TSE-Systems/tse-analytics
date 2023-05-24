@@ -1,9 +1,6 @@
 import logging
 from datetime import timedelta
 
-import logging
-from datetime import timedelta
-
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
@@ -57,9 +54,9 @@ def process_box(
         ref_o2 = ref_bin_data.iloc[0]['O2']
         ref_co2 = ref_bin_data.iloc[0]['CO2']
 
-        real_bin_data = df_predicted_measurements[df_predicted_measurements["Bin"] == bin_number]
-        o2 = real_bin_data.iloc[0]['O2']
-        co2 = real_bin_data.iloc[0]['CO2']
+        bin_data = df_predicted_measurements[df_predicted_measurements["Bin"] == bin_number]
+        o2 = bin_data.iloc[0]['O2']
+        co2 = bin_data.iloc[0]['CO2']
 
         predicted_rer.append(
             calculate_rer(
@@ -78,18 +75,30 @@ def process_box(
         predicted_rer = predicted_rer[0:-1]
 
     # Drop last bin
-    bins = params.general_df['Bin'].iloc[0:-1]
-    measured_rer = measured_rer.iloc[0:-1]
+    bins = params.general_df['Bin'].iloc[0:-1].tolist()
+    measured_rer = measured_rer.iloc[0:-1].tolist()
     predicted_rer = predicted_rer[0:-1]
+    measured_o2 = params.general_df['O2'].iloc[0:-1].tolist()
+    predicted_o2 = df_predicted_measurements['O2'][0:-1].tolist()
+    measured_co2 = params.general_df['CO2'].iloc[0:-1].tolist()
+    predicted_co2 = df_predicted_measurements['CO2'][0:-1].tolist()
 
-    rer_df = pd.DataFrame(data={"Bin": bins, "Measured": measured_rer, "Predicted": predicted_rer})
+    result_df = pd.DataFrame(data={
+        "Bin": bins,
+        "MeasuredO2": measured_o2,
+        "PredictedO2": predicted_o2,
+        "MeasuredCO2": measured_co2,
+        "PredictedCO2": predicted_co2,
+        "MeasuredRER": measured_rer,
+        "PredictedRER": predicted_rer,
+    })
 
     logging.info(f"Done! Box: {params.calo_details_box.box}, Ref box: {params.calo_details_box.ref_box}, Sample time: {sample_time}, Number of bins: {len(bin_numbers)}, Number of ref bins: {len(ref_bin_numbers)}")
 
     return CaloDetailsFittingResult(
         params.calo_details_box.box,
         params,
-        rer_df,
+        result_df,
     )
 
 

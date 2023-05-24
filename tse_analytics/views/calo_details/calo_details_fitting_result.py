@@ -8,8 +8,8 @@ class CaloDetailsFittingResult:
         self,
         box_number: int,
         params: FittingParams,
-        rer_df: pd.DataFrame,
+        df: pd.DataFrame,
     ):
         self.box_number = box_number
         self.params = params
-        self.rer_df = rer_df
+        self.df = df

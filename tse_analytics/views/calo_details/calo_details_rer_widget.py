@@ -1,6 +1,5 @@
 from typing import Optional
 
-import pandas as pd
 from PySide6.QtWidgets import QWidget
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 
@@ -15,9 +14,15 @@ class CaloDetailsRerWidget(QWidget):
         self.ui = Ui_CaloDetailsRerWidget()
         self.ui.setupUi(self)
 
+        self.ui.comboBoxVariable.addItems(["RER", "O2", "CO2"])
+        self.ui.comboBoxVariable.currentTextChanged.connect(self.__variable_changed)
+
         self.ui.horizontalLayout.insertWidget(self.ui.horizontalLayout.count(), NavigationToolbar2QT(self.ui.canvas, self))
 
         self.fitting_result: Optional[CaloDetailsFittingResult] = None
+
+    def __variable_changed(self, variable: str):
+        self.set_data(self.fitting_result)
 
     def set_data(self, fitting_result: CaloDetailsFittingResult):
         self.fitting_result = fitting_result
@@ -28,27 +33,23 @@ class CaloDetailsRerWidget(QWidget):
         self.ui.canvas.clear(False)
         ax = self.ui.canvas.figure.add_subplot(111)
 
-        self.fitting_result.rer_df.plot(
+        variable = self.ui.comboBoxVariable.currentText()
+
+        self.fitting_result.df.plot(
             x="Bin",
-            y="Measured",
+            y=f"Measured{variable}",
             kind="line",
-            title=f"RER [Box {self.fitting_result.box_number}]",
+            title=f"{variable} [Box {self.fitting_result.box_number}]",
             label='Measured',
             ax=ax,
         )
-        self.fitting_result.rer_df.plot(
+        self.fitting_result.df.plot(
             x="Bin",
-            y="Predicted",
+            y=f"Predicted{variable}",
             kind="line",
             label='Predicted',
             ax=ax,
         )
-        # ax.plot(
-        #     self.fitting_result.rer_df["Bin"],
-        #     self.fitting_result.rer_df["Predicted"],
-        #     'r-',
-        #     label='Predicted'
-        # )
 
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()
