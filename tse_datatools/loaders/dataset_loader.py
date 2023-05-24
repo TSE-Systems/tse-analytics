@@ -1,6 +1,7 @@
 from io import StringIO
 from pathlib import Path
-from typing import Optional
+from typing import Optional, NamedTuple
+from collections import namedtuple
 
 import pandas as pd
 
@@ -12,6 +13,8 @@ from tse_datatools.data.variable import Variable
 DELIMITER = ";"
 DECIMAL = "."
 
+Section = namedtuple("Section", ["lines", "section_start_index", "section_end_index"])
+
 
 class DatasetLoader:
     @staticmethod
@@ -22,27 +25,66 @@ class DatasetLoader:
         return None
 
     @staticmethod
+    def __get_header_section(lines: list[str]):
+        section = [
+            lines[0],
+            lines[1]
+        ]
+        return Section(section, 0, 1)
+
+    @staticmethod
+    def __get_animal_section(lines: list[str], start_index: int):
+        trimmed_lines = lines[start_index:]
+        section_end_index = None
+        for idx, line in enumerate(trimmed_lines):
+            if line == "":
+                section_end_index = idx + start_index
+                break
+        section = lines[start_index:section_end_index]
+        return Section(section, start_index, section_end_index)
+
+    @staticmethod
+    def __get_sample_interval_section(lines: list[str], start_index: int):
+        line = lines[start_index]
+        if "Sample Interval;" in line:
+            return Section([line], start_index, start_index+1)
+        else:
+            return None
+
+    @staticmethod
+    def __get_group_section(lines: list[str], start_index: int):
+        trimmed_lines = lines[start_index:]
+        section_end_index = None
+        for idx, line in enumerate(trimmed_lines):
+            if line == "":
+                section_end_index = idx + start_index
+                break
+        section = lines[start_index:section_end_index]
+        return Section(section, start_index, section_end_index)
+
+    @staticmethod
+    def __get_data_section(lines: list[str], start_index: int):
+        section = lines[start_index:]
+        return Section(section, start_index, len(lines))
+
+    @staticmethod
     def __load_from_csv(path: Path):
         with open(path, "r") as f:
             lines = f.readlines()
 
         lines = [line.strip().rstrip(DELIMITER) for line in lines]
 
-        header = [lines[0], lines[1]]
-
-        data_section_start = None
-        for num, line in enumerate(lines, 2):
-            if line == "":
-                data_section_start = num - 1
-                break
-
-        animal_section = lines[3 : data_section_start - 1]
+        header_section = DatasetLoader.__get_header_section(lines)
+        animal_section = DatasetLoader.__get_animal_section(lines, header_section.section_end_index + 1)
+        sample_interval_section = DatasetLoader.__get_sample_interval_section(lines, animal_section.section_end_index + 1)
+        group_section = DatasetLoader.__get_group_section(lines, sample_interval_section.section_end_index + 1) if sample_interval_section is not None else None
+        data_section = DatasetLoader.__get_data_section(lines, group_section.section_end_index + 1 if group_section is not None else animal_section.section_end_index + 1)
 
         boxes: dict[int, Box] = {}
         animals: dict[int, Animal] = {}
         variables: dict[str, Variable] = {}
 
-        for line in animal_section:
+        for line in animal_section.lines[1:]:
             elements = line.split(DELIMITER)
             animal = Animal(
                 id=int(elements[1]),
@@ -57,10 +99,9 @@ class DatasetLoader:
             box = Box(animal.box_id, animal.id)
             boxes[box.id] = box
 
-        data_header = lines[data_section_start]
+        data_header = data_section.lines[0]
         columns = data_header.split(DELIMITER)
-        data_unit_header = lines[data_section_start + 1]
-        data_section = lines[data_section_start + 2 : len(lines)]
+        data_unit_header = data_section.lines[1]
         columns_unit = data_unit_header.split(DELIMITER)
 
         for i, item in enumerate(columns):
@@ -70,7 +111,8 @@ class DatasetLoader:
             variable = Variable(name=item, unit=columns_unit[i], description="")
             variables[variable.name] = variable
 
-        csv = "\n".join(data_section)
+        data = data_section.lines[2:]
+        csv = "\n".join(data)
 
         # noinspection PyTypeChecker
         df = pd.read_csv(
@@ -124,9 +166,9 @@ class DatasetLoader:
         # Sort variables by name
         variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))
 
-        name = header[0].split(DELIMITER)[0]
-        description = header[0].split(DELIMITER)[1]
-        version = header[1].split(DELIMITER)[1]
+        name = header_section.lines[0].split(DELIMITER)[0]
+        description = header_section.lines[0].split(DELIMITER)[1]
+        version = header_section.lines[1].split(DELIMITER)[1]
 
         meta = {
             "Name": name,
@@ -148,5 +190,6 @@ if __name__ == "__main__":
 
     tic = timeit.default_timer()
     # dataset = DatasetLoader.load("C:\\Data\\tse-analytics\\20221018_ANIPHY test new logiciel PM_CalR.csv")
-    dataset = DatasetLoader.load("C:\\Users\\anton\\OneDrive\\Desktop\\20221018_ANIPHY test new logiciel PM.csv")
+    # dataset = DatasetLoader.load("C:\\Users\\anton\\OneDrive\\Desktop\\20221018_ANIPHY test new logiciel PM.csv")
+    dataset = DatasetLoader.load("C:\\Users\\anton\\Downloads\\2023-05-24_Test Sample Flow 0.5_90 s per box.csv")
     print(timeit.default_timer() - tic)
