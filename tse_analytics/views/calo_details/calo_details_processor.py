@@ -1,21 +1,16 @@
-import os
 import logging
 from datetime import timedelta
 
-import pandas as pd
+import logging
+from datetime import timedelta
+
 import numpy as np
-from matplotlib import pyplot as plt
+import pandas as pd
 from scipy.optimize import curve_fit
 
 from tse_analytics.views.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
 from tse_analytics.views.calo_details.calo_details_settings import CaloDetailsSettings
 from tse_analytics.views.calo_details.fitting_params import FittingParams
-
-
-logger = logging.getLogger(__name__)
-
-
-output_folder = f'output'
 
 
 def calo_details_calculation_task(params: FittingParams):
@@ -36,15 +31,21 @@ def process_box(
     #     print(ref_bin_numbers[-1])
     #     df_ref_box = df_ref_box.loc[df_ref_box["Bin"] != ref_bin_numbers[-1]]
 
+    details_df = params.details_df.loc[params.details_df["Bin"] != bin_numbers[-1]]
+    ref_details_df = params.ref_details_df.loc[params.ref_details_df["Bin"] != ref_bin_numbers[-1]]
+
+    # details_df = params.details_df
+    # ref_details_df = params.ref_details_df
+
     df_predicted_measurements = calculate_predicted_measurements(
-        params.details_df,
+        details_df,
         sample_time,
         params.calo_details_settings,
         False
     )
 
     df_ref_predicted_measurements = calculate_predicted_measurements(
-        params.ref_details_df,
+        ref_details_df,
         sample_time,
         params.calo_details_settings,
         True
@@ -72,20 +73,6 @@ def process_box(
 
     df_predicted_measurements['RER'] = predicted_rer
 
-    ax = params.general_df.plot(
-        x="Bin",
-        y="RER",
-        kind="line",
-        title=f"RER. Box {params.calo_details_box.box}",
-        label='Measured'
-    )
-    df_predicted_measurements.plot(
-        x="Bin",
-        y="RER",
-        ax=ax,
-        label='Predicted'
-    )
-
     measured_rer = params.general_df['RER']
     if len(predicted_rer) > len(measured_rer):
         predicted_rer = predicted_rer[0:-1]
@@ -97,7 +84,7 @@ def process_box(
 
     rer_df = pd.DataFrame(data={"Bin": bins, "Measured": measured_rer, "Predicted": predicted_rer})
 
-    logger.info(f"Done! Box: {params.calo_details_box.box}, Ref box: {params.calo_details_box.ref_box}, Sample time: {sample_time}, Number of bins: {len(bin_numbers)}, Number of ref bins: {len(ref_bin_numbers)}")
+    logging.info(f"Done! Box: {params.calo_details_box.box}, Ref box: {params.calo_details_box.ref_box}, Sample time: {sample_time}, Number of bins: {len(bin_numbers)}, Number of ref bins: {len(ref_bin_numbers)}")
 
     return CaloDetailsFittingResult(
         params.calo_details_box.box,
@@ -155,7 +142,6 @@ def calculate_predicted_measurements(
     is_ref: bool
 ):
     bins = df["Bin"].unique().tolist()
-    date_times = []
     offsets = []
     o2 = []
     co2 = []
@@ -184,12 +170,11 @@ def calculate_predicted_measurements(
             co2_bounds
         )
 
-        date_times.append(predicted_bin_measurements[0])
-        offsets.append(predicted_bin_measurements[1])
-        o2.append(predicted_bin_measurements[2])
-        co2.append(predicted_bin_measurements[3])
+        offsets.append(predicted_bin_measurements[0])
+        o2.append(predicted_bin_measurements[1])
+        co2.append(predicted_bin_measurements[2])
 
-    calculated_df = pd.DataFrame(data={"DateTime": date_times, "Offset": offsets, "Bin": bins, "O2": o2, "CO2": co2})
+    calculated_df = pd.DataFrame(data={"Offset": offsets, "Bin": bins, "O2": o2, "CO2": co2})
     return calculated_df
 
 
@@ -216,6 +201,5 @@ def calculate_predicted_bin_measurements(
 
     predicted_o2 = curve_fitting_func(prediction_offset * sample_time.total_seconds(), *o2_popt)
     predicted_co2 = curve_fitting_func(prediction_offset * sample_time.total_seconds(), *co2_popt)
-    date_time = bin_df[bin_df["Offset"] == prediction_offset]["DateTime"].values[0]
 
-    return date_time, prediction_offset, predicted_o2, predicted_co2
+    return prediction_offset, predicted_o2, predicted_co2
