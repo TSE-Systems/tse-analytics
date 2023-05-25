@@ -34,10 +34,14 @@ class CaloDetailsGasSettingsWidget(QWidget):
     def set_data(
         self,
         gas_name: str,
+        calo_details_gas_settings: CaloDetailsGasSettings,
         bounds: tuple[tuple[float, float, float], tuple[float, float, float]],
         ref_bounds: tuple[tuple[float, float, float], tuple[float, float, float]]
     ):
         self.ui.titleGroupBox.setTitle(gas_name)
+
+        self.ui.spinBoxStartOffset.setValue(calo_details_gas_settings.start_offset)
+        self.ui.spinBoxEndOffset.setValue(calo_details_gas_settings.end_offset)
 
         self.ui.doubleSpinBoxMinA.setValue(bounds[0][0])
         self.ui.doubleSpinBoxMaxA.setValue(bounds[1][0])

@@ -28,27 +28,24 @@ def process_box(
     #     print(ref_bin_numbers[-1])
     #     df_ref_box = df_ref_box.loc[df_ref_box["Bin"] != ref_bin_numbers[-1]]
 
-    details_df = params.details_df.loc[params.details_df["Bin"] != bin_numbers[-1]]
-    ref_details_df = params.ref_details_df.loc[params.ref_details_df["Bin"] != ref_bin_numbers[-1]]
-
-    # details_df = params.details_df
-    # ref_details_df = params.ref_details_df
-
     df_predicted_measurements = calculate_predicted_measurements(
-        details_df,
+        params.details_df,
         sample_time,
         params.calo_details_settings,
         False
     )
 
     df_ref_predicted_measurements = calculate_predicted_measurements(
-        ref_details_df,
+        params.ref_details_df,
         sample_time,
         params.calo_details_settings,
         True
     )
 
     predicted_rer = []
+    predicted_vo2 = []
+    predicted_vco2 = []
+    predicted_h = []
     for bin_number in range(len(df_predicted_measurements)):
         ref_bin_data = df_ref_predicted_measurements[df_ref_predicted_measurements["Bin"] == bin_number]
         ref_o2 = ref_bin_data.iloc[0]['O2']
@@ -58,39 +55,58 @@ def process_box(
         o2 = bin_data.iloc[0]['O2']
         co2 = bin_data.iloc[0]['CO2']
 
-        predicted_rer.append(
-            calculate_rer(
+        rer, vo2, vco2, h = calculate_rer(
                 ref_o2,
                 o2,
                 ref_co2,
                 co2,
                 params.calo_details_settings.flow
             )
-        )
 
-    df_predicted_measurements['RER'] = predicted_rer
+        predicted_rer.append(rer)
+        predicted_vo2.append(vo2)
+        predicted_vco2.append(vco2)
+        predicted_h.append(h)
 
-    measured_rer = params.general_df['RER']
-    if len(predicted_rer) > len(measured_rer):
-        predicted_rer = predicted_rer[0:-1]
+    # measured_rer = params.general_df['RER']
+    # if len(predicted_rer) > len(measured_rer):
+    #     predicted_rer = predicted_rer[0:-1]
 
-    # Drop last bin
-    bins = params.general_df['Bin'].iloc[0:-1].tolist()
-    measured_rer = measured_rer.iloc[0:-1].tolist()
-    predicted_rer = predicted_rer[0:-1]
-    measured_o2 = params.general_df['O2'].iloc[0:-1].tolist()
-    predicted_o2 = df_predicted_measurements['O2'][0:-1].tolist()
-    measured_co2 = params.general_df['CO2'].iloc[0:-1].tolist()
-    predicted_co2 = df_predicted_measurements['CO2'][0:-1].tolist()
+    bins = params.general_df['Bin'].tolist()
+
+    measured_rer = params.general_df['RER'].tolist()
+    measured_o2 = params.general_df['O2'].tolist()
+    measured_ref_o2 = params.general_df['Ref.O2'].tolist()
+    measured_co2 = params.general_df['CO2'].tolist()
+    measured_ref_co2 = params.general_df['Ref.CO2'].tolist()
+    measured_vo2 = params.general_df['VO2(3)'].tolist()
+    measured_vco2 = params.general_df['VCO2(3)'].tolist()
+    measured_h = params.general_df['H(3)'].tolist()
+
+    predicted_o2 = df_predicted_measurements['O2'].tolist()
+    predicted_ref_o2 = df_ref_predicted_measurements['O2'].tolist()
+
+    predicted_co2 = df_predicted_measurements['CO2'].tolist()
+    predicted_ref_co2 = df_ref_predicted_measurements['CO2'].tolist()
 
     result_df = pd.DataFrame(data={
         "Bin": bins,
-        "MeasuredO2": measured_o2,
-        "PredictedO2": predicted_o2,
-        "MeasuredCO2": measured_co2,
-        "PredictedCO2": predicted_co2,
-        "MeasuredRER": measured_rer,
-        "PredictedRER": predicted_rer,
+        "O2": measured_o2,
+        "O2-p": predicted_o2,
+        "CO2": measured_co2,
+        "CO2-p": predicted_co2,
+        "Ref.O2": measured_ref_o2,
+        "Ref.O2-p": predicted_ref_o2,
+        "Ref.CO2": measured_ref_co2,
+        "Ref.CO2-p": predicted_ref_co2,
+        "RER": measured_rer,
+        "RER-p": predicted_rer,
+        "VO2(3)": measured_vo2,
+        "VO2(3)-p": predicted_vo2,
+        "VCO2(3)": measured_vco2,
+        "VCO2(3)-p": predicted_vco2,
+        "H(3)": measured_h,
+        "H(3)-p": predicted_h,
     })
 
     logging.info(f"Done! Box: {params.calo_details_box.box}, Ref box: {params.calo_details_box.ref_box}, Sample time: {sample_time}, Number of bins: {len(bin_numbers)}, Number of ref bins: {len(ref_bin_numbers)}")
@@ -107,21 +123,26 @@ def curve_fitting_func(x, a, b, c):
 
 
 def calculate_rer(o2_ref, o2, co2_ref, co2, flow):
-    dO2 = o2_ref - o2
-    dCO2 = co2 - co2_ref
+    do2 = o2_ref - o2
+    dco2 = co2 - co2_ref
 
     n2_ref = 100.0 - (o2_ref + co2_ref)  # -0.8
     if n2_ref < 0.001:
         n2_ref = 0.001  # Division durch Null vermeiden
 
-    V1 = n2_ref * dO2
-    V2 = o2_ref * (dO2 - dCO2)
+    v1 = n2_ref * do2
+    v2 = o2_ref * (do2 - dco2)
 
-    VO2 = flow * (V1 + V2) / n2_ref
-    VCO2 = flow * dCO2
+    vo2 = (flow * 1000.0) * (v1 + v2) / (n2_ref * 100.0)
+    vco2 = (flow * 1000.0) * dco2 / 100.0
 
-    rer = VCO2 / VO2
-    return rer
+    cvo2 = 3.941
+    cvco2 = 1.106
+
+    h = (cvo2 * vo2 + cvco2 * vco2) / 1000.0
+
+    rer = vco2 / vo2
+    return rer, vo2, vco2, h
 
 
 def calculate_fit(

@@ -59,14 +59,14 @@
          <item>
           <widget class="QSpinBox" name="spinBoxStartOffset">
            <property name="value">
-            <number>35</number>
+            <number>20</number>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QSpinBox" name="spinBoxEndOffset">
            <property name="value">
-            <number>50</number>
+            <number>30</number>
            </property>
           </widget>
          </item>

@@ -40,13 +40,13 @@ class Ui_CaloDetailsGasSettingsWidget(object):
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.spinBoxStartOffset = QSpinBox(self.trainingIntervalGroupBox)
         self.spinBoxStartOffset.setObjectName(u"spinBoxStartOffset")
-        self.spinBoxStartOffset.setValue(35)
+        self.spinBoxStartOffset.setValue(20)
 
         self.horizontalLayout.addWidget(self.spinBoxStartOffset)
 
         self.spinBoxEndOffset = QSpinBox(self.trainingIntervalGroupBox)
         self.spinBoxEndOffset.setObjectName(u"spinBoxEndOffset")
-        self.spinBoxEndOffset.setValue(50)
+        self.spinBoxEndOffset.setValue(30)
 
         self.horizontalLayout.addWidget(self.spinBoxEndOffset)
 

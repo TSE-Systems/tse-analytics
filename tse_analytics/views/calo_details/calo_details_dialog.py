@@ -1,9 +1,11 @@
 from multiprocessing import Pool
 from typing import Optional
 
-from PySide6.QtGui import QIcon
+from PySide6.QtCore import QSettings, Qt
+from PySide6.QtGui import QIcon, QCloseEvent, QKeyEvent
 from PySide6.QtWidgets import QDialog, QWidget
 
+from tse_analytics.core.notificator import show_notification
 from tse_analytics.views.calo_details.calo_details_bin_selector import CaloDetailsBinSelector
 from tse_analytics.views.calo_details.calo_details_box_selector import CaloDetailsBoxSelector
 from tse_analytics.views.calo_details.calo_details_dialog_ui import Ui_CaloDetailsDialog
@@ -28,6 +30,10 @@ class CaloDetailsDialog(QDialog):
         self.ui = Ui_CaloDetailsDialog()
         self.ui.setupUi(self)
 
+        settings = QSettings()
+        self.restoreGeometry(settings.value("CaloDetailsDialog/Geometry"))
+        calo_details_settings = settings.value("CaloDetailsSettings")
+
         self.calo_details = calo_details
 
         self.calo_details_table_view = CaloDetailsTableView()
@@ -51,7 +57,7 @@ class CaloDetailsDialog(QDialog):
         self.calo_details_bin_selector.set_data(calo_details.dataset)
         self.ui.toolBox.addItem(self.calo_details_bin_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Bins")
 
-        self.calo_details_settings_widget = CaloDetailsSettingsWidget()
+        self.calo_details_settings_widget = CaloDetailsSettingsWidget(calo_details_settings)
         self.calo_details_settings_widget.set_data(self.calo_details.dataset)
         self.ui.toolBox.addItem(self.calo_details_settings_widget, QIcon(":/icons/icons8-dog-tag-16.png"), "Settings")
 
@@ -97,6 +103,11 @@ class CaloDetailsDialog(QDialog):
     def __analyze(self):
         calo_details_settings = self.calo_details_settings_widget.get_calo_details_settings()
 
+        # remove last bin
+        bin_numbers = sorted(self.calo_details.raw_df["Bin"].unique().tolist())
+        raw_df = self.calo_details.raw_df.loc[self.calo_details.raw_df["Bin"] != bin_numbers[-1]]
+        active_df = self.calo_details.dataset.active_df.loc[self.calo_details.dataset.active_df["Bin"] != bin_numbers[-1]]
+
         fitting_params_list: list[FittingParams] = []
 
         for calo_details_box in self.selected_boxes:
@@ -104,9 +115,9 @@ class CaloDetailsDialog(QDialog):
             if calo_details_box.ref_box is None:
                 continue
 
-            general_df = self.calo_details.dataset.active_df[self.calo_details.dataset.active_df["Box"] == calo_details_box.box].copy()
-            details_df = self.calo_details.raw_df[self.calo_details.raw_df["Box"] == calo_details_box.box].copy()
-            ref_details_df = self.calo_details.raw_df[self.calo_details.raw_df["Box"] == calo_details_box.ref_box].copy()
+            general_df = active_df[active_df["Box"] == calo_details_box.box].copy()
+            details_df = raw_df[raw_df["Box"] == calo_details_box.box].copy()
+            ref_details_df = raw_df[raw_df["Box"] == calo_details_box.ref_box].copy()
 
             params = FittingParams(
                 calo_details_box,
@@ -124,3 +135,17 @@ class CaloDetailsDialog(QDialog):
             for result in pool.map(calo_details_calculation_task, fitting_params_list):
                 # report the value to show progress
                 self.fitting_results[result.box_number] = result
+
+        show_notification("Calo Details", "Processing complete.")
+
+    def hideEvent(self, event: QCloseEvent) -> None:
+        settings = QSettings()
+        settings.setValue("CaloDetailsDialog/Geometry", self.saveGeometry())
+
+        calo_details_settings = self.calo_details_settings_widget.get_calo_details_settings()
+        settings.setValue("CaloDetailsSettings", calo_details_settings)
+
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Escape:
+            return
+        super().keyPressEvent(event)
