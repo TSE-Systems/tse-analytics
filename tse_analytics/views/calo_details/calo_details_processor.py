@@ -133,8 +133,8 @@ def calculate_rer(o2_ref, o2, co2_ref, co2, flow):
     v1 = n2_ref * do2
     v2 = o2_ref * (do2 - dco2)
 
-    vo2 = (flow * 1000.0) * (v1 + v2) / (n2_ref * 100.0)
-    vco2 = (flow * 1000.0) * dco2 / 100.0
+    vo2 = (flow * 1000.0 * 60) * (v1 + v2) / (n2_ref * 100.0)  # ml/h (LmGlob.pas - CalculateValues
+    vco2 = (flow * 1000.0 * 60) * dco2 / 100.0
 
     cvo2 = 3.941
     cvco2 = 1.106

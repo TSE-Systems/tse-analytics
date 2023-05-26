@@ -15,20 +15,14 @@ class CaloDetailsSettingsWidget(QWidget):
         self.ui.setupUi(self)
 
         self.ui.iterationsSpinBox.setValue(calo_details_settings.iterations)
-        self.ui.predictionOffsetSpinBox.setValue(calo_details_settings.iterations)
+        self.ui.predictionOffsetSpinBox.setValue(calo_details_settings.prediction_offset)
 
         self.ui.widgetO2Settings.set_data(
-            "O2",
             calo_details_settings.o2_settings,
-            ((-3.75e+12, -9.0, 0), (2.389e+12, 0, 25)),
-            ((-3.75e+12, -9.0, 0), (2.389e+12, 0, 25))
         )
 
         self.ui.widgetCO2Settings.set_data(
-            "CO2",
             calo_details_settings.co2_settings,
-            ((-3.75e+12, -9.0, 0), (2.389e+12, 0, 1)),
-            ((-1.381e+12, -8.806, 0), (2.525e+12, 0, 0.1))
         )
 
         self.dataset: Optional[Dataset] = None

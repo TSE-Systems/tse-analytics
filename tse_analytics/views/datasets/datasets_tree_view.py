@@ -141,7 +141,7 @@ class DatasetsTreeView(QTreeView):
                 dlg = CaloDetailsDialog(item.calo_details, self)
                 result = dlg.exec()
                 if result == QDialog.DialogCode.Accepted:
-                    pass
+                    Manager.data.append_fitting_results(dlg.fitting_results)
 
     def minimumSizeHint(self):
         return QSize(200, 40)

@@ -33,33 +33,30 @@ class CaloDetailsGasSettingsWidget(QWidget):
 
     def set_data(
         self,
-        gas_name: str,
         calo_details_gas_settings: CaloDetailsGasSettings,
-        bounds: tuple[tuple[float, float, float], tuple[float, float, float]],
-        ref_bounds: tuple[tuple[float, float, float], tuple[float, float, float]]
     ):
-        self.ui.titleGroupBox.setTitle(gas_name)
+        self.ui.titleGroupBox.setTitle(calo_details_gas_settings.gas_name)
 
         self.ui.spinBoxStartOffset.setValue(calo_details_gas_settings.start_offset)
         self.ui.spinBoxEndOffset.setValue(calo_details_gas_settings.end_offset)
 
-        self.ui.doubleSpinBoxMinA.setValue(bounds[0][0])
-        self.ui.doubleSpinBoxMaxA.setValue(bounds[1][0])
+        self.ui.doubleSpinBoxMinA.setValue(calo_details_gas_settings.bounds[0][0])
+        self.ui.doubleSpinBoxMaxA.setValue(calo_details_gas_settings.bounds[1][0])
 
-        self.ui.doubleSpinBoxMinB.setValue(bounds[0][1])
-        self.ui.doubleSpinBoxMaxB.setValue(bounds[1][1])
+        self.ui.doubleSpinBoxMinB.setValue(calo_details_gas_settings.bounds[0][1])
+        self.ui.doubleSpinBoxMaxB.setValue(calo_details_gas_settings.bounds[1][1])
 
-        self.ui.doubleSpinBoxMinC.setValue(bounds[0][2])
-        self.ui.doubleSpinBoxMaxC.setValue(bounds[1][2])
+        self.ui.doubleSpinBoxMinC.setValue(calo_details_gas_settings.bounds[0][2])
+        self.ui.doubleSpinBoxMaxC.setValue(calo_details_gas_settings.bounds[1][2])
 
-        self.ui.doubleSpinBoxRefMinA.setValue(ref_bounds[0][0])
-        self.ui.doubleSpinBoxRefMaxA.setValue(ref_bounds[1][0])
+        self.ui.doubleSpinBoxRefMinA.setValue(calo_details_gas_settings.ref_bounds[0][0])
+        self.ui.doubleSpinBoxRefMaxA.setValue(calo_details_gas_settings.ref_bounds[1][0])
 
-        self.ui.doubleSpinBoxRefMinB.setValue(ref_bounds[0][1])
-        self.ui.doubleSpinBoxRefMaxB.setValue(ref_bounds[1][1])
+        self.ui.doubleSpinBoxRefMinB.setValue(calo_details_gas_settings.ref_bounds[0][1])
+        self.ui.doubleSpinBoxRefMaxB.setValue(calo_details_gas_settings.ref_bounds[1][1])
 
-        self.ui.doubleSpinBoxRefMinC.setValue(ref_bounds[0][2])
-        self.ui.doubleSpinBoxRefMaxC.setValue(ref_bounds[1][2])
+        self.ui.doubleSpinBoxRefMinC.setValue(calo_details_gas_settings.ref_bounds[0][2])
+        self.ui.doubleSpinBoxRefMaxC.setValue(calo_details_gas_settings.ref_bounds[1][2])
 
     def get_gas_settings(self) -> CaloDetailsGasSettings:
         bounds = (

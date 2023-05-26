@@ -1,3 +1,5 @@
+import logging
+import os
 from multiprocessing import Pool
 from typing import Optional
 
@@ -13,12 +15,18 @@ from tse_analytics.views.calo_details.calo_details_fitting_result import CaloDet
 from tse_analytics.views.calo_details.calo_details_plot_widget import CaloDetailsPlotWidget
 from tse_analytics.views.calo_details.calo_details_processor import calo_details_calculation_task
 from tse_analytics.views.calo_details.calo_details_rer_widget import CaloDetailsRerWidget
+from tse_analytics.views.calo_details.calo_details_settings import CaloDetailsSettings, CaloDetailsGasSettings
 from tse_analytics.views.calo_details.calo_details_settings_widget import CaloDetailsSettingsWidget
 from tse_analytics.views.calo_details.calo_details_table_view import CaloDetailsTableView
 from tse_analytics.views.calo_details.calo_details_test_fit_widget import CaloDetailsTestFitWidget
 from tse_analytics.views.calo_details.fitting_params import FittingParams
 from tse_datatools.data.calo_details import CaloDetails
 from tse_datatools.data.calo_details_box import CaloDetailsBox
+
+
+# progress indicator for tasks in the process pool
+def progress(result: CaloDetailsFittingResult):
+    logging.info(f"Done! Box: {result.box_number}")
 
 
 class CaloDetailsDialog(QDialog):
@@ -33,6 +41,26 @@ class CaloDetailsDialog(QDialog):
         settings = QSettings()
         self.restoreGeometry(settings.value("CaloDetailsDialog/Geometry"))
         calo_details_settings = settings.value("CaloDetailsSettings")
+        if calo_details_settings is None:
+            calo_details_settings = CaloDetailsSettings(
+                10000,
+                50,
+                0.5,
+                CaloDetailsGasSettings(
+                    "O2",
+                    20,
+                    30,
+                    ((-3.75e+12, -9.0, 0), (2.389e+12, 0, 25)),
+                    ((-3.75e+12, -9.0, 0), (2.389e+12, 0, 25)),
+                ),
+                CaloDetailsGasSettings(
+                    "CO2",
+                    20,
+                    30,
+                    ((-3.75e+12, -9.0, 0), (2.389e+12, 0, 1)),
+                    ((-1.381e+12, -8.806, 0), (2.525e+12, 0, 0.1))
+                ),
+            )
 
         self.calo_details = calo_details
 
@@ -130,7 +158,15 @@ class CaloDetailsDialog(QDialog):
 
         self.fitting_results.clear()
         # create the process pool
-        with Pool() as pool:
+        processes = len(self.selected_boxes) if len(self.selected_boxes) < os.cpu_count() else os.cpu_count()
+        with Pool(processes=processes) as pool:
+            # # issue many tasks asynchronously to the process pool
+            # self.fitting_results = [pool.apply_async(calo_details_calculation_task, (params,), callback=progress) for params in fitting_params_list]
+            # # close the pool
+            # pool.close()
+            # # wait for all issued tasks to complete
+            # pool.join()
+
             # call the same function with different data in parallel
             for result in pool.map(calo_details_calculation_task, fitting_params_list):
                 # report the value to show progress
