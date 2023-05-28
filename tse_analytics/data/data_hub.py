@@ -111,22 +111,36 @@ class DataHub:
                 for index, row in result.df.iterrows():
                     bin_number = row["Bin"]
 
-                    active_df['O2-p'] = np.where(
-                        (active_df['Box'] == result.box_number) & (active_df["Bin"] == bin_number), row["O2-p"],
-                        active_df['O2-p'])
+                    active_df.loc[
+                        active_df[(active_df['Box'] == result.box_number) & (active_df["Bin"] == bin_number)].index[
+                            0], ["O2-p", "CO2-p", "RER-p", "H(3)-p"]] = [row["O2-p"], row["CO2-p"], row["RER-p"],
+                                                                         row["H(3)-p"]]
 
-                    active_df['CO2-p'] = np.where(
-                        (active_df['Box'] == result.box_number) & (active_df["Bin"] == bin_number), row["CO2-p"],
-                        active_df['CO2-p'])
-
-                    active_df['RER-p'] = np.where(
-                        (active_df['Box'] == result.box_number) & (active_df["Bin"] == bin_number), row["RER-p"],
-                        active_df['RER-p'])
-
-                    active_df['H(3)-p'] = np.where(
-                        (active_df['Box'] == result.box_number) & (active_df["Bin"] == bin_number), row["H(3)-p"],
-                        active_df['H(3)-p'])
+                    # active_df['O2-p'] = np.where(
+                    #     (active_df['Box'] == result.box_number) & (active_df["Bin"] == bin_number), row["O2-p"],
+                    #     active_df['O2-p'])
+                    #
+                    # active_df['CO2-p'] = np.where(
+                    #     (active_df['Box'] == result.box_number) & (active_df["Bin"] == bin_number), row["CO2-p"],
+                    #     active_df['CO2-p'])
+                    #
+                    # active_df['RER-p'] = np.where(
+                    #     (active_df['Box'] == result.box_number) & (active_df["Bin"] == bin_number), row["RER-p"],
+                    #     active_df['RER-p'])
+                    #
+                    # active_df['H(3)-p'] = np.where(
+                    #     (active_df['Box'] == result.box_number) & (active_df["Bin"] == bin_number), row["H(3)-p"],
+                    #     active_df['H(3)-p'])
+            if "O2-p" not in self.selected_dataset.variables:
+                self.selected_dataset.variables["O2-p"] = Variable("O2-p", "[%]", "Predicted O2")
+            if "CO2-p" not in self.selected_dataset.variables:
+                self.selected_dataset.variables["CO2-p"] = Variable("CO2-p", "[%]", "Predicted CO2")
+            if "RER-p" not in self.selected_dataset.variables:
+                self.selected_dataset.variables["RER-p"] = Variable("RER-p", "", "Predicted RER")
+            if "H(3)-p" not in self.selected_dataset.variables:
+                self.selected_dataset.variables["H(3)-p"] = Variable("H(3)-p", "[kcal/h]", "Predicted H(3)")
             print(timeit.default_timer() - tic)
+            self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
 
     def get_current_df(self, calculate_error=False) -> pd.DataFrame:
         result = self.selected_dataset.active_df.copy()
