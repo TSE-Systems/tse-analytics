@@ -8,12 +8,15 @@ from tse_datatools.data.dataset import Dataset
 
 
 class CaloDetailsSettingsWidget(QWidget):
-    def __init__(self, calo_details_settings: CaloDetailsSettings, parent: Optional[QWidget] = None):
+    def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
         self.ui = Ui_CaloDetailsSettingsWidget()
         self.ui.setupUi(self)
 
+        self.dataset: Optional[Dataset] = None
+
+    def set_settings(self, calo_details_settings: CaloDetailsSettings):
         self.ui.iterationsSpinBox.setValue(calo_details_settings.iterations)
         self.ui.predictionOffsetSpinBox.setValue(calo_details_settings.prediction_offset)
 
@@ -24,8 +27,6 @@ class CaloDetailsSettingsWidget(QWidget):
         self.ui.widgetCO2Settings.set_data(
             calo_details_settings.co2_settings,
         )
-
-        self.dataset: Optional[Dataset] = None
 
     def set_data(self, dataset: Dataset):
         self.dataset = dataset

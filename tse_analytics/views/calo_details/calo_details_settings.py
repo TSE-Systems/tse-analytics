@@ -28,3 +28,26 @@ class CaloDetailsSettings:
         self.flow = flow
         self.o2_settings = o2_settings
         self.co2_settings = co2_settings
+
+
+def get_default_settings():
+    settings = CaloDetailsSettings(
+        10000,
+        50,
+        0.5,
+        CaloDetailsGasSettings(
+            "O2",
+            20,
+            30,
+            ((-3.75e+12, -9.0, 0), (2.389e+12, 0, 25)),
+            ((-3.75e+12, -9.0, 0), (2.389e+12, 0, 25)),
+        ),
+        CaloDetailsGasSettings(
+            "CO2",
+            20,
+            30,
+            ((-3.75e+12, -9.0, 0), (2.389e+12, 0, 1)),
+            ((-1.381e+12, -8.806, 0), (2.525e+12, 0, 0.1))
+        ),
+    )
+    return settings

@@ -76,9 +76,9 @@ def process_box(
 
     measured_rer = params.general_df['RER'].tolist()
     measured_o2 = params.general_df['O2'].tolist()
-    measured_ref_o2 = params.general_df['Ref.O2'].tolist()
+    measured_ref_o2 = params.general_df['Ref.O2'].tolist() if "Ref.O2" in params.general_df.columns else None
     measured_co2 = params.general_df['CO2'].tolist()
-    measured_ref_co2 = params.general_df['Ref.CO2'].tolist()
+    measured_ref_co2 = params.general_df['Ref.CO2'].tolist() if "Ref.CO2" in params.general_df.columns else None
     measured_vo2 = params.general_df['VO2(3)'].tolist()
     measured_vco2 = params.general_df['VCO2(3)'].tolist()
     measured_h = params.general_df['H(3)'].tolist()

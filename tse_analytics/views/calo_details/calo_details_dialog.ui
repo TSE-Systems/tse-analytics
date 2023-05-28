@@ -17,9 +17,16 @@
    <item>
     <layout class="QHBoxLayout" name="toolbarLayout">
      <item>
-      <widget class="QToolButton" name="toolButtonAnalyse">
+      <widget class="QToolButton" name="toolButtonCalculate">
        <property name="text">
-        <string>Analyze</string>
+        <string>Calculate prediction for selected boxes</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="toolButtonResetSettings">
+       <property name="text">
+        <string>Reset default settings</string>
        </property>
       </widget>
      </item>

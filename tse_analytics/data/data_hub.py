@@ -103,14 +103,26 @@ class DataHub:
         if self.selected_dataset is not None:
             tic = timeit.default_timer()
             active_df = self.selected_dataset.active_df
+            active_df["O2-p"] = np.NaN
+            active_df["CO2-p"] = np.NaN
             active_df["RER-p"] = np.NaN
             active_df["H(3)-p"] = np.NaN
             for result in fitting_results.values():
                 for index, row in result.df.iterrows():
                     bin_number = row["Bin"]
+
+                    active_df['O2-p'] = np.where(
+                        (active_df['Box'] == result.box_number) & (active_df["Bin"] == bin_number), row["O2-p"],
+                        active_df['O2-p'])
+
+                    active_df['CO2-p'] = np.where(
+                        (active_df['Box'] == result.box_number) & (active_df["Bin"] == bin_number), row["CO2-p"],
+                        active_df['CO2-p'])
+
                     active_df['RER-p'] = np.where(
                         (active_df['Box'] == result.box_number) & (active_df["Bin"] == bin_number), row["RER-p"],
                         active_df['RER-p'])
+
                     active_df['H(3)-p'] = np.where(
                         (active_df['Box'] == result.box_number) & (active_df["Bin"] == bin_number), row["H(3)-p"],
                         active_df['H(3)-p'])

@@ -30,10 +30,15 @@ class Ui_CaloDetailsDialog(object):
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.toolbarLayout = QHBoxLayout()
         self.toolbarLayout.setObjectName(u"toolbarLayout")
-        self.toolButtonAnalyse = QToolButton(CaloDetailsDialog)
-        self.toolButtonAnalyse.setObjectName(u"toolButtonAnalyse")
+        self.toolButtonCalculate = QToolButton(CaloDetailsDialog)
+        self.toolButtonCalculate.setObjectName(u"toolButtonCalculate")
 
-        self.toolbarLayout.addWidget(self.toolButtonAnalyse)
+        self.toolbarLayout.addWidget(self.toolButtonCalculate)
+
+        self.toolButtonResetSettings = QToolButton(CaloDetailsDialog)
+        self.toolButtonResetSettings.setObjectName(u"toolButtonResetSettings")
+
+        self.toolbarLayout.addWidget(self.toolButtonResetSettings)
 
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
@@ -92,7 +97,8 @@ class Ui_CaloDetailsDialog(object):
 
     def retranslateUi(self, CaloDetailsDialog):
         CaloDetailsDialog.setWindowTitle(QCoreApplication.translate("CaloDetailsDialog", u"Calo Details", None))
-        self.toolButtonAnalyse.setText(QCoreApplication.translate("CaloDetailsDialog", u"Analyze", None))
+        self.toolButtonCalculate.setText(QCoreApplication.translate("CaloDetailsDialog", u"Calculate prediction for selected boxes", None))
+        self.toolButtonResetSettings.setText(QCoreApplication.translate("CaloDetailsDialog", u"Reset default settings", None))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("CaloDetailsDialog", u"Page 1", None))
     # retranslateUi
 

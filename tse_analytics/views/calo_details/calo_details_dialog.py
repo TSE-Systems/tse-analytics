@@ -15,7 +15,7 @@ from tse_analytics.views.calo_details.calo_details_fitting_result import CaloDet
 from tse_analytics.views.calo_details.calo_details_plot_widget import CaloDetailsPlotWidget
 from tse_analytics.views.calo_details.calo_details_processor import calo_details_calculation_task
 from tse_analytics.views.calo_details.calo_details_rer_widget import CaloDetailsRerWidget
-from tse_analytics.views.calo_details.calo_details_settings import CaloDetailsSettings, CaloDetailsGasSettings
+from tse_analytics.views.calo_details.calo_details_settings import get_default_settings
 from tse_analytics.views.calo_details.calo_details_settings_widget import CaloDetailsSettingsWidget
 from tse_analytics.views.calo_details.calo_details_table_view import CaloDetailsTableView
 from tse_analytics.views.calo_details.calo_details_test_fit_widget import CaloDetailsTestFitWidget
@@ -40,27 +40,6 @@ class CaloDetailsDialog(QDialog):
 
         settings = QSettings()
         self.restoreGeometry(settings.value("CaloDetailsDialog/Geometry"))
-        calo_details_settings = settings.value("CaloDetailsSettings")
-        if calo_details_settings is None:
-            calo_details_settings = CaloDetailsSettings(
-                10000,
-                50,
-                0.5,
-                CaloDetailsGasSettings(
-                    "O2",
-                    20,
-                    30,
-                    ((-3.75e+12, -9.0, 0), (2.389e+12, 0, 25)),
-                    ((-3.75e+12, -9.0, 0), (2.389e+12, 0, 25)),
-                ),
-                CaloDetailsGasSettings(
-                    "CO2",
-                    20,
-                    30,
-                    ((-3.75e+12, -9.0, 0), (2.389e+12, 0, 1)),
-                    ((-1.381e+12, -8.806, 0), (2.525e+12, 0, 0.1))
-                ),
-            )
 
         self.calo_details = calo_details
 
@@ -75,7 +54,8 @@ class CaloDetailsDialog(QDialog):
 
         self.ui.toolBox.removeItem(0)
 
-        self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
+        self.ui.toolButtonCalculate.clicked.connect(self.__calculate)
+        self.ui.toolButtonResetSettings.clicked.connect(self.__reset_settings)
 
         self.calo_details_box_selector = CaloDetailsBoxSelector(self.__filter_boxes)
         self.calo_details_box_selector.set_data(calo_details.dataset)
@@ -85,7 +65,12 @@ class CaloDetailsDialog(QDialog):
         self.calo_details_bin_selector.set_data(calo_details.dataset)
         self.ui.toolBox.addItem(self.calo_details_bin_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Bins")
 
-        self.calo_details_settings_widget = CaloDetailsSettingsWidget(calo_details_settings)
+        calo_details_settings = settings.value("CaloDetailsSettings")
+        if calo_details_settings is None:
+            calo_details_settings = get_default_settings()
+
+        self.calo_details_settings_widget = CaloDetailsSettingsWidget()
+        self.calo_details_settings_widget.set_settings(calo_details_settings)
         self.calo_details_settings_widget.set_data(self.calo_details.dataset)
         self.ui.toolBox.addItem(self.calo_details_settings_widget, QIcon(":/icons/icons8-dog-tag-16.png"), "Settings")
 
@@ -128,7 +113,11 @@ class CaloDetailsDialog(QDialog):
         self.calo_details_plot_widget.set_data(df)
         self.calo_details_test_fit_widget.set_data(df)
 
-    def __analyze(self):
+    def __reset_settings(self):
+        calo_details_settings = get_default_settings()
+        self.calo_details_settings_widget.set_settings(calo_details_settings)
+
+    def __calculate(self):
         calo_details_settings = self.calo_details_settings_widget.get_calo_details_settings()
 
         # remove last bin
