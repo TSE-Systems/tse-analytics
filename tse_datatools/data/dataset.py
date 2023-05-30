@@ -123,6 +123,10 @@ class Dataset:
         df["Phase"] = df["Phase"].astype("category")
         self.active_df = df
 
+    def refresh_active_df(self):
+        self.set_factors(self.factors)
+        self.set_time_phases(self.time_phases)
+
     def __getstate__(self):
         state = self.__dict__.copy()
         del state["active_df"]
@@ -135,5 +139,4 @@ class Dataset:
         if not hasattr(self, "time_phases"):
             self.time_phases = []
 
-        self.set_factors(self.factors)
-        self.set_time_phases(self.time_phases)
+        self.refresh_active_df()

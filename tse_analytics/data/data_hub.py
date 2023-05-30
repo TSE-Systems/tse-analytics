@@ -23,6 +23,7 @@ from tse_datatools.analysis.outliers_params import OutliersParams
 from tse_datatools.analysis.pipeline.time_cycles_pipe_operator import TimeCyclesPipeOperator, TimeCyclesParams
 from tse_datatools.analysis.processor import calculate_grouped_data
 from tse_datatools.data.animal import Animal
+from tse_datatools.data.calo_details import CaloDetails
 from tse_datatools.data.dataset import Dataset
 from tse_datatools.data.factor import Factor
 from tse_datatools.data.variable import Variable
@@ -61,8 +62,8 @@ class DataHub:
         self.messenger.broadcast(GroupingModeChangedMessage(self, self.grouping_mode))
 
     def set_selected_dataset(self, dataset: Dataset) -> None:
-        if self.selected_dataset is dataset:
-            return
+        # if self.selected_dataset is dataset:
+        #     return
         self.selected_dataset = dataset
         self.selected_factor = None
         self.selected_animals.clear()
@@ -99,10 +100,11 @@ class DataHub:
         if self.selected_dataset is not None:
             self.get_current_df().to_csv(path, sep=";", index=False)
 
-    def append_fitting_results(self, fitting_results: dict[int, CaloDetailsFittingResult]) -> None:
-        if self.selected_dataset is not None:
+    def append_fitting_results(self, calo_details: CaloDetails, fitting_results: dict[int, CaloDetailsFittingResult]) -> None:
+        if calo_details is not None and len(fitting_results) > 0:
             tic = timeit.default_timer()
-            active_df = self.selected_dataset.active_df
+            dataset = calo_details.dataset
+            active_df = dataset.original_df
             active_df["O2-p"] = np.NaN
             active_df["CO2-p"] = np.NaN
             active_df["RER-p"] = np.NaN
@@ -131,16 +133,17 @@ class DataHub:
                     # active_df['H(3)-p'] = np.where(
                     #     (active_df['Box'] == result.box_number) & (active_df["Bin"] == bin_number), row["H(3)-p"],
                     #     active_df['H(3)-p'])
-            if "O2-p" not in self.selected_dataset.variables:
-                self.selected_dataset.variables["O2-p"] = Variable("O2-p", "[%]", "Predicted O2")
-            if "CO2-p" not in self.selected_dataset.variables:
-                self.selected_dataset.variables["CO2-p"] = Variable("CO2-p", "[%]", "Predicted CO2")
-            if "RER-p" not in self.selected_dataset.variables:
-                self.selected_dataset.variables["RER-p"] = Variable("RER-p", "", "Predicted RER")
-            if "H(3)-p" not in self.selected_dataset.variables:
-                self.selected_dataset.variables["H(3)-p"] = Variable("H(3)-p", "[kcal/h]", "Predicted H(3)")
+            if "O2-p" not in dataset.variables:
+                dataset.variables["O2-p"] = Variable("O2-p", "[%]", "Predicted O2")
+            if "CO2-p" not in dataset.variables:
+                dataset.variables["CO2-p"] = Variable("CO2-p", "[%]", "Predicted CO2")
+            if "RER-p" not in dataset.variables:
+                dataset.variables["RER-p"] = Variable("RER-p", "", "Predicted RER")
+            if "H(3)-p" not in dataset.variables:
+                dataset.variables["H(3)-p"] = Variable("H(3)-p", "[kcal/h]", "Predicted H(3)")
             print(timeit.default_timer() - tic)
-            self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
+            dataset.refresh_active_df()
+            self.set_selected_dataset(dataset)
 
     def get_current_df(self, calculate_error=False) -> pd.DataFrame:
         result = self.selected_dataset.active_df.copy()
