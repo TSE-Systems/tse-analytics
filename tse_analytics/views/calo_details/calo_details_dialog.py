@@ -1,5 +1,6 @@
 import logging
 import os
+import timeit
 from multiprocessing import Pool
 from typing import Optional
 
@@ -148,6 +149,7 @@ class CaloDetailsDialog(QDialog):
         self.fitting_results.clear()
         # create the process pool
         processes = len(self.selected_boxes) if len(self.selected_boxes) < os.cpu_count() else os.cpu_count()
+        tic = timeit.default_timer()
         with Pool(processes=processes) as pool:
             # # issue many tasks asynchronously to the process pool
             # self.fitting_results = [pool.apply_async(calo_details_calculation_task, (params,), callback=progress) for params in fitting_params_list]
@@ -161,6 +163,7 @@ class CaloDetailsDialog(QDialog):
                 # report the value to show progress
                 self.fitting_results[result.box_number] = result
 
+        logging.info(f"Processing complete: {timeit.default_timer() - tic} sec")
         show_notification("Calo Details", "Processing complete.")
 
     def hideEvent(self, event: QCloseEvent) -> None:

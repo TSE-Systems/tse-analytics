@@ -72,7 +72,8 @@ class DatasetLoader:
         with open(path, "r") as f:
             lines = f.readlines()
 
-        lines = [line.strip().rstrip(DELIMITER) for line in lines]
+        # lines = [line.strip().rstrip(DELIMITER) for line in lines]
+        lines = [line.strip() for line in lines]
 
         header_section = DatasetLoader.__get_header_section(lines)
         animal_section = DatasetLoader.__get_animal_section(lines, header_section.section_end_index + 1)
@@ -99,9 +100,9 @@ class DatasetLoader:
             box = Box(animal.box_id, animal.id)
             boxes[box.id] = box
 
-        data_header = data_section.lines[0]
+        data_header = data_section.lines[0].rstrip(DELIMITER)
         columns = data_header.split(DELIMITER)
-        data_unit_header = data_section.lines[1]
+        data_unit_header = data_section.lines[1].rstrip(DELIMITER)
         columns_unit = data_unit_header.split(DELIMITER)
 
         for i, item in enumerate(columns):
@@ -112,6 +113,7 @@ class DatasetLoader:
             variables[variable.name] = variable
 
         data = data_section.lines[2:]
+        data = [line.rstrip(DELIMITER) for line in data]
         csv = "\n".join(data)
 
         # noinspection PyTypeChecker
