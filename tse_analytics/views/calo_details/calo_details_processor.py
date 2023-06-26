@@ -3,6 +3,7 @@ from datetime import timedelta
 
 import numpy as np
 import pandas as pd
+from lmfit import Parameters, minimize
 from scipy.optimize import curve_fit
 
 from tse_analytics.views.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
@@ -162,7 +163,42 @@ def calculate_fit(
         bounds=bounds,
         max_nfev=number_of_iterations,
     )
-    return popt, pcov
+    return popt[0], popt[1], popt[2]
+
+
+# Define the fitting function
+def power_fitting_lmfit(params, x, y):
+    a = params['a']
+    b = params['b']
+    c = params['c']
+    y_fit = curve_fitting_func(x, a, b, c)
+    return y_fit - y
+
+
+def calculate_fit_v2(
+    df: pd.DataFrame,
+    gas_name: str,
+    number_of_iterations: int,
+    bounds: tuple[tuple[float, float, float], tuple[float, float, float]]
+):
+    xdata = df["Offset"]
+    ydata = df[gas_name]
+
+    # Defining the various parameters
+    params = Parameters()
+    params.add('a', min=bounds[0][0], max=bounds[1][0])
+    params.add('b', min=bounds[0][1], max=bounds[1][1])
+    params.add('c', min=0.0)
+
+    # Calling the minimize function. Args contains the x and y data.
+    fitted_params = minimize(power_fitting_lmfit, params, args=(xdata, ydata,), method='leastsq')
+
+    # Getting the fitted values
+    a = fitted_params.params['a'].value
+    b = fitted_params.params['b'].value
+    c = fitted_params.params['c'].value
+
+    return a, b, c
 
 
 def calculate_predicted_measurements(
@@ -226,10 +262,10 @@ def calculate_predicted_bin_measurements(
     training_data_o2 = bin_df.iloc[start_offset_o2:end_offset_o2]
     training_data_co2 = bin_df.iloc[start_offset_co2:end_offset_co2]
 
-    o2_popt, _ = calculate_fit(training_data_o2, "O2", iterations, o2_bounds)
-    co2_popt, _ = calculate_fit(training_data_co2, "CO2", iterations, co2_bounds)
+    o2_a, o2_b, o2_c = calculate_fit_v2(training_data_o2, "O2", iterations, o2_bounds)
+    co2_a, co2_b, co2_c = calculate_fit_v2(training_data_co2, "CO2", iterations, co2_bounds)
 
-    predicted_o2 = curve_fitting_func(prediction_offset * sample_time.total_seconds(), *o2_popt)
-    predicted_co2 = curve_fitting_func(prediction_offset * sample_time.total_seconds(), *co2_popt)
+    predicted_o2 = curve_fitting_func(prediction_offset * sample_time.total_seconds(), o2_a, o2_b, o2_c)
+    predicted_co2 = curve_fitting_func(prediction_offset * sample_time.total_seconds(), co2_a, co2_b, co2_c)
 
     return prediction_offset, predicted_o2, predicted_co2

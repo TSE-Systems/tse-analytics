@@ -11,7 +11,10 @@ packages = [{include = "tse_analytics"}]
 
 [tool.poetry.dependencies]
 python = "3.11.4"
+PySide6 = "6.4.3"
+PySide6-QtAds = "4.0.1.2"
 bottleneck = "1.3.7"
+lmfit = "1.2.1"
 matplotlib = "3.7.1"
 openpyxl = "3.1.2"
 pandas = {version="1.5.3"}
@@ -19,8 +22,6 @@ pingouin = "0.5.3"
 plotly = "5.15.0"
 psutil = "5.9.5"
 pyqtgraph = "0.13.3"
-PySide6 = "6.4.3"
-PySide6-QtAds = "4.0.1.2"
 scikit-learn = "1.2.2"
 scipy = "1.10.1"
 seaborn = "0.12.2"
