@@ -6,8 +6,14 @@ from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.workers.worker import Worker
-from tse_analytics.messaging.messages import ClearDataMessage, DatasetChangedMessage, BinningAppliedMessage, \
-    RevertBinningMessage, DataChangedMessage, GroupingModeChangedMessage
+from tse_analytics.messaging.messages import (
+    ClearDataMessage,
+    DatasetChangedMessage,
+    BinningAppliedMessage,
+    RevertBinningMessage,
+    DataChangedMessage,
+    GroupingModeChangedMessage,
+)
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.models.pandas_model import PandasModel
@@ -46,7 +52,9 @@ class DataTableWidget(QWidget, MessengerListener):
 
     def __resize_columns_width(self):
         # Pass the function to execute
-        worker = Worker(self.ui.tableView.resizeColumnsToContents)  # Any other args, kwargs are passed to the run function
+        worker = Worker(
+            self.ui.tableView.resizeColumnsToContents
+        )  # Any other args, kwargs are passed to the run function
         # Execute
         Manager.threadpool.start(worker)
 
@@ -89,3 +97,4 @@ class DataTableWidget(QWidget, MessengerListener):
         self.ui.tableView.setSortingEnabled(False)
         self.ui.tableView.model().setSourceModel(model)
         self.ui.tableView.setSortingEnabled(self._sorting)
+        self.ui.tableView.setColumnWidth(0, 120)

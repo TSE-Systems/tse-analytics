@@ -1,6 +1,6 @@
 from io import StringIO
 from pathlib import Path
-from typing import Optional, NamedTuple
+from typing import Optional
 from collections import namedtuple
 
 import pandas as pd

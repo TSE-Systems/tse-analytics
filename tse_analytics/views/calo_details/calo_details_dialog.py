@@ -12,15 +12,15 @@ from tse_analytics.core.notificator import show_notification
 from tse_analytics.views.calo_details.calo_details_bin_selector import CaloDetailsBinSelector
 from tse_analytics.views.calo_details.calo_details_box_selector import CaloDetailsBoxSelector
 from tse_analytics.views.calo_details.calo_details_dialog_ui import Ui_CaloDetailsDialog
-from tse_analytics.views.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
+from tse_datatools.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
 from tse_analytics.views.calo_details.calo_details_plot_widget import CaloDetailsPlotWidget
-from tse_analytics.views.calo_details.calo_details_processor import calo_details_calculation_task
+from tse_datatools.calo_details.calo_details_processor import calo_details_calculation_task
 from tse_analytics.views.calo_details.calo_details_rer_widget import CaloDetailsRerWidget
-from tse_analytics.views.calo_details.calo_details_settings import get_default_settings
+from tse_datatools.calo_details.calo_details_settings import get_default_settings
 from tse_analytics.views.calo_details.calo_details_settings_widget import CaloDetailsSettingsWidget
 from tse_analytics.views.calo_details.calo_details_table_view import CaloDetailsTableView
 from tse_analytics.views.calo_details.calo_details_test_fit_widget import CaloDetailsTestFitWidget
-from tse_analytics.views.calo_details.fitting_params import FittingParams
+from tse_datatools.calo_details.fitting_params import FittingParams
 from tse_datatools.data.calo_details import CaloDetails
 from tse_datatools.data.calo_details_box import CaloDetailsBox
 
@@ -66,8 +66,9 @@ class CaloDetailsDialog(QDialog):
         self.calo_details_bin_selector.set_data(calo_details.dataset)
         self.ui.toolBox.addItem(self.calo_details_bin_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Bins")
 
-        calo_details_settings = settings.value("CaloDetailsSettings")
-        if calo_details_settings is None:
+        try:
+            calo_details_settings = settings.value("CaloDetailsSettings", get_default_settings())
+        except:
             calo_details_settings = get_default_settings()
 
         self.calo_details_settings_widget = CaloDetailsSettingsWidget()
@@ -95,6 +96,8 @@ class CaloDetailsDialog(QDialog):
         if len(selected_boxes) == 1:
             if selected_boxes[0].box in self.fitting_results:
                 self.calo_details_rer_widget.set_data(self.fitting_results[selected_boxes[0].box])
+            else:
+                self.calo_details_rer_widget.clear()
 
     def __filter_bins(self, selected_bins: list[int]):
         self.selected_bins = selected_bins
@@ -124,7 +127,9 @@ class CaloDetailsDialog(QDialog):
         # remove last bin
         bin_numbers = sorted(self.calo_details.raw_df["Bin"].unique().tolist())
         raw_df = self.calo_details.raw_df.loc[self.calo_details.raw_df["Bin"] != bin_numbers[-1]]
-        active_df = self.calo_details.dataset.active_df.loc[self.calo_details.dataset.active_df["Bin"] != bin_numbers[-1]]
+        active_df = self.calo_details.dataset.active_df.loc[
+            self.calo_details.dataset.active_df["Bin"] != bin_numbers[-1]
+        ]
 
         fitting_params_list: list[FittingParams] = []
 
@@ -137,13 +142,7 @@ class CaloDetailsDialog(QDialog):
             details_df = raw_df[raw_df["Box"] == calo_details_box.box].copy()
             ref_details_df = raw_df[raw_df["Box"] == calo_details_box.ref_box].copy()
 
-            params = FittingParams(
-                calo_details_box,
-                general_df,
-                details_df,
-                ref_details_df,
-                calo_details_settings
-            )
+            params = FittingParams(calo_details_box, general_df, details_df, ref_details_df, calo_details_settings)
             fitting_params_list.append(params)
 
         self.fitting_results.clear()

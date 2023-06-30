@@ -9,7 +9,8 @@ from PySide6.QtWidgets import (
     QMenu,
     QTreeView,
     QWidget,
-    QDialog, QFileDialog,
+    QDialog,
+    QFileDialog,
 )
 
 from tse_analytics.core.manager import Manager

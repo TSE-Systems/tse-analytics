@@ -2,7 +2,7 @@ from typing import Optional
 
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.views.calo_details.calo_details_settings import CaloDetailsSettings
+from tse_datatools.calo_details.calo_details_settings import CaloDetailsSettings
 from tse_analytics.views.calo_details.calo_details_settings_widget_ui import Ui_CaloDetailsSettingsWidget
 from tse_datatools.data.dataset import Dataset
 
@@ -43,10 +43,4 @@ class CaloDetailsSettingsWidget(QWidget):
         o2_gas_settings = self.ui.widgetO2Settings.get_gas_settings()
         co2_gas_settings = self.ui.widgetCO2Settings.get_gas_settings()
 
-        return CaloDetailsSettings(
-            iterations,
-            prediction_offset,
-            flow,
-            o2_gas_settings,
-            co2_gas_settings
-        )
+        return CaloDetailsSettings(iterations, prediction_offset, flow, o2_gas_settings, co2_gas_settings)

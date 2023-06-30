@@ -28,13 +28,13 @@ class CaloDetailsPlotView(pg.GraphicsLayoutWidget):
         # customize the averaged curve that can be activated from the context menu:
         self.p1.avgPen = pg.mkPen("#FFFFFF")
         self.p1.avgShadowPen = pg.mkPen("#8080DD", width=10)
-        self.p1.setAxisItems({'bottom': pg.DateAxisItem()})
+        self.p1.setAxisItems({"bottom": pg.DateAxisItem()})
         self.p1.showGrid(x=True, y=True)
 
         self.legend = self.p1.addLegend((10, 10))
 
         self.p2: pg.PlotItem = self.addPlot(row=1, col=0)
-        self.p2.setAxisItems({'bottom': pg.DateAxisItem()})
+        self.p2.setAxisItems({"bottom": pg.DateAxisItem()})
         self.p2.showGrid(x=True, y=True)
 
         self.region = pg.LinearRegionItem()

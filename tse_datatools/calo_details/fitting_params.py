@@ -1,6 +1,6 @@
 import pandas as pd
 
-from tse_analytics.views.calo_details.calo_details_settings import CaloDetailsSettings
+from tse_datatools.calo_details.calo_details_settings import CaloDetailsSettings
 from tse_datatools.data.calo_details_box import CaloDetailsBox
 
 

@@ -3,7 +3,7 @@ from typing import Optional
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.views.calo_details.calo_details_gas_settings_widget_ui import Ui_CaloDetailsGasSettingsWidget
-from tse_analytics.views.calo_details.calo_details_settings import CaloDetailsGasSettings
+from tse_datatools.calo_details.calo_details_settings import CaloDetailsGasSettings
 
 
 class CaloDetailsGasSettingsWidget(QWidget):
@@ -13,23 +13,23 @@ class CaloDetailsGasSettingsWidget(QWidget):
         self.ui = Ui_CaloDetailsGasSettingsWidget()
         self.ui.setupUi(self)
 
-        self.ui.doubleSpinBoxMinA.setRange(-float('inf'), float('inf'))
-        self.ui.doubleSpinBoxMaxA.setRange(-float('inf'), float('inf'))
+        self.ui.doubleSpinBoxMinA.setRange(-float("inf"), float("inf"))
+        self.ui.doubleSpinBoxMaxA.setRange(-float("inf"), float("inf"))
 
-        self.ui.doubleSpinBoxMinB.setRange(-float('inf'), float('inf'))
-        self.ui.doubleSpinBoxMaxB.setRange(-float('inf'), float('inf'))
+        self.ui.doubleSpinBoxMinB.setRange(-float("inf"), float("inf"))
+        self.ui.doubleSpinBoxMaxB.setRange(-float("inf"), float("inf"))
 
-        self.ui.doubleSpinBoxMinC.setRange(-float('inf'), float('inf'))
-        self.ui.doubleSpinBoxMaxC.setRange(-float('inf'), float('inf'))
+        self.ui.doubleSpinBoxMinC.setRange(-float("inf"), float("inf"))
+        self.ui.doubleSpinBoxMaxC.setRange(-float("inf"), float("inf"))
 
-        self.ui.doubleSpinBoxRefMinA.setRange(-float('inf'), float('inf'))
-        self.ui.doubleSpinBoxRefMaxA.setRange(-float('inf'), float('inf'))
+        self.ui.doubleSpinBoxRefMinA.setRange(-float("inf"), float("inf"))
+        self.ui.doubleSpinBoxRefMaxA.setRange(-float("inf"), float("inf"))
 
-        self.ui.doubleSpinBoxRefMinB.setRange(-float('inf'), float('inf'))
-        self.ui.doubleSpinBoxRefMaxB.setRange(-float('inf'), float('inf'))
+        self.ui.doubleSpinBoxRefMinB.setRange(-float("inf"), float("inf"))
+        self.ui.doubleSpinBoxRefMaxB.setRange(-float("inf"), float("inf"))
 
-        self.ui.doubleSpinBoxRefMinC.setRange(-float('inf'), float('inf'))
-        self.ui.doubleSpinBoxRefMaxC.setRange(-float('inf'), float('inf'))
+        self.ui.doubleSpinBoxRefMinC.setRange(-float("inf"), float("inf"))
+        self.ui.doubleSpinBoxRefMaxC.setRange(-float("inf"), float("inf"))
 
     def set_data(
         self,
@@ -64,13 +64,21 @@ class CaloDetailsGasSettingsWidget(QWidget):
             (self.ui.doubleSpinBoxMaxA.value(), self.ui.doubleSpinBoxMaxB.value(), self.ui.doubleSpinBoxMaxC.value()),
         )
         ref_bounds = (
-            (self.ui.doubleSpinBoxRefMinA.value(), self.ui.doubleSpinBoxRefMinB.value(), self.ui.doubleSpinBoxRefMinC.value()),
-            (self.ui.doubleSpinBoxRefMaxA.value(), self.ui.doubleSpinBoxRefMaxB.value(), self.ui.doubleSpinBoxRefMaxC.value()),
+            (
+                self.ui.doubleSpinBoxRefMinA.value(),
+                self.ui.doubleSpinBoxRefMinB.value(),
+                self.ui.doubleSpinBoxRefMinC.value(),
+            ),
+            (
+                self.ui.doubleSpinBoxRefMaxA.value(),
+                self.ui.doubleSpinBoxRefMaxB.value(),
+                self.ui.doubleSpinBoxRefMaxC.value(),
+            ),
         )
         return CaloDetailsGasSettings(
             self.ui.titleGroupBox.title(),
             self.ui.spinBoxStartOffset.value(),
             self.ui.spinBoxEndOffset.value(),
             bounds,
-            ref_bounds
+            ref_bounds,
         )

@@ -28,7 +28,9 @@ class DistributionWidget(QWidget, MessengerListener):
         self.variable = ""
         self.ui.variableSelector.currentTextChanged.connect(self.__variable_changed)
 
-        self.ui.horizontalLayout.insertWidget(self.ui.horizontalLayout.count()-2, NavigationToolbar2QT(self.ui.canvas, self))
+        self.ui.horizontalLayout.insertWidget(
+            self.ui.horizontalLayout.count() - 2, NavigationToolbar2QT(self.ui.canvas, self)
+        )
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)

@@ -290,7 +290,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self,
             "Import dataset",
             "",
-            f"Dataset Files (*.csv)",
+            "Dataset Files (*.csv)",
             options=options,
         )
         if path:

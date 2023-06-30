@@ -27,7 +27,7 @@ class CaloDetailsLoader:
         with open(path, "r") as f:
             lines = f.readlines()
 
-            header_template = "Date;Time;Box;Marker;"
+            header_template = "Date;Time;"
             # looping through each line in the file
             for idx, line in enumerate(lines):
                 if header_template in line:
@@ -41,7 +41,6 @@ class CaloDetailsLoader:
             decimal=DECIMAL,
             skiprows=header_line_number,  # Skip header line
             parse_dates={"DateTime": ["Date", "Time"]},
-            infer_datetime_format=True,
             encoding='ISO-8859-1',
             na_values="-",
         )

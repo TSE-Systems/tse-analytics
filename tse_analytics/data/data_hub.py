@@ -15,7 +15,7 @@ from tse_analytics.messaging.messages import (
     GroupingModeChangedMessage,
 )
 from tse_analytics.messaging.messenger import Messenger
-from tse_analytics.views.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
+from tse_datatools.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
 from tse_datatools.analysis.binning_operation import BinningOperation
 from tse_datatools.analysis.binning_params import BinningParams
 from tse_datatools.analysis.grouping_mode import GroupingMode
@@ -100,13 +100,17 @@ class DataHub:
         if self.selected_dataset is not None:
             self.get_current_df().to_csv(path, sep=";", index=False)
 
-    def append_fitting_results(self, calo_details: CaloDetails, fitting_results: dict[int, CaloDetailsFittingResult]) -> None:
+    def append_fitting_results(
+        self, calo_details: CaloDetails, fitting_results: dict[int, CaloDetailsFittingResult]
+    ) -> None:
         if calo_details is not None and len(fitting_results) > 0:
             tic = timeit.default_timer()
             dataset = calo_details.dataset
             active_df = dataset.original_df
             active_df["O2-p"] = np.NaN
             active_df["CO2-p"] = np.NaN
+            active_df["VO2(3)-p"] = np.NaN
+            active_df["VCO2(3)-p"] = np.NaN
             active_df["RER-p"] = np.NaN
             active_df["H(3)-p"] = np.NaN
             for result in fitting_results.values():
@@ -114,9 +118,9 @@ class DataHub:
                     bin_number = row["Bin"]
 
                     active_df.loc[
-                        active_df[(active_df['Box'] == result.box_number) & (active_df["Bin"] == bin_number)].index[
-                            0], ["O2-p", "CO2-p", "RER-p", "H(3)-p"]] = [row["O2-p"], row["CO2-p"], row["RER-p"],
-                                                                         row["H(3)-p"]]
+                        active_df[(active_df["Box"] == result.box_number) & (active_df["Bin"] == bin_number)].index[0],
+                        ["O2-p", "CO2-p", "VO2(3)-p", "VCO2(3)-p", "RER-p", "H(3)-p"],
+                    ] = [row["O2-p"], row["CO2-p"], row["VO2(3)-p"], row["VCO2(3)-p"], row["RER-p"], row["H(3)-p"]]
 
                     # active_df['O2-p'] = np.where(
                     #     (active_df['Box'] == result.box_number) & (active_df["Bin"] == bin_number), row["O2-p"],
@@ -137,11 +141,14 @@ class DataHub:
                 dataset.variables["O2-p"] = Variable("O2-p", "[%]", "Predicted O2")
             if "CO2-p" not in dataset.variables:
                 dataset.variables["CO2-p"] = Variable("CO2-p", "[%]", "Predicted CO2")
+            if "VO2(3)-p" not in dataset.variables:
+                dataset.variables["VO2(3)-p"] = Variable("VO2(3)-p", "[ml/h]", "Predicted VO2(3)")
+            if "VCO2(3)-p" not in dataset.variables:
+                dataset.variables["VCO2(3)-p"] = Variable("VCO2(3)-p", "[ml/h]", "Predicted VCO2(3)")
             if "RER-p" not in dataset.variables:
                 dataset.variables["RER-p"] = Variable("RER-p", "", "Predicted RER")
             if "H(3)-p" not in dataset.variables:
                 dataset.variables["H(3)-p"] = Variable("H(3)-p", "[kcal/h]", "Predicted H(3)")
-            print(timeit.default_timer() - tic)
             dataset.refresh_active_df()
             self.set_selected_dataset(dataset)
 

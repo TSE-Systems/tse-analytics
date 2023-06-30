@@ -109,7 +109,6 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
                 self.listWidgetAnimals.addItem(item)
 
     def animal_item_changed(self, item: QListWidgetItem):
-        x = item.text()
         animal_id = next(
             (animal.id for animal in Manager.data.selected_dataset.animals.values() if animal.id == int(item.text())),
             None,

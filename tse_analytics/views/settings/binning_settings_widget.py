@@ -24,7 +24,6 @@ class BinningSettingsWidget(QWidget):
 
         self.ui.applyBinningCheckBox.stateChanged.connect(self.__apply_binning_changed)
 
-
         self.ui.unitComboBox.addItems(["day", "hour", "minute"])
         self.ui.unitComboBox.setCurrentText("hour")
         self.ui.unitComboBox.currentTextChanged.connect(self.__binning_unit_changed)
@@ -73,7 +72,7 @@ class BinningSettingsWidget(QWidget):
         binning_params = BinningParams(
             self.ui.applyBinningCheckBox.isChecked(),
             timedelta,
-            BinningOperation(self.ui.operationComboBox.currentText())
+            BinningOperation(self.ui.operationComboBox.currentText()),
         )
         Manager.data.binning_params = binning_params
 

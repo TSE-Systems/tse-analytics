@@ -14,3 +14,4 @@ class CaloDetailsTableView(QTableView):
     def set_data(self, df: pd.DataFrame):
         model = PandasModel(df)
         self.setModel(model)
+        self.setColumnWidth(0, 120)

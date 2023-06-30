@@ -5,7 +5,7 @@ class CaloDetailsGasSettings:
         start_offset: int,
         end_offset: int,
         bounds: tuple[tuple[float, float, float], tuple[float, float, float]],
-        ref_bounds: tuple[tuple[float, float, float], tuple[float, float, float]]
+        ref_bounds: tuple[tuple[float, float, float], tuple[float, float, float]],
     ):
         self.gas_name = gas_name
         self.start_offset = start_offset
@@ -21,7 +21,7 @@ class CaloDetailsSettings:
         prediction_offset: int,
         flow: float,
         o2_settings: CaloDetailsGasSettings,
-        co2_settings: CaloDetailsGasSettings
+        co2_settings: CaloDetailsGasSettings,
     ):
         self.iterations = iterations
         self.prediction_offset = prediction_offset
@@ -39,15 +39,11 @@ def get_default_settings():
             "O2",
             20,
             30,
-            ((-3.75e+12, -9.0, 0), (2.389e+12, 0, 25)),
-            ((-3.75e+12, -9.0, 0), (2.389e+12, 0, 25)),
+            ((-3.75e12, -9.0, 0), (2.389e12, 0, 25)),
+            ((-3.75e12, -9.0, 0), (2.389e12, 0, 25)),
         ),
         CaloDetailsGasSettings(
-            "CO2",
-            20,
-            30,
-            ((-3.75e+12, -9.0, 0), (2.389e+12, 0, 1)),
-            ((-1.381e+12, -8.806, 0), (2.525e+12, 0, 0.1))
+            "CO2", 20, 30, ((-3.75e12, -9.0, 0), (2.389e12, 0, 1)), ((-1.381e12, -8.806, 0), (2.525e12, 0, 0.1))
         ),
     )
     return settings
