@@ -1,6 +1,5 @@
 import gc
 import timeit
-from datetime import time
 from typing import Optional
 
 import numpy as np
@@ -13,15 +12,21 @@ from tse_analytics.messaging.messages import (
     DataChangedMessage,
     DatasetChangedMessage,
     GroupingModeChangedMessage,
+    BinningAppliedMessage,
+    RevertBinningMessage,
 )
 from tse_analytics.messaging.messenger import Messenger
-from tse_datatools.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
+from tse_datatools.analysis.binning_mode import BinningMode
 from tse_datatools.analysis.binning_operation import BinningOperation
 from tse_datatools.analysis.binning_params import BinningParams
 from tse_datatools.analysis.grouping_mode import GroupingMode
 from tse_datatools.analysis.outliers_params import OutliersParams
-from tse_datatools.analysis.pipeline.time_cycles_pipe_operator import TimeCyclesPipeOperator, TimeCyclesParams
-from tse_datatools.analysis.processor import calculate_grouped_data
+from tse_datatools.analysis.pipeline.animal_filter_pipe_operator import AnimalFilterPipeOperator
+from tse_datatools.analysis.pipeline.std_pipe_operator import STDPipeOperator
+from tse_datatools.analysis.pipeline.time_cycles_binning_pipe_operator import TimeCyclesBinningPipeOperator
+from tse_datatools.analysis.pipeline.time_intervals_binning_pipe_operator import TimeIntervalsBinningPipeOperator
+from tse_datatools.analysis.pipeline.time_phases_binning_pipe_operator import TimePhasesBinningPipeOperator
+from tse_datatools.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
 from tse_datatools.data.animal import Animal
 from tse_datatools.data.calo_details import CaloDetails
 from tse_datatools.data.dataset import Dataset
@@ -40,9 +45,8 @@ class DataHub:
 
         self.grouping_mode = GroupingMode.ANIMALS
 
-        self.binning_params = BinningParams(False, pd.Timedelta("1H"), BinningOperation.MEAN)
+        self.binning_params = BinningParams(False, BinningMode.INTERVALS, BinningOperation.MEAN)
         self.outliers_params = OutliersParams(False, 3.0)
-        self.time_cycles_params = TimeCyclesParams(False, time(7, 0), time(19, 0))
 
         self.selected_variable = ""
 
@@ -56,6 +60,16 @@ class DataHub:
         gc.collect()
 
         self.messenger.broadcast(ClearDataMessage(self))
+
+    def apply_binning(self, params: BinningParams):
+        if self.selected_dataset is None:
+            return
+
+        self.binning_params = params
+        if self.binning_params.apply:
+            self.messenger.broadcast(BinningAppliedMessage(self, self.binning_params))
+        else:
+            self.messenger.broadcast(RevertBinningMessage(self))
 
     def set_grouping_mode(self, mode: GroupingMode):
         self.grouping_mode = mode
@@ -157,50 +171,48 @@ class DataHub:
 
         factor_names = list(self.selected_dataset.factors.keys())
 
-        timedelta = (
-            self.selected_dataset.sampling_interval if not self.binning_params.apply else self.binning_params.timedelta
-        )
+        # Filter operator
+        if len(self.selected_animals) > 0:
+            operator = AnimalFilterPipeOperator(self.selected_animals)
+            result = operator.process(result)
 
-        # Apply time cycles if needed
-        result = TimeCyclesPipeOperator(self.time_cycles_params).process(result)
+        # Binning
+        if self.binning_params.apply:
+            match self.binning_params.mode:
+                case BinningMode.INTERVALS:
+                    operator = TimeIntervalsBinningPipeOperator(
+                        self.selected_dataset.binning_settings.time_intervals_settings,
+                        self.binning_params.operation,
+                        self.grouping_mode,
+                        factor_names,
+                        self.selected_factor
+                    )
+                    result = operator.process(result)
+                case BinningMode.CYCLES:
+                    operator = TimeCyclesBinningPipeOperator(
+                        self.selected_dataset.binning_settings.time_cycles_settings,
+                        self.binning_params.operation,
+                        self.grouping_mode,
+                        factor_names,
+                        self.selected_factor
+                    )
+                    result = operator.process(result)
+                case BinningMode.PHASES:
+                    operator = TimePhasesBinningPipeOperator(
+                        self.selected_dataset.binning_settings.time_phases_settings,
+                        self.binning_params.operation,
+                        self.grouping_mode,
+                        factor_names,
+                        self.selected_factor
+                    )
+                    result = operator.process(result)
 
-        if self.grouping_mode == GroupingMode.FACTORS and self.selected_factor is not None:
-            result = calculate_grouped_data(
-                result,
-                timedelta,
-                self.binning_params.operation,
-                self.grouping_mode,
-                factor_names,
-                self.selected_variable if calculate_error else None,
-                self.selected_factor,
-            )
-            # TODO: should or should not?
-            # result = result.dropna()
-        elif self.grouping_mode == GroupingMode.ANIMALS and len(self.selected_dataset.animals) > 0:
-            if len(self.selected_animals) > 0:
-                animal_ids = [animal.id for animal in self.selected_animals]
-                result = result[result["Animal"].isin(animal_ids)]
-            if self.binning_params.apply:
-                result = calculate_grouped_data(
-                    result,
-                    timedelta,
-                    self.binning_params.operation,
-                    self.grouping_mode,
-                    factor_names,
-                    self.selected_variable if calculate_error else None,
-                    self.selected_factor,
-                )
-        if self.grouping_mode == GroupingMode.RUNS:
-            result = calculate_grouped_data(
-                result,
-                timedelta,
-                self.binning_params.operation,
-                self.grouping_mode,
-                factor_names,
-                self.selected_variable if calculate_error else None,
-                self.selected_factor,
-            )
-            # TODO: should or should not?
-            # result = result.dropna()
+        # TODO: should or should not?
+        # result = result.dropna()
+
+        # STD operator
+        if calculate_error and self.selected_variable != "":
+            operator = STDPipeOperator(self.selected_variable)
+            result = operator.process(result)
 
         return result

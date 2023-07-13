@@ -34,6 +34,12 @@ class Ui_CaloDetailsTestFitWidget(object):
 
         self.horizontalLayout.addWidget(self.toolButtonFit)
 
+        self.toolButtonExport = QToolButton(CaloDetailsTestFitWidget)
+        self.toolButtonExport.setObjectName(u"toolButtonExport")
+        self.toolButtonExport.setPopupMode(QToolButton.MenuButtonPopup)
+
+        self.horizontalLayout.addWidget(self.toolButtonExport)
+
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer)
@@ -60,5 +66,6 @@ class Ui_CaloDetailsTestFitWidget(object):
     def retranslateUi(self, CaloDetailsTestFitWidget):
         CaloDetailsTestFitWidget.setWindowTitle(QCoreApplication.translate("CaloDetailsTestFitWidget", u"Form", None))
         self.toolButtonFit.setText(QCoreApplication.translate("CaloDetailsTestFitWidget", u"Calculate Test Fit", None))
+        self.toolButtonExport.setText(QCoreApplication.translate("CaloDetailsTestFitWidget", u"Export", None))
     # retranslateUi
 

@@ -25,11 +25,11 @@ def get_ref_box_number(box: int, boxes: list[int]) -> Optional[int]:
     if gap_index is None:
         return None
 
-    ref_boxes = boxes[gap_index + 1:]
+    ref_boxes = boxes[gap_index + 1 :]
     if box in ref_boxes:
         return None
 
-    standard_boxes = boxes[:gap_index+1]
+    standard_boxes = boxes[: gap_index + 1]
 
     parts = len(standard_boxes) // len(ref_boxes)
 

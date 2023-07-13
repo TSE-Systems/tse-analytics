@@ -41,7 +41,7 @@ class CaloDetailsLoader:
             decimal=DECIMAL,
             skiprows=header_line_number,  # Skip header line
             parse_dates={"DateTime": ["Date", "Time"]},
-            encoding='ISO-8859-1',
+            encoding="ISO-8859-1",
             na_values="-",
         )
 
@@ -78,7 +78,8 @@ class CaloDetailsLoader:
         bins = []
         offsets = []
         timedeltas = []
-        time_delta = sampling_interval + timedelta(seconds=1)
+        time_gap = timedelta(seconds=10)
+        offset = 0
         for row in df.itertuples():
             timestamp = row.DateTime
             box = row.Box
@@ -88,9 +89,11 @@ class CaloDetailsLoader:
 
             if previous_timestamp is None:
                 bins = [0]
-            elif timestamp - previous_timestamp > time_delta:
+            elif timestamp - previous_timestamp > time_gap:
                 bin_number = bins[-1]
                 bin_number = bin_number + 1
+
+                offset = 0
 
                 # reset bin number for a new box
                 if box != previous_box:
@@ -104,6 +107,7 @@ class CaloDetailsLoader:
                 # reset bin number for a new box
                 if box != previous_box:
                     bin_number = 0
+                    offset = 0
 
                 bins.append(bin_number)
 
@@ -113,14 +117,14 @@ class CaloDetailsLoader:
             td = timestamp - start_timestamp
             timedeltas.append(td)
 
-            offset = td.total_seconds()
+            # offset = td.total_seconds()
             offsets.append(offset)
-
+            offset = offset + 1
             previous_timestamp = timestamp
 
         df.insert(1, "Timedelta", timedeltas)
         df.insert(2, "Bin", bins)
-        df.insert(3, "Offset", np.array(offsets, dtype=int))
+        df.insert(3, "Offset", offsets)
 
         calo_details = CaloDetails(dataset, "Calo Details", str(path), variables, df, sampling_interval)
         return calo_details

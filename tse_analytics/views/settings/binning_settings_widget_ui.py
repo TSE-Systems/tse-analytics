@@ -17,77 +17,93 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFormLayout,
     QFrame, QLabel, QScrollArea, QSizePolicy,
-    QSpinBox, QVBoxLayout, QWidget)
+    QVBoxLayout, QWidget)
+
+from tse_analytics.views.settings.time_cycles_settings_widget import TimeCyclesSettingsWidget
+from tse_analytics.views.settings.time_intervals_settings_widget import TimeIntervalsSettingsWidget
+from tse_analytics.views.settings.time_phases_settings_widget import TimePhasesSettingsWidget
 
 class Ui_BinningSettingsWidget(object):
     def setupUi(self, BinningSettingsWidget):
         if not BinningSettingsWidget.objectName():
             BinningSettingsWidget.setObjectName(u"BinningSettingsWidget")
-        BinningSettingsWidget.resize(546, 585)
-        self.verticalLayout = QVBoxLayout(BinningSettingsWidget)
-        self.verticalLayout.setObjectName(u"verticalLayout")
+        BinningSettingsWidget.resize(564, 607)
+        self.verticalLayout_2 = QVBoxLayout(BinningSettingsWidget)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.scrollArea = QScrollArea(BinningSettingsWidget)
         self.scrollArea.setObjectName(u"scrollArea")
         self.scrollArea.setFrameShape(QFrame.NoFrame)
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 528, 567))
-        self.formLayout = QFormLayout(self.scrollAreaWidgetContents)
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 546, 589))
+        self.verticalLayout_3 = QVBoxLayout(self.scrollAreaWidgetContents)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.widgetBinningOptions = QWidget(self.scrollAreaWidgetContents)
+        self.widgetBinningOptions.setObjectName(u"widgetBinningOptions")
+        self.formLayout = QFormLayout(self.widgetBinningOptions)
         self.formLayout.setObjectName(u"formLayout")
-        self.groupingModeLabel = QLabel(self.scrollAreaWidgetContents)
-        self.groupingModeLabel.setObjectName(u"groupingModeLabel")
-
-        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.groupingModeLabel)
-
-        self.groupingModeComboBox = QComboBox(self.scrollAreaWidgetContents)
-        self.groupingModeComboBox.setObjectName(u"groupingModeComboBox")
-
-        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.groupingModeComboBox)
-
-        self.applyBinningLabel = QLabel(self.scrollAreaWidgetContents)
+        self.applyBinningLabel = QLabel(self.widgetBinningOptions)
         self.applyBinningLabel.setObjectName(u"applyBinningLabel")
 
-        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.applyBinningLabel)
+        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.applyBinningLabel)
 
-        self.applyBinningCheckBox = QCheckBox(self.scrollAreaWidgetContents)
+        self.applyBinningCheckBox = QCheckBox(self.widgetBinningOptions)
         self.applyBinningCheckBox.setObjectName(u"applyBinningCheckBox")
 
-        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.applyBinningCheckBox)
+        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.applyBinningCheckBox)
 
-        self.unitLabel = QLabel(self.scrollAreaWidgetContents)
-        self.unitLabel.setObjectName(u"unitLabel")
+        self.binningModeLabel = QLabel(self.widgetBinningOptions)
+        self.binningModeLabel.setObjectName(u"binningModeLabel")
 
-        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.unitLabel)
+        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.binningModeLabel)
 
-        self.unitComboBox = QComboBox(self.scrollAreaWidgetContents)
-        self.unitComboBox.setObjectName(u"unitComboBox")
+        self.binningModeComboBox = QComboBox(self.widgetBinningOptions)
+        self.binningModeComboBox.setObjectName(u"binningModeComboBox")
 
-        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.unitComboBox)
+        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.binningModeComboBox)
 
-        self.deltaLabel = QLabel(self.scrollAreaWidgetContents)
-        self.deltaLabel.setObjectName(u"deltaLabel")
+        self.binningOperationLabel = QLabel(self.widgetBinningOptions)
+        self.binningOperationLabel.setObjectName(u"binningOperationLabel")
 
-        self.formLayout.setWidget(3, QFormLayout.LabelRole, self.deltaLabel)
+        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.binningOperationLabel)
 
-        self.deltaSpinBox = QSpinBox(self.scrollAreaWidgetContents)
-        self.deltaSpinBox.setObjectName(u"deltaSpinBox")
+        self.binningOperationComboBox = QComboBox(self.widgetBinningOptions)
+        self.binningOperationComboBox.setObjectName(u"binningOperationComboBox")
 
-        self.formLayout.setWidget(3, QFormLayout.FieldRole, self.deltaSpinBox)
+        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.binningOperationComboBox)
 
-        self.operationLabel = QLabel(self.scrollAreaWidgetContents)
-        self.operationLabel.setObjectName(u"operationLabel")
 
-        self.formLayout.setWidget(4, QFormLayout.LabelRole, self.operationLabel)
+        self.verticalLayout_3.addWidget(self.widgetBinningOptions)
 
-        self.operationComboBox = QComboBox(self.scrollAreaWidgetContents)
-        self.operationComboBox.setObjectName(u"operationComboBox")
+        self.widgetTimeIntervalSettings = TimeIntervalsSettingsWidget(self.scrollAreaWidgetContents)
+        self.widgetTimeIntervalSettings.setObjectName(u"widgetTimeIntervalSettings")
+        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.widgetTimeIntervalSettings.sizePolicy().hasHeightForWidth())
+        self.widgetTimeIntervalSettings.setSizePolicy(sizePolicy)
 
-        self.formLayout.setWidget(4, QFormLayout.FieldRole, self.operationComboBox)
+        self.verticalLayout_3.addWidget(self.widgetTimeIntervalSettings)
+
+        self.widgetTimeCyclesSettings = TimeCyclesSettingsWidget(self.scrollAreaWidgetContents)
+        self.widgetTimeCyclesSettings.setObjectName(u"widgetTimeCyclesSettings")
+        sizePolicy.setHeightForWidth(self.widgetTimeCyclesSettings.sizePolicy().hasHeightForWidth())
+        self.widgetTimeCyclesSettings.setSizePolicy(sizePolicy)
+
+        self.verticalLayout_3.addWidget(self.widgetTimeCyclesSettings)
+
+        self.widgetTimePhasesSettings = TimePhasesSettingsWidget(self.scrollAreaWidgetContents)
+        self.widgetTimePhasesSettings.setObjectName(u"widgetTimePhasesSettings")
+        sizePolicy.setHeightForWidth(self.widgetTimePhasesSettings.sizePolicy().hasHeightForWidth())
+        self.widgetTimePhasesSettings.setSizePolicy(sizePolicy)
+
+        self.verticalLayout_3.addWidget(self.widgetTimePhasesSettings)
 
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
 
-        self.verticalLayout.addWidget(self.scrollArea)
+        self.verticalLayout_2.addWidget(self.scrollArea)
 
 
         self.retranslateUi(BinningSettingsWidget)
@@ -97,10 +113,8 @@ class Ui_BinningSettingsWidget(object):
 
     def retranslateUi(self, BinningSettingsWidget):
         BinningSettingsWidget.setWindowTitle(QCoreApplication.translate("BinningSettingsWidget", u"Form", None))
-        self.groupingModeLabel.setText(QCoreApplication.translate("BinningSettingsWidget", u"Grouping Mode", None))
         self.applyBinningLabel.setText(QCoreApplication.translate("BinningSettingsWidget", u"Apply Binning", None))
-        self.unitLabel.setText(QCoreApplication.translate("BinningSettingsWidget", u"Unit", None))
-        self.deltaLabel.setText(QCoreApplication.translate("BinningSettingsWidget", u"Delta", None))
-        self.operationLabel.setText(QCoreApplication.translate("BinningSettingsWidget", u"Operation", None))
+        self.binningModeLabel.setText(QCoreApplication.translate("BinningSettingsWidget", u"Binning Mode", None))
+        self.binningOperationLabel.setText(QCoreApplication.translate("BinningSettingsWidget", u"Binning Operation", None))
     # retranslateUi
 

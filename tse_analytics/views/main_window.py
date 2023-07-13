@@ -5,7 +5,7 @@ import PySide6QtAds
 import psutil
 from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtGui import QIcon, QAction, QCloseEvent
-from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow
+from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QComboBox
 
 from tse_analytics.core.helper import LAYOUT_VERSION
 from tse_analytics.core.manager import Manager
@@ -30,7 +30,7 @@ from tse_analytics.views.selection.factors.factors_widget import FactorsWidget
 from tse_analytics.views.selection.variables.variables_widget import VariablesWidget
 from tse_analytics.views.settings.binning_settings_widget import BinningSettingsWidget
 from tse_analytics.views.settings.outliers_settings_widget import OutliersSettingsWidget
-from tse_analytics.views.settings.time_settings_widget import TimeSettingsWidget
+from tse_datatools.analysis.grouping_mode import GroupingMode
 
 PySide6QtAds.CDockManager.setConfigFlags(PySide6QtAds.CDockManager.DefaultNonOpaqueConfig)
 PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.ActiveTabHasCloseButton, False)
@@ -60,6 +60,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.statusBar.addPermanentWidget(self.memory_usage_label)
 
         self.menuOpenRecent.aboutToShow.connect(self.populate_open_recent)
+
+        self.toolBar.addWidget(QLabel("Grouping Mode: "))
+        grouping_mode_combo_box = QComboBox()
+        grouping_mode_combo_box.addItems([e.value for e in GroupingMode])
+        grouping_mode_combo_box.currentTextChanged.connect(self.__grouping_mode_changed)
+        self.toolBar.addWidget(grouping_mode_combo_box)
 
         # Create the dock manager. Because the parent parameter is a QMainWindow
         # the dock manager registers itself as the central widget.
@@ -168,11 +174,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area
         )
 
-        time_setings_dock_widget = PySide6QtAds.CDockWidget("Time settings")
-        time_setings_dock_widget.setWidget(TimeSettingsWidget())
-        time_setings_dock_widget.setIcon(QIcon(":/icons/icons8-clock-16.png"))
-        self.dock_manager.addDockWidgetTabToArea(time_setings_dock_widget, settings_dock_area)
-
         outliers_dock_widget = PySide6QtAds.CDockWidget("Outliers")
         outliers_dock_widget.setWidget(OutliersSettingsWidget())
         outliers_dock_widget.setIcon(QIcon(":/icons/icons8-outliers-16.png"))
@@ -267,13 +268,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             Manager.data.export_to_excel(dialog.selectedFiles()[0])
 
     def export_csv_dialog(self):
-        file_ext = "*.csv"
         dialog = QFileDialog(self)
         dialog.setDefaultSuffix(".csv")
-        dialog.setAcceptMode(QFileDialog.AcceptSave)
+        dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
         dialog.setWindowTitle("Export to CSV")
-        dialog.setNameFilter("CSV Files ({})".format(file_ext))
-        if dialog.exec() == QDialog.Accepted:
+        dialog.setNameFilter("CSV Files (*.csv)")
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             Manager.data.export_to_csv(dialog.selectedFiles()[0])
 
     def update_memory_usage(self):
@@ -283,6 +283,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __reset_layout(self):
         self.dock_manager.restoreState(self.default_docking_state, LAYOUT_VERSION)
+
+    def __grouping_mode_changed(self, text: str):
+        Manager.data.set_grouping_mode(GroupingMode(text))
 
     def import_dataset_dialog(self):
         options = QFileDialog.Options()

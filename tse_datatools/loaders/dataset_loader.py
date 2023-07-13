@@ -26,10 +26,7 @@ class DatasetLoader:
 
     @staticmethod
     def __get_header_section(lines: list[str]):
-        section = [
-            lines[0],
-            lines[1]
-        ]
+        section = [lines[0], lines[1]]
         return Section(section, 0, 1)
 
     @staticmethod
@@ -47,7 +44,7 @@ class DatasetLoader:
     def __get_sample_interval_section(lines: list[str], start_index: int):
         line = lines[start_index]
         if "Sample Interval;" in line:
-            return Section([line], start_index, start_index+1)
+            return Section([line], start_index, start_index + 1)
         else:
             return None
 
@@ -77,9 +74,18 @@ class DatasetLoader:
 
         header_section = DatasetLoader.__get_header_section(lines)
         animal_section = DatasetLoader.__get_animal_section(lines, header_section.section_end_index + 1)
-        sample_interval_section = DatasetLoader.__get_sample_interval_section(lines, animal_section.section_end_index + 1)
-        group_section = DatasetLoader.__get_group_section(lines, sample_interval_section.section_end_index + 1) if sample_interval_section is not None else None
-        data_section = DatasetLoader.__get_data_section(lines, group_section.section_end_index + 1 if group_section is not None else animal_section.section_end_index + 1)
+        sample_interval_section = DatasetLoader.__get_sample_interval_section(
+            lines, animal_section.section_end_index + 1
+        )
+        group_section = (
+            DatasetLoader.__get_group_section(lines, sample_interval_section.section_end_index + 1)
+            if sample_interval_section is not None
+            else None
+        )
+        data_section = DatasetLoader.__get_data_section(
+            lines,
+            group_section.section_end_index + 1 if group_section is not None else animal_section.section_end_index + 1,
+        )
 
         boxes: dict[int, Box] = {}
         animals: dict[int, Animal] = {}
@@ -130,10 +136,12 @@ class DatasetLoader:
         df.rename(columns={"Date_Time": "DateTime", "Animal No.": "Animal"}, inplace=True)
 
         # Apply categorical types
-        df = df.astype({
-            "Animal": "category",
-            "Box": "category",
-        })
+        df = df.astype(
+            {
+                "Animal": "category",
+                "Box": "category",
+            }
+        )
 
         timedelta = df["DateTime"][1] - df["DateTime"][0]
 
@@ -160,10 +168,12 @@ class DatasetLoader:
         df.insert(loc=5, column="Run", value=1)
 
         # convert categorical types
-        df = df.astype({
-            "Bin": "category",
-            "Run": "category",
-        })
+        df = df.astype(
+            {
+                "Bin": "category",
+                "Run": "category",
+            }
+        )
 
         # Sort variables by name
         variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))

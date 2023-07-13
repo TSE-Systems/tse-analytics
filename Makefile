@@ -41,7 +41,9 @@ build_ui:
 	pyside6-uic tse_analytics/views/selection/variables/variables_widget.ui -o tse_analytics/views/selection/variables/variables_widget_ui.py
 	pyside6-uic tse_analytics/views/data/data_table_widget.ui -o tse_analytics/views/data/data_table_widget_ui.py
 	pyside6-uic tse_analytics/views/data/data_plot_widget.ui -o tse_analytics/views/data/data_plot_widget_ui.py
-	pyside6-uic tse_analytics/views/settings/time_settings_widget.ui -o tse_analytics/views/settings/time_settings_widget_ui.py
+	pyside6-uic tse_analytics/views/settings/time_intervals_settings_widget.ui -o tse_analytics/views/settings/time_intervals_settings_widget_ui.py
+	pyside6-uic tse_analytics/views/settings/time_cycles_settings_widget.ui -o tse_analytics/views/settings/time_cycles_settings_widget_ui.py
+	pyside6-uic tse_analytics/views/settings/time_phases_settings_widget.ui -o tse_analytics/views/settings/time_phases_settings_widget_ui.py
 	pyside6-uic tse_analytics/views/settings/outliers_settings_widget.ui -o tse_analytics/views/settings/outliers_settings_widget_ui.py
 	pyside6-uic tse_analytics/views/settings/binning_settings_widget.ui -o tse_analytics/views/settings/binning_settings_widget_ui.py
 	pyside6-uic tse_analytics/views/analysis/histogram_widget.ui -o tse_analytics/views/analysis/histogram_widget_ui.py

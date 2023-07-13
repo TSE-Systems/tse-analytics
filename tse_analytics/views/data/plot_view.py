@@ -32,13 +32,13 @@ class PlotView(pg.GraphicsLayoutWidget):
         # customize the averaged curve that can be activated from the context menu:
         self.p1.avgPen = pg.mkPen("#FFFFFF")
         self.p1.avgShadowPen = pg.mkPen("#8080DD", width=10)
-        # self.p1.setAxisItems({'bottom': pg.DateAxisItem()})
+        self.p1.setAxisItems({'bottom': pg.DateAxisItem()})
         self.p1.showGrid(x=True, y=True)
 
         self.legend = self.p1.addLegend((10, 10))
 
         self.p2: pg.PlotItem = self.addPlot(row=1, col=0)
-        # self.p2.setAxisItems({'bottom': pg.DateAxisItem()})
+        self.p2.setAxisItems({'bottom': pg.DateAxisItem()})
         self.p2.showGrid(x=True, y=True)
 
         self.region = pg.LinearRegionItem()
@@ -123,9 +123,10 @@ class PlotView(pg.GraphicsLayoutWidget):
             for i, animal in enumerate(animals):
                 filtered_data = self._df[self._df["Animal"] == animal.id]
 
-                # x = filtered_data["DateTime"]
-                # x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
-                x = filtered_data["Bin"].to_numpy()
+                x = filtered_data["DateTime"]
+                x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
+                x = x.to_numpy()
+                # x = filtered_data["Bin"].to_numpy()
                 y = filtered_data[self._variable].to_numpy()
 
                 pen = mkPen(color=(i, len(animals)), width=1)
@@ -150,9 +151,10 @@ class PlotView(pg.GraphicsLayoutWidget):
                 factor_name = Manager.data.selected_factor.name
                 filtered_data = self._df[self._df[factor_name] == group.name]
 
-                # x = filtered_data["DateTime"]
-                # x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
-                x = filtered_data["Bin"].to_numpy()
+                x = filtered_data["DateTime"]
+                x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
+                x = x.to_numpy()
+                # x = filtered_data["Bin"].to_numpy()
                 y = filtered_data[self._variable].to_numpy()
 
                 # pen = (i, len(Manager.data.selected_groups))
@@ -177,9 +179,10 @@ class PlotView(pg.GraphicsLayoutWidget):
             for i, run in enumerate(runs):
                 filtered_data = self._df[self._df["Run"] == run]
 
-                # x = filtered_data["DateTime"]
-                # x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
-                x = filtered_data["Bin"].to_numpy()
+                x = filtered_data["DateTime"]
+                x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
+                x = x.to_numpy()
+                # x = filtered_data["Bin"].to_numpy()
                 y = filtered_data[self._variable].to_numpy()
 
                 pen = mkPen(color=(i, len(runs)), width=1)

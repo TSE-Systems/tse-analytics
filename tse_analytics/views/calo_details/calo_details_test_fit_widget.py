@@ -1,7 +1,8 @@
 from typing import Optional
 
 import pandas as pd
-from PySide6.QtWidgets import QWidget
+from PySide6.QtGui import QAction
+from PySide6.QtWidgets import QWidget, QFileDialog, QDialog
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 
 from tse_datatools.calo_details.calo_details_processor import curve_fitting_func, calculate_fit_v2
@@ -18,6 +19,13 @@ class CaloDetailsTestFitWidget(QWidget):
 
         self.ui.toolButtonFit.clicked.connect(self.__test_fit)
 
+        action = QAction("O2", self)
+        action.triggered.connect(self.__export_o2)
+        self.ui.toolButtonExport.addAction(action)
+        action = QAction("CO2", self)
+        action.triggered.connect(self.__export_co2)
+        self.ui.toolButtonExport.addAction(action)
+
         self.ui.horizontalLayout.insertWidget(
             self.ui.horizontalLayout.count() - 1, NavigationToolbar2QT(self.ui.canvas, self)
         )
@@ -27,6 +35,35 @@ class CaloDetailsTestFitWidget(QWidget):
 
     def set_data(self, df: pd.DataFrame):
         self.df = df
+
+    def __export_o2(self):
+        self.__export_test_bin("O2")
+
+    def __export_co2(self):
+        self.__export_test_bin("CO2")
+
+    def __export_test_bin(self, gas_name: str):
+        if self.df is None:
+            return
+
+        calo_details_settings = self.settings_widget.get_calo_details_settings()
+
+        training_data = (
+            self.df.iloc[calo_details_settings.o2_settings.start_offset : calo_details_settings.o2_settings.end_offset]
+            if gas_name == "O2"
+            else self.df.iloc[
+                calo_details_settings.co2_settings.start_offset : calo_details_settings.co2_settings.end_offset
+            ]
+        )
+        training_data = training_data[["Offset", gas_name]]
+
+        dialog = QFileDialog(self)
+        dialog.setDefaultSuffix(".csv")
+        dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+        dialog.setWindowTitle("Export to CSV")
+        dialog.setNameFilter("CSV Files (*.csv)")
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            training_data.to_csv(dialog.selectedFiles()[0], sep=";", index=False, header=False)
 
     def __test_fit(self):
         if self.df is None:

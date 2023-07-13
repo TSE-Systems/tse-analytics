@@ -4,11 +4,11 @@ import numpy as np
 import pandas as pd
 
 from tse_datatools.data.animal import Animal
+from tse_datatools.data.binning_settings import BinningSettings
 from tse_datatools.data.box import Box
 from tse_datatools.data.calo_details import CaloDetails
 from tse_datatools.data.factor import Factor
 from tse_datatools.data.group import Group
-from tse_datatools.data.time_phase import TimePhase
 from tse_datatools.data.variable import Variable
 
 
@@ -38,7 +38,7 @@ class Dataset:
         self.sampling_interval = sampling_interval
 
         self.factors: dict[str, Factor] = {}
-        self.time_phases: list[TimePhase] = []
+        self.binning_settings = BinningSettings()
 
         self.calo_details: Optional[CaloDetails] = None
 
@@ -103,29 +103,8 @@ class Dataset:
 
         self.active_df = df
 
-    def set_time_phases(self, time_phases: list[TimePhase]):
-        if len(time_phases) == 0:
-            if "Phase" in self.active_df.columns:
-                self.active_df = self.active_df.drop(columns=["Phase"])
-            return
-
-        time_phases.sort(key=lambda x: x.start_timestamp)
-
-        self.time_phases = time_phases
-
-        # TODO: should be copy?
-        df = self.active_df.copy()
-        df["Phase"] = np.NaN
-
-        for phase in self.time_phases:
-            df.loc[df["DateTime"] >= phase.start_timestamp, "Phase"] = phase.name
-
-        df["Phase"] = df["Phase"].astype("category")
-        self.active_df = df
-
     def refresh_active_df(self):
         self.set_factors(self.factors)
-        self.set_time_phases(self.time_phases)
 
     def __getstate__(self):
         state = self.__dict__.copy()
@@ -134,9 +113,4 @@ class Dataset:
 
     def __setstate__(self, state):
         self.__dict__.update(state)
-
-        # New fields checks
-        if not hasattr(self, "time_phases"):
-            self.time_phases = []
-
         self.refresh_active_df()
