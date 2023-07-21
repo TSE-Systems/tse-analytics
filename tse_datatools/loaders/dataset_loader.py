@@ -193,8 +193,7 @@ class DatasetLoader:
             "Sampling Interval": str(timedelta),
         }
 
-        dataset = Dataset(name, str(path), meta, boxes, animals, variables, df, timedelta)
-        return dataset
+        return Dataset(name, str(path), meta, boxes, animals, variables, df, timedelta)
 
 
 if __name__ == "__main__":

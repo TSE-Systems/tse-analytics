@@ -1,25 +1,21 @@
-import datetime
 from typing import Optional, Union
 
 import pandas as pd
 import pyqtgraph as pg
-from pyqtgraph import mkPen
 from PySide6.QtWidgets import QWidget
+from pyqtgraph import mkPen
 
 from tse_analytics.core.manager import Manager
 from tse_datatools.analysis.grouping_mode import GroupingMode
 
 
-class PlotView(pg.GraphicsLayoutWidget):
+class TimelinePlotView(pg.GraphicsLayoutWidget):
     def __init__(self, parent: QWidget, title="Plot"):
         super().__init__(parent, title=title)
 
         self._df: Optional[pd.DataFrame] = None
         self._variable: str = ""
         self._display_errors = False
-
-        self._start_datetime = None
-        self._timedelta = None
 
         # Set layout proportions
         self.ci.layout.setRowStretchFactor(0, 2)
@@ -93,9 +89,10 @@ class PlotView(pg.GraphicsLayoutWidget):
         self._df = df
         self.__update_plot()
 
-    def set_variable(self, variable: str):
+    def set_variable(self, variable: str, update: bool):
         self._variable = variable
-        self.__update_plot()
+        if update:
+            self.__update_plot()
 
     def set_display_errors(self, state: bool):
         self._display_errors = state
@@ -198,10 +195,6 @@ class PlotView(pg.GraphicsLayoutWidget):
         self.region.setClipItem(p2d)
         if len(x) > 0:
             self.region.setRegion([x.min(), x.max()])
-            self._start_datetime = datetime.datetime.fromtimestamp(x[0])
-            self._timedelta = pd.Timedelta(
-                datetime.datetime.fromtimestamp(x[1]) - datetime.datetime.fromtimestamp(x[0])
-            )
 
         self.update()
 
@@ -213,5 +206,4 @@ class PlotView(pg.GraphicsLayoutWidget):
 
         self._df = None
         self._variable = None
-        self._start_datetime = None
-        self._timedelta = None
+        self._display_errors = False

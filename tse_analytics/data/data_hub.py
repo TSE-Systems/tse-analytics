@@ -1,5 +1,4 @@
 import gc
-import timeit
 from typing import Optional
 
 import numpy as np
@@ -118,7 +117,6 @@ class DataHub:
         self, calo_details: CaloDetails, fitting_results: dict[int, CaloDetailsFittingResult]
     ) -> None:
         if calo_details is not None and len(fitting_results) > 0:
-            tic = timeit.default_timer()
             dataset = calo_details.dataset
             active_df = dataset.original_df
             active_df["O2-p"] = np.NaN
@@ -176,6 +174,11 @@ class DataHub:
             operator = AnimalFilterPipeOperator(self.selected_animals)
             result = operator.process(result)
 
+        # STD operator
+        if calculate_error and self.selected_variable != "":
+            operator = STDPipeOperator(self.selected_variable)
+            result = operator.process(result)
+
         # Binning
         if self.binning_params.apply:
             match self.binning_params.mode:
@@ -209,10 +212,5 @@ class DataHub:
 
         # TODO: should or should not?
         # result = result.dropna()
-
-        # STD operator
-        if calculate_error and self.selected_variable != "":
-            operator = STDPipeOperator(self.selected_variable)
-            result = operator.process(result)
 
         return result

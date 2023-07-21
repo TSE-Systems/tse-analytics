@@ -41,11 +41,11 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
         timedelta = pd.Timedelta(f"{self.settings.delta}{unit}")
 
         match self.grouping_mode:
+            case GroupingMode.ANIMALS:
+                result = df.groupby(["Animal", "Box", "Run"] + self.factor_names).resample(timedelta, on="DateTime", origin="start")
             case GroupingMode.FACTORS:
                 if self.selected_factor is not None:
                     result = df.groupby([self.selected_factor.name, "Run"]).resample(timedelta, on="DateTime", origin="start")
-            case GroupingMode.ANIMALS:
-                result = df.groupby(["Animal", "Box", "Run"] + self.factor_names).resample(timedelta, on="DateTime", origin="start")
             case GroupingMode.RUNS:
                 result = df.groupby(["Run"]).resample(timedelta, on="DateTime", origin="start")
 
@@ -54,15 +54,15 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
                 result = result.mean(numeric_only=True)
             case BinningOperation.MEDIAN:
                 result = result.median(numeric_only=True)
-            case _:
+            case BinningOperation.SUM:
                 result = result.sum(numeric_only=True)
 
         match self.grouping_mode:
+            case GroupingMode.ANIMALS:
+                result.sort_values(by=["DateTime", "Box"], inplace=True)
             case GroupingMode.FACTORS:
                 if self.selected_factor is not None:
                     result.sort_values(by=["DateTime", self.selected_factor.name], inplace=True)
-            case GroupingMode.ANIMALS:
-                result.sort_values(by=["DateTime", "Box"], inplace=True)
             case GroupingMode.RUNS:
                 result.sort_values(by=["DateTime", "Run"], inplace=True)
 
