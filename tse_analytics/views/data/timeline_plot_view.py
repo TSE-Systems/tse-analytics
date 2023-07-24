@@ -1,25 +1,21 @@
-import datetime
 from typing import Optional, Union
 
 import pandas as pd
 import pyqtgraph as pg
-from pyqtgraph import mkPen
 from PySide6.QtWidgets import QWidget
+from pyqtgraph import mkPen
 
 from tse_analytics.core.manager import Manager
 from tse_datatools.analysis.grouping_mode import GroupingMode
 
 
-class PlotView(pg.GraphicsLayoutWidget):
+class TimelinePlotView(pg.GraphicsLayoutWidget):
     def __init__(self, parent: QWidget, title="Plot"):
         super().__init__(parent, title=title)
 
         self._df: Optional[pd.DataFrame] = None
         self._variable: str = ""
         self._display_errors = False
-
-        self._start_datetime = None
-        self._timedelta = None
 
         # Set layout proportions
         self.ci.layout.setRowStretchFactor(0, 2)
@@ -32,13 +28,13 @@ class PlotView(pg.GraphicsLayoutWidget):
         # customize the averaged curve that can be activated from the context menu:
         self.p1.avgPen = pg.mkPen("#FFFFFF")
         self.p1.avgShadowPen = pg.mkPen("#8080DD", width=10)
-        # self.p1.setAxisItems({'bottom': pg.DateAxisItem()})
+        self.p1.setAxisItems({'bottom': pg.DateAxisItem()})
         self.p1.showGrid(x=True, y=True)
 
         self.legend = self.p1.addLegend((10, 10))
 
         self.p2: pg.PlotItem = self.addPlot(row=1, col=0)
-        # self.p2.setAxisItems({'bottom': pg.DateAxisItem()})
+        self.p2.setAxisItems({'bottom': pg.DateAxisItem()})
         self.p2.showGrid(x=True, y=True)
 
         self.region = pg.LinearRegionItem()
@@ -93,9 +89,10 @@ class PlotView(pg.GraphicsLayoutWidget):
         self._df = df
         self.__update_plot()
 
-    def set_variable(self, variable: str):
+    def set_variable(self, variable: str, update: bool):
         self._variable = variable
-        self.__update_plot()
+        if update:
+            self.__update_plot()
 
     def set_display_errors(self, state: bool):
         self._display_errors = state
@@ -123,9 +120,10 @@ class PlotView(pg.GraphicsLayoutWidget):
             for i, animal in enumerate(animals):
                 filtered_data = self._df[self._df["Animal"] == animal.id]
 
-                # x = filtered_data["DateTime"]
-                # x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
-                x = filtered_data["Bin"].to_numpy()
+                x = filtered_data["DateTime"]
+                x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
+                x = x.to_numpy()
+                # x = filtered_data["Bin"].to_numpy()
                 y = filtered_data[self._variable].to_numpy()
 
                 pen = mkPen(color=(i, len(animals)), width=1)
@@ -150,9 +148,10 @@ class PlotView(pg.GraphicsLayoutWidget):
                 factor_name = Manager.data.selected_factor.name
                 filtered_data = self._df[self._df[factor_name] == group.name]
 
-                # x = filtered_data["DateTime"]
-                # x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
-                x = filtered_data["Bin"].to_numpy()
+                x = filtered_data["DateTime"]
+                x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
+                x = x.to_numpy()
+                # x = filtered_data["Bin"].to_numpy()
                 y = filtered_data[self._variable].to_numpy()
 
                 # pen = (i, len(Manager.data.selected_groups))
@@ -177,9 +176,10 @@ class PlotView(pg.GraphicsLayoutWidget):
             for i, run in enumerate(runs):
                 filtered_data = self._df[self._df["Run"] == run]
 
-                # x = filtered_data["DateTime"]
-                # x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
-                x = filtered_data["Bin"].to_numpy()
+                x = filtered_data["DateTime"]
+                x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
+                x = x.to_numpy()
+                # x = filtered_data["Bin"].to_numpy()
                 y = filtered_data[self._variable].to_numpy()
 
                 pen = mkPen(color=(i, len(runs)), width=1)
@@ -195,10 +195,6 @@ class PlotView(pg.GraphicsLayoutWidget):
         self.region.setClipItem(p2d)
         if len(x) > 0:
             self.region.setRegion([x.min(), x.max()])
-            self._start_datetime = datetime.datetime.fromtimestamp(x[0])
-            self._timedelta = pd.Timedelta(
-                datetime.datetime.fromtimestamp(x[1]) - datetime.datetime.fromtimestamp(x[0])
-            )
 
         self.update()
 
@@ -210,5 +206,4 @@ class PlotView(pg.GraphicsLayoutWidget):
 
         self._df = None
         self._variable = None
-        self._start_datetime = None
-        self._timedelta = None
+        self._display_errors = False

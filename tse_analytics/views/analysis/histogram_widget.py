@@ -23,7 +23,9 @@ class HistogramWidget(QWidget, MessengerListener):
         self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
 
-        self.ui.horizontalLayout.insertWidget(self.ui.horizontalLayout.count()-2, NavigationToolbar2QT(self.ui.canvas, self))
+        self.ui.horizontalLayout.insertWidget(
+            self.ui.horizontalLayout.count() - 2, NavigationToolbar2QT(self.ui.canvas, self)
+        )
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)

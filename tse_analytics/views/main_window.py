@@ -4,9 +4,10 @@ from functools import partial
 import PySide6QtAds
 import psutil
 from PySide6.QtCore import QSettings, Qt, QTimer
-from PySide6.QtGui import QIcon, QAction
-from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow
+from PySide6.QtGui import QIcon, QAction, QCloseEvent
+from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QComboBox
 
+from tse_analytics.core.helper import LAYOUT_VERSION
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.analysis.ancova_widget import AncovaWidget
 from tse_analytics.views.analysis.anova_widget import AnovaWidget
@@ -14,22 +15,22 @@ from tse_analytics.views.analysis.correlation_widget import CorrelationWidget
 from tse_analytics.views.analysis.distribution_widget import DistributionWidget
 from tse_analytics.views.analysis.glm_widget import GlmWidget
 from tse_analytics.views.analysis.histogram_widget import HistogramWidget
+from tse_analytics.views.analysis.matrix_widget import MatrixWidget
 from tse_analytics.views.analysis.normality_widget import NormalityWidget
 from tse_analytics.views.analysis.pca_widget import PcaWidget
-from tse_analytics.views.analysis.matrix_widget import MatrixWidget
 from tse_analytics.views.data.data_plot_widget import DataPlotWidget
 from tse_analytics.views.data.data_table_widget import DataTableWidget
 from tse_analytics.views.datasets.datasets_tree_view import DatasetsTreeView
 from tse_analytics.views.help.help_widget import HelpWidget
 from tse_analytics.views.info.info_widget import InfoWidget
+from tse_analytics.views.log_widget import LogWidget
 from tse_analytics.views.main_window_ui import Ui_MainWindow
 from tse_analytics.views.selection.animals.animals_widget import AnimalsWidget
 from tse_analytics.views.selection.factors.factors_widget import FactorsWidget
 from tse_analytics.views.selection.variables.variables_widget import VariablesWidget
 from tse_analytics.views.settings.binning_settings_widget import BinningSettingsWidget
 from tse_analytics.views.settings.outliers_settings_widget import OutliersSettingsWidget
-from tse_analytics.views.settings.time_settings_widget import TimeSettingsWidget
-from tse_analytics.workspace.layout import LAYOUT_VERSION
+from tse_datatools.analysis.grouping_mode import GroupingMode
 
 PySide6QtAds.CDockManager.setConfigFlags(PySide6QtAds.CDockManager.DefaultNonOpaqueConfig)
 PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.ActiveTabHasCloseButton, False)
@@ -59,6 +60,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.statusBar.addPermanentWidget(self.memory_usage_label)
 
         self.menuOpenRecent.aboutToShow.connect(self.populate_open_recent)
+
+        self.toolBar.addWidget(QLabel("Grouping Mode: "))
+        grouping_mode_combo_box = QComboBox()
+        grouping_mode_combo_box.addItems([e.value for e in GroupingMode])
+        grouping_mode_combo_box.currentTextChanged.connect(self.__grouping_mode_changed)
+        self.toolBar.addWidget(grouping_mode_combo_box)
 
         # Create the dock manager. Because the parent parameter is a QMainWindow
         # the dock manager registers itself as the central widget.
@@ -138,6 +145,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         help_dock_widget.setIcon(QIcon(":/icons/icons8-help-16.png"))
         self.dock_manager.addDockWidgetTabToArea(help_dock_widget, info_dock_area)
 
+        log_dock_widget = PySide6QtAds.CDockWidget("Log")
+        log_dock_widget.setWidget(LogWidget())
+        log_dock_widget.setIcon(QIcon(":/icons/icons8-help-16.png"))
+        self.dock_manager.addDockWidgetTabToArea(log_dock_widget, info_dock_area)
+
         animals_dock_widget = PySide6QtAds.CDockWidget("Animals")
         animals_dock_widget.setWidget(AnimalsWidget())
         animals_dock_widget.setIcon(QIcon(":/icons/icons8-rat-silhouette-16.png"))
@@ -161,11 +173,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         settings_dock_area = self.dock_manager.addDockWidget(
             PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area
         )
-
-        time_setings_dock_widget = PySide6QtAds.CDockWidget("Time settings")
-        time_setings_dock_widget.setWidget(TimeSettingsWidget())
-        time_setings_dock_widget.setIcon(QIcon(":/icons/icons8-clock-16.png"))
-        self.dock_manager.addDockWidgetTabToArea(time_setings_dock_widget, settings_dock_area)
 
         outliers_dock_widget = PySide6QtAds.CDockWidget("Outliers")
         outliers_dock_widget.setWidget(OutliersSettingsWidget())
@@ -230,12 +237,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def load_workspace_dialog(self):
         options = QFileDialog.Options()
-        file_ext = "*.workspace"
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Load Workspace",
             "",
-            "Workspace Files ({})".format(file_ext),
+            "Workspace Files (*.workspace)",
             options=options,
         )
         if file_path:
@@ -262,13 +268,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             Manager.data.export_to_excel(dialog.selectedFiles()[0])
 
     def export_csv_dialog(self):
-        file_ext = "*.csv"
         dialog = QFileDialog(self)
         dialog.setDefaultSuffix(".csv")
-        dialog.setAcceptMode(QFileDialog.AcceptSave)
+        dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
         dialog.setWindowTitle("Export to CSV")
-        dialog.setNameFilter("CSV Files ({})".format(file_ext))
-        if dialog.exec() == QDialog.Accepted:
+        dialog.setNameFilter("CSV Files (*.csv)")
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             Manager.data.export_to_csv(dialog.selectedFiles()[0])
 
     def update_memory_usage(self):
@@ -276,29 +281,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         mem = self.process.memory_info()[0] / float(2**20)
         self.memory_usage_label.setText(f"Memory usage: {mem:.2f} Mb")
 
-    def import_dataset(self, path: str):
-        Manager.import_dataset(path)
-
     def __reset_layout(self):
         self.dock_manager.restoreState(self.default_docking_state, LAYOUT_VERSION)
 
+    def __grouping_mode_changed(self, text: str):
+        Manager.data.set_grouping_mode(GroupingMode(text))
+
     def import_dataset_dialog(self):
         options = QFileDialog.Options()
-        file_ext = "*.csv"
         path, _ = QFileDialog.getOpenFileName(
             self,
             "Import dataset",
             "",
-            "Dataset Files ({})".format(file_ext),
+            "Dataset Files (*.csv)",
             options=options,
         )
         if path:
-            self.import_dataset(path)
+            Manager.import_dataset(path)
 
     @property
     def okToQuit(self):
         return True
 
-    def closeEvent(self, event):
+    def closeEvent(self, event: QCloseEvent) -> None:
         if self.okToQuit:
             self.save_settings()

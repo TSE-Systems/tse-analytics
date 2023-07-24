@@ -1,8 +1,10 @@
+import logging
+
 from PySide6.QtCore import QModelIndex, QThreadPool
 
 from tse_analytics.data.data_hub import DataHub
 from tse_analytics.messaging.messenger import Messenger
-from tse_analytics.workspace.workspace_manager import WorkspaceManager
+from tse_analytics.models.workspace_model import WorkspaceModel
 from tse_datatools.data.dataset import Dataset
 from tse_datatools.helpers.dataset_merger import merge_datasets, MergingMode
 from tse_datatools.loaders.dataset_loader import DatasetLoader
@@ -10,12 +12,12 @@ from tse_datatools.loaders.dataset_loader import DatasetLoader
 
 class Manager:
     messenger = Messenger()
-    workspace = WorkspaceManager()
+    workspace = WorkspaceModel()
     data = DataHub(messenger)
     threadpool = QThreadPool()
 
     def __init__(self):
-        print(f"Multithreading with maximum {Manager.threadpool.maxThreadCount()} threads")
+        logging.info(f"Multithreading with maximum {Manager.threadpool.maxThreadCount()} threads")
 
     @classmethod
     def load_workspace(cls, path: str) -> None:
@@ -31,6 +33,10 @@ class Manager:
         dataset = DatasetLoader.load(path)
         if dataset is not None:
             cls.workspace.add_dataset(dataset)
+
+    @classmethod
+    def import_calo_details(cls, dataset_index: QModelIndex, path: str) -> None:
+        cls.workspace.add_calo_details(dataset_index, path)
 
     @classmethod
     def remove_dataset(cls, indexes: list[QModelIndex]) -> None:

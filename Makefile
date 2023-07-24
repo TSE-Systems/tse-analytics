@@ -40,8 +40,10 @@ build_ui:
 	pyside6-uic tse_analytics/views/selection/animals/animals_widget.ui -o tse_analytics/views/selection/animals/animals_widget_ui.py
 	pyside6-uic tse_analytics/views/selection/variables/variables_widget.ui -o tse_analytics/views/selection/variables/variables_widget_ui.py
 	pyside6-uic tse_analytics/views/data/data_table_widget.ui -o tse_analytics/views/data/data_table_widget_ui.py
-	pyside6-uic tse_analytics/views/data/data_plot_widget.ui -o tse_analytics/views/data/data_table_plot_ui.py
-	pyside6-uic tse_analytics/views/settings/time_settings_widget.ui -o tse_analytics/views/settings/time_settings_widget_ui.py
+	pyside6-uic tse_analytics/views/data/data_plot_widget.ui -o tse_analytics/views/data/data_plot_widget_ui.py
+	pyside6-uic tse_analytics/views/settings/time_intervals_settings_widget.ui -o tse_analytics/views/settings/time_intervals_settings_widget_ui.py
+	pyside6-uic tse_analytics/views/settings/time_cycles_settings_widget.ui -o tse_analytics/views/settings/time_cycles_settings_widget_ui.py
+	pyside6-uic tse_analytics/views/settings/time_phases_settings_widget.ui -o tse_analytics/views/settings/time_phases_settings_widget_ui.py
 	pyside6-uic tse_analytics/views/settings/outliers_settings_widget.ui -o tse_analytics/views/settings/outliers_settings_widget_ui.py
 	pyside6-uic tse_analytics/views/settings/binning_settings_widget.ui -o tse_analytics/views/settings/binning_settings_widget_ui.py
 	pyside6-uic tse_analytics/views/analysis/histogram_widget.ui -o tse_analytics/views/analysis/histogram_widget_ui.py
@@ -53,6 +55,12 @@ build_ui:
 	pyside6-uic tse_analytics/views/analysis/glm_widget.ui -o tse_analytics/views/analysis/glm_widget_ui.py
 	pyside6-uic tse_analytics/views/analysis/matrix_widget.ui -o tse_analytics/views/analysis/matrix_widget_ui.py
 	pyside6-uic tse_analytics/views/analysis/pca_widget.ui -o tse_analytics/views/analysis/pca_widget_ui.py
+	pyside6-uic tse_analytics/views/calo_details/calo_details_dialog.ui -o tse_analytics/views/calo_details/calo_details_dialog_ui.py
+	pyside6-uic tse_analytics/views/calo_details/calo_details_plot_widget.ui -o tse_analytics/views/calo_details/calo_details_plot_widget_ui.py
+	pyside6-uic tse_analytics/views/calo_details/calo_details_settings_widget.ui -o tse_analytics/views/calo_details/calo_details_settings_widget_ui.py
+	pyside6-uic tse_analytics/views/calo_details/calo_details_gas_settings_widget.ui -o tse_analytics/views/calo_details/calo_details_gas_settings_widget_ui.py
+	pyside6-uic tse_analytics/views/calo_details/calo_details_test_fit_widget.ui -o tse_analytics/views/calo_details/calo_details_test_fit_widget_ui.py
+	pyside6-uic tse_analytics/views/calo_details/calo_details_rer_widget.ui -o tse_analytics/views/calo_details/calo_details_rer_widget_ui.py
 
 build_resources:
 	pyside6-rcc resources/resources.qrc -o tse_analytics/resources_rc.py

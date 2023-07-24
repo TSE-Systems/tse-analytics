@@ -54,12 +54,8 @@ class TimePhasesModel(QAbstractTableModel):
         self.items.append(time_phase)
         # Trigger refresh.
         self.layoutChanged.emit()
-        Manager.data.selected_dataset.set_time_phases(self.items)
-        Manager.messenger.broadcast(DatasetChangedMessage(self, Manager.data.selected_dataset))
 
     def delete_time_phase(self, index):
         # Remove the item and refresh.
         del self.items[index.row()]
         self.layoutChanged.emit()
-        Manager.data.selected_dataset.set_time_phases(self.items)
-        Manager.messenger.broadcast(DatasetChangedMessage(self, Manager.data.selected_dataset))

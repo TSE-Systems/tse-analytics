@@ -78,9 +78,7 @@ class AnovaWidget(QWidget, MessengerListener):
         pt = pg.pairwise_tukey(dv=self.variable, between=factor_name, data=df)
         # self.webView.setHtml(pt.to_html())
 
-        tukey = pairwise_tukeyhsd(
-            endog=df[self.variable], groups=df[factor_name], alpha=0.05
-        )  # Significance level
+        tukey = pairwise_tukeyhsd(endog=df[self.variable], groups=df[factor_name], alpha=0.05)  # Significance level
 
         html_template = """
                 <html>
@@ -110,8 +108,7 @@ class AnovaWidget(QWidget, MessengerListener):
         self.ui.canvas.clear(False)
         ax = self.ui.canvas.figure.add_subplot(111)
         tukey.plot_simultaneous(
-            ax=ax,
-            figsize=self.ui.canvas.figure.get_size_inches()
+            ax=ax, figsize=self.ui.canvas.figure.get_size_inches()
         )  # Plot group confidence intervals
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()

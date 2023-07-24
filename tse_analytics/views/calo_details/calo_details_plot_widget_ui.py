@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'data_plot_widget.ui'
+## Form generated from reading UI file 'calo_details_plot_widget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.4.3
+## Created by: Qt User Interface Compiler version 6.5.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -16,40 +16,29 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QSizePolicy,
-    QSpacerItem, QToolButton, QVBoxLayout, QWidget)
+    QSpacerItem, QVBoxLayout, QWidget)
 
-from tse_analytics.views.data.plot_view import PlotView
+from tse_analytics.views.calo_details.calo_details_plot_view import CaloDetailsPlotView
 from tse_analytics.views.misc.variable_selector import VariableSelector
-import resources_rc
 
-class Ui_DataPlotWidget(object):
-    def setupUi(self, DataPlotWidget):
-        if not DataPlotWidget.objectName():
-            DataPlotWidget.setObjectName(u"DataPlotWidget")
-        DataPlotWidget.resize(538, 607)
-        self.verticalLayout = QVBoxLayout(DataPlotWidget)
+class Ui_CaloDetailsPlotWidget(object):
+    def setupUi(self, CaloDetailsPlotWidget):
+        if not CaloDetailsPlotWidget.objectName():
+            CaloDetailsPlotWidget.setObjectName(u"CaloDetailsPlotWidget")
+        CaloDetailsPlotWidget.resize(538, 607)
+        self.verticalLayout = QVBoxLayout(CaloDetailsPlotWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.label = QLabel(DataPlotWidget)
+        self.label = QLabel(CaloDetailsPlotWidget)
         self.label.setObjectName(u"label")
 
         self.horizontalLayout.addWidget(self.label)
 
-        self.variableSelector = VariableSelector(DataPlotWidget)
+        self.variableSelector = VariableSelector(CaloDetailsPlotWidget)
         self.variableSelector.setObjectName(u"variableSelector")
 
         self.horizontalLayout.addWidget(self.variableSelector)
-
-        self.toolButtonDisplayErrors = QToolButton(DataPlotWidget)
-        self.toolButtonDisplayErrors.setObjectName(u"toolButtonDisplayErrors")
-        icon = QIcon()
-        icon.addFile(u":/icons/icons8-sorting-16.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.toolButtonDisplayErrors.setIcon(icon)
-        self.toolButtonDisplayErrors.setCheckable(True)
-        self.toolButtonDisplayErrors.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-
-        self.horizontalLayout.addWidget(self.toolButtonDisplayErrors)
 
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
@@ -58,7 +47,7 @@ class Ui_DataPlotWidget(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout)
 
-        self.plotView = PlotView(DataPlotWidget)
+        self.plotView = CaloDetailsPlotView(CaloDetailsPlotWidget)
         self.plotView.setObjectName(u"plotView")
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -69,14 +58,13 @@ class Ui_DataPlotWidget(object):
         self.verticalLayout.addWidget(self.plotView)
 
 
-        self.retranslateUi(DataPlotWidget)
+        self.retranslateUi(CaloDetailsPlotWidget)
 
-        QMetaObject.connectSlotsByName(DataPlotWidget)
+        QMetaObject.connectSlotsByName(CaloDetailsPlotWidget)
     # setupUi
 
-    def retranslateUi(self, DataPlotWidget):
-        DataPlotWidget.setWindowTitle(QCoreApplication.translate("DataPlotWidget", u"Form", None))
-        self.label.setText(QCoreApplication.translate("DataPlotWidget", u"Variable:", None))
-        self.toolButtonDisplayErrors.setText(QCoreApplication.translate("DataPlotWidget", u"Display Errors", None))
+    def retranslateUi(self, CaloDetailsPlotWidget):
+        CaloDetailsPlotWidget.setWindowTitle(QCoreApplication.translate("CaloDetailsPlotWidget", u"Form", None))
+        self.label.setText(QCoreApplication.translate("CaloDetailsPlotWidget", u"Variable:", None))
     # retranslateUi
 

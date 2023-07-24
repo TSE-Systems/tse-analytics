@@ -20,8 +20,8 @@ class DatasetTreeItem(TreeItem):
 
     @property
     def foreground(self):
-        return QBrush(Qt.black)
+        return QBrush(Qt.GlobalColor.black)
 
     @property
     def tooltip(self):
-        return "DatasetTreeItem"
+        return self.dataset.name
