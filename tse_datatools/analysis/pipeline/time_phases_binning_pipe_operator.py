@@ -33,5 +33,37 @@ class TimePhasesBinningPipeOperator(PipeOperator):
             df.loc[df["DateTime"] >= phase.start_timestamp, "Bin"] = phase.name
 
         df["Bin"] = df["Bin"].astype("category")
+        df.drop(columns=["DateTime", "Timedelta"], inplace=True)
 
-        return df
+        result: Optional[pd.DataFrame] = None
+
+        match self.grouping_mode:
+            case GroupingMode.ANIMALS:
+                result = df.groupby(["Animal", "Box", "Run", "Bin"] + self.factor_names, observed=True)
+            case GroupingMode.FACTORS:
+                if self.selected_factor is not None:
+                    result = df.groupby([self.selected_factor.name, "Run", "Bin"], observed=True)
+            case GroupingMode.RUNS:
+                result = df.groupby(["Run", "Bin"], observed=True)
+
+        match self.binning_operation:
+            case BinningOperation.MEAN:
+                result = result.mean(numeric_only=True)
+            case BinningOperation.MEDIAN:
+                result = result.median(numeric_only=True)
+            case BinningOperation.SUM:
+                result = result.sum(numeric_only=True)
+
+        # match self.grouping_mode:
+        #     case GroupingMode.ANIMALS:
+        #         result.sort_values(by=["Bin", "Animal", "Box"], inplace=True)
+        #     case GroupingMode.FACTORS:
+        #         if self.selected_factor is not None:
+        #             result.sort_values(by=["Bin", self.selected_factor.name], inplace=True)
+        #     case GroupingMode.RUNS:
+        #         result.sort_values(by=["Bin", "Run"], inplace=True)
+
+        # the inverse of groupby, reset_index
+        result = result.reset_index()
+
+        return result

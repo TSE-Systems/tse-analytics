@@ -16,6 +16,7 @@ class BarPlotView(QWidget):
         super().__init__(parent)
 
         self.setLayout(QVBoxLayout(self))
+        self.layout().setContentsMargins(0, 0, 0, 0)
 
         self._df: Optional[pd.DataFrame] = None
         self._variable: str = ""
@@ -56,8 +57,11 @@ class BarPlotView(QWidget):
             plt.close(self.canvas.figure)
             del self.canvas
 
+        x_name = Manager.data.selected_factor.name if Manager.data.grouping_mode == GroupingMode.FACTORS else "Animal"
+        self._df[x_name] = self._df[x_name].cat.remove_unused_categories()
+
         faced_grid = sns.catplot(
-            x=Manager.data.selected_factor.name if Manager.data.grouping_mode == GroupingMode.FACTORS else "Animal",
+            x=x_name,
             y=self._variable,
             col="Bin",
             data=self._df,
