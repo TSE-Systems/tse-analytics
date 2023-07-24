@@ -35,6 +35,10 @@ class TimePhasesBinningPipeOperator(PipeOperator):
         df["Bin"] = df["Bin"].astype("category")
         df.drop(columns=["DateTime", "Timedelta"], inplace=True)
 
+        # Sort category names by time
+        categories = [item.name for item in self.settings.time_phases]
+        df["Bin"] = df["Bin"].cat.set_categories(categories, ordered=True)
+
         result: Optional[pd.DataFrame] = None
 
         match self.grouping_mode:
