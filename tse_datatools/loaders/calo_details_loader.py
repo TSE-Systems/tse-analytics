@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Optional
 
 import pandas as pd
-import numpy as np
 
 from tse_datatools.data.calo_details import CaloDetails
 from tse_datatools.data.dataset import Dataset

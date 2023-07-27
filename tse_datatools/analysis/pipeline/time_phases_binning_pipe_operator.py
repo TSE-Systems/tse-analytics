@@ -17,7 +17,7 @@ class TimePhasesBinningPipeOperator(PipeOperator):
         binning_operation: BinningOperation,
         grouping_mode: GroupingMode,
         factor_names: list[str],
-        selected_factor: Optional[Factor]
+        selected_factor: Optional[Factor],
     ):
         self.settings = settings
         self.binning_operation = binning_operation

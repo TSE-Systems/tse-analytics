@@ -11,7 +11,6 @@ from tse_datatools.analysis.grouping_mode import GroupingMode
 
 
 class BarPlotView(QWidget):
-
     def __init__(self, parent: QWidget):
         super().__init__(parent)
 
@@ -47,6 +46,7 @@ class BarPlotView(QWidget):
             self._df is None
             or self._variable == ""
             or (Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None)
+            or not Manager.data.binning_params.apply
         ):
             return
 
@@ -57,18 +57,13 @@ class BarPlotView(QWidget):
             plt.close(self.canvas.figure)
 
         if not self._df.empty:
-            x_name = Manager.data.selected_factor.name if Manager.data.grouping_mode == GroupingMode.FACTORS else "Animal"
+            x_name = (
+                Manager.data.selected_factor.name if Manager.data.grouping_mode == GroupingMode.FACTORS else "Animal"
+            )
 
             self._df[x_name] = self._df[x_name].cat.remove_unused_categories()
 
-            faced_grid = sns.catplot(
-                x=x_name,
-                y=self._variable,
-                col="Bin",
-                data=self._df,
-                kind="bar",
-                errorbar=None
-            )
+            faced_grid = sns.catplot(x=x_name, y=self._variable, col="Bin", data=self._df, kind="bar", errorbar=None)
             faced_grid.set_xticklabels(rotation=90)
             faced_grid.set_titles("{col_name}")
             self.canvas = FigureCanvasQTAgg(faced_grid.figure)

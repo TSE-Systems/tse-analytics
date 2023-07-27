@@ -133,7 +133,8 @@ class DatasetsTreeView(QTreeView):
                 Manager.data.set_selected_dataset(item.dataset)
 
     def _treeview_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
-        indexes = selected.indexes()
+        # indexes = selected.indexes()
+        pass
 
     def _treeview_double_clicked(self, index: QModelIndex):
         if index.isValid():

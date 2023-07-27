@@ -188,7 +188,7 @@ class DataHub:
                         self.binning_params.operation,
                         self.grouping_mode,
                         factor_names,
-                        self.selected_factor
+                        self.selected_factor,
                     )
                     result = operator.process(result)
                 case BinningMode.CYCLES:
@@ -197,7 +197,7 @@ class DataHub:
                         self.binning_params.operation,
                         self.grouping_mode,
                         factor_names,
-                        self.selected_factor
+                        self.selected_factor,
                     )
                     result = operator.process(result)
                 case BinningMode.PHASES:
@@ -206,7 +206,7 @@ class DataHub:
                         self.binning_params.operation,
                         self.grouping_mode,
                         factor_names,
-                        self.selected_factor
+                        self.selected_factor,
                     )
                     result = operator.process(result)
 

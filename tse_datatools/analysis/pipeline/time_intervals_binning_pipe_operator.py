@@ -16,7 +16,7 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
         binning_operation: BinningOperation,
         grouping_mode: GroupingMode,
         factor_names: list[str],
-        selected_factor: Optional[Factor]
+        selected_factor: Optional[Factor],
     ):
         self.settings = settings
         self.binning_operation = binning_operation
@@ -42,10 +42,14 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
 
         match self.grouping_mode:
             case GroupingMode.ANIMALS:
-                result = df.groupby(["Animal", "Box", "Run"] + self.factor_names).resample(timedelta, on="DateTime", origin="start")
+                result = df.groupby(["Animal", "Box", "Run"] + self.factor_names).resample(
+                    timedelta, on="DateTime", origin="start"
+                )
             case GroupingMode.FACTORS:
                 if self.selected_factor is not None:
-                    result = df.groupby([self.selected_factor.name, "Run"]).resample(timedelta, on="DateTime", origin="start")
+                    result = df.groupby([self.selected_factor.name, "Run"]).resample(
+                        timedelta, on="DateTime", origin="start"
+                    )
             case GroupingMode.RUNS:
                 result = df.groupby(["Run"]).resample(timedelta, on="DateTime", origin="start")
 

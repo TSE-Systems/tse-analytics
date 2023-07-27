@@ -16,7 +16,7 @@ class TimeCyclesBinningPipeOperator(PipeOperator):
         binning_operation: BinningOperation,
         grouping_mode: GroupingMode,
         factor_names: list[str],
-        selected_factor: Optional[Factor]
+        selected_factor: Optional[Factor],
     ):
         self.settings = settings
         self.binning_operation = binning_operation
@@ -26,8 +26,9 @@ class TimeCyclesBinningPipeOperator(PipeOperator):
 
     def process(self, df: pd.DataFrame) -> pd.DataFrame:
         filter_method = (
-            lambda x: "Light" if (
-                    self.settings.light_cycle_start <= x.time() < self.settings.dark_cycle_start) else "Dark"
+            lambda x: "Light"
+            if (self.settings.light_cycle_start <= x.time() < self.settings.dark_cycle_start)
+            else "Dark"
         )
         df["Bin"] = df["DateTime"].apply(filter_method).astype("category")
         df.drop(columns=["DateTime", "Timedelta"], inplace=True)

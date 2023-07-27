@@ -21,10 +21,16 @@ flake8: ## check style with flake8
 	flake8
 
 pylint:
-	pylint tse_analytics
+	pylint -j 8 tse_analytics tse_datatools
 
 ruff:
-	ruff tse_analytics
+	ruff tse_analytics tse_datatools
+
+black:
+	black tse_analytics tse_datatools
+
+mypy:
+	mypy tse_analytics tse_datatools
 
 pytest: ## run tests quickly with the default Python
 	pytest
