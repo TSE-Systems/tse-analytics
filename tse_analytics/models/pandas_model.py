@@ -3,6 +3,7 @@ from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 from PySide6.QtGui import QColor
 
 from tse_analytics.core.manager import Manager
+from tse_datatools.analysis.outliers_mode import OutliersMode
 
 
 class PandasModel(QAbstractTableModel):
@@ -44,7 +45,7 @@ class PandasModel(QAbstractTableModel):
         if role == Qt.ItemDataRole.DisplayRole:
             return str(self._dataframe.iloc[index.row(), index.column()])
 
-        if Manager.data.outliers_params.apply and role == Qt.ItemDataRole.BackgroundRole:
+        if Manager.data.outliers_params.mode == OutliersMode.HIGHLIGHT and role == Qt.ItemDataRole.BackgroundRole:
             value = self._dataframe.iloc[index.row()][index.column()]
             if isinstance(value, (int, float)):
                 var_name = str(self._dataframe.columns[index.column()])

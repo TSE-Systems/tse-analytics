@@ -39,14 +39,14 @@
          </property>
          <layout class="QFormLayout" name="formLayout">
           <item row="0" column="0">
-           <widget class="QLabel" name="labelDetect">
+           <widget class="QLabel" name="outliersModeLabel">
             <property name="text">
-             <string>Detect</string>
+             <string>Outliers Mode</string>
             </property>
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QCheckBox" name="checkBoxDetect"/>
+           <widget class="QComboBox" name="outliersModeComboBox"/>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="labelCoefficient">

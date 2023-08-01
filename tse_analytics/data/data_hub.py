@@ -19,8 +19,10 @@ from tse_datatools.analysis.binning_mode import BinningMode
 from tse_datatools.analysis.binning_operation import BinningOperation
 from tse_datatools.analysis.binning_params import BinningParams
 from tse_datatools.analysis.grouping_mode import GroupingMode
+from tse_datatools.analysis.outliers_mode import OutliersMode
 from tse_datatools.analysis.outliers_params import OutliersParams
 from tse_datatools.analysis.pipeline.animal_filter_pipe_operator import AnimalFilterPipeOperator
+from tse_datatools.analysis.pipeline.outliers_pipe_operator import OutliersPipeOperator
 from tse_datatools.analysis.pipeline.std_pipe_operator import STDPipeOperator
 from tse_datatools.analysis.pipeline.time_cycles_binning_pipe_operator import TimeCyclesBinningPipeOperator
 from tse_datatools.analysis.pipeline.time_intervals_binning_pipe_operator import TimeIntervalsBinningPipeOperator
@@ -45,14 +47,13 @@ class DataHub:
         self.grouping_mode = GroupingMode.ANIMALS
 
         self.binning_params = BinningParams(False, BinningMode.INTERVALS, BinningOperation.MEAN)
-        self.outliers_params = OutliersParams(False, 3.0)
+        self.outliers_params = OutliersParams(OutliersMode.OFF, 3.0)
 
         self.selected_variable = ""
 
     def clear(self):
         self.selected_dataset = None
         self.selected_factor = None
-        # self.apply_binning = False
         self.selected_animals.clear()
         self.selected_variables.clear()
         QPixmapCache.clear()
@@ -69,6 +70,12 @@ class DataHub:
             self.messenger.broadcast(BinningAppliedMessage(self, self.binning_params))
         else:
             self.messenger.broadcast(RevertBinningMessage(self))
+
+    def apply_outliers(self, params: OutliersParams):
+        if self.selected_dataset is None:
+            return
+        self.outliers_params = params
+        self.messenger.broadcast(DataChangedMessage(self))
 
     def set_grouping_mode(self, mode: GroupingMode):
         self.grouping_mode = mode
@@ -134,21 +141,6 @@ class DataHub:
                         ["O2-p", "CO2-p", "VO2(3)-p", "VCO2(3)-p", "RER-p", "H(3)-p"],
                     ] = [row["O2-p"], row["CO2-p"], row["VO2(3)-p"], row["VCO2(3)-p"], row["RER-p"], row["H(3)-p"]]
 
-                    # active_df['O2-p'] = np.where(
-                    #     (active_df['Box'] == result.box_number) & (active_df["Bin"] == bin_number), row["O2-p"],
-                    #     active_df['O2-p'])
-                    #
-                    # active_df['CO2-p'] = np.where(
-                    #     (active_df['Box'] == result.box_number) & (active_df["Bin"] == bin_number), row["CO2-p"],
-                    #     active_df['CO2-p'])
-                    #
-                    # active_df['RER-p'] = np.where(
-                    #     (active_df['Box'] == result.box_number) & (active_df["Bin"] == bin_number), row["RER-p"],
-                    #     active_df['RER-p'])
-                    #
-                    # active_df['H(3)-p'] = np.where(
-                    #     (active_df['Box'] == result.box_number) & (active_df["Bin"] == bin_number), row["H(3)-p"],
-                    #     active_df['H(3)-p'])
             if "O2-p" not in dataset.variables:
                 dataset.variables["O2-p"] = Variable("O2-p", "[%]", "Predicted O2")
             if "CO2-p" not in dataset.variables:
@@ -172,6 +164,12 @@ class DataHub:
         # Filter operator
         if len(self.selected_animals) > 0:
             operator = AnimalFilterPipeOperator(self.selected_animals)
+            result = operator.process(result)
+
+        # Outliers operator
+        if self.outliers_params.mode == OutliersMode.REMOVE:
+            variables = list(self.selected_dataset.variables.keys())
+            operator = OutliersPipeOperator(self.outliers_params, variables)
             result = operator.process(result)
 
         # STD operator

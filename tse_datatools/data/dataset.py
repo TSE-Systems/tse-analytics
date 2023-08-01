@@ -91,7 +91,7 @@ class Dataset:
         for factor in self.factors.values():
             animal_factor_map: dict[int, Any] = {}
             for animal_id in animal_ids:
-                animal_factor_map[animal_id] = np.NaN
+                animal_factor_map[animal_id] = None
 
             for group in factor.groups:
                 for animal_id in group.animal_ids:

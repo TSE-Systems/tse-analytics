@@ -15,7 +15,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QDoubleSpinBox, QFormLayout,
+from PySide6.QtWidgets import (QApplication, QComboBox, QDoubleSpinBox, QFormLayout,
     QFrame, QGroupBox, QLabel, QScrollArea,
     QSizePolicy, QVBoxLayout, QWidget)
 
@@ -39,15 +39,15 @@ class Ui_OutliersSettingsWidget(object):
         self.groupBoxIQR.setObjectName(u"groupBoxIQR")
         self.formLayout = QFormLayout(self.groupBoxIQR)
         self.formLayout.setObjectName(u"formLayout")
-        self.labelDetect = QLabel(self.groupBoxIQR)
-        self.labelDetect.setObjectName(u"labelDetect")
+        self.outliersModeLabel = QLabel(self.groupBoxIQR)
+        self.outliersModeLabel.setObjectName(u"outliersModeLabel")
 
-        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.labelDetect)
+        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.outliersModeLabel)
 
-        self.checkBoxDetect = QCheckBox(self.groupBoxIQR)
-        self.checkBoxDetect.setObjectName(u"checkBoxDetect")
+        self.outliersModeComboBox = QComboBox(self.groupBoxIQR)
+        self.outliersModeComboBox.setObjectName(u"outliersModeComboBox")
 
-        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.checkBoxDetect)
+        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.outliersModeComboBox)
 
         self.labelCoefficient = QLabel(self.groupBoxIQR)
         self.labelCoefficient.setObjectName(u"labelCoefficient")
@@ -75,7 +75,7 @@ class Ui_OutliersSettingsWidget(object):
     def retranslateUi(self, OutliersSettingsWidget):
         OutliersSettingsWidget.setWindowTitle(QCoreApplication.translate("OutliersSettingsWidget", u"Form", None))
         self.groupBoxIQR.setTitle(QCoreApplication.translate("OutliersSettingsWidget", u"Interquartile Range", None))
-        self.labelDetect.setText(QCoreApplication.translate("OutliersSettingsWidget", u"Detect", None))
+        self.outliersModeLabel.setText(QCoreApplication.translate("OutliersSettingsWidget", u"Outliers Mode", None))
         self.labelCoefficient.setText(QCoreApplication.translate("OutliersSettingsWidget", u"Coefficient", None))
     # retranslateUi
 
