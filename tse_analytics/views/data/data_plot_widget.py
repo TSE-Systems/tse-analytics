@@ -46,10 +46,7 @@ class DataPlotWidget(QWidget, MessengerListener):
 
     def __variable_changed(self, variable: str):
         Manager.data.selected_variable = variable
-        if Manager.data.binning_params.mode == BinningMode.INTERVALS:
-            self.timelinePlotView.set_variable(variable, True)
-        else:
-            self.barPlotView.set_variable(variable, True)
+        self.__assign_data()
 
     def __display_errors(self, state: bool):
         if Manager.data.binning_params.mode == BinningMode.INTERVALS:
@@ -82,7 +79,10 @@ class DataPlotWidget(QWidget, MessengerListener):
         self.__assign_data()
 
     def __assign_data(self):
-        df = Manager.data.get_current_df(calculate_error=False)
+        if Manager.data.selected_variable == "":
+            return
+
+        df = Manager.data.get_current_df(calculate_error=False, variables=[Manager.data.selected_variable])
 
         if Manager.data.binning_params.mode == BinningMode.INTERVALS:
             if Manager.data.binning_params.mode != self.active_binning_mode:

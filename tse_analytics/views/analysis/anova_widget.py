@@ -58,12 +58,15 @@ class AnovaWidget(QWidget, MessengerListener):
             return
 
         factor_name = Manager.data.selected_factor.name
-        df = Manager.data.selected_dataset.active_df[["Animal", factor_name, self.variable]]
+        df = Manager.data.get_current_df(
+            calculate_error=False,
+            variables=[self.variable]
+        )
 
         # Drop NaN rows
         df = df.dropna()
 
-        homoscedasticity = pg.homoscedasticity(data=df, dv=self.variable, group=factor_name, center="mean")
+        homoscedasticity = pg.homoscedasticity(data=df, dv=self.variable, group=factor_name)
 
         if homoscedasticity["equal_var"].values[0]:
             anova_header = "Classic one-way ANOVA"

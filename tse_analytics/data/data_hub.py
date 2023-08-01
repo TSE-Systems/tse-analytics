@@ -156,10 +156,13 @@ class DataHub:
             dataset.refresh_active_df()
             self.set_selected_dataset(dataset)
 
-    def get_current_df(self, calculate_error=False) -> pd.DataFrame:
-        result = self.selected_dataset.active_df.copy()
-
-        factor_names = list(self.selected_dataset.factors.keys())
+    def get_current_df(self, calculate_error=False, variables: Optional[list[str]] = None) -> pd.DataFrame:
+        if variables is not None:
+            default_columns = ["DateTime", "Animal", "Box", "Run", "Bin"]
+            factor_columns = list(self.selected_dataset.factors.keys())
+            result = self.selected_dataset.active_df[default_columns + factor_columns + variables].copy()
+        else:
+            result = self.selected_dataset.active_df.copy()
 
         # Filter operator
         if len(self.selected_animals) > 0:
@@ -179,6 +182,7 @@ class DataHub:
 
         # Binning
         if self.binning_params.apply:
+            factor_names = list(self.selected_dataset.factors.keys())
             match self.binning_params.mode:
                 case BinningMode.INTERVALS:
                     operator = TimeIntervalsBinningPipeOperator(
