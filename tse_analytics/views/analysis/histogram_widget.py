@@ -57,16 +57,15 @@ class HistogramWidget(QWidget, MessengerListener):
         self.ui.canvas.clear(False)
         ax = self.ui.canvas.figure.add_subplot(111)
 
-        df = Manager.data.selected_dataset.active_df
-        selected_variables = Manager.data.selected_variables
-        columns = [item.name for item in selected_variables]
+        variables = [variable.name for variable in Manager.data.selected_variables]
+        df = Manager.data.get_current_df(calculate_error=False, variables=variables)
 
         df.hist(
-            column=columns,
+            column=variables,
             bins=50,
             sharex=False,
             sharey=False,
-            layout=self.__get_plot_layout(len(selected_variables)),
+            layout=self.__get_plot_layout(len(variables)),
             ax=ax,
         )
 

@@ -3,6 +3,7 @@ from typing import Optional
 import pingouin as pg
 from PySide6.QtWidgets import QWidget
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
+from numpy import isnan
 
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
@@ -56,7 +57,7 @@ class NormalityWidget(QWidget, MessengerListener):
         ):
             return
 
-        df = Manager.data.selected_dataset.active_df
+        df = Manager.data.get_current_df(calculate_error=False, variables=[self.variable])
 
         self.ui.canvas.clear(False)
 
@@ -70,12 +71,15 @@ class NormalityWidget(QWidget, MessengerListener):
             groups = df[factor_name].unique()
             nrows, ncols = self.__get_cells(len(groups))
             for index, group in enumerate(groups):
+                # TODO: NaN check
+                if group != group:
+                    continue
                 ax = self.ui.canvas.figure.add_subplot(nrows, ncols, index + 1)
                 # stats.probplot(df[df[factor_name] == group][variable], dist="norm", plot=ax)
                 pg.qqplot(df[df[factor_name] == group][self.variable], dist="norm", ax=ax)
                 ax.set_title(group)
         else:
-            animals = Manager.data.selected_animals
+            animals = Manager.data.selected_animals if len(Manager.data.selected_animals) > 0 else Manager.data.selected_dataset.animals.values()
             nrows, ncols = self.__get_cells(len(animals))
             for index, animal in enumerate(animals):
                 ax = self.ui.canvas.figure.add_subplot(nrows, ncols, index + 1)
@@ -86,14 +90,12 @@ class NormalityWidget(QWidget, MessengerListener):
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()
 
-    def __get_cells(self, count: int):
-        if count == 1:
+    def __get_cells(self, number_of_elements: int):
+        if number_of_elements == 1:
             return 1, 1
-        elif count == 2:
+        elif number_of_elements == 2:
             return 1, 2
-        elif count <= 4:
+        elif number_of_elements <= 4:
             return 2, 2
         else:
-            nrows = count // 2 + (count % 2 > 0)
-            ncols = 2
-            return nrows, ncols
+            return round(number_of_elements / 3) + 1, 3

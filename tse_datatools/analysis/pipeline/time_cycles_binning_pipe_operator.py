@@ -31,7 +31,7 @@ class TimeCyclesBinningPipeOperator(PipeOperator):
             else "Dark"
         )
         df["Bin"] = df["DateTime"].apply(filter_method).astype("category")
-        df.drop(columns=["DateTime", "Timedelta"], inplace=True)
+        df.drop(columns=["DateTime"], inplace=True)
 
         result: Optional[pd.DataFrame] = None
 

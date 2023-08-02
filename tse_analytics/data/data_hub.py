@@ -171,7 +171,8 @@ class DataHub:
 
         # Outliers operator
         if self.outliers_params.mode == OutliersMode.REMOVE:
-            variables = list(self.selected_dataset.variables.keys())
+            if variables is None:
+                variables = list(self.selected_dataset.variables.keys())
             operator = OutliersPipeOperator(self.outliers_params, variables)
             result = operator.process(result)
 

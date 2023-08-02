@@ -28,13 +28,13 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         # customize the averaged curve that can be activated from the context menu:
         self.p1.avgPen = pg.mkPen("#FFFFFF")
         self.p1.avgShadowPen = pg.mkPen("#8080DD", width=10)
-        self.p1.setAxisItems({"bottom": pg.DateAxisItem()})
+        self.p1.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
         self.p1.showGrid(x=True, y=True)
 
         self.legend = self.p1.addLegend((10, 10))
 
         self.p2: pg.PlotItem = self.addPlot(row=1, col=0)
-        self.p2.setAxisItems({"bottom": pg.DateAxisItem()})
+        self.p2.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
         self.p2.showGrid(x=True, y=True)
 
         self.region = pg.LinearRegionItem()
@@ -72,7 +72,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
     #     pos = evt[0]  # using signal proxy turns original arguments into a tuple
     #     if self.start_datetime is not None and self.p1.sceneBoundingRect().contains(pos):
     #         mousePoint = self.view_box.mapSceneToView(pos)
-    #         dt = datetime.datetime.fromtimestamp(mousePoint.x())
+    #         dt = datetime.fromtimestamp(mousePoint.x())
     #         index = (dt - self.start_datetime) // self.timedelta  # Convert to POSIX timestamp
     #         index = int(index)
     #         keys = list(self.plot_data_items.keys())
@@ -80,7 +80,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
     #             spans = ""
     #             for animal in self._animals:
     #                 spans = spans + f",  <span>Animal {animal.id}={self.plot_data_items[animal.id].yData[index]}</span>"
-    #             text = f'<span style="font-size: 8pt">x={datetime.datetime.fromtimestamp(self.plot_data_items[animal.id].xData[index])}{spans}</span>'
+    #             text = f'<span style="font-size: 8pt">x={datetime.fromtimestamp(self.plot_data_items[animal.id].xData[index])}{spans}</span>'
     #             self.label.setText(text)
     #             self.vLine.setPos(mousePoint.x())
     #             self.hLine.setPos(mousePoint.y())
@@ -120,8 +120,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
             for i, animal in enumerate(animals):
                 filtered_data = self._df[self._df["Animal"] == animal.id]
 
-                x = filtered_data["DateTime"]
-                x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
+                x = (filtered_data["DateTime"] - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
                 x = x.to_numpy()
                 # x = filtered_data["Bin"].to_numpy()
                 y = filtered_data[self._variable].to_numpy()
@@ -148,8 +147,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
                 factor_name = Manager.data.selected_factor.name
                 filtered_data = self._df[self._df[factor_name] == group.name]
 
-                x = filtered_data["DateTime"]
-                x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
+                x = (filtered_data["DateTime"] - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
                 x = x.to_numpy()
                 # x = filtered_data["Bin"].to_numpy()
                 y = filtered_data[self._variable].to_numpy()
@@ -176,8 +174,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
             for i, run in enumerate(runs):
                 filtered_data = self._df[self._df["Run"] == run]
 
-                x = filtered_data["DateTime"]
-                x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
+                x = (filtered_data["DateTime"] - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
                 x = x.to_numpy()
                 # x = filtered_data["Bin"].to_numpy()
                 y = filtered_data[self._variable].to_numpy()
