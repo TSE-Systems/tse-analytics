@@ -66,7 +66,8 @@ class AncovaWidget(QWidget, MessengerListener):
 
         factor_name = Manager.data.selected_factor.name
 
-        df = Manager.data.selected_dataset.active_df
+        variables = [self.response] if self.response == self.covariate else [self.response, self.covariate]
+        df = Manager.data.get_current_df(calculate_error=False, variables=variables)
 
         ancova = pg.ancova(data=df, dv=self.response, covar=self.covariate, between=factor_name)
 

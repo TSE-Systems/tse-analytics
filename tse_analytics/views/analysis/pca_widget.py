@@ -4,6 +4,8 @@ import plotly.express as px
 from PySide6.QtCore import QTemporaryFile, QDir, QUrl
 from PySide6.QtWidgets import QWidget
 from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
+# from umap import UMAP
 
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
@@ -24,6 +26,9 @@ class PcaWidget(QWidget, MessengerListener):
         self.help_path = "docs/pca.md"
         self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
+
+        self.ui.comboBoxMethod.addItems(["PCA", "tSNE", "UMAP"])
+        self.ui.comboBoxMethod.setCurrentText("PCA")
 
         self.ui.comboBoxDimensions.addItems(["2D", "3D"])
         self.ui.comboBoxDimensions.setCurrentText("2D")
@@ -49,39 +54,54 @@ class PcaWidget(QWidget, MessengerListener):
         if Manager.data.selected_dataset is None or Manager.data.selected_factor is None:
             return
 
-        selected_variables = Manager.data.selected_variables
-        if len(selected_variables) < 3:
+        if len(Manager.data.selected_variables) < 3:
             return
 
-        df = Manager.data.selected_dataset.active_df.dropna()
         factor_name = Manager.data.selected_factor.name
 
-        features = [item.name for item in selected_variables]
+        variables = [variable.name for variable in Manager.data.selected_variables]
+        df = Manager.data.get_current_df(calculate_error=False, variables=variables, dropna=True)
+
+        method = self.ui.comboBoxMethod.currentText()
         n_components = 2 if self.ui.comboBoxDimensions.currentText() == "2D" else 3
 
-        pca = PCA(n_components=n_components)
-        components = pca.fit_transform(df[features])
-
-        total_var = pca.explained_variance_ratio_.sum() * 100
+        match method:
+            case "PCA":
+                pca = PCA(n_components=n_components)
+                data = pca.fit_transform(df[variables])
+                total_var = pca.explained_variance_ratio_.sum() * 100
+                title = f"Total Explained Variance: {total_var:.2f}%"
+            case "tSNE":
+                tsne = TSNE(n_components=n_components, random_state=0)
+                data = tsne.fit_transform(df[variables])
+                title = "tSNE"
+            case _:
+                pca = PCA(n_components=n_components)
+                data = pca.fit_transform(df[variables])
+                total_var = pca.explained_variance_ratio_.sum() * 100
+                title = f"Total Explained Variance: {total_var:.2f}%"
+                # umap = UMAP(n_components=n_components, init='random', random_state=0)
+                # data = umap.fit_transform(df[variables])
+                # title = "UMAP"
 
         if n_components == 2:
             fig = px.scatter(
-                components,
+                data,
                 x=0,
                 y=1,
                 color=df[factor_name],
-                title=f"Total Explained Variance: {total_var:.2f}%",
+                title=title,
                 labels={"0": "PC 1", "1": "PC 2"},
             )
             self.ui.webView.setHtml(fig.to_html(include_plotlyjs="cdn"))
         elif n_components == 3:
             fig = px.scatter_3d(
-                components,
+                data,
                 x=0,
                 y=1,
                 z=2,
                 color=df[factor_name],
-                title=f"Total Explained Variance: {total_var:.2f}%",
+                title=title,
                 labels={"0": "PC 1", "1": "PC 2", "2": "PC 3"},
             )
 

@@ -45,13 +45,12 @@ class MatrixWidget(QWidget, MessengerListener):
         if Manager.data.selected_dataset is None or Manager.data.selected_factor is None:
             return
 
-        df = Manager.data.selected_dataset.active_df
         factor_name = Manager.data.selected_factor.name
 
-        selected_variables = Manager.data.selected_variables
-        features = [item.name for item in selected_variables]
+        variables = [variable.name for variable in Manager.data.selected_variables]
+        df = Manager.data.get_current_df(calculate_error=False, variables=variables)
 
-        fig = px.scatter_matrix(df, dimensions=features, color=factor_name)
+        fig = px.scatter_matrix(df, dimensions=variables, color=factor_name)
         fig.update_traces(diagonal_visible=False)
 
         file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.html", self)

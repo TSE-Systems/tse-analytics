@@ -24,6 +24,16 @@
       </widget>
      </item>
      <item>
+      <widget class="QLabel" name="labelMethod">
+       <property name="text">
+        <string>Method:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboBoxMethod"/>
+     </item>
+     <item>
       <widget class="QLabel" name="labelDimensions">
        <property name="text">
         <string>Dimensions:</string>

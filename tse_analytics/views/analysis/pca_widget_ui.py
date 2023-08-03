@@ -35,6 +35,16 @@ class Ui_PcaWidget(object):
 
         self.horizontalLayout.addWidget(self.toolButtonAnalyse)
 
+        self.labelMethod = QLabel(PcaWidget)
+        self.labelMethod.setObjectName(u"labelMethod")
+
+        self.horizontalLayout.addWidget(self.labelMethod)
+
+        self.comboBoxMethod = QComboBox(PcaWidget)
+        self.comboBoxMethod.setObjectName(u"comboBoxMethod")
+
+        self.horizontalLayout.addWidget(self.comboBoxMethod)
+
         self.labelDimensions = QLabel(PcaWidget)
         self.labelDimensions.setObjectName(u"labelDimensions")
 
@@ -79,6 +89,7 @@ class Ui_PcaWidget(object):
     def retranslateUi(self, PcaWidget):
         PcaWidget.setWindowTitle(QCoreApplication.translate("PcaWidget", u"Form", None))
         self.toolButtonAnalyse.setText(QCoreApplication.translate("PcaWidget", u"Analyze", None))
+        self.labelMethod.setText(QCoreApplication.translate("PcaWidget", u"Method:", None))
         self.labelDimensions.setText(QCoreApplication.translate("PcaWidget", u"Dimensions:", None))
     # retranslateUi
 

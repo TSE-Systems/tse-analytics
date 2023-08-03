@@ -156,7 +156,7 @@ class DataHub:
             dataset.refresh_active_df()
             self.set_selected_dataset(dataset)
 
-    def get_current_df(self, calculate_error=False, variables: Optional[list[str]] = None) -> pd.DataFrame:
+    def get_current_df(self, calculate_error=False, variables: Optional[list[str]] = None, dropna=False) -> pd.DataFrame:
         if variables is not None:
             default_columns = ["DateTime", "Animal", "Box", "Run", "Bin"]
             factor_columns = list(self.selected_dataset.factors.keys())
@@ -214,6 +214,7 @@ class DataHub:
                     result = operator.process(result)
 
         # TODO: should or should not?
-        # result = result.dropna()
+        if dropna:
+            result = result.dropna()
 
         return result
