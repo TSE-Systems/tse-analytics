@@ -91,7 +91,8 @@ class PcaWidget(QWidget, MessengerListener):
                 y=1,
                 color=df[factor_name],
                 title=title,
-                labels={"0": "PC 1", "1": "PC 2"},
+                labels={"0": "PC 1", "1": "PC 2", "color": "Group"},
+                hover_name=df["Animal"]
             )
             self.ui.webView.setHtml(fig.to_html(include_plotlyjs="cdn"))
         elif n_components == 3:
@@ -102,7 +103,8 @@ class PcaWidget(QWidget, MessengerListener):
                 z=2,
                 color=df[factor_name],
                 title=title,
-                labels={"0": "PC 1", "1": "PC 2", "2": "PC 3"},
+                labels={"0": "PC 1", "1": "PC 2", "2": "PC 3", "color": "Group"},
+                hover_name=df["Animal"]
             )
 
             file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.html", self)
