@@ -13,6 +13,7 @@ from tse_analytics.messaging.messages import DatasetChangedMessage, ClearDataMes
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.pca_widget_ui import Ui_PcaWidget
+from tse_datatools.analysis.grouping_mode import GroupingMode
 
 
 class PcaWidget(QWidget, MessengerListener):
@@ -51,16 +52,18 @@ class PcaWidget(QWidget, MessengerListener):
         self.ui.webView.setHtml("")
 
     def __analyze(self):
-        if Manager.data.selected_dataset is None or Manager.data.selected_factor is None:
+        if Manager.data.selected_dataset is None or (
+            Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None
+        ):
             return
 
         if len(Manager.data.selected_variables) < 3:
             return
 
-        factor_name = Manager.data.selected_factor.name
+        color_column = Manager.data.selected_factor.name if Manager.data.grouping_mode == GroupingMode.FACTORS else "Animal"
 
         variables = [variable.name for variable in Manager.data.selected_variables]
-        df = Manager.data.get_current_df(calculate_error=False, variables=variables, dropna=True)
+        df = Manager.data.get_current_df(calculate_error=False, variables=variables, dropna=False)
 
         method = self.ui.comboBoxMethod.currentText()
         n_components = 2 if self.ui.comboBoxDimensions.currentText() == "2D" else 3
@@ -89,9 +92,13 @@ class PcaWidget(QWidget, MessengerListener):
                 data,
                 x=0,
                 y=1,
-                color=df[factor_name],
+                color=df[color_column].astype(str),
                 title=title,
-                labels={"0": "PC 1", "1": "PC 2", "color": "Group"},
+                labels={
+                    "0": "PC 1",
+                    "1": "PC 2",
+                    "color": "Group" if Manager.data.grouping_mode == GroupingMode.FACTORS else "Animal"
+                },
                 hover_name=df["Animal"]
             )
             self.ui.webView.setHtml(fig.to_html(include_plotlyjs="cdn"))
@@ -101,9 +108,14 @@ class PcaWidget(QWidget, MessengerListener):
                 x=0,
                 y=1,
                 z=2,
-                color=df[factor_name],
+                color=df[color_column],
                 title=title,
-                labels={"0": "PC 1", "1": "PC 2", "2": "PC 3", "color": "Group"},
+                labels={
+                    "0": "PC 1",
+                    "1": "PC 2",
+                    "2": "PC 3",
+                    "color": "Group" if Manager.data.grouping_mode == GroupingMode.FACTORS else "Animal"
+                },
                 hover_name=df["Animal"]
             )
 
