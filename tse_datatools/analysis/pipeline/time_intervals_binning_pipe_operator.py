@@ -42,16 +42,16 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
 
         match self.grouping_mode:
             case GroupingMode.ANIMALS:
-                result = df.groupby(["Animal", "Box", "Run"] + self.factor_names, dropna=False).resample(
+                result = df.groupby(["Animal", "Box", "Run"] + self.factor_names, dropna=False, observed=False).resample(
                     timedelta, on="DateTime", origin="start"
                 )
             case GroupingMode.FACTORS:
                 if self.selected_factor is not None:
-                    result = df.groupby([self.selected_factor.name, "Run"], dropna=False).resample(
+                    result = df.groupby([self.selected_factor.name, "Run"], dropna=False, observed=False).resample(
                         timedelta, on="DateTime", origin="start"
                     )
             case GroupingMode.RUNS:
-                result = df.groupby(["Run"], dropna=False).resample(timedelta, on="DateTime", origin="start")
+                result = df.groupby(["Run"], dropna=False, observed=False).resample(timedelta, on="DateTime", origin="start")
 
         match self.binning_operation:
             case BinningOperation.MEAN:
