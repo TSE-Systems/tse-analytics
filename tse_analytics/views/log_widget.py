@@ -1,6 +1,8 @@
 import logging
 from typing import Optional
 
+from loguru import logger
+
 from PySide6.QtWidgets import QWidget, QTextEdit
 
 
@@ -32,4 +34,5 @@ class LogWidget(QTextEdit):
         super().__init__(parent)
         self.setReadOnly(True)
         self.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
-        logging.getLogger().addHandler(TextEditLogger(self))
+        # logging.getLogger().addHandler(TextEditLogger(self))
+        logger.add(TextEditLogger(self), level="INFO", colorize=False, backtrace=False, enqueue=True)

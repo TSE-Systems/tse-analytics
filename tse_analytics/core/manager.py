@@ -1,6 +1,5 @@
-import logging
-
 from PySide6.QtCore import QModelIndex, QThreadPool
+from loguru import logger
 
 from tse_analytics.data.data_hub import DataHub
 from tse_analytics.messaging.messenger import Messenger
@@ -17,7 +16,8 @@ class Manager:
     threadpool = QThreadPool()
 
     def __init__(self):
-        logging.info(f"Multithreading with maximum {Manager.threadpool.maxThreadCount()} threads")
+        # logging.info(f"Multithreading with maximum {Manager.threadpool.maxThreadCount()} threads")
+        logger.info(f"Multithreading with maximum {Manager.threadpool.maxThreadCount()} threads")
 
     @classmethod
     def load_workspace(cls, path: str) -> None:

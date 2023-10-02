@@ -1,9 +1,9 @@
-import logging
 import os
 import timeit
 from multiprocessing import Pool
 from typing import Optional
 
+from loguru import logger
 from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QIcon, QCloseEvent, QKeyEvent
 from PySide6.QtWidgets import QDialog, QWidget
@@ -12,9 +12,9 @@ from tse_analytics.core.notificator import show_notification
 from tse_analytics.views.calo_details.calo_details_bin_selector import CaloDetailsBinSelector
 from tse_analytics.views.calo_details.calo_details_box_selector import CaloDetailsBoxSelector
 from tse_analytics.views.calo_details.calo_details_dialog_ui import Ui_CaloDetailsDialog
+from tse_analytics.views.calo_details.calo_details_worker import CaloDetailsWorker
 from tse_datatools.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
 from tse_analytics.views.calo_details.calo_details_plot_widget import CaloDetailsPlotWidget
-from tse_datatools.calo_details.calo_details_processor import calo_details_calculation_task
 from tse_analytics.views.calo_details.calo_details_rer_widget import CaloDetailsRerWidget
 from tse_datatools.calo_details.calo_details_settings import get_default_settings
 from tse_analytics.views.calo_details.calo_details_settings_widget import CaloDetailsSettingsWidget
@@ -23,11 +23,6 @@ from tse_analytics.views.calo_details.calo_details_test_fit_widget import CaloDe
 from tse_datatools.calo_details.fitting_params import FittingParams
 from tse_datatools.data.calo_details import CaloDetails
 from tse_datatools.data.calo_details_box import CaloDetailsBox
-
-
-# progress indicator for tasks in the process pool
-def progress(result: CaloDetailsFittingResult):
-    logging.info(f"Done! Box: {result.box_number}")
 
 
 class CaloDetailsDialog(QDialog):
@@ -149,7 +144,8 @@ class CaloDetailsDialog(QDialog):
         # create the process pool
         processes = len(self.selected_boxes) if len(self.selected_boxes) < os.cpu_count() else os.cpu_count()
         tic = timeit.default_timer()
-        with Pool(processes=processes) as pool:
+        worker = CaloDetailsWorker()
+        with Pool(processes=processes, initializer=worker.set_logger, initargs=(logger, )) as pool:
             # # issue many tasks asynchronously to the process pool
             # self.fitting_results = [pool.apply_async(calo_details_calculation_task, (params,), callback=progress) for params in fitting_params_list]
             # # close the pool
@@ -158,11 +154,11 @@ class CaloDetailsDialog(QDialog):
             # pool.join()
 
             # call the same function with different data in parallel
-            for result in pool.map(calo_details_calculation_task, fitting_params_list):
+            for result in pool.map(worker.process_box, fitting_params_list):
                 # report the value to show progress
                 self.fitting_results[result.box_number] = result
 
-        logging.info(f"Processing complete: {timeit.default_timer() - tic} sec")
+        logger.info(f"Processing complete: {timeit.default_timer() - tic} sec")
         show_notification("Calo Details", "Processing complete.")
 
     def hideEvent(self, event: QCloseEvent) -> None:
