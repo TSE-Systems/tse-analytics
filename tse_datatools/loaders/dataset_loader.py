@@ -151,12 +151,12 @@ class DatasetLoader:
 
         # Calculate cumulative values
         if "Drink" in df.columns:
-            df["DrinkK"] = df.groupby("Box")["Drink"].transform(pd.Series.cumsum)
+            df["DrinkK"] = df.groupby("Box", observed=False)["Drink"].transform(pd.Series.cumsum)
             var = Variable(name="DrinkK", unit=variables["Drink"].unit, description="")
             variables[var.name] = var
 
         if "Feed" in df.columns:
-            df["FeedK"] = df.groupby("Box")["Feed"].transform(pd.Series.cumsum)
+            df["FeedK"] = df.groupby("Box", observed=False)["Feed"].transform(pd.Series.cumsum)
             var = Variable(name="FeedK", unit=variables["Feed"].unit, description="")
             variables[var.name] = var
 

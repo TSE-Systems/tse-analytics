@@ -120,7 +120,9 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
             for i, animal in enumerate(animals):
                 filtered_data = self._df[self._df["Animal"] == animal.id]
 
-                x = (filtered_data["DateTime"] - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
+                x = (filtered_data["DateTime"] - pd.Timestamp("1970-01-01")) // pd.Timedelta(
+                    "1s"
+                )  # Convert to POSIX timestamp
                 x = x.to_numpy()
                 # x = filtered_data["Bin"].to_numpy()
                 y = filtered_data[self._variable].to_numpy()
@@ -147,7 +149,9 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
                 factor_name = Manager.data.selected_factor.name
                 filtered_data = self._df[self._df[factor_name] == group.name]
 
-                x = (filtered_data["DateTime"] - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
+                x = (filtered_data["DateTime"] - pd.Timestamp("1970-01-01")) // pd.Timedelta(
+                    "1s"
+                )  # Convert to POSIX timestamp
                 x = x.to_numpy()
                 # x = filtered_data["Bin"].to_numpy()
                 y = filtered_data[self._variable].to_numpy()
@@ -174,7 +178,9 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
             for i, run in enumerate(runs):
                 filtered_data = self._df[self._df["Run"] == run]
 
-                x = (filtered_data["DateTime"] - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
+                x = (filtered_data["DateTime"] - pd.Timestamp("1970-01-01")) // pd.Timedelta(
+                    "1s"
+                )  # Convert to POSIX timestamp
                 x = x.to_numpy()
                 # x = filtered_data["Bin"].to_numpy()
                 y = filtered_data[self._variable].to_numpy()

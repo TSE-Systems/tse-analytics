@@ -6,7 +6,6 @@ from tse_datatools.calo_details.fitting_params import FittingParams
 
 
 class CaloDetailsWorker:
-
     _logger = None
 
     @staticmethod

@@ -58,10 +58,7 @@ class AnovaWidget(QWidget, MessengerListener):
             return
 
         factor_name = Manager.data.selected_factor.name
-        df = Manager.data.get_current_df(
-            calculate_error=False,
-            variables=[self.variable]
-        )
+        df = Manager.data.get_current_df(calculate_error=False, variables=[self.variable])
 
         # Drop NaN rows
         df = df.dropna()

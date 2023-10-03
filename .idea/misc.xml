@@ -2,7 +2,7 @@
 <project version="4">
   <component name="Black">
     <option name="enabledOnReformat" value="true" />
-    <option name="sdkUUID" value="a3eb0e5f-7d00-41e7-86ca-4af2c40c335c" />
+    <option name="sdkName" value="Python 3.11 (tse-analytics)" />
   </component>
   <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.11 (tse-analytics)" project-jdk-type="Python SDK" />
   <component name="PythonCompatibilityInspectionAdvertiser">

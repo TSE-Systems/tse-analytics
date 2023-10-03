@@ -1,3 +1,4 @@
+import os
 import sys
 
 # import PySide6 before matplotlib
@@ -52,6 +53,12 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 
 
 def main():
+    # See: https://github.com/pyinstaller/pyinstaller/issues/7334#issuecomment-1357447176
+    if sys.stdout is None:
+        sys.stdout = open(os.devnull, "w")
+    if sys.stderr is None:
+        sys.stderr = open(os.devnull, "w")
+
     logger.remove()  # Remove all handlers added so far, including the default one.
     logger.add(sys.stderr, level="INFO", colorize=True, backtrace=False, enqueue=True)
 

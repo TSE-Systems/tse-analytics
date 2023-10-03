@@ -5,6 +5,7 @@ from PySide6.QtCore import QTemporaryFile, QDir, QUrl
 from PySide6.QtWidgets import QWidget
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
+
 # from umap import UMAP
 
 from tse_analytics.core.helper import show_help
@@ -60,7 +61,9 @@ class PcaWidget(QWidget, MessengerListener):
         if len(Manager.data.selected_variables) < 3:
             return
 
-        color_column = Manager.data.selected_factor.name if Manager.data.grouping_mode == GroupingMode.FACTORS else "Animal"
+        color_column = (
+            Manager.data.selected_factor.name if Manager.data.grouping_mode == GroupingMode.FACTORS else "Animal"
+        )
 
         variables = [variable.name for variable in Manager.data.selected_variables]
         df = Manager.data.get_current_df(calculate_error=False, variables=variables, dropna=False)
@@ -97,9 +100,9 @@ class PcaWidget(QWidget, MessengerListener):
                 labels={
                     "0": "PC 1",
                     "1": "PC 2",
-                    "color": "Group" if Manager.data.grouping_mode == GroupingMode.FACTORS else "Animal"
+                    "color": "Group" if Manager.data.grouping_mode == GroupingMode.FACTORS else "Animal",
                 },
-                hover_name=df["Animal"]
+                hover_name=df["Animal"],
             )
             self.ui.webView.setHtml(fig.to_html(include_plotlyjs="cdn"))
         elif n_components == 3:
@@ -114,9 +117,9 @@ class PcaWidget(QWidget, MessengerListener):
                     "0": "PC 1",
                     "1": "PC 2",
                     "2": "PC 3",
-                    "color": "Group" if Manager.data.grouping_mode == GroupingMode.FACTORS else "Animal"
+                    "color": "Group" if Manager.data.grouping_mode == GroupingMode.FACTORS else "Animal",
                 },
-                hover_name=df["Animal"]
+                hover_name=df["Animal"],
             )
 
             file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.html", self)

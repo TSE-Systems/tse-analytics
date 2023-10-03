@@ -145,7 +145,7 @@ class CaloDetailsDialog(QDialog):
         processes = len(self.selected_boxes) if len(self.selected_boxes) < os.cpu_count() else os.cpu_count()
         tic = timeit.default_timer()
         worker = CaloDetailsWorker()
-        with Pool(processes=processes, initializer=worker.set_logger, initargs=(logger, )) as pool:
+        with Pool(processes=processes, initializer=worker.set_logger, initargs=(logger,)) as pool:
             # # issue many tasks asynchronously to the process pool
             # self.fitting_results = [pool.apply_async(calo_details_calculation_task, (params,), callback=progress) for params in fitting_params_list]
             # # close the pool

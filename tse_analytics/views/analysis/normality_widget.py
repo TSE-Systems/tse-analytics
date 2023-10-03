@@ -79,7 +79,11 @@ class NormalityWidget(QWidget, MessengerListener):
                 pg.qqplot(df[df[factor_name] == group][self.variable], dist="norm", ax=ax)
                 ax.set_title(group)
         else:
-            animals = Manager.data.selected_animals if len(Manager.data.selected_animals) > 0 else Manager.data.selected_dataset.animals.values()
+            animals = (
+                Manager.data.selected_animals
+                if len(Manager.data.selected_animals) > 0
+                else Manager.data.selected_dataset.animals.values()
+            )
             nrows, ncols = self.__get_cells(len(animals))
             for index, animal in enumerate(animals):
                 ax = self.ui.canvas.figure.add_subplot(nrows, ncols, index + 1)
