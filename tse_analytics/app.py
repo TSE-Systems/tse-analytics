@@ -1,7 +1,6 @@
 import os
 import sys
 
-# import PySide6 before matplotlib
 import matplotlib
 from loguru import logger
 from pyqtgraph import setConfigOptions

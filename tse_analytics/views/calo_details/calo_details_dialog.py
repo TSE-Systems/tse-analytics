@@ -8,7 +8,9 @@ from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QIcon, QCloseEvent, QKeyEvent
 from PySide6.QtWidgets import QDialog, QWidget
 
+from tse_analytics.core.manager import Manager
 from tse_analytics.core.notificator import show_notification
+from tse_analytics.core.workers.worker import Worker
 from tse_analytics.views.calo_details.calo_details_bin_selector import CaloDetailsBinSelector
 from tse_analytics.views.calo_details.calo_details_box_selector import CaloDetailsBoxSelector
 from tse_analytics.views.calo_details.calo_details_dialog_ui import Ui_CaloDetailsDialog
@@ -117,6 +119,12 @@ class CaloDetailsDialog(QDialog):
         self.calo_details_settings_widget.set_settings(calo_details_settings)
 
     def __calculate(self):
+        # Pass the function to execute
+        worker = Worker(self.__run_calculate)  # Any other args, kwargs are passed to the run function
+        # Execute
+        Manager.threadpool.start(worker)
+
+    def __run_calculate(self):
         calo_details_settings = self.calo_details_settings_widget.get_calo_details_settings()
 
         # remove last bin

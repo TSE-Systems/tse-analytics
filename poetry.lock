@@ -1835,6 +1835,30 @@ files = [
 ]
 
 [[package]]
+name = "toasts-winrt"
+version = "1.0.0"
+description = "Python WinRT bindings for Windows-Toasts"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "toasts-winrt-1.0.0.tar.gz", hash = "sha256:bf71ce565a4d5b5ae83e5e4061ea2148138b3c64adaaea0881c5cce8a94a394a"},
+    {file = "toasts_winrt-1.0.0-cp310-cp310-win32.whl", hash = "sha256:5e276a240a0f707ec2aba1c39c060f85529723723ce0180c2b4c2176bc41fb5c"},
+    {file = "toasts_winrt-1.0.0-cp310-cp310-win_amd64.whl", hash = "sha256:adfd274e36973f9841e815a5affaa9b7448c34530b66a54b65a9ffc32035f388"},
+    {file = "toasts_winrt-1.0.0-cp310-cp310-win_arm64.whl", hash = "sha256:d7289a2b654b21320b67f8384010b6c2fc09781a3cf02b54736cdea99b03db19"},
+    {file = "toasts_winrt-1.0.0-cp311-cp311-win32.whl", hash = "sha256:aec4568def3e83cc6784ebea7c8770be29018aa8ff9b12e7da5b9d6c8b2e8dcf"},
+    {file = "toasts_winrt-1.0.0-cp311-cp311-win_amd64.whl", hash = "sha256:f8459e6d2bd8bb2006d3f6543871f05d11673e0c5391ed1c3d66915509c9e5f3"},
+    {file = "toasts_winrt-1.0.0-cp311-cp311-win_arm64.whl", hash = "sha256:e6b49b964192947d44089ff9332da584384d6746f4a440cf588e0fd05048f697"},
+    {file = "toasts_winrt-1.0.0-cp312-cp312-win32.whl", hash = "sha256:4afd92ecb403e6c79dd1aa2b1e4aede302de00392b8df252813c1107b3ec53ef"},
+    {file = "toasts_winrt-1.0.0-cp312-cp312-win_amd64.whl", hash = "sha256:1e2e91d2710019b2eeb8066ece9b4619c6fb1b45792cb8c26c25b0b1a5a07cab"},
+    {file = "toasts_winrt-1.0.0-cp312-cp312-win_arm64.whl", hash = "sha256:acb2edc54e707a624d42b16caa28f1008572c0d4c2d8d1407218c4ea3cfce234"},
+    {file = "toasts_winrt-1.0.0-cp38-cp38-win32.whl", hash = "sha256:924118b81de9fb81b04ae9b06b1adf8891cdc35b01554a2024c5d8f0520adfa3"},
+    {file = "toasts_winrt-1.0.0-cp38-cp38-win_amd64.whl", hash = "sha256:3c027a49bd157938068449c603f02a315fd7cfcd52d9af83275bcdb156e399c8"},
+    {file = "toasts_winrt-1.0.0-cp39-cp39-win32.whl", hash = "sha256:0ab28913c3649fa9f0d539fdc580df7c807f095225fc8b16bb701567cec679c7"},
+    {file = "toasts_winrt-1.0.0-cp39-cp39-win_amd64.whl", hash = "sha256:f7d13a1da03a69f5b6c3a4143bd5d2199199e0ff7f307321241c5bc7ccc8d6cb"},
+    {file = "toasts_winrt-1.0.0-cp39-cp39-win_arm64.whl", hash = "sha256:f7d80addf22b53e63ca9cc0659fb8ae26330a2be649c8ceee5d6694a6d68c191"},
+]
+
+[[package]]
 name = "tomlkit"
 version = "0.12.1"
 description = "Style preserving TOML library"
@@ -1905,20 +1929,6 @@ socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
-name = "win11toast"
-version = "0.32"
-description = "Toast notifications for Windows 10 and 11"
-optional = false
-python-versions = "*"
-files = [
-    {file = "win11toast-0.32-py3-none-any.whl", hash = "sha256:38ecf6625374cbeebce4f3eda20cef0b2c468fedda23d95d883dfcdac98154a6"},
-    {file = "win11toast-0.32.tar.gz", hash = "sha256:640650374285ef51bcad4453a3404f502e5b746e4a7fd7d974064a73ae808e33"},
-]
-
-[package.dependencies]
-winsdk = "*"
-
-[[package]]
 name = "win32-setctime"
 version = "1.1.0"
 description = "A small Python utility to set file creation time on Windows"
@@ -1933,28 +1943,18 @@ files = [
 dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 
 [[package]]
-name = "winsdk"
-version = "1.0.0b10"
-description = "Python bindings for the Windows SDK"
+name = "windows-toasts"
+version = "1.0.1"
+description = "Python library used to send toast notifications on Windows machines"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "winsdk-1.0.0b10-cp310-cp310-win32.whl", hash = "sha256:90f75c67e166d588a045bcde0117a4631c705904f7af4ac42644479dcf0d8c52"},
-    {file = "winsdk-1.0.0b10-cp310-cp310-win_amd64.whl", hash = "sha256:c3be3fbf692b8888bac8c0712c490c080ab8976649ef01f9f6365947f4e5a8b1"},
-    {file = "winsdk-1.0.0b10-cp310-cp310-win_arm64.whl", hash = "sha256:6ab69dd65d959d94939c21974a33f4f1dfa625106c8784435ecacbd8ff0bf74d"},
-    {file = "winsdk-1.0.0b10-cp311-cp311-win32.whl", hash = "sha256:9ea4fdad9ca8a542198aee3c753ac164b8e2f550d760bb88815095d64750e0f5"},
-    {file = "winsdk-1.0.0b10-cp311-cp311-win_amd64.whl", hash = "sha256:f12e25bbf0a658270203615677520b8170edf500fba11e0f80359c5dbf090676"},
-    {file = "winsdk-1.0.0b10-cp311-cp311-win_arm64.whl", hash = "sha256:e77bce44a9ff151562bd261b2a1a8255e258bb10696d0d31ef63267a27628af1"},
-    {file = "winsdk-1.0.0b10-cp312-cp312-win32.whl", hash = "sha256:775a55a71e05ec2aa262c1fd67d80f270d4186bbdbbee2f43c9c412cf76f0761"},
-    {file = "winsdk-1.0.0b10-cp312-cp312-win_amd64.whl", hash = "sha256:8231ce5f16e1fc88bb7dda0adf35633b5b26101eae3b0799083ca2177f03e4e5"},
-    {file = "winsdk-1.0.0b10-cp312-cp312-win_arm64.whl", hash = "sha256:f4ab469ada19b34ccfc69a148090f98b40a1da1da797b50b9cbba0c090c365a5"},
-    {file = "winsdk-1.0.0b10-cp38-cp38-win32.whl", hash = "sha256:786d6b50e4fcb8af2d701d7400c74e1c3f3ab7766ed1dfd516cdd6688072ea87"},
-    {file = "winsdk-1.0.0b10-cp38-cp38-win_amd64.whl", hash = "sha256:1d4fdd1f79b41b64fedfbc478a29112edf2076e1a61001eccb536c0568510e74"},
-    {file = "winsdk-1.0.0b10-cp39-cp39-win32.whl", hash = "sha256:4f04d3e50eeb8ca5fe4eb2e39785f3fa594199819acdfb23a10aaef4b97699ad"},
-    {file = "winsdk-1.0.0b10-cp39-cp39-win_amd64.whl", hash = "sha256:7948bc5d8a02d73b1db043788d32b2988b8e7e29a25e503c21d34478e630eaf1"},
-    {file = "winsdk-1.0.0b10-cp39-cp39-win_arm64.whl", hash = "sha256:342b1095cbd937865cee962676e279a1fd28896a0680724fcf9c65157e7ebdb7"},
-    {file = "winsdk-1.0.0b10.tar.gz", hash = "sha256:8f39ea759626797449371f857c9085b84bb9f3b6d493dc6525e2cedcb3d15ea2"},
+    {file = "Windows-Toasts-1.0.1.tar.gz", hash = "sha256:1a13675e90634b829dffebfac8241d2ca46d6db21182c12c7b38e73f9c2427ea"},
+    {file = "Windows_Toasts-1.0.1-py3-none-any.whl", hash = "sha256:a980585dc55f1b810096e072afdcbd61a39188af903eb81fc662787ff8a7363f"},
 ]
+
+[package.dependencies]
+toasts-winrt = "1.0.0"
 
 [[package]]
 name = "xarray"
@@ -1982,4 +1982,4 @@ viz = ["matplotlib", "nc-time-axis", "seaborn"]
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.6"
-content-hash = "f05b8370dc0191eb12406ab22bd926a723d0c548412b909de7dbe1f0d774bb97"
+content-hash = "1d07d05a6b99b70e4c82f2ccd4c93e3ecd2e462b27aae9b42745695c2176bd36"

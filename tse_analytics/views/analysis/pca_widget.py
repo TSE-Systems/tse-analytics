@@ -29,7 +29,8 @@ class PcaWidget(QWidget, MessengerListener):
         self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
 
-        self.ui.comboBoxMethod.addItems(["PCA", "tSNE", "UMAP"])
+        # self.ui.comboBoxMethod.addItems(["PCA", "tSNE", "UMAP"])
+        self.ui.comboBoxMethod.addItems(["PCA", "tSNE"])
         self.ui.comboBoxMethod.setCurrentText("PCA")
 
         self.ui.comboBoxDimensions.addItems(["2D", "3D"])
@@ -86,7 +87,7 @@ class PcaWidget(QWidget, MessengerListener):
                 data = pca.fit_transform(df[variables])
                 total_var = pca.explained_variance_ratio_.sum() * 100
                 title = f"Total Explained Variance: {total_var:.2f}%"
-                # umap = UMAP(n_components=n_components, init='random', random_state=0)
+                # umap = UMAP(n_components=n_components, init='random')
                 # data = umap.fit_transform(df[variables])
                 # title = "UMAP"
 
