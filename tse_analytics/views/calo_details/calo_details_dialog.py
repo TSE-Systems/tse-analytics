@@ -14,10 +14,10 @@ from tse_analytics.core.workers.worker import Worker
 from tse_analytics.views.calo_details.calo_details_bin_selector import CaloDetailsBinSelector
 from tse_analytics.views.calo_details.calo_details_box_selector import CaloDetailsBoxSelector
 from tse_analytics.views.calo_details.calo_details_dialog_ui import Ui_CaloDetailsDialog
-from tse_analytics.views.calo_details.calo_details_worker import CaloDetailsWorker
 from tse_datatools.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
 from tse_analytics.views.calo_details.calo_details_plot_widget import CaloDetailsPlotWidget
 from tse_analytics.views.calo_details.calo_details_rer_widget import CaloDetailsRerWidget
+from tse_datatools.calo_details.calo_details_processor import process_box
 from tse_datatools.calo_details.calo_details_settings import get_default_settings
 from tse_analytics.views.calo_details.calo_details_settings_widget import CaloDetailsSettingsWidget
 from tse_analytics.views.calo_details.calo_details_table_view import CaloDetailsTableView
@@ -152,8 +152,7 @@ class CaloDetailsDialog(QDialog):
         # create the process pool
         processes = len(self.selected_boxes) if len(self.selected_boxes) < os.cpu_count() else os.cpu_count()
         tic = timeit.default_timer()
-        worker = CaloDetailsWorker()
-        with Pool(processes=processes, initializer=worker.set_logger, initargs=(logger,)) as pool:
+        with Pool(processes=processes) as pool:
             # # issue many tasks asynchronously to the process pool
             # self.fitting_results = [pool.apply_async(calo_details_calculation_task, (params,), callback=progress) for params in fitting_params_list]
             # # close the pool
@@ -162,7 +161,7 @@ class CaloDetailsDialog(QDialog):
             # pool.join()
 
             # call the same function with different data in parallel
-            for result in pool.map(worker.process_box, fitting_params_list):
+            for result in pool.map(process_box, fitting_params_list):
                 # report the value to show progress
                 self.fitting_results[result.box_number] = result
 
