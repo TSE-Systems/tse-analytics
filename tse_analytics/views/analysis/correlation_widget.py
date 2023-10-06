@@ -75,10 +75,14 @@ class CorrelationWidget(QWidget, MessengerListener):
         variables = [self.x_var] if self.x_var == self.y_var else [self.x_var, self.y_var]
         df = Manager.data.get_current_df(calculate_error=False, variables=variables)
 
-        if Manager.data.grouping_mode == GroupingMode.ANIMALS:
-            df["Animal"] = df["Animal"].cat.remove_unused_categories()
-
-        grouping = Manager.data.selected_factor.name if Manager.data.grouping_mode == GroupingMode.FACTORS else "Animal"
+        match Manager.data.grouping_mode:
+            case GroupingMode.FACTORS:
+                grouping = Manager.data.selected_factor.name
+            case GroupingMode.RUNS:
+                grouping = "Run"
+            case _:
+                df["Animal"] = df["Animal"].cat.remove_unused_categories()
+                grouping = "Animal"
 
         joint_grid = sns.jointplot(data=df, x=self.x_var, y=self.y_var, hue=grouping)
         joint_grid.fig.suptitle(f"Correlation between {self.x_var} and {self.y_var}")

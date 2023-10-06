@@ -62,12 +62,16 @@ class PcaWidget(QWidget, MessengerListener):
         if len(Manager.data.selected_variables) < 3:
             return
 
-        color_column = (
-            Manager.data.selected_factor.name if Manager.data.grouping_mode == GroupingMode.FACTORS else "Animal"
-        )
+        match Manager.data.grouping_mode:
+            case GroupingMode.FACTORS:
+                color_column = Manager.data.selected_factor.name
+            case GroupingMode.RUNS:
+                color_column = "Run"
+            case _:
+                color_column = "Animal"
 
         variables = [variable.name for variable in Manager.data.selected_variables]
-        df = Manager.data.get_current_df(calculate_error=False, variables=variables, dropna=False)
+        df = Manager.data.get_current_df(calculate_error=False, variables=variables, dropna=True)
 
         method = self.ui.comboBoxMethod.currentText()
         n_components = 2 if self.ui.comboBoxDimensions.currentText() == "2D" else 3
@@ -101,7 +105,7 @@ class PcaWidget(QWidget, MessengerListener):
                 labels={
                     "0": "PC 1",
                     "1": "PC 2",
-                    "color": "Group" if Manager.data.grouping_mode == GroupingMode.FACTORS else "Animal",
+                    "color": color_column,
                 },
                 hover_name=df["Animal"],
             )
@@ -118,7 +122,7 @@ class PcaWidget(QWidget, MessengerListener):
                     "0": "PC 1",
                     "1": "PC 2",
                     "2": "PC 3",
-                    "color": "Group" if Manager.data.grouping_mode == GroupingMode.FACTORS else "Animal",
+                    "color": color_column,
                 },
                 hover_name=df["Animal"],
             )

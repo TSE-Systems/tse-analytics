@@ -10,6 +10,7 @@ from tse_analytics.messaging.messages import DatasetChangedMessage, ClearDataMes
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.matrix_widget_ui import Ui_MatrixWidget
+from tse_datatools.analysis.grouping_mode import GroupingMode
 
 
 class MatrixWidget(QWidget, MessengerListener):
@@ -23,10 +24,6 @@ class MatrixWidget(QWidget, MessengerListener):
         self.help_path = "docs/scatter-matrix.md"
         self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
-
-        # self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PluginsEnabled, False)
-        # self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PdfViewerEnabled, False)
-        # self.ui.webView.setHtml("")
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
@@ -42,15 +39,23 @@ class MatrixWidget(QWidget, MessengerListener):
         self.ui.webView.setHtml("")
 
     def __analyze(self):
-        if Manager.data.selected_dataset is None or Manager.data.selected_factor is None:
+        if Manager.data.selected_dataset is None or (
+            Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None
+        ):
             return
 
-        factor_name = Manager.data.selected_factor.name
+        match Manager.data.grouping_mode:
+            case GroupingMode.FACTORS:
+                color = Manager.data.selected_factor.name
+            case GroupingMode.RUNS:
+                color = "Run"
+            case _:
+                color = "Animal"
 
         variables = [variable.name for variable in Manager.data.selected_variables]
         df = Manager.data.get_current_df(calculate_error=False, variables=variables)
 
-        fig = px.scatter_matrix(df, dimensions=variables, color=factor_name)
+        fig = px.scatter_matrix(df, dimensions=variables, color=color)
         fig.update_traces(diagonal_visible=False)
 
         file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.html", self)

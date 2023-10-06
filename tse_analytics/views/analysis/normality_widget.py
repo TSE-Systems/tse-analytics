@@ -77,7 +77,15 @@ class NormalityWidget(QWidget, MessengerListener):
                 ax = self.ui.canvas.figure.add_subplot(nrows, ncols, index + 1)
                 # stats.probplot(df[df[factor_name] == group][variable], dist="norm", plot=ax)
                 pg.qqplot(df[df[factor_name] == group][self.variable], dist="norm", ax=ax)
-                ax.set_title(group)
+                ax.set_title(f"Group {group}")
+        elif Manager.data.grouping_mode == GroupingMode.RUNS:
+            runs = df["Run"].unique()
+            nrows, ncols = self.__get_cells(len(runs))
+            for index, run in enumerate(runs):
+                ax = self.ui.canvas.figure.add_subplot(nrows, ncols, index + 1)
+                # stats.probplot(df[df[factor_name] == group][variable], dist="norm", plot=ax)
+                pg.qqplot(df[df["Run"] == run][self.variable], dist="norm", ax=ax)
+                ax.set_title(f"Run {run}")
         else:
             animals = (
                 Manager.data.selected_animals
@@ -89,7 +97,7 @@ class NormalityWidget(QWidget, MessengerListener):
                 ax = self.ui.canvas.figure.add_subplot(nrows, ncols, index + 1)
                 # stats.probplot(df[df["Animal"] == group][variable], dist="norm", plot=ax)
                 pg.qqplot(df[df["Animal"] == animal.id][self.variable], dist="norm", ax=ax)
-                ax.set_title(animal.id)
+                ax.set_title(f"Animal {animal.id}")
 
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()
