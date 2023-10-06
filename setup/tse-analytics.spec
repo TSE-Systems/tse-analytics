@@ -4,8 +4,6 @@ import os
 
 pathex = os.path.abspath(os.path.join(SPECPATH, '..'))
 
-block_cipher = None
-
 
 a = Analysis(['../tse_analytics/__main__.py'],
              pathex=[pathex],
@@ -27,10 +25,9 @@ a = Analysis(['../tse_analytics/__main__.py'],
              excludes=[],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
-             cipher=block_cipher,
              noarchive=False)
 
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+pyz = PYZ(a.pure, a.zipped_data)
 
 exe = EXE(pyz,
           a.scripts,

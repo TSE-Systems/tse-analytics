@@ -72,4 +72,4 @@ build_resources:
 	pyside6-rcc resources/resources.qrc -o tse_analytics/resources_rc.py
 
 create_setup:
-	pyinstaller setup/tse-analytics.spec
+	pyinstaller --clean setup/tse-analytics.spec
