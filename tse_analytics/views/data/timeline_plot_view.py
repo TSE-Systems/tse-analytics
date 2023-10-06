@@ -195,7 +195,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
                 p2d: pg.PlotDataItem = self.p2.plot(x, y, pen=pen)
 
         # bound the LinearRegionItem to the plotted data
-        self.region.setClipItem(p2d)
+        # self.region.setClipItem(p2d)
         if len(x) > 0:
             self.region.setRegion([x.min(), x.max()])
 

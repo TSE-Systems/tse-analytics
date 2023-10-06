@@ -82,7 +82,8 @@ class DataPlotWidget(QWidget, MessengerListener):
         if Manager.data.selected_variable == "":
             return
 
-        df = Manager.data.get_current_df(calculate_error=False, variables=[Manager.data.selected_variable])
+        calculate_error = self.ui.toolButtonDisplayErrors.isChecked()
+        df = Manager.data.get_current_df(calculate_error=calculate_error, variables=[Manager.data.selected_variable])
 
         if Manager.data.binning_params.mode == BinningMode.INTERVALS:
             if Manager.data.binning_params.mode != self.active_binning_mode:
