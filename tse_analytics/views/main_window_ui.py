@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.1
+## Created by: Qt User Interface Compiler version 6.5.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -63,12 +63,15 @@ class Ui_MainWindow(object):
         self.actionExportCsv = QAction(MainWindow)
         self.actionExportCsv.setObjectName(u"actionExportCsv")
         self.actionExportCsv.setIcon(icon5)
+        self.actionCompareRuns = QAction(MainWindow)
+        self.actionCompareRuns.setObjectName(u"actionCompareRuns")
+        self.actionCompareRuns.setEnabled(False)
         self.centralWidget = QWidget(MainWindow)
         self.centralWidget.setObjectName(u"centralWidget")
         MainWindow.setCentralWidget(self.centralWidget)
         self.menuBar = QMenuBar(MainWindow)
         self.menuBar.setObjectName(u"menuBar")
-        self.menuBar.setGeometry(QRect(0, 0, 1472, 22))
+        self.menuBar.setGeometry(QRect(0, 0, 1472, 21))
         self.menuFile = QMenu(self.menuBar)
         self.menuFile.setObjectName(u"menuFile")
         self.menuOpenRecent = QMenu(self.menuFile)
@@ -77,6 +80,8 @@ class Ui_MainWindow(object):
         self.menuHelp.setObjectName(u"menuHelp")
         self.menuView = QMenu(self.menuBar)
         self.menuView.setObjectName(u"menuView")
+        self.menuTools = QMenu(self.menuBar)
+        self.menuTools.setObjectName(u"menuTools")
         MainWindow.setMenuBar(self.menuBar)
         self.statusBar = QStatusBar(MainWindow)
         self.statusBar.setObjectName(u"statusBar")
@@ -87,6 +92,7 @@ class Ui_MainWindow(object):
         MainWindow.addToolBar(Qt.TopToolBarArea, self.toolBar)
 
         self.menuBar.addAction(self.menuFile.menuAction())
+        self.menuBar.addAction(self.menuTools.menuAction())
         self.menuBar.addAction(self.menuView.menuAction())
         self.menuBar.addAction(self.menuHelp.menuAction())
         self.menuFile.addAction(self.actionOpenWorkspace)
@@ -101,6 +107,7 @@ class Ui_MainWindow(object):
         self.menuFile.addAction(self.actionExit)
         self.menuHelp.addAction(self.actionAbout)
         self.menuView.addAction(self.actionResetLayout)
+        self.menuTools.addAction(self.actionCompareRuns)
         self.toolBar.addAction(self.actionOpenWorkspace)
         self.toolBar.addAction(self.actionSaveWorkspace)
         self.toolBar.addSeparator()
@@ -138,10 +145,12 @@ class Ui_MainWindow(object):
 #if QT_CONFIG(tooltip)
         self.actionExportCsv.setToolTip(QCoreApplication.translate("MainWindow", u"Export to CSV...", None))
 #endif // QT_CONFIG(tooltip)
+        self.actionCompareRuns.setText(QCoreApplication.translate("MainWindow", u"Compare Runs...", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"&File", None))
         self.menuOpenRecent.setTitle(QCoreApplication.translate("MainWindow", u"Open Recent", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"&Help", None))
         self.menuView.setTitle(QCoreApplication.translate("MainWindow", u"&View", None))
+        self.menuTools.setTitle(QCoreApplication.translate("MainWindow", u"&Tools", None))
         self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"ToolBar", None))
     # retranslateUi
 

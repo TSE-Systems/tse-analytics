@@ -1,3 +1,34 @@
 {
-    "files": ["tse_analytics/views/calo_details/calo_details_plot_widget.ui","tse_analytics/views/analysis/distribution_widget.ui","resources/resources.qrc","tse_analytics/views/calo_details/calo_details_gas_settings_widget.ui","tse_analytics/views/analysis/matrix_widget.ui","tse_analytics/views/analysis/normality_widget.ui","tse_analytics/views/calo_details/calo_details_dialog.ui","tse_analytics/views/data/data_plot_widget.ui","tse_analytics/views/selection/variables/variables_widget.ui","tse_analytics/views/analysis/pca_widget.ui","tse_analytics/views/datasets_merge_dialog.ui","tse_analytics/views/calo_details/calo_details_settings_widget.ui","tse_analytics/views/selection/factors/factors_widget.ui","tse_analytics/views/analysis/ancova_widget.ui","tse_analytics/views/analysis/anova_widget.ui","tse_analytics/views/analysis/correlation_widget.ui","tse_analytics/views/settings/binning_settings_widget.ui","tse_analytics/views/calo_details/calo_details_rer_widget.ui","tse_analytics/views/factors_dialog.ui","tse_analytics/views/calo_details/calo_details_test_fit_widget.ui","tse_analytics/views/analysis/glm_widget.ui","tse_analytics/views/analysis/histogram_widget.ui","tse_analytics/views/main_window.ui","tse_analytics/views/settings/time_cycles_settings_widget.ui","tse_analytics/views/selection/animals/animals_widget.ui","tse_analytics/views/data/data_table_widget.ui","tse_analytics/views/settings/time_phases_settings_widget.ui","tse_analytics/views/settings/outliers_settings_widget.ui","tse_analytics/views/settings/time_intervals_settings_widget.ui"]
+    "files": [
+        "tse_analytics/views/calo_details/calo_details_plot_widget.ui",
+        "tse_analytics/views/analysis/distribution_widget.ui",
+        "resources/resources.qrc",
+        "tse_analytics/views/calo_details/calo_details_gas_settings_widget.ui",
+        "tse_analytics/views/analysis/matrix_widget.ui",
+        "tse_analytics/views/analysis/normality_widget.ui",
+        "tse_analytics/views/calo_details/calo_details_dialog.ui",
+        "tse_analytics/views/data/data_plot_widget.ui",
+        "tse_analytics/views/selection/variables/variables_widget.ui",
+        "tse_analytics/views/analysis/pca_widget.ui",
+        "tse_analytics/views/datasets_merge_dialog.ui",
+        "tse_analytics/views/calo_details/calo_details_settings_widget.ui",
+        "tse_analytics/views/selection/factors/factors_widget.ui",
+        "tse_analytics/views/analysis/ancova_widget.ui",
+        "tse_analytics/views/analysis/anova_widget.ui",
+        "tse_analytics/views/analysis/correlation_widget.ui",
+        "tse_analytics/views/settings/binning_settings_widget.ui",
+        "tse_analytics/views/calo_details/calo_details_rer_widget.ui",
+        "tse_analytics/views/factors_dialog.ui",
+        "tse_analytics/views/calo_details/calo_details_test_fit_widget.ui",
+        "tse_analytics/views/analysis/glm_widget.ui",
+        "tse_analytics/views/analysis/histogram_widget.ui",
+        "tse_analytics/views/main_window.ui",
+        "tse_analytics/views/settings/time_cycles_settings_widget.ui",
+        "tse_analytics/views/selection/animals/animals_widget.ui",
+        "tse_analytics/views/data/data_table_widget.ui",
+        "tse_analytics/views/settings/time_phases_settings_widget.ui",
+        "tse_analytics/views/settings/outliers_settings_widget.ui",
+        "tse_analytics/views/settings/time_intervals_settings_widget.ui",
+        "tse_analytics/views/tools/compare_runs_widget.ui"
+    ]
 }

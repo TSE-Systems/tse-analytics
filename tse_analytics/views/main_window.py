@@ -1,5 +1,6 @@
 import os
 from functools import partial
+from typing import Optional
 
 import PySide6QtAds
 import psutil
@@ -30,6 +31,7 @@ from tse_analytics.views.selection.factors.factors_widget import FactorsWidget
 from tse_analytics.views.selection.variables.variables_widget import VariablesWidget
 from tse_analytics.views.settings.binning_settings_widget import BinningSettingsWidget
 from tse_analytics.views.settings.outliers_settings_widget import OutliersSettingsWidget
+from tse_analytics.views.tools.compare_runs_widget import CompareRunsWidget
 from tse_datatools.analysis.grouping_mode import GroupingMode
 
 PySide6QtAds.CDockManager.setConfigFlags(PySide6QtAds.CDockManager.DefaultNonOpaqueConfig)
@@ -61,6 +63,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.statusBar.addPermanentWidget(self.memory_usage_label)
 
         self.menuOpenRecent.aboutToShow.connect(self.populate_open_recent)
+        self.menuTools.aboutToShow.connect(self.__tools_availability)
 
         self.toolBar.addWidget(QLabel("Grouping Mode: "))
         grouping_mode_combo_box = QComboBox()
@@ -175,8 +178,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionExportCsv.triggered.connect(self.export_csv_dialog)
         self.actionResetLayout.triggered.connect(self.__reset_layout)
         self.actionExit.triggered.connect(lambda: QApplication.exit())
+        self.actionCompareRuns.triggered.connect(self.__compare_runs)
 
         self.default_docking_state = self.dock_manager.saveState(LAYOUT_VERSION)
+
+        self.compare_runs_widget: Optional[CompareRunsWidget] = None
 
         self.load_settings()
 
@@ -282,6 +288,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __grouping_mode_changed(self, text: str):
         Manager.data.set_grouping_mode(GroupingMode(text))
+
+    def __tools_availability(self):
+        self.actionCompareRuns.setEnabled(
+            Manager.data.selected_dataset is not None and Manager.data.selected_dataset.runs_count > 1
+        )
+
+    def __compare_runs(self):
+        if self.compare_runs_widget is None:
+            self.compare_runs_widget = CompareRunsWidget(self)
+            self.compare_runs_widget.setWindowFlag(Qt.WindowType.Tool)
+        self.compare_runs_widget.show()
 
     def import_dataset_dialog(self):
         options = QFileDialog.Options()

@@ -47,6 +47,10 @@ class Dataset:
         first_value = self.original_df["DateTime"].iat[0]
         return first_value
 
+    @property
+    def runs_count(self) -> Optional[int]:
+        return self.active_df["Run"].value_counts().count()
+
     def extract_groups_from_field(self, field: Literal["text1", "text2", "text3"] = "text1") -> dict[str, Group]:
         """Extract groups assignment from Text1, Text2 or Text3 field"""
         groups_dict: dict[str, list[int]] = {}
