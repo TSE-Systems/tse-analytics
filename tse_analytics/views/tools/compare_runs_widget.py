@@ -1,8 +1,8 @@
 from typing import Optional
 
+import seaborn as sns
 from PySide6.QtWidgets import QWidget
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
-import seaborn as sns
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import DataChangedMessage
@@ -56,6 +56,27 @@ class CompareRunsWidget(QWidget, MessengerListener):
         ax = self.ui.canvas.figure.add_subplot(111)
 
         sns.lineplot(data=df, x="Bin", y=self.variable, hue="Run", errorbar=None, ax=ax)
+
+        # dark_cycle_start = Manager.data.selected_dataset.binning_settings.time_cycles_settings.dark_cycle_start
+        # light_cycle_start = Manager.data.selected_dataset.binning_settings.time_cycles_settings.light_cycle_start
+        #
+        # unit = "H"
+        # match Manager.data.selected_dataset.binning_settings.time_intervals_settings.unit:
+        #     case "day":
+        #         unit = "D"
+        #     case "hour":
+        #         unit = "H"
+        #     case "minute":
+        #         unit = "min"
+        # delta = pd.Timedelta(f"{Manager.data.selected_dataset.binning_settings.time_intervals_settings.delta}{unit}")
+        #
+        # start_timestamp = Manager.data.selected_dataset.start_timestamp
+        #
+        # z = 1 / delta
+        #
+        # x1 = dark_cycle_start * z
+        # x2 = light_cycle_start * z
+        # ax.axvspan(3, 5, alpha=0.1)
 
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()

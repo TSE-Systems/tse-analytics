@@ -3,7 +3,6 @@ from typing import Optional
 
 import pandas as pd
 
-from tse_analytics.core.notificator import show_notification
 from tse_datatools.data.dataset import Dataset
 
 
@@ -21,11 +20,11 @@ def merge_datasets(new_dataset_name: str, datasets: list[Dataset], merging_mode:
     datasets.sort(key=lambda x: x.start_timestamp)
 
     # check sampling intervals compatibility
-    first_sampling_interval = datasets[0].sampling_interval
-    for dataset in datasets:
-        if dataset.sampling_interval != first_sampling_interval:
-            show_notification("Cannot merge datasets!", "Sampling intervals should be the same.")
-            return None
+    # first_sampling_interval = datasets[0].sampling_interval
+    # for dataset in datasets:
+    #     if dataset.sampling_interval != first_sampling_interval:
+    #         show_notification("Cannot merge datasets!", "Sampling intervals should be the same.")
+    #         return None
 
     # reassign run number
     for run, dataset in enumerate(datasets):
@@ -38,24 +37,31 @@ def merge_datasets(new_dataset_name: str, datasets: list[Dataset], merging_mode:
 
     # reassign bin and timedelta
     start_date_time = new_df["DateTime"][0]
-    timedelta = datasets[0].sampling_interval
+    # find minimum sampling interval
+    timedelta = min([dataset.sampling_interval for dataset in datasets])
     new_df["Timedelta"] = new_df["DateTime"] - start_date_time
     new_df["Bin"] = (new_df["Timedelta"] / timedelta).round().astype(int)
 
     # convert categorical types
     new_df = new_df.astype(
         {
+            "Animal": "category",
+            "Box": "category",
             "Bin": "category",
             "Run": "category",
         }
     )
 
     new_path = ""
-    new_meta = datasets[0].meta
-    new_boxes = datasets[0].boxes
-    new_animals = datasets[0].animals
+    new_meta = [dataset.meta for dataset in datasets]
+    new_boxes = {}
+    for box in [dataset.boxes for dataset in datasets]:
+        new_boxes.update(box)
+    new_animals = {}
+    for animals in [dataset.animals for dataset in datasets]:
+        new_animals.update(animals)
     new_variables = datasets[0].variables
-    new_sampling_interval = datasets[0].sampling_interval
+    new_sampling_interval = timedelta
 
     result = Dataset(
         name=new_dataset_name,

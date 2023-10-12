@@ -1,7 +1,6 @@
 from typing import Optional
 
 import pandas as pd
-import numpy as np
 
 from tse_datatools.analysis.binning_operation import BinningOperation
 from tse_datatools.analysis.grouping_mode import GroupingMode
@@ -28,12 +27,12 @@ class TimePhasesBinningPipeOperator(PipeOperator):
     def process(self, df: pd.DataFrame) -> pd.DataFrame:
         self.settings.time_phases.sort(key=lambda x: x.start_timestamp)
 
-        df["Bin"] = np.NaN
+        df["Bin"] = None
         for phase in self.settings.time_phases:
             df.loc[df["DateTime"] >= phase.start_timestamp, "Bin"] = phase.name
 
         df["Bin"] = df["Bin"].astype("category")
-        df.drop(columns=["DateTime", "Timedelta"], inplace=True)
+        df.drop(columns=["DateTime"], inplace=True)
 
         # Sort category names by time
         categories = [item.name for item in self.settings.time_phases]

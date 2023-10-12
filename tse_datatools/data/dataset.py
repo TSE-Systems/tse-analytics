@@ -1,6 +1,5 @@
 from typing import Literal, Any, Optional
 
-import numpy as np
 import pandas as pd
 
 from tse_datatools.data.animal import Animal
@@ -17,7 +16,7 @@ class Dataset:
         self,
         name: str,
         path: str,
-        meta: dict,
+        meta: dict | list[dict],
         boxes: dict[int, Box],
         animals: dict[int, Animal],
         variables: dict[str, Variable],
@@ -43,7 +42,7 @@ class Dataset:
         self.calo_details: Optional[CaloDetails] = None
 
     @property
-    def start_timestamp(self):
+    def start_timestamp(self) -> pd.Timestamp:
         first_value = self.original_df["DateTime"].iat[0]
         return first_value
 

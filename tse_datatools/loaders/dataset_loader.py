@@ -16,6 +16,10 @@ DECIMAL = "."
 Section = namedtuple("Section", ["lines", "section_start_index", "section_end_index"])
 
 
+def most_frequent(lst: list):
+    return max(set(lst), key=lst.count)
+
+
 class DatasetLoader:
     @staticmethod
     def load(filename: str) -> Optional[Dataset]:
@@ -143,7 +147,11 @@ class DatasetLoader:
             }
         )
 
-        timedelta = df["DateTime"][1] - df["DateTime"][0]
+        # find sampling interval
+        timedeltas = []
+        for index in range(1, 6):
+            timedeltas.append(df["DateTime"][index] - df["DateTime"][index-1])
+        timedelta = most_frequent(timedeltas)
 
         # Sort dataframe
         df.sort_values(by=["DateTime", "Box"], inplace=True)
@@ -193,7 +201,16 @@ class DatasetLoader:
             "Sampling Interval": str(timedelta),
         }
 
-        return Dataset(name, str(path), meta, boxes, animals, variables, df, timedelta)
+        return Dataset(
+            name=name,
+            path=str(path),
+            meta=meta,
+            boxes=boxes,
+            animals=animals,
+            variables=variables,
+            df=df,
+            sampling_interval=timedelta
+        )
 
 
 if __name__ == "__main__":
