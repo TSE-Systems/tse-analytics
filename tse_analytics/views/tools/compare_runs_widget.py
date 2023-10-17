@@ -43,6 +43,9 @@ class CompareRunsWidget(QWidget, MessengerListener):
         df = Manager.data.get_current_df(calculate_error=False, variables=[self.variable])
 
         runs = df["Run"].unique()
+        df["Run"] = df["Run"].astype(int)
+        df["Bin"] = df["Bin"].astype(int)
+
         for i, run in enumerate(runs):
             run_df = df[df["Run"] == run]
             first_bin = run_df["Bin"].values[0]
@@ -50,6 +53,7 @@ class CompareRunsWidget(QWidget, MessengerListener):
             new_bins = old_bins - first_bin
             df.loc[df["Run"] == run, "Bin"] = new_bins
 
+        df["Run"] = df["Run"].astype("category")
         df["Bin"] = df["Bin"].astype("category")
 
         self.ui.canvas.clear(False)
