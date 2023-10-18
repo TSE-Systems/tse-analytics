@@ -99,7 +99,7 @@ class DatasetsTreeView(QTreeView):
         if result == QDialog.DialogCode.Accepted:
             new_dataset_name = dlg.lineEditName.text()
             merging_mode = MergingMode.CONCATENATE if dlg.radioButtonConcatenation.isChecked() else MergingMode.OVERLAP
-            Manager.merge_datasets(new_dataset_name, checked_datasets, merging_mode)
+            Manager.merge_datasets(new_dataset_name, checked_datasets, merging_mode, self)
             # uncheck all datasets
             items = self.model().workspace_tree_item.child_items
             for item in items:

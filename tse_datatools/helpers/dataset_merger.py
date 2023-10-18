@@ -2,6 +2,7 @@ from enum import unique, Enum
 from typing import Optional
 
 import pandas as pd
+from PySide6.QtWidgets import QMessageBox, QWidget
 
 from tse_datatools.data.dataset import Dataset
 
@@ -12,25 +13,42 @@ class MergingMode(Enum):
     OVERLAP = "Overlap"
 
 
-def merge_datasets(new_dataset_name: str, datasets: list[Dataset], merging_mode: MergingMode) -> Optional[Dataset]:
+def merge_datasets(
+    new_dataset_name: str, datasets: list[Dataset], merging_mode: MergingMode, parent_widget: QWidget
+) -> Optional[Dataset]:
+    # check number of datasets
     if len(datasets) < 2:
-        raise Exception("At least two datasets should be present")
+        QMessageBox.critical(
+            parent_widget,
+            "Cannot merge datasets!",
+            "At least two datasets should be selected.",
+            buttons=QMessageBox.StandardButton.Abort,
+            defaultButton=QMessageBox.StandardButton.Abort,
+        )
+        return None
+
+    # check variables compatibility
+    first_variables_set = datasets[0].variables
+    for dataset in datasets:
+        if dataset.variables != first_variables_set:
+            QMessageBox.critical(
+                parent_widget,
+                "Cannot merge datasets!",
+                "List of variables should be the same.",
+                buttons=QMessageBox.StandardButton.Abort,
+                defaultButton=QMessageBox.StandardButton.Abort,
+            )
+            return None
 
     # sort datasets by start time
     datasets.sort(key=lambda x: x.start_timestamp)
 
-    # check sampling intervals compatibility
-    # first_sampling_interval = datasets[0].sampling_interval
-    # for dataset in datasets:
-    #     if dataset.sampling_interval != first_sampling_interval:
-    #         show_notification("Cannot merge datasets!", "Sampling intervals should be the same.")
-    #         return None
+    dfs = [x.original_df.copy() for x in datasets]
 
     # reassign run number
-    for run, dataset in enumerate(datasets):
-        dataset.original_df["Run"] = run + 1
+    for run, df in enumerate(dfs):
+        df["Run"] = run + 1
 
-    dfs = [x.original_df for x in datasets]
     new_df = None
     if merging_mode is MergingMode.CONCATENATE:
         new_df = pd.concat(dfs, ignore_index=True)

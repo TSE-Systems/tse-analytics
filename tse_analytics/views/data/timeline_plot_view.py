@@ -111,6 +111,9 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         ):
             return
 
+        x_min = None
+        x_max = None
+
         if Manager.data.grouping_mode == GroupingMode.ANIMALS:
             animals = (
                 Manager.data.selected_animals
@@ -123,8 +126,16 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
                 x = (filtered_data["DateTime"] - pd.Timestamp("1970-01-01")) // pd.Timedelta(
                     "1s"
                 )  # Convert to POSIX timestamp
+
                 x = x.to_numpy()
                 # x = filtered_data["Bin"].to_numpy()
+                tmp_min = x.min()
+                tmp_max = x.max()
+                if x_min is None or tmp_min < x_min:
+                    x_min = tmp_min
+                if x_max is None or tmp_max > x_max:
+                    x_max = tmp_max
+
                 y = filtered_data[self._variable].to_numpy()
 
                 pen = mkPen(color=(i, len(animals)), width=1)
@@ -152,8 +163,16 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
                 x = (filtered_data["DateTime"] - pd.Timestamp("1970-01-01")) // pd.Timedelta(
                     "1s"
                 )  # Convert to POSIX timestamp
+
                 x = x.to_numpy()
                 # x = filtered_data["Bin"].to_numpy()
+                tmp_min = x.min()
+                tmp_max = x.max()
+                if x_min is None or tmp_min < x_min:
+                    x_min = tmp_min
+                if x_max is None or tmp_max > x_max:
+                    x_max = tmp_max
+
                 y = filtered_data[self._variable].to_numpy()
 
                 # pen = (i, len(Manager.data.selected_groups))
@@ -181,8 +200,16 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
                 x = (filtered_data["DateTime"] - pd.Timestamp("1970-01-01")) // pd.Timedelta(
                     "1s"
                 )  # Convert to POSIX timestamp
+
                 x = x.to_numpy()
                 # x = filtered_data["Bin"].to_numpy()
+                tmp_min = x.min()
+                tmp_max = x.max()
+                if x_min is None or tmp_min < x_min:
+                    x_min = tmp_min
+                if x_max is None or tmp_max > x_max:
+                    x_max = tmp_max
+
                 y = filtered_data[self._variable].to_numpy()
 
                 pen = mkPen(color=(i, len(runs)), width=1)
@@ -195,9 +222,8 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
                 p2d: pg.PlotDataItem = self.p2.plot(x, y, pen=pen)
 
         # bound the LinearRegionItem to the plotted data
-        # self.region.setClipItem(p2d)
-        if len(x) > 0:
-            self.region.setRegion([x.min(), x.max()])
+        self.region.setClipItem(self.p2)
+        self.region.setRegion([x_min, x_max])
 
         self.update()
 

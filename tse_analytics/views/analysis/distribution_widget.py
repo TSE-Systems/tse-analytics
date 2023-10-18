@@ -61,8 +61,6 @@ class DistributionWidget(QWidget, MessengerListener):
         self.ui.canvas.clear(False)
         ax = self.ui.canvas.figure.add_subplot(111)
 
-        # sns.boxplot(data=df, x="Group", y=self.variable, ax=self.ax, color="green")
-
         match Manager.data.grouping_mode:
             case GroupingMode.FACTORS:
                 x = Manager.data.selected_factor.name
@@ -74,6 +72,7 @@ class DistributionWidget(QWidget, MessengerListener):
         df[x] = df[x].cat.remove_unused_categories()
 
         sns.violinplot(data=df, x=x, y=self.variable, ax=ax)
+        # sns.boxplot(data=df, x=x, y=self.variable, hue="f1", fill=False, ax=ax)
 
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()

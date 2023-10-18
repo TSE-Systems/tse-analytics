@@ -150,7 +150,7 @@ class DatasetLoader:
         # find sampling interval
         timedeltas = []
         for index in range(1, 6):
-            timedeltas.append(df["DateTime"][index] - df["DateTime"][index-1])
+            timedeltas.append(df["DateTime"][index] - df["DateTime"][index - 1])
         timedelta = most_frequent(timedeltas)
 
         # Sort dataframe
@@ -190,6 +190,8 @@ class DatasetLoader:
         description = header_section.lines[0].split(DELIMITER)[1]
         version = header_section.lines[1].split(DELIMITER)[1]
 
+        buf = StringIO()
+        df.info(buf=buf)
         meta = {
             "Name": name,
             "Description": description,
@@ -199,6 +201,7 @@ class DatasetLoader:
             "Animals": [v.get_dict() for i, (k, v) in enumerate(animals.items())],
             "Variables": [v.get_dict() for i, (k, v) in enumerate(variables.items())],
             "Sampling Interval": str(timedelta),
+            "Data": [buf.getvalue()],
         }
 
         return Dataset(
@@ -209,7 +212,7 @@ class DatasetLoader:
             animals=animals,
             variables=variables,
             df=df,
-            sampling_interval=timedelta
+            sampling_interval=timedelta,
         )
 
 

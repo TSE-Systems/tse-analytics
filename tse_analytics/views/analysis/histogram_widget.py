@@ -38,7 +38,7 @@ class HistogramWidget(QWidget, MessengerListener):
         self.__clear()
 
     def __clear(self):
-        self.ui.canvas.clear()
+        self.ui.canvas.clear(True)
 
     def __get_plot_layout(self, number_of_elements: int):
         if number_of_elements == 1:
@@ -62,7 +62,8 @@ class HistogramWidget(QWidget, MessengerListener):
 
         df.hist(
             column=variables,
-            bins=50,
+            bins=self.ui.spinBoxBins.value(),
+            log=self.ui.toolButtonLogScale.isChecked(),
             sharex=False,
             sharey=False,
             layout=self.__get_plot_layout(len(variables)),

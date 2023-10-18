@@ -1,7 +1,7 @@
 from typing import Optional
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QTreeView, QWidget
+from PySide6.QtWidgets import QTreeView, QWidget, QAbstractItemView
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import (
@@ -20,6 +20,7 @@ class InfoWidget(QTreeView, MessengerListener):
 
         self.horizontalScrollBar().setEnabled(True)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
         self.setAlternatingRowColors(True)
 
         self._model = JsonModel()

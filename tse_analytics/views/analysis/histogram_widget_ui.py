@@ -15,8 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QHBoxLayout, QSizePolicy, QSpacerItem,
-    QToolButton, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QSizePolicy,
+    QSpacerItem, QSpinBox, QToolButton, QVBoxLayout,
+    QWidget)
 
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 import resources_rc
@@ -34,6 +35,25 @@ class Ui_HistogramWidget(object):
         self.toolButtonAnalyse.setObjectName(u"toolButtonAnalyse")
 
         self.horizontalLayout.addWidget(self.toolButtonAnalyse)
+
+        self.labelBins = QLabel(HistogramWidget)
+        self.labelBins.setObjectName(u"labelBins")
+
+        self.horizontalLayout.addWidget(self.labelBins)
+
+        self.spinBoxBins = QSpinBox(HistogramWidget)
+        self.spinBoxBins.setObjectName(u"spinBoxBins")
+        self.spinBoxBins.setMinimum(1)
+        self.spinBoxBins.setMaximum(100)
+        self.spinBoxBins.setValue(50)
+
+        self.horizontalLayout.addWidget(self.spinBoxBins)
+
+        self.toolButtonLogScale = QToolButton(HistogramWidget)
+        self.toolButtonLogScale.setObjectName(u"toolButtonLogScale")
+        self.toolButtonLogScale.setCheckable(True)
+
+        self.horizontalLayout.addWidget(self.toolButtonLogScale)
 
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
@@ -69,5 +89,7 @@ class Ui_HistogramWidget(object):
     def retranslateUi(self, HistogramWidget):
         HistogramWidget.setWindowTitle(QCoreApplication.translate("HistogramWidget", u"Form", None))
         self.toolButtonAnalyse.setText(QCoreApplication.translate("HistogramWidget", u"Analyze", None))
+        self.labelBins.setText(QCoreApplication.translate("HistogramWidget", u"Bins:", None))
+        self.toolButtonLogScale.setText(QCoreApplication.translate("HistogramWidget", u"Log Scale", None))
     # retranslateUi
 

@@ -20,7 +20,7 @@ openpyxl = "3.1.2"
 pandas = {version="2.1.1", extras=["performance"]}
 pingouin = "0.5.3"
 plotly = "5.17.0"
-psutil = "5.9.5"
+psutil = "5.9.6"
 pyqtgraph = "0.13.3"
 scikit-learn = "1.3.1"
 scipy = "1.11.3"
@@ -29,14 +29,12 @@ statsmodels = "0.14.0"
 windows-toasts = "1.0.1"
 
 [tool.poetry.group.dev.dependencies]
-black = "23.9.1"
-flake8 = "6.1.0"
-isort = "5.12.0"
-mypy = "1.6.0"
-pyinstaller = "6.0.0"
+black = "23.10.0"
+mypy = "1.6.1"
+pyinstaller = "6.1.0"
 pylint = "3.0.1"
 pytest = "7.4.2"
-ruff = "0.0.292"
+ruff = "0.1.0"
 
 [build-system]
 requires = ["poetry-core"]

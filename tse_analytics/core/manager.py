@@ -1,4 +1,5 @@
 from PySide6.QtCore import QModelIndex, QThreadPool
+from PySide6.QtWidgets import QWidget
 from loguru import logger
 
 from tse_analytics.data.data_hub import DataHub
@@ -44,7 +45,7 @@ class Manager:
         cls.data.clear()
 
     @classmethod
-    def merge_datasets(cls, new_dataset_name: str, datasets: list[Dataset], merging_mode: MergingMode) -> None:
-        result_dataset = merge_datasets(new_dataset_name, datasets, merging_mode)
+    def merge_datasets(cls, new_dataset_name: str, datasets: list[Dataset], merging_mode: MergingMode, parent_widget: QWidget) -> None:
+        result_dataset = merge_datasets(new_dataset_name, datasets, merging_mode, parent_widget)
         if result_dataset is not None:
             cls.workspace.add_dataset(result_dataset)

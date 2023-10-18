@@ -160,7 +160,7 @@ class DataHub:
         self, calculate_error=False, variables: Optional[list[str]] = None, dropna=False
     ) -> pd.DataFrame:
         if variables is not None:
-            default_columns = ["DateTime", "Animal", "Box", "Run", "Bin"]
+            default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
             factor_columns = list(self.selected_dataset.factors.keys())
             result = self.selected_dataset.active_df[default_columns + factor_columns + variables].copy()
         else:
