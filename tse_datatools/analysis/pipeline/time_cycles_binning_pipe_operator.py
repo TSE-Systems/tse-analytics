@@ -25,11 +25,8 @@ class TimeCyclesBinningPipeOperator(PipeOperator):
         self.selected_factor = selected_factor
 
     def process(self, df: pd.DataFrame) -> pd.DataFrame:
-        filter_method = (
-            lambda x: "Light"
-            if (self.settings.light_cycle_start <= x.time() < self.settings.dark_cycle_start)
-            else "Dark"
-        )
+        def filter_method(x):
+            return "Light" if self.settings.light_cycle_start <= x.time() < self.settings.dark_cycle_start else "Dark"
         df["Bin"] = df["DateTime"].apply(filter_method).astype("category")
         df.drop(columns=["DateTime"], inplace=True)
 

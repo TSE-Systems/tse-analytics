@@ -3,7 +3,6 @@ from typing import Optional
 import pingouin as pg
 from PySide6.QtWidgets import QWidget
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
-from numpy import isnan
 
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager

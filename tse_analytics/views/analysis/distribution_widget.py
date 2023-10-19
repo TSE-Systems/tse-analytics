@@ -28,6 +28,9 @@ class DistributionWidget(QWidget, MessengerListener):
         self.variable = ""
         self.ui.variableSelector.currentTextChanged.connect(self.__variable_changed)
 
+        self.color_factor = None
+        self.ui.factorSelector.currentTextChanged.connect(self.__factor_changed)
+
         self.ui.horizontalLayout.insertWidget(
             self.ui.horizontalLayout.count() - 2, NavigationToolbar2QT(self.ui.canvas, self)
         )
@@ -39,16 +42,24 @@ class DistributionWidget(QWidget, MessengerListener):
     def __on_dataset_changed(self, message: DatasetChangedMessage):
         self.__clear()
         self.ui.variableSelector.set_data(message.data.variables)
+        self.ui.factorSelector.set_data(message.data.factors)
 
     def __on_clear_data(self, message: ClearDataMessage):
         self.__clear()
 
     def __clear(self):
         self.ui.variableSelector.clear()
+        self.ui.factorSelector.clear()
         self.ui.canvas.clear()
 
     def __variable_changed(self, variable: str):
         self.variable = variable
+
+    def __factor_changed(self, factor: str):
+        if factor == "":
+            self.color_factor = None
+        else:
+            self.color_factor = factor
 
     def __analyze(self):
         if Manager.data.selected_dataset is None or (
@@ -71,8 +82,10 @@ class DistributionWidget(QWidget, MessengerListener):
 
         df[x] = df[x].cat.remove_unused_categories()
 
-        sns.violinplot(data=df, x=x, y=self.variable, ax=ax)
-        # sns.boxplot(data=df, x=x, y=self.variable, hue="f1", fill=False, ax=ax)
+        if self.color_factor is None:
+            sns.violinplot(data=df, x=x, y=self.variable, ax=ax)
+        else:
+            sns.boxplot(data=df, x=x, y=self.variable, hue=self.color_factor, gap=0.1, ax=ax)
 
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()

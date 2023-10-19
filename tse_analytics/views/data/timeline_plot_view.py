@@ -153,7 +153,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
                 self.plot_data_items[animal.id] = p1d
                 self.legend.addItem(p1d, f"Animal {animal.id}")
 
-                p2d: pg.PlotDataItem = self.p2.plot(x, y, pen=pen)
+                self.p2.plot(x, y, pen=pen)
         elif Manager.data.grouping_mode == GroupingMode.FACTORS:
             groups = Manager.data.selected_factor.groups
             for i, group in enumerate(groups):
@@ -191,7 +191,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
                 self.plot_data_items[group.name] = p1d
                 self.legend.addItem(p1d, f"{group.name}")
 
-                p2d: pg.PlotDataItem = self.p2.plot(x, y, pen=pen)
+                self.p2.plot(x, y, pen=pen)
         elif Manager.data.grouping_mode == GroupingMode.RUNS:
             runs = self._df["Run"].unique()
             for i, run in enumerate(runs):
@@ -219,7 +219,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
                 self.plot_data_items[run] = p1d
                 self.legend.addItem(p1d, f"Run {run}")
 
-                p2d: pg.PlotDataItem = self.p2.plot(x, y, pen=pen)
+                self.p2.plot(x, y, pen=pen)
 
         # bound the LinearRegionItem to the plotted data
         self.region.setClipItem(self.p2)

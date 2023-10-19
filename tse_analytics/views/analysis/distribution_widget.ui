@@ -34,6 +34,16 @@
       <widget class="VariableSelector" name="variableSelector"/>
      </item>
      <item>
+      <widget class="QLabel" name="labelColorFactor">
+       <property name="text">
+        <string>Color Factor:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="FactorSelector" name="factorSelector"/>
+     </item>
+     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -79,6 +89,11 @@
    <class>VariableSelector</class>
    <extends>QComboBox</extends>
    <header>tse_analytics.views.misc.variable_selector</header>
+  </customwidget>
+  <customwidget>
+   <class>FactorSelector</class>
+   <extends>QComboBox</extends>
+   <header>tse_analytics.views.misc.factor_selector</header>
   </customwidget>
  </customwidgets>
  <resources>

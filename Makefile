@@ -17,14 +17,11 @@ clean: ## remove all build, test, coverage and Python artifacts
 	find $(SOURCE_DIR) -name '*_ui.py' -exec rm -f {} +
 	find $(SOURCE_DIR) -name '*_rc.py' -exec rm -f {} +
 
-flake8: ## check style with flake8
-	flake8
-
 pylint:
 	pylint -j 8 tse_analytics tse_datatools
 
 ruff:
-	ruff tse_analytics tse_datatools
+	ruff check .
 
 black:
 	black tse_analytics tse_datatools

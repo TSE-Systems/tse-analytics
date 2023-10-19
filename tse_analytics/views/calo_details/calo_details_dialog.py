@@ -65,7 +65,7 @@ class CaloDetailsDialog(QDialog):
 
         try:
             calo_details_settings = settings.value("CaloDetailsSettings", get_default_settings())
-        except:
+        except Exception:
             calo_details_settings = get_default_settings()
 
         self.calo_details_settings_widget = CaloDetailsSettingsWidget()

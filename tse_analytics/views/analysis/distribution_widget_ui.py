@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QSizePolicy,
     QSpacerItem, QToolButton, QVBoxLayout, QWidget)
 
 from tse_analytics.views.misc.MplCanvas import MplCanvas
+from tse_analytics.views.misc.factor_selector import FactorSelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 import resources_rc
 
@@ -45,6 +46,16 @@ class Ui_DistributionWidget(object):
         self.variableSelector.setObjectName(u"variableSelector")
 
         self.horizontalLayout.addWidget(self.variableSelector)
+
+        self.labelColorFactor = QLabel(DistributionWidget)
+        self.labelColorFactor.setObjectName(u"labelColorFactor")
+
+        self.horizontalLayout.addWidget(self.labelColorFactor)
+
+        self.factorSelector = FactorSelector(DistributionWidget)
+        self.factorSelector.setObjectName(u"factorSelector")
+
+        self.horizontalLayout.addWidget(self.factorSelector)
 
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
@@ -81,5 +92,6 @@ class Ui_DistributionWidget(object):
         DistributionWidget.setWindowTitle(QCoreApplication.translate("DistributionWidget", u"Form", None))
         self.toolButtonAnalyse.setText(QCoreApplication.translate("DistributionWidget", u"Analyze", None))
         self.labelVariable.setText(QCoreApplication.translate("DistributionWidget", u"Variable:", None))
+        self.labelColorFactor.setText(QCoreApplication.translate("DistributionWidget", u"Color Factor:", None))
     # retranslateUi
 
