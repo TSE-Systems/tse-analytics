@@ -17,10 +17,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QSizePolicy,
-    QSpacerItem, QSplitter, QToolButton, QVBoxLayout,
-    QWidget)
+    QSpacerItem, QToolButton, QVBoxLayout, QWidget)
 
-from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.variable_selector import VariableSelector
 import resources_rc
 
@@ -63,22 +61,15 @@ class Ui_AnovaWidget(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout)
 
-        self.splitter = QSplitter(AnovaWidget)
-        self.splitter.setObjectName(u"splitter")
+        self.webView = QWebEngineView(AnovaWidget)
+        self.webView.setObjectName(u"webView")
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.splitter.sizePolicy().hasHeightForWidth())
-        self.splitter.setSizePolicy(sizePolicy)
-        self.splitter.setOrientation(Qt.Vertical)
-        self.canvas = MplCanvas(self.splitter)
-        self.canvas.setObjectName(u"canvas")
-        self.splitter.addWidget(self.canvas)
-        self.webView = QWebEngineView(self.splitter)
-        self.webView.setObjectName(u"webView")
-        self.splitter.addWidget(self.webView)
+        sizePolicy.setHeightForWidth(self.webView.sizePolicy().hasHeightForWidth())
+        self.webView.setSizePolicy(sizePolicy)
 
-        self.verticalLayout.addWidget(self.splitter)
+        self.verticalLayout.addWidget(self.webView)
 
 
         self.retranslateUi(AnovaWidget)

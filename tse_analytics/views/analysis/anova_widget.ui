@@ -57,29 +57,18 @@
     </layout>
    </item>
    <item>
-    <widget class="QSplitter" name="splitter">
+    <widget class="QWebEngineView" name="webView" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <widget class="MplCanvas" name="canvas" native="true"/>
-     <widget class="QWebEngineView" name="webView" native="true"/>
     </widget>
    </item>
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>MplCanvas</class>
-   <extends>QWidget</extends>
-   <header>tse_analytics.views.misc.MplCanvas</header>
-   <container>1</container>
-  </customwidget>
   <customwidget>
    <class>VariableSelector</class>
    <extends>QComboBox</extends>

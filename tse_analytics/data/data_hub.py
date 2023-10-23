@@ -32,6 +32,7 @@ from tse_datatools.data.animal import Animal
 from tse_datatools.data.calo_details import CaloDetails
 from tse_datatools.data.dataset import Dataset
 from tse_datatools.data.factor import Factor
+from tse_datatools.data.time_intervals_binning_settings import TimeIntervalsBinningSettings
 from tse_datatools.data.variable import Variable
 
 
@@ -218,5 +219,41 @@ class DataHub:
         # TODO: should or should not?
         if dropna:
             result = result.dropna()
+
+        return result
+
+    def get_anova_df(self, variables: Optional[list[str]] = None) -> pd.DataFrame:
+        if variables is not None:
+            default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
+            factor_columns = list(self.selected_dataset.factors.keys())
+            result = self.selected_dataset.active_df[default_columns + factor_columns + variables].copy()
+        else:
+            result = self.selected_dataset.active_df.copy()
+
+        # Filter operator
+        if len(self.selected_animals) > 0:
+            operator = AnimalFilterPipeOperator(self.selected_animals)
+            result = operator.process(result)
+
+        # Outliers operator
+        if self.outliers_params.mode == OutliersMode.REMOVE:
+            if variables is None:
+                variables = list(self.selected_dataset.variables.keys())
+            operator = OutliersPipeOperator(self.outliers_params, variables)
+            result = operator.process(result)
+
+        # Binning
+        factor_names = list(self.selected_dataset.factors.keys())
+        operator = TimeIntervalsBinningPipeOperator(
+            TimeIntervalsBinningSettings("day", 365),
+            BinningOperation.MEAN,
+            GroupingMode.ANIMALS,
+            factor_names,
+            None,
+        )
+        result = operator.process(result)
+
+        # TODO: should or should not?
+        result = result.dropna()
 
         return result

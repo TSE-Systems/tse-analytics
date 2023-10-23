@@ -2,7 +2,6 @@ from typing import Optional
 
 import pingouin as pg
 from PySide6.QtWidgets import QWidget
-from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
@@ -32,8 +31,6 @@ class AnovaWidget(QWidget, MessengerListener):
         # self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PdfViewerEnabled, False)
         # self.ui.webView.setHtml("")
 
-        self.ui.splitter.setSizes([2, 1])
-
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
         messenger.subscribe(self, ClearDataMessage, self.__on_clear_data)
@@ -47,38 +44,28 @@ class AnovaWidget(QWidget, MessengerListener):
 
     def __clear(self):
         self.ui.variableSelector.clear()
-        self.ui.canvas.clear()
         self.ui.webView.setHtml("")
 
     def __variable_changed(self, variable: str):
         self.variable = variable
 
     def __analyze(self):
-        if Manager.data.selected_dataset is None or Manager.data.selected_factor is None:
+        if Manager.data.selected_dataset is None or len(Manager.data.selected_dataset.factors) == 0:
             return
 
-        factor_name = Manager.data.selected_factor.name
-        df = Manager.data.get_current_df(calculate_error=False, variables=[self.variable])
+        df = Manager.data.get_anova_df(variables=[self.variable])
 
-        # Drop NaN rows
-        df = df.dropna()
-
-        homoscedasticity = pg.homoscedasticity(data=df, dv=self.variable, group=factor_name)
-
-        if homoscedasticity["equal_var"].values[0]:
-            anova_header = "Classic one-way ANOVA"
-            anova = pg.anova(data=df, dv=self.variable, between=factor_name, detailed=True)
-        else:
-            anova_header = "Welch one-way ANOVA"
-            anova = pg.welch_anova(data=df, dv=self.variable, between=factor_name)
-
-        # anova_header = "Repeated measures one-way ANOVA"
-        # anova = pg.rm_anova(data=df, dv=self.variable, within=factor_name, subject='Animal', detailed=True)
-
-        pt = pg.pairwise_tukey(dv=self.variable, between=factor_name, data=df)
-        # self.webView.setHtml(pt.to_html())
-
-        tukey = pairwise_tukeyhsd(endog=df[self.variable], groups=df[factor_name], alpha=0.05)  # Significance level
+        factor_names = list(Manager.data.selected_dataset.factors.keys())
+        match len(factor_names):
+            case 1:
+                anova_header = "One-way ANOVA"
+            case 2:
+                anova_header = "Two-way ANOVA"
+            case 3:
+                anova_header = "Three-way ANOVA"
+            case _:
+                anova_header = "Multi-way ANOVA"
+        anova = pg.anova(data=df, dv=self.variable, between=factor_names, detailed=True).round(3)
 
         html_template = """
                 <html>
@@ -86,29 +73,15 @@ class AnovaWidget(QWidget, MessengerListener):
                     {style}
                   </head>
                   <body>
-                    <h3>Test for equality of variances between groups</h3>
-                    {homoscedasticity}
                     <h3>{anova_header}</h3>
                     {anova}
-                    <h3>Pairwise Comparison</h3>
-                    {tukey}
                   </body>
                 </html>
                 """
 
         html = html_template.format(
             style=style,
-            homoscedasticity=homoscedasticity.to_html(classes="mystyle"),
             anova_header=anova_header,
             anova=anova.to_html(classes="mystyle"),
-            tukey=pt.to_html(classes="mystyle"),
         )
         self.ui.webView.setHtml(html)
-
-        self.ui.canvas.clear(False)
-        ax = self.ui.canvas.figure.add_subplot(111)
-        tukey.plot_simultaneous(
-            ax=ax, figsize=self.ui.canvas.figure.get_size_inches()
-        )  # Plot group confidence intervals
-        self.ui.canvas.figure.tight_layout()
-        self.ui.canvas.draw()
