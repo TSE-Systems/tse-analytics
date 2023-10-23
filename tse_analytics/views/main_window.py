@@ -10,7 +10,6 @@ from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainW
 
 from tse_analytics.core.helper import LAYOUT_VERSION
 from tse_analytics.core.manager import Manager
-from tse_analytics.views.analysis.ancova_widget import AncovaWidget
 from tse_analytics.views.analysis.anova_widget import AnovaWidget
 from tse_analytics.views.analysis.correlation_widget import CorrelationWidget
 from tse_analytics.views.analysis.distribution_widget import DistributionWidget
@@ -106,13 +105,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         self.dock_manager.addDockWidgetTabToArea(correlation_dock_widget, main_area)
 
-        anova_dock_widget = self.__register_dock_widget(AnovaWidget(), "ANOVA", QIcon(":/icons/icons8-scales-16.png"))
+        anova_dock_widget = self.__register_dock_widget(AnovaWidget(), "AN(C)OVA", QIcon(":/icons/icons8-scales-16.png"))
         self.dock_manager.addDockWidgetTabToArea(anova_dock_widget, main_area)
-
-        ancova_dock_widget = self.__register_dock_widget(
-            AncovaWidget(), "ANCOVA", QIcon(":/icons/icons8-scales-16.png")
-        )
-        self.dock_manager.addDockWidgetTabToArea(ancova_dock_widget, main_area)
 
         glm_dock_widget = self.__register_dock_widget(GlmWidget(), "GLM", QIcon(":/icons/icons8-scales-16.png"))
         self.dock_manager.addDockWidgetTabToArea(glm_dock_widget, main_area)

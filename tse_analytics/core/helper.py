@@ -4,7 +4,7 @@ from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import ShowHelpMessage
 
 
-LAYOUT_VERSION = 5
+LAYOUT_VERSION = 6
 
 
 def show_help(sender, path: str):

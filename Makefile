@@ -54,7 +54,6 @@ build_ui:
 	pyside6-uic tse_analytics/views/analysis/normality_widget.ui -o tse_analytics/views/analysis/normality_widget_ui.py
 	pyside6-uic tse_analytics/views/analysis/correlation_widget.ui -o tse_analytics/views/analysis/correlation_widget_ui.py
 	pyside6-uic tse_analytics/views/analysis/anova_widget.ui -o tse_analytics/views/analysis/anova_widget_ui.py
-	pyside6-uic tse_analytics/views/analysis/ancova_widget.ui -o tse_analytics/views/analysis/ancova_widget_ui.py
 	pyside6-uic tse_analytics/views/analysis/glm_widget.ui -o tse_analytics/views/analysis/glm_widget_ui.py
 	pyside6-uic tse_analytics/views/analysis/matrix_widget.ui -o tse_analytics/views/analysis/matrix_widget_ui.py
 	pyside6-uic tse_analytics/views/analysis/pca_widget.ui -o tse_analytics/views/analysis/pca_widget_ui.py
