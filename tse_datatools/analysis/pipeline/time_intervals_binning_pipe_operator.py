@@ -25,9 +25,6 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
         self.selected_factor = selected_factor
 
     def process(self, df: pd.DataFrame) -> pd.DataFrame:
-        # Store initial column order
-        cols = df.columns
-
         result: Optional[pd.DataFrame] = None
 
         unit = "H"
@@ -43,11 +40,11 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
         match self.grouping_mode:
             case GroupingMode.ANIMALS:
                 result = df.groupby(
-                    ["Animal", "Box", "Run"] + self.factor_names, dropna=False, observed=False
+                    ["Animal", "Box"] + self.factor_names, dropna=False, observed=False
                 ).resample(timedelta, on="DateTime", origin="start")
             case GroupingMode.FACTORS:
                 if self.selected_factor is not None:
-                    result = df.groupby([self.selected_factor.name, "Run"], dropna=False, observed=False).resample(
+                    result = df.groupby([self.selected_factor.name], dropna=False, observed=False).resample(
                         timedelta, on="DateTime", origin="start"
                     )
             case GroupingMode.RUNS:
@@ -65,7 +62,7 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
 
         match self.grouping_mode:
             case GroupingMode.ANIMALS:
-                result.sort_values(by=["DateTime", "Box"], inplace=True)
+                result.sort_values(by=["DateTime", "Animal"], inplace=True)
             case GroupingMode.FACTORS:
                 if self.selected_factor is not None:
                     result.sort_values(by=["DateTime", self.selected_factor.name], inplace=True)
@@ -73,14 +70,7 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
                 result.sort_values(by=["DateTime", "Run"], inplace=True)
 
         # the inverse of groupby, reset_index
-        result = result.reset_index().reindex(cols, axis=1)
-
-        # Hide empty columns
-        match self.grouping_mode:
-            case GroupingMode.FACTORS:
-                result.drop(columns=["Animal", "Box"], inplace=True)
-            case GroupingMode.RUNS:
-                result.drop(columns=["Animal", "Box"], inplace=True)
+        result = result.reset_index()
 
         start_date_time = result["DateTime"][0]
         result["Timedelta"] = result["DateTime"] - start_date_time

@@ -47,6 +47,8 @@ class Ui_TimeIntervalsSettingsWidget(object):
 
         self.deltaSpinBox = QSpinBox(self.groupBoxIntervals)
         self.deltaSpinBox.setObjectName(u"deltaSpinBox")
+        self.deltaSpinBox.setMinimum(1)
+        self.deltaSpinBox.setMaximum(1000)
 
         self.formLayout.setWidget(1, QFormLayout.FieldRole, self.deltaSpinBox)
 

@@ -1,6 +1,7 @@
 from typing import Optional
 
 import pingouin as pg
+from statsmodels.stats.anova import AnovaRM
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QWidget, QTableWidgetItem, QMessageBox
 
@@ -31,6 +32,8 @@ class AnovaWidget(QWidget, MessengerListener):
         self.ui.tableWidgetCovariates.setHorizontalHeaderLabels(["Name", "Unit", "Description"])
 
         self.ui.radioButtonAnova.toggled.connect(self.__anova_mode_activated)
+        self.ui.radioButtonRMAnova.toggled.connect(self.__rm_anova_mode_activated)
+        self.ui.radioButtonMixedAnova.toggled.connect(self.__mixed_anova_mode_activated)
         self.ui.radioButtonAncova.toggled.connect(self.__ancova_mode_activated)
 
         # self.ui.splitter.setSizes((1, 1))
@@ -40,6 +43,12 @@ class AnovaWidget(QWidget, MessengerListener):
         messenger.subscribe(self, ClearDataMessage, self.__on_clear_data)
 
     def __anova_mode_activated(self):
+        self.ui.groupBoxCovariates.hide()
+
+    def __rm_anova_mode_activated(self):
+        self.ui.groupBoxCovariates.hide()
+
+    def __mixed_anova_mode_activated(self):
         self.ui.groupBoxCovariates.hide()
 
     def __ancova_mode_activated(self):
@@ -102,7 +111,11 @@ class AnovaWidget(QWidget, MessengerListener):
 
         if self.ui.radioButtonAnova.isChecked():
             self.__analyze_anova(dependent_variable)
-        else:
+        elif self.ui.radioButtonRMAnova.isChecked():
+            self.__analyze_rm_anova(dependent_variable)
+        elif self.ui.radioButtonMixedAnova.isChecked():
+            self.__analyze_mixed_anova(dependent_variable)
+        elif self.ui.radioButtonAncova.isChecked():
             self.__analyze_ancova(dependent_variable)
 
     def __analyze_anova(self, dependent_variable: str):
@@ -118,7 +131,8 @@ class AnovaWidget(QWidget, MessengerListener):
                 anova_header = "Three-way ANOVA"
             case _:
                 anova_header = "Multi-way ANOVA"
-        anova = pg.anova(data=df, dv=dependent_variable, between=factor_names, detailed=True).round(3)
+
+        anova = pg.anova(data=df, dv=dependent_variable, between=factor_names, detailed=True).round(6)
 
         html_template = """
                 <html>
@@ -139,6 +153,59 @@ class AnovaWidget(QWidget, MessengerListener):
         )
         self.ui.webView.setHtml(html)
 
+    def __analyze_rm_anova(self, dependent_variable: str):
+        df = Manager.data.get_current_df(variables=[dependent_variable], dropna=True)
+
+        anova = pg.rm_anova(data=df, dv=dependent_variable, within="Bin", subject="Animal", detailed=True).round(6)
+
+        html_template = """
+                <html>
+                  <head>
+                    {style}
+                  </head>
+                  <body>
+                    <h3>Repeated measures one-way ANOVA</h3>
+                    {anova}
+                  </body>
+                </html>
+                """
+
+        html = html_template.format(
+            style=style,
+            anova=anova.to_html(classes="mystyle"),
+        )
+        self.ui.webView.setHtml(html)
+
+    def __analyze_mixed_anova(self, dependent_variable: str):
+        if Manager.data.selected_factor is None:
+            return
+
+        factor_name = Manager.data.selected_factor.name
+
+        df = Manager.data.get_current_df(variables=[dependent_variable], dropna=True)
+
+        anova = pg.mixed_anova(
+            data=df, dv=dependent_variable, between=factor_name, within="Bin", subject="Animal"
+        ).round(6)
+
+        html_template = """
+                <html>
+                  <head>
+                    {style}
+                  </head>
+                  <body>
+                    <h3>Mixed-design ANOVA</h3>
+                    {anova}
+                  </body>
+                </html>
+                """
+
+        html = html_template.format(
+            style=style,
+            anova=anova.to_html(classes="mystyle"),
+        )
+        self.ui.webView.setHtml(html)
+
     def __analyze_ancova(self, dependent_variable: str):
         if Manager.data.selected_factor is None:
             return
@@ -154,7 +221,7 @@ class AnovaWidget(QWidget, MessengerListener):
 
         df = Manager.data.get_anova_df(variables=variables)
 
-        ancova = pg.ancova(data=df, dv=dependent_variable, covar=selected_covariates, between=factor_name).round(3)
+        ancova = pg.ancova(data=df, dv=dependent_variable, covar=selected_covariates, between=factor_name).round(6)
 
         html_template = """
                         <html>

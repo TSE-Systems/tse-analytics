@@ -42,10 +42,10 @@ class TimePhasesBinningPipeOperator(PipeOperator):
 
         match self.grouping_mode:
             case GroupingMode.ANIMALS:
-                result = df.groupby(["Animal", "Box", "Run", "Bin"] + self.factor_names, observed=True)
+                result = df.groupby(["Animal", "Box", "Bin"] + self.factor_names, observed=True)
             case GroupingMode.FACTORS:
                 if self.selected_factor is not None:
-                    result = df.groupby([self.selected_factor.name, "Run", "Bin"], observed=True)
+                    result = df.groupby([self.selected_factor.name, "Bin"], observed=True)
             case GroupingMode.RUNS:
                 result = df.groupby(["Run", "Bin"], observed=True)
 

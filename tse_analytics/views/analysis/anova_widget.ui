@@ -82,10 +82,24 @@
           <item>
            <widget class="QRadioButton" name="radioButtonAnova">
             <property name="text">
-             <string>ANOVA</string>
+             <string>N-way ANOVA</string>
             </property>
             <property name="checked">
              <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonRMAnova">
+            <property name="text">
+             <string>Repeated measures ANOVA</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonMixedAnova">
+            <property name="text">
+             <string>Mixed-design ANOVA</string>
             </property>
            </widget>
           </item>

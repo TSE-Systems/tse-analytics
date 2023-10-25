@@ -82,6 +82,16 @@ class Ui_AnovaWidget(object):
 
         self.verticalLayout_2.addWidget(self.radioButtonAnova)
 
+        self.radioButtonRMAnova = QRadioButton(self.groupBoxMode)
+        self.radioButtonRMAnova.setObjectName(u"radioButtonRMAnova")
+
+        self.verticalLayout_2.addWidget(self.radioButtonRMAnova)
+
+        self.radioButtonMixedAnova = QRadioButton(self.groupBoxMode)
+        self.radioButtonMixedAnova.setObjectName(u"radioButtonMixedAnova")
+
+        self.verticalLayout_2.addWidget(self.radioButtonMixedAnova)
+
         self.radioButtonAncova = QRadioButton(self.groupBoxMode)
         self.radioButtonAncova.setObjectName(u"radioButtonAncova")
 
@@ -151,7 +161,9 @@ class Ui_AnovaWidget(object):
         self.toolButtonAnalyse.setText(QCoreApplication.translate("AnovaWidget", u"Analyze", None))
         self.groupBoxSettings.setTitle(QCoreApplication.translate("AnovaWidget", u"Settings", None))
         self.groupBoxMode.setTitle(QCoreApplication.translate("AnovaWidget", u"Mode", None))
-        self.radioButtonAnova.setText(QCoreApplication.translate("AnovaWidget", u"ANOVA", None))
+        self.radioButtonAnova.setText(QCoreApplication.translate("AnovaWidget", u"N-way ANOVA", None))
+        self.radioButtonRMAnova.setText(QCoreApplication.translate("AnovaWidget", u"Repeated measures ANOVA", None))
+        self.radioButtonMixedAnova.setText(QCoreApplication.translate("AnovaWidget", u"Mixed-design ANOVA", None))
         self.radioButtonAncova.setText(QCoreApplication.translate("AnovaWidget", u"ANCOVA", None))
         self.groupBoxDependentVariable.setTitle(QCoreApplication.translate("AnovaWidget", u"Dependent Variable", None))
         self.groupBoxCovariates.setTitle(QCoreApplication.translate("AnovaWidget", u"Covariates", None))
