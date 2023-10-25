@@ -12,7 +12,6 @@ from tse_analytics.messaging.messages import DatasetChangedMessage, ClearDataMes
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.glm_widget_ui import Ui_GlmWidget
-from tse_datatools.data.variable import Variable
 
 
 class GlmWidget(QWidget, MessengerListener):
@@ -45,9 +44,7 @@ class GlmWidget(QWidget, MessengerListener):
 
     def __on_dataset_changed(self, message: DatasetChangedMessage):
         self.__clear()
-        covariate_variables = message.data.variables.copy()
-        covariate_variables["Weight"] = Variable("Weight", "[g]", "Animal weight")
-        self.ui.variableSelectorCovariate.set_data(covariate_variables)
+        self.ui.variableSelectorCovariate.set_data(message.data.variables)
         self.ui.variableSelectorResponse.set_data(message.data.variables)
 
     def __on_clear_data(self, message: ClearDataMessage):
@@ -73,19 +70,9 @@ class GlmWidget(QWidget, MessengerListener):
         variables = [self.response] if self.response == self.covariate else [self.response, self.covariate]
         df = Manager.data.get_current_df(calculate_error=False, variables=variables)
 
-        if self.covariate == "Weight":
-            df = df.groupby(by=["Animal"], as_index=False).agg({self.response: "mean", factor_name: "first"})
-        else:
-            df = df.groupby(by=["Animal"], as_index=False).agg(
-                {self.covariate: "mean", self.response: "mean", factor_name: "first"}
-            )
-
-        if self.covariate == "Weight":
-            df["Weight"] = df["Animal"].astype(float)
-            weights = {}
-            for animal in Manager.data.selected_dataset.animals.values():
-                weights[animal.id] = animal.weight
-            df = df.replace({"Weight": weights})
+        df = df.groupby(by=["Animal"], as_index=False).agg(
+            {self.covariate: "mean", self.response: "mean", factor_name: "first"}
+        )
 
         facet_grid = sns.lmplot(data=df, x=self.covariate, y=self.response, hue=factor_name, robust=False)
         canvas = FigureCanvasQTAgg(facet_grid.figure)

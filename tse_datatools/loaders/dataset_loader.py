@@ -6,7 +6,6 @@ from collections import namedtuple
 import pandas as pd
 
 from tse_datatools.data.animal import Animal
-from tse_datatools.data.box import Box
 from tse_datatools.data.dataset import Dataset
 from tse_datatools.data.variable import Variable
 
@@ -69,6 +68,15 @@ class DatasetLoader:
         return Section(section, start_index, len(lines))
 
     @staticmethod
+    def __add_cumulative_columns(df: pd.DataFrame, origin_name: str, variables: dict[str, Variable]):
+        cols = [col for col in df.columns if origin_name in col]
+        for col in cols:
+            cumulative_col_name = col + "C"
+            df[cumulative_col_name] = df.groupby("Box", observed=False)[col].transform(pd.Series.cumsum)
+            var = Variable(name=cumulative_col_name, unit=variables[col].unit, description=f"{col} (cumulative)")
+            variables[var.name] = var
+
+    @staticmethod
     def __load_from_csv(path: Path):
         with open(path, "r") as f:
             lines = f.readlines()
@@ -91,7 +99,6 @@ class DatasetLoader:
             group_section.section_end_index + 1 if group_section is not None else animal_section.section_end_index + 1,
         )
 
-        boxes: dict[int, Box] = {}
         animals: dict[int, Animal] = {}
         variables: dict[str, Variable] = {}
 
@@ -99,16 +106,13 @@ class DatasetLoader:
             elements = line.split(DELIMITER)
             animal = Animal(
                 id=int(elements[1]),
-                box_id=int(elements[0]),
+                box=int(elements[0]),
                 weight=float(elements[2]),
                 text1=elements[3],
                 text2=elements[4],
                 text3=elements[5] if len(elements) == 6 else "",
             )
             animals[animal.id] = animal
-
-            box = Box(animal.box_id, animal.id)
-            boxes[box.id] = box
 
         data_header = data_section.lines[0].rstrip(DELIMITER)
         columns = data_header.split(DELIMITER)
@@ -121,6 +125,9 @@ class DatasetLoader:
                 continue
             variable = Variable(name=item, unit=columns_unit[i], description="")
             variables[variable.name] = variable
+
+        # Add Weight variable
+        variables["Weight"] = Variable("Weight", "[g]", "Animal weight")
 
         data = data_section.lines[2:]
         data = [line.rstrip(DELIMITER) for line in data]
@@ -158,15 +165,8 @@ class DatasetLoader:
         df.reset_index(drop=True, inplace=True)
 
         # Calculate cumulative values
-        if "Drink" in df.columns:
-            df["DrinkK"] = df.groupby("Box", observed=False)["Drink"].transform(pd.Series.cumsum)
-            var = Variable(name="DrinkK", unit=variables["Drink"].unit, description="")
-            variables[var.name] = var
-
-        if "Feed" in df.columns:
-            df["FeedK"] = df.groupby("Box", observed=False)["Feed"].transform(pd.Series.cumsum)
-            var = Variable(name="FeedK", unit=variables["Feed"].unit, description="")
-            variables[var.name] = var
+        DatasetLoader.__add_cumulative_columns(df, "Drink", variables)
+        DatasetLoader.__add_cumulative_columns(df, "Feed", variables)
 
         start_date_time = df["DateTime"][0]
         df.insert(loc=1, column="Timedelta", value=df["DateTime"] - start_date_time)
@@ -175,11 +175,20 @@ class DatasetLoader:
         # Add Run column
         df.insert(loc=5, column="Run", value=1)
 
+        # Add Weight column
+        if "Weight" not in df.columns:
+            df.insert(loc=6, column="Weight", value=df["Animal"])
+            weights = {}
+            for animal in animals.values():
+                weights[animal.id] = animal.weight
+            df = df.replace({"Weight": weights})
+
         # convert categorical types
         df = df.astype(
             {
                 "Bin": "category",
                 "Run": "category",
+                "Weight": "float",
             }
         )
 
@@ -197,7 +206,6 @@ class DatasetLoader:
             "Description": description,
             "Version": version,
             "Path": str(path),
-            "Boxes": [v.get_dict() for i, (k, v) in enumerate(boxes.items())],
             "Animals": [v.get_dict() for i, (k, v) in enumerate(animals.items())],
             "Variables": [v.get_dict() for i, (k, v) in enumerate(variables.items())],
             "Sampling Interval": str(timedelta),
@@ -208,7 +216,6 @@ class DatasetLoader:
             name=name,
             path=str(path),
             meta=meta,
-            boxes=boxes,
             animals=animals,
             variables=variables,
             df=df,

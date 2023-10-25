@@ -4,7 +4,7 @@ from dataclasses import dataclass
 @dataclass
 class Animal:
     id: int
-    box_id: int
+    box: int
     weight: float
     text1: str
     text2: str

@@ -4,7 +4,6 @@ import pandas as pd
 
 from tse_datatools.data.animal import Animal
 from tse_datatools.data.binning_settings import BinningSettings
-from tse_datatools.data.box import Box
 from tse_datatools.data.calo_details import CaloDetails
 from tse_datatools.data.factor import Factor
 from tse_datatools.data.group import Group
@@ -17,7 +16,6 @@ class Dataset:
         name: str,
         path: str,
         meta: dict | list[dict],
-        boxes: dict[int, Box],
         animals: dict[int, Animal],
         variables: dict[str, Variable],
         df: pd.DataFrame,
@@ -28,7 +26,6 @@ class Dataset:
 
         self.meta = meta
 
-        self.boxes = boxes
         self.animals = animals
         self.variables = variables
 
@@ -92,7 +89,7 @@ class Dataset:
         animal_ids = df["Animal"].unique()
 
         for factor in self.factors.values():
-            animal_factor_map: dict[int, Any] = {}
+            animal_factor_map: dict[str, Any] = {}
             for animal_id in animal_ids:
                 animal_factor_map[animal_id] = None
 

@@ -72,9 +72,6 @@ def merge_datasets(
 
     new_path = ""
     new_meta = [dataset.meta for dataset in datasets]
-    new_boxes = {}
-    for box in [dataset.boxes for dataset in datasets]:
-        new_boxes.update(box)
     new_animals = {}
     for animals in [dataset.animals for dataset in datasets]:
         new_animals.update(animals)
@@ -85,7 +82,6 @@ def merge_datasets(
         name=new_dataset_name,
         path=new_path,
         meta=new_meta,
-        boxes=new_boxes,
         animals=new_animals,
         variables=new_variables,
         df=new_df,

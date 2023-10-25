@@ -19,7 +19,7 @@ class AnimalsModel(QAbstractTableModel):
         elif role != Qt.ItemDataRole.DisplayRole:
             return None
         item = self.items[index.row()]
-        values = (item.id, item.box_id, item.weight, item.text1, item.text2, item.text3)
+        values = (item.id, item.box, item.weight, item.text1, item.text2, item.text3)
         return values[index.column()]
 
     def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
