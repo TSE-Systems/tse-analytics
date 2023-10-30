@@ -6,7 +6,7 @@ from tse_analytics.data.data_hub import DataHub
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.models.workspace_model import WorkspaceModel
 from tse_datatools.data.dataset import Dataset
-from tse_datatools.helpers.dataset_merger import merge_datasets, MergingMode
+from tse_datatools.helpers.dataset_merger import merge_datasets
 from tse_datatools.loaders.dataset_loader import DatasetLoader
 
 
@@ -45,7 +45,7 @@ class Manager:
         cls.data.clear()
 
     @classmethod
-    def merge_datasets(cls, new_dataset_name: str, datasets: list[Dataset], merging_mode: MergingMode, parent_widget: QWidget) -> None:
-        result_dataset = merge_datasets(new_dataset_name, datasets, merging_mode, parent_widget)
+    def merge_datasets(cls, new_dataset_name: str, datasets: list[Dataset], single_run: bool, parent_widget: QWidget) -> None:
+        result_dataset = merge_datasets(new_dataset_name, datasets, single_run, parent_widget)
         if result_dataset is not None:
             cls.workspace.add_dataset(result_dataset)

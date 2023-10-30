@@ -21,7 +21,7 @@ class BarPlotView(QWidget):
         self._variable: str = ""
         self._display_errors = False
 
-        self.canvas: Optional[FigureCanvasQTAgg] = None
+        self.canvas: Optional[FigureCanvasQTAgg] = FigureCanvasQTAgg(None)
 
     def set_data(self, df: pd.DataFrame):
         self._df = df

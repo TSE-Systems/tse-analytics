@@ -1,4 +1,3 @@
-from enum import unique, Enum
 from typing import Optional
 
 import pandas as pd
@@ -7,14 +6,8 @@ from PySide6.QtWidgets import QMessageBox, QWidget
 from tse_datatools.data.dataset import Dataset
 
 
-@unique
-class MergingMode(Enum):
-    CONCATENATE = "Concatenate"
-    OVERLAP = "Overlap"
-
-
 def merge_datasets(
-    new_dataset_name: str, datasets: list[Dataset], merging_mode: MergingMode, parent_widget: QWidget
+    new_dataset_name: str, datasets: list[Dataset], single_run: bool, parent_widget: QWidget
 ) -> Optional[Dataset]:
     # check number of datasets
     if len(datasets) < 2:
@@ -46,12 +39,14 @@ def merge_datasets(
     dfs = [x.original_df.copy() for x in datasets]
 
     # reassign run number
-    for run, df in enumerate(dfs):
-        df["Run"] = run + 1
+    if not single_run:
+        for run, df in enumerate(dfs):
+            df["Run"] = run + 1
 
-    new_df = None
-    if merging_mode is MergingMode.CONCATENATE:
-        new_df = pd.concat(dfs, ignore_index=True)
+    new_df = pd.concat(dfs, ignore_index=True)
+
+    if single_run:
+        new_df["Run"] = 1
 
     # reassign bin and timedelta
     start_date_time = new_df["DateTime"][0]

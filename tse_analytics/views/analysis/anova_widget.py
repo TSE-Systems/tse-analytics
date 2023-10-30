@@ -1,7 +1,6 @@
 from typing import Optional
 
 import pingouin as pg
-from statsmodels.stats.anova import AnovaRM
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QWidget, QTableWidgetItem, QMessageBox
 

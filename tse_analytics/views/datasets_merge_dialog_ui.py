@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractButton, QApplication, QDialog, QDialogButtonBox,
-    QGroupBox, QHBoxLayout, QLineEdit, QRadioButton,
-    QSizePolicy, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDialog,
+    QDialogButtonBox, QGroupBox, QLineEdit, QSizePolicy,
+    QVBoxLayout, QWidget)
 
 class Ui_DatasetsMergeDialog(object):
     def setupUi(self, DatasetsMergeDialog):
@@ -26,8 +26,8 @@ class Ui_DatasetsMergeDialog(object):
         DatasetsMergeDialog.resize(440, 132)
         self._4 = QVBoxLayout(DatasetsMergeDialog)
         self._4.setObjectName(u"_4")
-        self.horizontalLayout = QHBoxLayout()
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.verticalLayout = QVBoxLayout()
+        self.verticalLayout.setObjectName(u"verticalLayout")
         self.groupBoxName = QGroupBox(DatasetsMergeDialog)
         self.groupBoxName.setObjectName(u"groupBoxName")
         self._3 = QVBoxLayout(self.groupBoxName)
@@ -38,28 +38,15 @@ class Ui_DatasetsMergeDialog(object):
         self._3.addWidget(self.lineEditName)
 
 
-        self.horizontalLayout.addWidget(self.groupBoxName, 0, Qt.AlignTop)
-
-        self.groupBoxMergeMode = QGroupBox(DatasetsMergeDialog)
-        self.groupBoxMergeMode.setObjectName(u"groupBoxMergeMode")
-        self._2 = QVBoxLayout(self.groupBoxMergeMode)
-        self._2.setObjectName(u"_2")
-        self.radioButtonConcatenation = QRadioButton(self.groupBoxMergeMode)
-        self.radioButtonConcatenation.setObjectName(u"radioButtonConcatenation")
-        self.radioButtonConcatenation.setChecked(True)
-
-        self._2.addWidget(self.radioButtonConcatenation)
-
-        self.radioButtonOverlap = QRadioButton(self.groupBoxMergeMode)
-        self.radioButtonOverlap.setObjectName(u"radioButtonOverlap")
-
-        self._2.addWidget(self.radioButtonOverlap)
+        self.verticalLayout.addWidget(self.groupBoxName)
 
 
-        self.horizontalLayout.addWidget(self.groupBoxMergeMode, 0, Qt.AlignTop)
+        self._4.addLayout(self.verticalLayout)
 
+        self.checkBoxSingleRun = QCheckBox(DatasetsMergeDialog)
+        self.checkBoxSingleRun.setObjectName(u"checkBoxSingleRun")
 
-        self._4.addLayout(self.horizontalLayout)
+        self._4.addWidget(self.checkBoxSingleRun)
 
         self.buttonBox = QDialogButtonBox(DatasetsMergeDialog)
         self.buttonBox.setObjectName(u"buttonBox")
@@ -79,8 +66,6 @@ class Ui_DatasetsMergeDialog(object):
     def retranslateUi(self, DatasetsMergeDialog):
         DatasetsMergeDialog.setWindowTitle(QCoreApplication.translate("DatasetsMergeDialog", u"Merge Datasets", None))
         self.groupBoxName.setTitle(QCoreApplication.translate("DatasetsMergeDialog", u"Merged dataset name", None))
-        self.groupBoxMergeMode.setTitle(QCoreApplication.translate("DatasetsMergeDialog", u"Merge mode", None))
-        self.radioButtonConcatenation.setText(QCoreApplication.translate("DatasetsMergeDialog", u"Concatenation", None))
-        self.radioButtonOverlap.setText(QCoreApplication.translate("DatasetsMergeDialog", u"Overlap", None))
+        self.checkBoxSingleRun.setText(QCoreApplication.translate("DatasetsMergeDialog", u"Merge as a single run", None))
     # retranslateUi
 

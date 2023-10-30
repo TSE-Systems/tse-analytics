@@ -17,9 +17,9 @@ lmfit = "1.2.2"
 loguru = "0.7.2"
 matplotlib = "3.8.0"
 openpyxl = "3.1.2"
-pandas = {version="2.1.1", extras=["performance"]}
+pandas = {version="2.1.2", extras=["performance"]}
 pingouin = "0.5.3"
-plotly = "5.17.0"
+plotly = "5.18.0"
 psutil = "5.9.6"
 pyqtgraph = "0.13.3"
 scikit-learn = "1.3.2"
@@ -29,14 +29,14 @@ statsmodels = "0.14.0"
 windows-toasts = "1.0.1"
 
 [tool.poetry.group.dev.dependencies]
-black = "23.10.0"
+black = "23.10.1"
 mypy = "1.6.1"
 ipywidgets = "8.1.1"
 jupyterlab = "4.0.7"
 pyinstaller = "6.1.0"
 pylint = "3.0.2"
-pytest = "7.4.2"
-ruff = "0.1.1"
+pytest = "7.4.3"
+ruff = "0.1.3"
 
 [build-system]
 requires = ["poetry-core"]

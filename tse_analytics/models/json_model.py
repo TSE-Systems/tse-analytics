@@ -183,7 +183,7 @@ class JsonModel(QAbstractItemModel):
                 document[ch.key] = self.to_json(ch)
             return document
 
-        elif item.value_type == list:
+        elif item.value_type is list:
             document = []
             for i in range(nchild):
                 ch = item.child(i)

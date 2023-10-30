@@ -1,6 +1,7 @@
 from typing import Optional
 
 from PySide6.QtWidgets import QWidget
+from matplotlib.backends.backend_qt import NavigationToolbar2QT
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import (
@@ -35,6 +36,10 @@ class DataPlotWidget(QWidget, MessengerListener):
 
         self.ui.verticalLayout.addWidget(self.timelinePlotView)
         self.active_binning_mode = BinningMode.INTERVALS
+
+        self.plotToolbar = NavigationToolbar2QT(self.barPlotView.canvas, self)
+        self.ui.horizontalLayout.insertWidget(self.ui.horizontalLayout.count() - 1, self.plotToolbar)
+        self.plotToolbar.hide()
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
@@ -93,6 +98,7 @@ class DataPlotWidget(QWidget, MessengerListener):
                 self.active_binning_mode = Manager.data.binning_params.mode
             self.timelinePlotView.set_variable(Manager.data.selected_variable, False)
             self.timelinePlotView.set_data(df)
+            self.plotToolbar.hide()
         else:
             if Manager.data.binning_params.mode != self.active_binning_mode:
                 self.ui.verticalLayout.replaceWidget(self.timelinePlotView, self.barPlotView)
@@ -101,3 +107,5 @@ class DataPlotWidget(QWidget, MessengerListener):
                 self.active_binning_mode = Manager.data.binning_params.mode
             self.barPlotView.set_variable(Manager.data.selected_variable, False)
             self.barPlotView.set_data(df)
+            self.plotToolbar.canvas = self.barPlotView.canvas
+            self.plotToolbar.show()
