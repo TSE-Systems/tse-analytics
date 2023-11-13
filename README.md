@@ -1,45 +1,27 @@
-tse-analytics
-=============================
+# TSE Analytics
 
-This repository contains a code for QT for Python based application.
+TSE Analytics is a data analysis application designed specifically to work with the data output produced by
+[TSE PhenoMaster](https://www.tse-systems.com/service/phenotype/) software. It allows a simplified management of
+multiple datasets, data sharing and reproducibility of experimental results in a flexible and user-friendly way.
 
-Getting started
----------------
+At its core, TSE Analytics provides the following functionality:
 
-New installation mechanics (see: https://stackoverflow.com/questions/28509965/setuptools-development-requirements):
+- Working with multiple datasets simultaneously with the option to merge individual datasets
+and to save the whole workspace for later use.
+- Automatic extraction of meaningful metadata from the raw data (i.e. animal information, factors, variables sets)
+- Applying different data processing parameters on per-dataset level (e.g. different sampling times, etc.)
+- Data filtering on per-animal level, like exclusion of some animals from data processing.
+- User-defined flexible time binning with multiple grouping modes: animals, factors or runs.
+- Automatic handling of light/dark cycles or manual configuration of time phases
+(for instance, "fasting", "pre-feeding", "sleeping", etc.)
+- Outliers detection with or without removal of the data entries.
+- Export of the pre-processed data for external downstream analysis.
 
-    pip install -e .[dev] .
+Being modular toolkit by design, TSE Analytics hosts already many data analysis and visualisation capabilities and
+can be easily expanded in the future:
 
-Resources and translations
---------------------------
-
-In order to ease the development process, the Qt Creator project
-`tse-analytics.pro` is provided. You can open it to edit the UI files or to manage
-resources. Translations can be edited using Qt Linguist, part of the Qt
-SDK. In order to build the translations, you will need to have the
-`lrelease` command on your `PATH` or set its full path to the
-`LRELEASE_BIN` environment variable. UI files, translations and
-resources can be built like this:
-
-    python setup.py build_res
-
-Note that this command is automatically run before running `sdist` and
-`bdist_app` commands.
-
-Compiled application
---------------------
-
-You can generate a *compiled* application so that end-users do not need
-to install anything. You can tweak some settings on the `tse-analytics.spec` file.
-It can be generated like this:
-
-    python setup.py bdist_app
-
-Linting
--------
-
-Flake8 is a great tool to check for style issues, unused imports and
-similar stuff. You can tweak `.flake8` to ignore certain types of
-errors, increase the maximum line length, etc. You can run it like this:
-
-    flake8 app
+- Visualisation of row data on the timeline grouped by animals, factors or time bins.
+- Histograms for selected sets of variables together with distribution and normality analysis.
+- Calculation of correlations between variables, including linear regression analysis.
+- Several forms of ANOVA (N-way, repeated measures, mixed design) and ANCOVA.
+- Dimensionality reduction by means of PCA, tSNE or UMAP.
