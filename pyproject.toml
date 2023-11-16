@@ -11,13 +11,13 @@ packages = [{include = "tse_analytics"}]
 
 [tool.poetry.dependencies]
 python = "3.11.6"
-PySide6 = "6.5.2"
-PySide6-QtAds = "4.1.0.1"
+PySide6 = "6.6.0"
+PySide6-QtAds = "4.1.0.2"
 lmfit = "1.2.2"
 loguru = "0.7.2"
 matplotlib = "3.8.1"
 openpyxl = "3.1.2"
-pandas = {version="2.1.2", extras=["performance"]}
+pandas = {version="2.1.3", extras=["performance"]}
 pingouin = "0.5.3"
 plotly = "5.18.0"
 psutil = "5.9.6"
@@ -29,14 +29,14 @@ statsmodels = "0.14.0"
 windows-toasts = "1.0.1"
 
 [tool.poetry.group.dev.dependencies]
-black = "23.10.1"
-mypy = "1.6.1"
+black = "23.11.0"
+mypy = "1.7.0"
 ipywidgets = "8.1.1"
 jupyterlab = "4.0.8"
-pyinstaller = "6.1.0"
+pyinstaller = "6.2.0"
 pylint = "3.0.2"
 pytest = "7.4.3"
-ruff = "0.1.4"
+ruff = "0.1.5"
 
 [build-system]
 requires = ["poetry-core"]
