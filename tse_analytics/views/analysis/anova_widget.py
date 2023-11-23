@@ -21,7 +21,7 @@ class AnovaWidget(QWidget, MessengerListener):
         self.ui = Ui_AnovaWidget()
         self.ui.setupUi(self)
 
-        self.help_path = "docs/anova.md"
+        self.help_path = "anova.md"
         self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
 

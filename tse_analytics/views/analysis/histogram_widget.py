@@ -19,7 +19,7 @@ class HistogramWidget(QWidget, MessengerListener):
         self.ui = Ui_HistogramWidget()
         self.ui.setupUi(self)
 
-        self.help_path = "docs/histogram.md"
+        self.help_path = "histogram.md"
         self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
 

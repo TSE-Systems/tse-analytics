@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainW
 
 from tse_analytics.core.helper import LAYOUT_VERSION, show_help
 from tse_analytics.core.manager import Manager
+from tse_analytics.views.about_dialog import AboutDialog
 from tse_analytics.views.analysis.anova_widget import AnovaWidget
 from tse_analytics.views.analysis.correlation_widget import CorrelationWidget
 from tse_analytics.views.analysis.distribution_widget import DistributionWidget
@@ -175,7 +176,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionResetLayout.triggered.connect(self.__reset_layout)
         self.actionExit.triggered.connect(lambda: QApplication.exit())
         self.actionCompareRuns.triggered.connect(self.__compare_runs)
-        self.actionHelp.triggered.connect(lambda: show_help(self, "docs/main.md"))
+        self.actionHelp.triggered.connect(lambda: show_help(self, "main.md"))
+        self.actionAbout.triggered.connect(self.__show_about_dialog)
 
         self.default_docking_state = self.dock_manager.saveState(LAYOUT_VERSION)
 
@@ -296,6 +298,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.compare_runs_widget = CompareRunsWidget(self)
             self.compare_runs_widget.setWindowFlag(Qt.WindowType.Tool)
         self.compare_runs_widget.show()
+
+    def __show_about_dialog(self):
+        dlg = AboutDialog(self)
+        dlg.show()
 
     def import_dataset_dialog(self):
         options = QFileDialog.Options()

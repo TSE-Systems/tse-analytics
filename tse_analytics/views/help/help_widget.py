@@ -20,5 +20,4 @@ class HelpWidget(QTextEdit, MessengerListener):
         messenger.subscribe(self, ShowHelpMessage, self._on_show_help)
 
     def _on_show_help(self, message: ShowHelpMessage):
-        content = message.content.replace("../docs/", "docs/")
-        self.setMarkdown(content)
+        self.setMarkdown(message.content)

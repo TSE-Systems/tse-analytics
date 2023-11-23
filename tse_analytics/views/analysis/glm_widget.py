@@ -22,7 +22,7 @@ class GlmWidget(QWidget, MessengerListener):
         self.ui = Ui_GlmWidget()
         self.ui.setupUi(self)
 
-        self.help_path = "docs/glm.md"
+        self.help_path = "glm.md"
         self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
 

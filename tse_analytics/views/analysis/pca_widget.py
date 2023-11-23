@@ -25,7 +25,7 @@ class PcaWidget(QWidget, MessengerListener):
         self.ui = Ui_PcaWidget()
         self.ui.setupUi(self)
 
-        self.help_path = "docs/pca.md"
+        self.help_path = "pca.md"
         self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
 

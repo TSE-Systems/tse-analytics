@@ -21,7 +21,7 @@ class MatrixWidget(QWidget, MessengerListener):
         self.ui = Ui_MatrixWidget()
         self.ui.setupUi(self)
 
-        self.help_path = "docs/scatter-matrix.md"
+        self.help_path = "scatter-matrix.md"
         self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
 

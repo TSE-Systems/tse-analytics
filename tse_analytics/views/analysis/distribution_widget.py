@@ -21,7 +21,7 @@ class DistributionWidget(QWidget, MessengerListener):
         self.ui = Ui_DistributionWidget()
         self.ui.setupUi(self)
 
-        self.help_path = "docs/distribution.md"
+        self.help_path = "distribution.md"
         self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
 

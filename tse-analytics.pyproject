@@ -28,6 +28,7 @@
         "tse_analytics/views/settings/time_phases_settings_widget.ui",
         "tse_analytics/views/settings/outliers_settings_widget.ui",
         "tse_analytics/views/settings/time_intervals_settings_widget.ui",
-        "tse_analytics/views/tools/compare_runs_widget.ui"
+        "tse_analytics/views/tools/compare_runs_widget.ui",
+        "tse_analytics/views/about_dialog.ui"
     ]
 }

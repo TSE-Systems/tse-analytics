@@ -27,7 +27,7 @@ class CorrelationWidget(QWidget, MessengerListener):
         self.ui = Ui_CorrelationWidget()
         self.ui.setupUi(self)
 
-        self.help_path = "docs/correlation.md"
+        self.help_path = "correlation.md"
         self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
 

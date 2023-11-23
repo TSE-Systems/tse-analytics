@@ -21,7 +21,7 @@ class NormalityWidget(QWidget, MessengerListener):
         self.ui = Ui_NormalityWidget()
         self.ui.setupUi(self)
 
-        self.help_path = "docs/normality.md"
+        self.help_path = "normality.md"
         self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
 
