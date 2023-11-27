@@ -14,11 +14,19 @@ a = Analysis(['../tse_analytics/__main__.py'],
              ],
              hiddenimports=[],
              hookspath=['setup/hooks'],
-             runtime_hooks=[],
-             excludes=[],
-             win_no_prefer_redirects=False,
-             win_private_assemblies=False,
-             noarchive=False)
+             hooksconfig={
+                "matplotlib": {
+                    # "backends": "auto",  # auto-detect; the default behavior
+                    # "backends": "all",  # collect all backends
+                    # "backends": "TkAgg",  # collect a specific backend
+                    "backends": ["QtAgg", "SVG", "PDF"],  # collect multiple backends
+                },
+            },
+            runtime_hooks=[],
+            excludes=[],
+            win_no_prefer_redirects=False,
+            win_private_assemblies=False,
+            noarchive=False)
 
 pyz = PYZ(a.pure, a.zipped_data)
 

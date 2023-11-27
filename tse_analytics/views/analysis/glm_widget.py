@@ -3,6 +3,7 @@ from typing import Optional
 import pingouin as pg
 import seaborn as sns
 from PySide6.QtWidgets import QWidget
+from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 
 from tse_analytics.core.helper import show_help
@@ -31,6 +32,9 @@ class GlmWidget(QWidget, MessengerListener):
 
         self.response = ""
         self.ui.variableSelectorResponse.currentTextChanged.connect(self.__response_changed)
+
+        self.plotToolbar = NavigationToolbar2QT(self.ui.canvas, self)
+        self.ui.horizontalLayout.insertWidget(self.ui.horizontalLayout.count() - 2, self.plotToolbar)
 
         # self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PluginsEnabled, False)
         # self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PdfViewerEnabled, False)
@@ -76,9 +80,13 @@ class GlmWidget(QWidget, MessengerListener):
 
         facet_grid = sns.lmplot(data=df, x=self.covariate, y=self.response, hue=factor_name, robust=False)
         canvas = FigureCanvasQTAgg(facet_grid.figure)
+
         canvas.updateGeometry()
         canvas.draw()
         self.ui.splitter.replaceWidget(0, canvas)
+
+        # Assign canvas to PlotToolbar
+        self.plotToolbar.canvas = canvas
 
         glm = pg.linear_regression(df[[self.covariate]], df[self.response])
 

@@ -4,6 +4,7 @@ import pandas as pd
 import pingouin as pg
 import seaborn as sns
 from PySide6.QtWidgets import QWidget
+from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 
 from tse_analytics.core.helper import show_help
@@ -36,6 +37,9 @@ class CorrelationWidget(QWidget, MessengerListener):
 
         self.y_var = ""
         self.ui.variableSelectorY.currentTextChanged.connect(self.__y_current_text_changed)
+
+        self.plotToolbar = NavigationToolbar2QT(self.ui.canvas, self)
+        self.ui.horizontalLayout.insertWidget(self.ui.horizontalLayout.count() - 2, self.plotToolbar)
 
         # self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PluginsEnabled, False)
         # self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PdfViewerEnabled, False)
@@ -90,6 +94,9 @@ class CorrelationWidget(QWidget, MessengerListener):
         canvas.updateGeometry()
         canvas.draw()
         self.ui.splitter.replaceWidget(0, canvas)
+
+        # Assign canvas to PlotToolbar
+        self.plotToolbar.canvas = canvas
 
         t_test = pg.ttest(df[self.x_var], df[self.y_var])
         corr = pg.pairwise_corr(data=df, columns=[self.x_var, self.y_var], method="pearson")
