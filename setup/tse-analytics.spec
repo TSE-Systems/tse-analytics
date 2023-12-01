@@ -52,5 +52,5 @@ coll = COLLECT(exe,
 
 app = BUNDLE(coll,
              name='tse-analytics.app',
-             icon='..\\resources\\icons\\app.icns',
+             icon='..\\resources\\icons\\app.ico',
              bundle_identifier=None)

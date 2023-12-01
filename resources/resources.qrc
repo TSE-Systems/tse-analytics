@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>style.qss</file>
-        <file>icons/app.icns</file>
         <file>icons/app.ico</file>
         <file>icons/exit.png</file>
         <file>icons/grid.png</file>

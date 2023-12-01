@@ -1,5 +1,6 @@
 import os
 import sys
+import ctypes
 
 import matplotlib
 from loguru import logger
@@ -30,12 +31,15 @@ class App(QApplication):
         # Force the light mode
         args += ["-platform", "windows:darkmode=1"]
 
+        app_id = "tse-systems.tse-analytics"  # arbitrary string
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
+
         QApplication.__init__(self, args)
         self.setStyle("fusion")
         self.setOrganizationName("TSE Systems")
         self.setOrganizationDomain("http://www.tse-systems.com")
         self.setApplicationName("TSE Analytics")
-        self.setWindowIcon(QIcon(":/icons/icons8-eukaryotic-cells-96.png"))
+        self.setWindowIcon(QIcon(":/icons/app.ico"))
 
         f = QFile(":/style.qss")
         f.open(QFile.ReadOnly | QFile.Text)

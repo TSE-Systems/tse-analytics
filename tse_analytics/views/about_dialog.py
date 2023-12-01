@@ -1,8 +1,10 @@
 import importlib.metadata
 import subprocess
 from typing import Optional
+import json
 
 from PySide6.QtWidgets import QDialog, QWidget
+from cryptography.fernet import Fernet
 
 from tse_analytics.views.about_dialog_ui import Ui_AboutDialog
 
@@ -31,3 +33,13 @@ class AboutDialog(QDialog, Ui_AboutDialog):
 
         hardware_id = start_process_ps_v2()
         self.lineEditHardwareId.setText(hardware_id)
+
+        key = "YKC9sNqbtUJhdjoOeMQVHvv830eRWcTgswnnqamakJA="
+        fernet = Fernet(key)
+
+        with open("C:\\Users\\anton\OneDrive - TSE Systems, Inc\Desktop\\tse-analytics.license", "rb") as f:
+            token = f.read()
+
+        payload = fernet.decrypt(token)
+        license = json.loads(payload)
+        print(license)
