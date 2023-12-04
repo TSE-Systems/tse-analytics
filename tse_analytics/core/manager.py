@@ -2,6 +2,7 @@ from PySide6.QtCore import QModelIndex, QThreadPool
 from PySide6.QtWidgets import QWidget
 from loguru import logger
 
+from tse_analytics.core.licensing import LicenseManager
 from tse_analytics.data.data_hub import DataHub
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.models.workspace_model import WorkspaceModel
@@ -19,6 +20,7 @@ class Manager:
     def __init__(self):
         # logging.info(f"Multithreading with maximum {Manager.threadpool.maxThreadCount()} threads")
         logger.info(f"Multithreading with maximum {Manager.threadpool.maxThreadCount()} threads")
+        LicenseManager.load_license()
 
     @classmethod
     def load_workspace(cls, path: str) -> None:

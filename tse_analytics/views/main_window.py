@@ -237,13 +237,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         settings.setValue("MainWindow/DockingState", self.dock_manager.saveState(LAYOUT_VERSION))
 
     def load_workspace_dialog(self):
-        options = QFileDialog.Options()
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Load Workspace",
             "",
             "Workspace Files (*.workspace)",
-            options=options,
         )
         if file_path:
             self.load_workspace(file_path)
@@ -304,13 +302,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         dlg.show()
 
     def import_dataset_dialog(self):
-        options = QFileDialog.Options()
         path, _ = QFileDialog.getOpenFileName(
             self,
             "Import dataset",
             "",
             "Dataset Files (*.csv)",
-            options=options,
         )
         if path:
             Manager.import_dataset(path)
