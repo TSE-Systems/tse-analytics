@@ -9,6 +9,7 @@ from PySide6.QtGui import QIcon, QAction, QCloseEvent
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QComboBox, QWidget
 
 from tse_analytics.core.helper import LAYOUT_VERSION, show_help
+from tse_analytics.core.licensing import LicenseManager
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.about_dialog import AboutDialog
 from tse_analytics.views.analysis.anova_widget import AnovaWidget
@@ -185,6 +186,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.load_settings()
 
+        self.__check_license()
+
+    def __check_license(self):
+        if LicenseManager.is_license_missing():
+            self.statusBar.showMessage("License is missing!")
+        elif LicenseManager.is_license_expired():
+            self.statusBar.showMessage("License has expired!")
+        elif LicenseManager.is_hardware_id_invalid():
+            self.statusBar.showMessage("License Hardware ID is invalid!")
+
+        self.actionImportDataset.setDisabled(
+            LicenseManager.is_license_missing()
+            or LicenseManager.is_license_expired()
+            or LicenseManager.is_hardware_id_invalid()
+            or LicenseManager.is_feature_missing("PhenoMaster")
+        )
+
     def __register_dock_widget(self, widget: QWidget, title: str, icon: QIcon) -> PySide6QtAds.CDockWidget:
         dock_widget = PySide6QtAds.CDockWidget(title)
         dock_widget.setWidget(widget)
@@ -300,6 +318,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __show_about_dialog(self):
         dlg = AboutDialog(self)
         dlg.show()
+        self.__check_license()
 
     def import_dataset_dialog(self):
         path, _ = QFileDialog.getOpenFileName(
@@ -312,9 +331,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             Manager.import_dataset(path)
 
     @property
-    def okToQuit(self):
+    def ok_to_quit(self):
         return True
 
     def closeEvent(self, event: QCloseEvent) -> None:
-        if self.okToQuit:
+        if self.ok_to_quit:
             self.save_settings()

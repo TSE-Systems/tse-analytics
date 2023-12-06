@@ -47,7 +47,9 @@ class Manager:
         cls.data.clear()
 
     @classmethod
-    def merge_datasets(cls, new_dataset_name: str, datasets: list[Dataset], single_run: bool, parent_widget: QWidget) -> None:
+    def merge_datasets(
+        cls, new_dataset_name: str, datasets: list[Dataset], single_run: bool, parent_widget: QWidget
+    ) -> None:
         result_dataset = merge_datasets(new_dataset_name, datasets, single_run, parent_widget)
         if result_dataset is not None:
             cls.workspace.add_dataset(result_dataset)

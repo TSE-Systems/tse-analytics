@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QFileDialog,
 )
 
+from tse_analytics.core.licensing import LicenseManager
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import SelectedTreeNodeChangedMessage
 from tse_analytics.models.calo_details_tree_item import CaloDetailsTreeItem
@@ -63,7 +64,7 @@ class DatasetsTreeView(QTreeView):
         menu = QMenu(self)
 
         if level == 1:
-            if len(indexes) == 1:
+            if len(indexes) == 1 and not LicenseManager.is_feature_missing("CurveFitting"):
                 action = menu.addAction("Import calo details...")
                 action.triggered.connect(partial(self.__import_calo_details, indexes))
 

@@ -3,11 +3,13 @@ import json
 import shutil
 from dataclasses import dataclass
 import subprocess
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
 from PySide6.QtCore import QStandardPaths
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
+from loguru import logger
 
 
 LICENSE_FILENAME = "tse-analytics.license"
@@ -53,7 +55,11 @@ class LicenseManager:
         with open(license_path, "rb") as f:
             token = f.read()
 
-        payload = fernet.decrypt(token)
+        try:
+            payload = fernet.decrypt(token)
+        except InvalidToken as error:
+            logger.exception(error)
+            return
         data = json.loads(payload)
 
         LicenseManager.license = License(**data)
@@ -72,8 +78,30 @@ class LicenseManager:
         LicenseManager.load_license()
 
     @staticmethod
-    def is_feature_available(feature: str) -> bool:
+    def is_license_missing() -> bool:
+        return LicenseManager.license is None
+
+    @staticmethod
+    def is_license_expired() -> bool:
         if LicenseManager.license is None:
+            return True
+
+        if LicenseManager.license.ExpirationDate is None:
             return False
+
+        expiration_date = datetime.strptime(LicenseManager.license.ExpirationDate, "%Y-%m-%d").date()
+        return datetime.today().date() > expiration_date
+
+    @staticmethod
+    def is_hardware_id_invalid() -> bool:
+        if LicenseManager.license is None:
+            return True
+        hardware_id = get_hardware_id()
+        return hardware_id != LicenseManager.license.HardwareId
+
+    @staticmethod
+    def is_feature_missing(feature: str) -> bool:
+        if LicenseManager.license is None:
+            return True
         else:
-            return feature in LicenseManager.license.Features
+            return feature not in LicenseManager.license.Features
