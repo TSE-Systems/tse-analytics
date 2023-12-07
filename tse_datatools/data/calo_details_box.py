@@ -14,10 +14,10 @@ class CaloDetailsBox:
 def get_ref_box_number(box: int, boxes: list[int]) -> Optional[int]:
     assert len(boxes) > 0
     # find a gap between standard and reference boxes
-    prev = boxes[0]
+    prev = boxes[-1]
     gap_index: Optional[int] = None
-    for idx, this in enumerate(boxes[1:]):
-        if this > prev + 1:
+    for idx, this in reversed(list(enumerate(boxes))):
+        if this < prev - 1:
             gap_index = idx
             break
         prev = this
@@ -25,7 +25,7 @@ def get_ref_box_number(box: int, boxes: list[int]) -> Optional[int]:
     if gap_index is None:
         return None
 
-    ref_boxes = boxes[gap_index + 1 :]
+    ref_boxes = boxes[gap_index + 1:]
     if box in ref_boxes:
         return None
 
@@ -33,5 +33,6 @@ def get_ref_box_number(box: int, boxes: list[int]) -> Optional[int]:
 
     parts = len(standard_boxes) // len(ref_boxes)
 
-    ref_box_index = (box - 1) // parts
+    box_index = standard_boxes.index(box)
+    ref_box_index = box_index // parts
     return ref_boxes[ref_box_index]
