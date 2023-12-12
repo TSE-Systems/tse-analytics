@@ -39,9 +39,9 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
 
         match self.grouping_mode:
             case GroupingMode.ANIMALS:
-                result = df.groupby(
-                    ["Animal", "Box"] + self.factor_names, dropna=False, observed=False
-                ).resample(timedelta, on="DateTime", origin="start")
+                result = df.groupby(["Animal", "Box"] + self.factor_names, dropna=False, observed=False).resample(
+                    timedelta, on="DateTime", origin="start"
+                )
             case GroupingMode.FACTORS:
                 if self.selected_factor is not None:
                     result = df.groupby([self.selected_factor.name], dropna=False, observed=False).resample(

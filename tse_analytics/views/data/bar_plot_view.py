@@ -67,7 +67,14 @@ class BarPlotView(QWidget):
 
             self._df[x_name] = self._df[x_name].cat.remove_unused_categories()
 
-            faced_grid = sns.catplot(x=x_name, y=self._variable, col="Bin", data=self._df, kind="bar", errorbar=("ci", 95) if self._display_errors else None)
+            faced_grid = sns.catplot(
+                x=x_name,
+                y=self._variable,
+                col="Bin",
+                data=self._df,
+                kind="bar",
+                errorbar=("ci", 95) if self._display_errors else None,
+            )
             faced_grid.set_xticklabels(rotation=90)
             faced_grid.set_titles("{col_name}")
             self.canvas = FigureCanvasQTAgg(faced_grid.figure)

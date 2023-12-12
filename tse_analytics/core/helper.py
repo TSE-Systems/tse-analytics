@@ -15,5 +15,7 @@ def show_help(sender, filename: str):
         with open(path, "r", encoding="utf-8") as file:
             content = file.read().rstrip()
             if content is not None:
-                content = content.replace("](./", "](_internal/docs/") if IS_RELEASE else content.replace("](./", "](docs/")
+                content = (
+                    content.replace("](./", "](_internal/docs/") if IS_RELEASE else content.replace("](./", "](docs/")
+                )
                 Manager.messenger.broadcast(ShowHelpMessage(sender, content))

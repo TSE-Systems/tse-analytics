@@ -30,16 +30,17 @@ def get_hardware_id() -> str:
 @dataclass
 class License:
     HardwareId: str
-    OwnerName: str
-    OwnerCompany: str
-    OwnerEmail: str
     Features: list[str]
+    OwnerName: Optional[str] = None
+    OwnerCompany: Optional[str] = None
+    OwnerEmail: Optional[str] = None
     ExpirationDate: Optional[str] = None
 
 
 class LicenseManager:
     key = "LXP9fAdogHWuqwbBrZDIUii830rEJpGtfjaadnznxWN="
     license: Optional[License] = None
+    hardware_id = get_hardware_id()
 
     @staticmethod
     def load_license():
@@ -70,11 +71,10 @@ class LicenseManager:
         if not original_path.is_file():
             return
 
-        license_path = (
-            Path(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppLocalDataLocation))
-            / LICENSE_FILENAME
-        )
-        shutil.copy(original_path, license_path)
+        license_path = Path(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppLocalDataLocation))
+        if not license_path.exists():
+            license_path.mkdir(parents=True, exist_ok=True)
+        shutil.copy(original_path, license_path / LICENSE_FILENAME)
         LicenseManager.load_license()
 
     @staticmethod
@@ -96,8 +96,7 @@ class LicenseManager:
     def is_hardware_id_invalid() -> bool:
         if LicenseManager.license is None:
             return True
-        hardware_id = get_hardware_id()
-        return hardware_id != LicenseManager.license.HardwareId
+        return LicenseManager.hardware_id != LicenseManager.license.HardwareId
 
     @staticmethod
     def is_feature_missing(feature: str) -> bool:

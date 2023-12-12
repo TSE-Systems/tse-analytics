@@ -35,4 +35,6 @@ class LogWidget(QTextEdit):
         self.setReadOnly(True)
         self.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
         # logging.getLogger().addHandler(TextEditLogger(self))
-        logger.add(TextEditLogger(self), level="INFO", colorize=False, backtrace=False, enqueue=True, format="{message}")
+        logger.add(
+            TextEditLogger(self), level="INFO", colorize=False, backtrace=False, enqueue=True, format="{message}"
+        )

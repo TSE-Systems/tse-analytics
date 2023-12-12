@@ -196,12 +196,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         elif LicenseManager.is_hardware_id_invalid():
             self.statusBar.showMessage("License Hardware ID is invalid!")
 
-        self.actionImportDataset.setDisabled(
+        if (
             LicenseManager.is_license_missing()
             or LicenseManager.is_license_expired()
             or LicenseManager.is_hardware_id_invalid()
             or LicenseManager.is_feature_missing("PhenoMaster")
-        )
+        ):
+            self.actionImportDataset.setDisabled(True)
+            self.actionExportCsv.setDisabled(True)
+            self.actionExportExcel.setDisabled(True)
 
     def __register_dock_widget(self, widget: QWidget, title: str, icon: QIcon) -> PySide6QtAds.CDockWidget:
         dock_widget = PySide6QtAds.CDockWidget(title)

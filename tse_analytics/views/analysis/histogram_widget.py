@@ -9,6 +9,7 @@ from tse_analytics.messaging.messages import DatasetChangedMessage, ClearDataMes
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.histogram_widget_ui import Ui_HistogramWidget
+from tse_analytics.views.misc.toast import Toast
 
 
 class HistogramWidget(QWidget, MessengerListener):
@@ -51,7 +52,12 @@ class HistogramWidget(QWidget, MessengerListener):
             return round(number_of_elements / 3) + 1, 3
 
     def __analyze(self):
-        if Manager.data.selected_dataset is None or len(Manager.data.selected_variables) == 0:
+        if Manager.data.selected_dataset is None:
+            return
+
+        if len(Manager.data.selected_variables) == 0:
+            __toast = Toast(text="Please select variables first!", duration=2000, parent=self)
+            __toast.show_toast()
             return
 
         self.ui.canvas.clear(False)
