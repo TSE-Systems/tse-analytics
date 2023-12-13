@@ -17,30 +17,31 @@ class Toast(QWidget):
 
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.SubWindow)
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
 
         # text in toast (toast foreground)
-        self.__lbl = QLabel(text)
-        self.__lbl.setObjectName("popupLbl")
-        self.__lbl.setStyleSheet("QLabel#popupLbl {{ color: #EEEEEE; padding: 5px; }}")
+        self.__label = QLabel(text)
+        self.__label.setObjectName("popupLbl")
+        self.__label.setStyleSheet("QLabel#popupLbl {{ color: #EEEEEE; padding: 5px; }}")
 
-        self.__lbl.setMinimumWidth(min(200, self.__lbl.fontMetrics().boundingRect(text).width() * 2))
-        self.__lbl.setMinimumHeight(self.__lbl.fontMetrics().boundingRect(text).height() * 2)
-        self.__lbl.setWordWrap(True)
+        self.__label.setMinimumWidth(min(200, self.__label.fontMetrics().boundingRect(text).width() * 2))
+        self.__label.setMinimumHeight(self.__label.fontMetrics().boundingRect(text).height() * 2)
+        self.__label.setWordWrap(True)
 
         self.__timer = QTimer(self)
 
         # animation
-        self.fade_effect = QGraphicsOpacityEffect(self)
-        self.setGraphicsEffect(self.fade_effect)
+        fade_effect = QGraphicsOpacityEffect(self)
+        self.setGraphicsEffect(fade_effect)
 
-        self.__animation = QPropertyAnimation(self.fade_effect, b"opacity")
+        self.__animation = QPropertyAnimation(fade_effect, b"opacity")
         self.__animation.setDuration(300)
         self.__animation.setStartValue(0.0)
         self.__animation.setEndValue(self.__opacity)
 
         # toast background
         layout = QHBoxLayout()
-        layout.addWidget(self.__lbl)
+        layout.addWidget(self.__label)
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
 
         self.setStyleSheet("QWidget { background: #444444; border-radius: 5px; }")
@@ -57,9 +58,10 @@ class Toast(QWidget):
         return self.show()
 
     def __hide_toast(self):
+        self.__timer.stop()
+        self.__animation.finished.connect(lambda: self.close())
         self.__animation.setDirection(QAbstractAnimation.Direction.Backward)
         self.__animation.start(QPropertyAnimation.DeletionPolicy.KeepWhenStopped)
-        self.__timer.stop()
 
     def setPosition(self, pos):
         geo = self.geometry()
@@ -67,18 +69,18 @@ class Toast(QWidget):
         self.setGeometry(geo)
 
     def setAlignment(self, alignment: Qt.AlignmentFlag):
-        self.__lbl.setAlignment(alignment)
+        self.__label.setAlignment(alignment)
 
     def setFont(self, font: QFont):
-        self.__lbl.setFont(font)
+        self.__label.setFont(font)
         self.__setToastSizeBasedOnTextSize()
 
     def __setToastSizeBasedOnTextSize(self):
-        self.setFixedWidth(self.__lbl.sizeHint().width() * 2)
-        self.setFixedHeight(self.__lbl.sizeHint().height() * 2)
+        self.setFixedWidth(self.__label.sizeHint().width() * 2)
+        self.setFixedHeight(self.__label.sizeHint().height() * 2)
 
     def __setForegroundColor(self):
-        self.__lbl.setStyleSheet(f"QLabel#popupLbl {{ color: {self.__foregroundColor}; padding: 5px; }}")
+        self.__label.setStyleSheet(f"QLabel#popupLbl {{ color: {self.__foregroundColor}; padding: 5px; }}")
 
     def __setBackgroundColor(self):
         self.setStyleSheet(f"QWidget {{ background-color: {self.__backgroundColor}; border-radius: 5px; }}")

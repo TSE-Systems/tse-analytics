@@ -4,7 +4,7 @@ from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import DatasetChangedMessage, ClearDataMessage
+from tse_analytics.messaging.messages import DatasetChangedMessage
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.settings.binning_settings_widget_ui import Ui_BinningSettingsWidget
@@ -35,15 +35,14 @@ class BinningSettingsWidget(QWidget, MessengerListener):
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
-        messenger.subscribe(self, ClearDataMessage, self.__on_clear_data)
 
     def __on_dataset_changed(self, message: DatasetChangedMessage):
-        self.ui.widgetTimeIntervalSettings.set_data(message.data.binning_settings.time_intervals_settings)
-        self.ui.widgetTimeCyclesSettings.set_data(message.data.binning_settings.time_cycles_settings)
-        self.ui.widgetTimePhasesSettings.set_data(message.data.binning_settings.time_phases_settings)
-
-    def __on_clear_data(self, message: ClearDataMessage):
-        self.ui.widgetTimePhasesSettings.clear()
+        if message.data is None:
+            self.ui.widgetTimePhasesSettings.clear()
+        else:
+            self.ui.widgetTimeIntervalSettings.set_data(message.data.binning_settings.time_intervals_settings)
+            self.ui.widgetTimeCyclesSettings.set_data(message.data.binning_settings.time_cycles_settings)
+            self.ui.widgetTimePhasesSettings.set_data(message.data.binning_settings.time_phases_settings)
 
     def __binning_mode_changed(self, value: BinningMode):
         match value:

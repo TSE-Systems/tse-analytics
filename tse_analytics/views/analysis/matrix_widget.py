@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import DatasetChangedMessage, ClearDataMessage
+from tse_analytics.messaging.messages import DatasetChangedMessage
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.matrix_widget_ui import Ui_MatrixWidget
@@ -27,12 +27,8 @@ class MatrixWidget(QWidget, MessengerListener):
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
-        messenger.subscribe(self, ClearDataMessage, self.__on_clear_data)
 
     def __on_dataset_changed(self, message: DatasetChangedMessage):
-        self.__clear()
-
-    def __on_clear_data(self, message: ClearDataMessage):
         self.__clear()
 
     def __clear(self):

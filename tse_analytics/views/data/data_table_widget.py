@@ -6,7 +6,6 @@ from PySide6.QtWidgets import QWidget
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.messaging.messages import (
-    ClearDataMessage,
     DatasetChangedMessage,
     BinningAppliedMessage,
     RevertBinningMessage,
@@ -38,7 +37,6 @@ class DataTableWidget(QWidget, MessengerListener):
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
-        messenger.subscribe(self, ClearDataMessage, self.__on_clear_data)
         messenger.subscribe(self, BinningAppliedMessage, self.__on_binning_applied)
         messenger.subscribe(self, RevertBinningMessage, self.__on_revert_binning)
         messenger.subscribe(self, DataChangedMessage, self.__on_data_changed)
@@ -58,10 +56,10 @@ class DataTableWidget(QWidget, MessengerListener):
         Manager.threadpool.start(worker)
 
     def __on_dataset_changed(self, message: DatasetChangedMessage):
-        self.__set_data()
-
-    def __on_clear_data(self, message: ClearDataMessage):
-        self.ui.tableView.model().setSourceModel(None)
+        if message.data is None:
+            self.ui.tableView.model().setSourceModel(None)
+        else:
+            self.__set_data()
 
     def __on_binning_applied(self, message: BinningAppliedMessage):
         self.__set_data()

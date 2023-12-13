@@ -5,7 +5,7 @@ from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import DatasetChangedMessage, ClearDataMessage
+from tse_analytics.messaging.messages import DatasetChangedMessage
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.histogram_widget_ui import Ui_HistogramWidget
@@ -30,12 +30,8 @@ class HistogramWidget(QWidget, MessengerListener):
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
-        messenger.subscribe(self, ClearDataMessage, self.__on_clear_data)
 
     def __on_dataset_changed(self, message: DatasetChangedMessage):
-        self.__clear()
-
-    def __on_clear_data(self, message: ClearDataMessage):
         self.__clear()
 
     def __clear(self):
@@ -56,8 +52,7 @@ class HistogramWidget(QWidget, MessengerListener):
             return
 
         if len(Manager.data.selected_variables) == 0:
-            __toast = Toast(text="Please select variables first!", duration=2000, parent=self)
-            __toast.show_toast()
+            Toast(text="Please select variables first!", duration=2000, parent=self).show_toast()
             return
 
         self.ui.canvas.clear(False)

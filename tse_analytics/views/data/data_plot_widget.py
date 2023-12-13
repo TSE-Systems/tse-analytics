@@ -5,7 +5,6 @@ from matplotlib.backends.backend_qt import NavigationToolbar2QT
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import (
-    ClearDataMessage,
     DatasetChangedMessage,
     BinningAppliedMessage,
     RevertBinningMessage,
@@ -43,7 +42,6 @@ class DataPlotWidget(QWidget, MessengerListener):
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
-        messenger.subscribe(self, ClearDataMessage, self.__on_clear_data)
         messenger.subscribe(self, BinningAppliedMessage, self.__on_binning_applied)
         messenger.subscribe(self, RevertBinningMessage, self.__on_revert_binning)
         messenger.subscribe(self, DataChangedMessage, self.__on_data_changed)
@@ -60,15 +58,15 @@ class DataPlotWidget(QWidget, MessengerListener):
             self.barPlotView.set_display_errors(state)
 
     def __on_dataset_changed(self, message: DatasetChangedMessage):
-        self.ui.variableSelector.set_data(message.data.variables)
-        self.__assign_data()
-
-    def __on_clear_data(self, message: ClearDataMessage):
-        self.ui.variableSelector.clear()
-        if Manager.data.binning_params.mode == BinningMode.INTERVALS:
-            self.timelinePlotView.clear_plot()
+        if message.data is None:
+            self.ui.variableSelector.clear()
+            if Manager.data.binning_params.mode == BinningMode.INTERVALS:
+                self.timelinePlotView.clear_plot()
+            else:
+                self.barPlotView.clear_plot()
         else:
-            self.barPlotView.clear_plot()
+            self.ui.variableSelector.set_data(message.data.variables)
+            self.__assign_data()
 
     def __on_binning_applied(self, message: BinningAppliedMessage):
         self.__assign_data()

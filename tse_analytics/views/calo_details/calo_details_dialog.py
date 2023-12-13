@@ -3,25 +3,25 @@ import timeit
 from multiprocessing import Pool
 from typing import Optional
 
-from loguru import logger
 from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QIcon, QCloseEvent, QKeyEvent
 from PySide6.QtWidgets import QDialog, QWidget
+from loguru import logger
 
 from tse_analytics.core.manager import Manager
-from tse_analytics.core.notificator import show_notification
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.views.calo_details.calo_details_bin_selector import CaloDetailsBinSelector
 from tse_analytics.views.calo_details.calo_details_box_selector import CaloDetailsBoxSelector
 from tse_analytics.views.calo_details.calo_details_dialog_ui import Ui_CaloDetailsDialog
-from tse_datatools.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
 from tse_analytics.views.calo_details.calo_details_plot_widget import CaloDetailsPlotWidget
 from tse_analytics.views.calo_details.calo_details_rer_widget import CaloDetailsRerWidget
-from tse_datatools.calo_details.calo_details_processor import process_box
-from tse_datatools.calo_details.calo_details_settings import get_default_settings
 from tse_analytics.views.calo_details.calo_details_settings_widget import CaloDetailsSettingsWidget
 from tse_analytics.views.calo_details.calo_details_table_view import CaloDetailsTableView
 from tse_analytics.views.calo_details.calo_details_test_fit_widget import CaloDetailsTestFitWidget
+from tse_analytics.views.misc.toast import Toast
+from tse_datatools.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
+from tse_datatools.calo_details.calo_details_processor import process_box
+from tse_datatools.calo_details.calo_details_settings import get_default_settings
 from tse_datatools.calo_details.fitting_params import FittingParams
 from tse_datatools.data.calo_details import CaloDetails
 from tse_datatools.data.calo_details_box import CaloDetailsBox
@@ -166,7 +166,7 @@ class CaloDetailsDialog(QDialog):
                 self.fitting_results[result.box_number] = result
 
         logger.info(f"Processing complete: {timeit.default_timer() - tic} sec")
-        show_notification("Calo Details", "Processing complete.")
+        Toast(text="Processing complete.", duration=2000, parent=self).show_toast()
 
     def hideEvent(self, event: QCloseEvent) -> None:
         settings = QSettings()

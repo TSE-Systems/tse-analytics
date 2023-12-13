@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QWidget, QTableWidgetItem, QMessageBox
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.css import style
-from tse_analytics.messaging.messages import ClearDataMessage, DatasetChangedMessage
+from tse_analytics.messaging.messages import DatasetChangedMessage
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.anova_widget_ui import Ui_AnovaWidget
@@ -39,7 +39,6 @@ class AnovaWidget(QWidget, MessengerListener):
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
-        messenger.subscribe(self, ClearDataMessage, self.__on_clear_data)
 
     def __anova_mode_activated(self):
         self.ui.groupBoxCovariates.hide()
@@ -55,6 +54,8 @@ class AnovaWidget(QWidget, MessengerListener):
 
     def __on_dataset_changed(self, message: DatasetChangedMessage):
         self.__clear()
+        if message.data is None:
+            return
 
         self.ui.toolButtonAnalyse.setDisabled(len(Manager.data.selected_dataset.factors) == 0)
 
@@ -84,9 +85,6 @@ class AnovaWidget(QWidget, MessengerListener):
 
             self.ui.tableWidgetDependentVariable.setItem(i, 2, QTableWidgetItem(variable.description))
             self.ui.tableWidgetCovariates.setItem(i, 2, QTableWidgetItem(variable.description))
-
-    def __on_clear_data(self, message: ClearDataMessage):
-        self.__clear()
 
     def __clear(self):
         self.ui.toolButtonAnalyse.setDisabled(True)

@@ -5,7 +5,7 @@ from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import ClearDataMessage, DatasetChangedMessage
+from tse_analytics.messaging.messages import DatasetChangedMessage
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.models.variables_model import VariablesModel
@@ -42,15 +42,14 @@ class VariablesWidget(QWidget, MessengerListener):
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
-        messenger.subscribe(self, ClearDataMessage, self.__on_clear_data)
-
-    def __on_clear_data(self, message: ClearDataMessage):
-        self.ui.tableView.model().setSourceModel(None)
 
     def __on_dataset_changed(self, message: DatasetChangedMessage):
-        model = VariablesModel(list(message.data.variables.values()))
-        self.ui.tableView.model().setSourceModel(model)
-        self.ui.tableView.resizeColumnsToContents()
+        if message.data is None:
+            self.ui.tableView.model().setSourceModel(None)
+        else:
+            model = VariablesModel(list(message.data.variables.values()))
+            self.ui.tableView.model().setSourceModel(model)
+            self.ui.tableView.resizeColumnsToContents()
 
     def __on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
         proxy_model = self.ui.tableView.model()

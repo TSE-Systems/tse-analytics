@@ -7,7 +7,6 @@ from PySide6.QtCore import QModelIndex
 from PySide6.QtGui import QPixmapCache
 
 from tse_analytics.messaging.messages import (
-    ClearDataMessage,
     DataChangedMessage,
     DatasetChangedMessage,
     GroupingModeChangedMessage,
@@ -60,7 +59,7 @@ class DataHub:
         QPixmapCache.clear()
         gc.collect()
 
-        self.messenger.broadcast(ClearDataMessage(self))
+        self.messenger.broadcast(DatasetChangedMessage(self, None))
 
     def apply_binning(self, params: BinningParams):
         if self.selected_dataset is None:

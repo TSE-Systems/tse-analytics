@@ -1,3 +1,5 @@
+from typing import Optional
+
 from tse_analytics.models.tree_item import TreeItem
 from tse_datatools.analysis.binning_params import BinningParams
 from tse_datatools.analysis.grouping_mode import GroupingMode
@@ -56,15 +58,9 @@ class DataChangedMessage(Message):
 class DatasetChangedMessage(Message):
     """Indicates that selected dataset is changed"""
 
-    def __init__(self, sender, dataset: Dataset, tag=None):
+    def __init__(self, sender, dataset: Optional[Dataset], tag=None):
         super().__init__(sender, tag=tag)
         self.data = dataset
-
-
-class ClearDataMessage(Message):
-    """Clear data"""
-
-    pass
 
 
 class BinningAppliedMessage(Message):

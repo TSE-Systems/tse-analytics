@@ -27,7 +27,6 @@ scikit-learn = "1.3.2"
 scipy = "1.11.4"
 seaborn = "0.13.0"
 statsmodels = "0.14.0"
-windows-toasts = "1.0.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "23.12.0"

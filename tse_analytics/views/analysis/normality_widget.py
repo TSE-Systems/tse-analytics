@@ -6,7 +6,7 @@ from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import DatasetChangedMessage, ClearDataMessage
+from tse_analytics.messaging.messages import DatasetChangedMessage
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.normality_widget_ui import Ui_NormalityWidget
@@ -34,14 +34,11 @@ class NormalityWidget(QWidget, MessengerListener):
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
-        messenger.subscribe(self, ClearDataMessage, self.__on_clear_data)
 
     def __on_dataset_changed(self, message: DatasetChangedMessage):
         self.__clear()
-        self.ui.variableSelector.set_data(message.data.variables)
-
-    def __on_clear_data(self, message: ClearDataMessage):
-        self.__clear()
+        if message.data is not None:
+            self.ui.variableSelector.set_data(message.data.variables)
 
     def __clear(self):
         self.ui.variableSelector.clear()
