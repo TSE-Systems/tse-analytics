@@ -18,6 +18,9 @@
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QToolButton" name="toolButtonAnalyse">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Analyze</string>
        </property>
@@ -78,12 +81,18 @@
       <enum>Qt::Vertical</enum>
      </property>
      <widget class="MplCanvas" name="canvas" native="true"/>
-     <widget class="QWebEngineView" name="webView" native="true"/>
+     <widget class="QWebEngineView" name="webView"/>
     </widget>
    </item>
   </layout>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>QWebEngineView</class>
+   <extends>QWidget</extends>
+   <header location="global">QtWebEngineWidgets/QWebEngineView</header>
+   <container>1</container>
+  </customwidget>
   <customwidget>
    <class>MplCanvas</class>
    <extends>QWidget</extends>
@@ -94,12 +103,6 @@
    <class>VariableSelector</class>
    <extends>QComboBox</extends>
    <header>tse_analytics.views.misc.variable_selector</header>
-  </customwidget>
-  <customwidget>
-   <class>QWebEngineView</class>
-   <extends>QWidget</extends>
-   <header>PySide6.QtWebEngineWidgets</header>
-   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

@@ -33,6 +33,7 @@ class Ui_NormalityWidget(object):
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.toolButtonAnalyse = QToolButton(NormalityWidget)
         self.toolButtonAnalyse.setObjectName(u"toolButtonAnalyse")
+        self.toolButtonAnalyse.setEnabled(False)
 
         self.horizontalLayout.addWidget(self.toolButtonAnalyse)
 

@@ -1,6 +1,7 @@
 from typing import Optional
 
 import seaborn as sns
+from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 
@@ -10,6 +11,7 @@ from tse_analytics.messaging.messages import DatasetChangedMessage
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.distribution_widget_ui import Ui_DistributionWidget
+from tse_analytics.views.misc.toast import Toast
 from tse_datatools.analysis.grouping_mode import GroupingMode
 
 
@@ -31,14 +33,15 @@ class DistributionWidget(QWidget, MessengerListener):
         self.color_factor = None
         self.ui.factorSelector.currentTextChanged.connect(self.__factor_changed)
 
-        self.ui.horizontalLayout.insertWidget(
-            self.ui.horizontalLayout.count() - 2, NavigationToolbar2QT(self.ui.canvas, self)
-        )
+        plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
+        plot_toolbar.setIconSize(QSize(16, 16))
+        self.ui.horizontalLayout.insertWidget(self.ui.horizontalLayout.count() - 1, plot_toolbar)
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
 
     def __on_dataset_changed(self, message: DatasetChangedMessage):
+        self.ui.toolButtonAnalyse.setDisabled(message.data is None)
         self.__clear()
         if message.data is not None:
             self.ui.variableSelector.set_data(message.data.variables)
@@ -59,9 +62,8 @@ class DistributionWidget(QWidget, MessengerListener):
             self.color_factor = factor
 
     def __analyze(self):
-        if Manager.data.selected_dataset is None or (
-            Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None
-        ):
+        if Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None:
+            Toast(text="Please select a factor first!", duration=2000, parent=self).show_toast()
             return
 
         df = Manager.data.get_current_df(calculate_error=False, variables=[self.variable])

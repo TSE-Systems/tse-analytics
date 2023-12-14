@@ -55,6 +55,7 @@ class AnovaWidget(QWidget, MessengerListener):
     def __on_dataset_changed(self, message: DatasetChangedMessage):
         self.__clear()
         if message.data is None:
+            self.ui.toolButtonAnalyse.setDisabled(True)
             return
 
         self.ui.toolButtonAnalyse.setDisabled(len(Manager.data.selected_dataset.factors) == 0)

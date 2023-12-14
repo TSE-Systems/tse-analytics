@@ -10,6 +10,7 @@ from tse_analytics.messaging.messages import DatasetChangedMessage
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.matrix_widget_ui import Ui_MatrixWidget
+from tse_analytics.views.misc.toast import Toast
 from tse_datatools.analysis.grouping_mode import GroupingMode
 
 
@@ -29,15 +30,15 @@ class MatrixWidget(QWidget, MessengerListener):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
 
     def __on_dataset_changed(self, message: DatasetChangedMessage):
+        self.ui.toolButtonAnalyse.setDisabled(message.data is None)
         self.__clear()
 
     def __clear(self):
         self.ui.webView.setHtml("")
 
     def __analyze(self):
-        if Manager.data.selected_dataset is None or (
-            Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None
-        ):
+        if Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None:
+            Toast(text="Please select a factor first!", duration=2000, parent=self).show_toast()
             return
 
         match Manager.data.grouping_mode:

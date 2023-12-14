@@ -32,6 +32,7 @@ class Ui_PcaWidget(object):
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.toolButtonAnalyse = QToolButton(PcaWidget)
         self.toolButtonAnalyse.setObjectName(u"toolButtonAnalyse")
+        self.toolButtonAnalyse.setEnabled(False)
 
         self.horizontalLayout.addWidget(self.toolButtonAnalyse)
 

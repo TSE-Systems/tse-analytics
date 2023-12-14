@@ -3,6 +3,8 @@ import sys
 import ctypes
 
 import matplotlib
+import pandas as pd
+import seaborn as sns
 from loguru import logger
 from pyqtgraph import setConfigOptions
 from PySide6.QtCore import QFile, QTextStream
@@ -12,6 +14,7 @@ from PySide6.QtWidgets import QApplication
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.main_window import MainWindow
 
+# Global configuration
 
 matplotlib.use("QtAgg")
 
@@ -24,6 +27,9 @@ setConfigOptions(
     antialias=False,
     useOpenGL=False,
 )
+
+pd.set_option("colheader_justify", "center")  # FOR TABLE <th>
+sns.set_theme(style="whitegrid")
 
 
 class App(QApplication):

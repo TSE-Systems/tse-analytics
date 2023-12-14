@@ -35,6 +35,7 @@ class Ui_CorrelationWidget(object):
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.toolButtonAnalyse = QToolButton(CorrelationWidget)
         self.toolButtonAnalyse.setObjectName(u"toolButtonAnalyse")
+        self.toolButtonAnalyse.setEnabled(False)
 
         self.horizontalLayout.addWidget(self.toolButtonAnalyse)
 

@@ -11,7 +11,6 @@ from tse_analytics.messaging.messenger_listener import MessengerListener
 class HelpWidget(QTextEdit, MessengerListener):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
-        MessengerListener.__init__(self)
         self.register_to_messenger(Manager.messenger)
 
         self.setReadOnly(True)

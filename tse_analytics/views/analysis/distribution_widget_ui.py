@@ -34,6 +34,7 @@ class Ui_DistributionWidget(object):
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.toolButtonAnalyse = QToolButton(DistributionWidget)
         self.toolButtonAnalyse.setObjectName(u"toolButtonAnalyse")
+        self.toolButtonAnalyse.setEnabled(False)
 
         self.horizontalLayout.addWidget(self.toolButtonAnalyse)
 

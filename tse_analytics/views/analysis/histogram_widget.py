@@ -1,5 +1,6 @@
 from typing import Optional
 
+from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 
@@ -24,14 +25,15 @@ class HistogramWidget(QWidget, MessengerListener):
         self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
 
-        self.ui.horizontalLayout.insertWidget(
-            self.ui.horizontalLayout.count() - 2, NavigationToolbar2QT(self.ui.canvas, self)
-        )
+        plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
+        plot_toolbar.setIconSize(QSize(16, 16))
+        self.ui.horizontalLayout.insertWidget(self.ui.horizontalLayout.count() - 1, plot_toolbar)
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
 
     def __on_dataset_changed(self, message: DatasetChangedMessage):
+        self.ui.toolButtonAnalyse.setDisabled(message.data is None)
         self.__clear()
 
     def __clear(self):
@@ -48,9 +50,6 @@ class HistogramWidget(QWidget, MessengerListener):
             return round(number_of_elements / 3) + 1, 3
 
     def __analyze(self):
-        if Manager.data.selected_dataset is None:
-            return
-
         if len(Manager.data.selected_variables) == 0:
             Toast(text="Please select variables first!", duration=2000, parent=self).show_toast()
             return

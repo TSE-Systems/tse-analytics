@@ -137,7 +137,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         help_dock_widget = self.__register_dock_widget(HelpWidget(), "Help", QIcon(":/icons/icons8-help-16.png"))
         self.dock_manager.addDockWidgetTabToArea(help_dock_widget, info_dock_area)
 
-        log_dock_widget = self.__register_dock_widget(LogWidget(), "Log", QIcon(":/icons/icons8-help-16.png"))
+        log_dock_widget = self.__register_dock_widget(LogWidget(), "Log", QIcon(":/icons/log-16.png"))
         self.dock_manager.addDockWidgetTabToArea(log_dock_widget, info_dock_area)
 
         animals_dock_widget = self.__register_dock_widget(

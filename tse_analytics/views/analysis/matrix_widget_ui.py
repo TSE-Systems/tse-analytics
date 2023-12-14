@@ -31,6 +31,7 @@ class Ui_MatrixWidget(object):
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.toolButtonAnalyse = QToolButton(MatrixWidget)
         self.toolButtonAnalyse.setObjectName(u"toolButtonAnalyse")
+        self.toolButtonAnalyse.setEnabled(False)
 
         self.horizontalLayout.addWidget(self.toolButtonAnalyse)
 

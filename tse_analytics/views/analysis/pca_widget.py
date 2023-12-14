@@ -14,6 +14,7 @@ from tse_analytics.messaging.messages import DatasetChangedMessage
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.pca_widget_ui import Ui_PcaWidget
+from tse_analytics.views.misc.toast import Toast
 from tse_datatools.analysis.grouping_mode import GroupingMode
 
 
@@ -36,23 +37,19 @@ class PcaWidget(QWidget, MessengerListener):
         self.ui.comboBoxDimensions.addItems(["2D", "3D"])
         self.ui.comboBoxDimensions.setCurrentText("2D")
 
-        # self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PluginsEnabled, False)
-        # self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PdfViewerEnabled, False)
-        # self.ui.webView.setHtml("")
-
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
 
     def __on_dataset_changed(self, message: DatasetChangedMessage):
+        self.ui.toolButtonAnalyse.setDisabled(message.data is None)
         self.__clear()
 
     def __clear(self):
         self.ui.webView.setHtml("")
 
     def __analyze(self):
-        if Manager.data.selected_dataset is None or (
-            Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None
-        ):
+        if Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None:
+            Toast(text="Please select a factor first!", duration=2000, parent=self).show_toast()
             return
 
         if len(Manager.data.selected_variables) < 3:

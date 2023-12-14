@@ -13,7 +13,6 @@ from tse_analytics.models.json_model import JsonModel
 class InfoWidget(QTreeView, MessengerListener):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
-        MessengerListener.__init__(self)
 
         self.horizontalScrollBar().setEnabled(True)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)

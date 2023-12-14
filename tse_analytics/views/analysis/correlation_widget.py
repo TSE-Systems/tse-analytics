@@ -1,8 +1,9 @@
 from typing import Optional
 
-import pandas as pd
 import pingouin as pg
 import seaborn as sns
+from PySide6.QtCore import QSize
+from PySide6.QtGui import Qt
 from PySide6.QtWidgets import QWidget
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
@@ -14,10 +15,8 @@ from tse_analytics.messaging.messages import DatasetChangedMessage
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.correlation_widget_ui import Ui_CorrelationWidget
+from tse_analytics.views.misc.toast import Toast
 from tse_datatools.analysis.grouping_mode import GroupingMode
-
-pd.set_option("colheader_justify", "center")  # FOR TABLE <th>
-sns.set_theme(style="whitegrid")
 
 
 class CorrelationWidget(QWidget, MessengerListener):
@@ -39,11 +38,8 @@ class CorrelationWidget(QWidget, MessengerListener):
         self.ui.variableSelectorY.currentTextChanged.connect(self.__y_current_text_changed)
 
         self.plotToolbar = NavigationToolbar2QT(self.ui.canvas, self)
-        self.ui.horizontalLayout.insertWidget(self.ui.horizontalLayout.count() - 2, self.plotToolbar)
-
-        # self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PluginsEnabled, False)
-        # self.ui.webView.settings().setAttribute(self.ui.webView.settings().WebAttribute.PdfViewerEnabled, False)
-        # self.ui.webView.setHtml("")
+        self.plotToolbar.setIconSize(QSize(16, 16))
+        self.ui.horizontalLayout.insertWidget(self.ui.horizontalLayout.count() - 1, self.plotToolbar)
 
         self.ui.splitter.setSizes([2, 1])
 
@@ -51,6 +47,7 @@ class CorrelationWidget(QWidget, MessengerListener):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
 
     def __on_dataset_changed(self, message: DatasetChangedMessage):
+        self.ui.toolButtonAnalyse.setDisabled(message.data is None)
         self.__clear()
         if message.data is not None:
             self.ui.variableSelectorX.set_data(message.data.variables)
@@ -68,9 +65,8 @@ class CorrelationWidget(QWidget, MessengerListener):
         self.y_var = y
 
     def __analyze(self):
-        if Manager.data.selected_dataset is None or (
-            Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None
-        ):
+        if Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None:
+            Toast(text="Please select a factor first!", duration=2000, parent=self).show_toast()
             return
 
         variables = [self.x_var] if self.x_var == self.y_var else [self.x_var, self.y_var]
