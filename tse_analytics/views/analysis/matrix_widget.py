@@ -37,6 +37,10 @@ class MatrixWidget(QWidget, MessengerListener):
         self.ui.webView.setHtml("")
 
     def __analyze(self):
+        if len(Manager.data.selected_variables) < 2:
+            Toast(text="Please select at least two variables.", duration=2000, parent=self).show_toast()
+            return
+
         if Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None:
             Toast(text="Please select a factor first!", duration=2000, parent=self).show_toast()
             return

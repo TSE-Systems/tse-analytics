@@ -29,21 +29,11 @@ class Ui_DataTableWidget(object):
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.toolButtonEnableSorting = QToolButton(DataTableWidget)
-        self.toolButtonEnableSorting.setObjectName(u"toolButtonEnableSorting")
-        icon = QIcon()
-        icon.addFile(u":/icons/icons8-sorting-16.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.toolButtonEnableSorting.setIcon(icon)
-        self.toolButtonEnableSorting.setCheckable(True)
-        self.toolButtonEnableSorting.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-
-        self.horizontalLayout.addWidget(self.toolButtonEnableSorting)
-
         self.toolButtonResizeColumns = QToolButton(DataTableWidget)
         self.toolButtonResizeColumns.setObjectName(u"toolButtonResizeColumns")
-        icon1 = QIcon()
-        icon1.addFile(u":/icons/icons8-resize-horizontal-16.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.toolButtonResizeColumns.setIcon(icon1)
+        icon = QIcon()
+        icon.addFile(u":/icons/icons8-resize-horizontal-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.toolButtonResizeColumns.setIcon(icon)
         self.toolButtonResizeColumns.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
         self.horizontalLayout.addWidget(self.toolButtonResizeColumns)
@@ -61,6 +51,7 @@ class Ui_DataTableWidget(object):
         self.tableView.setSelectionMode(QAbstractItemView.SingleSelection)
         self.tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.tableView.setSortingEnabled(True)
+        self.tableView.verticalHeader().setMinimumSectionSize(20)
         self.tableView.verticalHeader().setDefaultSectionSize(20)
 
         self.verticalLayout.addWidget(self.tableView)
@@ -73,7 +64,6 @@ class Ui_DataTableWidget(object):
 
     def retranslateUi(self, DataTableWidget):
         DataTableWidget.setWindowTitle(QCoreApplication.translate("DataTableWidget", u"Form", None))
-        self.toolButtonEnableSorting.setText(QCoreApplication.translate("DataTableWidget", u"Enable Sorting", None))
         self.toolButtonResizeColumns.setText(QCoreApplication.translate("DataTableWidget", u"Resize Columns", None))
     # retranslateUi
 

@@ -102,7 +102,6 @@ class PcaWidget(QWidget, MessengerListener):
                 },
                 hover_name=df["Animal"],
             )
-            self.ui.webView.setHtml(fig.to_html(include_plotlyjs="cdn"))
         elif n_components == 3:
             fig = px.scatter_3d(
                 data,
@@ -120,7 +119,7 @@ class PcaWidget(QWidget, MessengerListener):
                 hover_name=df["Animal"],
             )
 
-            file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.html", self)
-            if file.open():
-                fig.write_html(file.fileName(), include_plotlyjs=True)
-                self.ui.webView.load(QUrl.fromLocalFile(file.fileName()))
+        file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.html", self)
+        if file.open():
+            fig.write_html(file.fileName(), include_plotlyjs=True)
+            self.ui.webView.load(QUrl.fromLocalFile(file.fileName()))

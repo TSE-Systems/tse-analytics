@@ -1,6 +1,7 @@
 from typing import Optional
 
-from PySide6.QtCore import Qt, QSortFilterProxyModel
+import pandas as pd
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.manager import Manager
@@ -26,14 +27,12 @@ class DataTableWidget(QWidget, MessengerListener):
         self.ui = Ui_DataTableWidget()
         self.ui.setupUi(self)
 
-        proxy_model = QSortFilterProxyModel()
-        proxy_model.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
-        self.ui.tableView.setModel(proxy_model)
-
-        self.ui.toolButtonEnableSorting.toggled.connect(self.__enable_sorting)
         self.ui.toolButtonResizeColumns.clicked.connect(self.__resize_columns_width)
 
-        self._sorting = False
+        self.header = self.ui.tableView.horizontalHeader()
+        self.header.sectionClicked.connect(self.header_clicked)
+
+        self.df: Optional[pd.DataFrame] = None
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
@@ -41,11 +40,6 @@ class DataTableWidget(QWidget, MessengerListener):
         messenger.subscribe(self, RevertBinningMessage, self.__on_revert_binning)
         messenger.subscribe(self, DataChangedMessage, self.__on_data_changed)
         messenger.subscribe(self, GroupingModeChangedMessage, self.__on_grouping_mode_changed)
-
-    def __enable_sorting(self, state: bool):
-        self._sorting = state
-        self.ui.tableView.horizontalHeader().setSortIndicator(-1, Qt.SortOrder.AscendingOrder)
-        self.ui.tableView.setSortingEnabled(self._sorting)
 
     def __resize_columns_width(self):
         # Pass the function to execute
@@ -57,7 +51,7 @@ class DataTableWidget(QWidget, MessengerListener):
 
     def __on_dataset_changed(self, message: DatasetChangedMessage):
         if message.data is None:
-            self.ui.tableView.model().setSourceModel(None)
+            self.ui.tableView.setModel(None)
         else:
             self.__set_data()
 
@@ -77,11 +71,16 @@ class DataTableWidget(QWidget, MessengerListener):
         selected_variable_names = [item.name for item in Manager.data.selected_variables]
         selected_variable_names = list(set(selected_variable_names))
 
-        df = Manager.data.get_current_df(calculate_error=False, variables=selected_variable_names)
+        self.df = Manager.data.get_current_df(calculate_error=False, variables=selected_variable_names)
 
-        model = PandasModel(df)
-        self.ui.tableView.horizontalHeader().setSortIndicator(-1, Qt.SortOrder.AscendingOrder)
-        self.ui.tableView.setSortingEnabled(False)
-        self.ui.tableView.model().setSourceModel(model)
-        self.ui.tableView.setSortingEnabled(self._sorting)
+        self.ui.tableView.setModel(PandasModel(self.df))
         self.ui.tableView.setColumnWidth(0, 120)
+        self.header.setSortIndicatorShown(False)
+
+    def header_clicked(self, logical_index: int):
+        if self.df is None:
+            return
+        self.header.setSortIndicatorShown(True)
+        order = self.header.sortIndicatorOrder() == Qt.SortOrder.AscendingOrder
+        df = self.df.sort_values(self.df.columns[logical_index], ascending=order, inplace=False)
+        self.ui.tableView.setModel(PandasModel(df))

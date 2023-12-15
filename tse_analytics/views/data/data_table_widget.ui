@@ -17,23 +17,6 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QToolButton" name="toolButtonEnableSorting">
-       <property name="text">
-        <string>Enable Sorting</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../../../resources/resources.qrc">
-         <normaloff>:/icons/icons8-sorting-16.png</normaloff>:/icons/icons8-sorting-16.png</iconset>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
-       <property name="toolButtonStyle">
-        <enum>Qt::ToolButtonTextBesideIcon</enum>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QToolButton" name="toolButtonResizeColumns">
        <property name="text">
         <string>Resize Columns</string>
@@ -76,6 +59,9 @@
      <property name="sortingEnabled">
       <bool>true</bool>
      </property>
+     <attribute name="verticalHeaderMinimumSectionSize">
+      <number>20</number>
+     </attribute>
      <attribute name="verticalHeaderDefaultSectionSize">
       <number>20</number>
      </attribute>
