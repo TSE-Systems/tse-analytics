@@ -10,7 +10,7 @@ repository = "https://github.com/TSE-Systems/tse-analytics"
 packages = [{include = "tse_analytics"}]
 
 [tool.poetry.dependencies]
-python = "3.12.1"
+python = "3.11.7"
 PySide6 = "6.6.0"
 PySide6-QtAds = "4.1.0.2"
 cryptography = "41.0.7"
@@ -18,15 +18,14 @@ lmfit = "1.2.2"
 loguru = "0.7.2"
 matplotlib = "3.8.2"
 openpyxl = "3.1.2"
-pandas = {version="2.1.4"}
+pandas = {version="2.0.3"}
 pingouin = "0.5.3"
 plotly = "5.18.0"
-psutil = "5.9.6"
+psutil = "5.9.7"
 pyqtgraph = "0.13.3"
-scikit-learn = "1.3.2"
-scipy = "1.11.4"
 seaborn = "0.13.0"
-statsmodels = "0.14.1"
+aeon = "0.6.0"
+prophet = "1.1.5"
 
 [tool.poetry.group.dev.dependencies]
 black = "23.12.0"
@@ -42,7 +41,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 120
-target-version = ["py312"]
+target-version = ["py311"]
 exclude = "/.*_ui.py|/.*_rc.py"
 
 [tool.isort]
@@ -52,14 +51,14 @@ profile = "black"
 max-line-length = 120
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.11"
 ignore_missing_imports = true
 
 [tool.ruff]
 preview = true
 unsafe-fixes = true
 line-length = 120
-target-version = "py312"
+target-version = "py311"
 src = ["tse_analytics", "tse_datatools"]
 exclude = [
     "*_ui.py",

@@ -3,7 +3,6 @@ from typing import Optional
 import pingouin as pg
 import seaborn as sns
 from PySide6.QtCore import QSize
-from PySide6.QtGui import Qt
 from PySide6.QtWidgets import QWidget
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg

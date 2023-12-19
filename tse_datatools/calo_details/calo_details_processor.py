@@ -3,7 +3,7 @@ from datetime import timedelta
 import numpy as np
 import pandas as pd
 from lmfit import Parameters, minimize
-from scipy.optimize import curve_fit
+# from scipy.optimize import curve_fit
 from loguru import logger
 
 from tse_datatools.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
@@ -131,24 +131,24 @@ def calculate_rer(o2_ref, o2, co2_ref, co2, flow):
     return rer, vo2, vco2, h
 
 
-def calculate_fit(
-    df: pd.DataFrame,
-    gas_name: str,
-    number_of_iterations: int,
-    bounds: tuple[tuple[float, float, float], tuple[float, float, float]],
-):
-    xdata = df["Offset"]
-    ydata = df[gas_name]
-
-    popt, pcov = curve_fit(
-        curve_fitting_func,
-        method="trf",
-        xdata=xdata,
-        ydata=ydata,
-        bounds=bounds,
-        max_nfev=number_of_iterations,
-    )
-    return popt[0], popt[1], popt[2]
+# def calculate_fit(
+#     df: pd.DataFrame,
+#     gas_name: str,
+#     number_of_iterations: int,
+#     bounds: tuple[tuple[float, float, float], tuple[float, float, float]],
+# ):
+#     xdata = df["Offset"]
+#     ydata = df[gas_name]
+#
+#     popt, pcov = curve_fit(
+#         curve_fitting_func,
+#         method="trf",
+#         xdata=xdata,
+#         ydata=ydata,
+#         bounds=bounds,
+#         max_nfev=number_of_iterations,
+#     )
+#     return popt[0], popt[1], popt[2]
 
 
 # Define the fitting function

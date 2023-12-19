@@ -47,6 +47,8 @@ tasks:
       - pyside6-uic tse_analytics/views/calo_details/calo_details_rer_widget.ui -o tse_analytics/views/calo_details/calo_details_rer_widget_ui.py
       - pyside6-uic tse_analytics/views/tools/compare_runs_widget.ui -o tse_analytics/views/tools/compare_runs_widget_ui.py
       - pyside6-uic tse_analytics/views/about_dialog.ui -o tse_analytics/views/about_dialog_ui.py
+      - pyside6-uic tse_analytics/views/analysis/timeseries/timeseries_widget.ui -o tse_analytics/views/analysis/timeseries/timeseries_widget_ui.py
+      - pyside6-uic tse_analytics/views/analysis/timeseries/prophet_forecasting_widget.ui -o tse_analytics/views/analysis/timeseries/prophet_forecasting_widget_ui.py
 
   clean:
     desc: remove all build, test, coverage and Python artifacts

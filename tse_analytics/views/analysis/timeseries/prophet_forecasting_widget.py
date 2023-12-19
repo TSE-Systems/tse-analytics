@@ -1,0 +1,100 @@
+from typing import Optional
+
+from PySide6.QtCore import QSize
+from PySide6.QtWidgets import QWidget
+from aeon.forecasting.model_selection import temporal_train_test_split
+from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
+import pandas as pd
+import numpy as np
+from prophet import Prophet
+
+from aeon.datasets import load_airline
+from aeon.utils.plotting import plot_series
+from aeon.forecasting.base import ForecastingHorizon
+from aeon.forecasting.naive import NaiveForecaster
+from aeon.registry import all_estimators
+from prophet.plot import add_changepoints_to_plot
+
+from tse_analytics.core.helper import show_help
+from tse_analytics.core.manager import Manager
+from tse_analytics.views.analysis.timeseries.prophet_forecasting_widget_ui import Ui_ProphetForecastingWidget
+from tse_analytics.views.misc.toast import Toast
+
+
+class ProphetForecastingWidget(QWidget):
+    def __init__(self, parent: Optional[QWidget] = None):
+        super().__init__(parent)
+
+        self.ui = Ui_ProphetForecastingWidget()
+        self.ui.setupUi(self)
+
+        self.help_path = "prophet-forecasting.md"
+        self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
+        self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
+
+        plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
+        plot_toolbar.setIconSize(QSize(16, 16))
+        self.ui.horizontalLayout.insertWidget(self.ui.horizontalLayout.count() - 1, plot_toolbar)
+
+    def set_data(self, data):
+        self.ui.toolButtonAnalyse.setDisabled(data is None)
+        self.clear()
+
+    def clear(self):
+        self.ui.canvas.clear(True)
+
+    def __analyze(self):
+        if len(Manager.data.selected_variables) == 0:
+            Toast(text="Please select variables first!", duration=2000, parent=self).show_toast()
+            return
+
+        self.ui.canvas.clear(False)
+        ax = self.ui.canvas.figure.add_subplot(111)
+
+        variables = [variable.name for variable in Manager.data.selected_variables]
+        df = Manager.data.get_current_df(calculate_error=False, variables=variables)
+
+        # # step 1: data specification
+        # y = df[Manager.data.selected_variables[0].name]
+        #
+        # y_train, y_test = temporal_train_test_split(y, test_size=24)
+        #
+        # # step 2: specifying forecasting horizon
+        # fh = np.arange(1, 24)
+        #
+        # # step 3: specifying the forecasting algorithm
+        # forecaster = NaiveForecaster(strategy="mean", sp=24)
+        #
+        # # step 4: fitting the forecaster
+        # forecaster.fit(y_train)
+        #
+        # # step 5: querying predictions
+        # y_pred = forecaster.predict(fh)
+        #
+        # # optional: plotting predictions and past data
+        # plot_series(y_train, y_test, y_pred, labels=["y_train", "y_test", "y_pred"], ax=ax)
+
+        df = pd.concat({"ds": df["DateTime"], "y": df[Manager.data.selected_variables[0].name]}, axis=1)
+
+        m = Prophet(changepoint_prior_scale=self.ui.changepointPriorScaleDoubleSpinBox.value())
+        m.fit(df=df)
+
+        if self.ui.radioButtonDayFrequency.isChecked():
+            freq = "D"
+        elif self.ui.radioButtonHourFrequency.isChecked():
+            freq = "H"
+        elif self.ui.radioButtonMinuteFrequency.isChecked():
+            freq = "min"
+        elif self.ui.radioButtonSecondFrequency.isChecked():
+            freq = "S"
+        future = m.make_future_dataframe(periods=self.ui.periodsSpinBox.value(), freq=freq, include_history=self.ui.showHistoryCheckBox.isChecked())
+        future.tail()
+
+        forecast = m.predict(future)
+        fig = m.plot(forecast, ax=ax)
+
+        if self.ui.showTrendCheckBox.isChecked():
+            a = add_changepoints_to_plot(fig.gca(), m, forecast)
+
+        self.ui.canvas.figure.tight_layout()
+        self.ui.canvas.draw()

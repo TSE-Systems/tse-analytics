@@ -20,6 +20,7 @@ from tse_analytics.views.analysis.histogram_widget import HistogramWidget
 from tse_analytics.views.analysis.matrix_widget import MatrixWidget
 from tse_analytics.views.analysis.normality_widget import NormalityWidget
 from tse_analytics.views.analysis.pca_widget import PcaWidget
+from tse_analytics.views.analysis.timeseries.timeseries_widget import TimeseriesWidget
 from tse_analytics.views.data.data_plot_widget import DataPlotWidget
 from tse_analytics.views.data.data_table_widget import DataTableWidget
 from tse_analytics.views.datasets.datasets_tree_view import DatasetsTreeView
@@ -122,6 +123,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         pca_dock_widget = self.__register_dock_widget(PcaWidget(), "PCA", QIcon(":/icons/icons8-scales-16.png"))
         self.dock_manager.addDockWidgetTabToArea(pca_dock_widget, main_area)
+
+        timeseries_dock_widget = self.__register_dock_widget(TimeseriesWidget(), "Timeseries", QIcon(":/icons/time.svg"))
+        self.dock_manager.addDockWidgetTabToArea(timeseries_dock_widget, main_area)
 
         datasets_dock_widget = self.__register_dock_widget(
             DatasetsTreeView(), "Datasets", QIcon(":/icons/icons8-database-16.png")
