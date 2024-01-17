@@ -19,21 +19,21 @@ loguru = "0.7.2"
 matplotlib = "3.8.2"
 openpyxl = "3.1.2"
 pandas = {version="2.0.3"}
-pingouin = "0.5.3"
+pingouin = "0.5.4"
 plotly = "5.18.0"
+prophet = "1.1.5"
 psutil = "5.9.7"
 pyqtgraph = "0.13.3"
-seaborn = "0.13.0"
-aeon = "0.6.0"
-prophet = "1.1.5"
+scalecast = "0.19.7"
+seaborn = "0.13.1"
 
 [tool.poetry.group.dev.dependencies]
-black = "23.12.0"
-mypy = "1.7.1"
+black = "23.12.1"
+mypy = "1.8.0"
 pyinstaller = "6.3.0"
 pylint = "3.0.3"
-pytest = "7.4.3"
-ruff = "0.1.8"
+pytest = "7.4.4"
+ruff = "0.1.13"
 
 [build-system]
 requires = ["poetry-core"]

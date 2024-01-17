@@ -2,17 +2,9 @@ from typing import Optional
 
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
-from aeon.forecasting.model_selection import temporal_train_test_split
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 import pandas as pd
-import numpy as np
 from prophet import Prophet
-
-from aeon.datasets import load_airline
-from aeon.utils.plotting import plot_series
-from aeon.forecasting.base import ForecastingHorizon
-from aeon.forecasting.naive import NaiveForecaster
-from aeon.registry import all_estimators
 from prophet.plot import add_changepoints_to_plot
 
 from tse_analytics.core.helper import show_help
@@ -54,26 +46,6 @@ class ProphetForecastingWidget(QWidget):
         variables = [variable.name for variable in Manager.data.selected_variables]
         df = Manager.data.get_current_df(calculate_error=False, variables=variables)
 
-        # # step 1: data specification
-        # y = df[Manager.data.selected_variables[0].name]
-        #
-        # y_train, y_test = temporal_train_test_split(y, test_size=24)
-        #
-        # # step 2: specifying forecasting horizon
-        # fh = np.arange(1, 24)
-        #
-        # # step 3: specifying the forecasting algorithm
-        # forecaster = NaiveForecaster(strategy="mean", sp=24)
-        #
-        # # step 4: fitting the forecaster
-        # forecaster.fit(y_train)
-        #
-        # # step 5: querying predictions
-        # y_pred = forecaster.predict(fh)
-        #
-        # # optional: plotting predictions and past data
-        # plot_series(y_train, y_test, y_pred, labels=["y_train", "y_test", "y_pred"], ax=ax)
-
         df = pd.concat({"ds": df["DateTime"], "y": df[Manager.data.selected_variables[0].name]}, axis=1)
 
         m = Prophet(changepoint_prior_scale=self.ui.changepointPriorScaleDoubleSpinBox.value())
@@ -94,7 +66,7 @@ class ProphetForecastingWidget(QWidget):
         fig = m.plot(forecast, ax=ax)
 
         if self.ui.showTrendCheckBox.isChecked():
-            a = add_changepoints_to_plot(fig.gca(), m, forecast)
+            add_changepoints_to_plot(fig.gca(), m, forecast)
 
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()

@@ -31,6 +31,7 @@
         "tse_analytics/views/tools/compare_runs_widget.ui",
         "tse_analytics/views/about_dialog.ui",
         "tse_analytics/views/analysis/timeseries/timeseries_widget.ui",
-        "tse_analytics/views/analysis/timeseries/prophet_forecasting_widget.ui"
+        "tse_analytics/views/analysis/timeseries/prophet_forecasting_widget.ui",
+        "tse_analytics/views/analysis/timeseries/decomposition_widget.ui"
     ]
 }
