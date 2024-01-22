@@ -27,15 +27,7 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
     def process(self, df: pd.DataFrame) -> pd.DataFrame:
         result: Optional[pd.DataFrame] = None
 
-        unit = "H"
-        match self.settings.unit:
-            case "day":
-                unit = "D"
-            case "hour":
-                unit = "H"
-            case "minute":
-                unit = "min"
-        timedelta = pd.Timedelta(f"{self.settings.delta}{unit}")
+        timedelta = pd.Timedelta(f"{self.settings.delta}{self.settings.unit}")
 
         match self.grouping_mode:
             case GroupingMode.ANIMALS:

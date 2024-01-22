@@ -28,7 +28,10 @@ setConfigOptions(
     useOpenGL=False,
 )
 
+pd.options.mode.copy_on_write = True
+# pd.options.future.infer_string = True
 pd.set_option("colheader_justify", "center")  # FOR TABLE <th>
+
 sns.set_theme(style="whitegrid")
 
 

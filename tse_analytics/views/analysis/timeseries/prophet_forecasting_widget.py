@@ -41,7 +41,6 @@ class ProphetForecastingWidget(QWidget):
             return
 
         self.ui.canvas.clear(False)
-        ax = self.ui.canvas.figure.add_subplot(111)
 
         variables = [variable.name for variable in Manager.data.selected_variables]
         df = Manager.data.get_current_df(calculate_error=False, variables=variables)
@@ -59,10 +58,14 @@ class ProphetForecastingWidget(QWidget):
             freq = "min"
         elif self.ui.radioButtonSecondFrequency.isChecked():
             freq = "S"
-        future = m.make_future_dataframe(periods=self.ui.periodsSpinBox.value(), freq=freq, include_history=self.ui.showHistoryCheckBox.isChecked())
+        future = m.make_future_dataframe(
+            periods=self.ui.periodsSpinBox.value(), freq=freq, include_history=self.ui.showHistoryCheckBox.isChecked()
+        )
         future.tail()
 
         forecast = m.predict(future)
+
+        ax = self.ui.canvas.figure.add_subplot(111)
         fig = m.plot(forecast, ax=ax)
 
         if self.ui.showTrendCheckBox.isChecked():

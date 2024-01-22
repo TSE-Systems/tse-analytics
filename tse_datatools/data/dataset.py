@@ -91,14 +91,16 @@ class Dataset:
         for factor in self.factors.values():
             animal_factor_map: dict[str, Any] = {}
             for animal_id in animal_ids:
-                animal_factor_map[animal_id] = None
+                animal_factor_map[animal_id] = pd.NA
 
             for group in factor.groups:
                 for animal_id in group.animal_ids:
                     animal_factor_map[animal_id] = group.name
 
             df[factor.name] = df["Animal"]
-            df[factor.name].replace(animal_factor_map, inplace=True)
+            # df[factor.name].replace(animal_factor_map, inplace=True)
+            # df[factor.name] = df[factor.name].replace(animal_factor_map)
+            df.replace({factor.name: animal_factor_map}, inplace=True)
             df[factor.name] = df[factor.name].astype("category")
 
         self.active_df = df
