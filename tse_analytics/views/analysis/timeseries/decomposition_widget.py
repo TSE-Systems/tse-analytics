@@ -3,11 +3,8 @@ from typing import Optional
 import pandas as pd
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
-from darts import TimeSeries
-from darts.utils.missing_values import fill_missing_values
-from darts.utils.statistics import extract_trend_and_seasonality
-from darts.utils.utils import ModelMode
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
+from statsmodels.tsa.seasonal import seasonal_decompose, STL, MSTL
 
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
@@ -45,28 +42,53 @@ class DecompositionWidget(QWidget):
         self.ui.canvas.clear(False)
 
         variables = [variable.name for variable in Manager.data.selected_variables]
-        df = Manager.data.get_current_df(calculate_error=False, variables=variables, dropna=True)
+        var_name = Manager.data.selected_variables[0].name
+        df = Manager.data.get_current_df(calculate_error=False, variables=variables, dropna=False)
 
         index = pd.DatetimeIndex(df["DateTime"])
         index = index.round("min")
         df.set_index(index, inplace=True)
         # df = df.asfreq("min")
 
-        timeseries = TimeSeries.from_dataframe(
-            df=df,
-            value_cols=Manager.data.selected_variables[0].name,
-            freq="min",
-        )
+        df[var_name] = df[var_name].interpolate(limit_direction="both")
 
-        timeseries = fill_missing_values(timeseries, fill="auto")
+        model = "additive" if self.ui.radioButtonModelAdditive.isChecked() else "multiplicative"
+        period = self.ui.periodSpinBox.value()
 
-        trend, seasonal = extract_trend_and_seasonality(timeseries, model=ModelMode.ADDITIVE, method="STL", freq=60*4)
+        if self.ui.radioButtonMethodNaive.isChecked():
+            result = seasonal_decompose(
+                df[var_name],
+                period=period,
+                model=model,
+                extrapolate_trend="freq"
+            )
+        elif self.ui.radioButtonMethodSTL.isChecked():
+            result = STL(
+                endog=df[var_name],
+                period=period,
+            ).fit()
+        elif self.ui.radioButtonMethodMSTL.isChecked():
+            result = MSTL(
+                endog=df[var_name],
+                periods=(60, 60*24),
+            ).fit()
 
-        axs = self.ui.canvas.figure.subplots(3, 1, sharex=True)
+        axs = self.ui.canvas.figure.subplots(4, 1, sharex=True)
 
-        timeseries.plot(ax=axs[0], label="Original Data", default_formatting=True)
-        trend.plot(ax=axs[1], label="Trend Data", default_formatting=True)
-        seasonal.plot(ax=axs[2], label="Seasonal Data", default_formatting=True)
+        axs[0].plot(result.observed, label="Observed", lw=1)
+        axs[0].legend()
+
+        axs[1].plot(result.trend, label="Trend Component", lw=1)
+        axs[1].legend()
+
+        axs[2].plot(result.seasonal, label="Seasonal Component", lw=1)
+        axs[2].legend()
+
+        axs[3].plot(result.resid, label="Residual Component", marker=".", markersize=2, linestyle="none")
+        nobs = result.observed.shape[0]
+        xlim = result.observed.index[0], result.observed.index[nobs - 1]
+        axs[3].plot(xlim, (0, 0), color="#000000", zorder=-3)
+        axs[3].legend()
 
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()

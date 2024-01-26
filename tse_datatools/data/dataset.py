@@ -89,7 +89,7 @@ class Dataset:
         animal_ids = df["Animal"].unique()
 
         for factor in self.factors.values():
-            animal_factor_map: dict[str, Any] = {}
+            animal_factor_map: dict[int, Any] = {}
             for animal_id in animal_ids:
                 animal_factor_map[animal_id] = pd.NA
 
@@ -97,7 +97,7 @@ class Dataset:
                 for animal_id in group.animal_ids:
                     animal_factor_map[animal_id] = group.name
 
-            df[factor.name] = df["Animal"]
+            df[factor.name] = df["Animal"].astype(int)
             # df[factor.name].replace(animal_factor_map, inplace=True)
             # df[factor.name] = df[factor.name].replace(animal_factor_map)
             df.replace({factor.name: animal_factor_map}, inplace=True)

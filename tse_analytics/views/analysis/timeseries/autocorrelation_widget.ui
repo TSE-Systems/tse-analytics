@@ -76,14 +76,14 @@
        <item>
         <layout class="QFormLayout" name="formLayout">
          <item row="0" column="0">
-          <widget class="QLabel" name="diffyLabel">
+          <widget class="QLabel" name="adjustedLabel">
            <property name="text">
-            <string>Data difference</string>
+            <string>Adjusted</string>
            </property>
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QCheckBox" name="diffyCheckBox"/>
+          <widget class="QCheckBox" name="adjustedCheckBox"/>
          </item>
         </layout>
        </item>

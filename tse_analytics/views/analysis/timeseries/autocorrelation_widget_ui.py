@@ -74,15 +74,15 @@ class Ui_AutocorrelationWidget(object):
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
         self.formLayout = QFormLayout()
         self.formLayout.setObjectName(u"formLayout")
-        self.diffyLabel = QLabel(self.groupBoxSettings)
-        self.diffyLabel.setObjectName(u"diffyLabel")
+        self.adjustedLabel = QLabel(self.groupBoxSettings)
+        self.adjustedLabel.setObjectName(u"adjustedLabel")
 
-        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.diffyLabel)
+        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.adjustedLabel)
 
-        self.diffyCheckBox = QCheckBox(self.groupBoxSettings)
-        self.diffyCheckBox.setObjectName(u"diffyCheckBox")
+        self.adjustedCheckBox = QCheckBox(self.groupBoxSettings)
+        self.adjustedCheckBox.setObjectName(u"adjustedCheckBox")
 
-        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.diffyCheckBox)
+        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.adjustedCheckBox)
 
 
         self.verticalLayout_6.addLayout(self.formLayout)
@@ -105,6 +105,6 @@ class Ui_AutocorrelationWidget(object):
         AutocorrelationWidget.setWindowTitle(QCoreApplication.translate("AutocorrelationWidget", u"Form", None))
         self.toolButtonAnalyse.setText(QCoreApplication.translate("AutocorrelationWidget", u"Analyze", None))
         self.groupBoxSettings.setTitle(QCoreApplication.translate("AutocorrelationWidget", u"Settings", None))
-        self.diffyLabel.setText(QCoreApplication.translate("AutocorrelationWidget", u"Data difference", None))
+        self.adjustedLabel.setText(QCoreApplication.translate("AutocorrelationWidget", u"Adjusted", None))
     # retranslateUi
 

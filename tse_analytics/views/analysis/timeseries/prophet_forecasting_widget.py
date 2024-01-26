@@ -20,7 +20,7 @@ class ProphetForecastingWidget(QWidget):
         self.ui = Ui_ProphetForecastingWidget()
         self.ui.setupUi(self)
 
-        self.help_path = "prophet-forecasting.md"
+        self.help_path = "timeseries-prophet.md"
         self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
 
@@ -58,10 +58,10 @@ class ProphetForecastingWidget(QWidget):
             freq = "min"
         elif self.ui.radioButtonSecondFrequency.isChecked():
             freq = "S"
+
         future = m.make_future_dataframe(
             periods=self.ui.periodsSpinBox.value(), freq=freq, include_history=self.ui.showHistoryCheckBox.isChecked()
         )
-        future.tail()
 
         forecast = m.predict(future)
 

@@ -3,10 +3,8 @@ from typing import Optional
 import pandas as pd
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
-from darts import TimeSeries
-from darts.utils.missing_values import fill_missing_values
-from darts.utils.statistics import plot_residuals_analysis, plot_acf, plot_pacf
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
@@ -44,20 +42,19 @@ class AutocorrelationWidget(QWidget):
         self.ui.canvas.clear(False)
 
         variables = [variable.name for variable in Manager.data.selected_variables]
-        df = Manager.data.get_current_df(calculate_error=False, variables=variables, dropna=True)
+        var_name = Manager.data.selected_variables[0].name
+        df = Manager.data.get_current_df(calculate_error=False, variables=variables, dropna=False)
 
         index = pd.DatetimeIndex(df["DateTime"])
         index = index.round("min")
         df.set_index(index, inplace=True)
         # df = df.asfreq("min")
 
-        timeseries = TimeSeries.from_dataframe(df=df, value_cols=Manager.data.selected_variables[0].name, freq="min")
-
-        timeseries = fill_missing_values(timeseries, fill="auto")
+        df[var_name] = df[var_name].interpolate(limit_direction="both")
 
         axs = self.ui.canvas.figure.subplots(2, 1, sharex=True)
-        plot_acf(timeseries, alpha=0.05, axis=axs[0], default_formatting=True)
-        plot_pacf(timeseries, alpha=0.05, axis=axs[1], default_formatting=True)
+        plot_acf(df[var_name], ax=axs[0], adjusted=self.ui.adjustedCheckBox.isChecked())
+        plot_pacf(df[var_name], ax=axs[1])
 
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()

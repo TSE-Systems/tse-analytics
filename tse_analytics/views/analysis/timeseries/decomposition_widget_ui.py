@@ -15,10 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QDoubleSpinBox, QFormLayout,
-    QGroupBox, QHBoxLayout, QLabel, QRadioButton,
-    QSizePolicy, QSpacerItem, QSpinBox, QSplitter,
-    QToolButton, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QFormLayout, QGroupBox, QHBoxLayout,
+    QLabel, QRadioButton, QSizePolicy, QSpacerItem,
+    QSpinBox, QSplitter, QToolButton, QVBoxLayout,
+    QWidget)
 
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 import resources_rc
@@ -73,6 +73,47 @@ class Ui_DecompositionWidget(object):
         self.groupBoxSettings.setObjectName(u"groupBoxSettings")
         self.verticalLayout_6 = QVBoxLayout(self.groupBoxSettings)
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
+        self.groupBoxMethod = QGroupBox(self.groupBoxSettings)
+        self.groupBoxMethod.setObjectName(u"groupBoxMethod")
+        self.verticalLayout_3 = QVBoxLayout(self.groupBoxMethod)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.radioButtonMethodNaive = QRadioButton(self.groupBoxMethod)
+        self.radioButtonMethodNaive.setObjectName(u"radioButtonMethodNaive")
+        self.radioButtonMethodNaive.setChecked(True)
+
+        self.verticalLayout_3.addWidget(self.radioButtonMethodNaive)
+
+        self.radioButtonMethodSTL = QRadioButton(self.groupBoxMethod)
+        self.radioButtonMethodSTL.setObjectName(u"radioButtonMethodSTL")
+
+        self.verticalLayout_3.addWidget(self.radioButtonMethodSTL)
+
+        self.radioButtonMethodMSTL = QRadioButton(self.groupBoxMethod)
+        self.radioButtonMethodMSTL.setObjectName(u"radioButtonMethodMSTL")
+
+        self.verticalLayout_3.addWidget(self.radioButtonMethodMSTL)
+
+
+        self.verticalLayout_6.addWidget(self.groupBoxMethod)
+
+        self.groupBoxModel = QGroupBox(self.groupBoxSettings)
+        self.groupBoxModel.setObjectName(u"groupBoxModel")
+        self.verticalLayout_2 = QVBoxLayout(self.groupBoxModel)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.radioButtonModelAdditive = QRadioButton(self.groupBoxModel)
+        self.radioButtonModelAdditive.setObjectName(u"radioButtonModelAdditive")
+        self.radioButtonModelAdditive.setChecked(True)
+
+        self.verticalLayout_2.addWidget(self.radioButtonModelAdditive)
+
+        self.radioButtonModelMultiplicative = QRadioButton(self.groupBoxModel)
+        self.radioButtonModelMultiplicative.setObjectName(u"radioButtonModelMultiplicative")
+
+        self.verticalLayout_2.addWidget(self.radioButtonModelMultiplicative)
+
+
+        self.verticalLayout_6.addWidget(self.groupBoxModel)
+
         self.groupBoxFrequency = QGroupBox(self.groupBoxSettings)
         self.groupBoxFrequency.setObjectName(u"groupBoxFrequency")
         self.verticalLayout_5 = QVBoxLayout(self.groupBoxFrequency)
@@ -103,49 +144,17 @@ class Ui_DecompositionWidget(object):
 
         self.formLayout = QFormLayout()
         self.formLayout.setObjectName(u"formLayout")
-        self.changepointPriorScaleLabel = QLabel(self.groupBoxSettings)
-        self.changepointPriorScaleLabel.setObjectName(u"changepointPriorScaleLabel")
+        self.periodLabel = QLabel(self.groupBoxSettings)
+        self.periodLabel.setObjectName(u"periodLabel")
 
-        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.changepointPriorScaleLabel)
+        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.periodLabel)
 
-        self.changepointPriorScaleDoubleSpinBox = QDoubleSpinBox(self.groupBoxSettings)
-        self.changepointPriorScaleDoubleSpinBox.setObjectName(u"changepointPriorScaleDoubleSpinBox")
-        self.changepointPriorScaleDoubleSpinBox.setValue(0.050000000000000)
+        self.periodSpinBox = QSpinBox(self.groupBoxSettings)
+        self.periodSpinBox.setObjectName(u"periodSpinBox")
+        self.periodSpinBox.setMaximum(1000000000)
+        self.periodSpinBox.setValue(60)
 
-        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.changepointPriorScaleDoubleSpinBox)
-
-        self.periodsLabel = QLabel(self.groupBoxSettings)
-        self.periodsLabel.setObjectName(u"periodsLabel")
-
-        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.periodsLabel)
-
-        self.periodsSpinBox = QSpinBox(self.groupBoxSettings)
-        self.periodsSpinBox.setObjectName(u"periodsSpinBox")
-        self.periodsSpinBox.setMaximum(1000000000)
-        self.periodsSpinBox.setValue(60)
-
-        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.periodsSpinBox)
-
-        self.showTrendLabel = QLabel(self.groupBoxSettings)
-        self.showTrendLabel.setObjectName(u"showTrendLabel")
-
-        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.showTrendLabel)
-
-        self.showTrendCheckBox = QCheckBox(self.groupBoxSettings)
-        self.showTrendCheckBox.setObjectName(u"showTrendCheckBox")
-
-        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.showTrendCheckBox)
-
-        self.showHistoryLabel = QLabel(self.groupBoxSettings)
-        self.showHistoryLabel.setObjectName(u"showHistoryLabel")
-
-        self.formLayout.setWidget(3, QFormLayout.LabelRole, self.showHistoryLabel)
-
-        self.showHistoryCheckBox = QCheckBox(self.groupBoxSettings)
-        self.showHistoryCheckBox.setObjectName(u"showHistoryCheckBox")
-        self.showHistoryCheckBox.setChecked(True)
-
-        self.formLayout.setWidget(3, QFormLayout.FieldRole, self.showHistoryCheckBox)
+        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.periodSpinBox)
 
 
         self.verticalLayout_6.addLayout(self.formLayout)
@@ -168,14 +177,27 @@ class Ui_DecompositionWidget(object):
         DecompositionWidget.setWindowTitle(QCoreApplication.translate("DecompositionWidget", u"Form", None))
         self.toolButtonAnalyse.setText(QCoreApplication.translate("DecompositionWidget", u"Analyze", None))
         self.groupBoxSettings.setTitle(QCoreApplication.translate("DecompositionWidget", u"Settings", None))
+        self.groupBoxMethod.setTitle(QCoreApplication.translate("DecompositionWidget", u"Method", None))
+#if QT_CONFIG(tooltip)
+        self.radioButtonMethodNaive.setToolTip(QCoreApplication.translate("DecompositionWidget", u"Seasonal decomposition using moving averages", None))
+#endif // QT_CONFIG(tooltip)
+        self.radioButtonMethodNaive.setText(QCoreApplication.translate("DecompositionWidget", u"Naive", None))
+#if QT_CONFIG(tooltip)
+        self.radioButtonMethodSTL.setToolTip(QCoreApplication.translate("DecompositionWidget", u"Season-Trend decomposition using LOESS", None))
+#endif // QT_CONFIG(tooltip)
+        self.radioButtonMethodSTL.setText(QCoreApplication.translate("DecompositionWidget", u"STL", None))
+#if QT_CONFIG(tooltip)
+        self.radioButtonMethodMSTL.setToolTip(QCoreApplication.translate("DecompositionWidget", u"Multiple Seasonal-Trend decomposition using LOESS", None))
+#endif // QT_CONFIG(tooltip)
+        self.radioButtonMethodMSTL.setText(QCoreApplication.translate("DecompositionWidget", u"MSTL", None))
+        self.groupBoxModel.setTitle(QCoreApplication.translate("DecompositionWidget", u"Model", None))
+        self.radioButtonModelAdditive.setText(QCoreApplication.translate("DecompositionWidget", u"Additive", None))
+        self.radioButtonModelMultiplicative.setText(QCoreApplication.translate("DecompositionWidget", u"Multiplicative", None))
         self.groupBoxFrequency.setTitle(QCoreApplication.translate("DecompositionWidget", u"Frequency", None))
         self.radioButtonDayFrequency.setText(QCoreApplication.translate("DecompositionWidget", u"Day", None))
         self.radioButtonHourFrequency.setText(QCoreApplication.translate("DecompositionWidget", u"Hour", None))
         self.radioButtonMinuteFrequency.setText(QCoreApplication.translate("DecompositionWidget", u"Minute", None))
         self.radioButtonSecondFrequency.setText(QCoreApplication.translate("DecompositionWidget", u"Second", None))
-        self.changepointPriorScaleLabel.setText(QCoreApplication.translate("DecompositionWidget", u"Changepoint Prior Scale", None))
-        self.periodsLabel.setText(QCoreApplication.translate("DecompositionWidget", u"Periods", None))
-        self.showTrendLabel.setText(QCoreApplication.translate("DecompositionWidget", u"Show Trend", None))
-        self.showHistoryLabel.setText(QCoreApplication.translate("DecompositionWidget", u"Show History", None))
+        self.periodLabel.setText(QCoreApplication.translate("DecompositionWidget", u"Period", None))
     # retranslateUi
 

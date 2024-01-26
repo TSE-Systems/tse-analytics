@@ -166,7 +166,7 @@ class CaloDetailsDialog(QDialog):
                 self.fitting_results[result.box_number] = result
 
         logger.info(f"Processing complete: {timeit.default_timer() - tic} sec")
-        Toast(text="Processing complete.", duration=2000, parent=self).show_toast()
+        # Toast(text="Processing complete.", duration=2000, parent=self).show_toast()
 
     def hideEvent(self, event: QCloseEvent) -> None:
         settings = QSettings()

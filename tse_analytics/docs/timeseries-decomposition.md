@@ -1,4 +1,6 @@
-Time Series Decomposition is a technique to extract multiple types of variation from your dataset. There are three important components in the temporal data of a time series: seasonality, trend, and noise.
+# Time series decomposition
+
+Time series decomposition is a technique to extract multiple types of variation from your dataset. There are three important components in the temporal data of a time series: seasonality, trend, and noise.
 
 - **Seasonality** is a recurring movement that is present in your time series variable. For example, the temperature of a place will be higher in the summer months and lower in the winter months.
 You could compute average monthly temperatures and use this seasonality as a basis for forecasting future values.
