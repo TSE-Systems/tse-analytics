@@ -1,6 +1,6 @@
 import pandas as pd
 
-from tse_datatools.analysis.pipeline.pipe_operator import PipeOperator
+from tse_analytics.analysis.pipeline.pipe_operator import PipeOperator
 
 
 class STDPipeOperator(PipeOperator):

@@ -1,7 +1,7 @@
 import plotly.express as px
 from PySide6.QtCore import QDir, QTemporaryFile, QUrl
 from PySide6.QtWidgets import QWidget
-from tse_datatools.analysis.grouping_mode import GroupingMode
+from tse_analytics.analysis.grouping_mode import GroupingMode
 
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager

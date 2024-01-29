@@ -1,6 +1,6 @@
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from PySide6.QtWidgets import QWidget
-from tse_datatools.analysis.binning_mode import BinningMode
+from tse_analytics.analysis.binning_mode import BinningMode
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import (

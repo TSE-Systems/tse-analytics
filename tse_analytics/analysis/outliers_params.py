@@ -1,4 +1,4 @@
-from tse_datatools.analysis.outliers_mode import OutliersMode
+from tse_analytics.analysis.outliers_mode import OutliersMode
 
 
 class OutliersParams:

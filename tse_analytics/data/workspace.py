@@ -1,4 +1,4 @@
-from tse_datatools.data.dataset import Dataset
+from tse_analytics.data.dataset import Dataset
 
 
 class Workspace:

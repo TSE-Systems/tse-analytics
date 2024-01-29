@@ -1,7 +1,7 @@
 from PySide6.QtCore import QItemSelection, QSize, QSortFilterProxyModel, Qt
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QWidget
-from tse_datatools.data.animal import Animal
+from tse_analytics.data.animal import Animal
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import DatasetChangedMessage

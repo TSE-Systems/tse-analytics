@@ -8,7 +8,7 @@ IS_RELEASE = Path("_internal").exists()
 
 
 def show_help(sender, filename: str):
-    docs_path = Path("_internal/docs") if IS_RELEASE else Path("docs")
+    docs_path = Path("_internal/docs") if IS_RELEASE else Path("../docs")
     path = docs_path / Path(filename)
     if path.exists():
         with open(path, encoding="utf-8") as file:

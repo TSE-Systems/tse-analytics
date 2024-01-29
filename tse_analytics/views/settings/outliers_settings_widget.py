@@ -1,7 +1,7 @@
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
-from tse_datatools.analysis.outliers_mode import OutliersMode
-from tse_datatools.analysis.outliers_params import OutliersParams
+from tse_analytics.analysis.outliers_mode import OutliersMode
+from tse_analytics.analysis.outliers_params import OutliersParams
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.settings.outliers_settings_widget_ui import Ui_OutliersSettingsWidget

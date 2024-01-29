@@ -1,6 +1,6 @@
-from tse_datatools.analysis.binning_params import BinningParams
-from tse_datatools.analysis.grouping_mode import GroupingMode
-from tse_datatools.data.dataset import Dataset
+from tse_analytics.analysis.binning_params import BinningParams
+from tse_analytics.analysis.grouping_mode import GroupingMode
+from tse_analytics.data.dataset import Dataset
 
 from tse_analytics.models.tree_item import TreeItem
 

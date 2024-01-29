@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
-from tse_datatools.data.variable import Variable
+from tse_analytics.data.variable import Variable
 
 
 class VariablesModel(QAbstractTableModel):

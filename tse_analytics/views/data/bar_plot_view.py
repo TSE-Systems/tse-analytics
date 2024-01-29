@@ -3,7 +3,7 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtWidgets import QVBoxLayout, QWidget
-from tse_datatools.analysis.grouping_mode import GroupingMode
+from tse_analytics.analysis.grouping_mode import GroupingMode
 
 from tse_analytics.core.manager import Manager
 

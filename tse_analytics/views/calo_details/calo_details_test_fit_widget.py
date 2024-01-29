@@ -2,7 +2,7 @@ import pandas as pd
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QDialog, QFileDialog, QWidget
-from tse_datatools.calo_details.calo_details_processor import calculate_fit_v2, curve_fitting_func
+from tse_analytics.calo_details.calo_details_processor import calculate_fit_v2, curve_fitting_func
 
 from tse_analytics.views.calo_details.calo_details_settings_widget import CaloDetailsSettingsWidget
 from tse_analytics.views.calo_details.calo_details_test_fit_widget_ui import Ui_CaloDetailsTestFitWidget

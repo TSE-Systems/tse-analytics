@@ -1,7 +1,7 @@
 import numpy as np
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 from PySide6.QtGui import QColor
-from tse_datatools.analysis.outliers_mode import OutliersMode
+from tse_analytics.analysis.outliers_mode import OutliersMode
 
 from tse_analytics.core.manager import Manager
 

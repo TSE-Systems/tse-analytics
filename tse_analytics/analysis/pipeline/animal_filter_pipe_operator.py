@@ -1,7 +1,7 @@
 import pandas as pd
 
-from tse_datatools.analysis.pipeline.pipe_operator import PipeOperator
-from tse_datatools.data.animal import Animal
+from tse_analytics.analysis.pipeline.pipe_operator import PipeOperator
+from tse_analytics.data.animal import Animal
 
 
 class AnimalFilterPipeOperator(PipeOperator):

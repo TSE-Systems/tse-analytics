@@ -1,7 +1,7 @@
 import pandas as pd
 
-from tse_datatools.calo_details.calo_details_settings import CaloDetailsSettings
-from tse_datatools.data.calo_details_box import CaloDetailsBox
+from tse_analytics.calo_details.calo_details_settings import CaloDetailsSettings
+from tse_analytics.data.calo_details_box import CaloDetailsBox
 
 
 class FittingParams:

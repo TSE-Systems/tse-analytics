@@ -1,7 +1,7 @@
 from PySide6.QtCore import QItemSelection, QSortFilterProxyModel, Qt
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QAbstractItemView, QTableView, QWidget
-from tse_datatools.data.dataset import Dataset
+from tse_analytics.data.dataset import Dataset
 
 from tse_analytics.models.bins_model import BinsModel
 

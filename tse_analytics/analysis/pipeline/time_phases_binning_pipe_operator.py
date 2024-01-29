@@ -1,16 +1,16 @@
 import pandas as pd
 
-from tse_datatools.analysis.binning_operation import BinningOperation
-from tse_datatools.analysis.grouping_mode import GroupingMode
-from tse_datatools.analysis.pipeline.pipe_operator import PipeOperator
-from tse_datatools.data.factor import Factor
-from tse_datatools.data.time_cycles_binning_settings import TimeCyclesBinningSettings
+from tse_analytics.analysis.binning_operation import BinningOperation
+from tse_analytics.analysis.grouping_mode import GroupingMode
+from tse_analytics.analysis.pipeline.pipe_operator import PipeOperator
+from tse_analytics.data.factor import Factor
+from tse_analytics.data.time_phases_binning_settings import TimePhasesBinningSettings
 
 
-class TimeCyclesBinningPipeOperator(PipeOperator):
+class TimePhasesBinningPipeOperator(PipeOperator):
     def __init__(
         self,
-        settings: TimeCyclesBinningSettings,
+        settings: TimePhasesBinningSettings,
         binning_operation: BinningOperation,
         grouping_mode: GroupingMode,
         factor_names: list[str],
@@ -23,11 +23,18 @@ class TimeCyclesBinningPipeOperator(PipeOperator):
         self.selected_factor = selected_factor
 
     def process(self, df: pd.DataFrame) -> pd.DataFrame:
-        def filter_method(x):
-            return "Light" if self.settings.light_cycle_start <= x.time() < self.settings.dark_cycle_start else "Dark"
+        self.settings.time_phases.sort(key=lambda x: x.start_timestamp)
 
-        df["Bin"] = df["DateTime"].apply(filter_method).astype("category")
+        df["Bin"] = None
+        for phase in self.settings.time_phases:
+            df.loc[df["DateTime"] >= phase.start_timestamp, "Bin"] = phase.name
+
+        df["Bin"] = df["Bin"].astype("category")
         df.drop(columns=["DateTime"], inplace=True)
+
+        # Sort category names by time
+        categories = [item.name for item in self.settings.time_phases]
+        df["Bin"] = df["Bin"].cat.set_categories(categories, ordered=True)
 
         result: pd.DataFrame | None = None
 

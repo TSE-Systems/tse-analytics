@@ -2,7 +2,7 @@ import seaborn as sns
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
-from tse_datatools.analysis.grouping_mode import GroupingMode
+from tse_analytics.analysis.grouping_mode import GroupingMode
 
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager

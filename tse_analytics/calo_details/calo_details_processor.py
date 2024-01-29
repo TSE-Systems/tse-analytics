@@ -7,9 +7,9 @@ from lmfit import Parameters, minimize
 # from scipy.optimize import curve_fit
 from loguru import logger
 
-from tse_datatools.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
-from tse_datatools.calo_details.calo_details_settings import CaloDetailsSettings
-from tse_datatools.calo_details.fitting_params import FittingParams
+from tse_analytics.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
+from tse_analytics.calo_details.calo_details_settings import CaloDetailsSettings
+from tse_analytics.calo_details.fitting_params import FittingParams
 
 
 def process_box(params: FittingParams) -> CaloDetailsFittingResult:

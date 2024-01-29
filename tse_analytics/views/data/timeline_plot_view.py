@@ -2,7 +2,7 @@ import pandas as pd
 import pyqtgraph as pg
 from pyqtgraph import mkPen
 from PySide6.QtWidgets import QWidget
-from tse_datatools.analysis.grouping_mode import GroupingMode
+from tse_analytics.analysis.grouping_mode import GroupingMode
 
 from tse_analytics.core.manager import Manager
 

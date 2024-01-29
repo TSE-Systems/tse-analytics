@@ -1,6 +1,6 @@
 import pandas as pd
 
-from tse_datatools.calo_details.fitting_params import FittingParams
+from tse_analytics.calo_details.fitting_params import FittingParams
 
 
 class CaloDetailsFittingResult:

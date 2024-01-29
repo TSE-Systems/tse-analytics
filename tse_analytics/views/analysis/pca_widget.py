@@ -3,7 +3,7 @@ from PySide6.QtCore import QDir, QTemporaryFile, QUrl
 from PySide6.QtWidgets import QWidget
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
-from tse_datatools.analysis.grouping_mode import GroupingMode
+from tse_analytics.analysis.grouping_mode import GroupingMode
 
 # from umap import UMAP
 from tse_analytics.core.helper import show_help

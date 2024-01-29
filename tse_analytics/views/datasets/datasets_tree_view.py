@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
     QTreeView,
     QWidget,
 )
-from tse_datatools.data.dataset import Dataset
+from tse_analytics.data.dataset import Dataset
 
 from tse_analytics.core.licensing import LicenseManager
 from tse_analytics.core.manager import Manager

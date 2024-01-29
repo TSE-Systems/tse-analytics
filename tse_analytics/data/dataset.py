@@ -2,12 +2,12 @@ from typing import Any, Literal
 
 import pandas as pd
 
-from tse_datatools.data.animal import Animal
-from tse_datatools.data.binning_settings import BinningSettings
-from tse_datatools.data.calo_details import CaloDetails
-from tse_datatools.data.factor import Factor
-from tse_datatools.data.group import Group
-from tse_datatools.data.variable import Variable
+from tse_analytics.data.animal import Animal
+from tse_analytics.data.binning_settings import BinningSettings
+from tse_analytics.data.calo_details import CaloDetails
+from tse_analytics.data.factor import Factor
+from tse_analytics.data.group import Group
+from tse_analytics.data.variable import Variable
 
 
 class Dataset:

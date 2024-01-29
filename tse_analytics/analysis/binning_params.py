@@ -1,5 +1,5 @@
-from tse_datatools.analysis.binning_mode import BinningMode
-from tse_datatools.analysis.binning_operation import BinningOperation
+from tse_analytics.analysis.binning_mode import BinningMode
+from tse_analytics.analysis.binning_operation import BinningOperation
 
 
 class BinningParams:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QIcon
-from tse_datatools.data.calo_details import CaloDetails
+from tse_analytics.data.calo_details import CaloDetails
 
 from tse_analytics.models.tree_item import TreeItem
 

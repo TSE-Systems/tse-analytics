@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
-from tse_datatools.data.time_phase import TimePhase
+from tse_analytics.data.time_phase import TimePhase
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import DatasetChangedMessage

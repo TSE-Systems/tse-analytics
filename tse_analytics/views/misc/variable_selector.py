@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QComboBox, QHeaderView, QTableView
-from tse_datatools.data.variable import Variable
+from tse_analytics.data.variable import Variable
 
 from tse_analytics.models.variables_model import VariablesModel
 

@@ -50,7 +50,7 @@ preview = true
 unsafe-fixes = false
 line-length = 120
 target-version = "py312"
-src = ["tse_analytics", "tse_datatools"]
+src = ["tse_analytics"]
 exclude = [
     "*_ui.py",
     "*_rc.py",

@@ -1,5 +1,5 @@
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
-from tse_datatools.data.factor import Factor
+from tse_analytics.data.factor import Factor
 
 
 class FactorsModel(QAbstractTableModel):

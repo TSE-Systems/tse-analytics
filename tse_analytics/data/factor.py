@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from tse_datatools.data.group import Group
+from tse_analytics.data.group import Group
 
 
 @dataclass

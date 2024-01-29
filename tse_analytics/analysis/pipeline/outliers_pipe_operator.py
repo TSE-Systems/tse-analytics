@@ -1,7 +1,7 @@
 import pandas as pd
 
-from tse_datatools.analysis.outliers_params import OutliersParams
-from tse_datatools.analysis.pipeline.pipe_operator import PipeOperator
+from tse_analytics.analysis.outliers_params import OutliersParams
+from tse_analytics.analysis.pipeline.pipe_operator import PipeOperator
 
 
 class OutliersPipeOperator(PipeOperator):

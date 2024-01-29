@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
-from tse_datatools.data.animal import Animal
+from tse_analytics.data.animal import Animal
 
 
 class AnimalsModel(QAbstractTableModel):

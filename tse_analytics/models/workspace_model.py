@@ -1,9 +1,9 @@
 import pickle
 
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt, Signal
-from tse_datatools.data.dataset import Dataset
-from tse_datatools.data.workspace import Workspace
-from tse_datatools.loaders.calo_details_loader import CaloDetailsLoader
+from tse_analytics.data.dataset import Dataset
+from tse_analytics.data.workspace import Workspace
+from tse_analytics.loaders.calo_details_loader import CaloDetailsLoader
 
 from tse_analytics.models.calo_details_tree_item import CaloDetailsTreeItem
 from tse_analytics.models.dataset_tree_item import DatasetTreeItem

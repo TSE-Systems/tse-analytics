@@ -1,4 +1,4 @@
-from tse_datatools.data.workspace import Workspace
+from tse_analytics.data.workspace import Workspace
 
 from tse_analytics.models.tree_item import TreeItem
 

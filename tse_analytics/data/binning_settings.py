@@ -1,8 +1,8 @@
 from datetime import time
 
-from tse_datatools.data.time_cycles_binning_settings import TimeCyclesBinningSettings
-from tse_datatools.data.time_intervals_binning_settings import TimeIntervalsBinningSettings
-from tse_datatools.data.time_phases_binning_settings import TimePhasesBinningSettings
+from tse_analytics.data.time_cycles_binning_settings import TimeCyclesBinningSettings
+from tse_analytics.data.time_intervals_binning_settings import TimeIntervalsBinningSettings
+from tse_analytics.data.time_phases_binning_settings import TimePhasesBinningSettings
 
 
 class BinningSettings:

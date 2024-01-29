@@ -38,7 +38,7 @@ The layout is saved when you quit application.
 
 > Default layout may be restored by clicking **View - Reset Layout** menu item.
 
-![Main Window](./main.png)
+![Main Window](main.png)
 
 
 ## Data structure organization in TSE Analytics
@@ -77,7 +77,7 @@ In order to import dataset, please click **File - Import Dataset** command. As s
 you will see a new entry in the *Datasets* widget. By selecting specific entry in this widget, one can switch freely
 between different datasets:
 
-![Datasets](./datasets.png)
+![Datasets](datasets.png)
 
 > **Note:** Only one dataset can be active at the time in the workspace!
 
@@ -91,7 +91,7 @@ Let's have a look at the selection widgets.
 Here users can select one or many animals from the list of all animals that were registered in the experiment. This
 allows to filter (exclude) some of them from further analysis and visualisation.
 
-![Animals](./animals.png)
+![Animals](animals.png)
 
 In order to select all animals at once, please press **CTRL-A** or drag mouse over entries you want to choose.
 To select/deselect individual entries, click on the entry holding **CTRL** key.
@@ -104,14 +104,14 @@ This widget is used to choose of one or many variables that you want to display 
 include in the downstream analysis in components that support multiple variables selection, like **Matrix** or **PCA**
 widgets.
 
-![Variables](./variables.png)
+![Variables](variables.png)
 
 Similarly to **Animals** widget, in order to select all variables at once, please press **CTRL-A** or drag mouse over
 entries you want to choose. To select/deselect individual entries, click on the entry holding **CTRL** key.
 
 ### Factors
 
-![Factors](./factors.png)
+![Factors](factors.png)
 
 ## Data analysis pipeline
 

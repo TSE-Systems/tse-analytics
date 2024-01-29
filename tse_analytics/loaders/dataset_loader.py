@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pandas as pd
 
-from tse_datatools.data.animal import Animal
-from tse_datatools.data.dataset import Dataset
-from tse_datatools.data.variable import Variable
+from tse_analytics.data.animal import Animal
+from tse_analytics.data.dataset import Dataset
+from tse_analytics.data.variable import Variable
 
 DELIMITER = ";"
 DECIMAL = "."

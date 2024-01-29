@@ -1,10 +1,10 @@
 import pandas as pd
 
-from tse_datatools.analysis.binning_operation import BinningOperation
-from tse_datatools.analysis.grouping_mode import GroupingMode
-from tse_datatools.analysis.pipeline.pipe_operator import PipeOperator
-from tse_datatools.data.factor import Factor
-from tse_datatools.data.time_intervals_binning_settings import TimeIntervalsBinningSettings
+from tse_analytics.analysis.binning_operation import BinningOperation
+from tse_analytics.analysis.grouping_mode import GroupingMode
+from tse_analytics.analysis.pipeline.pipe_operator import PipeOperator
+from tse_analytics.data.factor import Factor
+from tse_analytics.data.time_intervals_binning_settings import TimeIntervalsBinningSettings
 
 
 class TimeIntervalsBinningPipeOperator(PipeOperator):

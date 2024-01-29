@@ -1,8 +1,8 @@
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
-from tse_datatools.analysis.binning_mode import BinningMode
-from tse_datatools.analysis.binning_operation import BinningOperation
-from tse_datatools.analysis.binning_params import BinningParams
+from tse_analytics.analysis.binning_mode import BinningMode
+from tse_analytics.analysis.binning_operation import BinningOperation
+from tse_analytics.analysis.binning_params import BinningParams
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import DatasetChangedMessage

@@ -1,6 +1,6 @@
 import pandas as pd
 from PySide6.QtWidgets import QWidget
-from tse_datatools.data.variable import Variable
+from tse_analytics.data.variable import Variable
 
 from tse_analytics.views.calo_details.calo_details_plot_widget_ui import Ui_CaloDetailsPlotWidget
 

@@ -1,4 +1,4 @@
-from tse_datatools.data.time_phase import TimePhase
+from tse_analytics.data.time_phase import TimePhase
 
 
 class TimePhasesBinningSettings:

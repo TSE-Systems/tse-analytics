@@ -1,6 +1,6 @@
 import pandas as pd
 
-from tse_datatools.data.variable import Variable
+from tse_analytics.data.variable import Variable
 
 
 class CaloDetails:
