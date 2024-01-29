@@ -56,14 +56,12 @@ def merge_datasets(
     new_df["Bin"] = (new_df["Timedelta"] / timedelta).round().astype(int)
 
     # convert categorical types
-    new_df = new_df.astype(
-        {
-            "Animal": "category",
-            "Box": "category",
-            "Bin": "category",
-            "Run": "category",
-        }
-    )
+    new_df = new_df.astype({
+        "Animal": "category",
+        "Box": "category",
+        "Bin": "category",
+        "Run": "category",
+    })
 
     new_path = ""
     new_meta = [dataset.meta for dataset in datasets]

@@ -10,7 +10,6 @@ from tse_analytics.messaging.messenger_listener import MessengerListener
 
 
 class Messenger:
-
     """The messenger manages communication between subscribers.
 
     Objects :func:`subscribe` to receive specific message types. When

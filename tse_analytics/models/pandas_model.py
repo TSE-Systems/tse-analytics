@@ -10,6 +10,7 @@ class PandasModel(QAbstractTableModel):
     """
     Class to populate a table view with a pandas dataframe
     """
+
     def __init__(self, dataframe, parent=None):
         QAbstractTableModel.__init__(self, parent)
         self._data = np.array(dataframe.values)

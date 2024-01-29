@@ -87,9 +87,14 @@ tasks:
       - pylint -j 8 tse_analytics tse_datatools
     ignore_error: true
 
-  ruff:
+  ruff-check:
     cmds:
       - ruff check .
+    ignore_error: true
+
+  ruff-format:
+    cmds:
+      - ruff format .
     ignore_error: true
 
   test:

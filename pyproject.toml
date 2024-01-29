@@ -27,7 +27,6 @@ pyqtgraph = "0.13.3"
 seaborn = "0.13.2"
 
 [tool.poetry.group.dev.dependencies]
-black = "24.1.1"
 mypy = "1.8.0"
 pyinstaller = "6.3.0"
 pylint = "3.0.3"
@@ -38,27 +37,33 @@ ruff = "0.1.14"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.black]
-line-length = 120
-target-version = ["py312"]
-exclude = "/.*_ui.py|/.*_rc.py"
-
-[tool.isort]
-profile = "black"
-
 [tool.pylint.format]
 max-line-length = 120
 
 [tool.mypy]
 python_version = "3.12"
+strict = true
 ignore_missing_imports = true
 
 [tool.ruff]
 preview = true
-unsafe-fixes = true
+unsafe-fixes = false
 line-length = 120
 target-version = "py312"
 src = ["tse_analytics", "tse_datatools"]
 exclude = [
     "*_ui.py",
+    "*_rc.py",
 ]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"

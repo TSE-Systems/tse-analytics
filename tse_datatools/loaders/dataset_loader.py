@@ -147,12 +147,10 @@ class DatasetLoader:
         df.rename(columns={"Date_Time": "DateTime", "Animal No.": "Animal"}, inplace=True)
 
         # Apply categorical types
-        df = df.astype(
-            {
-                "Animal": "category",
-                "Box": "category",
-            }
-        )
+        df = df.astype({
+            "Animal": "category",
+            "Box": "category",
+        })
 
         # find sampling interval
         timedeltas = []
@@ -184,13 +182,11 @@ class DatasetLoader:
             df = df.replace({"Weight": weights})
 
         # convert categorical types
-        df = df.astype(
-            {
-                "Bin": "category",
-                "Run": "category",
-                "Weight": "float",
-            }
-        )
+        df = df.astype({
+            "Bin": "category",
+            "Run": "category",
+            "Weight": "float",
+        })
 
         # Sort variables by name
         variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))

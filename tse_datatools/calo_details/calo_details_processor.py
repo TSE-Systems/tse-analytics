@@ -3,6 +3,7 @@ from datetime import timedelta
 import numpy as np
 import pandas as pd
 from lmfit import Parameters, minimize
+
 # from scipy.optimize import curve_fit
 from loguru import logger
 

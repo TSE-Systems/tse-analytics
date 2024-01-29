@@ -1,5 +1,4 @@
 class MessengerListener:
-
     """
     The base class for any object that subscribes to messenger messages.
     This interface defines a single method, notify, that receives messages.

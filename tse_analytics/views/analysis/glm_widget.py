@@ -72,9 +72,11 @@ class GlmWidget(QWidget, MessengerListener):
         variables = [self.response] if self.response == self.covariate else [self.response, self.covariate]
         df = Manager.data.get_current_df(calculate_error=False, variables=variables)
 
-        df = df.groupby(by=["Animal"], as_index=False).agg(
-            {self.covariate: "mean", self.response: "mean", factor_name: "first"}
-        )
+        df = df.groupby(by=["Animal"], as_index=False).agg({
+            self.covariate: "mean",
+            self.response: "mean",
+            factor_name: "first",
+        })
 
         facet_grid = sns.lmplot(data=df, x=self.covariate, y=self.response, hue=factor_name, robust=False)
         canvas = FigureCanvasQTAgg(facet_grid.figure)

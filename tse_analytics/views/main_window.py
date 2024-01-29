@@ -124,7 +124,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         pca_dock_widget = self.__register_dock_widget(PcaWidget(), "PCA", QIcon(":/icons/icons8-scales-16.png"))
         self.dock_manager.addDockWidgetTabToArea(pca_dock_widget, main_area)
 
-        timeseries_dock_widget = self.__register_dock_widget(TimeseriesWidget(), "Timeseries", QIcon(":/icons/time.svg"))
+        timeseries_dock_widget = self.__register_dock_widget(
+            TimeseriesWidget(), "Timeseries", QIcon(":/icons/time.svg")
+        )
         self.dock_manager.addDockWidgetTabToArea(timeseries_dock_widget, main_area)
 
         datasets_dock_widget = self.__register_dock_widget(

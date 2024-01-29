@@ -36,8 +36,12 @@ class ProphetForecastingWidget(QWidget):
         self.ui.canvas.clear(True)
 
     def __analyze(self):
-        if len(Manager.data.selected_variables) == 0:
-            Toast(text="Please select variables first!", parent=self, duration=2000).show_toast()
+        if len(Manager.data.selected_variables) != 1:
+            Toast(text="Please select a single variable.", parent=self, duration=2000).show_toast()
+            return
+
+        if len(Manager.data.selected_animals) != 1:
+            Toast(text="Please select a single animal.", parent=self, duration=2000).show_toast()
             return
 
         self.ui.canvas.clear(False)
