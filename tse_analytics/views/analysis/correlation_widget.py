@@ -1,11 +1,11 @@
-from typing import Optional
 
 import pingouin as pg
 import seaborn as sns
-from PySide6.QtCore import QSize
-from PySide6.QtWidgets import QWidget
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from PySide6.QtCore import QSize
+from PySide6.QtWidgets import QWidget
+from tse_datatools.analysis.grouping_mode import GroupingMode
 
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
@@ -15,11 +15,10 @@ from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.correlation_widget_ui import Ui_CorrelationWidget
 from tse_analytics.views.misc.toast import Toast
-from tse_datatools.analysis.grouping_mode import GroupingMode
 
 
 class CorrelationWidget(QWidget, MessengerListener):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.register_to_messenger(Manager.messenger)
 

@@ -1,4 +1,3 @@
-from typing import Optional
 
 import pandas as pd
 
@@ -16,7 +15,7 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
         binning_operation: BinningOperation,
         grouping_mode: GroupingMode,
         factor_names: list[str],
-        selected_factor: Optional[Factor],
+        selected_factor: Factor | None,
     ):
         self.settings = settings
         self.binning_operation = binning_operation
@@ -25,7 +24,7 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
         self.selected_factor = selected_factor
 
     def process(self, df: pd.DataFrame) -> pd.DataFrame:
-        result: Optional[pd.DataFrame] = None
+        result: pd.DataFrame | None = None
 
         timedelta = pd.Timedelta(f"{self.settings.delta}{self.settings.unit}")
 

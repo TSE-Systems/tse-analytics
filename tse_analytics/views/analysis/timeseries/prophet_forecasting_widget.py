@@ -1,11 +1,10 @@
-from typing import Optional
 
-from PySide6.QtCore import QSize
-from PySide6.QtWidgets import QWidget
-from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 import pandas as pd
+from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from prophet import Prophet
 from prophet.plot import add_changepoints_to_plot
+from PySide6.QtCore import QSize
+from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
@@ -14,7 +13,7 @@ from tse_analytics.views.misc.toast import Toast
 
 
 class ProphetForecastingWidget(QWidget):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.ui = Ui_ProphetForecastingWidget()

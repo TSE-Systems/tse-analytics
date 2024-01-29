@@ -1,20 +1,19 @@
-from typing import Optional
 
 from PySide6.QtWidgets import QWidget
-
 from tse_datatools.calo_details.calo_details_settings import CaloDetailsSettings
-from tse_analytics.views.calo_details.calo_details_settings_widget_ui import Ui_CaloDetailsSettingsWidget
 from tse_datatools.data.dataset import Dataset
+
+from tse_analytics.views.calo_details.calo_details_settings_widget_ui import Ui_CaloDetailsSettingsWidget
 
 
 class CaloDetailsSettingsWidget(QWidget):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.ui = Ui_CaloDetailsSettingsWidget()
         self.ui.setupUi(self)
 
-        self.dataset: Optional[Dataset] = None
+        self.dataset: Dataset | None = None
 
     def set_settings(self, calo_details_settings: CaloDetailsSettings):
         self.ui.iterationsSpinBox.setValue(calo_details_settings.iterations)

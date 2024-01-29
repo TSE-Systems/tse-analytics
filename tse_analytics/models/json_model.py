@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, QObject, Qt
 
@@ -8,7 +8,7 @@ from tse_analytics.models.json_tree_item import TreeItem
 class JsonModel(QAbstractItemModel):
     """An editable model of Json data"""
 
-    def __init__(self, parent: Optional[QObject] = None):
+    def __init__(self, parent: QObject | None = None):
         super().__init__(parent)
 
         self._rootItem = TreeItem()

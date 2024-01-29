@@ -1,4 +1,3 @@
-from typing import Optional
 
 import pandas as pd
 from PySide6.QtWidgets import QMessageBox, QWidget
@@ -8,7 +7,7 @@ from tse_datatools.data.dataset import Dataset
 
 def merge_datasets(
     new_dataset_name: str, datasets: list[Dataset], single_run: bool, parent_widget: QWidget
-) -> Optional[Dataset]:
+) -> Dataset | None:
     # check number of datasets
     if len(datasets) < 2:
         QMessageBox.critical(

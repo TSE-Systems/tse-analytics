@@ -1,17 +1,16 @@
 from datetime import datetime, timedelta
-from typing import Optional
 
-from PySide6.QtWidgets import QWidget, QHeaderView, QInputDialog
+from PySide6.QtWidgets import QHeaderView, QInputDialog, QWidget
+from tse_datatools.data.time_phase import TimePhase
+from tse_datatools.data.time_phases_binning_settings import TimePhasesBinningSettings
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.models.time_phases_model import TimePhasesModel
 from tse_analytics.views.settings.time_phases_settings_widget_ui import Ui_TimePhasesSettingsWidget
-from tse_datatools.data.time_phase import TimePhase
-from tse_datatools.data.time_phases_binning_settings import TimePhasesBinningSettings
 
 
 class TimePhasesSettingsWidget(QWidget):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.ui = Ui_TimePhasesSettingsWidget()

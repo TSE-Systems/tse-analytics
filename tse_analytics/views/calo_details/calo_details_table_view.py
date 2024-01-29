@@ -1,13 +1,12 @@
-from typing import Optional
 
 import pandas as pd
-from PySide6.QtWidgets import QWidget, QTableView
+from PySide6.QtWidgets import QTableView, QWidget
 
 from tse_analytics.models.pandas_model import PandasModel
 
 
 class CaloDetailsTableView(QTableView):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.verticalHeader().setDefaultSectionSize(20)
 

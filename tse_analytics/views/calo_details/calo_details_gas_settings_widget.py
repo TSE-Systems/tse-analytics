@@ -1,13 +1,12 @@
-from typing import Optional
 
 from PySide6.QtWidgets import QWidget
+from tse_datatools.calo_details.calo_details_settings import CaloDetailsGasSettings
 
 from tse_analytics.views.calo_details.calo_details_gas_settings_widget_ui import Ui_CaloDetailsGasSettingsWidget
-from tse_datatools.calo_details.calo_details_settings import CaloDetailsGasSettings
 
 
 class CaloDetailsGasSettingsWidget(QWidget):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.ui = Ui_CaloDetailsGasSettingsWidget()

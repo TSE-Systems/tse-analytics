@@ -1,7 +1,6 @@
+from collections import namedtuple
 from io import StringIO
 from pathlib import Path
-from typing import Optional
-from collections import namedtuple
 
 import pandas as pd
 
@@ -21,7 +20,7 @@ def most_frequent(lst: list):
 
 class DatasetLoader:
     @staticmethod
-    def load(filename: str) -> Optional[Dataset]:
+    def load(filename: str) -> Dataset | None:
         path = Path(filename)
         if path.is_file() and path.suffix.lower() == ".csv":
             return DatasetLoader.__load_from_csv(path)
@@ -78,7 +77,7 @@ class DatasetLoader:
 
     @staticmethod
     def __load_from_csv(path: Path):
-        with open(path, "r") as f:
+        with open(path) as f:
             lines = f.readlines()
 
         # lines = [line.strip().rstrip(DELIMITER) for line in lines]

@@ -1,4 +1,3 @@
-from typing import Optional
 
 import pandas as pd
 
@@ -16,7 +15,7 @@ class TimeCyclesBinningPipeOperator(PipeOperator):
         binning_operation: BinningOperation,
         grouping_mode: GroupingMode,
         factor_names: list[str],
-        selected_factor: Optional[Factor],
+        selected_factor: Factor | None,
     ):
         self.settings = settings
         self.binning_operation = binning_operation
@@ -31,7 +30,7 @@ class TimeCyclesBinningPipeOperator(PipeOperator):
         df["Bin"] = df["DateTime"].apply(filter_method).astype("category")
         df.drop(columns=["DateTime"], inplace=True)
 
-        result: Optional[pd.DataFrame] = None
+        result: pd.DataFrame | None = None
 
         match self.grouping_mode:
             case GroupingMode.ANIMALS:

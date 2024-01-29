@@ -1,12 +1,12 @@
 import os
 from functools import partial
-from typing import Optional
 
-import PySide6QtAds
 import psutil
+import PySide6QtAds
 from PySide6.QtCore import QSettings, Qt, QTimer
-from PySide6.QtGui import QIcon, QAction, QCloseEvent
-from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QComboBox, QWidget
+from PySide6.QtGui import QAction, QCloseEvent, QIcon
+from PySide6.QtWidgets import QApplication, QComboBox, QDialog, QFileDialog, QLabel, QMainWindow, QWidget
+from tse_datatools.analysis.grouping_mode import GroupingMode
 
 from tse_analytics.core.helper import LAYOUT_VERSION, show_help
 from tse_analytics.core.licensing import LicenseManager
@@ -34,7 +34,6 @@ from tse_analytics.views.selection.variables.variables_widget import VariablesWi
 from tse_analytics.views.settings.binning_settings_widget import BinningSettingsWidget
 from tse_analytics.views.settings.outliers_settings_widget import OutliersSettingsWidget
 from tse_analytics.views.tools.compare_runs_widget import CompareRunsWidget
-from tse_datatools.analysis.grouping_mode import GroupingMode
 
 PySide6QtAds.CDockManager.setConfigFlags(PySide6QtAds.CDockManager.DefaultNonOpaqueConfig)
 PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.ActiveTabHasCloseButton, False)
@@ -188,7 +187,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.default_docking_state = self.dock_manager.saveState(LAYOUT_VERSION)
 
-        self.compare_runs_widget: Optional[CompareRunsWidget] = None
+        self.compare_runs_widget: CompareRunsWidget | None = None
 
         self.load_settings()
 
@@ -279,7 +278,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         dialog.setDefaultSuffix(".workspace")
         dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
         dialog.setWindowTitle("Save Workspace")
-        dialog.setNameFilter("Workspace Files ({})".format(file_ext))
+        dialog.setNameFilter(f"Workspace Files ({file_ext})")
         if dialog.exec() == QDialog.DialogCode.Accepted:
             Manager.save_workspace(dialog.selectedFiles()[0])
 
@@ -289,7 +288,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         dialog.setDefaultSuffix(".xlsx")
         dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
         dialog.setWindowTitle("Export to Excel")
-        dialog.setNameFilter("Excel Files ({})".format(file_ext))
+        dialog.setNameFilter(f"Excel Files ({file_ext})")
         if dialog.exec() == QDialog.DialogCode.Accepted:
             Manager.data.export_to_excel(dialog.selectedFiles()[0])
 

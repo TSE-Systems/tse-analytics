@@ -1,11 +1,10 @@
-from typing import Optional
 
 import pingouin as pg
 import seaborn as sns
-from PySide6.QtCore import QSize
-from PySide6.QtWidgets import QWidget
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from PySide6.QtCore import QSize
+from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
@@ -18,7 +17,7 @@ from tse_analytics.views.misc.toast import Toast
 
 
 class GlmWidget(QWidget, MessengerListener):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.register_to_messenger(Manager.messenger)
 

@@ -1,4 +1,3 @@
-from typing import Optional
 
 from PySide6.QtWidgets import QWidget
 
@@ -13,7 +12,7 @@ from tse_analytics.views.analysis.timeseries.timeseries_widget_ui import Ui_Time
 
 
 class TimeseriesWidget(QWidget, MessengerListener):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.register_to_messenger(Manager.messenger)
 

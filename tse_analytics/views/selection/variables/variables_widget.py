@@ -1,8 +1,8 @@
-from typing import Optional
 
-from PySide6.QtCore import Qt, QSortFilterProxyModel, QItemSelection, QSize
+from PySide6.QtCore import QItemSelection, QSize, QSortFilterProxyModel, Qt
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QWidget
+from tse_datatools.data.variable import Variable
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import DatasetChangedMessage
@@ -10,11 +10,10 @@ from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.models.variables_model import VariablesModel
 from tse_analytics.views.selection.variables.variables_widget_ui import Ui_VariablesWidget
-from tse_datatools.data.variable import Variable
 
 
 class VariablesWidget(QWidget, MessengerListener):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.register_to_messenger(Manager.messenger)
 

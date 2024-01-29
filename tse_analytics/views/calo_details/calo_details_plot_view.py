@@ -1,17 +1,16 @@
 import datetime
-from typing import Optional, Union
 
 import pandas as pd
 import pyqtgraph as pg
-from PySide6.QtWidgets import QWidget
 from pyqtgraph import mkPen
+from PySide6.QtWidgets import QWidget
 
 
 class CaloDetailsPlotView(pg.GraphicsLayoutWidget):
     def __init__(self, parent: QWidget, title="CaloDetailsPlot"):
         super().__init__(parent, title=title)
 
-        self._df: Optional[pd.DataFrame] = None
+        self._df: pd.DataFrame | None = None
         self._variable: str = ""
 
         self._start_datetime = None
@@ -22,7 +21,7 @@ class CaloDetailsPlotView(pg.GraphicsLayoutWidget):
 
         self.label = self.addLabel(row=0, col=0, justify="right")
 
-        self.plot_data_items: dict[Union[int, str], pg.PlotDataItem] = {}
+        self.plot_data_items: dict[int | str, pg.PlotDataItem] = {}
 
         self.p1: pg.PlotItem = self.addPlot(row=0, col=0)
         # customize the averaged curve that can be activated from the context menu:

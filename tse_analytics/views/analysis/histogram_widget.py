@@ -1,8 +1,7 @@
-from typing import Optional
 
+from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
-from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
@@ -14,7 +13,7 @@ from tse_analytics.views.misc.toast import Toast
 
 
 class HistogramWidget(QWidget, MessengerListener):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.register_to_messenger(Manager.messenger)
 

@@ -1,19 +1,9 @@
 import gc
-from typing import Optional
 
 import numpy as np
 import pandas as pd
 from PySide6.QtCore import QModelIndex
 from PySide6.QtGui import QPixmapCache
-
-from tse_analytics.messaging.messages import (
-    DataChangedMessage,
-    DatasetChangedMessage,
-    GroupingModeChangedMessage,
-    BinningAppliedMessage,
-    RevertBinningMessage,
-)
-from tse_analytics.messaging.messenger import Messenger
 from tse_datatools.analysis.binning_mode import BinningMode
 from tse_datatools.analysis.binning_operation import BinningOperation
 from tse_datatools.analysis.binning_params import BinningParams
@@ -34,13 +24,22 @@ from tse_datatools.data.factor import Factor
 from tse_datatools.data.time_intervals_binning_settings import TimeIntervalsBinningSettings
 from tse_datatools.data.variable import Variable
 
+from tse_analytics.messaging.messages import (
+    BinningAppliedMessage,
+    DataChangedMessage,
+    DatasetChangedMessage,
+    GroupingModeChangedMessage,
+    RevertBinningMessage,
+)
+from tse_analytics.messaging.messenger import Messenger
+
 
 class DataHub:
     def __init__(self, messenger: Messenger):
         self.messenger = messenger
 
-        self.selected_dataset: Optional[Dataset] = None
-        self.selected_factor: Optional[Factor] = None
+        self.selected_dataset: Dataset | None = None
+        self.selected_factor: Factor | None = None
         self.selected_animals: list[Animal] = []
         self.selected_variables: list[Variable] = []
 
@@ -95,7 +94,7 @@ class DataHub:
         self.selected_animals = animals
         self._broadcast_data_changed()
 
-    def set_selected_factor(self, factor: Optional[Factor]) -> None:
+    def set_selected_factor(self, factor: Factor | None) -> None:
         self.selected_factor = factor
         self._broadcast_data_changed()
 
@@ -157,7 +156,7 @@ class DataHub:
             self.set_selected_dataset(dataset)
 
     def get_current_df(
-        self, calculate_error=False, variables: Optional[list[str]] = None, dropna=False
+        self, calculate_error=False, variables: list[str] | None = None, dropna=False
     ) -> pd.DataFrame:
         if variables is not None:
             default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
@@ -221,7 +220,7 @@ class DataHub:
 
         return result
 
-    def get_anova_df(self, variables: Optional[list[str]] = None) -> pd.DataFrame:
+    def get_anova_df(self, variables: list[str] | None = None) -> pd.DataFrame:
         if variables is not None:
             default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
             factor_columns = list(self.selected_dataset.factors.keys())

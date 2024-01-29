@@ -1,14 +1,13 @@
-from typing import Optional
 
-from PySide6.QtWidgets import QWidget
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
-
+from PySide6.QtWidgets import QWidget
 from tse_datatools.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
+
 from tse_analytics.views.calo_details.calo_details_rer_widget_ui import Ui_CaloDetailsRerWidget
 
 
 class CaloDetailsRerWidget(QWidget):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.ui = Ui_CaloDetailsRerWidget()
@@ -21,7 +20,7 @@ class CaloDetailsRerWidget(QWidget):
             self.ui.horizontalLayout.count(), NavigationToolbar2QT(self.ui.canvas, self)
         )
 
-        self.fitting_result: Optional[CaloDetailsFittingResult] = None
+        self.fitting_result: CaloDetailsFittingResult | None = None
 
     def __variable_changed(self, variable: str):
         self.set_data(self.fitting_result)

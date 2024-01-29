@@ -1,6 +1,6 @@
+import ctypes
 import os
 import sys
-import ctypes
 
 import matplotlib
 import pandas as pd

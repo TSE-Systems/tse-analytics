@@ -1,13 +1,12 @@
-from typing import Optional
 
 import plotly.express as px
-from PySide6.QtCore import QTemporaryFile, QDir, QUrl
+from PySide6.QtCore import QDir, QTemporaryFile, QUrl
 from PySide6.QtWidgets import QWidget
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
+from tse_datatools.analysis.grouping_mode import GroupingMode
 
 # from umap import UMAP
-
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import DatasetChangedMessage
@@ -15,11 +14,10 @@ from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.pca_widget_ui import Ui_PcaWidget
 from tse_analytics.views.misc.toast import Toast
-from tse_datatools.analysis.grouping_mode import GroupingMode
 
 
 class PcaWidget(QWidget, MessengerListener):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.register_to_messenger(Manager.messenger)
 

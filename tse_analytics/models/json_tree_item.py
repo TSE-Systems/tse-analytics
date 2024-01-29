@@ -1,4 +1,3 @@
-from typing import Union
 
 
 class TreeItem:
@@ -62,7 +61,7 @@ class TreeItem:
         self._value_type = value
 
     @classmethod
-    def load(cls, value: Union[list, dict], parent: "TreeItem" = None, sort=True) -> "TreeItem":
+    def load(cls, value: list | dict, parent: "TreeItem" = None, sort=True) -> "TreeItem":
         """Create a 'root' TreeItem from a nested list or a nested dictonary
 
         Examples:

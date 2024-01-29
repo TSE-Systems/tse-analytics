@@ -1,15 +1,14 @@
-from typing import Optional
 
-from PySide6.QtCore import Qt, QSortFilterProxyModel, QItemSelection
+from PySide6.QtCore import QItemSelection, QSortFilterProxyModel, Qt
 from PySide6.QtGui import QPalette
-from PySide6.QtWidgets import QWidget, QTableView, QAbstractItemView
+from PySide6.QtWidgets import QAbstractItemView, QTableView, QWidget
+from tse_datatools.data.dataset import Dataset
 
 from tse_analytics.models.bins_model import BinsModel
-from tse_datatools.data.dataset import Dataset
 
 
 class CaloDetailsBinSelector(QTableView):
-    def __init__(self, callback, parent: Optional[QWidget] = None):
+    def __init__(self, callback, parent: QWidget | None = None):
         super().__init__(parent)
         self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)

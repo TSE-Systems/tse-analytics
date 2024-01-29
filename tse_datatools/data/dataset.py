@@ -1,4 +1,4 @@
-from typing import Literal, Any, Optional
+from typing import Any, Literal
 
 import pandas as pd
 
@@ -36,7 +36,7 @@ class Dataset:
         self.factors: dict[str, Factor] = {}
         self.binning_settings = BinningSettings()
 
-        self.calo_details: Optional[CaloDetails] = None
+        self.calo_details: CaloDetails | None = None
 
     @property
     def start_timestamp(self) -> pd.Timestamp:
@@ -44,7 +44,7 @@ class Dataset:
         return first_value
 
     @property
-    def runs_count(self) -> Optional[int]:
+    def runs_count(self) -> int | None:
         return self.active_df["Run"].value_counts().count()
 
     def extract_groups_from_field(self, field: Literal["text1", "text2", "text3"] = "text1") -> dict[str, Group]:

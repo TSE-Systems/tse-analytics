@@ -1,14 +1,13 @@
-from typing import Optional
 
 import pandas as pd
 from PySide6.QtWidgets import QWidget
+from tse_datatools.data.variable import Variable
 
 from tse_analytics.views.calo_details.calo_details_plot_widget_ui import Ui_CaloDetailsPlotWidget
-from tse_datatools.data.variable import Variable
 
 
 class CaloDetailsPlotWidget(QWidget):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.ui = Ui_CaloDetailsPlotWidget()

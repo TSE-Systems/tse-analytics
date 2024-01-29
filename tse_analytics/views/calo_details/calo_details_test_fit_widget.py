@@ -1,17 +1,16 @@
-from typing import Optional
 
 import pandas as pd
-from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QWidget, QFileDialog, QDialog
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
+from PySide6.QtGui import QAction
+from PySide6.QtWidgets import QDialog, QFileDialog, QWidget
+from tse_datatools.calo_details.calo_details_processor import calculate_fit_v2, curve_fitting_func
 
-from tse_datatools.calo_details.calo_details_processor import curve_fitting_func, calculate_fit_v2
 from tse_analytics.views.calo_details.calo_details_settings_widget import CaloDetailsSettingsWidget
 from tse_analytics.views.calo_details.calo_details_test_fit_widget_ui import Ui_CaloDetailsTestFitWidget
 
 
 class CaloDetailsTestFitWidget(QWidget):
-    def __init__(self, settings_widget: CaloDetailsSettingsWidget, parent: Optional[QWidget] = None):
+    def __init__(self, settings_widget: CaloDetailsSettingsWidget, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.ui = Ui_CaloDetailsTestFitWidget()
@@ -31,7 +30,7 @@ class CaloDetailsTestFitWidget(QWidget):
         )
 
         self.settings_widget = settings_widget
-        self.df: Optional[pd.DataFrame] = None
+        self.df: pd.DataFrame | None = None
 
     def set_data(self, df: pd.DataFrame):
         self.df = df

@@ -1,15 +1,14 @@
 import pickle
-from typing import Optional
 
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt, Signal
+from tse_datatools.data.dataset import Dataset
+from tse_datatools.data.workspace import Workspace
+from tse_datatools.loaders.calo_details_loader import CaloDetailsLoader
 
 from tse_analytics.models.calo_details_tree_item import CaloDetailsTreeItem
 from tse_analytics.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.models.tree_item import TreeItem
 from tse_analytics.models.workspace_tree_item import WorkspaceTreeItem
-from tse_datatools.data.dataset import Dataset
-from tse_datatools.data.workspace import Workspace
-from tse_datatools.loaders.calo_details_loader import CaloDetailsLoader
 
 
 class WorkspaceModel(QAbstractItemModel):
@@ -26,14 +25,14 @@ class WorkspaceModel(QAbstractItemModel):
             return index.internalPointer().child_count()
         return self.workspace_tree_item.child_count()
 
-    def addChild(self, node, parent: Optional[QModelIndex] = None):
+    def addChild(self, node, parent: QModelIndex | None = None):
         if not parent or not parent.isValid():
             parent = self.workspace_tree_item
         else:
             parent = parent.internalPointer()
         parent.add_child(node)
 
-    def removeRow(self, row: int, parent: Optional[QModelIndex] = None):
+    def removeRow(self, row: int, parent: QModelIndex | None = None):
         if not parent or not parent.isValid():
             # parent is not valid when it is the root node, since the "parent"
             # method returns an empty QModelIndex

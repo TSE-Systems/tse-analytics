@@ -1,6 +1,5 @@
 from datetime import timedelta
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 
@@ -14,7 +13,7 @@ DECIMAL = "."
 
 class CaloDetailsLoader:
     @staticmethod
-    def load(filename: str, dataset: Dataset) -> Optional[CaloDetails]:
+    def load(filename: str, dataset: Dataset) -> CaloDetails | None:
         path = Path(filename)
         if path.is_file() and path.suffix.lower() == ".csv":
             return CaloDetailsLoader.__load_from_csv(path, dataset)
@@ -23,7 +22,7 @@ class CaloDetailsLoader:
     @staticmethod
     def __load_from_csv(path: Path, dataset: Dataset):
         columns_line = None
-        with open(path, "r") as f:
+        with open(path) as f:
             lines = f.readlines()
 
             header_template = "Date;Time;"

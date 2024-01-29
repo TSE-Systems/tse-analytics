@@ -1,16 +1,14 @@
 import codecs
 import json
 import shutil
-from dataclasses import dataclass
 import subprocess
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
-from PySide6.QtCore import QStandardPaths
 from cryptography.fernet import Fernet, InvalidToken
 from loguru import logger
-
+from PySide6.QtCore import QStandardPaths
 
 LICENSE_FILENAME = "tse-analytics.license"
 
@@ -31,15 +29,15 @@ def get_hardware_id() -> str:
 class License:
     HardwareId: str
     Features: list[str]
-    OwnerName: Optional[str] = None
-    OwnerCompany: Optional[str] = None
-    OwnerEmail: Optional[str] = None
-    ExpirationDate: Optional[str] = None
+    OwnerName: str | None = None
+    OwnerCompany: str | None = None
+    OwnerEmail: str | None = None
+    ExpirationDate: str | None = None
 
 
 class LicenseManager:
     key = "LXP9fAdogHWuqwbBrZDIUii830rEJpGtfjaadnznxWN="
-    license: Optional[License] = None
+    license: License | None = None
     hardware_id = get_hardware_id()
 
     @staticmethod

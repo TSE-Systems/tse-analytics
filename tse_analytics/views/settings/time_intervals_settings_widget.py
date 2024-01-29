@@ -1,14 +1,13 @@
-from typing import Optional
 
 from PySide6.QtWidgets import QWidget
+from tse_datatools.data.time_intervals_binning_settings import TimeIntervalsBinningSettings
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.settings.time_intervals_settings_widget_ui import Ui_TimeIntervalsSettingsWidget
-from tse_datatools.data.time_intervals_binning_settings import TimeIntervalsBinningSettings
 
 
 class TimeIntervalsSettingsWidget(QWidget):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.ui = Ui_TimeIntervalsSettingsWidget()

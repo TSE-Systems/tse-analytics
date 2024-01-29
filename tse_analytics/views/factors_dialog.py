@@ -1,18 +1,17 @@
-from typing import Optional
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QInputDialog, QListWidgetItem, QWidget
+from tse_datatools.data.factor import Factor
+from tse_datatools.data.group import Group
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.factors_dialog_ui import Ui_FactorsDialog
-from tse_datatools.data.factor import Factor
-from tse_datatools.data.group import Group
 
 
 class FactorsDialog(QDialog, Ui_FactorsDialog):
     """Factors Dialog"""
 
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.setupUi(self)
 
@@ -35,8 +34,8 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         self.listWidgetGroups.currentTextChanged.connect(self.current_group_text_changed)
         self.listWidgetAnimals.itemChanged.connect(self.animal_item_changed)
 
-        self.selected_factor: Optional[Factor] = None
-        self.selected_group: Optional[Group] = None
+        self.selected_factor: Factor | None = None
+        self.selected_group: Group | None = None
 
     def add_factor(self):
         if Manager.data.selected_dataset is not None:
