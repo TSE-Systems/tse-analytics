@@ -52,7 +52,7 @@ class NormalityWidget(QWidget, MessengerListener):
 
     def __analyze(self):
         if Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None:
-            Toast(text="Please select a factor first!", duration=2000, parent=self).show_toast()
+            Toast(text="Please select a factor first!", parent=self, duration=2000).show_toast()
             return
 
         df = Manager.data.get_current_df(calculate_error=False, variables=[self.variable])

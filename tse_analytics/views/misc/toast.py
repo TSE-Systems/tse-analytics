@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QWidget, QLabel, QHBoxLayout, QGraphicsOpacityEffe
 
 
 class Toast(QWidget):
-    def __init__(self, text: str, duration=2000, parent=None):
+    def __init__(self, text: str, parent: QWidget, duration=2000):
         super().__init__(parent)
 
         self.__parent = parent
