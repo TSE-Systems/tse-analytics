@@ -132,7 +132,7 @@ class DataHub:
             active_df["RER-p"] = np.NaN
             active_df["H(3)-p"] = np.NaN
             for result in fitting_results.values():
-                for index, row in result.df.iterrows():
+                for _index, row in result.df.iterrows():
                     bin_number = row["Bin"]
 
                     active_df.loc[
@@ -155,9 +155,7 @@ class DataHub:
             dataset.refresh_active_df()
             self.set_selected_dataset(dataset)
 
-    def get_current_df(
-        self, calculate_error=False, variables: list[str] | None = None, dropna=False
-    ) -> pd.DataFrame:
+    def get_current_df(self, calculate_error=False, variables: list[str] | None = None, dropna=False) -> pd.DataFrame:
         if variables is not None:
             default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
             factor_columns = list(self.selected_dataset.factors.keys())

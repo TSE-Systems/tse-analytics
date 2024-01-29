@@ -1,4 +1,3 @@
-
 import pingouin as pg
 import seaborn as sns
 from matplotlib.backends.backend_qt import NavigationToolbar2QT

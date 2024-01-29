@@ -1,4 +1,3 @@
-
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QInputDialog, QListWidgetItem, QWidget
 from tse_datatools.data.factor import Factor

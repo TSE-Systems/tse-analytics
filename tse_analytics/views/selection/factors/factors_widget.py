@@ -1,4 +1,3 @@
-
 from PySide6.QtCore import QItemSelection, QSortFilterProxyModel, Qt
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QDialog, QWidget

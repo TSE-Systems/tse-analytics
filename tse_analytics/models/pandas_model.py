@@ -32,7 +32,7 @@ class PandasModel(QAbstractTableModel):
             if role == Qt.ItemDataRole.BackgroundRole:
                 if Manager.data.outliers_params.mode == OutliersMode.HIGHLIGHT:
                     value = self._data[index.row(), index.column()]
-                    if isinstance(value, (int, float)):
+                    if isinstance(value, int | float):
                         var_name = str(self._cols[index.column()])
                         if var_name in self.q1:
                             q1 = self.q1[var_name]

@@ -1,5 +1,3 @@
-
-
 class CaloDetailsBox:
     def __init__(
         self,

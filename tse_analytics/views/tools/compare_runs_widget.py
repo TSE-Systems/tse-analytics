@@ -1,4 +1,3 @@
-
 import seaborn as sns
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from PySide6.QtWidgets import QWidget
@@ -45,7 +44,7 @@ class CompareRunsWidget(QWidget, MessengerListener):
         df["Run"] = df["Run"].astype(int)
         df["Bin"] = df["Bin"].astype(int)
 
-        for i, run in enumerate(runs):
+        for _i, run in enumerate(runs):
             run_df = df[df["Run"] == run]
             first_bin = run_df["Bin"].values[0]
             old_bins = df[df["Run"] == run]["Bin"].astype(int)

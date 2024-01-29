@@ -1,4 +1,3 @@
-
 import pingouin as pg
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QMessageBox, QTableWidgetItem, QWidget

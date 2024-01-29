@@ -1,4 +1,3 @@
-
 import pingouin as pg
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from PySide6.QtCore import QSize

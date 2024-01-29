@@ -1,4 +1,3 @@
-
 from PySide6.QtWidgets import QTextEdit, QWidget
 
 from tse_analytics.core.manager import Manager

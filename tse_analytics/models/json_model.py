@@ -25,7 +25,7 @@ class JsonModel(QAbstractItemModel):
             document (dict): JSON-compatible dictionary
         """
 
-        assert isinstance(document, (dict, list, tuple)), (
+        assert isinstance(document, dict | list | tuple), (
             "`document` must be of dict, list or tuple, " f"not {type(document)}"
         )
 
@@ -163,7 +163,7 @@ class JsonModel(QAbstractItemModel):
 
         Return flags of index
         """
-        flags = super(JsonModel, self).flags(index)
+        flags = super().flags(index)
 
         if index.column() == 1:
             return Qt.ItemFlag.ItemIsEditable | flags

@@ -212,7 +212,7 @@ def calculate_predicted_measurements(
     o2_bounds = calo_details_settings.o2_settings.ref_bounds if is_ref else calo_details_settings.o2_settings.bounds
     co2_bounds = calo_details_settings.co2_settings.ref_bounds if is_ref else calo_details_settings.co2_settings.bounds
 
-    for idx, bin in enumerate(bins):
+    for _idx, bin in enumerate(bins):
         predicted_bin_measurements = calculate_predicted_bin_measurements(
             bin,
             df,

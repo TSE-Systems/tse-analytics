@@ -1,5 +1,3 @@
-
-
 class TreeItem:
     """A Json item corresponding to a line in QTreeView"""
 
@@ -87,10 +85,10 @@ class TreeItem:
                 rootItem.appendChild(child)
 
         elif isinstance(value, list):
-            for index, value in enumerate(value):
-                child = cls.load(value, rootItem)
+            for index, val in enumerate(value):
+                child = cls.load(val, rootItem)
                 child.key = index
-                child.value_type = type(value)
+                child.value_type = type(val)
                 rootItem.appendChild(child)
 
         else:

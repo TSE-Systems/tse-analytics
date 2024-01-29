@@ -1,4 +1,3 @@
-
 import plotly.express as px
 from PySide6.QtCore import QDir, QTemporaryFile, QUrl
 from PySide6.QtWidgets import QWidget

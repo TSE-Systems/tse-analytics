@@ -1,4 +1,3 @@
-
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from PySide6.QtWidgets import QWidget
 from tse_datatools.calo_details.calo_details_fitting_result import CaloDetailsFittingResult

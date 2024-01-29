@@ -1,4 +1,3 @@
-
 from PySide6.QtCore import QTime
 from PySide6.QtWidgets import QWidget
 from tse_datatools.data.time_cycles_binning_settings import TimeCyclesBinningSettings

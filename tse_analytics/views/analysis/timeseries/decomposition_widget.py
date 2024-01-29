@@ -1,4 +1,3 @@
-
 import pandas as pd
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from PySide6.QtCore import QSize

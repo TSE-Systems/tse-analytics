@@ -1,4 +1,3 @@
-
 import pandas as pd
 import pyqtgraph as pg
 from pyqtgraph import mkPen

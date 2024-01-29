@@ -1,4 +1,3 @@
-
 import pandas as pd
 from PySide6.QtWidgets import QWidget
 from tse_datatools.data.variable import Variable

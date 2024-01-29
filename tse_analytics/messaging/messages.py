@@ -1,4 +1,3 @@
-
 from tse_datatools.analysis.binning_params import BinningParams
 from tse_datatools.analysis.grouping_mode import GroupingMode
 from tse_datatools.data.dataset import Dataset
@@ -31,7 +30,7 @@ class Message:
         self.tag = tag
 
     def __str__(self):
-        return "%s: %s\n\t Sent from: %s" % (type(self).__name__, self.tag or "", self.sender)
+        return "{}: {}\n\t Sent from: {}".format(type(self).__name__, self.tag or "", self.sender)
 
 
 class ErrorMessage(Message):

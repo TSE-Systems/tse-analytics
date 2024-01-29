@@ -1,4 +1,3 @@
-
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 from tse_datatools.analysis.outliers_mode import OutliersMode
