@@ -1,5 +1,4 @@
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
-
 from tse_datatools.data.calo_details_box import CaloDetailsBox
 
 

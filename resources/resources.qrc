@@ -48,5 +48,6 @@
         <file>icons/icons8-info-16.png</file>
         <file>icons/icons8-details-16.png</file>
         <file>icons/log-16.png</file>
+        <file>icons/time.svg</file>
     </qresource>
 </RCC>

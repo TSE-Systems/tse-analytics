@@ -1,5 +1,3 @@
-from typing import Optional
-
 from PySide6.QtCore import Qt
 
 
@@ -7,9 +5,9 @@ class TreeItem:
     column_names = ["Name"]
     column_flags = [Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsUserCheckable]
 
-    def __init__(self, name: str, meta: Optional[dict] = None):
+    def __init__(self, name: str, meta: dict | None = None):
         self.name = name
-        self.meta: Optional[dict] = meta
+        self.meta: dict | None = meta
         self.parent_item = None
         self.child_items = []
         self._row = 0

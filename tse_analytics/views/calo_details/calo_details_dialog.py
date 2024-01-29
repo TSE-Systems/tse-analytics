@@ -1,15 +1,18 @@
 import os
 import timeit
 from multiprocessing import Pool
-from typing import Optional
 
-from PySide6.QtCore import QSettings, Qt
-from PySide6.QtGui import QIcon, QCloseEvent, QKeyEvent
-from PySide6.QtWidgets import QDialog, QWidget
 from loguru import logger
+from PySide6.QtCore import QSettings, Qt
+from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
+from PySide6.QtWidgets import QDialog, QWidget
+from tse_datatools.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
+from tse_datatools.calo_details.calo_details_processor import process_box
+from tse_datatools.calo_details.calo_details_settings import get_default_settings
+from tse_datatools.calo_details.fitting_params import FittingParams
+from tse_datatools.data.calo_details import CaloDetails
+from tse_datatools.data.calo_details_box import CaloDetailsBox
 
-from tse_analytics.core.manager import Manager
-from tse_analytics.core.workers.worker import Worker
 from tse_analytics.views.calo_details.calo_details_bin_selector import CaloDetailsBinSelector
 from tse_analytics.views.calo_details.calo_details_box_selector import CaloDetailsBoxSelector
 from tse_analytics.views.calo_details.calo_details_dialog_ui import Ui_CaloDetailsDialog
@@ -19,18 +22,12 @@ from tse_analytics.views.calo_details.calo_details_settings_widget import CaloDe
 from tse_analytics.views.calo_details.calo_details_table_view import CaloDetailsTableView
 from tse_analytics.views.calo_details.calo_details_test_fit_widget import CaloDetailsTestFitWidget
 from tse_analytics.views.misc.toast import Toast
-from tse_datatools.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
-from tse_datatools.calo_details.calo_details_processor import process_box
-from tse_datatools.calo_details.calo_details_settings import get_default_settings
-from tse_datatools.calo_details.fitting_params import FittingParams
-from tse_datatools.data.calo_details import CaloDetails
-from tse_datatools.data.calo_details_box import CaloDetailsBox
 
 
 class CaloDetailsDialog(QDialog):
     """CaloDetails Dialog"""
 
-    def __init__(self, calo_details: CaloDetails, parent: Optional[QWidget] = None):
+    def __init__(self, calo_details: CaloDetails, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.ui = Ui_CaloDetailsDialog()
@@ -52,7 +49,7 @@ class CaloDetailsDialog(QDialog):
 
         self.ui.toolBox.removeItem(0)
 
-        self.ui.toolButtonCalculate.clicked.connect(self.__calculate)
+        self.ui.toolButtonCalculate.clicked.connect(self.__run_calculate)
         self.ui.toolButtonResetSettings.clicked.connect(self.__reset_settings)
 
         self.calo_details_box_selector = CaloDetailsBoxSelector(self.__filter_boxes)
@@ -118,12 +115,6 @@ class CaloDetailsDialog(QDialog):
         calo_details_settings = get_default_settings()
         self.calo_details_settings_widget.set_settings(calo_details_settings)
 
-    def __calculate(self):
-        # Pass the function to execute
-        worker = Worker(self.__run_calculate)  # Any other args, kwargs are passed to the run function
-        # Execute
-        Manager.threadpool.start(worker)
-
     def __run_calculate(self):
         calo_details_settings = self.calo_details_settings_widget.get_calo_details_settings()
 
@@ -153,20 +144,13 @@ class CaloDetailsDialog(QDialog):
         processes = len(self.selected_boxes) if len(self.selected_boxes) < os.cpu_count() else os.cpu_count()
         tic = timeit.default_timer()
         with Pool(processes=processes) as pool:
-            # # issue many tasks asynchronously to the process pool
-            # self.fitting_results = [pool.apply_async(calo_details_calculation_task, (params,), callback=progress) for params in fitting_params_list]
-            # # close the pool
-            # pool.close()
-            # # wait for all issued tasks to complete
-            # pool.join()
-
             # call the same function with different data in parallel
             for result in pool.map(process_box, fitting_params_list):
                 # report the value to show progress
                 self.fitting_results[result.box_number] = result
 
         logger.info(f"Processing complete: {timeit.default_timer() - tic} sec")
-        Toast(text="Processing complete.", duration=2000, parent=self).show_toast()
+        Toast(text="Processing complete.", parent=self, duration=4000).show_toast()
 
     def hideEvent(self, event: QCloseEvent) -> None:
         settings = QSettings()

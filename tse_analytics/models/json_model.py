@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, QObject, Qt
 
@@ -8,7 +8,7 @@ from tse_analytics.models.json_tree_item import TreeItem
 class JsonModel(QAbstractItemModel):
     """An editable model of Json data"""
 
-    def __init__(self, parent: Optional[QObject] = None):
+    def __init__(self, parent: QObject | None = None):
         super().__init__(parent)
 
         self._rootItem = TreeItem()
@@ -25,7 +25,7 @@ class JsonModel(QAbstractItemModel):
             document (dict): JSON-compatible dictionary
         """
 
-        assert isinstance(document, (dict, list, tuple)), (
+        assert isinstance(document, dict | list | tuple), (
             "`document` must be of dict, list or tuple, " f"not {type(document)}"
         )
 
@@ -163,7 +163,7 @@ class JsonModel(QAbstractItemModel):
 
         Return flags of index
         """
-        flags = super(JsonModel, self).flags(index)
+        flags = super().flags(index)
 
         if index.column() == 1:
             return Qt.ItemFlag.ItemIsEditable | flags

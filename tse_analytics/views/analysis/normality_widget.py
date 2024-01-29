@@ -1,9 +1,8 @@
-from typing import Optional
-
 import pingouin as pg
+from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
-from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
+from tse_datatools.analysis.grouping_mode import GroupingMode
 
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
@@ -12,11 +11,10 @@ from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.normality_widget_ui import Ui_NormalityWidget
 from tse_analytics.views.misc.toast import Toast
-from tse_datatools.analysis.grouping_mode import GroupingMode
 
 
 class NormalityWidget(QWidget, MessengerListener):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.register_to_messenger(Manager.messenger)
 
@@ -52,7 +50,7 @@ class NormalityWidget(QWidget, MessengerListener):
 
     def __analyze(self):
         if Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None:
-            Toast(text="Please select a factor first!", duration=2000, parent=self).show_toast()
+            Toast(text="Please select a factor first!", parent=self, duration=2000).show_toast()
             return
 
         df = Manager.data.get_current_df(calculate_error=False, variables=[self.variable])

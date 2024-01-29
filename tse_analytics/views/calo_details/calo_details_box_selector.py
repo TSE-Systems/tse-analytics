@@ -1,16 +1,14 @@
-from typing import Optional
-
-from PySide6.QtCore import Qt, QSortFilterProxyModel, QItemSelection
+from PySide6.QtCore import QItemSelection, QSortFilterProxyModel, Qt
 from PySide6.QtGui import QPalette
-from PySide6.QtWidgets import QWidget, QTableView, QAbstractItemView
+from PySide6.QtWidgets import QAbstractItemView, QTableView, QWidget
+from tse_datatools.data.calo_details_box import CaloDetailsBox, get_ref_box_number
+from tse_datatools.data.dataset import Dataset
 
 from tse_analytics.models.calo_details_boxes_model import CaloDetailsBoxesModel
-from tse_datatools.data.calo_details_box import get_ref_box_number, CaloDetailsBox
-from tse_datatools.data.dataset import Dataset
 
 
 class CaloDetailsBoxSelector(QTableView):
-    def __init__(self, callback, parent: Optional[QWidget] = None):
+    def __init__(self, callback, parent: QWidget | None = None):
         super().__init__(parent)
         self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)

@@ -1,13 +1,11 @@
-from typing import Optional
-
 import pandas as pd
 import seaborn as sns
-from PySide6.QtWidgets import QWidget, QVBoxLayout
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from PySide6.QtWidgets import QVBoxLayout, QWidget
+from tse_datatools.analysis.grouping_mode import GroupingMode
 
 from tse_analytics.core.manager import Manager
-from tse_datatools.analysis.grouping_mode import GroupingMode
 
 
 class BarPlotView(QWidget):
@@ -17,11 +15,11 @@ class BarPlotView(QWidget):
         self.setLayout(QVBoxLayout(self))
         self.layout().setContentsMargins(0, 0, 0, 0)
 
-        self._df: Optional[pd.DataFrame] = None
+        self._df: pd.DataFrame | None = None
         self._variable: str = ""
         self._display_errors = False
 
-        self.canvas: Optional[FigureCanvasQTAgg] = FigureCanvasQTAgg(None)
+        self.canvas: FigureCanvasQTAgg | None = FigureCanvasQTAgg(None)
 
     def set_data(self, df: pd.DataFrame):
         self._df = df

@@ -1,8 +1,6 @@
-from typing import Optional
-
 import pingouin as pg
 from PySide6.QtGui import QPalette
-from PySide6.QtWidgets import QWidget, QTableWidgetItem, QMessageBox
+from PySide6.QtWidgets import QMessageBox, QTableWidgetItem, QWidget
 
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
@@ -14,7 +12,7 @@ from tse_analytics.views.analysis.anova_widget_ui import Ui_AnovaWidget
 
 
 class AnovaWidget(QWidget, MessengerListener):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.register_to_messenger(Manager.messenger)
 

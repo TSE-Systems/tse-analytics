@@ -10,7 +10,6 @@ from tse_analytics.messaging.messenger_listener import MessengerListener
 
 
 class Messenger:
-
     """The messenger manages communication between subscribers.
 
     Objects :func:`subscribe` to receive specific message types. When
@@ -184,7 +183,7 @@ class Messenger:
             self._queue.append(message)
         else:
             # logging.getLogger(__name__).debug("Broadcasting %s", message)
-            for subscriber, handler in self._find_handlers(message):
+            for _subscriber, handler in self._find_handlers(message):
                 handler(message)
 
     def __getstate__(self):

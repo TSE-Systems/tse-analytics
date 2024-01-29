@@ -1,4 +1,4 @@
-from typing import Literal, Any, Optional
+from typing import Any, Literal
 
 import pandas as pd
 
@@ -36,7 +36,7 @@ class Dataset:
         self.factors: dict[str, Factor] = {}
         self.binning_settings = BinningSettings()
 
-        self.calo_details: Optional[CaloDetails] = None
+        self.calo_details: CaloDetails | None = None
 
     @property
     def start_timestamp(self) -> pd.Timestamp:
@@ -44,7 +44,7 @@ class Dataset:
         return first_value
 
     @property
-    def runs_count(self) -> Optional[int]:
+    def runs_count(self) -> int | None:
         return self.active_df["Run"].value_counts().count()
 
     def extract_groups_from_field(self, field: Literal["text1", "text2", "text3"] = "text1") -> dict[str, Group]:
@@ -89,16 +89,18 @@ class Dataset:
         animal_ids = df["Animal"].unique()
 
         for factor in self.factors.values():
-            animal_factor_map: dict[str, Any] = {}
+            animal_factor_map: dict[int, Any] = {}
             for animal_id in animal_ids:
-                animal_factor_map[animal_id] = None
+                animal_factor_map[animal_id] = pd.NA
 
             for group in factor.groups:
                 for animal_id in group.animal_ids:
                     animal_factor_map[animal_id] = group.name
 
-            df[factor.name] = df["Animal"]
-            df[factor.name].replace(animal_factor_map, inplace=True)
+            df[factor.name] = df["Animal"].astype(int)
+            # df[factor.name].replace(animal_factor_map, inplace=True)
+            # df[factor.name] = df[factor.name].replace(animal_factor_map)
+            df.replace({factor.name: animal_factor_map}, inplace=True)
             df[factor.name] = df[factor.name].astype("category")
 
         self.active_df = df

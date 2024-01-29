@@ -1,5 +1,3 @@
-from typing import Optional
-
 import pandas as pd
 
 from tse_datatools.analysis.binning_operation import BinningOperation
@@ -16,7 +14,7 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
         binning_operation: BinningOperation,
         grouping_mode: GroupingMode,
         factor_names: list[str],
-        selected_factor: Optional[Factor],
+        selected_factor: Factor | None,
     ):
         self.settings = settings
         self.binning_operation = binning_operation
@@ -25,17 +23,9 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
         self.selected_factor = selected_factor
 
     def process(self, df: pd.DataFrame) -> pd.DataFrame:
-        result: Optional[pd.DataFrame] = None
+        result: pd.DataFrame | None = None
 
-        unit = "H"
-        match self.settings.unit:
-            case "day":
-                unit = "D"
-            case "hour":
-                unit = "H"
-            case "minute":
-                unit = "min"
-        timedelta = pd.Timedelta(f"{self.settings.delta}{unit}")
+        timedelta = pd.Timedelta(f"{self.settings.delta}{self.settings.unit}")
 
         match self.grouping_mode:
             case GroupingMode.ANIMALS:

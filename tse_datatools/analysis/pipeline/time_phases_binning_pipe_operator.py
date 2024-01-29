@@ -1,5 +1,3 @@
-from typing import Optional
-
 import pandas as pd
 
 from tse_datatools.analysis.binning_operation import BinningOperation
@@ -16,7 +14,7 @@ class TimePhasesBinningPipeOperator(PipeOperator):
         binning_operation: BinningOperation,
         grouping_mode: GroupingMode,
         factor_names: list[str],
-        selected_factor: Optional[Factor],
+        selected_factor: Factor | None,
     ):
         self.settings = settings
         self.binning_operation = binning_operation
@@ -38,7 +36,7 @@ class TimePhasesBinningPipeOperator(PipeOperator):
         categories = [item.name for item in self.settings.time_phases]
         df["Bin"] = df["Bin"].cat.set_categories(categories, ordered=True)
 
-        result: Optional[pd.DataFrame] = None
+        result: pd.DataFrame | None = None
 
         match self.grouping_mode:
             case GroupingMode.ANIMALS:

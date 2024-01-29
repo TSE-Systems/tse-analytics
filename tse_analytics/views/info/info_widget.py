@@ -1,17 +1,15 @@
-from typing import Optional
-
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QTreeView, QWidget, QAbstractItemView
+from PySide6.QtWidgets import QAbstractItemView, QTreeView, QWidget
 
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import SelectedTreeNodeChangedMessage, DatasetChangedMessage
+from tse_analytics.messaging.messages import DatasetChangedMessage, SelectedTreeNodeChangedMessage
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.models.json_model import JsonModel
 
 
 class InfoWidget(QTreeView, MessengerListener):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.horizontalScrollBar().setEnabled(True)

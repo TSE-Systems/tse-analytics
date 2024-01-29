@@ -1,14 +1,14 @@
+from loguru import logger
 from PySide6.QtCore import QModelIndex, QThreadPool
 from PySide6.QtWidgets import QWidget
-from loguru import logger
+from tse_datatools.data.dataset import Dataset
+from tse_datatools.helpers.dataset_merger import merge_datasets
+from tse_datatools.loaders.dataset_loader import DatasetLoader
 
 from tse_analytics.core.licensing import LicenseManager
 from tse_analytics.data.data_hub import DataHub
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.models.workspace_model import WorkspaceModel
-from tse_datatools.data.dataset import Dataset
-from tse_datatools.helpers.dataset_merger import merge_datasets
-from tse_datatools.loaders.dataset_loader import DatasetLoader
 
 
 class Manager:

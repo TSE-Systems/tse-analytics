@@ -15,7 +15,7 @@ class MessengerCallbackContainer:
     """
 
     def __init__(self):
-        self.callbacks = dict()
+        self.callbacks = {}
 
     def _wrap(self, handler, filter):
         """

@@ -1,15 +1,13 @@
-from typing import Optional
-
 from PySide6.QtCore import QTime
 from PySide6.QtWidgets import QWidget
+from tse_datatools.data.time_cycles_binning_settings import TimeCyclesBinningSettings
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.settings.time_cycles_settings_widget_ui import Ui_TimeCyclesSettingsWidget
-from tse_datatools.data.time_cycles_binning_settings import TimeCyclesBinningSettings
 
 
 class TimeCyclesSettingsWidget(QWidget):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.ui = Ui_TimeCyclesSettingsWidget()

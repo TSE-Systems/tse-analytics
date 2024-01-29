@@ -1,8 +1,7 @@
-from typing import Optional
-
 import plotly.express as px
-from PySide6.QtCore import QUrl, QTemporaryFile, QDir
+from PySide6.QtCore import QDir, QTemporaryFile, QUrl
 from PySide6.QtWidgets import QWidget
+from tse_datatools.analysis.grouping_mode import GroupingMode
 
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
@@ -11,11 +10,10 @@ from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.matrix_widget_ui import Ui_MatrixWidget
 from tse_analytics.views.misc.toast import Toast
-from tse_datatools.analysis.grouping_mode import GroupingMode
 
 
 class MatrixWidget(QWidget, MessengerListener):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.register_to_messenger(Manager.messenger)
 
@@ -38,11 +36,11 @@ class MatrixWidget(QWidget, MessengerListener):
 
     def __analyze(self):
         if len(Manager.data.selected_variables) < 2:
-            Toast(text="Please select at least two variables.", duration=2000, parent=self).show_toast()
+            Toast(text="Please select at least two variables.", parent=self, duration=2000).show_toast()
             return
 
         if Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None:
-            Toast(text="Please select a factor first!", duration=2000, parent=self).show_toast()
+            Toast(text="Please select a factor first!", parent=self, duration=2000).show_toast()
             return
 
         match Manager.data.grouping_mode:

@@ -1,4 +1,4 @@
-from multiprocessing import freeze_support, Process
+from multiprocessing import Process, freeze_support
 
 from tse_analytics.app import main
 

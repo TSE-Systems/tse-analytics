@@ -1,15 +1,16 @@
 import numpy as np
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 from PySide6.QtGui import QColor
+from tse_datatools.analysis.outliers_mode import OutliersMode
 
 from tse_analytics.core.manager import Manager
-from tse_datatools.analysis.outliers_mode import OutliersMode
 
 
 class PandasModel(QAbstractTableModel):
     """
     Class to populate a table view with a pandas dataframe
     """
+
     def __init__(self, dataframe, parent=None):
         QAbstractTableModel.__init__(self, parent)
         self._data = np.array(dataframe.values)
@@ -31,7 +32,7 @@ class PandasModel(QAbstractTableModel):
             if role == Qt.ItemDataRole.BackgroundRole:
                 if Manager.data.outliers_params.mode == OutliersMode.HIGHLIGHT:
                     value = self._data[index.row(), index.column()]
-                    if isinstance(value, (int, float)):
+                    if isinstance(value, int | float):
                         var_name = str(self._cols[index.column()])
                         if var_name in self.q1:
                             q1 = self.q1[var_name]

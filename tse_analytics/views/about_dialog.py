@@ -1,16 +1,15 @@
 import importlib.metadata
-from typing import Optional
 
-from PySide6.QtWidgets import QDialog, QWidget, QPushButton, QDialogButtonBox, QFileDialog
+from PySide6.QtWidgets import QDialog, QDialogButtonBox, QFileDialog, QPushButton, QWidget
 
-from tse_analytics.core.licensing import LicenseManager, License, get_hardware_id
+from tse_analytics.core.licensing import License, LicenseManager, get_hardware_id
 from tse_analytics.views.about_dialog_ui import Ui_AboutDialog
 
 
 class AboutDialog(QDialog, Ui_AboutDialog):
     """About Dialog"""
 
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.setupUi(self)
 

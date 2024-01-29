@@ -1,5 +1,3 @@
-from typing import Optional
-
 import pandas as pd
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget
@@ -7,11 +5,11 @@ from PySide6.QtWidgets import QWidget
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.messaging.messages import (
-    DatasetChangedMessage,
     BinningAppliedMessage,
-    RevertBinningMessage,
     DataChangedMessage,
+    DatasetChangedMessage,
     GroupingModeChangedMessage,
+    RevertBinningMessage,
 )
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
@@ -20,7 +18,7 @@ from tse_analytics.views.data.data_table_widget_ui import Ui_DataTableWidget
 
 
 class DataTableWidget(QWidget, MessengerListener):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.register_to_messenger(Manager.messenger)
 
@@ -32,7 +30,7 @@ class DataTableWidget(QWidget, MessengerListener):
         self.header = self.ui.tableView.horizontalHeader()
         self.header.sectionClicked.connect(self.header_clicked)
 
-        self.df: Optional[pd.DataFrame] = None
+        self.df: pd.DataFrame | None = None
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)

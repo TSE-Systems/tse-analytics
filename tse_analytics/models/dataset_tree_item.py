@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QIcon
+from tse_datatools.data.dataset import Dataset
 
 from tse_analytics.models.tree_item import TreeItem
-from tse_datatools.data.dataset import Dataset
 
 
 class DatasetTreeItem(TreeItem):

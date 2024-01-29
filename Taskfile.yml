@@ -47,10 +47,15 @@ tasks:
       - pyside6-uic tse_analytics/views/calo_details/calo_details_rer_widget.ui -o tse_analytics/views/calo_details/calo_details_rer_widget_ui.py
       - pyside6-uic tse_analytics/views/tools/compare_runs_widget.ui -o tse_analytics/views/tools/compare_runs_widget_ui.py
       - pyside6-uic tse_analytics/views/about_dialog.ui -o tse_analytics/views/about_dialog_ui.py
+      - pyside6-uic tse_analytics/views/analysis/timeseries/timeseries_widget.ui -o tse_analytics/views/analysis/timeseries/timeseries_widget_ui.py
+      - pyside6-uic tse_analytics/views/analysis/timeseries/prophet_forecasting_widget.ui -o tse_analytics/views/analysis/timeseries/prophet_forecasting_widget_ui.py
+      - pyside6-uic tse_analytics/views/analysis/timeseries/decomposition_widget.ui -o tse_analytics/views/analysis/timeseries/decomposition_widget_ui.py
+      - pyside6-uic tse_analytics/views/analysis/timeseries/autocorrelation_widget.ui -o tse_analytics/views/analysis/timeseries/autocorrelation_widget_ui.py
 
   clean:
     desc: remove all build, test, coverage and Python artifacts
     cmds:
+      - '{{.SHELL}} rm -r -fo __pycache__/'
       - '{{.SHELL}} rm -r -fo build/'
       - '{{.SHELL}} rm -r -fo dist/'
       - '{{.SHELL}} rm -r -fo .pytest_cache/'
@@ -82,9 +87,14 @@ tasks:
       - pylint -j 8 tse_analytics tse_datatools
     ignore_error: true
 
-  ruff:
+  ruff-check:
     cmds:
       - ruff check .
+    ignore_error: true
+
+  ruff-format:
+    cmds:
+      - ruff format .
     ignore_error: true
 
   test:

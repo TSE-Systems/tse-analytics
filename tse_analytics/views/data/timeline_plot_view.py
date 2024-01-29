@@ -1,19 +1,17 @@
-from typing import Optional, Union
-
 import pandas as pd
 import pyqtgraph as pg
-from PySide6.QtWidgets import QWidget
 from pyqtgraph import mkPen
+from PySide6.QtWidgets import QWidget
+from tse_datatools.analysis.grouping_mode import GroupingMode
 
 from tse_analytics.core.manager import Manager
-from tse_datatools.analysis.grouping_mode import GroupingMode
 
 
 class TimelinePlotView(pg.GraphicsLayoutWidget):
     def __init__(self, parent: QWidget, title="Plot"):
         super().__init__(parent, title=title)
 
-        self._df: Optional[pd.DataFrame] = None
+        self._df: pd.DataFrame | None = None
         self._variable: str = ""
         self._display_errors = False
 
@@ -22,7 +20,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         self.label = self.addLabel(row=0, col=0, justify="right")
 
-        self.plot_data_items: dict[Union[int, str], pg.PlotDataItem] = {}
+        self.plot_data_items: dict[int | str, pg.PlotDataItem] = {}
 
         self.p1: pg.PlotItem = self.addPlot(row=0, col=0)
         # customize the averaged curve that can be activated from the context menu:

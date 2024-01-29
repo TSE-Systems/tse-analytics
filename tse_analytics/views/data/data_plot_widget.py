@@ -1,26 +1,24 @@
-from typing import Optional
-
-from PySide6.QtWidgets import QWidget
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
+from PySide6.QtWidgets import QWidget
+from tse_datatools.analysis.binning_mode import BinningMode
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.messaging.messages import (
-    DatasetChangedMessage,
     BinningAppliedMessage,
-    RevertBinningMessage,
     DataChangedMessage,
+    DatasetChangedMessage,
     GroupingModeChangedMessage,
+    RevertBinningMessage,
 )
 from tse_analytics.messaging.messenger import Messenger
 from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.data.bar_plot_view import BarPlotView
 from tse_analytics.views.data.data_plot_widget_ui import Ui_DataPlotWidget
 from tse_analytics.views.data.timeline_plot_view import TimelinePlotView
-from tse_datatools.analysis.binning_mode import BinningMode
 
 
 class DataPlotWidget(QWidget, MessengerListener):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.register_to_messenger(Manager.messenger)
 

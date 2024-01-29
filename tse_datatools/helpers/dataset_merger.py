@@ -1,5 +1,3 @@
-from typing import Optional
-
 import pandas as pd
 from PySide6.QtWidgets import QMessageBox, QWidget
 
@@ -8,7 +6,7 @@ from tse_datatools.data.dataset import Dataset
 
 def merge_datasets(
     new_dataset_name: str, datasets: list[Dataset], single_run: bool, parent_widget: QWidget
-) -> Optional[Dataset]:
+) -> Dataset | None:
     # check number of datasets
     if len(datasets) < 2:
         QMessageBox.critical(
@@ -56,14 +54,12 @@ def merge_datasets(
     new_df["Bin"] = (new_df["Timedelta"] / timedelta).round().astype(int)
 
     # convert categorical types
-    new_df = new_df.astype(
-        {
-            "Animal": "category",
-            "Box": "category",
-            "Bin": "category",
-            "Run": "category",
-        }
-    )
+    new_df = new_df.astype({
+        "Animal": "category",
+        "Box": "category",
+        "Bin": "category",
+        "Run": "category",
+    })
 
     new_path = ""
     new_meta = [dataset.meta for dataset in datasets]

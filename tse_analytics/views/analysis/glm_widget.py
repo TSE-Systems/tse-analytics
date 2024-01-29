@@ -1,11 +1,9 @@
-from typing import Optional
-
 import pingouin as pg
 import seaborn as sns
-from PySide6.QtCore import QSize
-from PySide6.QtWidgets import QWidget
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from PySide6.QtCore import QSize
+from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
@@ -18,7 +16,7 @@ from tse_analytics.views.misc.toast import Toast
 
 
 class GlmWidget(QWidget, MessengerListener):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.register_to_messenger(Manager.messenger)
 
@@ -64,7 +62,7 @@ class GlmWidget(QWidget, MessengerListener):
 
     def __analyze(self):
         if Manager.data.selected_factor is None:
-            Toast(text="Please select a factor first!", duration=2000, parent=self).show_toast()
+            Toast(text="Please select a factor first!", parent=self, duration=2000).show_toast()
             return
 
         factor_name = Manager.data.selected_factor.name
@@ -72,9 +70,11 @@ class GlmWidget(QWidget, MessengerListener):
         variables = [self.response] if self.response == self.covariate else [self.response, self.covariate]
         df = Manager.data.get_current_df(calculate_error=False, variables=variables)
 
-        df = df.groupby(by=["Animal"], as_index=False).agg(
-            {self.covariate: "mean", self.response: "mean", factor_name: "first"}
-        )
+        df = df.groupby(by=["Animal"], as_index=False).agg({
+            self.covariate: "mean",
+            self.response: "mean",
+            factor_name: "first",
+        })
 
         facet_grid = sns.lmplot(data=df, x=self.covariate, y=self.response, hue=factor_name, robust=False)
         canvas = FigureCanvasQTAgg(facet_grid.figure)

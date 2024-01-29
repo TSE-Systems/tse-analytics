@@ -1,21 +1,18 @@
-from typing import Optional
-
-
 class CaloDetailsBox:
     def __init__(
         self,
         box: int,
-        ref_box: Optional[int],
+        ref_box: int | None,
     ):
         self.box = box
         self.ref_box = ref_box
 
 
-def get_ref_box_number(box: int, boxes: list[int]) -> Optional[int]:
+def get_ref_box_number(box: int, boxes: list[int]) -> int | None:
     assert len(boxes) > 0
     # find a gap between standard and reference boxes
     prev = boxes[-1]
-    gap_index: Optional[int] = None
+    gap_index: int | None = None
     for idx, this in reversed(list(enumerate(boxes))):
         if this < prev - 1:
             gap_index = idx

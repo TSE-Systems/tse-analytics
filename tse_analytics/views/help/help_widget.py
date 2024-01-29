@@ -1,5 +1,3 @@
-from typing import Optional
-
 from PySide6.QtWidgets import QTextEdit, QWidget
 
 from tse_analytics.core.manager import Manager
@@ -9,7 +7,7 @@ from tse_analytics.messaging.messenger_listener import MessengerListener
 
 
 class HelpWidget(QTextEdit, MessengerListener):
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.register_to_messenger(Manager.messenger)
 
