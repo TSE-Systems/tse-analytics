@@ -1,8 +1,8 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QComboBox, QHeaderView, QTableView
-from tse_analytics.data.variable import Variable
 
-from tse_analytics.models.variables_model import VariablesModel
+from tse_analytics.core.data.shared import Variable
+from tse_analytics.core.models.variables_model import VariablesModel
 
 
 class VariableSelector(QComboBox):

@@ -1,13 +1,13 @@
 from PySide6.QtCore import QItemSelection, QSize, QSortFilterProxyModel, Qt
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QWidget
-from tse_analytics.data.variable import Variable
 
+from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import DatasetChangedMessage
-from tse_analytics.messaging.messenger import Messenger
-from tse_analytics.messaging.messenger_listener import MessengerListener
-from tse_analytics.models.variables_model import VariablesModel
+from tse_analytics.core.messaging.messages import DatasetChangedMessage
+from tse_analytics.core.messaging.messenger import Messenger
+from tse_analytics.core.messaging.messenger_listener import MessengerListener
+from tse_analytics.core.models.variables_model import VariablesModel
 from tse_analytics.views.selection.variables.variables_widget_ui import Ui_VariablesWidget
 
 

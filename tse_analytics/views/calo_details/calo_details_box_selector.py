@@ -1,10 +1,10 @@
 from PySide6.QtCore import QItemSelection, QSortFilterProxyModel, Qt
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QAbstractItemView, QTableView, QWidget
-from tse_analytics.data.calo_details_box import CaloDetailsBox, get_ref_box_number
-from tse_analytics.data.dataset import Dataset
 
-from tse_analytics.models.calo_details_boxes_model import CaloDetailsBoxesModel
+from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.models.calo_details_boxes_model import CaloDetailsBoxesModel
+from tse_analytics.modules.phenomaster.data.calo_details_box import CaloDetailsBox, get_ref_box_number
 
 
 class CaloDetailsBoxSelector(QTableView):

@@ -1,8 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QInputDialog, QListWidgetItem, QWidget
-from tse_analytics.data.factor import Factor
-from tse_analytics.data.group import Group
 
+from tse_analytics.core.data.shared import Factor, Group
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.factors_dialog_ui import Ui_FactorsDialog
 

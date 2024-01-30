@@ -1,17 +1,17 @@
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from PySide6.QtWidgets import QWidget
-from tse_analytics.analysis.binning_mode import BinningMode
 
+from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import (
+from tse_analytics.core.messaging.messages import (
     BinningAppliedMessage,
     DataChangedMessage,
     DatasetChangedMessage,
     GroupingModeChangedMessage,
     RevertBinningMessage,
 )
-from tse_analytics.messaging.messenger import Messenger
-from tse_analytics.messaging.messenger_listener import MessengerListener
+from tse_analytics.core.messaging.messenger import Messenger
+from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.data.bar_plot_view import BarPlotView
 from tse_analytics.views.data.data_plot_widget_ui import Ui_DataPlotWidget
 from tse_analytics.views.data.timeline_plot_view import TimelinePlotView

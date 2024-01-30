@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.calo_details.calo_details_settings import CaloDetailsGasSettings
+from tse_analytics.modules.phenomaster.calo_details.calo_details_settings import CaloDetailsGasSettings
 from tse_analytics.views.calo_details.calo_details_gas_settings_widget_ui import Ui_CaloDetailsGasSettingsWidget
 
 

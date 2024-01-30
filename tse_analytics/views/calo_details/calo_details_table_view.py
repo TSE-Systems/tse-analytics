@@ -1,7 +1,7 @@
 import pandas as pd
 from PySide6.QtWidgets import QTableView, QWidget
 
-from tse_analytics.models.pandas_model import PandasModel
+from tse_analytics.core.models.pandas_model import PandasModel
 
 
 class CaloDetailsTableView(QTableView):

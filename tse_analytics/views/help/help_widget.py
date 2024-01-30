@@ -1,9 +1,9 @@
 from PySide6.QtWidgets import QTextEdit, QWidget
 
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import ShowHelpMessage
-from tse_analytics.messaging.messenger import Messenger
-from tse_analytics.messaging.messenger_listener import MessengerListener
+from tse_analytics.core.messaging.messages import ShowHelpMessage
+from tse_analytics.core.messaging.messenger import Messenger
+from tse_analytics.core.messaging.messenger_listener import MessengerListener
 
 
 class HelpWidget(QTextEdit, MessengerListener):

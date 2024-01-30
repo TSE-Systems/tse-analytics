@@ -3,17 +3,17 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.manager import Manager
-from tse_analytics.core.workers.worker import Worker
-from tse_analytics.messaging.messages import (
+from tse_analytics.core.messaging.messages import (
     BinningAppliedMessage,
     DataChangedMessage,
     DatasetChangedMessage,
     GroupingModeChangedMessage,
     RevertBinningMessage,
 )
-from tse_analytics.messaging.messenger import Messenger
-from tse_analytics.messaging.messenger_listener import MessengerListener
-from tse_analytics.models.pandas_model import PandasModel
+from tse_analytics.core.messaging.messenger import Messenger
+from tse_analytics.core.messaging.messenger_listener import MessengerListener
+from tse_analytics.core.models.pandas_model import PandasModel
+from tse_analytics.core.workers.worker import Worker
 from tse_analytics.views.data.data_table_widget_ui import Ui_DataTableWidget
 
 

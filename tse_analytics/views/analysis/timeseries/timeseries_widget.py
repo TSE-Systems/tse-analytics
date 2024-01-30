@@ -1,9 +1,9 @@
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import DatasetChangedMessage
-from tse_analytics.messaging.messenger import Messenger
-from tse_analytics.messaging.messenger_listener import MessengerListener
+from tse_analytics.core.messaging.messages import DatasetChangedMessage
+from tse_analytics.core.messaging.messenger import Messenger
+from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.timeseries.autocorrelation_widget import AutocorrelationWidget
 from tse_analytics.views.analysis.timeseries.decomposition_widget import DecompositionWidget
 from tse_analytics.views.analysis.timeseries.prophet_forecasting_widget import ProphetForecastingWidget

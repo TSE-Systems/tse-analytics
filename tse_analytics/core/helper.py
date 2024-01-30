@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import ShowHelpMessage
+from tse_analytics.core.messaging.messages import ShowHelpMessage
 
 LAYOUT_VERSION = 7
 IS_RELEASE = Path("_internal").exists()

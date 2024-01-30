@@ -3,9 +3,9 @@ from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import DataChangedMessage
-from tse_analytics.messaging.messenger import Messenger
-from tse_analytics.messaging.messenger_listener import MessengerListener
+from tse_analytics.core.messaging.messages import DataChangedMessage
+from tse_analytics.core.messaging.messenger import Messenger
+from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.tools.compare_runs_widget_ui import Ui_CompareRunsWidget
 
 

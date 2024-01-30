@@ -7,13 +7,12 @@ from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
 from PySide6.QtWidgets import QDialog, QWidget
 
-from tse_analytics.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
-from tse_analytics.calo_details.calo_details_processor import process_box
-from tse_analytics.calo_details.calo_details_settings import get_default_settings
-from tse_analytics.calo_details.fitting_params import FittingParams
-from tse_analytics.data.calo_details import CaloDetails
-from tse_analytics.data.calo_details_box import CaloDetailsBox
-
+from tse_analytics.modules.phenomaster.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
+from tse_analytics.modules.phenomaster.calo_details.calo_details_processor import process_box
+from tse_analytics.modules.phenomaster.calo_details.calo_details_settings import get_default_settings
+from tse_analytics.modules.phenomaster.calo_details.fitting_params import FittingParams
+from tse_analytics.modules.phenomaster.data.calo_details import CaloDetails
+from tse_analytics.modules.phenomaster.data.calo_details_box import CaloDetailsBox
 from tse_analytics.views.calo_details.calo_details_bin_selector import CaloDetailsBinSelector
 from tse_analytics.views.calo_details.calo_details_box_selector import CaloDetailsBoxSelector
 from tse_analytics.views.calo_details.calo_details_dialog_ui import Ui_CaloDetailsDialog
