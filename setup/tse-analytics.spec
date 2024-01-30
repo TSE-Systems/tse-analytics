@@ -6,7 +6,7 @@ from PyInstaller.utils.hooks import copy_metadata
 pathex = os.path.abspath(os.path.join(SPECPATH, '..'))
 
 datas = [
-    ('../tse_analytics/docs', 'docs'),
+    ('../docs', 'docs'),
     ('../tse_analytics/resources_rc.py', '.'),
 ]
 
