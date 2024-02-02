@@ -4,11 +4,10 @@ from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import (
-    BinningAppliedMessage,
+    BinningMessage,
     DataChangedMessage,
     DatasetChangedMessage,
     GroupingModeChangedMessage,
-    RevertBinningMessage,
 )
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
@@ -34,8 +33,7 @@ class DataTableWidget(QWidget, MessengerListener):
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
-        messenger.subscribe(self, BinningAppliedMessage, self.__on_binning_applied)
-        messenger.subscribe(self, RevertBinningMessage, self.__on_revert_binning)
+        messenger.subscribe(self, BinningMessage, self.__on_binning_applied)
         messenger.subscribe(self, DataChangedMessage, self.__on_data_changed)
         messenger.subscribe(self, GroupingModeChangedMessage, self.__on_grouping_mode_changed)
 
@@ -53,10 +51,7 @@ class DataTableWidget(QWidget, MessengerListener):
         else:
             self.__set_data()
 
-    def __on_binning_applied(self, message: BinningAppliedMessage):
-        self.__set_data()
-
-    def __on_revert_binning(self, message: RevertBinningMessage):
+    def __on_binning_applied(self, message: BinningMessage):
         self.__set_data()
 
     def __on_data_changed(self, message: DataChangedMessage):

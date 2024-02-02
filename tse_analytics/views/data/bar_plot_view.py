@@ -56,26 +56,26 @@ class BarPlotView(QWidget):
 
         if not self._df.empty:
             match Manager.data.grouping_mode:
+                case GroupingMode.ANIMALS:
+                    x_name = "Animal"
                 case GroupingMode.FACTORS:
                     x_name = Manager.data.selected_factor.name
                 case GroupingMode.RUNS:
                     x_name = "Run"
-                case _:
-                    x_name = "Animal"
 
             self._df[x_name] = self._df[x_name].cat.remove_unused_categories()
 
-            faced_grid = sns.catplot(
+            facet_grid = sns.catplot(
+                data=self._df,
                 x=x_name,
                 y=self._variable,
                 col="Bin",
-                data=self._df,
                 kind="bar",
-                errorbar=("ci", 95) if self._display_errors else None,
+                errorbar="sd" if self._display_errors else None,
             )
-            faced_grid.set_xticklabels(rotation=90)
-            faced_grid.set_titles("{col_name}")
-            self.canvas = FigureCanvasQTAgg(faced_grid.figure)
+            facet_grid.set_xticklabels(rotation=90)
+            facet_grid.set_titles("{col_name}")
+            self.canvas = FigureCanvasQTAgg(facet_grid.figure)
             self.canvas.updateGeometry()
             self.canvas.draw()
             self.layout().addWidget(self.canvas)

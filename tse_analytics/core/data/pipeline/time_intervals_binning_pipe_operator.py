@@ -21,41 +21,38 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
         self.selected_factor = selected_factor
 
     def process(self, df: pd.DataFrame) -> pd.DataFrame:
-        result: pd.DataFrame | None = None
-
-        timedelta = pd.Timedelta(f"{self.settings.delta}{self.settings.unit}")
-
         match self.grouping_mode:
             case GroupingMode.ANIMALS:
-                result = df.groupby(["Animal", "Box"] + self.factor_names, dropna=False, observed=False).resample(
-                    timedelta, on="DateTime", origin="start"
-                )
+                group_by = ["Animal", "Box"] + self.factor_names
             case GroupingMode.FACTORS:
                 if self.selected_factor is not None:
-                    result = df.groupby([self.selected_factor.name], dropna=False, observed=False).resample(
-                        timedelta, on="DateTime", origin="start"
-                    )
+                    group_by = [self.selected_factor.name]
             case GroupingMode.RUNS:
-                result = df.groupby(["Run"], dropna=False, observed=False).resample(
-                    timedelta, on="DateTime", origin="start"
-                )
+                group_by = ["Run"]
+
+        grouped = df.groupby(group_by, dropna=False, observed=False)
+
+        timedelta = pd.Timedelta(f"{self.settings.delta}{self.settings.unit}")
+        resampler = grouped.resample(timedelta, on="DateTime", origin="start")
 
         match self.binning_operation:
             case BinningOperation.MEAN:
-                result = result.mean(numeric_only=True)
+                result = resampler.mean(numeric_only=True)
             case BinningOperation.MEDIAN:
-                result = result.median(numeric_only=True)
+                result = resampler.median(numeric_only=True)
             case BinningOperation.SUM:
-                result = result.sum(numeric_only=True)
+                result = resampler.sum(numeric_only=True)
 
         match self.grouping_mode:
             case GroupingMode.ANIMALS:
-                result.sort_values(by=["DateTime", "Animal"], inplace=True)
+                sort_by = ["DateTime", "Animal"]
             case GroupingMode.FACTORS:
                 if self.selected_factor is not None:
-                    result.sort_values(by=["DateTime", self.selected_factor.name], inplace=True)
+                    sort_by = ["DateTime", self.selected_factor.name]
             case GroupingMode.RUNS:
-                result.sort_values(by=["DateTime", "Run"], inplace=True)
+                sort_by = ["DateTime", "Run"]
+
+        result.sort_values(by=sort_by, inplace=True)
 
         # the inverse of groupby, reset_index
         result = result.reset_index()

@@ -34,33 +34,24 @@ class TimePhasesBinningPipeOperator(PipeOperator):
         categories = [item.name for item in self.settings.time_phases]
         df["Bin"] = df["Bin"].cat.set_categories(categories, ordered=True)
 
-        result: pd.DataFrame | None = None
-
         match self.grouping_mode:
             case GroupingMode.ANIMALS:
-                result = df.groupby(["Animal", "Box", "Bin"] + self.factor_names, observed=True)
+                group_by = ["Animal", "Box", "Bin"] + self.factor_names
             case GroupingMode.FACTORS:
                 if self.selected_factor is not None:
-                    result = df.groupby([self.selected_factor.name, "Bin"], observed=True)
+                    group_by = [self.selected_factor.name, "Bin"]
             case GroupingMode.RUNS:
-                result = df.groupby(["Run", "Bin"], observed=True)
+                group_by = ["Run", "Bin"]
+
+        grouped = df.groupby(group_by, dropna=False, observed=True)
 
         match self.binning_operation:
             case BinningOperation.MEAN:
-                result = result.mean(numeric_only=True)
+                result = grouped.mean(numeric_only=True)
             case BinningOperation.MEDIAN:
-                result = result.median(numeric_only=True)
+                result = grouped.median(numeric_only=True)
             case BinningOperation.SUM:
-                result = result.sum(numeric_only=True)
-
-        # match self.grouping_mode:
-        #     case GroupingMode.ANIMALS:
-        #         result.sort_values(by=["Bin", "Animal", "Box"], inplace=True)
-        #     case GroupingMode.FACTORS:
-        #         if self.selected_factor is not None:
-        #             result.sort_values(by=["Bin", self.selected_factor.name], inplace=True)
-        #     case GroupingMode.RUNS:
-        #         result.sort_values(by=["Bin", "Run"], inplace=True)
+                result = grouped.sum(numeric_only=True)
 
         # the inverse of groupby, reset_index
         result = result.reset_index()

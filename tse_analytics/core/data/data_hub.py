@@ -9,18 +9,17 @@ from tse_analytics.core.data.binning import BinningMode, BinningOperation, Binni
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.outliers import OutliersMode, OutliersParams
 from tse_analytics.core.data.pipeline.animal_filter_pipe_operator import AnimalFilterPipeOperator
+from tse_analytics.core.data.pipeline.error_pipe_operator import ErrorPipeOperator
 from tse_analytics.core.data.pipeline.outliers_pipe_operator import OutliersPipeOperator
-from tse_analytics.core.data.pipeline.std_pipe_operator import STDPipeOperator
 from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import TimeCyclesBinningPipeOperator
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import TimeIntervalsBinningPipeOperator
 from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import TimePhasesBinningPipeOperator
 from tse_analytics.core.data.shared import Animal, Factor, GroupingMode, Variable
 from tse_analytics.core.messaging.messages import (
-    BinningAppliedMessage,
+    BinningMessage,
     DataChangedMessage,
     DatasetChangedMessage,
     GroupingModeChangedMessage,
-    RevertBinningMessage,
 )
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.modules.phenomaster.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
@@ -58,10 +57,7 @@ class DataHub:
             return
 
         self.binning_params = params
-        if self.binning_params.apply:
-            self.messenger.broadcast(BinningAppliedMessage(self, self.binning_params))
-        else:
-            self.messenger.broadcast(RevertBinningMessage(self))
+        self.messenger.broadcast(BinningMessage(self, self.binning_params))
 
     def apply_outliers(self, params: OutliersParams):
         if self.selected_dataset is None:
@@ -168,9 +164,9 @@ class DataHub:
             operator = OutliersPipeOperator(self.outliers_params, variables)
             result = operator.process(result)
 
-        # STD operator
+        # Error calculation operator
         if calculate_error and self.selected_variable != "":
-            operator = STDPipeOperator(self.selected_variable)
+            operator = ErrorPipeOperator(self.selected_variable)
             result = operator.process(result)
 
         # Binning

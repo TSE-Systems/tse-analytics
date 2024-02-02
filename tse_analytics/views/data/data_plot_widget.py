@@ -4,11 +4,10 @@ from PySide6.QtWidgets import QWidget
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import (
-    BinningAppliedMessage,
+    BinningMessage,
     DataChangedMessage,
     DatasetChangedMessage,
     GroupingModeChangedMessage,
-    RevertBinningMessage,
 )
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
@@ -20,13 +19,14 @@ from tse_analytics.views.data.timeline_plot_view import TimelinePlotView
 class DataPlotWidget(QWidget, MessengerListener):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
-        self.register_to_messenger(Manager.messenger)
-
         self.ui = Ui_DataPlotWidget()
         self.ui.setupUi(self)
 
+        self.register_to_messenger(Manager.messenger)
+
         self.ui.variableSelector.currentTextChanged.connect(self.__variable_changed)
         self.ui.toolButtonDisplayErrors.toggled.connect(self.__display_errors)
+        self.ui.checkBoxScatterPlot.stateChanged.connect(self.__set_scatter_plot)
 
         self.timelinePlotView = TimelinePlotView(self)
         self.barPlotView = BarPlotView(self)
@@ -40,8 +40,7 @@ class DataPlotWidget(QWidget, MessengerListener):
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
-        messenger.subscribe(self, BinningAppliedMessage, self.__on_binning_applied)
-        messenger.subscribe(self, RevertBinningMessage, self.__on_revert_binning)
+        messenger.subscribe(self, BinningMessage, self.__on_binning_applied)
         messenger.subscribe(self, DataChangedMessage, self.__on_data_changed)
         messenger.subscribe(self, GroupingModeChangedMessage, self.__on_grouping_mode_changed)
 
@@ -55,6 +54,9 @@ class DataPlotWidget(QWidget, MessengerListener):
         else:
             self.barPlotView.set_display_errors(state)
 
+    def __set_scatter_plot(self, state: bool):
+        self.timelinePlotView.set_scatter_plot(state)
+
     def __on_dataset_changed(self, message: DatasetChangedMessage):
         if message.data is None:
             self.ui.variableSelector.clear()
@@ -66,12 +68,12 @@ class DataPlotWidget(QWidget, MessengerListener):
             self.ui.variableSelector.set_data(message.data.variables)
             self.__assign_data()
 
-    def __on_binning_applied(self, message: BinningAppliedMessage):
-        self.__assign_data()
-
-    def __on_revert_binning(self, message: RevertBinningMessage):
-        if Manager.data.binning_params.mode == BinningMode.INTERVALS:
+    def __on_binning_applied(self, message: BinningMessage):
+        if message.params.apply:
             self.__assign_data()
+        else:
+            if Manager.data.binning_params.mode == BinningMode.INTERVALS:
+                self.__assign_data()
 
     def __on_data_changed(self, message: DataChangedMessage):
         self.__assign_data()

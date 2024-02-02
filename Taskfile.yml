@@ -10,7 +10,7 @@ vars:
 tasks:
   black:
     cmds:
-      - black tse_analytics tse_datatools
+      - black tse_analytics
 
   build-resources:
     cmds:

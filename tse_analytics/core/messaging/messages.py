@@ -61,18 +61,12 @@ class DatasetChangedMessage(Message):
         self.data = dataset
 
 
-class BinningAppliedMessage(Message):
-    """Indicates that binning is applied"""
+class BinningMessage(Message):
+    """Binning signalling"""
 
     def __init__(self, sender, params: BinningParams, tag=None):
         super().__init__(sender, tag=tag)
         self.params = params
-
-
-class RevertBinningMessage(Message):
-    """Revert to original data"""
-
-    pass
 
 
 class GroupingModeChangedMessage(Message):
