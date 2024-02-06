@@ -1,4 +1,5 @@
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
+from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.data.binning import BinningMode
@@ -24,6 +25,10 @@ class DataPlotWidget(QWidget, MessengerListener):
 
         self.register_to_messenger(Manager.messenger)
 
+        self.ui.comboBoxErrorType.addItems(["Standard deviation", "Standard error"])
+        self.ui.comboBoxErrorType.setCurrentText("Standard deviation")
+        self.ui.comboBoxErrorType.currentTextChanged.connect(self.__error_type_changed)
+
         self.ui.variableSelector.currentTextChanged.connect(self.__variable_changed)
         self.ui.toolButtonDisplayErrors.toggled.connect(self.__display_errors)
         self.ui.checkBoxScatterPlot.stateChanged.connect(self.__set_scatter_plot)
@@ -35,7 +40,8 @@ class DataPlotWidget(QWidget, MessengerListener):
         self.active_binning_mode = BinningMode.INTERVALS
 
         self.plotToolbar = NavigationToolbar2QT(self.barPlotView.canvas, self)
-        self.ui.horizontalLayout.insertWidget(self.ui.horizontalLayout.count() - 1, self.plotToolbar)
+        self.plotToolbar.setIconSize(QSize(16, 16))
+        self.ui.horizontalLayout.insertWidget(self.ui.horizontalLayout.count(), self.plotToolbar)
         self.plotToolbar.hide()
 
     def register_to_messenger(self, messenger: Messenger):
@@ -47,6 +53,13 @@ class DataPlotWidget(QWidget, MessengerListener):
     def __variable_changed(self, variable: str):
         Manager.data.selected_variable = variable
         self.__assign_data()
+
+    def __error_type_changed(self, error_type: str):
+        error_type = "std" if error_type == "Standard deviation" else "sem"
+        if Manager.data.binning_params.mode == BinningMode.INTERVALS:
+            self.timelinePlotView.set_error_type(error_type)
+        else:
+            self.barPlotView.set_error_type(error_type)
 
     def __display_errors(self, state: bool):
         if Manager.data.binning_params.mode == BinningMode.INTERVALS:
@@ -86,7 +99,11 @@ class DataPlotWidget(QWidget, MessengerListener):
             return
 
         calculate_error = self.ui.toolButtonDisplayErrors.isChecked()
-        df = Manager.data.get_current_df(calculate_error=calculate_error, variables=[Manager.data.selected_variable])
+        df = (
+            Manager.data.get_current_df(calculate_error=calculate_error, variables=[Manager.data.selected_variable])
+            if Manager.data.binning_params.mode == BinningMode.INTERVALS
+            else Manager.data.get_bar_plot_df(variable=Manager.data.selected_variable)
+        )
 
         if Manager.data.binning_params.mode == BinningMode.INTERVALS:
             if Manager.data.binning_params.mode != self.active_binning_mode:

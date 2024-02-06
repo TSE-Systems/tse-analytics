@@ -16,7 +16,8 @@ class BarPlotView(QWidget):
         self.layout().setContentsMargins(0, 0, 0, 0)
 
         self._df: pd.DataFrame | None = None
-        self._variable: str = ""
+        self._variable = ""
+        self._error_type = "std"
         self._display_errors = False
 
         self.canvas: FigureCanvasQTAgg | None = FigureCanvasQTAgg(None)
@@ -32,6 +33,10 @@ class BarPlotView(QWidget):
 
     def set_display_errors(self, state: bool):
         self._display_errors = state
+        self._update_plot()
+
+    def set_error_type(self, error_type: str):
+        self._error_type = error_type
         self._update_plot()
 
     def clear_plot(self):
@@ -71,9 +76,9 @@ class BarPlotView(QWidget):
                 y=self._variable,
                 col="Bin",
                 kind="bar",
-                errorbar="sd" if self._display_errors else None,
+                errorbar="sd",
             )
-            facet_grid.set_xticklabels(rotation=90)
+            # facet_grid.set_xticklabels(rotation=90)
             facet_grid.set_titles("{col_name}")
             self.canvas = FigureCanvasQTAgg(facet_grid.figure)
             self.canvas.updateGeometry()

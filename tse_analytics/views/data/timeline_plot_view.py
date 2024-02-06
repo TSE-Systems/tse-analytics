@@ -3,7 +3,6 @@ import pyqtgraph as pg
 from pyqtgraph import mkPen
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.core.data.binning import BinningOperation
 from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.manager import Manager
 
@@ -13,7 +12,8 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         super().__init__(parent, title=title)
 
         self._df: pd.DataFrame | None = None
-        self._variable: str = ""
+        self._variable = ""
+        self._error_type = "std"
         self._display_errors = False
         self._scatter_plot = False
 
@@ -71,6 +71,10 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         self._display_errors = state
         self.__update_plot()
 
+    def set_error_type(self, error_type: str):
+        self._error_type = error_type
+        self.__update_plot()
+
     def set_scatter_plot(self, state: bool):
         self._scatter_plot = state
         self.__update_plot()
@@ -110,17 +114,20 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         tmp_min = x.min()
         tmp_max = x.max()
 
+        # y = data[self._variable].to_numpy()
         y = data[self._variable].to_numpy()
 
         # p1d = self.p1.plot(x, y, symbol='o', symbolSize=2, symbolPen=pen, pen=pen)
         p1d = self.p1.scatterPlot(x, y, pen=pen, size=2) if self._scatter_plot else self.p1.plot(x, y, pen=pen)
 
-        if self._display_errors:
+        if self._display_errors and Manager.data.grouping_mode != GroupingMode.ANIMALS:
             # Error bars
             error_plot = pg.ErrorBarItem(beam=0.2)
             error = data["Error"].to_numpy()
-            error_plot.setData(x=x, y=y, top=error, bottom=error)
+            error_plot.setData(x=x, y=y, top=error, bottom=error, pen=pen)
             self.p1.addItem(error_plot)
+
+            p1d.visibleChanged.connect(lambda: error_plot.setVisible(p1d.isVisible()))
 
         self.plot_data_items[name] = p1d
         self.legend.addItem(p1d, name)
@@ -160,14 +167,20 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         group_by = ["DateTime", factor_name]
         grouped = self._df.groupby(group_by, dropna=False, observed=False)
-        match Manager.data.binning_params.operation:
-            case BinningOperation.MEAN:
-                result = grouped.mean(numeric_only=True)
-            case BinningOperation.MEDIAN:
-                result = grouped.median(numeric_only=True)
-            case BinningOperation.SUM:
-                result = grouped.sum(numeric_only=True)
+
+        result = (
+            grouped.agg(
+                Value=(self._variable, Manager.data.binning_params.operation.value),
+                Error=(self._variable, self._error_type),
+            )
+            if self._display_errors
+            else grouped.agg(
+                Value=(self._variable, Manager.data.binning_params.operation.value),
+            )
+        )
+
         data = result.reset_index()
+        data.rename(columns={"Value": self._variable}, inplace=True)
 
         groups = Manager.data.selected_factor.groups
         for i, group in enumerate(groups):
@@ -189,14 +202,20 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         group_by = ["DateTime", "Run"]
         grouped = self._df.groupby(group_by, dropna=False, observed=False)
-        match Manager.data.binning_params.operation:
-            case BinningOperation.MEAN:
-                result = grouped.mean(numeric_only=True)
-            case BinningOperation.MEDIAN:
-                result = grouped.median(numeric_only=True)
-            case BinningOperation.SUM:
-                result = grouped.sum(numeric_only=True)
+
+        result = (
+            grouped.agg(
+                Value=(self._variable, Manager.data.binning_params.operation.value),
+                Error=(self._variable, self._error_type),
+            )
+            if self._display_errors
+            else grouped.agg(
+                Value=(self._variable, Manager.data.binning_params.operation.value),
+            )
+        )
+
         data = result.reset_index()
+        data.rename(columns={"Value": self._variable}, inplace=True)
 
         runs = self._df["Run"].unique()
         for i, run in enumerate(runs):

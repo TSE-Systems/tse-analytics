@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QHBoxLayout, QLabel,
-    QSizePolicy, QSpacerItem, QToolButton, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QHBoxLayout,
+    QLabel, QSizePolicy, QSpacerItem, QToolButton,
+    QVBoxLayout, QWidget)
 
 from tse_analytics.views.misc.variable_selector import VariableSelector
 import resources_rc
@@ -59,6 +59,11 @@ class Ui_DataPlotWidget(object):
         self.toolButtonDisplayErrors.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
         self.horizontalLayout.addWidget(self.toolButtonDisplayErrors)
+
+        self.comboBoxErrorType = QComboBox(DataPlotWidget)
+        self.comboBoxErrorType.setObjectName(u"comboBoxErrorType")
+
+        self.horizontalLayout.addWidget(self.comboBoxErrorType)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout)

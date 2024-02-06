@@ -164,10 +164,10 @@ class DataHub:
             operator = OutliersPipeOperator(self.outliers_params, variables)
             result = operator.process(result)
 
-        # Error calculation operator
-        if calculate_error and self.selected_variable != "":
-            operator = ErrorPipeOperator(self.selected_variable)
-            result = operator.process(result)
+        # # Error calculation operator
+        # if calculate_error and self.selected_variable != "":
+        #     operator = ErrorPipeOperator(self.selected_variable)
+        #     result = operator.process(result)
 
         # Binning
         if self.binning_params.apply:
@@ -240,5 +240,42 @@ class DataHub:
 
         # TODO: should or should not?
         result = result.dropna()
+
+        return result
+
+    def get_bar_plot_df(self, variable: str) -> pd.DataFrame:
+        default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin", variable]
+        factor_columns = list(self.selected_dataset.factors.keys())
+        result = self.selected_dataset.active_df[default_columns + factor_columns].copy()
+
+        # Filter operator
+        if len(self.selected_animals) > 0:
+            operator = AnimalFilterPipeOperator(self.selected_animals)
+            result = operator.process(result)
+
+        # Outliers operator
+        if self.outliers_params.mode == OutliersMode.REMOVE:
+            operator = OutliersPipeOperator(self.outliers_params, [variable])
+            result = operator.process(result)
+
+        if self.binning_params.mode == BinningMode.CYCLES:
+            def filter_method(x):
+                return "Light" if self.selected_dataset.binning_settings.time_cycles_settings.light_cycle_start <= x.time() < self.selected_dataset.binning_settings.time_cycles_settings.dark_cycle_start else "Dark"
+
+            result["Bin"] = result["DateTime"].apply(filter_method).astype("category")
+            result.drop(columns=["DateTime"], inplace=True)
+        elif self.binning_params.mode == BinningMode.PHASES:
+            self.selected_dataset.binning_settings.time_phases_settings.time_phases.sort(key=lambda x: x.start_timestamp)
+
+            result["Bin"] = None
+            for phase in self.selected_dataset.binning_settings.time_phases_settings.time_phases:
+                result.loc[result["DateTime"] >= phase.start_timestamp, "Bin"] = phase.name
+
+            result["Bin"] = result["Bin"].astype("category")
+            result.drop(columns=["DateTime"], inplace=True)
+
+            # Sort category names by time
+            categories = [item.name for item in self.selected_dataset.binning_settings.time_phases_settings.time_phases]
+            result["Bin"] = result["Bin"].cat.set_categories(categories, ordered=True)
 
         return result
