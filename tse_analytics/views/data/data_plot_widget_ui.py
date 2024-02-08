@@ -15,8 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QSizePolicy,
-    QSpacerItem, QToolButton, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QHBoxLayout,
+    QLabel, QSizePolicy, QSpacerItem, QToolButton,
+    QVBoxLayout, QWidget)
 
 from tse_analytics.views.misc.variable_selector import VariableSelector
 import resources_rc
@@ -40,6 +41,15 @@ class Ui_DataPlotWidget(object):
 
         self.horizontalLayout.addWidget(self.variableSelector)
 
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout.addItem(self.horizontalSpacer)
+
+        self.checkBoxScatterPlot = QCheckBox(DataPlotWidget)
+        self.checkBoxScatterPlot.setObjectName(u"checkBoxScatterPlot")
+
+        self.horizontalLayout.addWidget(self.checkBoxScatterPlot)
+
         self.toolButtonDisplayErrors = QToolButton(DataPlotWidget)
         self.toolButtonDisplayErrors.setObjectName(u"toolButtonDisplayErrors")
         icon = QIcon()
@@ -50,9 +60,10 @@ class Ui_DataPlotWidget(object):
 
         self.horizontalLayout.addWidget(self.toolButtonDisplayErrors)
 
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.comboBoxErrorType = QComboBox(DataPlotWidget)
+        self.comboBoxErrorType.setObjectName(u"comboBoxErrorType")
 
-        self.horizontalLayout.addItem(self.horizontalSpacer)
+        self.horizontalLayout.addWidget(self.comboBoxErrorType)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout)
@@ -66,6 +77,7 @@ class Ui_DataPlotWidget(object):
     def retranslateUi(self, DataPlotWidget):
         DataPlotWidget.setWindowTitle(QCoreApplication.translate("DataPlotWidget", u"Form", None))
         self.label.setText(QCoreApplication.translate("DataPlotWidget", u"Variable:", None))
+        self.checkBoxScatterPlot.setText(QCoreApplication.translate("DataPlotWidget", u"Scatter Plot", None))
         self.toolButtonDisplayErrors.setText(QCoreApplication.translate("DataPlotWidget", u"Display Errors", None))
     # retranslateUi
 

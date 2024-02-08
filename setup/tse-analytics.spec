@@ -6,7 +6,7 @@ from PyInstaller.utils.hooks import copy_metadata
 pathex = os.path.abspath(os.path.join(SPECPATH, '..'))
 
 datas = [
-    ('../tse_analytics/docs', 'docs'),
+    ('../docs', 'docs'),
     ('../tse_analytics/resources_rc.py', '.'),
 ]
 
@@ -45,7 +45,7 @@ exe = EXE(
     strip=False,
     upx=True,
     console=False,
-    icon='..\\resources\\icons\\app.ico'
+    icon='../resources/icons/app.ico'
 )
 
 coll = COLLECT(
@@ -61,6 +61,6 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     name='tse-analytics.app',
-    icon='..\\resources\\icons\\app.ico',
+    icon='../resources/icons/app.ico',
     bundle_identifier=None
 )

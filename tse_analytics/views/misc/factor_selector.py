@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QComboBox
-from tse_datatools.data.factor import Factor
+
+from tse_analytics.core.data.shared import Factor
 
 
 class FactorSelector(QComboBox):

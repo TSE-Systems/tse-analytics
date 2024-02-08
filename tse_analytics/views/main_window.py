@@ -6,8 +6,8 @@ import PySide6QtAds
 from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QCloseEvent, QIcon
 from PySide6.QtWidgets import QApplication, QComboBox, QDialog, QFileDialog, QLabel, QMainWindow, QWidget
-from tse_datatools.analysis.grouping_mode import GroupingMode
 
+from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.helper import LAYOUT_VERSION, show_help
 from tse_analytics.core.licensing import LicenseManager
 from tse_analytics.core.manager import Manager

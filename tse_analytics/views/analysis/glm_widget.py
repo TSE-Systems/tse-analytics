@@ -7,10 +7,10 @@ from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
+from tse_analytics.core.messaging.messages import DatasetChangedMessage
+from tse_analytics.core.messaging.messenger import Messenger
+from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.css import style
-from tse_analytics.messaging.messages import DatasetChangedMessage
-from tse_analytics.messaging.messenger import Messenger
-from tse_analytics.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.glm_widget_ui import Ui_GlmWidget
 from tse_analytics.views.misc.toast import Toast
 
@@ -68,7 +68,7 @@ class GlmWidget(QWidget, MessengerListener):
         factor_name = Manager.data.selected_factor.name
 
         variables = [self.response] if self.response == self.covariate else [self.response, self.covariate]
-        df = Manager.data.get_current_df(calculate_error=False, variables=variables)
+        df = Manager.data.get_current_df(variables=variables)
 
         df = df.groupby(by=["Animal"], as_index=False).agg({
             self.covariate: "mean",

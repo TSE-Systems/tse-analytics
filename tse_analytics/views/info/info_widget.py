@@ -2,10 +2,10 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QAbstractItemView, QTreeView, QWidget
 
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import DatasetChangedMessage, SelectedTreeNodeChangedMessage
-from tse_analytics.messaging.messenger import Messenger
-from tse_analytics.messaging.messenger_listener import MessengerListener
-from tse_analytics.models.json_model import JsonModel
+from tse_analytics.core.messaging.messages import DatasetChangedMessage, SelectedTreeNodeChangedMessage
+from tse_analytics.core.messaging.messenger import Messenger
+from tse_analytics.core.messaging.messenger_listener import MessengerListener
+from tse_analytics.core.models.json_model import JsonModel
 
 
 class InfoWidget(QTreeView, MessengerListener):

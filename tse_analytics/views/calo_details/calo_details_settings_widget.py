@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QWidget
-from tse_datatools.calo_details.calo_details_settings import CaloDetailsSettings
-from tse_datatools.data.dataset import Dataset
 
+from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.calo_details.calo_details_settings import CaloDetailsSettings
 from tse_analytics.views.calo_details.calo_details_settings_widget_ui import Ui_CaloDetailsSettingsWidget
 
 

@@ -3,9 +3,9 @@ from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import DataChangedMessage
-from tse_analytics.messaging.messenger import Messenger
-from tse_analytics.messaging.messenger_listener import MessengerListener
+from tse_analytics.core.messaging.messages import DataChangedMessage
+from tse_analytics.core.messaging.messenger import Messenger
+from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.tools.compare_runs_widget_ui import Ui_CompareRunsWidget
 
 
@@ -38,7 +38,7 @@ class CompareRunsWidget(QWidget, MessengerListener):
         self.__prepare_data()
 
     def __prepare_data(self):
-        df = Manager.data.get_current_df(calculate_error=False, variables=[self.variable])
+        df = Manager.data.get_current_df(variables=[self.variable])
 
         runs = df["Run"].unique()
         df["Run"] = df["Run"].astype(int)

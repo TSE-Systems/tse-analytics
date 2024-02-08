@@ -10,7 +10,7 @@ vars:
 tasks:
   black:
     cmds:
-      - black tse_analytics tse_datatools
+      - black tse_analytics
 
   build-resources:
     cmds:
@@ -80,11 +80,11 @@ tasks:
 
   mypy:
     cmds:
-      - mypy tse_analytics tse_datatools
+      - mypy tse_analytics
 
   pylint:
     cmds:
-      - pylint -j 8 tse_analytics tse_datatools
+      - pylint -j 8 tse_analytics
     ignore_error: true
 
   ruff-check:

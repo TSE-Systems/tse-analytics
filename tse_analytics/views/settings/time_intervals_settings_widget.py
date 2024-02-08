@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QWidget
-from tse_datatools.data.time_intervals_binning_settings import TimeIntervalsBinningSettings
 
+from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.settings.time_intervals_settings_widget_ui import Ui_TimeIntervalsSettingsWidget
 

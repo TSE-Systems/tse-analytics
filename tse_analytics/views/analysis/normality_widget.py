@@ -2,13 +2,13 @@ import pingouin as pg
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
-from tse_datatools.analysis.grouping_mode import GroupingMode
 
+from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import DatasetChangedMessage
-from tse_analytics.messaging.messenger import Messenger
-from tse_analytics.messaging.messenger_listener import MessengerListener
+from tse_analytics.core.messaging.messages import DatasetChangedMessage
+from tse_analytics.core.messaging.messenger import Messenger
+from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.normality_widget_ui import Ui_NormalityWidget
 from tse_analytics.views.misc.toast import Toast
 
@@ -53,7 +53,7 @@ class NormalityWidget(QWidget, MessengerListener):
             Toast(text="Please select a factor first!", parent=self, duration=2000).show_toast()
             return
 
-        df = Manager.data.get_current_df(calculate_error=False, variables=[self.variable])
+        df = Manager.data.get_current_df(variables=[self.variable])
 
         self.ui.canvas.clear(False)
 

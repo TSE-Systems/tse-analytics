@@ -3,14 +3,13 @@ from PySide6.QtCore import QDir, QTemporaryFile, QUrl
 from PySide6.QtWidgets import QWidget
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
-from tse_datatools.analysis.grouping_mode import GroupingMode
 
-# from umap import UMAP
+from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
-from tse_analytics.messaging.messages import DatasetChangedMessage
-from tse_analytics.messaging.messenger import Messenger
-from tse_analytics.messaging.messenger_listener import MessengerListener
+from tse_analytics.core.messaging.messages import DatasetChangedMessage
+from tse_analytics.core.messaging.messenger import Messenger
+from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.pca_widget_ui import Ui_PcaWidget
 from tse_analytics.views.misc.toast import Toast
 
@@ -61,7 +60,7 @@ class PcaWidget(QWidget, MessengerListener):
                 color_column = "Animal"
 
         variables = [variable.name for variable in Manager.data.selected_variables]
-        df = Manager.data.get_current_df(calculate_error=False, variables=variables, dropna=True)
+        df = Manager.data.get_current_df(variables=variables, dropna=True)
 
         method = self.ui.comboBoxMethod.currentText()
         n_components = 2 if self.ui.comboBoxDimensions.currentText() == "2D" else 3

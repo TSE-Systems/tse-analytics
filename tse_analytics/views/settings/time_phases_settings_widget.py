@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 
 from PySide6.QtWidgets import QHeaderView, QInputDialog, QWidget
-from tse_datatools.data.time_phase import TimePhase
-from tse_datatools.data.time_phases_binning_settings import TimePhasesBinningSettings
 
+from tse_analytics.core.data.binning import TimePhasesBinningSettings
+from tse_analytics.core.data.shared import TimePhase
 from tse_analytics.core.manager import Manager
-from tse_analytics.models.time_phases_model import TimePhasesModel
+from tse_analytics.core.models.time_phases_model import TimePhasesModel
 from tse_analytics.views.settings.time_phases_settings_widget_ui import Ui_TimePhasesSettingsWidget
 
 

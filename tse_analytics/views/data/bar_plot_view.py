@@ -3,8 +3,8 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtWidgets import QVBoxLayout, QWidget
-from tse_datatools.analysis.grouping_mode import GroupingMode
 
+from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.manager import Manager
 
 
@@ -16,7 +16,8 @@ class BarPlotView(QWidget):
         self.layout().setContentsMargins(0, 0, 0, 0)
 
         self._df: pd.DataFrame | None = None
-        self._variable: str = ""
+        self._variable = ""
+        self._error_type = "sd"
         self._display_errors = False
 
         self.canvas: FigureCanvasQTAgg | None = FigureCanvasQTAgg(None)
@@ -32,6 +33,10 @@ class BarPlotView(QWidget):
 
     def set_display_errors(self, state: bool):
         self._display_errors = state
+        self._update_plot()
+
+    def set_error_type(self, error_type: str):
+        self._error_type = error_type
         self._update_plot()
 
     def clear_plot(self):
@@ -56,26 +61,26 @@ class BarPlotView(QWidget):
 
         if not self._df.empty:
             match Manager.data.grouping_mode:
+                case GroupingMode.ANIMALS:
+                    x_name = "Animal"
                 case GroupingMode.FACTORS:
                     x_name = Manager.data.selected_factor.name
                 case GroupingMode.RUNS:
                     x_name = "Run"
-                case _:
-                    x_name = "Animal"
 
             self._df[x_name] = self._df[x_name].cat.remove_unused_categories()
 
-            faced_grid = sns.catplot(
+            facet_grid = sns.catplot(
+                data=self._df,
                 x=x_name,
                 y=self._variable,
                 col="Bin",
-                data=self._df,
                 kind="bar",
-                errorbar=("ci", 95) if self._display_errors else None,
+                errorbar=self._error_type if self._display_errors else None,
             )
-            faced_grid.set_xticklabels(rotation=90)
-            faced_grid.set_titles("{col_name}")
-            self.canvas = FigureCanvasQTAgg(faced_grid.figure)
+            # facet_grid.set_xticklabels(rotation=90)
+            facet_grid.set_titles("{col_name}")
+            self.canvas = FigureCanvasQTAgg(facet_grid.figure)
             self.canvas.updateGeometry()
             self.canvas.draw()
             self.layout().addWidget(self.canvas)
