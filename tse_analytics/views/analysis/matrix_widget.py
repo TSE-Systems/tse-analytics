@@ -52,7 +52,7 @@ class MatrixWidget(QWidget, MessengerListener):
                 color = "Animal"
 
         variables = [variable.name for variable in Manager.data.selected_variables]
-        df = Manager.data.get_current_df(calculate_error=False, variables=variables)
+        df = Manager.data.get_current_df(variables=variables)
 
         fig = px.scatter_matrix(df, dimensions=variables, color=color)
         fig.update_traces(diagonal_visible=False)

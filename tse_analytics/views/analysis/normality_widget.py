@@ -53,7 +53,7 @@ class NormalityWidget(QWidget, MessengerListener):
             Toast(text="Please select a factor first!", parent=self, duration=2000).show_toast()
             return
 
-        df = Manager.data.get_current_df(calculate_error=False, variables=[self.variable])
+        df = Manager.data.get_current_df(variables=[self.variable])
 
         self.ui.canvas.clear(False)
 

@@ -67,7 +67,7 @@ class CorrelationWidget(QWidget, MessengerListener):
             return
 
         variables = [self.x_var] if self.x_var == self.y_var else [self.x_var, self.y_var]
-        df = Manager.data.get_current_df(calculate_error=False, variables=variables)
+        df = Manager.data.get_current_df(variables=variables)
 
         match Manager.data.grouping_mode:
             case GroupingMode.FACTORS:

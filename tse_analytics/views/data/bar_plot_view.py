@@ -17,7 +17,7 @@ class BarPlotView(QWidget):
 
         self._df: pd.DataFrame | None = None
         self._variable = ""
-        self._error_type = "std"
+        self._error_type = "sd"
         self._display_errors = False
 
         self.canvas: FigureCanvasQTAgg | None = FigureCanvasQTAgg(None)
@@ -76,7 +76,7 @@ class BarPlotView(QWidget):
                 y=self._variable,
                 col="Bin",
                 kind="bar",
-                errorbar="sd",
+                errorbar=self._error_type if self._display_errors else None,
             )
             # facet_grid.set_xticklabels(rotation=90)
             facet_grid.set_titles("{col_name}")

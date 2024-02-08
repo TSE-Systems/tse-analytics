@@ -45,7 +45,7 @@ class AutocorrelationWidget(QWidget):
 
         variables = [variable.name for variable in Manager.data.selected_variables]
         var_name = Manager.data.selected_variables[0].name
-        df = Manager.data.get_current_df(calculate_error=False, variables=variables, dropna=False)
+        df = Manager.data.get_current_df(variables=variables, dropna=False)
 
         index = pd.DatetimeIndex(df["DateTime"])
         index = index.round("min")

@@ -2,6 +2,7 @@ import pandas as pd
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget
 
+from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import (
     BinningMessage,
@@ -61,10 +62,13 @@ class DataTableWidget(QWidget, MessengerListener):
         self.__set_data()
 
     def __set_data(self):
+        if Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None:
+            return
+
         selected_variable_names = [item.name for item in Manager.data.selected_variables]
         selected_variable_names = list(set(selected_variable_names))
 
-        self.df = Manager.data.get_current_df(calculate_error=False, variables=selected_variable_names)
+        self.df = Manager.data.get_current_df(variables=selected_variable_names)
 
         self.ui.tableView.setModel(PandasModel(self.df))
         self.ui.tableView.setColumnWidth(0, 120)

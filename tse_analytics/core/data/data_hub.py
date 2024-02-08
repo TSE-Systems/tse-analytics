@@ -9,7 +9,6 @@ from tse_analytics.core.data.binning import BinningMode, BinningOperation, Binni
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.outliers import OutliersMode, OutliersParams
 from tse_analytics.core.data.pipeline.animal_filter_pipe_operator import AnimalFilterPipeOperator
-from tse_analytics.core.data.pipeline.error_pipe_operator import ErrorPipeOperator
 from tse_analytics.core.data.pipeline.outliers_pipe_operator import OutliersPipeOperator
 from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import TimeCyclesBinningPipeOperator
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import TimeIntervalsBinningPipeOperator
@@ -144,7 +143,7 @@ class DataHub:
             dataset.refresh_active_df()
             self.set_selected_dataset(dataset)
 
-    def get_current_df(self, calculate_error=False, variables: list[str] | None = None, dropna=False) -> pd.DataFrame:
+    def get_current_df(self, variables: list[str] | None = None, dropna=False) -> pd.DataFrame:
         if variables is not None:
             default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
             factor_columns = list(self.selected_dataset.factors.keys())
@@ -259,13 +258,22 @@ class DataHub:
             result = operator.process(result)
 
         if self.binning_params.mode == BinningMode.CYCLES:
+
             def filter_method(x):
-                return "Light" if self.selected_dataset.binning_settings.time_cycles_settings.light_cycle_start <= x.time() < self.selected_dataset.binning_settings.time_cycles_settings.dark_cycle_start else "Dark"
+                return (
+                    "Light"
+                    if self.selected_dataset.binning_settings.time_cycles_settings.light_cycle_start
+                    <= x.time()
+                    < self.selected_dataset.binning_settings.time_cycles_settings.dark_cycle_start
+                    else "Dark"
+                )
 
             result["Bin"] = result["DateTime"].apply(filter_method).astype("category")
             result.drop(columns=["DateTime"], inplace=True)
         elif self.binning_params.mode == BinningMode.PHASES:
-            self.selected_dataset.binning_settings.time_phases_settings.time_phases.sort(key=lambda x: x.start_timestamp)
+            self.selected_dataset.binning_settings.time_phases_settings.time_phases.sort(
+                key=lambda x: x.start_timestamp
+            )
 
             result["Bin"] = None
             for phase in self.selected_dataset.binning_settings.time_phases_settings.time_phases:

@@ -3,6 +3,7 @@ from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.data.binning import BinningMode
+from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import (
     BinningMessage,
@@ -55,11 +56,10 @@ class DataPlotWidget(QWidget, MessengerListener):
         self.__assign_data()
 
     def __error_type_changed(self, error_type: str):
-        error_type = "std" if error_type == "Standard deviation" else "sem"
         if Manager.data.binning_params.mode == BinningMode.INTERVALS:
-            self.timelinePlotView.set_error_type(error_type)
+            self.timelinePlotView.set_error_type("std" if error_type == "Standard deviation" else "sem")
         else:
-            self.barPlotView.set_error_type(error_type)
+            self.barPlotView.set_error_type("sd" if error_type == "Standard deviation" else "se")
 
     def __display_errors(self, state: bool):
         if Manager.data.binning_params.mode == BinningMode.INTERVALS:
@@ -95,12 +95,13 @@ class DataPlotWidget(QWidget, MessengerListener):
         self.__assign_data()
 
     def __assign_data(self):
-        if Manager.data.selected_variable == "":
+        if Manager.data.selected_variable == "" or (
+            Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None
+        ):
             return
 
-        calculate_error = self.ui.toolButtonDisplayErrors.isChecked()
         df = (
-            Manager.data.get_current_df(calculate_error=calculate_error, variables=[Manager.data.selected_variable])
+            Manager.data.get_current_df(variables=[Manager.data.selected_variable])
             if Manager.data.binning_params.mode == BinningMode.INTERVALS
             else Manager.data.get_bar_plot_df(variable=Manager.data.selected_variable)
         )

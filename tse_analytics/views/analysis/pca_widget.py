@@ -60,7 +60,7 @@ class PcaWidget(QWidget, MessengerListener):
                 color_column = "Animal"
 
         variables = [variable.name for variable in Manager.data.selected_variables]
-        df = Manager.data.get_current_df(calculate_error=False, variables=variables, dropna=True)
+        df = Manager.data.get_current_df(variables=variables, dropna=True)
 
         method = self.ui.comboBoxMethod.currentText()
         n_components = 2 if self.ui.comboBoxDimensions.currentText() == "2D" else 3

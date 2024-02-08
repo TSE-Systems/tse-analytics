@@ -38,7 +38,7 @@ class CompareRunsWidget(QWidget, MessengerListener):
         self.__prepare_data()
 
     def __prepare_data(self):
-        df = Manager.data.get_current_df(calculate_error=False, variables=[self.variable])
+        df = Manager.data.get_current_df(variables=[self.variable])
 
         runs = df["Run"].unique()
         df["Run"] = df["Run"].astype(int)

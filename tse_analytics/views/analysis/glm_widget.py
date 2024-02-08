@@ -68,7 +68,7 @@ class GlmWidget(QWidget, MessengerListener):
         factor_name = Manager.data.selected_factor.name
 
         variables = [self.response] if self.response == self.covariate else [self.response, self.covariate]
-        df = Manager.data.get_current_df(calculate_error=False, variables=variables)
+        df = Manager.data.get_current_df(variables=variables)
 
         df = df.groupby(by=["Animal"], as_index=False).agg({
             self.covariate: "mean",
