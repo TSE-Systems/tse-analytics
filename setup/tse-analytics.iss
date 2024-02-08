@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "TSE Analytics"
-#define MyAppVersion "0.3.0"
+#define MyAppVersion "0.1.0"
 #define MyAppPublisher "TSE Systems"
 #define MyAppURL "https://tse-systems.com"
 #define MyAppExeName "tse-analytics.exe"
@@ -25,8 +25,8 @@ DefaultDirName={autopf64}\{#MyAppPublisher}\{#MyAppName}
 ChangesAssociations=yes
 DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
-;PrivilegesRequired=lowest
-PrivilegesRequiredOverridesAllowed=dialog
+PrivilegesRequired=lowest
+;PrivilegesRequiredOverridesAllowed=dialog
 ;OutputDir=C:\Projects\TSE\tse-analytics\setup\output
 OutputBaseFilename=tse-analytics-setup
 Compression=lzma
