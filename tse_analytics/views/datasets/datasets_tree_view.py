@@ -19,8 +19,10 @@ from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import SelectedTreeNodeChangedMessage
 from tse_analytics.core.models.calo_details_tree_item import CaloDetailsTreeItem
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
+from tse_analytics.core.models.meal_details_tree_item import MealDetailsTreeItem
 from tse_analytics.views.calo_details.calo_details_dialog import CaloDetailsDialog
 from tse_analytics.views.datasets_merge_dialog import DatasetsMergeDialog
+from tse_analytics.views.meal_details.meal_details_dialog import MealDetailsDialog
 
 
 class DatasetsTreeView(QTreeView):
@@ -64,9 +66,12 @@ class DatasetsTreeView(QTreeView):
         menu = QMenu(self)
 
         if level == 1:
-            if len(indexes) == 1 and not LicenseManager.is_feature_missing("CurveFitting"):
-                action = menu.addAction("Import calo details...")
-                action.triggered.connect(partial(self.__import_calo_details, indexes))
+            if len(indexes) == 1:
+                action = menu.addAction("Import meal details...")
+                action.triggered.connect(partial(self.__import_meal_details, indexes))
+                if not LicenseManager.is_feature_missing("CurveFitting"):
+                    action = menu.addAction("Import calo details...")
+                    action.triggered.connect(partial(self.__import_calo_details, indexes))
 
             action = menu.addAction("Adjust time...")
             action.triggered.connect(partial(self.__adjust_dataset_time, indexes))
@@ -104,6 +109,18 @@ class DatasetsTreeView(QTreeView):
             items = self.model().workspace_tree_item.child_items
             for item in items:
                 item.checked = False
+
+    def __import_meal_details(self, indexes: list[QModelIndex]):
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Import meal details",
+            "",
+            "Meal Details Files (*.csv)",
+        )
+        if path:
+            if len(indexes) == 1:
+                selected_dataset_index = indexes[0]
+                Manager.import_meal_details(selected_dataset_index, path)
 
     def __import_calo_details(self, indexes: list[QModelIndex]):
         path, _ = QFileDialog.getOpenFileName(
@@ -144,6 +161,11 @@ class DatasetsTreeView(QTreeView):
                 result = dlg.exec()
                 if result == QDialog.DialogCode.Accepted:
                     Manager.data.append_fitting_results(item.calo_details, dlg.fitting_results)
+            elif isinstance(item, MealDetailsTreeItem):
+                dlg = MealDetailsDialog(item.meal_details, self)
+                result = dlg.exec()
+                if result == QDialog.DialogCode.Accepted:
+                    Manager.data.append_fitting_results(item.meal_details, dlg.fitting_results)
 
     def minimumSizeHint(self):
         return QSize(200, 40)

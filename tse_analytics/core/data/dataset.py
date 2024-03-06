@@ -5,6 +5,7 @@ import pandas as pd
 from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.shared import Animal, Factor, Group, Variable
 from tse_analytics.modules.phenomaster.data.calo_details import CaloDetails
+from tse_analytics.modules.phenomaster.data.meal_details import MealDetails
 
 
 class Dataset:
@@ -34,6 +35,7 @@ class Dataset:
         self.binning_settings = BinningSettings()
 
         self.calo_details: CaloDetails | None = None
+        self.meal_details: MealDetails | None = None
 
     @property
     def start_timestamp(self) -> pd.Timestamp:

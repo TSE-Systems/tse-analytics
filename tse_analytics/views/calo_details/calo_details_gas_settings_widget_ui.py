@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'calo_details_gas_settings_widget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -121,7 +121,7 @@ class Ui_CaloDetailsGasSettingsWidget(object):
 
         self.verticalLayout_3.addWidget(self.groupBoxC)
 
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_3.addItem(self.verticalSpacer)
 
@@ -189,7 +189,7 @@ class Ui_CaloDetailsGasSettingsWidget(object):
 
         self.verticalLayout_4.addWidget(self.groupBoxRefC)
 
-        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_4.addItem(self.verticalSpacer_2)
 

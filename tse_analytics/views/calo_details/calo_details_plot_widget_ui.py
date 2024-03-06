@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'calo_details_plot_widget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -40,7 +40,7 @@ class Ui_CaloDetailsPlotWidget(object):
 
         self.horizontalLayout.addWidget(self.variableSelector)
 
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer)
 
@@ -49,7 +49,7 @@ class Ui_CaloDetailsPlotWidget(object):
 
         self.plotView = CaloDetailsPlotView(CaloDetailsPlotWidget)
         self.plotView.setObjectName(u"plotView")
-        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.plotView.sizePolicy().hasHeightForWidth())

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'calo_details_settings_widget.ui'
+## Form generated from reading UI file 'meal_details_settings_widget.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.6.2
 ##
@@ -19,18 +19,16 @@ from PySide6.QtWidgets import (QApplication, QDoubleSpinBox, QFormLayout, QFrame
     QGroupBox, QLabel, QScrollArea, QSizePolicy,
     QSpinBox, QVBoxLayout, QWidget)
 
-from tse_analytics.views.calo_details.calo_details_gas_settings_widget import CaloDetailsGasSettingsWidget
-
-class Ui_CaloDetailsSettingsWidget(object):
-    def setupUi(self, CaloDetailsSettingsWidget):
-        if not CaloDetailsSettingsWidget.objectName():
-            CaloDetailsSettingsWidget.setObjectName(u"CaloDetailsSettingsWidget")
-        CaloDetailsSettingsWidget.resize(546, 585)
-        self.verticalLayout = QVBoxLayout(CaloDetailsSettingsWidget)
+class Ui_MealDetailsSettingsWidget(object):
+    def setupUi(self, MealDetailsSettingsWidget):
+        if not MealDetailsSettingsWidget.objectName():
+            MealDetailsSettingsWidget.setObjectName(u"MealDetailsSettingsWidget")
+        MealDetailsSettingsWidget.resize(546, 585)
+        self.verticalLayout = QVBoxLayout(MealDetailsSettingsWidget)
         self.verticalLayout.setSpacing(4)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(4, 4, 4, 4)
-        self.scrollArea = QScrollArea(CaloDetailsSettingsWidget)
+        self.scrollArea = QScrollArea(MealDetailsSettingsWidget)
         self.scrollArea.setObjectName(u"scrollArea")
         self.scrollArea.setFrameShape(QFrame.NoFrame)
         self.scrollArea.setWidgetResizable(True)
@@ -81,44 +79,21 @@ class Ui_CaloDetailsSettingsWidget(object):
 
         self.verticalLayout_2.addWidget(self.groupBoxGeneralSettings)
 
-        self.groupBoxGasSettings = QGroupBox(self.scrollAreaWidgetContents)
-        self.groupBoxGasSettings.setObjectName(u"groupBoxGasSettings")
-        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.groupBoxGasSettings.sizePolicy().hasHeightForWidth())
-        self.groupBoxGasSettings.setSizePolicy(sizePolicy)
-        self.verticalLayout_3 = QVBoxLayout(self.groupBoxGasSettings)
-        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.widgetO2Settings = CaloDetailsGasSettingsWidget(self.groupBoxGasSettings)
-        self.widgetO2Settings.setObjectName(u"widgetO2Settings")
-
-        self.verticalLayout_3.addWidget(self.widgetO2Settings)
-
-        self.widgetCO2Settings = CaloDetailsGasSettingsWidget(self.groupBoxGasSettings)
-        self.widgetCO2Settings.setObjectName(u"widgetCO2Settings")
-
-        self.verticalLayout_3.addWidget(self.widgetCO2Settings)
-
-
-        self.verticalLayout_2.addWidget(self.groupBoxGasSettings)
-
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
 
         self.verticalLayout.addWidget(self.scrollArea)
 
 
-        self.retranslateUi(CaloDetailsSettingsWidget)
+        self.retranslateUi(MealDetailsSettingsWidget)
 
-        QMetaObject.connectSlotsByName(CaloDetailsSettingsWidget)
+        QMetaObject.connectSlotsByName(MealDetailsSettingsWidget)
     # setupUi
 
-    def retranslateUi(self, CaloDetailsSettingsWidget):
-        CaloDetailsSettingsWidget.setWindowTitle(QCoreApplication.translate("CaloDetailsSettingsWidget", u"Form", None))
-        self.groupBoxGeneralSettings.setTitle(QCoreApplication.translate("CaloDetailsSettingsWidget", u"General", None))
-        self.iterationsLabel.setText(QCoreApplication.translate("CaloDetailsSettingsWidget", u"Iterations", None))
-        self.predictionOffsetLabel.setText(QCoreApplication.translate("CaloDetailsSettingsWidget", u"Prediction Offset", None))
-        self.flowLabel.setText(QCoreApplication.translate("CaloDetailsSettingsWidget", u"Flow [l/min]", None))
-        self.groupBoxGasSettings.setTitle(QCoreApplication.translate("CaloDetailsSettingsWidget", u"Gas Settings", None))
+    def retranslateUi(self, MealDetailsSettingsWidget):
+        MealDetailsSettingsWidget.setWindowTitle(QCoreApplication.translate("MealDetailsSettingsWidget", u"Form", None))
+        self.groupBoxGeneralSettings.setTitle(QCoreApplication.translate("MealDetailsSettingsWidget", u"General", None))
+        self.iterationsLabel.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Iterations", None))
+        self.predictionOffsetLabel.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Prediction Offset", None))
+        self.flowLabel.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Flow [l/min]", None))
     # retranslateUi
 

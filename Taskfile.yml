@@ -51,6 +51,9 @@ tasks:
       - pyside6-uic tse_analytics/views/analysis/timeseries/prophet_forecasting_widget.ui -o tse_analytics/views/analysis/timeseries/prophet_forecasting_widget_ui.py
       - pyside6-uic tse_analytics/views/analysis/timeseries/decomposition_widget.ui -o tse_analytics/views/analysis/timeseries/decomposition_widget_ui.py
       - pyside6-uic tse_analytics/views/analysis/timeseries/autocorrelation_widget.ui -o tse_analytics/views/analysis/timeseries/autocorrelation_widget_ui.py
+      - pyside6-uic tse_analytics/views/meal_details/meal_details_dialog.ui -o tse_analytics/views/meal_details/meal_details_dialog_ui.py
+      - pyside6-uic tse_analytics/views/meal_details/meal_details_plot_widget.ui -o tse_analytics/views/meal_details/meal_details_plot_widget_ui.py
+      - pyside6-uic tse_analytics/views/meal_details/meal_details_settings_widget.ui -o tse_analytics/views/meal_details/meal_details_settings_widget_ui.py
 
   clean:
     desc: remove all build, test, coverage and Python artifacts

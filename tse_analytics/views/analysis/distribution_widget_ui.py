@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'distribution_widget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -58,7 +58,7 @@ class Ui_DistributionWidget(object):
 
         self.horizontalLayout.addWidget(self.factorSelector)
 
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer)
 
@@ -75,7 +75,7 @@ class Ui_DistributionWidget(object):
 
         self.canvas = MplCanvas(DistributionWidget)
         self.canvas.setObjectName(u"canvas")
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.canvas.sizePolicy().hasHeightForWidth())

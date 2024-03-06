@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'compare_runs_widget.ui'
+## Form generated from reading UI file 'meal_details_plot_widget.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.6.2
 ##
@@ -18,24 +18,24 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QSizePolicy,
     QSpacerItem, QVBoxLayout, QWidget)
 
-from tse_analytics.views.misc.MplCanvas import MplCanvas
+from tse_analytics.views.calo_details.calo_details_plot_view import CaloDetailsPlotView
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
-class Ui_CompareRunsWidget(object):
-    def setupUi(self, CompareRunsWidget):
-        if not CompareRunsWidget.objectName():
-            CompareRunsWidget.setObjectName(u"CompareRunsWidget")
-        CompareRunsWidget.resize(905, 684)
-        self.verticalLayout = QVBoxLayout(CompareRunsWidget)
+class Ui_MealDetailsPlotWidget(object):
+    def setupUi(self, MealDetailsPlotWidget):
+        if not MealDetailsPlotWidget.objectName():
+            MealDetailsPlotWidget.setObjectName(u"MealDetailsPlotWidget")
+        MealDetailsPlotWidget.resize(538, 607)
+        self.verticalLayout = QVBoxLayout(MealDetailsPlotWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.label = QLabel(CompareRunsWidget)
+        self.label = QLabel(MealDetailsPlotWidget)
         self.label.setObjectName(u"label")
 
         self.horizontalLayout.addWidget(self.label)
 
-        self.variableSelector = VariableSelector(CompareRunsWidget)
+        self.variableSelector = VariableSelector(MealDetailsPlotWidget)
         self.variableSelector.setObjectName(u"variableSelector")
 
         self.horizontalLayout.addWidget(self.variableSelector)
@@ -47,24 +47,24 @@ class Ui_CompareRunsWidget(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout)
 
-        self.canvas = MplCanvas(CompareRunsWidget)
-        self.canvas.setObjectName(u"canvas")
-        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.plotView = CaloDetailsPlotView(MealDetailsPlotWidget)
+        self.plotView.setObjectName(u"plotView")
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.canvas.sizePolicy().hasHeightForWidth())
-        self.canvas.setSizePolicy(sizePolicy)
+        sizePolicy.setHeightForWidth(self.plotView.sizePolicy().hasHeightForWidth())
+        self.plotView.setSizePolicy(sizePolicy)
 
-        self.verticalLayout.addWidget(self.canvas)
+        self.verticalLayout.addWidget(self.plotView)
 
 
-        self.retranslateUi(CompareRunsWidget)
+        self.retranslateUi(MealDetailsPlotWidget)
 
-        QMetaObject.connectSlotsByName(CompareRunsWidget)
+        QMetaObject.connectSlotsByName(MealDetailsPlotWidget)
     # setupUi
 
-    def retranslateUi(self, CompareRunsWidget):
-        CompareRunsWidget.setWindowTitle(QCoreApplication.translate("CompareRunsWidget", u"Compare Runs", None))
-        self.label.setText(QCoreApplication.translate("CompareRunsWidget", u"Variable:", None))
+    def retranslateUi(self, MealDetailsPlotWidget):
+        MealDetailsPlotWidget.setWindowTitle(QCoreApplication.translate("MealDetailsPlotWidget", u"Form", None))
+        self.label.setText(QCoreApplication.translate("MealDetailsPlotWidget", u"Variable:", None))
     # retranslateUi
 
