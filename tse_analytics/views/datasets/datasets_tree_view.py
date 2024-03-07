@@ -165,7 +165,7 @@ class DatasetsTreeView(QTreeView):
                 dlg = MealDetailsDialog(item.meal_details, self)
                 result = dlg.exec()
                 if result == QDialog.DialogCode.Accepted:
-                    Manager.data.append_fitting_results(item.meal_details, dlg.fitting_results)
+                    pass
 
     def minimumSizeHint(self):
         return QSize(200, 40)

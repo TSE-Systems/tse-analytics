@@ -17,7 +17,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QDoubleSpinBox, QFormLayout, QFrame,
     QGroupBox, QLabel, QScrollArea, QSizePolicy,
-    QSpinBox, QVBoxLayout, QWidget)
+    QTimeEdit, QVBoxLayout, QWidget)
 
 class Ui_MealDetailsSettingsWidget(object):
     def setupUi(self, MealDetailsSettingsWidget):
@@ -43,38 +43,35 @@ class Ui_MealDetailsSettingsWidget(object):
         self.groupBoxGeneralSettings.setObjectName(u"groupBoxGeneralSettings")
         self.formLayout = QFormLayout(self.groupBoxGeneralSettings)
         self.formLayout.setObjectName(u"formLayout")
-        self.iterationsLabel = QLabel(self.groupBoxGeneralSettings)
-        self.iterationsLabel.setObjectName(u"iterationsLabel")
+        self.intermealIntervalLabel = QLabel(self.groupBoxGeneralSettings)
+        self.intermealIntervalLabel.setObjectName(u"intermealIntervalLabel")
 
-        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.iterationsLabel)
+        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.intermealIntervalLabel)
 
-        self.iterationsSpinBox = QSpinBox(self.groupBoxGeneralSettings)
-        self.iterationsSpinBox.setObjectName(u"iterationsSpinBox")
-        self.iterationsSpinBox.setMaximum(1000000)
-        self.iterationsSpinBox.setValue(10000)
+        self.intermealIntervalTimeEdit = QTimeEdit(self.groupBoxGeneralSettings)
+        self.intermealIntervalTimeEdit.setObjectName(u"intermealIntervalTimeEdit")
 
-        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.iterationsSpinBox)
+        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.intermealIntervalTimeEdit)
 
-        self.predictionOffsetLabel = QLabel(self.groupBoxGeneralSettings)
-        self.predictionOffsetLabel.setObjectName(u"predictionOffsetLabel")
+        self.drinkingMinimumAmountLabel = QLabel(self.groupBoxGeneralSettings)
+        self.drinkingMinimumAmountLabel.setObjectName(u"drinkingMinimumAmountLabel")
 
-        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.predictionOffsetLabel)
+        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.drinkingMinimumAmountLabel)
 
-        self.predictionOffsetSpinBox = QSpinBox(self.groupBoxGeneralSettings)
-        self.predictionOffsetSpinBox.setObjectName(u"predictionOffsetSpinBox")
-        self.predictionOffsetSpinBox.setValue(90)
+        self.drinkingMinimumAmountDoubleSpinBox = QDoubleSpinBox(self.groupBoxGeneralSettings)
+        self.drinkingMinimumAmountDoubleSpinBox.setObjectName(u"drinkingMinimumAmountDoubleSpinBox")
 
-        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.predictionOffsetSpinBox)
+        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.drinkingMinimumAmountDoubleSpinBox)
 
-        self.flowLabel = QLabel(self.groupBoxGeneralSettings)
-        self.flowLabel.setObjectName(u"flowLabel")
+        self.feedingMinimumAmountLabel = QLabel(self.groupBoxGeneralSettings)
+        self.feedingMinimumAmountLabel.setObjectName(u"feedingMinimumAmountLabel")
 
-        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.flowLabel)
+        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.feedingMinimumAmountLabel)
 
-        self.flowDoubleSpinBox = QDoubleSpinBox(self.groupBoxGeneralSettings)
-        self.flowDoubleSpinBox.setObjectName(u"flowDoubleSpinBox")
+        self.feedingMinimumAmountDoubleSpinBox = QDoubleSpinBox(self.groupBoxGeneralSettings)
+        self.feedingMinimumAmountDoubleSpinBox.setObjectName(u"feedingMinimumAmountDoubleSpinBox")
 
-        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.flowDoubleSpinBox)
+        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.feedingMinimumAmountDoubleSpinBox)
 
 
         self.verticalLayout_2.addWidget(self.groupBoxGeneralSettings)
@@ -92,8 +89,9 @@ class Ui_MealDetailsSettingsWidget(object):
     def retranslateUi(self, MealDetailsSettingsWidget):
         MealDetailsSettingsWidget.setWindowTitle(QCoreApplication.translate("MealDetailsSettingsWidget", u"Form", None))
         self.groupBoxGeneralSettings.setTitle(QCoreApplication.translate("MealDetailsSettingsWidget", u"General", None))
-        self.iterationsLabel.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Iterations", None))
-        self.predictionOffsetLabel.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Prediction Offset", None))
-        self.flowLabel.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Flow [l/min]", None))
+        self.intermealIntervalLabel.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Intermeal Interval [hh:mm:ss]", None))
+        self.intermealIntervalTimeEdit.setDisplayFormat(QCoreApplication.translate("MealDetailsSettingsWidget", u"HH:mm:ss", None))
+        self.drinkingMinimumAmountLabel.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Drinking Minimum Amount [ml]", None))
+        self.feedingMinimumAmountLabel.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Feeding Minimum Amount [g]", None))
     # retranslateUi
 

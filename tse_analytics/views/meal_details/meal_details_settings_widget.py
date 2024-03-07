@@ -1,3 +1,4 @@
+from PySide6.QtCore import QTime
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.data.dataset import Dataset
@@ -15,19 +16,21 @@ class MealDetailsSettingsWidget(QWidget):
         self.dataset: Dataset | None = None
 
     def set_settings(self, meal_details_settings: MealDetailsSettings):
-        self.ui.iterationsSpinBox.setValue(meal_details_settings.iterations)
-        self.ui.predictionOffsetSpinBox.setValue(meal_details_settings.prediction_offset)
+        time = QTime(
+            meal_details_settings.intermeal_interval.hour,
+            meal_details_settings.intermeal_interval.minute,
+            meal_details_settings.intermeal_interval.second,
+        )
+        self.ui.intermealIntervalTimeEdit.setTime(time)
+        self.ui.drinkingMinimumAmountDoubleSpinBox.setValue(meal_details_settings.drinking_minimum_amount)
+        self.ui.feedingMinimumAmountDoubleSpinBox.setValue(meal_details_settings.feeding_minimum_amount)
 
     def set_data(self, dataset: Dataset):
         self.dataset = dataset
-        flow_value = 0.5
-        if "Flow" in dataset.original_df.columns:
-            flow_value = dataset.original_df.iloc[1].at["Flow"]
-        self.ui.flowDoubleSpinBox.setValue(flow_value)
 
     def get_meal_details_settings(self) -> MealDetailsSettings:
-        iterations = self.ui.iterationsSpinBox.value()
-        prediction_offset = self.ui.predictionOffsetSpinBox.value()
-        flow = self.ui.flowDoubleSpinBox.value()
+        intermeal_interval = self.ui.intermealIntervalTimeEdit.time().toPython()
+        drinking_minimum_amount = self.ui.drinkingMinimumAmountDoubleSpinBox.value()
+        feeding_minimum_amount = self.ui.feedingMinimumAmountDoubleSpinBox.value()
 
-        return MealDetailsSettings(iterations, prediction_offset, flow)
+        return MealDetailsSettings(intermeal_interval, drinking_minimum_amount, feeding_minimum_amount)

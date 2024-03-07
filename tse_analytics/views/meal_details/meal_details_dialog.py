@@ -91,7 +91,7 @@ class MealDetailsDialog(QDialog):
         settings.setValue("MealDetailsDialog/Geometry", self.saveGeometry())
 
         meal_details_settings = self.meal_details_settings_widget.get_meal_details_settings()
-        # settings.setValue("MealDetailsSettings", calo_details_settings)
+        settings.setValue("MealDetailsSettings", meal_details_settings)
 
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Escape:

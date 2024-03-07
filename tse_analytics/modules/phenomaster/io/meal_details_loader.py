@@ -19,6 +19,15 @@ class MealDetailsLoader:
         return None
 
     @staticmethod
+    def __add_cumulative_columns(df: pd.DataFrame, origin_name: str, variables: dict[str, Variable]):
+        cols = [col for col in df.columns if origin_name in col]
+        for col in cols:
+            cumulative_col_name = col + "C"
+            df[cumulative_col_name] = df.groupby("Box", observed=False)[col].transform(pd.Series.cumsum)
+            var = Variable(name=cumulative_col_name, unit=variables[col].unit, description=f"{col} (cumulative)")
+            variables[var.name] = var
+
+    @staticmethod
     def __load_from_csv(path: Path, dataset: Dataset):
         columns_line = None
         with open(path) as f:
@@ -100,6 +109,17 @@ class MealDetailsLoader:
             new_df = pd.concat([new_df, box_df], ignore_index=True)
 
         new_df = new_df.sort_values(["Box", "DateTime"])
+        new_df.reset_index(drop=True, inplace=True)
+
+        # Calculate cumulative values
+        if drink1_present:
+            MealDetailsLoader.__add_cumulative_columns(new_df, "Drink1", variables)
+        if feed1_present:
+            MealDetailsLoader.__add_cumulative_columns(new_df, "Feed1", variables)
+        if drink2_present:
+            MealDetailsLoader.__add_cumulative_columns(new_df, "Drink2", variables)
+        if feed2_present:
+            MealDetailsLoader.__add_cumulative_columns(new_df, "Feed2", variables)
 
         # Calo Details sampling interval
         sampling_interval = new_df.iloc[1].at["DateTime"] - new_df.iloc[0].at["DateTime"]

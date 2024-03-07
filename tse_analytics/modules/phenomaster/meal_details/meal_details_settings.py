@@ -1,19 +1,22 @@
+from datetime import time
+
+
 class MealDetailsSettings:
     def __init__(
         self,
-        iterations: int,
-        prediction_offset: int,
-        flow: float,
+        intermeal_interval: time,
+        drinking_minimum_amount: float,
+        feeding_minimum_amount: float,
     ):
-        self.iterations = iterations
-        self.prediction_offset = prediction_offset
-        self.flow = flow
+        self.intermeal_interval = intermeal_interval
+        self.drinking_minimum_amount = drinking_minimum_amount
+        self.feeding_minimum_amount = feeding_minimum_amount
 
 
 def get_default_settings():
     settings = MealDetailsSettings(
-        10000,
-        50,
-        0.5,
+        time(minute=10),
+        0.1,
+        0.1,
     )
     return settings
