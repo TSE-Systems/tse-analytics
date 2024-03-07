@@ -4,7 +4,7 @@ import pandas as pd
 
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Variable
-from tse_analytics.modules.phenomaster.data.meal_details import MealDetails
+from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
 
 DELIMITER = ";"
 DECIMAL = "."
@@ -110,6 +110,12 @@ class MealDetailsLoader:
 
         new_df = new_df.sort_values(["Box", "DateTime"])
         new_df.reset_index(drop=True, inplace=True)
+
+        # convert categorical types
+        new_df = new_df.astype({
+            "Animal": "category",
+            "Box": "category",
+        })
 
         # Calculate cumulative values
         if drink1_present:

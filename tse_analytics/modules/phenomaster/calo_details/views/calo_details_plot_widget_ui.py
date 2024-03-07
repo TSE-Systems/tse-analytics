@@ -18,7 +18,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QSizePolicy,
     QSpacerItem, QVBoxLayout, QWidget)
 
-from tse_analytics.views.calo_details.calo_details_plot_view import CaloDetailsPlotView
+from tse_analytics.modules.phenomaster.calo_details.views.calo_details_plot_view import CaloDetailsPlotView
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 class Ui_CaloDetailsPlotWidget(object):

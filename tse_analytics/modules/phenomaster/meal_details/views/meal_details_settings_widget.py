@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.modules.phenomaster.meal_details.meal_details_settings import MealDetailsSettings
-from tse_analytics.views.meal_details.meal_details_settings_widget_ui import Ui_MealDetailsSettingsWidget
+from tse_analytics.modules.phenomaster.meal_details.views.meal_details_settings_widget_ui import Ui_MealDetailsSettingsWidget
 
 
 class MealDetailsSettingsWidget(QWidget):

@@ -2,14 +2,14 @@ import pandas as pd
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.data.shared import Variable
-from tse_analytics.views.meal_details.meal_details_plot_widget_ui import Ui_MealDetailsPlotWidget
+from tse_analytics.modules.phenomaster.calo_details.views.calo_details_plot_widget_ui import Ui_CaloDetailsPlotWidget
 
 
-class MealDetailsPlotWidget(QWidget):
+class CaloDetailsPlotWidget(QWidget):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
 
-        self.ui = Ui_MealDetailsPlotWidget()
+        self.ui = Ui_CaloDetailsPlotWidget()
         self.ui.setupUi(self)
 
         self.ui.variableSelector.currentTextChanged.connect(self.__variable_changed)

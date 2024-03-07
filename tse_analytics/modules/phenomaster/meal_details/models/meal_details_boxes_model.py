@@ -1,6 +1,6 @@
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
-from tse_analytics.modules.phenomaster.data.meal_details_box import MealDetailsBox
+from tse_analytics.modules.phenomaster.meal_details.data.meal_details_box import MealDetailsBox
 
 
 class MealDetailsBoxesModel(QAbstractTableModel):

@@ -2,14 +2,14 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QIcon
 
 from tse_analytics.core.models.tree_item import TreeItem
-from tse_analytics.modules.phenomaster.data.calo_details import CaloDetails
+from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
 
 
-class CaloDetailsTreeItem(TreeItem):
-    def __init__(self, calo_details: CaloDetails):
-        super().__init__(calo_details.name)
+class MealDetailsTreeItem(TreeItem):
+    def __init__(self, meal_details: MealDetails):
+        super().__init__(meal_details.name)
 
-        self.calo_details = calo_details
+        self.meal_details = meal_details
 
     @property
     def icon(self):
@@ -21,4 +21,4 @@ class CaloDetailsTreeItem(TreeItem):
 
     @property
     def tooltip(self):
-        return self.calo_details.name
+        return self.meal_details.name

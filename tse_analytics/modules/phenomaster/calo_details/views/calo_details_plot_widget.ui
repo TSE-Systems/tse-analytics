@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MealDetailsPlotWidget</class>
- <widget class="QWidget" name="MealDetailsPlotWidget">
+ <class>CaloDetailsPlotWidget</class>
+ <widget class="QWidget" name="CaloDetailsPlotWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -62,7 +62,7 @@
   <customwidget>
    <class>CaloDetailsPlotView</class>
    <extends>QWidget</extends>
-   <header>tse_analytics.views.calo_details.calo_details_plot_view</header>
+   <header>tse_analytics.modules.phenomaster.calo_details.views.calo_details_plot_view</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

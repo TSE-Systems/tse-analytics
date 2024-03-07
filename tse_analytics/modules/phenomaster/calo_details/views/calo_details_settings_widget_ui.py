@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (QApplication, QDoubleSpinBox, QFormLayout, QFrame
     QGroupBox, QLabel, QScrollArea, QSizePolicy,
     QSpinBox, QVBoxLayout, QWidget)
 
-from tse_analytics.views.calo_details.calo_details_gas_settings_widget import CaloDetailsGasSettingsWidget
+from tse_analytics.modules.phenomaster.calo_details.views.calo_details_gas_settings_widget import CaloDetailsGasSettingsWidget
 
 class Ui_CaloDetailsSettingsWidget(object):
     def setupUi(self, CaloDetailsSettingsWidget):

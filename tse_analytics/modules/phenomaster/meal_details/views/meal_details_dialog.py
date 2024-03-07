@@ -5,14 +5,14 @@ from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
 from PySide6.QtWidgets import QDialog, QWidget
 from loguru import logger
 
-from tse_analytics.modules.phenomaster.data.meal_details import MealDetails
-from tse_analytics.modules.phenomaster.data.meal_details_box import MealDetailsBox
+from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
+from tse_analytics.modules.phenomaster.meal_details.data.meal_details_box import MealDetailsBox
 from tse_analytics.modules.phenomaster.meal_details.meal_details_settings import get_default_settings
-from tse_analytics.views.meal_details.meal_details_box_selector import MealDetailsBoxSelector
-from tse_analytics.views.meal_details.meal_details_dialog_ui import Ui_MealDetailsDialog
-from tse_analytics.views.meal_details.meal_details_plot_widget import MealDetailsPlotWidget
-from tse_analytics.views.meal_details.meal_details_settings_widget import MealDetailsSettingsWidget
-from tse_analytics.views.meal_details.meal_details_table_view import MealDetailsTableView
+from tse_analytics.modules.phenomaster.meal_details.views.meal_details_box_selector import MealDetailsBoxSelector
+from tse_analytics.modules.phenomaster.meal_details.views.meal_details_dialog_ui import Ui_MealDetailsDialog
+from tse_analytics.modules.phenomaster.meal_details.views.meal_details_plot_widget import MealDetailsPlotWidget
+from tse_analytics.modules.phenomaster.meal_details.views.meal_details_settings_widget import MealDetailsSettingsWidget
+from tse_analytics.modules.phenomaster.meal_details.views.meal_details_table_view import MealDetailsTableView
 from tse_analytics.views.misc.toast import Toast
 
 

@@ -22,7 +22,7 @@ from tse_analytics.core.messaging.messages import (
 )
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.modules.phenomaster.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
-from tse_analytics.modules.phenomaster.data.calo_details import CaloDetails
+from tse_analytics.modules.phenomaster.calo_details.data.calo_details import CaloDetails
 
 
 class DataHub:

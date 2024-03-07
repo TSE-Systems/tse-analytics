@@ -5,7 +5,7 @@ import pandas as pd
 
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Variable
-from tse_analytics.modules.phenomaster.data.calo_details import CaloDetails
+from tse_analytics.modules.phenomaster.calo_details.data.calo_details import CaloDetails
 
 DELIMITER = ";"
 DECIMAL = "."

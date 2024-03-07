@@ -4,8 +4,8 @@ import pandas as pd
 
 from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.shared import Animal, Factor, Group, Variable
-from tse_analytics.modules.phenomaster.data.calo_details import CaloDetails
-from tse_analytics.modules.phenomaster.data.meal_details import MealDetails
+from tse_analytics.modules.phenomaster.calo_details.data.calo_details import CaloDetails
+from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
 
 
 class Dataset:

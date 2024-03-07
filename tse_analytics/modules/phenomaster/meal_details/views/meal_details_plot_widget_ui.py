@@ -18,7 +18,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QSizePolicy,
     QSpacerItem, QVBoxLayout, QWidget)
 
-from tse_analytics.views.calo_details.calo_details_plot_view import CaloDetailsPlotView
+from tse_analytics.modules.phenomaster.meal_details.views.meal_details_plot_view import MealDetailsPlotView
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 class Ui_MealDetailsPlotWidget(object):
@@ -47,7 +47,7 @@ class Ui_MealDetailsPlotWidget(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout)
 
-        self.plotView = CaloDetailsPlotView(MealDetailsPlotWidget)
+        self.plotView = MealDetailsPlotView(MealDetailsPlotWidget)
         self.plotView.setObjectName(u"plotView")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
