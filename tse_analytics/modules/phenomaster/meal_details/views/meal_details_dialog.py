@@ -1,5 +1,6 @@
 import timeit
 
+import pandas as pd
 from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
 from PySide6.QtWidgets import QDialog, QWidget
@@ -7,7 +8,8 @@ from loguru import logger
 
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details_box import MealDetailsBox
-from tse_analytics.modules.phenomaster.meal_details.meal_details_settings import get_default_settings
+from tse_analytics.modules.phenomaster.meal_details.meal_details_processor import process_box
+from tse_analytics.modules.phenomaster.meal_details.meal_details_settings import MealDetailsSettings
 from tse_analytics.modules.phenomaster.meal_details.views.meal_details_box_selector import MealDetailsBoxSelector
 from tse_analytics.modules.phenomaster.meal_details.views.meal_details_dialog_ui import Ui_MealDetailsDialog
 from tse_analytics.modules.phenomaster.meal_details.views.meal_details_plot_widget import MealDetailsPlotWidget
@@ -41,7 +43,7 @@ class MealDetailsDialog(QDialog):
 
         self.ui.toolBox.removeItem(0)
 
-        self.ui.toolButtonCalculate.clicked.connect(self.__run_calculate)
+        self.ui.toolButtonCalculate.clicked.connect(self.__calculate)
         self.ui.toolButtonResetSettings.clicked.connect(self.__reset_settings)
 
         self.meal_details_box_selector = MealDetailsBoxSelector(self.__filter_boxes)
@@ -49,9 +51,9 @@ class MealDetailsDialog(QDialog):
         self.ui.toolBox.addItem(self.meal_details_box_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Boxes")
 
         try:
-            meal_details_settings = settings.value("MealDetailsSettings", get_default_settings())
+            meal_details_settings = settings.value("MealDetailsSettings", MealDetailsSettings.get_default())
         except Exception:
-            meal_details_settings = get_default_settings()
+            meal_details_settings = MealDetailsSettings.get_default()
 
         self.meal_details_settings_widget = MealDetailsSettingsWidget()
         self.meal_details_settings_widget.set_settings(meal_details_settings)
@@ -77,12 +79,26 @@ class MealDetailsDialog(QDialog):
         self.meal_details_plot_widget.set_data(df)
 
     def __reset_settings(self):
-        meal_details_settings = get_default_settings()
+        meal_details_settings = MealDetailsSettings.get_default()
         self.meal_details_settings_widget.set_settings(meal_details_settings)
 
-    def __run_calculate(self):
-        meal_details_settings = self.meal_details_settings_widget.get_meal_details_settings()
+    def __calculate(self):
         tic = timeit.default_timer()
+
+        meal_details_settings = self.meal_details_settings_widget.get_meal_details_settings()
+        all_box_numbers = list(self.meal_details.raw_df["Box"].unique())
+        new_df = None
+        for box_number in all_box_numbers:
+            df = self.meal_details.raw_df[self.meal_details.raw_df["Box"] == box_number]
+            result = process_box(box_number, df, meal_details_settings)
+            if new_df is None:
+                new_df = result
+            else:
+                new_df = pd.concat([new_df, result], ignore_index=True)
+
+        self.meal_details.raw_df = new_df
+        self.meal_details_table_view.set_data(new_df)
+
         logger.info(f"Processing complete: {timeit.default_timer() - tic} sec")
         Toast(text="Processing complete.", parent=self, duration=4000).show_toast()
 

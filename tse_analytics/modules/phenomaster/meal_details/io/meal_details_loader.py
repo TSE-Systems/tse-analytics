@@ -23,7 +23,11 @@ class MealDetailsLoader:
         cols = [col for col in df.columns if origin_name in col]
         for col in cols:
             cumulative_col_name = col + "C"
-            df[cumulative_col_name] = df.groupby("Box", observed=False)[col].transform(pd.Series.cumsum)
+            df.insert(
+                df.columns.get_loc(col) + 1,
+                cumulative_col_name,
+                df.groupby("Box", observed=False)[col].transform(pd.Series.cumsum),
+            )
             var = Variable(name=cumulative_col_name, unit=variables[col].unit, description=f"{col} (cumulative)")
             variables[var.name] = var
 

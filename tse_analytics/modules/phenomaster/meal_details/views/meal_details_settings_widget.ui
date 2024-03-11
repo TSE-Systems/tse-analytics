@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>546</width>
+    <width>320</width>
     <height>585</height>
    </rect>
   </property>
@@ -42,7 +42,7 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>538</width>
+        <width>312</width>
         <height>577</height>
        </rect>
       </property>
@@ -71,7 +71,7 @@
           <item row="0" column="0">
            <widget class="QLabel" name="intermealIntervalLabel">
             <property name="text">
-             <string>Intermeal Interval [hh:mm:ss]</string>
+             <string>Inter-meal Interval [hh:mm:ss]</string>
             </property>
            </widget>
           </item>
@@ -90,7 +90,14 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QDoubleSpinBox" name="drinkingMinimumAmountDoubleSpinBox"/>
+           <widget class="QDoubleSpinBox" name="drinkingMinimumAmountDoubleSpinBox">
+            <property name="decimals">
+             <number>3</number>
+            </property>
+            <property name="singleStep">
+             <double>0.001000000000000</double>
+            </property>
+           </widget>
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="feedingMinimumAmountLabel">
@@ -100,7 +107,14 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QDoubleSpinBox" name="feedingMinimumAmountDoubleSpinBox"/>
+           <widget class="QDoubleSpinBox" name="feedingMinimumAmountDoubleSpinBox">
+            <property name="decimals">
+             <number>3</number>
+            </property>
+            <property name="singleStep">
+             <double>0.001000000000000</double>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>

@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QDialog, QWidget
 
 from tse_analytics.modules.phenomaster.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
 from tse_analytics.modules.phenomaster.calo_details.calo_details_processor import process_box
-from tse_analytics.modules.phenomaster.calo_details.calo_details_settings import get_default_settings
+from tse_analytics.modules.phenomaster.calo_details.calo_details_settings import CaloDetailsSettings
 from tse_analytics.modules.phenomaster.calo_details.fitting_params import FittingParams
 from tse_analytics.modules.phenomaster.calo_details.data.calo_details import CaloDetails
 from tse_analytics.modules.phenomaster.calo_details.data.calo_details_box import CaloDetailsBox
@@ -49,7 +49,7 @@ class CaloDetailsDialog(QDialog):
 
         self.ui.toolBox.removeItem(0)
 
-        self.ui.toolButtonCalculate.clicked.connect(self.__run_calculate)
+        self.ui.toolButtonCalculate.clicked.connect(self.__calculate)
         self.ui.toolButtonResetSettings.clicked.connect(self.__reset_settings)
 
         self.calo_details_box_selector = CaloDetailsBoxSelector(self.__filter_boxes)
@@ -61,9 +61,9 @@ class CaloDetailsDialog(QDialog):
         self.ui.toolBox.addItem(self.calo_details_bin_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Bins")
 
         try:
-            calo_details_settings = settings.value("CaloDetailsSettings", get_default_settings())
+            calo_details_settings = settings.value("CaloDetailsSettings", CaloDetailsSettings.get_default())
         except Exception:
-            calo_details_settings = get_default_settings()
+            calo_details_settings = CaloDetailsSettings.get_default()
 
         self.calo_details_settings_widget = CaloDetailsSettingsWidget()
         self.calo_details_settings_widget.set_settings(calo_details_settings)
@@ -112,10 +112,10 @@ class CaloDetailsDialog(QDialog):
         self.calo_details_test_fit_widget.set_data(df)
 
     def __reset_settings(self):
-        calo_details_settings = get_default_settings()
+        calo_details_settings = CaloDetailsSettings.get_default()
         self.calo_details_settings_widget.set_settings(calo_details_settings)
 
-    def __run_calculate(self):
+    def __calculate(self):
         calo_details_settings = self.calo_details_settings_widget.get_calo_details_settings()
 
         # remove last bin

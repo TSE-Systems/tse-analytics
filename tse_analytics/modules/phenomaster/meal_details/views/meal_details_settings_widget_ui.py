@@ -23,7 +23,7 @@ class Ui_MealDetailsSettingsWidget(object):
     def setupUi(self, MealDetailsSettingsWidget):
         if not MealDetailsSettingsWidget.objectName():
             MealDetailsSettingsWidget.setObjectName(u"MealDetailsSettingsWidget")
-        MealDetailsSettingsWidget.resize(546, 585)
+        MealDetailsSettingsWidget.resize(320, 585)
         self.verticalLayout = QVBoxLayout(MealDetailsSettingsWidget)
         self.verticalLayout.setSpacing(4)
         self.verticalLayout.setObjectName(u"verticalLayout")
@@ -34,7 +34,7 @@ class Ui_MealDetailsSettingsWidget(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 538, 577))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 312, 577))
         self.verticalLayout_2 = QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_2.setSpacing(2)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
@@ -60,6 +60,8 @@ class Ui_MealDetailsSettingsWidget(object):
 
         self.drinkingMinimumAmountDoubleSpinBox = QDoubleSpinBox(self.groupBoxGeneralSettings)
         self.drinkingMinimumAmountDoubleSpinBox.setObjectName(u"drinkingMinimumAmountDoubleSpinBox")
+        self.drinkingMinimumAmountDoubleSpinBox.setDecimals(3)
+        self.drinkingMinimumAmountDoubleSpinBox.setSingleStep(0.001000000000000)
 
         self.formLayout.setWidget(1, QFormLayout.FieldRole, self.drinkingMinimumAmountDoubleSpinBox)
 
@@ -70,6 +72,8 @@ class Ui_MealDetailsSettingsWidget(object):
 
         self.feedingMinimumAmountDoubleSpinBox = QDoubleSpinBox(self.groupBoxGeneralSettings)
         self.feedingMinimumAmountDoubleSpinBox.setObjectName(u"feedingMinimumAmountDoubleSpinBox")
+        self.feedingMinimumAmountDoubleSpinBox.setDecimals(3)
+        self.feedingMinimumAmountDoubleSpinBox.setSingleStep(0.001000000000000)
 
         self.formLayout.setWidget(2, QFormLayout.FieldRole, self.feedingMinimumAmountDoubleSpinBox)
 
@@ -89,7 +93,7 @@ class Ui_MealDetailsSettingsWidget(object):
     def retranslateUi(self, MealDetailsSettingsWidget):
         MealDetailsSettingsWidget.setWindowTitle(QCoreApplication.translate("MealDetailsSettingsWidget", u"Form", None))
         self.groupBoxGeneralSettings.setTitle(QCoreApplication.translate("MealDetailsSettingsWidget", u"General", None))
-        self.intermealIntervalLabel.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Intermeal Interval [hh:mm:ss]", None))
+        self.intermealIntervalLabel.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Inter-meal Interval [hh:mm:ss]", None))
         self.intermealIntervalTimeEdit.setDisplayFormat(QCoreApplication.translate("MealDetailsSettingsWidget", u"HH:mm:ss", None))
         self.drinkingMinimumAmountLabel.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Drinking Minimum Amount [ml]", None))
         self.feedingMinimumAmountLabel.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Feeding Minimum Amount [g]", None))
