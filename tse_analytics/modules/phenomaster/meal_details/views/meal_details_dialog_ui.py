@@ -32,13 +32,12 @@ class Ui_MealDetailsDialog(object):
         self.toolbarLayout.setObjectName(u"toolbarLayout")
         self.toolButtonCalculate = QToolButton(MealDetailsDialog)
         self.toolButtonCalculate.setObjectName(u"toolButtonCalculate")
+        icon = QIcon()
+        icon.addFile(u":/icons/icons8-scales-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.toolButtonCalculate.setIcon(icon)
+        self.toolButtonCalculate.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
         self.toolbarLayout.addWidget(self.toolButtonCalculate)
-
-        self.toolButtonResetSettings = QToolButton(MealDetailsDialog)
-        self.toolButtonResetSettings.setObjectName(u"toolButtonResetSettings")
-
-        self.toolbarLayout.addWidget(self.toolButtonResetSettings)
 
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -46,9 +45,9 @@ class Ui_MealDetailsDialog(object):
 
         self.toolButtonHelp = QToolButton(MealDetailsDialog)
         self.toolButtonHelp.setObjectName(u"toolButtonHelp")
-        icon = QIcon()
-        icon.addFile(u":/icons/icons8-help-16.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.toolButtonHelp.setIcon(icon)
+        icon1 = QIcon()
+        icon1.addFile(u":/icons/icons8-help-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.toolButtonHelp.setIcon(icon1)
 
         self.toolbarLayout.addWidget(self.toolButtonHelp)
 
@@ -98,7 +97,6 @@ class Ui_MealDetailsDialog(object):
     def retranslateUi(self, MealDetailsDialog):
         MealDetailsDialog.setWindowTitle(QCoreApplication.translate("MealDetailsDialog", u"Meal Details", None))
         self.toolButtonCalculate.setText(QCoreApplication.translate("MealDetailsDialog", u"Calculate", None))
-        self.toolButtonResetSettings.setText(QCoreApplication.translate("MealDetailsDialog", u"Reset settings", None))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("MealDetailsDialog", u"Page 1", None))
     # retranslateUi
 

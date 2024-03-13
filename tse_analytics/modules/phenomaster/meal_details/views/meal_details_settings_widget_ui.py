@@ -16,8 +16,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QDoubleSpinBox, QFormLayout, QFrame,
-    QGroupBox, QLabel, QScrollArea, QSizePolicy,
-    QTimeEdit, QVBoxLayout, QWidget)
+    QGroupBox, QLabel, QPushButton, QScrollArea,
+    QSizePolicy, QTimeEdit, QVBoxLayout, QWidget)
 
 class Ui_MealDetailsSettingsWidget(object):
     def setupUi(self, MealDetailsSettingsWidget):
@@ -80,6 +80,11 @@ class Ui_MealDetailsSettingsWidget(object):
 
         self.verticalLayout_2.addWidget(self.groupBoxGeneralSettings)
 
+        self.pushButtonResetSettings = QPushButton(self.scrollAreaWidgetContents)
+        self.pushButtonResetSettings.setObjectName(u"pushButtonResetSettings")
+
+        self.verticalLayout_2.addWidget(self.pushButtonResetSettings)
+
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
 
         self.verticalLayout.addWidget(self.scrollArea)
@@ -97,5 +102,6 @@ class Ui_MealDetailsSettingsWidget(object):
         self.intermealIntervalTimeEdit.setDisplayFormat(QCoreApplication.translate("MealDetailsSettingsWidget", u"HH:mm:ss", None))
         self.drinkingMinimumAmountLabel.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Drinking Minimum Amount [ml]", None))
         self.feedingMinimumAmountLabel.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Feeding Minimum Amount [g]", None))
+        self.pushButtonResetSettings.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Reset Settings", None))
     # retranslateUi
 

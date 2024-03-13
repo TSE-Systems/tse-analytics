@@ -15,7 +15,13 @@ class MealDetailsSettingsWidget(QWidget):
         self.ui = Ui_MealDetailsSettingsWidget()
         self.ui.setupUi(self)
 
+        self.ui.pushButtonResetSettings.clicked.connect(self.__reset_settings)
+
         self.dataset: Dataset | None = None
+
+    def __reset_settings(self):
+        meal_details_settings = MealDetailsSettings.get_default()
+        self.set_settings(meal_details_settings)
 
     def set_settings(self, meal_details_settings: MealDetailsSettings):
         time = QTime(

@@ -48,6 +48,7 @@ tasks:
       - pyside6-uic tse_analytics/modules/phenomaster/meal_details/views/meal_details_dialog.ui -o tse_analytics/modules/phenomaster/meal_details/views/meal_details_dialog_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/meal_details/views/meal_details_plot_widget.ui -o tse_analytics/modules/phenomaster/meal_details/views/meal_details_plot_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/meal_details/views/meal_details_settings_widget.ui -o tse_analytics/modules/phenomaster/meal_details/views/meal_details_settings_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/meal_details/views/meal_episodes_plot_widget.ui -o tse_analytics/modules/phenomaster/meal_details/views/meal_episodes_plot_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/calo_details/views/calo_details_dialog.ui -o tse_analytics/modules/phenomaster/calo_details/views/calo_details_dialog_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/calo_details/views/calo_details_plot_widget.ui -o tse_analytics/modules/phenomaster/calo_details/views/calo_details_plot_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/calo_details/views/calo_details_settings_widget.ui -o tse_analytics/modules/phenomaster/calo_details/views/calo_details_settings_widget_ui.py

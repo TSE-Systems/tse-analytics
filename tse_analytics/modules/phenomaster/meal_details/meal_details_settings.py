@@ -15,8 +15,8 @@ class MealDetailsSettings:
     @staticmethod
     def get_default():
         settings = MealDetailsSettings(
-            time(minute=30),
-            0.1,
-            0.1,
+            time(minute=5),
+            0.05,
+            0.05,
         )
         return settings

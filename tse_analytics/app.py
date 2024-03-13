@@ -33,6 +33,7 @@ pd.options.mode.copy_on_write = True
 pd.set_option("colheader_justify", "center")  # FOR TABLE <th>
 
 sns.set_theme(style="whitegrid")
+sns.set_color_codes("pastel")
 
 
 class App(QApplication):
