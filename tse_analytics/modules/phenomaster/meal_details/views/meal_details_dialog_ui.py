@@ -97,8 +97,8 @@ class Ui_MealDetailsDialog(object):
 
     def retranslateUi(self, MealDetailsDialog):
         MealDetailsDialog.setWindowTitle(QCoreApplication.translate("MealDetailsDialog", u"Meal Details", None))
-        self.toolButtonCalculate.setText(QCoreApplication.translate("MealDetailsDialog", u"Calculate meal sessions", None))
-        self.toolButtonResetSettings.setText(QCoreApplication.translate("MealDetailsDialog", u"Reset default settings", None))
+        self.toolButtonCalculate.setText(QCoreApplication.translate("MealDetailsDialog", u"Calculate", None))
+        self.toolButtonResetSettings.setText(QCoreApplication.translate("MealDetailsDialog", u"Reset settings", None))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("MealDetailsDialog", u"Page 1", None))
     # retranslateUi
 

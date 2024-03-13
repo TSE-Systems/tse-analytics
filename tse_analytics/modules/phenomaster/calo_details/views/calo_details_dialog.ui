@@ -46,7 +46,7 @@
      <item>
       <widget class="QToolButton" name="toolButtonHelp">
        <property name="icon">
-        <iconset resource="../../../resources/resources.qrc">
+        <iconset resource="../../../../../resources/resources.qrc">
          <normaloff>:/icons/icons8-help-16.png</normaloff>:/icons/icons8-help-16.png</iconset>
        </property>
       </widget>
@@ -78,8 +78,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>871</width>
-         <height>745</height>
+         <width>870</width>
+         <height>746</height>
         </rect>
        </property>
        <attribute name="label">
@@ -102,7 +102,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../../../resources/resources.qrc"/>
+  <include location="../../../../../resources/resources.qrc"/>
  </resources>
  <connections>
   <connection>

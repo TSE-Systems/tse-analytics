@@ -32,14 +32,17 @@ class MealDetailsDialog(QDialog):
 
         self.meal_details = meal_details
 
-        self.meal_details_table_view = MealDetailsTableView()
-        self.meal_details_table_view.set_data(meal_details.raw_df)
-        self.ui.tabWidget.addTab(self.meal_details_table_view, "Data")
+        self.meal_events_table_view = MealDetailsTableView()
+        self.meal_events_table_view.set_data(meal_details.raw_df)
+        self.ui.tabWidget.addTab(self.meal_events_table_view, "Meal Events")
 
         self.meal_details_plot_widget = MealDetailsPlotWidget()
         self.meal_details_plot_widget.set_variables(meal_details.variables)
         # self.calo_details_plot_widget.set_data(calo_details.raw_df)
         self.ui.tabWidget.addTab(self.meal_details_plot_widget, "Plot")
+
+        self.meal_episodes_table_view = MealDetailsTableView()
+        self.ui.tabWidget.addTab(self.meal_episodes_table_view, "Meal Episodes")
 
         self.ui.toolBox.removeItem(0)
 
@@ -48,7 +51,7 @@ class MealDetailsDialog(QDialog):
 
         self.meal_details_box_selector = MealDetailsBoxSelector(self.__filter_boxes)
         self.meal_details_box_selector.set_data(meal_details.dataset)
-        self.ui.toolBox.addItem(self.meal_details_box_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Boxes")
+        self.ui.toolBox.addItem(self.meal_details_box_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Animals")
 
         try:
             meal_details_settings = settings.value("MealDetailsSettings", MealDetailsSettings.get_default())
@@ -75,7 +78,7 @@ class MealDetailsDialog(QDialog):
             box_numbers = [b.box for b in self.selected_boxes]
             df = df[df["Box"].isin(box_numbers)]
 
-        self.meal_details_table_view.set_data(df)
+        self.meal_events_table_view.set_data(df)
         self.meal_details_plot_widget.set_data(df)
 
     def __reset_settings(self):
@@ -85,19 +88,33 @@ class MealDetailsDialog(QDialog):
     def __calculate(self):
         tic = timeit.default_timer()
 
+        box_to_animal_map = {}
+        for animal in self.meal_details.dataset.animals.values():
+            box_to_animal_map[animal.box] = animal.id
+
         meal_details_settings = self.meal_details_settings_widget.get_meal_details_settings()
         all_box_numbers = list(self.meal_details.raw_df["Box"].unique())
-        new_df = None
+        all_events_df = None
+        all_episodes_df = None
         for box_number in all_box_numbers:
             df = self.meal_details.raw_df[self.meal_details.raw_df["Box"] == box_number]
-            result = process_box(box_number, df, meal_details_settings)
-            if new_df is None:
-                new_df = result
-            else:
-                new_df = pd.concat([new_df, result], ignore_index=True)
+            meal_events_df, meal_episodes_df = process_box(
+                box_number, box_to_animal_map[box_number], df, meal_details_settings
+            )
 
-        self.meal_details.raw_df = new_df
-        self.meal_details_table_view.set_data(new_df)
+            if all_events_df is None:
+                all_events_df = meal_events_df
+            else:
+                all_events_df = pd.concat([all_events_df, meal_events_df], ignore_index=True)
+
+            if all_episodes_df is None:
+                all_episodes_df = meal_episodes_df
+            else:
+                all_episodes_df = pd.concat([all_episodes_df, meal_episodes_df], ignore_index=True)
+
+        self.meal_details.raw_df = all_events_df
+        self.meal_events_table_view.set_data(all_events_df)
+        self.meal_episodes_table_view.set_data(all_episodes_df)
 
         logger.info(f"Processing complete: {timeit.default_timer() - tic} sec")
         Toast(text="Processing complete.", parent=self, duration=4000).show_toast()

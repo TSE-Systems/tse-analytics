@@ -19,14 +19,14 @@
      <item>
       <widget class="QToolButton" name="toolButtonCalculate">
        <property name="text">
-        <string>Calculate meal sessions</string>
+        <string>Calculate</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QToolButton" name="toolButtonResetSettings">
        <property name="text">
-        <string>Reset default settings</string>
+        <string>Reset settings</string>
        </property>
       </widget>
      </item>
@@ -46,7 +46,7 @@
      <item>
       <widget class="QToolButton" name="toolButtonHelp">
        <property name="icon">
-        <iconset resource="../../../resources/resources.qrc">
+        <iconset resource="../../../../../resources/resources.qrc">
          <normaloff>:/icons/icons8-help-16.png</normaloff>:/icons/icons8-help-16.png</iconset>
        </property>
       </widget>
@@ -102,7 +102,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../../../resources/resources.qrc"/>
+  <include location="../../../../../resources/resources.qrc"/>
  </resources>
  <connections>
   <connection>

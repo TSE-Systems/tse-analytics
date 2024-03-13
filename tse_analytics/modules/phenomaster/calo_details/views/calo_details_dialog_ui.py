@@ -70,7 +70,7 @@ class Ui_CaloDetailsDialog(object):
         self.toolBox.setObjectName(u"toolBox")
         self.page = QWidget()
         self.page.setObjectName(u"page")
-        self.page.setGeometry(QRect(0, 0, 871, 745))
+        self.page.setGeometry(QRect(0, 0, 870, 746))
         self.toolBox.addItem(self.page, u"Page 1")
         self.splitter.addWidget(self.toolBox)
 
