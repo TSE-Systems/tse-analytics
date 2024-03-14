@@ -73,19 +73,19 @@ class MealDetailsLoader:
         variables: dict[str, Variable] = {}
         if drink1_present:
             new_columns.append("Drink1")
-            variables["Drink1"] = Variable(name="Drink1", unit="[ml]", description="")
+            variables["Drink1"] = Variable(name="Drink1", unit="[ml]", description="Drink1 sensor")
         if feed1_present:
             new_columns.append("Feed1")
-            variables["Feed1"] = Variable(name="Feed1", unit="[g]", description="")
+            variables["Feed1"] = Variable(name="Feed1", unit="[g]", description="Feed1 sensor")
         if drink2_present:
             new_columns.append("Drink2")
-            variables["Drink2"] = Variable(name="Drink2", unit="[ml]", description="")
+            variables["Drink2"] = Variable(name="Drink2", unit="[ml]", description="Drink2 sensor")
         if feed2_present:
             new_columns.append("Feed2")
-            variables["Feed2"] = Variable(name="Feed2", unit="[g]", description="")
+            variables["Feed2"] = Variable(name="Feed2", unit="[g]", description="Feed2 sensor")
         if weight_present:
             new_columns.append("Weight")
-            variables["Weight"] = Variable(name="Weight", unit="[g]", description="")
+            variables["Weight"] = Variable(name="Weight", unit="[g]", description="Animal weight")
 
         new_df = pd.DataFrame(columns=new_columns)
 

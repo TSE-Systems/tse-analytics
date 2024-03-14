@@ -39,15 +39,25 @@ class Ui_MealDetailsDialog(object):
 
         self.toolbarLayout.addWidget(self.toolButtonCalculate)
 
+        self.toolButtonExport = QToolButton(MealDetailsDialog)
+        self.toolButtonExport.setObjectName(u"toolButtonExport")
+        self.toolButtonExport.setEnabled(False)
+        icon1 = QIcon()
+        icon1.addFile(u":/icons/icons8-export-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.toolButtonExport.setIcon(icon1)
+        self.toolButtonExport.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+
+        self.toolbarLayout.addWidget(self.toolButtonExport)
+
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.toolbarLayout.addItem(self.horizontalSpacer)
 
         self.toolButtonHelp = QToolButton(MealDetailsDialog)
         self.toolButtonHelp.setObjectName(u"toolButtonHelp")
-        icon1 = QIcon()
-        icon1.addFile(u":/icons/icons8-help-16.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.toolButtonHelp.setIcon(icon1)
+        icon2 = QIcon()
+        icon2.addFile(u":/icons/icons8-help-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.toolButtonHelp.setIcon(icon2)
 
         self.toolbarLayout.addWidget(self.toolButtonHelp)
 
@@ -97,6 +107,7 @@ class Ui_MealDetailsDialog(object):
     def retranslateUi(self, MealDetailsDialog):
         MealDetailsDialog.setWindowTitle(QCoreApplication.translate("MealDetailsDialog", u"Meal Details", None))
         self.toolButtonCalculate.setText(QCoreApplication.translate("MealDetailsDialog", u"Calculate", None))
+        self.toolButtonExport.setText(QCoreApplication.translate("MealDetailsDialog", u"Export meal episodes...", None))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("MealDetailsDialog", u"Page 1", None))
     # retranslateUi
 

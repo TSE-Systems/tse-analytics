@@ -17,6 +17,16 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Sensor:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="VariableSelector" name="variableSelector"/>
+     </item>
+     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -49,6 +59,11 @@
    <extends>QWidget</extends>
    <header>tse_analytics.views.misc.MplCanvas</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>VariableSelector</class>
+   <extends>QComboBox</extends>
+   <header>tse_analytics.views.misc.variable_selector</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -3,9 +3,10 @@ import timeit
 import pandas as pd
 from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
-from PySide6.QtWidgets import QDialog, QWidget
+from PySide6.QtWidgets import QDialog, QWidget, QFileDialog
 from loguru import logger
 
+from tse_analytics.core.data.shared import Variable
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details_box import MealDetailsBox
 from tse_analytics.modules.phenomaster.meal_details.meal_details_processor import process_meal_details
@@ -15,7 +16,13 @@ from tse_analytics.modules.phenomaster.meal_details.views.meal_details_dialog_ui
 from tse_analytics.modules.phenomaster.meal_details.views.meal_details_plot_widget import MealDetailsPlotWidget
 from tse_analytics.modules.phenomaster.meal_details.views.meal_details_settings_widget import MealDetailsSettingsWidget
 from tse_analytics.modules.phenomaster.meal_details.views.meal_details_table_view import MealDetailsTableView
-from tse_analytics.modules.phenomaster.meal_details.views.meal_episodes_plot_widget import MealEpisodesPlotWidget
+from tse_analytics.modules.phenomaster.meal_details.views.meal_episodes_gap_plot_widget import MealEpisodesGapPlotWidget
+from tse_analytics.modules.phenomaster.meal_details.views.meal_episodes_intake_plot_widget import (
+    MealEpisodesIntakePlotWidget,
+)
+from tse_analytics.modules.phenomaster.meal_details.views.meal_episodes_offset_plot_widget import (
+    MealEpisodesOffsetPlotWidget,
+)
 from tse_analytics.views.misc.toast import Toast
 
 
@@ -45,12 +52,19 @@ class MealDetailsDialog(QDialog):
         self.meal_episodes_table_view = MealDetailsTableView()
         self.ui.tabWidget.addTab(self.meal_episodes_table_view, "Episodes")
 
-        self.meal_episodes_plot_widget = MealEpisodesPlotWidget()
-        self.ui.tabWidget.addTab(self.meal_episodes_plot_widget, "Episodes Offset Plot")
+        self.meal_episodes_offset_plot_widget = MealEpisodesOffsetPlotWidget()
+        self.ui.tabWidget.addTab(self.meal_episodes_offset_plot_widget, "Episodes Offset")
+
+        self.meal_episodes_gap_plot_widget = MealEpisodesGapPlotWidget()
+        self.ui.tabWidget.addTab(self.meal_episodes_gap_plot_widget, "Episodes IMI")
+
+        self.meal_episodes_intake_plot_widget = MealEpisodesIntakePlotWidget()
+        self.ui.tabWidget.addTab(self.meal_episodes_intake_plot_widget, "Episodes Intake")
 
         self.ui.toolBox.removeItem(0)
 
         self.ui.toolButtonCalculate.clicked.connect(self.__calculate)
+        self.ui.toolButtonExport.clicked.connect(self.__export_meal_episodes)
 
         self.meal_details_box_selector = MealDetailsBoxSelector(self.__filter_boxes)
         self.meal_details_box_selector.set_data(meal_details.dataset)
@@ -104,10 +118,32 @@ class MealDetailsDialog(QDialog):
 
         self.meal_events_table_view.set_data(self.meal_events_df)
         self.meal_episodes_table_view.set_data(self.meal_episodes_df)
-        self.meal_episodes_plot_widget.set_data(self.meal_episodes_df)
 
-        logger.info(f"Processing complete: {timeit.default_timer() - tic} sec")
-        Toast(text="Processing complete.", parent=self, duration=4000).show_toast()
+        variables_subset: dict[str, Variable] = {}
+        if "Drink1" in self.meal_details.variables:
+            variables_subset["Drink1"] = self.meal_details.variables["Drink1"]
+        if "Feed1" in self.meal_details.variables:
+            variables_subset["Feed1"] = self.meal_details.variables["Feed1"]
+        if "Drink2" in self.meal_details.variables:
+            variables_subset["Drink2"] = self.meal_details.variables["Drink2"]
+        if "Feed2" in self.meal_details.variables:
+            variables_subset["Feed2"] = self.meal_details.variables["Feed2"]
+
+        self.meal_episodes_offset_plot_widget.set_data(self.meal_episodes_df, variables_subset)
+        self.meal_episodes_gap_plot_widget.set_data(self.meal_episodes_df, variables_subset)
+        self.meal_episodes_intake_plot_widget.set_data(self.meal_episodes_df, variables_subset)
+
+        self.ui.toolButtonExport.setEnabled(True)
+
+        logger.info(f"Meal analysis complete: {timeit.default_timer() - tic} sec")
+        Toast(text="Meal analysis complete.", parent=self, duration=4000).show_toast()
+
+    def __export_meal_episodes(self):
+        filename, _ = QFileDialog.getSaveFileName(
+            self, "Export to CSV", "MealEpisodes", "CSV Files (*.csv)"
+        )
+        if filename:
+            self.meal_episodes_df.to_csv(filename, sep=";", index=False)
 
     def hideEvent(self, event: QCloseEvent) -> None:
         settings = QSettings()

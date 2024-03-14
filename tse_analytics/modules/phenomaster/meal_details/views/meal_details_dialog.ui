@@ -31,6 +31,23 @@
       </widget>
      </item>
      <item>
+      <widget class="QToolButton" name="toolButtonExport">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Export meal episodes...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../../../../../resources/resources.qrc">
+         <normaloff>:/icons/icons8-export-16.png</normaloff>:/icons/icons8-export-16.png</iconset>
+       </property>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonTextBesideIcon</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>

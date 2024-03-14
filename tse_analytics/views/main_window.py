@@ -1,11 +1,11 @@
 import os
 from functools import partial
 
-import psutil
 import PySide6QtAds
+import psutil
 from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QCloseEvent, QIcon
-from PySide6.QtWidgets import QApplication, QComboBox, QDialog, QFileDialog, QLabel, QMainWindow, QWidget
+from PySide6.QtWidgets import QApplication, QComboBox, QFileDialog, QLabel, QMainWindow, QWidget
 
 from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.helper import LAYOUT_VERSION, show_help
@@ -273,33 +273,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.load_workspace(file_path)
 
     def save_workspace_dialog(self):
-        file_ext = "*.workspace"
-        dialog = QFileDialog(self)
-        dialog.setDefaultSuffix(".workspace")
-        dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
-        dialog.setWindowTitle("Save Workspace")
-        dialog.setNameFilter(f"Workspace Files ({file_ext})")
-        if dialog.exec() == QDialog.DialogCode.Accepted:
-            Manager.save_workspace(dialog.selectedFiles()[0])
+        filename, _ = QFileDialog.getSaveFileName(
+            self, "Save TSE Analytics Workspace", "", "Workspace Files (*.workspace)"
+        )
+        if filename:
+            Manager.save_workspace(filename)
 
     def export_excel_dialog(self):
-        file_ext = "*.xlsx"
-        dialog = QFileDialog(self)
-        dialog.setDefaultSuffix(".xlsx")
-        dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
-        dialog.setWindowTitle("Export to Excel")
-        dialog.setNameFilter(f"Excel Files ({file_ext})")
-        if dialog.exec() == QDialog.DialogCode.Accepted:
-            Manager.data.export_to_excel(dialog.selectedFiles()[0])
+        filename, _ = QFileDialog.getSaveFileName(
+            self, "Export to Excel", "", "Excel Files (*.xlsx)"
+        )
+        if filename:
+            Manager.data.export_to_excel(filename)
 
     def export_csv_dialog(self):
-        dialog = QFileDialog(self)
-        dialog.setDefaultSuffix(".csv")
-        dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
-        dialog.setWindowTitle("Export to CSV")
-        dialog.setNameFilter("CSV Files (*.csv)")
-        if dialog.exec() == QDialog.DialogCode.Accepted:
-            Manager.data.export_to_csv(dialog.selectedFiles()[0])
+        filename, _ = QFileDialog.getSaveFileName(
+            self, "Export to CSV", "", "Excel Files (*.csv)"
+        )
+        if filename:
+            Manager.data.export_to_csv(filename)
 
     def update_memory_usage(self):
         # return the memory usage in MB
