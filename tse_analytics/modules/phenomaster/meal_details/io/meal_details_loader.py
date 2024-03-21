@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
 

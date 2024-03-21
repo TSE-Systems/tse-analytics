@@ -3,7 +3,7 @@ from PySide6.QtCore import QModelIndex, QThreadPool
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.data.data_hub import DataHub
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.core.dataset_merger import merge_datasets
 from tse_analytics.core.licensing import LicenseManager
 from tse_analytics.core.messaging.messenger import Messenger

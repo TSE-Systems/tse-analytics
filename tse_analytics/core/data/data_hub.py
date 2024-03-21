@@ -6,7 +6,7 @@ from PySide6.QtCore import QModelIndex
 from PySide6.QtGui import QPixmapCache
 
 from tse_analytics.core.data.binning import BinningMode, BinningOperation, BinningParams, TimeIntervalsBinningSettings
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.core.data.outliers import OutliersMode, OutliersParams
 from tse_analytics.core.data.pipeline.animal_filter_pipe_operator import AnimalFilterPipeOperator
 from tse_analytics.core.data.pipeline.outliers_pipe_operator import OutliersPipeOperator

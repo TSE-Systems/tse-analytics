@@ -2,15 +2,15 @@ import pickle
 
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt, Signal
 
-from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.workspace import Workspace
-from tse_analytics.modules.phenomaster.calo_details.models.calo_details_tree_item import CaloDetailsTreeItem
-from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
-from tse_analytics.modules.phenomaster.meal_details.models.meal_details_tree_item import MealDetailsTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
 from tse_analytics.core.models.workspace_tree_item import WorkspaceTreeItem
 from tse_analytics.modules.phenomaster.calo_details.io.calo_details_loader import CaloDetailsLoader
+from tse_analytics.modules.phenomaster.calo_details.models.calo_details_tree_item import CaloDetailsTreeItem
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.modules.phenomaster.meal_details.io.meal_details_loader import MealDetailsLoader
+from tse_analytics.modules.phenomaster.meal_details.models.meal_details_tree_item import MealDetailsTreeItem
+from tse_analytics.modules.phenomaster.models.dataset_tree_item import DatasetTreeItem
 
 
 class WorkspaceModel(QAbstractItemModel):

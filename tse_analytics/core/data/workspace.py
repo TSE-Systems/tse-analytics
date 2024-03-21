@@ -1,4 +1,4 @@
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
 
 class Workspace:

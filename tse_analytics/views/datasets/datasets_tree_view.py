@@ -13,12 +13,12 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.core.licensing import LicenseManager
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import SelectedTreeNodeChangedMessage
 from tse_analytics.modules.phenomaster.calo_details.models.calo_details_tree_item import CaloDetailsTreeItem
-from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
+from tse_analytics.modules.phenomaster.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.modules.phenomaster.calo_details.views.calo_details_dialog import CaloDetailsDialog
 from tse_analytics.modules.phenomaster.meal_details.models.meal_details_tree_item import MealDetailsTreeItem
 from tse_analytics.modules.phenomaster.meal_details.views.meal_details_dialog import MealDetailsDialog
