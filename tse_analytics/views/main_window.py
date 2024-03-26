@@ -280,16 +280,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             Manager.save_workspace(filename)
 
     def export_excel_dialog(self):
-        filename, _ = QFileDialog.getSaveFileName(
-            self, "Export to Excel", "", "Excel Files (*.xlsx)"
-        )
+        filename, _ = QFileDialog.getSaveFileName(self, "Export to Excel", "", "Excel Files (*.xlsx)")
         if filename:
             Manager.data.export_to_excel(filename)
 
     def export_csv_dialog(self):
-        filename, _ = QFileDialog.getSaveFileName(
-            self, "Export to CSV", "", "Excel Files (*.csv)"
-        )
+        filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "", "Excel Files (*.csv)")
         if filename:
             Manager.data.export_to_csv(filename)
 

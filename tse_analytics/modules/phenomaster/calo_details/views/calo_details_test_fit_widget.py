@@ -57,9 +57,7 @@ class CaloDetailsTestFitWidget(QWidget):
         )
         training_data = training_data[["Offset", gas_name]]
 
-        filename, _ = QFileDialog.getSaveFileName(
-            self, "Export to CSV", "TrainingData", "CSV Files (*.csv)"
-        )
+        filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "TrainingData", "CSV Files (*.csv)")
         if filename:
             training_data.to_csv(filename, sep=";", index=False, header=False)
 

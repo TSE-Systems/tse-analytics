@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
@@ -294,7 +293,7 @@ def __extract_meal_episodes(
     return meal_episodes_df
 
 
-def process_box(
+def __process_box(
     box_number: int,
     animal_number: int,
     meal_details_df: pd.DataFrame,
@@ -324,7 +323,7 @@ def process_box(
     return meal_events_df, meal_episodes_df
 
 
-def process_meal_details(meal_details: MealDetails, meal_details_settings: MealDetailsSettings):
+def process_meal_sequences(meal_details: MealDetails, meal_details_settings: MealDetailsSettings):
     box_to_animal_map = {}
     for animal in meal_details.dataset.animals.values():
         box_to_animal_map[animal.box] = animal.id
@@ -337,7 +336,7 @@ def process_meal_details(meal_details: MealDetails, meal_details_settings: MealD
     for box_number in all_box_numbers:
         df = meal_details.raw_df[meal_details.raw_df["Box"] == box_number]
 
-        meal_events_df, meal_episodes_df = process_box(
+        meal_events_df, meal_episodes_df = __process_box(
             box_number,
             box_to_animal_map[box_number],
             df,

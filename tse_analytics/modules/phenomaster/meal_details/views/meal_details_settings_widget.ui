@@ -2,14 +2,6 @@
 <ui version="4.0">
  <class>MealDetailsSettingsWidget</class>
  <widget class="QWidget" name="MealDetailsSettingsWidget">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>320</width>
-    <height>585</height>
-   </rect>
-  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -38,14 +30,6 @@
       <bool>true</bool>
      </property>
      <widget class="QWidget" name="scrollAreaWidgetContents">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>312</width>
-        <height>577</height>
-       </rect>
-      </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <property name="spacing">
         <number>2</number>
@@ -63,9 +47,35 @@
         <number>2</number>
        </property>
        <item>
-        <widget class="QGroupBox" name="groupBoxGeneralSettings">
+        <widget class="QGroupBox" name="groupBoxAnalysisType">
          <property name="title">
-          <string>General</string>
+          <string>Analysis Type</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QRadioButton" name="radioButtonSequentialType">
+            <property name="text">
+             <string>Sequential</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonIntervalType">
+            <property name="text">
+             <string>Interval</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBoxSequentialSettings">
+         <property name="title">
+          <string>Sequential Meal Analysis</string>
          </property>
          <layout class="QFormLayout" name="formLayout">
           <item row="0" column="0">
@@ -118,6 +128,42 @@
           </item>
          </layout>
         </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBoxIntervalSettings">
+         <property name="title">
+          <string>Interval Meal Analysis</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_2">
+          <item row="0" column="0">
+           <widget class="QLabel" name="fixedIntervalLabel">
+            <property name="text">
+             <string>Fixed Interval [hh:mm:ss]</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QTimeEdit" name="fixedIntervalTimeEdit">
+            <property name="displayFormat">
+             <string>HH:mm:ss</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
        </item>
        <item>
         <widget class="QPushButton" name="pushButtonResetSettings">

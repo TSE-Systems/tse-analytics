@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Meal Details</string>
+   <string>Meal Analysis</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -36,7 +36,7 @@
         <bool>false</bool>
        </property>
        <property name="text">
-        <string>Export meal episodes...</string>
+        <string>Export meal data...</string>
        </property>
        <property name="icon">
         <iconset resource="../../../../../resources/resources.qrc">
@@ -87,18 +87,13 @@
       </property>
      </widget>
      <widget class="QToolBox" name="toolBox">
-      <property name="currentIndex">
-       <number>0</number>
+      <property name="maximumSize">
+       <size>
+        <width>300</width>
+        <height>16777215</height>
+       </size>
       </property>
       <widget class="QWidget" name="page">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>870</width>
-         <height>746</height>
-        </rect>
-       </property>
        <attribute name="label">
         <string>Page 1</string>
        </attribute>

@@ -77,9 +77,9 @@ class Ui_MealDetailsDialog(object):
         self.splitter.addWidget(self.tabWidget)
         self.toolBox = QToolBox(self.splitter)
         self.toolBox.setObjectName(u"toolBox")
+        self.toolBox.setMaximumSize(QSize(300, 16777215))
         self.page = QWidget()
         self.page.setObjectName(u"page")
-        self.page.setGeometry(QRect(0, 0, 870, 746))
         self.toolBox.addItem(self.page, u"Page 1")
         self.splitter.addWidget(self.toolBox)
 
@@ -98,16 +98,15 @@ class Ui_MealDetailsDialog(object):
         self.buttonBox.rejected.connect(MealDetailsDialog.reject)
 
         self.tabWidget.setCurrentIndex(-1)
-        self.toolBox.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(MealDetailsDialog)
     # setupUi
 
     def retranslateUi(self, MealDetailsDialog):
-        MealDetailsDialog.setWindowTitle(QCoreApplication.translate("MealDetailsDialog", u"Meal Details", None))
+        MealDetailsDialog.setWindowTitle(QCoreApplication.translate("MealDetailsDialog", u"Meal Analysis", None))
         self.toolButtonCalculate.setText(QCoreApplication.translate("MealDetailsDialog", u"Calculate", None))
-        self.toolButtonExport.setText(QCoreApplication.translate("MealDetailsDialog", u"Export meal episodes...", None))
+        self.toolButtonExport.setText(QCoreApplication.translate("MealDetailsDialog", u"Export meal data...", None))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("MealDetailsDialog", u"Page 1", None))
     # retranslateUi
 
