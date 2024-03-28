@@ -24,7 +24,6 @@ class Ui_TimePhasesSettingsWidget(object):
     def setupUi(self, TimePhasesSettingsWidget):
         if not TimePhasesSettingsWidget.objectName():
             TimePhasesSettingsWidget.setObjectName(u"TimePhasesSettingsWidget")
-        TimePhasesSettingsWidget.resize(546, 585)
         self.verticalLayout = QVBoxLayout(TimePhasesSettingsWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.groupBoxPhases = QGroupBox(TimePhasesSettingsWidget)
@@ -33,7 +32,7 @@ class Ui_TimePhasesSettingsWidget(object):
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.tableViewTimePhases = QTableView(self.groupBoxPhases)
         self.tableViewTimePhases.setObjectName(u"tableViewTimePhases")
-        self.tableViewTimePhases.verticalHeader().setDefaultSectionSize(20)
+        self.tableViewTimePhases.verticalHeader().setDefaultSectionSize(24)
 
         self.verticalLayout_2.addWidget(self.tableViewTimePhases)
 

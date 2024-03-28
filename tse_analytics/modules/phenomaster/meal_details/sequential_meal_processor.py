@@ -323,7 +323,9 @@ def __process_box(
     return meal_events_df, meal_episodes_df
 
 
-def process_meal_sequences(meal_details: MealDetails, meal_details_settings: MealDetailsSettings):
+def process_meal_sequences(
+    meal_details: MealDetails, meal_details_settings: MealDetailsSettings, diets_dict: dict[int, float]
+):
     box_to_animal_map = {}
     for animal in meal_details.dataset.animals.values():
         box_to_animal_map[animal.box] = animal.id

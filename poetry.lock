@@ -105,25 +105,25 @@ pycparser = "*"
 
 [[package]]
 name = "cmdstanpy"
-version = "1.2.1"
+version = "1.2.2"
 description = "Python interface to CmdStan"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "cmdstanpy-1.2.1-py3-none-any.whl", hash = "sha256:950b31d0e5ca80c118ced24e5cebf18841eee9c553a6184e9a96fde4d536da10"},
-    {file = "cmdstanpy-1.2.1.tar.gz", hash = "sha256:09de766c3937d1db213f83c85722d6273aecf7f7c30a17d7c14835168892cb9a"},
+    {file = "cmdstanpy-1.2.2-py3-none-any.whl", hash = "sha256:b18cf61f9cae6babf4b26ab06a2c3572a64fc7781017ededdfa073430f8e29eb"},
+    {file = "cmdstanpy-1.2.2.tar.gz", hash = "sha256:09bcadd54a582090d722ba3e76d516db696275ab861ef71805195d0df2dd34a9"},
 ]
 
 [package.dependencies]
 numpy = ">=1.21"
 pandas = "*"
-stanio = ">=0.3.0,<0.4.0"
+stanio = ">=0.4.0,<2.0.0"
 tqdm = "*"
 
 [package.extras]
 all = ["xarray"]
-docs = ["matplotlib", "numpydoc", "sphinx", "sphinx-gallery", "sphinx-rtd-theme"]
-tests = ["flake8", "mypy", "pylint", "pytest", "pytest-cov", "pytest-order", "tqdm", "xarray"]
+docs = ["ipykernel", "ipython", "ipywidgets", "matplotlib", "nbsphinx", "pydata-sphinx-theme (<0.9)", "sphinx (>5,<6)", "sphinx-copybutton", "xarray"]
+test = ["flake8", "mypy", "pylint", "pytest", "pytest-cov", "pytest-order", "xarray"]
 
 [[package]]
 name = "colorama"
@@ -1520,13 +1520,13 @@ files = [
 
 [[package]]
 name = "stanio"
-version = "0.3.0"
-description = ""
+version = "0.5.0"
+description = "Utilities for preparing Stan inputs and processing Stan outputs"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "stanio-0.3.0-py3-none-any.whl", hash = "sha256:2d34b5ebe9ad8fcd137437209bf4b53846d88dbe933441aca5d83fd32f9b0c7e"},
-    {file = "stanio-0.3.0.tar.gz", hash = "sha256:0c504ae671b8d526a1da71185ac02a2775508ffe6d3db91f242eac85bcf6046f"},
+    {file = "stanio-0.5.0-py3-none-any.whl", hash = "sha256:412f8ede127968be51e074be6a6ca1e66d5a8ed50805e2fed89b76868e7332ae"},
+    {file = "stanio-0.5.0.tar.gz", hash = "sha256:dee429314d965f390181afa8ff7ff8144446eeb58cc2547ccc108ba73e6744e2"},
 ]
 
 [package.dependencies]
@@ -1534,6 +1534,7 @@ numpy = "*"
 
 [package.extras]
 test = ["pandas", "pytest", "pytest-cov"]
+ujson = ["ujson (>=5.5.0)"]
 
 [[package]]
 name = "statsmodels"

@@ -1,17 +1,17 @@
 import timeit
 
 import pandas as pd
+from loguru import logger
 from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
-from PySide6.QtWidgets import QDialog, QWidget, QFileDialog
-from loguru import logger
+from PySide6.QtWidgets import QDialog, QFileDialog, QWidget
 
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details_box import MealDetailsBox
 from tse_analytics.modules.phenomaster.meal_details.interval_meal_processor import process_meal_intervals
-from tse_analytics.modules.phenomaster.meal_details.sequential_meal_processor import process_meal_sequences
 from tse_analytics.modules.phenomaster.meal_details.meal_details_settings import MealDetailsSettings
+from tse_analytics.modules.phenomaster.meal_details.sequential_meal_processor import process_meal_sequences
 from tse_analytics.modules.phenomaster.meal_details.views.meal_details_box_selector import MealDetailsBoxSelector
 from tse_analytics.modules.phenomaster.meal_details.views.meal_details_dialog_ui import Ui_MealDetailsDialog
 from tse_analytics.modules.phenomaster.meal_details.views.meal_details_plot_widget import MealDetailsPlotWidget
@@ -78,23 +78,19 @@ class MealDetailsDialog(QDialog):
         self.ui.toolButtonCalculate.clicked.connect(self.__calculate)
         self.ui.toolButtonExport.clicked.connect(self.__export_meal_data)
 
-        self.meal_details_box_selector = MealDetailsBoxSelector(self.__filter_boxes)
-        self.meal_details_box_selector.set_data(meal_details.dataset)
-        self.ui.toolBox.addItem(self.meal_details_box_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Boxes")
-
         self.meal_details_settings_widget = MealDetailsSettingsWidget()
         try:
             meal_details_settings = settings.value("MealDetailsSettings", MealDetailsSettings.get_default())
-            self.meal_details_settings_widget.set_settings(meal_details_settings)
+            self.meal_details_settings_widget.set_data(self.meal_details.dataset, meal_details_settings)
         except Exception:
             meal_details_settings = MealDetailsSettings.get_default()
-            self.meal_details_settings_widget.set_settings(meal_details_settings)
+            self.meal_details_settings_widget.set_data(self.meal_details.dataset, meal_details_settings)
 
-        self.meal_details_settings_widget.set_data(self.meal_details.dataset)
+        self.meal_details_box_selector = MealDetailsBoxSelector(self.__filter_boxes, self.meal_details_settings_widget)
+        self.meal_details_box_selector.set_data(meal_details.dataset)
+
+        self.ui.toolBox.addItem(self.meal_details_box_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Boxes")
         self.ui.toolBox.addItem(self.meal_details_settings_widget, QIcon(":/icons/icons8-dog-tag-16.png"), "Settings")
-
-        # self.ui.splitter.setStretchFactor(0, 70)
-        # self.ui.splitter.setStretchFactor(1, 30)
 
         self.selected_boxes: list[MealDetailsBox] = []
 
@@ -157,6 +153,7 @@ class MealDetailsDialog(QDialog):
         tic = timeit.default_timer()
 
         meal_details_settings = self.meal_details_settings_widget.get_meal_details_settings()
+        diets_dict = self.meal_details_box_selector.get_diets_dict()
 
         variables_subset: dict[str, Variable] = {}
         if "Drink1" in self.meal_details.variables:
@@ -169,9 +166,9 @@ class MealDetailsDialog(QDialog):
             variables_subset["Feed2"] = self.meal_details.variables["Feed2"]
 
         if meal_details_settings.sequential_analysis_type:
-            self.__run_sequential_analysis(meal_details_settings, variables_subset)
+            self.__run_sequential_analysis(meal_details_settings, variables_subset, diets_dict)
         else:
-            self.__run_interval_analysis(meal_details_settings, variables_subset)
+            self.__run_interval_analysis(meal_details_settings, variables_subset, diets_dict)
 
         self.__update_tabs()
         self.ui.toolButtonExport.setEnabled(True)
@@ -180,9 +177,14 @@ class MealDetailsDialog(QDialog):
         Toast(text="Meal analysis complete.", parent=self, duration=4000).show_toast()
 
     def __run_sequential_analysis(
-        self, meal_details_settings: MealDetailsSettings, variables_subset: dict[str, Variable]
+        self,
+        meal_details_settings: MealDetailsSettings,
+        variables_subset: dict[str, Variable],
+        diets_dict: dict[int, float],
     ):
-        self.meal_events_df, self.meal_episodes_df = process_meal_sequences(self.meal_details, meal_details_settings)
+        self.meal_events_df, self.meal_episodes_df = process_meal_sequences(
+            self.meal_details, meal_details_settings, diets_dict
+        )
 
         self.meal_events_table_view.set_data(self.meal_events_df)
         self.meal_episodes_table_view.set_data(self.meal_episodes_df)
@@ -192,9 +194,12 @@ class MealDetailsDialog(QDialog):
         self.meal_episodes_intake_plot_widget.set_data(self.meal_episodes_df, variables_subset)
 
     def __run_interval_analysis(
-        self, meal_details_settings: MealDetailsSettings, variables_subset: dict[str, Variable]
+        self,
+        meal_details_settings: MealDetailsSettings,
+        variables_subset: dict[str, Variable],
+        diets_dict: dict[int, float],
     ):
-        self.meal_intervals_df = process_meal_intervals(self.meal_details, meal_details_settings)
+        self.meal_intervals_df = process_meal_intervals(self.meal_details, meal_details_settings, diets_dict)
 
         self.intervals_table_view.set_data(self.meal_intervals_df)
         self.intervals_plot_widget.set_data(self.meal_intervals_df, variables_subset)

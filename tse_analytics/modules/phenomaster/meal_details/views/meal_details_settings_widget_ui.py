@@ -16,14 +16,17 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QDoubleSpinBox, QFormLayout, QFrame,
-    QGroupBox, QLabel, QPushButton, QRadioButton,
-    QScrollArea, QSizePolicy, QSpacerItem, QTimeEdit,
+    QGroupBox, QHBoxLayout, QHeaderView, QLabel,
+    QPushButton, QRadioButton, QScrollArea, QSizePolicy,
+    QSpacerItem, QTableView, QTimeEdit, QToolButton,
     QVBoxLayout, QWidget)
+import resources_rc
 
 class Ui_MealDetailsSettingsWidget(object):
     def setupUi(self, MealDetailsSettingsWidget):
         if not MealDetailsSettingsWidget.objectName():
             MealDetailsSettingsWidget.setObjectName(u"MealDetailsSettingsWidget")
+        MealDetailsSettingsWidget.resize(288, 392)
         self.verticalLayout = QVBoxLayout(MealDetailsSettingsWidget)
         self.verticalLayout.setSpacing(4)
         self.verticalLayout.setObjectName(u"verticalLayout")
@@ -34,6 +37,7 @@ class Ui_MealDetailsSettingsWidget(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 266, 427))
         self.verticalLayout_2 = QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_2.setSpacing(2)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
@@ -114,9 +118,43 @@ class Ui_MealDetailsSettingsWidget(object):
 
         self.verticalLayout_2.addWidget(self.groupBoxIntervalSettings)
 
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.groupBoxDiets = QGroupBox(self.scrollAreaWidgetContents)
+        self.groupBoxDiets.setObjectName(u"groupBoxDiets")
+        self.verticalLayout_4 = QVBoxLayout(self.groupBoxDiets)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.tableViewDiets = QTableView(self.groupBoxDiets)
+        self.tableViewDiets.setObjectName(u"tableViewDiets")
+        self.tableViewDiets.verticalHeader().setDefaultSectionSize(24)
 
-        self.verticalLayout_2.addItem(self.verticalSpacer)
+        self.verticalLayout_4.addWidget(self.tableViewDiets)
+
+        self.horizontalLayout = QHBoxLayout()
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.toolButtonAddDiet = QToolButton(self.groupBoxDiets)
+        self.toolButtonAddDiet.setObjectName(u"toolButtonAddDiet")
+        icon = QIcon()
+        icon.addFile(u":/icons/icons8-add-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.toolButtonAddDiet.setIcon(icon)
+
+        self.horizontalLayout.addWidget(self.toolButtonAddDiet)
+
+        self.toolButtonDeleteDiet = QToolButton(self.groupBoxDiets)
+        self.toolButtonDeleteDiet.setObjectName(u"toolButtonDeleteDiet")
+        icon1 = QIcon()
+        icon1.addFile(u":/icons/icons8-minus-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.toolButtonDeleteDiet.setIcon(icon1)
+
+        self.horizontalLayout.addWidget(self.toolButtonDeleteDiet)
+
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout.addItem(self.horizontalSpacer)
+
+
+        self.verticalLayout_4.addLayout(self.horizontalLayout)
+
+
+        self.verticalLayout_2.addWidget(self.groupBoxDiets)
 
         self.pushButtonResetSettings = QPushButton(self.scrollAreaWidgetContents)
         self.pushButtonResetSettings.setObjectName(u"pushButtonResetSettings")
@@ -146,6 +184,13 @@ class Ui_MealDetailsSettingsWidget(object):
         self.groupBoxIntervalSettings.setTitle(QCoreApplication.translate("MealDetailsSettingsWidget", u"Interval Meal Analysis", None))
         self.fixedIntervalLabel.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Fixed Interval [hh:mm:ss]", None))
         self.fixedIntervalTimeEdit.setDisplayFormat(QCoreApplication.translate("MealDetailsSettingsWidget", u"HH:mm:ss", None))
+        self.groupBoxDiets.setTitle(QCoreApplication.translate("MealDetailsSettingsWidget", u"Diets", None))
+#if QT_CONFIG(tooltip)
+        self.toolButtonAddDiet.setToolTip(QCoreApplication.translate("MealDetailsSettingsWidget", u"Add diet", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.toolButtonDeleteDiet.setToolTip(QCoreApplication.translate("MealDetailsSettingsWidget", u"Delete selected diet", None))
+#endif // QT_CONFIG(tooltip)
         self.pushButtonResetSettings.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Reset Settings", None))
     # retranslateUi
 

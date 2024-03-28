@@ -4,7 +4,7 @@ from tse_analytics.modules.phenomaster.meal_details.data.meal_details_box import
 
 
 class MealDetailsBoxesModel(QAbstractTableModel):
-    header = ["Box", "Animal"]
+    header = ["Box", "Animal", "Diet"]
 
     def __init__(self, items: list[MealDetailsBox], parent=None):
         super().__init__(parent)
@@ -14,9 +14,13 @@ class MealDetailsBoxesModel(QAbstractTableModel):
     def data(self, index: QModelIndex, role: Qt.ItemDataRole):
         if role == Qt.ItemDataRole.DisplayRole:
             item = self.items[index.row()]
-            values = (item.box, item.animal)
-            value = values[index.column()]
-            return int(value) if value is not None else None
+            match index.column():
+                case 0:
+                    return item.box
+                case 1:
+                    return item.animal
+                case 2:
+                    return item.diet
 
     def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
@@ -27,3 +31,16 @@ class MealDetailsBoxesModel(QAbstractTableModel):
 
     def columnCount(self, parent):
         return len(self.header)
+
+    def clear_diets(self, indexes: list[QModelIndex]):
+        rows = {index.row() for index in indexes}
+        for row in rows:
+            self.items[row].diet = None
+
+    def set_diet(self, indexes: list[QModelIndex], diet: float):
+        rows = {index.row() for index in indexes}
+        for row in rows:
+            self.items[row].diet = diet
+
+    def get_diets_dict(self):
+        return {item.box: item.diet for item in self.items}

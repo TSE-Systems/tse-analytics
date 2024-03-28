@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>MealDetailsSettingsWidget</class>
  <widget class="QWidget" name="MealDetailsSettingsWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>288</width>
+    <height>392</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -30,6 +38,14 @@
       <bool>true</bool>
      </property>
      <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>266</width>
+        <height>427</height>
+       </rect>
+      </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <property name="spacing">
         <number>2</number>
@@ -153,17 +169,59 @@
         </widget>
        </item>
        <item>
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
+        <widget class="QGroupBox" name="groupBoxDiets">
+         <property name="title">
+          <string>Diets</string>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <widget class="QTableView" name="tableViewDiets">
+            <attribute name="verticalHeaderDefaultSectionSize">
+             <number>24</number>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QToolButton" name="toolButtonAddDiet">
+              <property name="toolTip">
+               <string>Add diet</string>
+              </property>
+              <property name="icon">
+               <iconset resource="../../../../../resources/resources.qrc">
+                <normaloff>:/icons/icons8-add-16.png</normaloff>:/icons/icons8-add-16.png</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="toolButtonDeleteDiet">
+              <property name="toolTip">
+               <string>Delete selected diet</string>
+              </property>
+              <property name="icon">
+               <iconset resource="../../../../../resources/resources.qrc">
+                <normaloff>:/icons/icons8-minus-16.png</normaloff>:/icons/icons8-minus-16.png</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
        </item>
        <item>
         <widget class="QPushButton" name="pushButtonResetSettings">
@@ -178,6 +236,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../../../../../resources/resources.qrc"/>
+ </resources>
  <connections/>
 </ui>
