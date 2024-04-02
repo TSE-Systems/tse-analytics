@@ -1,3 +1,4 @@
+import pandas as pd
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details_box import MealDetailsBox
@@ -35,7 +36,7 @@ class MealDetailsBoxesModel(QAbstractTableModel):
     def clear_diets(self, indexes: list[QModelIndex]):
         rows = {index.row() for index in indexes}
         for row in rows:
-            self.items[row].diet = None
+            self.items[row].diet = pd.NA
 
     def set_diet(self, indexes: list[QModelIndex], diet: float):
         rows = {index.row() for index in indexes}

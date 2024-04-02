@@ -1,6 +1,7 @@
 from functools import partial
 
-from PySide6.QtCore import QItemSelection, QSortFilterProxyModel, Qt
+import pandas as pd
+from PySide6.QtCore import QItemSelection, QSortFilterProxyModel, Qt, QTimer
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QAbstractItemView, QMenu, QTableView, QWidget
 
@@ -50,10 +51,11 @@ class MealDetailsBoxSelector(QTableView):
         all_box_numbers = list(dataset.meal_details.raw_df["Box"].unique())
         boxes: list[MealDetailsBox] = []
         for box in all_box_numbers:
-            boxes.append(MealDetailsBox(box, box_to_animal_map[box], None))
+            boxes.append(MealDetailsBox(box, box_to_animal_map[box], pd.NA))
         model = MealDetailsBoxesModel(boxes)
         self.model().setSourceModel(model)
-        # self.resizeColumnsToContents()
+        # See https://forum.pythonguis.com/t/resizecolumnstocontents-not-working-with-qsortfilterproxymodel-and-tableview/1285
+        QTimer.singleShot(0, self.resizeColumnsToContents)
 
     def __on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
         proxy_model = self.model()

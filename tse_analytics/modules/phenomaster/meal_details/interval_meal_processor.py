@@ -1,5 +1,3 @@
-from unittest import result
-
 import pandas as pd
 
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
@@ -49,9 +47,9 @@ def process_meal_intervals(
     result["Bin"] = (result["Timedelta"] / timedelta).round().astype(int)
     result = result.astype({"Bin": "category"})
 
-    __add_caloric_column(result, "Drink1", diets_dict)
+    # __add_caloric_column(result, "Drink1", diets_dict)
     __add_caloric_column(result, "Feed1", diets_dict)
-    __add_caloric_column(result, "Drink2", diets_dict)
+    # __add_caloric_column(result, "Drink2", diets_dict)
     __add_caloric_column(result, "Feed2", diets_dict)
 
     return result

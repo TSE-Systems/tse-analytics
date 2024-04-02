@@ -356,6 +356,11 @@ def process_meal_sequences(
         else:
             episodes_df = pd.concat([episodes_df, meal_episodes_df], ignore_index=True)
 
+    # Add caloric value column
+    episodes_df.insert(episodes_df.columns.get_loc("Quantity") + 1, "Quantity-kcal", episodes_df["Box"].astype(int))
+    episodes_df = episodes_df.replace({"Quantity-kcal": diets_dict})
+    episodes_df["Quantity-kcal"] = episodes_df["Quantity-kcal"] * episodes_df["Quantity"]
+
     # convert types
     episodes_df = episodes_df.astype({
         "Sensor": "category",
