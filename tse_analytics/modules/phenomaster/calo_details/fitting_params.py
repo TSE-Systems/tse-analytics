@@ -1,7 +1,7 @@
 import pandas as pd
 
 from tse_analytics.modules.phenomaster.calo_details.calo_details_settings import CaloDetailsSettings
-from tse_analytics.modules.phenomaster.data.calo_details_box import CaloDetailsBox
+from tse_analytics.modules.phenomaster.calo_details.data.calo_details_box import CaloDetailsBox
 
 
 class FittingParams:

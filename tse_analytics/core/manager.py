@@ -3,7 +3,7 @@ from PySide6.QtCore import QModelIndex, QThreadPool
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.data.data_hub import DataHub
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.core.dataset_merger import merge_datasets
 from tse_analytics.core.licensing import LicenseManager
 from tse_analytics.core.messaging.messenger import Messenger
@@ -36,6 +36,10 @@ class Manager:
         dataset = DatasetLoader.load(path)
         if dataset is not None:
             cls.workspace.add_dataset(dataset)
+
+    @classmethod
+    def import_meal_details(cls, dataset_index: QModelIndex, path: str) -> None:
+        cls.workspace.add_meal_details(dataset_index, path)
 
     @classmethod
     def import_calo_details(cls, dataset_index: QModelIndex, path: str) -> None:

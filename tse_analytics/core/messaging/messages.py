@@ -1,5 +1,5 @@
 from tse_analytics.core.data.binning import BinningParams
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.models.tree_item import TreeItem
 

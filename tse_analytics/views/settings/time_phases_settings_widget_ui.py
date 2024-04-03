@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'time_phases_settings_widget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -24,7 +24,6 @@ class Ui_TimePhasesSettingsWidget(object):
     def setupUi(self, TimePhasesSettingsWidget):
         if not TimePhasesSettingsWidget.objectName():
             TimePhasesSettingsWidget.setObjectName(u"TimePhasesSettingsWidget")
-        TimePhasesSettingsWidget.resize(546, 585)
         self.verticalLayout = QVBoxLayout(TimePhasesSettingsWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.groupBoxPhases = QGroupBox(TimePhasesSettingsWidget)
@@ -33,7 +32,7 @@ class Ui_TimePhasesSettingsWidget(object):
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.tableViewTimePhases = QTableView(self.groupBoxPhases)
         self.tableViewTimePhases.setObjectName(u"tableViewTimePhases")
-        self.tableViewTimePhases.verticalHeader().setDefaultSectionSize(20)
+        self.tableViewTimePhases.verticalHeader().setDefaultSectionSize(24)
 
         self.verticalLayout_2.addWidget(self.tableViewTimePhases)
 
@@ -55,7 +54,7 @@ class Ui_TimePhasesSettingsWidget(object):
 
         self.horizontalLayout.addWidget(self.toolButtonDeletePhase)
 
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer)
 

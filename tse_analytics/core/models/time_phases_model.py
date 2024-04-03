@@ -29,7 +29,7 @@ class TimePhasesModel(QAbstractTableModel):
             elif index.column() == 1:
                 try:
                     item.start_timestamp = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
-                    Manager.data.selected_dataset.set_time_phases(self.items)
+                    # Manager.data.selected_dataset.set_time_phases(self.items)
                     Manager.messenger.broadcast(DatasetChangedMessage(self, Manager.data.selected_dataset))
                 except ValueError:
                     return False

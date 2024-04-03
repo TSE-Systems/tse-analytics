@@ -21,5 +21,4 @@ insert_final_newline = false
 indent_style = tab
 
 [*.yml]
-indent_style = space
 indent_size = 2

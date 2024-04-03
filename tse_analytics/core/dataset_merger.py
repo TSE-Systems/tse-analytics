@@ -1,7 +1,7 @@
 import pandas as pd
 from PySide6.QtWidgets import QMessageBox, QWidget
 
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
 
 def merge_datasets(

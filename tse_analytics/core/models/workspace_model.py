@@ -2,13 +2,15 @@ import pickle
 
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt, Signal
 
-from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.workspace import Workspace
-from tse_analytics.core.models.calo_details_tree_item import CaloDetailsTreeItem
-from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
 from tse_analytics.core.models.workspace_tree_item import WorkspaceTreeItem
-from tse_analytics.modules.phenomaster.io.calo_details_loader import CaloDetailsLoader
+from tse_analytics.modules.phenomaster.calo_details.io.calo_details_loader import CaloDetailsLoader
+from tse_analytics.modules.phenomaster.calo_details.models.calo_details_tree_item import CaloDetailsTreeItem
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.meal_details.io.meal_details_loader import MealDetailsLoader
+from tse_analytics.modules.phenomaster.meal_details.models.meal_details_tree_item import MealDetailsTreeItem
+from tse_analytics.modules.phenomaster.models.dataset_tree_item import DatasetTreeItem
 
 
 class WorkspaceModel(QAbstractItemModel):
@@ -131,6 +133,10 @@ class WorkspaceModel(QAbstractItemModel):
             for dataset in self.workspace.datasets:
                 dataset_tree_item = DatasetTreeItem(dataset)
 
+                if hasattr(dataset, "meal_details") and dataset.meal_details is not None:
+                    meal_details_tree_item = MealDetailsTreeItem(dataset.meal_details)
+                    dataset_tree_item.add_child(meal_details_tree_item)
+
                 if hasattr(dataset, "calo_details") and dataset.calo_details is not None:
                     calo_details_tree_item = CaloDetailsTreeItem(dataset.calo_details)
                     dataset_tree_item.add_child(calo_details_tree_item)
@@ -148,6 +154,18 @@ class WorkspaceModel(QAbstractItemModel):
         self.beginResetModel()
         self.workspace_tree_item.add_child(dataset_tree_item)
         self.endResetModel()
+
+    def add_meal_details(self, dataset_index: QModelIndex, path: str):
+        dataset_tree_item: DatasetTreeItem = self.getItem(dataset_index)
+        if dataset_tree_item is not None and dataset_tree_item.dataset is not None:
+            meal_details = MealDetailsLoader.load(path, dataset_tree_item.dataset)
+            if meal_details is not None:
+                meal_details_tree_item = MealDetailsTreeItem(meal_details)
+                self.beginResetModel()
+                dataset_tree_item.dataset.meal_details = meal_details
+                dataset_tree_item.clear()
+                dataset_tree_item.add_child(meal_details_tree_item)
+                self.endResetModel()
 
     def add_calo_details(self, dataset_index: QModelIndex, path: str):
         dataset_tree_item: DatasetTreeItem = self.getItem(dataset_index)

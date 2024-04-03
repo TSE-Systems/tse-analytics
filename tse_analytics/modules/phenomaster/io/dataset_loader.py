@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.core.data.shared import Animal, Variable
 
 DELIMITER = ";"

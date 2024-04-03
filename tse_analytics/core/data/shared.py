@@ -49,3 +49,9 @@ class Variable:
 class TimePhase:
     name: str
     start_timestamp: datetime
+
+
+@dataclass
+class AnimalDiet:
+    name: str
+    caloric_value: float
