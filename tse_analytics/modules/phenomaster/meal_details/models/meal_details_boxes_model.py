@@ -1,27 +1,29 @@
 import pandas as pd
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
-from tse_analytics.modules.phenomaster.meal_details.data.meal_details_box import MealDetailsBox
+from tse_analytics.modules.phenomaster.meal_details.data.meal_details_animal_item import MealDetailsAnimalItem
 
 
 class MealDetailsBoxesModel(QAbstractTableModel):
-    header = ["Box", "Animal", "Diet"]
-
-    def __init__(self, items: list[MealDetailsBox], parent=None):
+    def __init__(self, items: list[MealDetailsAnimalItem], header: list[str], parent=None):
         super().__init__(parent)
 
         self.items = items
+        self.header = header
 
     def data(self, index: QModelIndex, role: Qt.ItemDataRole):
         if role == Qt.ItemDataRole.DisplayRole:
             item = self.items[index.row()]
-            match index.column():
+            column = index.column()
+            match column:
                 case 0:
-                    return item.box
-                case 1:
                     return item.animal
+                case 1:
+                    return item.box
                 case 2:
                     return item.diet
+                case _:
+                    return item.factors[self.header[column]]
 
     def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:

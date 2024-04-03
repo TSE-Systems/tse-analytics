@@ -80,6 +80,7 @@ class Ui_MealDetailsDialog(object):
         self.toolBox.setMaximumSize(QSize(300, 16777215))
         self.page = QWidget()
         self.page.setObjectName(u"page")
+        self.page.setGeometry(QRect(0, 0, 300, 746))
         self.toolBox.addItem(self.page, u"Page 1")
         self.splitter.addWidget(self.toolBox)
 
@@ -88,7 +89,7 @@ class Ui_MealDetailsDialog(object):
         self.buttonBox = QDialogButtonBox(MealDetailsDialog)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.Close)
 
         self.verticalLayout.addWidget(self.buttonBox)
 

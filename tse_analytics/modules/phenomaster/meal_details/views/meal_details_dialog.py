@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QDialog, QFileDialog, QWidget
 
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
-from tse_analytics.modules.phenomaster.meal_details.data.meal_details_box import MealDetailsBox
+from tse_analytics.modules.phenomaster.meal_details.data.meal_details_animal_item import MealDetailsAnimalItem
 from tse_analytics.modules.phenomaster.meal_details.interval_meal_processor import process_meal_intervals
 from tse_analytics.modules.phenomaster.meal_details.meal_details_settings import MealDetailsSettings
 from tse_analytics.modules.phenomaster.meal_details.sequential_meal_processor import process_meal_sequences
@@ -92,7 +92,7 @@ class MealDetailsDialog(QDialog):
         self.ui.toolBox.addItem(self.meal_details_box_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Boxes")
         self.ui.toolBox.addItem(self.meal_details_settings_widget, QIcon(":/icons/icons8-dog-tag-16.png"), "Settings")
 
-        self.selected_boxes: list[MealDetailsBox] = []
+        self.selected_boxes: list[MealDetailsAnimalItem] = []
 
         self.meal_events_df: pd.DataFrame | None = self.meal_details.raw_df
         self.meal_episodes_df: pd.DataFrame | None = None
@@ -110,7 +110,7 @@ class MealDetailsDialog(QDialog):
         self.ui.tabWidget.setTabVisible(self.intervals_table_tab_index, not settings.sequential_analysis_type)
         self.ui.tabWidget.setTabVisible(self.intervals_plot_tab_index, not settings.sequential_analysis_type)
 
-    def __filter_boxes(self, selected_boxes: list[MealDetailsBox]):
+    def __filter_boxes(self, selected_boxes: list[MealDetailsAnimalItem]):
         self.selected_boxes = selected_boxes
         self.__filter()
 

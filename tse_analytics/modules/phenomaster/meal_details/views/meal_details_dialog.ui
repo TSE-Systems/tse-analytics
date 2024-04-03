@@ -94,6 +94,14 @@
        </size>
       </property>
       <widget class="QWidget" name="page">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>300</width>
+         <height>746</height>
+        </rect>
+       </property>
        <attribute name="label">
         <string>Page 1</string>
        </attribute>
@@ -107,7 +115,7 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::Close</set>
      </property>
     </widget>
    </item>

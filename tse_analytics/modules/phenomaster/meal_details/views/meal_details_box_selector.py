@@ -6,7 +6,7 @@ from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QAbstractItemView, QMenu, QTableView, QWidget
 
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
-from tse_analytics.modules.phenomaster.meal_details.data.meal_details_box import MealDetailsBox
+from tse_analytics.modules.phenomaster.meal_details.data.meal_details_animal_item import MealDetailsAnimalItem
 from tse_analytics.modules.phenomaster.meal_details.models.meal_details_boxes_model import MealDetailsBoxesModel
 
 
@@ -44,15 +44,23 @@ class MealDetailsBoxSelector(QTableView):
         self.customContextMenuRequested.connect(self.__open_context_menu)
 
     def set_data(self, dataset: Dataset):
-        box_to_animal_map = {}
+        items: dict[int, MealDetailsAnimalItem] = {}
         for animal in dataset.animals.values():
-            box_to_animal_map[animal.box] = animal.id
+            items[animal.id] = MealDetailsAnimalItem(animal.box, animal.id, pd.NA, {})
+        animal_ids = list(items.keys())
 
-        all_box_numbers = list(dataset.meal_details.raw_df["Box"].unique())
-        boxes: list[MealDetailsBox] = []
-        for box in all_box_numbers:
-            boxes.append(MealDetailsBox(box, box_to_animal_map[box], pd.NA))
-        model = MealDetailsBoxesModel(boxes)
+        header = ["Animal", "Box", "Diet"]
+        for factor in dataset.factors.values():
+            header.append(factor.name)
+            for animal_id in animal_ids:
+                x = items[animal_id]
+                x.factors[factor.name] = None
+                for group in factor.groups:
+                    if animal_id in group.animal_ids:
+                        x.factors[factor.name] = group.name
+                        break
+
+        model = MealDetailsBoxesModel(list(items.values()), header)
         self.model().setSourceModel(model)
         # See https://forum.pythonguis.com/t/resizecolumnstocontents-not-working-with-qsortfilterproxymodel-and-tableview/1285
         QTimer.singleShot(0, self.resizeColumnsToContents)
@@ -60,7 +68,7 @@ class MealDetailsBoxSelector(QTableView):
     def __on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
         proxy_model = self.model()
         model = proxy_model.sourceModel()
-        selected_boxes: list[MealDetailsBox] = []
+        selected_boxes: list[MealDetailsAnimalItem] = []
         for index in self.selectedIndexes():
             if index.column() != 0:
                 continue
