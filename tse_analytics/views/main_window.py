@@ -1,8 +1,8 @@
 import os
 from functools import partial
 
-import PySide6QtAds
 import psutil
+import PySide6QtAds
 from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QCloseEvent, QIcon
 from PySide6.QtWidgets import QApplication, QComboBox, QFileDialog, QLabel, QMainWindow, QWidget

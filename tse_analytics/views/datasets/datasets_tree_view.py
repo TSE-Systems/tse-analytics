@@ -1,3 +1,5 @@
+import gc
+import weakref
 from functools import partial
 
 from PySide6.QtCore import QItemSelection, QModelIndex, QSize, Qt
@@ -13,6 +15,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from tse_analytics.modules.phenomaster.actimot.models.actimot_tree_item import ActimotTreeItem
+from tse_analytics.modules.phenomaster.actimot.views.actimot_dialog import ActimotDialog
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.core.licensing import LicenseManager
 from tse_analytics.core.manager import Manager
@@ -69,6 +73,10 @@ class DatasetsTreeView(QTreeView):
             if len(indexes) == 1:
                 action = menu.addAction("Import meal details...")
                 action.triggered.connect(partial(self.__import_meal_details, indexes))
+
+                action_actimot = menu.addAction("Import ActiMot details...")
+                action_actimot.triggered.connect(partial(self.__import_actimot_details, indexes))
+
                 if not LicenseManager.is_feature_missing("CurveFitting"):
                     action = menu.addAction("Import calo details...")
                     action.triggered.connect(partial(self.__import_calo_details, indexes))
@@ -122,6 +130,18 @@ class DatasetsTreeView(QTreeView):
                 selected_dataset_index = indexes[0]
                 Manager.import_meal_details(selected_dataset_index, path)
 
+    def __import_actimot_details(self, indexes: list[QModelIndex]):
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Import ActiMot details",
+            "",
+            "ActiMot Details Files (*.csv)",
+        )
+        if path:
+            if len(indexes) == 1:
+                selected_dataset_index = indexes[0]
+                Manager.import_actimot_details(selected_dataset_index, path)
+
     def __import_calo_details(self, indexes: list[QModelIndex]):
         path, _ = QFileDialog.getOpenFileName(
             self,
@@ -164,6 +184,15 @@ class DatasetsTreeView(QTreeView):
             elif isinstance(item, MealDetailsTreeItem):
                 dlg = MealDetailsDialog(item.meal_details, self)
                 result = dlg.exec()
+                if result == QDialog.DialogCode.Accepted:
+                    pass
+            elif isinstance(item, ActimotTreeItem):
+                dlg = ActimotDialog(item.actimot_details, self)
+                # TODO: check other cases!!
+                dlg.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+                result = dlg.exec()
+                del dlg
+                # gc.collect()
                 if result == QDialog.DialogCode.Accepted:
                     pass
 

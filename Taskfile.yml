@@ -55,6 +55,10 @@ tasks:
       - pyside6-uic tse_analytics/modules/phenomaster/calo_details/views/calo_details_gas_settings_widget.ui -o tse_analytics/modules/phenomaster/calo_details/views/calo_details_gas_settings_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/calo_details/views/calo_details_test_fit_widget.ui -o tse_analytics/modules/phenomaster/calo_details/views/calo_details_test_fit_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/calo_details/views/calo_details_rer_widget.ui -o tse_analytics/modules/phenomaster/calo_details/views/calo_details_rer_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/actimot/views/actimot_dialog.ui -o tse_analytics/modules/phenomaster/actimot/views/actimot_dialog_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/actimot/views/actimot_plot_widget.ui -o tse_analytics/modules/phenomaster/actimot/views/actimot_plot_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/actimot/views/actimot_settings_widget.ui -o tse_analytics/modules/phenomaster/actimot/views/actimot_settings_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/actimot/views/actimot_mpl_plot_widget.ui -o tse_analytics/modules/phenomaster/actimot/views/actimot_mpl_plot_widget_ui.py
 
   clean:
     desc: remove all build, test, coverage and Python artifacts

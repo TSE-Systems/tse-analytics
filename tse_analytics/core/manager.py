@@ -42,6 +42,10 @@ class Manager:
         cls.workspace.add_meal_details(dataset_index, path)
 
     @classmethod
+    def import_actimot_details(cls, dataset_index: QModelIndex, path: str) -> None:
+        cls.workspace.add_actimot_details(dataset_index, path)
+
+    @classmethod
     def import_calo_details(cls, dataset_index: QModelIndex, path: str) -> None:
         cls.workspace.add_calo_details(dataset_index, path)
 

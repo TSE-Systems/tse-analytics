@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'meal_details_settings_widget.ui'
+## Form generated from reading UI file 'actimot_settings_widget.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.6.2
 ##
@@ -22,16 +22,16 @@ from PySide6.QtWidgets import (QApplication, QDoubleSpinBox, QFormLayout, QFrame
     QVBoxLayout, QWidget)
 import resources_rc
 
-class Ui_MealDetailsSettingsWidget(object):
-    def setupUi(self, MealDetailsSettingsWidget):
-        if not MealDetailsSettingsWidget.objectName():
-            MealDetailsSettingsWidget.setObjectName(u"MealDetailsSettingsWidget")
-        MealDetailsSettingsWidget.resize(288, 392)
-        self.verticalLayout = QVBoxLayout(MealDetailsSettingsWidget)
+class Ui_ActimotSettingsWidget(object):
+    def setupUi(self, ActimotSettingsWidget):
+        if not ActimotSettingsWidget.objectName():
+            ActimotSettingsWidget.setObjectName(u"ActimotSettingsWidget")
+        ActimotSettingsWidget.resize(288, 392)
+        self.verticalLayout = QVBoxLayout(ActimotSettingsWidget)
         self.verticalLayout.setSpacing(4)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(4, 4, 4, 4)
-        self.scrollArea = QScrollArea(MealDetailsSettingsWidget)
+        self.scrollArea = QScrollArea(ActimotSettingsWidget)
         self.scrollArea.setObjectName(u"scrollArea")
         self.scrollArea.setFrameShape(QFrame.NoFrame)
         self.scrollArea.setWidgetResizable(True)
@@ -166,31 +166,31 @@ class Ui_MealDetailsSettingsWidget(object):
         self.verticalLayout.addWidget(self.scrollArea)
 
 
-        self.retranslateUi(MealDetailsSettingsWidget)
+        self.retranslateUi(ActimotSettingsWidget)
 
-        QMetaObject.connectSlotsByName(MealDetailsSettingsWidget)
+        QMetaObject.connectSlotsByName(ActimotSettingsWidget)
     # setupUi
 
-    def retranslateUi(self, MealDetailsSettingsWidget):
-        self.groupBoxAnalysisType.setTitle(QCoreApplication.translate("MealDetailsSettingsWidget", u"Analysis Type", None))
-        self.radioButtonSequentialType.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Sequential", None))
-        self.radioButtonIntervalType.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Interval", None))
-        self.groupBoxSequentialSettings.setTitle(QCoreApplication.translate("MealDetailsSettingsWidget", u"Sequential Meal Analysis", None))
-        self.intermealIntervalLabel.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Inter-meal Interval [hh:mm:ss]", None))
-        self.intermealIntervalTimeEdit.setDisplayFormat(QCoreApplication.translate("MealDetailsSettingsWidget", u"HH:mm:ss", None))
-        self.drinkingMinimumAmountLabel.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Drinking Minimum Amount [ml]", None))
-        self.feedingMinimumAmountLabel.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Feeding Minimum Amount [g]", None))
-        self.groupBoxIntervalSettings.setTitle(QCoreApplication.translate("MealDetailsSettingsWidget", u"Interval Meal Analysis", None))
-        self.fixedIntervalLabel.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Fixed Interval [hh:mm:ss]", None))
-        self.fixedIntervalTimeEdit.setDisplayFormat(QCoreApplication.translate("MealDetailsSettingsWidget", u"HH:mm:ss", None))
-        self.groupBoxDiets.setTitle(QCoreApplication.translate("MealDetailsSettingsWidget", u"Diets", None))
+    def retranslateUi(self, ActimotSettingsWidget):
+        self.groupBoxAnalysisType.setTitle(QCoreApplication.translate("ActimotSettingsWidget", u"Analysis Type", None))
+        self.radioButtonSequentialType.setText(QCoreApplication.translate("ActimotSettingsWidget", u"Sequential", None))
+        self.radioButtonIntervalType.setText(QCoreApplication.translate("ActimotSettingsWidget", u"Interval", None))
+        self.groupBoxSequentialSettings.setTitle(QCoreApplication.translate("ActimotSettingsWidget", u"Sequential Meal Analysis", None))
+        self.intermealIntervalLabel.setText(QCoreApplication.translate("ActimotSettingsWidget", u"Inter-meal Interval [hh:mm:ss]", None))
+        self.intermealIntervalTimeEdit.setDisplayFormat(QCoreApplication.translate("ActimotSettingsWidget", u"HH:mm:ss", None))
+        self.drinkingMinimumAmountLabel.setText(QCoreApplication.translate("ActimotSettingsWidget", u"Drinking Minimum Amount [ml]", None))
+        self.feedingMinimumAmountLabel.setText(QCoreApplication.translate("ActimotSettingsWidget", u"Feeding Minimum Amount [g]", None))
+        self.groupBoxIntervalSettings.setTitle(QCoreApplication.translate("ActimotSettingsWidget", u"Interval Meal Analysis", None))
+        self.fixedIntervalLabel.setText(QCoreApplication.translate("ActimotSettingsWidget", u"Fixed Interval [hh:mm:ss]", None))
+        self.fixedIntervalTimeEdit.setDisplayFormat(QCoreApplication.translate("ActimotSettingsWidget", u"HH:mm:ss", None))
+        self.groupBoxDiets.setTitle(QCoreApplication.translate("ActimotSettingsWidget", u"Diets", None))
 #if QT_CONFIG(tooltip)
-        self.toolButtonAddDiet.setToolTip(QCoreApplication.translate("MealDetailsSettingsWidget", u"Add diet", None))
+        self.toolButtonAddDiet.setToolTip(QCoreApplication.translate("ActimotSettingsWidget", u"Add diet", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
-        self.toolButtonDeleteDiet.setToolTip(QCoreApplication.translate("MealDetailsSettingsWidget", u"Delete selected diet", None))
+        self.toolButtonDeleteDiet.setToolTip(QCoreApplication.translate("ActimotSettingsWidget", u"Delete selected diet", None))
 #endif // QT_CONFIG(tooltip)
-        self.pushButtonResetSettings.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Reset Settings", None))
+        self.pushButtonResetSettings.setText(QCoreApplication.translate("ActimotSettingsWidget", u"Reset Settings", None))
         pass
     # retranslateUi
 

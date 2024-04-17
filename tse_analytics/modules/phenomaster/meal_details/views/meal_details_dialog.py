@@ -73,8 +73,6 @@ class MealDetailsDialog(QDialog):
             self.meal_episodes_intake_plot_widget, "Episodes Intake"
         )
 
-        self.ui.toolBox.removeItem(0)
-
         self.ui.toolButtonCalculate.clicked.connect(self.__calculate)
         self.ui.toolButtonExport.clicked.connect(self.__export_meal_data)
 
@@ -89,6 +87,7 @@ class MealDetailsDialog(QDialog):
         self.meal_details_box_selector = MealDetailsBoxSelector(self.__filter_boxes, self.meal_details_settings_widget)
         self.meal_details_box_selector.set_data(meal_details.dataset)
 
+        self.ui.toolBox.removeItem(0)
         self.ui.toolBox.addItem(self.meal_details_box_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Boxes")
         self.ui.toolBox.addItem(self.meal_details_settings_widget, QIcon(":/icons/icons8-dog-tag-16.png"), "Settings")
 
