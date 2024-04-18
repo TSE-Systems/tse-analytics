@@ -54,7 +54,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         self.process = psutil.Process(os.getpid())
-        self.setAttribute(Qt.WA_DeleteOnClose)
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
         self.ui_timer = QTimer(self)
         self.ui_timer.timeout.connect(self.update_memory_usage)
