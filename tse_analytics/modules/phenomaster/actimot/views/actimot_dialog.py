@@ -1,7 +1,6 @@
 import timeit
 
 import pandas as pd
-
 import traja
 from loguru import logger
 from PySide6.QtCore import QSettings, Qt
@@ -11,12 +10,13 @@ from PySide6.QtWidgets import QDialog, QFileDialog, QWidget
 from tse_analytics.modules.phenomaster.actimot.actimot_settings import ActimotSettings
 from tse_analytics.modules.phenomaster.actimot.data.actimot_animal_item import ActimotAnimalItem
 from tse_analytics.modules.phenomaster.actimot.data.actimot_details import ActimotDetails
-from tse_analytics.modules.phenomaster.actimot.views.actimot_stream_plot_widget import ActimotStreamPlotWidget
 from tse_analytics.modules.phenomaster.actimot.views.actimot_box_selector import ActimotBoxSelector
 from tse_analytics.modules.phenomaster.actimot.views.actimot_dialog_ui import Ui_ActimotDialog
+from tse_analytics.modules.phenomaster.actimot.views.actimot_frames_widget import ActimotFramesWidget
 from tse_analytics.modules.phenomaster.actimot.views.actimot_heatmap_plot_widget import ActimotHeatmapPlotWidget
 from tse_analytics.modules.phenomaster.actimot.views.actimot_plot_widget import ActimotPlotWidget
 from tse_analytics.modules.phenomaster.actimot.views.actimot_settings_widget import ActimotSettingsWidget
+from tse_analytics.modules.phenomaster.actimot.views.actimot_stream_plot_widget import ActimotStreamPlotWidget
 from tse_analytics.modules.phenomaster.actimot.views.actimot_table_view import ActimotTableView
 from tse_analytics.modules.phenomaster.actimot.views.actimot_trajectory_plot_widget import ActimotTrajectoryPlotWidget
 from tse_analytics.views.misc.toast import Toast
@@ -42,6 +42,10 @@ class ActimotDialog(QDialog):
         self.actimot_plot_widget.set_variables(actimot_details.variables)
         self.actimot_plot_widget.set_data(actimot_details.raw_df)
         self.ui.tabWidget.addTab(self.actimot_plot_widget, "Events Plot")
+
+        self.actimot_frames_widget = ActimotFramesWidget()
+        self.actimot_frames_widget.set_data(actimot_details.raw_df)
+        self.ui.tabWidget.addTab(self.actimot_frames_widget, "Frames")
 
         self.actimot_trajectory_plot_widget = ActimotTrajectoryPlotWidget()
         self.ui.tabWidget.addTab(self.actimot_trajectory_plot_widget, "Trajectory")
