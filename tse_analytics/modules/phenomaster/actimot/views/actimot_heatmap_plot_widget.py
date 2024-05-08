@@ -56,9 +56,7 @@ class ActimotHeatmapPlotWidget(QWidget):
 
         x, y = zip(*df.values)
 
-        hist, x_edges, y_edges = np.histogram2d(
-            x, y, bins, range=((xmin, xmax), (ymin, ymax)), density=normalize
-        )
+        hist, x_edges, y_edges = np.histogram2d(x, y, bins, range=((xmin, xmax), (ymin, ymax)), density=normalize)
 
         # rotate to keep y as first dimension
         hist = np.rot90(hist)
@@ -66,9 +64,7 @@ class ActimotHeatmapPlotWidget(QWidget):
         if log:
             hist = np.log(hist + np.e)
 
-        image = ax.imshow(
-            hist, interpolation="bilinear", aspect="equal", extent=[xmin, xmax, ymin, ymax], cmap="Reds"
-        )
+        image = ax.imshow(hist, interpolation="bilinear", aspect="equal", extent=[xmin, xmax, ymin, ymax], cmap="Reds")
         # TODO: Adjust colorbar ytick_labels to correspond with time
         label = "Frames" if not log else "$ln(frames)$"
         colorbar(image, ax=ax, label=label)

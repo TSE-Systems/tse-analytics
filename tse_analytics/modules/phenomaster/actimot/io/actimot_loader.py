@@ -47,8 +47,15 @@ class ActimotLoader:
                     break
 
         usecols = ["DateTime", "Rel. [s]", "BoxNr", "X (cm)", "Y (cm)", "X", "Y"]
-        dtype = {"DateTime": str, "Rel. [s]": np.float64, "BoxNr": np.uint8, "X (cm)": np.float64, "Y (cm)": np.float64,
-                 "X": str, "Y": str}
+        dtype = {
+            "DateTime": str,
+            "Rel. [s]": np.float64,
+            "BoxNr": np.uint8,
+            "X (cm)": np.float64,
+            "Y (cm)": np.float64,
+            "X": str,
+            "Y": str,
+        }
 
         for i in range(1, 65):
             usecols.append(f"X{i}")

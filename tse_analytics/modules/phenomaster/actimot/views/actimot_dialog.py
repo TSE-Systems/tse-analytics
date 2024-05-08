@@ -105,7 +105,7 @@ class ActimotDialog(QDialog):
         trj_df.spatial_units = "cm"
 
         preprocessed_trj = trj_df.copy()
-        preprocessed_trj["time"] = preprocessed_trj["time"].astype("int64") / 10 ** 9
+        preprocessed_trj["time"] = preprocessed_trj["time"].astype("int64") / 10**9
         preprocessed_trj = traja.get_derivatives(preprocessed_trj)
 
         df = pd.concat([new_df, preprocessed_trj], ignore_index=False, axis="columns")

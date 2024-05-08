@@ -21,9 +21,7 @@ class TrajaAccessor(object):
     @staticmethod
     def _set_axes(axes):
         if len(axes) != 2:
-            raise ValueError(
-                "TrajaAccessor requires precisely two axes, got {}".format(len(axes))
-            )
+            raise ValueError("TrajaAccessor requires precisely two axes, got {}".format(len(axes)))
         TrajaAccessor.__axes = axes
 
     def _strip(self, text):
@@ -34,13 +32,8 @@ class TrajaAccessor(object):
 
     @staticmethod
     def _validate(obj):
-        if (
-            TrajaAccessor.__axes[0] not in obj.columns
-            or TrajaAccessor.__axes[1] not in obj.columns
-        ):
-            raise AttributeError(
-                "Must have '{}' and '{}'.".format(*TrajaAccessor.__axes)
-            )
+        if TrajaAccessor.__axes[0] not in obj.columns or TrajaAccessor.__axes[1] not in obj.columns:
+            raise AttributeError("Must have '{}' and '{}'.".format(*TrajaAccessor.__axes))
 
     @property
     def center(self):
@@ -238,9 +231,7 @@ class TrajaAccessor(object):
         return ax
 
     def plot_collection(self, colors=None, **kwargs):
-        return traja.plotting.plot_collection(
-            self._obj, id_col=self._id_col, colors=colors, **kwargs
-        )
+        return traja.plotting.plot_collection(self._obj, id_col=self._id_col, colors=colors, **kwargs)
 
     def apply_all(self, method, id_col=None, **kwargs):
         """Applies method to all trajectories and returns grouped dataframes or series"""

@@ -43,9 +43,7 @@ class ActimotStreamPlotWidget(QWidget):
         Z = np.sqrt(U * U + V * V)
 
         ax.contourf(X, Y, Z)
-        ax.contour(
-            X, Y, Z, colors="k", linewidths=1, linestyles="solid"
-        )
+        ax.contour(X, Y, Z, colors="k", linewidths=1, linestyles="solid")
         ax.streamplot(X, Y, U, V, color=Z, cmap=cmap)
 
         ax = _label_axes(self.trj_df, ax)

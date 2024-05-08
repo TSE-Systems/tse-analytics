@@ -193,10 +193,7 @@ class TrajaDataFrame(pd.DataFrame):
             np.array, calculated coordinates of convex hull boundary
         """
         if values is not None and not values.shape[1] == 2:
-            raise Exception(
-                "XY coordinates must be in separate columns "
-                "for convex hull calculation."
-            )
+            raise Exception("XY coordinates must be in separate columns " "for convex hull calculation.")
         elif values is None:
             self._convex_hull = np.array([])
         else:
@@ -290,9 +287,7 @@ class TrajaCollection(TrajaDataFrame):
         >>> coll.plot() # doctest: +SKIP
 
         """
-        return traja.plotting.plot_collection(
-            self, self._id_col, colors=colors, **kwargs
-        )
+        return traja.plotting.plot_collection(self, self._id_col, colors=colors, **kwargs)
 
     def apply_all(self, method, **kwargs):
         """Applies method to all trajectories

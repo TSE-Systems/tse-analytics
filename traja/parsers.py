@@ -2,8 +2,7 @@ from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
-from pandas.core.dtypes.common import (is_datetime64_any_dtype,
-                                       is_timedelta64_dtype)
+from pandas.core.dtypes.common import is_datetime64_any_dtype, is_timedelta64_dtype
 
 from traja import TrajaDataFrame
 
@@ -37,9 +36,7 @@ def from_df(df: pd.DataFrame, xcol=None, ycol=None, time_col=None, **kwargs):
         traj_df["x"] = pd.to_numeric(traj_df[xcol], errors="coerce")
         traj_df["y"] = pd.to_numeric(traj_df[ycol], errors="coerce")
     if time_col:
-        traj_df[time_col] = pd.to_timedelta(
-            traj_df[time_col], unit=kwargs.get("time_units", "s")
-        )
+        traj_df[time_col] = pd.to_timedelta(traj_df[time_col], unit=kwargs.get("time_units", "s"))
         kwargs.update({"time_col": time_col})
 
     # Initialize metadata
@@ -89,9 +86,7 @@ def read_file(
     date_parser = kwargs.pop("date_parser", None)
 
     # TODO: Set index to first column containing 'time'
-    df_test = pd.read_csv(
-        filepath, nrows=10, parse_dates=parse_dates, infer_datetime_format=True
-    )
+    df_test = pd.read_csv(filepath, nrows=10, parse_dates=parse_dates, infer_datetime_format=True)
 
     if xcol is not None or ycol is not None:
         if not xcol in df_test or ycol not in df_test:
@@ -125,9 +120,7 @@ def read_file(
         for format_str in format_strs:
             date_parser = lambda x: pd.datetime.strptime(x, format_str)
             try:
-                df_test = pd.read_csv(
-                    filepath, date_parser=date_parser, nrows=10, parse_dates=[time_col]
-                )
+                df_test = pd.read_csv(filepath, date_parser=date_parser, nrows=10, parse_dates=[time_col])
             except ValueError:
                 pass
             if is_datetime64_any_dtype(df_test[time_col]):

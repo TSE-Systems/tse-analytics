@@ -59,5 +59,5 @@ class ActimotFramesWidget(QWidget):
         self.ui.labelFrameImage.setPixmap(pixmap)
 
         self.ui.labelFrameNumber.setText(f"Frame: {self.frame_number}")
-        self.ui.labelDateTime.setText(f"DateTime: {datetime.isoformat(sep=' ', timespec='milliseconds')}")
+        self.ui.labelDateTime.setText(f"DateTime: {datetime.isoformat(sep=" ", timespec="milliseconds")}")
         self.ui.labelCentroid.setText(f"Centroid: {centroid}")

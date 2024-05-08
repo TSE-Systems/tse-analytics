@@ -5,8 +5,7 @@ from typing import Callable, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
-from pandas.core.dtypes.common import (is_datetime64_any_dtype,
-                                       is_timedelta64_dtype)
+from pandas.core.dtypes.common import is_datetime64_any_dtype, is_timedelta64_dtype
 from scipy import signal
 from scipy.spatial.distance import directed_hausdorff, euclidean
 
@@ -186,9 +185,7 @@ def length(trj: TrajaDataFrame) -> float:
     return displacement.sum()
 
 
-def expected_sq_displacement(
-    trj: TrajaDataFrame, n: int = 0, eqn1: bool = True
-) -> float:
+def expected_sq_displacement(trj: TrajaDataFrame, n: int = 0, eqn1: bool = True) -> float:
     """Expected displacement.
 
     .. note::
@@ -207,16 +204,11 @@ def expected_sq_displacement(
     if eqn1:
         # Eqn 1
         alpha = np.arctan2(s, c)
-        gamma = ((1 - c) ** 2 - s2) * np.cos((n + 1) * alpha) - 2 * s * (
-            1 - c
-        ) * np.sin((n + 1) * alpha)
+        gamma = ((1 - c) ** 2 - s2) * np.cos((n + 1) * alpha) - 2 * s * (1 - c) * np.sin((n + 1) * alpha)
         esd = (
             n * l2
             + 2 * l1**2 * ((c - c**2 - s2) * n - c) / ((1 - c) ** 2 + s2)
-            + 2
-            * l1**2
-            * ((2 * s2 + (c + s2) ** ((n + 1) / 2)) / ((1 - c) ** 2 + s2) ** 2)
-            * gamma
+            + 2 * l1**2 * ((2 * s2 + (c + s2) ** ((n + 1) / 2)) / ((1 - c) ** 2 + s2) ** 2) * gamma
         )
         return abs(esd)
     else:
@@ -284,11 +276,7 @@ def traj_from_coords(
     # Allocate times if they aren't already known
     if "time" not in trj:
         if fps is None:
-            raise Exception(
-                (
-                    "Cannot create a trajectory without times: either fps or a time column must be specified"
-                )
-            )
+            raise Exception(("Cannot create a trajectory without times: either fps or a time column must be specified"))
         # Assign times to each frame, starting at 0
         trj["time"] = pd.Series(np.arange(0, len(trj)) / fps)
 
@@ -438,9 +426,7 @@ def calc_laterality(
 
     distance = step_lengths(trj)
     distance_mask = distance > dist_thresh
-    angle_mask = ((turn_angle > angle_thresh) & (turn_angle < 90)) | (
-        (turn_angle < -angle_thresh) & (turn_angle > -90)
-    )
+    angle_mask = ((turn_angle > angle_thresh) & (turn_angle < 90)) | ((turn_angle < -angle_thresh) & (turn_angle > -90))
 
     turns = turn_angle[distance_mask & angle_mask].dropna()
     left_turns = turns[turn_angle > 0].shape[0]
@@ -513,9 +499,7 @@ def _grid_coords1D(grid_indices: np.ndarray):
     grid_indices1D = []
     nr_cols = int(grid_indices[:, 0].max()) + 1
     for coord in grid_indices:
-        grid_indices1D.append(
-            coord[1] * nr_cols + coord[0]
-        )  # nr_rows * col_length + nr_cols
+        grid_indices1D.append(coord[1] * nr_cols + coord[0])  # nr_rows * col_length + nr_cols
 
     return np.array(grid_indices1D, dtype=int)
 
@@ -651,9 +635,7 @@ def generate(
     else:
         np.random.seed(seed)
     if angular_error_dist is None:
-        angular_error_dist = np.random.normal(
-            loc=0.0, scale=angular_error_sd, size=n - 1
-        )
+        angular_error_dist = np.random.normal(loc=0.0, scale=angular_error_sd, size=n - 1)
     if linear_error_dist is None:
         linear_error_dist = np.random.normal(loc=0.0, scale=linear_error_sd, size=n - 1)
     angular_errors = angular_error_dist
@@ -702,9 +684,7 @@ def generate(
     return df
 
 
-def _resample_time(
-    trj: TrajaDataFrame, step_time: Union[float, int, str], errors="coerce"
-):
+def _resample_time(trj: TrajaDataFrame, step_time: Union[float, int, str], errors="coerce"):
     if not is_datetime_or_timedelta_dtype(trj.index):
         raise Exception(f"{trj.index.dtype} is not datetime or timedelta.")
     try:
@@ -714,11 +694,7 @@ def _resample_time(
             if errors == "coerce":
                 logger.warning("Duplicate time indices, keeping first")
                 trj = trj.loc[~trj.index.duplicated(keep="first")]
-                df = (
-                    trj.resample(step_time)
-                    .bfill(limit=1)
-                    .interpolate(method="spline", order=2)
-                )
+                df = trj.resample(step_time).bfill(limit=1).interpolate(method="spline", order=2)
             else:
                 logger.error("Error: duplicate time indices")
                 raise ValueError("Duplicate values in indices")
@@ -774,17 +750,13 @@ def resample_time(trj: TrajaDataFrame, step_time: str, new_fps: Optional[bool] =
                             eg, step_time='2100L'"""
                     )
             except Exception:
-                raise NotImplementedError(
-                    f"Inferring from time format {step_time} not yet implemented."
-                )
+                raise NotImplementedError(f"Inferring from time format {step_time} not yet implemented.")
         _trj = trj.set_index(time_col)
         time_units = _trj.__dict__.get("time_units", "s")
         _trj.index = pd.to_datetime(_trj.index, unit=time_units)
         _trj = _resample_time(_trj, step_time)
     else:
-        raise NotImplementedError(
-            f"Time column ({time_col}) not of expected dataset type."
-        )
+        raise NotImplementedError(f"Time column ({time_col}) not of expected dataset type.")
     return _trj
 
 
@@ -853,18 +825,14 @@ def rediscretize_points(trj: TrajaDataFrame, R: Union[float, int], time_out=Fals
     results = _rediscretize_points(trj, R, time_out)
     rt = results["rt"]
     if len(rt) < 2:
-        raise RuntimeError(
-            f"Step length {R} is too large for path (path length {len(trj)})"
-        )
+        raise RuntimeError(f"Step length {R} is too large for path (path length {len(trj)})")
     rt = traja.from_xy(rt)
     if time_out:
         rt["time"] = results["time"]
     return rt
 
 
-def _rediscretize_points(
-    trj: TrajaDataFrame, R: Union[float, int], time_out=False
-) -> dict:
+def _rediscretize_points(trj: TrajaDataFrame, R: Union[float, int], time_out=False) -> dict:
     """Helper function for :func:`traja.trajectory.rediscretize`.
 
     Args:
@@ -895,9 +863,7 @@ def _rediscretize_points(
     while candidate_start <= n_points:
         # Find the first point `curr_ind` for which |points[curr_ind] - p_0| >= R
         curr_ind = np.NaN
-        for i in range(
-            candidate_start, n_points
-        ):  # range of search space for next point
+        for i in range(candidate_start, n_points):  # range of search space for next point
             d = np.linalg.norm(points[i] - result[step_nr])
             if d >= R:
                 curr_ind = i  # curr_ind is in [candidate, n_points)
@@ -919,9 +885,7 @@ def _rediscretize_points(
         prev_y = points[curr_ind - 1, 1]
 
         # a = 1 if points[k, 0] <= xk_1 else 0
-        lambda_ = np.arctan2(
-            points[curr_ind, 1] - prev_y, points[curr_ind, 0] - prev_x
-        )  # angle
+        lambda_ = np.arctan2(points[curr_ind, 1] - prev_y, points[curr_ind, 0] - prev_x)  # angle
         cos_l = np.cos(lambda_)
         sin_l = np.sin(lambda_)
         U = (curr_result_x - prev_x) * cos_l + (curr_result_y - prev_y) * sin_l
@@ -1032,9 +996,7 @@ def calc_displacement(trj: TrajaDataFrame, lag=1):
         Name: displacement, dtype: float64
 
     """
-    displacement = np.sqrt(
-        np.power(trj.x.shift(lag) - trj.x, 2) + np.power(trj.y.shift(lag) - trj.y, 2)
-    )
+    displacement = np.sqrt(np.power(trj.x.shift(lag) - trj.x, 2) + np.power(trj.y.shift(lag) - trj.y, 2))
     displacement.name = "displacement"
     return displacement
 
@@ -1070,21 +1032,15 @@ def calc_derivatives(trj: TrajaDataFrame):
 
     # get cumulative seconds
     if is_datetime64_any_dtype(trj[time_col]):
-        displacement_time = (
-            trj[time_col].astype(int).div(10**9).diff().fillna(0).cumsum()
-        )
+        displacement_time = trj[time_col].astype(int).div(10**9).diff().fillna(0).cumsum()
     else:
         try:
             displacement_time = trj[time_col].diff().fillna(0).cumsum()
         except TypeError:
-            raise Exception(
-                f"Format (example {trj[time_col][0]}) not recognized as datetime"
-            )
+            raise Exception(f"Format (example {trj[time_col][0]}) not recognized as datetime")
 
     # TODO: Create DataFrame directly
-    derivs = pd.DataFrame(
-        OrderedDict(displacement=displacement, displacement_time=displacement_time)
-    )
+    derivs = pd.DataFrame(OrderedDict(displacement=displacement, displacement_time=displacement_time))
 
     return derivs
 
@@ -1130,9 +1086,7 @@ def calc_heading(trj: TrajaDataFrame):
     return trj.heading
 
 
-def speed_intervals(
-    trj: TrajaDataFrame, faster_than: float = None, slower_than: float = None
-) -> pd.DataFrame:
+def speed_intervals(trj: TrajaDataFrame, faster_than: float = None, slower_than: float = None) -> pd.DataFrame:
     """Calculate speed time intervals.
 
     Returns a dictionary of time intervals where speed is slower and/or faster than specified values.
@@ -1164,9 +1118,7 @@ def speed_intervals(
     derivs = get_derivatives(trj)
 
     if faster_than is None and slower_than is None:
-        raise Exception(
-            "Parameters faster_than and slower_than are both None, at least one must be provided."
-        )
+        raise Exception("Parameters faster_than and slower_than are both None, at least one must be provided.")
 
     # Calculate trajectory speeds
     speed = derivs["speed"].values
@@ -1186,15 +1138,10 @@ def speed_intervals(
     # Handle situation where interval begins or ends outside of trajectory
     if len(start_frames) > 0 or len(stop_frames) > 0:
         # Assume interval started at beginning of trajectory, since we don't know what happened before that
-        if len(stop_frames) > 0 and (
-            len(start_frames) == 0 or stop_frames[0] < start_frames[0]
-        ):
+        if len(stop_frames) > 0 and (len(start_frames) == 0 or stop_frames[0] < start_frames[0]):
             start_frames = np.append(1, start_frames)
         # Similarly, assume that interval can't extend past end of trajectory
-        if (
-            len(stop_frames) == 0
-            or start_frames[len(start_frames) - 1] > stop_frames[len(stop_frames) - 1]
-        ):
+        if len(stop_frames) == 0 or start_frames[len(start_frames) - 1] > stop_frames[len(stop_frames) - 1]:
             stop_frames = np.append(stop_frames, len(speed) - 1)
 
     stop_times = times[stop_frames]
@@ -1261,11 +1208,7 @@ def get_derivatives(trj: TrajaDataFrame):
 
 
 def _get_xylim(trj: TrajaDataFrame) -> Tuple[Tuple, Tuple]:
-    if (
-        "xlim" in trj.__dict__
-        and "ylim" in trj.__dict__
-        and isinstance(trj.xlim, (list, tuple))
-    ):
+    if "xlim" in trj.__dict__ and "ylim" in trj.__dict__ and isinstance(trj.xlim, (list, tuple)):
         return trj.xlim, trj.ylim
     else:
         xlim = trj.x.min(), trj.x.max()
@@ -1337,9 +1280,7 @@ def determine_colinearity(p0: np.ndarray, p1: np.ndarray, p2: np.ndarray):
 
     """
 
-    cross_product = (p1[0] - p0[0]) * (p2[1] - p0[1]) - (p1[1] - p0[1]) * (
-        p2[0] - p0[0]
-    )
+    cross_product = (p1[0] - p0[0]) * (p2[1] - p0[1]) - (p1[1] - p0[1]) * (p2[0] - p0[0])
 
     if cross_product < 0:  # Right turn
         return False
@@ -1395,17 +1336,10 @@ def inside(
         # Test if horizontal trace from the point to infinity intersects the given polygon line segment
         if ((bounds_ys[i] > pt[1]) != (bounds_ys[j] > pt[1])) & (
             pt[0]
-            < (
-                (bounds_xs[j] - bounds_xs[i])
-                * (pt[1] - bounds_ys[i])
-                / (bounds_ys[j] - bounds_ys[i])
-                + bounds_xs[i]
-            )
+            < ((bounds_xs[j] - bounds_xs[i]) * (pt[1] - bounds_ys[i]) / (bounds_ys[j] - bounds_ys[i]) + bounds_xs[i])
         ):
             ct += 1
-    if (
-        ct % 2 == 0
-    ):  # Number of intersections between point, polygon edge(s) and infinity point are odd:
+    if ct % 2 == 0:  # Number of intersections between point, polygon edge(s) and infinity point are odd:
         return True  # Outside polygon
     else:
         return False  # Inside polygon
@@ -1455,16 +1389,12 @@ def calc_convex_hull(point_arr: np.array) -> np.array:
     bounds_x, bounds_y = extrema_xys[0], extrema_xys[1]
 
     # Filter trajectory points to only include points "outside" of this extrema polygon
-    convex_mask = np.apply_along_axis(
-        inside, 1, point_arr, bounds_x, bounds_y, minx, maxx, miny, maxy
-    )
+    convex_mask = np.apply_along_axis(inside, 1, point_arr, bounds_x, bounds_y, minx, maxx, miny, maxy)
     point_arr = point_arr[convex_mask]
 
     # Find principal point (lowest y, lower x) from which to start
     p0 = point_arr[point_arr[:, 1] == point_arr[:, 1].min()].min(axis=0)
-    point_arr = np.delete(
-        point_arr, np.where((point_arr[:, 0] == p0[0]) & (point_arr[:, 1] == p0[1])), 0
-    )
+    point_arr = np.delete(point_arr, np.where((point_arr[:, 0] == p0[0]) & (point_arr[:, 1] == p0[1])), 0)
     # Sort remaining points
     point_arr = point_arr[np.lexsort((point_arr[:, 0], point_arr[:, 1]))]
     # Populate array with direction of each point in the trajectory to the principal (lowest, then leftmost) point
@@ -1476,14 +1406,10 @@ def calc_convex_hull(point_arr: np.array) -> np.array:
 
     # Check for points with duplicate angles from principal point, only keep furthest point
     unique_r = np.unique(point_arr_r_p0, return_index=True)[1]
-    if (
-        unique_r.shape == point_arr_r_p0.shape
-    ):  # There are no two points at same angle from x axis
+    if unique_r.shape == point_arr_r_p0.shape:  # There are no two points at same angle from x axis
         pass
     else:
-        point_arr_d_p0 = np.apply_along_axis(
-            lambda x, p0=p0: np.linalg.norm(p0 - x), 1, point_arr
-        )
+        point_arr_d_p0 = np.apply_along_axis(lambda x, p0=p0: np.linalg.norm(p0 - x), 1, point_arr)
         # Identify duplicate angles
         unique, counts = np.unique(point_arr_r_p0, axis=0, return_counts=True)
         rep_angles = unique[counts > 1]
@@ -1492,17 +1418,10 @@ def calc_convex_hull(point_arr: np.array) -> np.array:
         # Get indices of only the furthest point from origin at each unique angle
         dropped_pts = []
         for dup_pt in duplicates:
-            pt_idx = np.where(
-                (point_arr[:, 0] == dup_pt[0]) & (point_arr[:, 1] == dup_pt[1])
-            )[0][0]
+            pt_idx = np.where((point_arr[:, 0] == dup_pt[0]) & (point_arr[:, 1] == dup_pt[1]))[0][0]
             r_val = point_arr_r_p0[pt_idx]
-            ind_furthest = np.where(
-                point_arr_d_p0
-                == point_arr_d_p0[np.where(point_arr_r_p0 == r_val)].max()
-            )[0][0]
-            if (
-                not pt_idx == ind_furthest
-            ):  # This is a "closer" point to origin, not in convex hull
+            ind_furthest = np.where(point_arr_d_p0 == point_arr_d_p0[np.where(point_arr_r_p0 == r_val)].max())[0][0]
+            if not pt_idx == ind_furthest:  # This is a "closer" point to origin, not in convex hull
                 dropped_pts.append(pt_idx)
         point_arr = np.delete(point_arr, dropped_pts, axis=0)
 
@@ -1515,9 +1434,7 @@ def calc_convex_hull(point_arr: np.array) -> np.array:
             if idx <= 1:
                 break
             # Continue working backwards until a left turn is made, or we reach the origin
-            elif determine_colinearity(
-                point_arr[idx - 2], point_arr[idx - 1], point_arr[idx]
-            ):
+            elif determine_colinearity(point_arr[idx - 2], point_arr[idx - 1], point_arr[idx]):
                 break
             else:  # This is a right turn
                 point_arr = np.delete(point_arr, idx - 1, 0)
