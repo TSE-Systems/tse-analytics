@@ -154,7 +154,9 @@ class AnovaWidget(QWidget, MessengerListener):
             anova = pg.anova(data=df, dv=dependent_variable, between=factor_name, detailed=True).round(3)
             anova_header = "One-way ANOVA"
         else:
-            post_hoc_test = pg.pairwise_gameshowell(data=df, dv=dependent_variable, between=factor_name, effsize=effsize).round(3)
+            post_hoc_test = pg.pairwise_gameshowell(
+                data=df, dv=dependent_variable, between=factor_name, effsize=effsize
+            ).round(3)
             post_hoc_test_header = "Pairwise Games-Howell post-hoc test"
 
             anova = pg.welch_anova(data=df, dv=dependent_variable, between=factor_name).round(3)

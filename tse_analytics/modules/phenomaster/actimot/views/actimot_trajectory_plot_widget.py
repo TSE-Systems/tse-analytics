@@ -3,9 +3,12 @@ from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
+from tse_analytics.core.manager import Manager
+from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.phenomaster.actimot.views.actimot_trajectory_plot_widget_ui import (
     Ui_ActimotTrajectoryPlotWidget,
 )
+from tse_analytics.views.misc.toast import Toast
 
 
 class ActimotTrajectoryPlotWidget(QWidget):
@@ -24,6 +27,8 @@ class ActimotTrajectoryPlotWidget(QWidget):
 
         self.trj_df: traja.TrajaDataFrame | None = None
 
+        self.toast = None
+
     def set_data(self, trj_df: traja.TrajaDataFrame) -> None:
         self.trj_df = trj_df
         # self.__update_plot()
@@ -33,6 +38,14 @@ class ActimotTrajectoryPlotWidget(QWidget):
             self.ui.canvas.clear(True)
             return
 
+        self.ui.toolButtonCalculate.setEnabled(False)
+        self.toast = Toast(text="Processing...", parent=self, duration=None)
+        self.toast.show_toast()
+
+        worker = Worker(self.work)
+        Manager.threadpool.start(worker)
+
+    def work(self):
         self.ui.canvas.clear(False)
         ax = self.ui.canvas.figure.add_subplot(111)
 
@@ -44,3 +57,6 @@ class ActimotTrajectoryPlotWidget(QWidget):
 
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()
+
+        self.toast.close_toast()
+        self.ui.toolButtonCalculate.setEnabled(True)
