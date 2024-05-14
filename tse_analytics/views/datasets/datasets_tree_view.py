@@ -1,5 +1,3 @@
-import gc
-import weakref
 from functools import partial
 
 from PySide6.QtCore import QItemSelection, QModelIndex, QSize, Qt
@@ -15,17 +13,17 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from tse_analytics.modules.phenomaster.actimot.models.actimot_tree_item import ActimotTreeItem
-from tse_analytics.modules.phenomaster.actimot.views.actimot_dialog import ActimotDialog
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.core.licensing import LicenseManager
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import SelectedTreeNodeChangedMessage
+from tse_analytics.modules.phenomaster.actimot.models.actimot_tree_item import ActimotTreeItem
+from tse_analytics.modules.phenomaster.actimot.views.actimot_dialog import ActimotDialog
 from tse_analytics.modules.phenomaster.calo_details.models.calo_details_tree_item import CaloDetailsTreeItem
-from tse_analytics.modules.phenomaster.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.modules.phenomaster.calo_details.views.calo_details_dialog import CaloDetailsDialog
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.modules.phenomaster.meal_details.models.meal_details_tree_item import MealDetailsTreeItem
 from tse_analytics.modules.phenomaster.meal_details.views.meal_details_dialog import MealDetailsDialog
+from tse_analytics.modules.phenomaster.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.views.datasets_merge_dialog import DatasetsMergeDialog
 
 

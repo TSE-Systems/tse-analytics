@@ -49,6 +49,7 @@ class Variable:
 class TimePhase:
     name: str
     start_timestamp: datetime
+    exclude: bool
 
 
 @dataclass

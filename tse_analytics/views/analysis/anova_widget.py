@@ -2,6 +2,7 @@ import pingouin as pg
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QMessageBox, QTableWidgetItem, QWidget
 
+from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import DatasetChangedMessage
@@ -228,12 +229,24 @@ class AnovaWidget(QWidget, MessengerListener):
         self.ui.webView.setHtml(html)
 
     def __analyze_rm_anova(self, dependent_variable: str):
+        if not Manager.data.binning_params.apply or Manager.data.binning_params.mode == BinningMode.INTERVALS:
+            QMessageBox.warning(
+                self,
+                "Cannot perform analysis!",
+                "Please apply binning in Dark/Light Cycles or Time Phases mode.",
+                buttons=QMessageBox.StandardButton.Abort,
+                defaultButton=QMessageBox.StandardButton.Abort,
+            )
+            return
+
         df = Manager.data.get_current_df(variables=[dependent_variable], dropna=True)
 
         anova = pg.rm_anova(data=df, dv=dependent_variable, within="Bin", subject="Animal", detailed=True).round(3)
 
-        # padjust = self.p_adjustment[self.ui.comboBoxPAdjustment.currentText()]
-        # pairwise_tests = pg.pairwise_tests(data=df, dv=dependent_variable, within="Bin", subject="Animal", return_desc=True, padjust=padjust).round(3)
+        padjust = self.p_adjustment[self.ui.comboBoxPAdjustment.currentText()]
+        pairwise_tests = pg.pairwise_tests(
+            data=df, dv=dependent_variable, within="Bin", subject="Animal", return_desc=True, padjust=padjust
+        ).round(3)
 
         html_template = """
                 <html>
@@ -243,6 +256,8 @@ class AnovaWidget(QWidget, MessengerListener):
                   <body>
                     <h3>Repeated measures one-way ANOVA</h3>
                     {anova}
+                    <h3>Pairwise tests</h3>
+                    {pairwise_tests}
                   </body>
                 </html>
                 """
@@ -250,7 +265,7 @@ class AnovaWidget(QWidget, MessengerListener):
         html = html_template.format(
             style=style,
             anova=anova.to_html(classes="mystyle"),
-            # pairwise_tests=pairwise_tests.to_html(classes="mystyle"),
+            pairwise_tests=pairwise_tests.to_html(classes="mystyle"),
         )
         self.ui.webView.setHtml(html)
 
@@ -260,6 +275,16 @@ class AnovaWidget(QWidget, MessengerListener):
                 self,
                 "Cannot perform analysis!",
                 "Please select one factor.",
+                buttons=QMessageBox.StandardButton.Abort,
+                defaultButton=QMessageBox.StandardButton.Abort,
+            )
+            return
+
+        if not Manager.data.binning_params.apply or Manager.data.binning_params.mode == BinningMode.INTERVALS:
+            QMessageBox.warning(
+                self,
+                "Cannot perform analysis!",
+                "Please apply binning in Dark/Light Cycles or Time Phases mode.",
                 buttons=QMessageBox.StandardButton.Abort,
                 defaultButton=QMessageBox.StandardButton.Abort,
             )
@@ -275,7 +300,12 @@ class AnovaWidget(QWidget, MessengerListener):
             between=factor_name,
             within="Bin",
             subject="Animal",
-        ).round(6)
+        ).round(3)
+
+        padjust = self.p_adjustment[self.ui.comboBoxPAdjustment.currentText()]
+        pairwise_tests = pg.pairwise_tests(
+            data=df, dv=dependent_variable, within="Bin", subject="Animal", return_desc=True, padjust=padjust
+        ).round(3)
 
         html_template = """
                 <html>
@@ -285,6 +315,8 @@ class AnovaWidget(QWidget, MessengerListener):
                   <body>
                     <h3>Mixed-design ANOVA</h3>
                     {anova}
+                    <h3>Pairwise tests</h3>
+                    {pairwise_tests}
                   </body>
                 </html>
                 """
@@ -292,6 +324,7 @@ class AnovaWidget(QWidget, MessengerListener):
         html = html_template.format(
             style=style,
             anova=anova.to_html(classes="mystyle"),
+            pairwise_tests=pairwise_tests.to_html(classes="mystyle"),
         )
         self.ui.webView.setHtml(html)
 

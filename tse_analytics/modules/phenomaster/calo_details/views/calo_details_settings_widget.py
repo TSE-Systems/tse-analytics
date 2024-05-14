@@ -1,10 +1,10 @@
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.modules.phenomaster.calo_details.calo_details_settings import CaloDetailsSettings
 from tse_analytics.modules.phenomaster.calo_details.views.calo_details_settings_widget_ui import (
     Ui_CaloDetailsSettingsWidget,
 )
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
 
 class CaloDetailsSettingsWidget(QWidget):

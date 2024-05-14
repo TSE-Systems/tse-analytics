@@ -49,7 +49,7 @@ def merge_datasets(
     # reassign bin and timedelta
     start_date_time = new_df["DateTime"][0]
     # find minimum sampling interval
-    timedelta = min([dataset.sampling_interval for dataset in datasets])
+    timedelta = min(dataset.sampling_interval for dataset in datasets)
     new_df["Timedelta"] = new_df["DateTime"] - start_date_time
     new_df["Bin"] = (new_df["Timedelta"] / timedelta).round().astype(int)
 

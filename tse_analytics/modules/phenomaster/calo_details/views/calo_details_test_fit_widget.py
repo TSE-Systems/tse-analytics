@@ -1,7 +1,7 @@
 import pandas as pd
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QDialog, QFileDialog, QWidget
+from PySide6.QtWidgets import QFileDialog, QWidget
 
 from tse_analytics.modules.phenomaster.calo_details.calo_details_processor import calculate_fit_v2, curve_fitting_func
 from tse_analytics.modules.phenomaster.calo_details.views.calo_details_settings_widget import CaloDetailsSettingsWidget

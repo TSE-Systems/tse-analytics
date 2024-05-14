@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>TimePhasesSettingsWidget</class>
  <widget class="QWidget" name="TimePhasesSettingsWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>294</width>
+    <height>276</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -14,6 +22,9 @@
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
        <widget class="QTableView" name="tableViewTimePhases">
+        <property name="selectionMode">
+         <enum>QAbstractItemView::SingleSelection</enum>
+        </property>
         <attribute name="verticalHeaderDefaultSectionSize">
          <number>24</number>
         </attribute>

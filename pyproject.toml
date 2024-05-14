@@ -21,7 +21,6 @@ openpyxl = "3.1.2"
 pandas = {version="2.2.2"}
 pingouin = "0.5.4"
 plotly = "5.22.0"
-prophet = "1.1.5"
 psutil = "5.9.8"
 pyqtgraph = "0.13.7"
 seaborn = "0.13.2"
@@ -29,13 +28,16 @@ seaborn = "0.13.2"
 [tool.poetry.group.dev.dependencies]
 mypy = "1.10.0"
 pyinstaller = "6.6.0"
-pylint = "3.1.0"
+pylint = "3.2.0"
 pytest = "8.2.0"
 ruff = "0.4.4"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pylint.main]
+ignore-patterns = ['.*ui\.py']
 
 [tool.pylint.format]
 max-line-length = 120
