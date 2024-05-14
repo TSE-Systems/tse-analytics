@@ -64,7 +64,7 @@ class BinningSettingsWidget(QWidget, MessengerListener):
 
     def __binning_params_changed(self):
         apply = self.ui.applyBinningCheckBox.isChecked()
-        mode = BinningMode(self.ui.binningModeComboBox.currentText())
+        mode = BinningMode(self.ui.binningModeComboBox.currentText()) if apply else BinningMode.INTERVALS
         operation = BinningOperation(self.ui.binningOperationComboBox.currentText())
         params = BinningParams(
             apply,

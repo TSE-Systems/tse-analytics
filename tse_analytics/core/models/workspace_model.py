@@ -5,6 +5,8 @@ from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt, Signal
 from tse_analytics.core.data.workspace import Workspace
 from tse_analytics.core.models.tree_item import TreeItem
 from tse_analytics.core.models.workspace_tree_item import WorkspaceTreeItem
+from tse_analytics.modules.phenomaster.actimot.io.actimot_loader import ActimotLoader
+from tse_analytics.modules.phenomaster.actimot.models.actimot_tree_item import ActimotTreeItem
 from tse_analytics.modules.phenomaster.calo_details.io.calo_details_loader import CaloDetailsLoader
 from tse_analytics.modules.phenomaster.calo_details.models.calo_details_tree_item import CaloDetailsTreeItem
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
@@ -137,6 +139,10 @@ class WorkspaceModel(QAbstractItemModel):
                     meal_details_tree_item = MealDetailsTreeItem(dataset.meal_details)
                     dataset_tree_item.add_child(meal_details_tree_item)
 
+                if hasattr(dataset, "actimot_details") and dataset.actimot_details is not None:
+                    actimot_tree_item = ActimotTreeItem(dataset.actimot_details)
+                    dataset_tree_item.add_child(actimot_tree_item)
+
                 if hasattr(dataset, "calo_details") and dataset.calo_details is not None:
                     calo_details_tree_item = CaloDetailsTreeItem(dataset.calo_details)
                     dataset_tree_item.add_child(calo_details_tree_item)
@@ -165,6 +171,18 @@ class WorkspaceModel(QAbstractItemModel):
                 dataset_tree_item.dataset.meal_details = meal_details
                 dataset_tree_item.clear()
                 dataset_tree_item.add_child(meal_details_tree_item)
+                self.endResetModel()
+
+    def add_actimot_details(self, dataset_index: QModelIndex, path: str):
+        dataset_tree_item: DatasetTreeItem = self.getItem(dataset_index)
+        if dataset_tree_item is not None and dataset_tree_item.dataset is not None:
+            actimot_details = ActimotLoader.load(path, dataset_tree_item.dataset)
+            if actimot_details is not None:
+                actimot_tree_item = ActimotTreeItem(actimot_details)
+                self.beginResetModel()
+                dataset_tree_item.dataset.actimot_details = actimot_details
+                dataset_tree_item.clear()
+                dataset_tree_item.add_child(actimot_tree_item)
                 self.endResetModel()
 
     def add_calo_details(self, dataset_index: QModelIndex, path: str):

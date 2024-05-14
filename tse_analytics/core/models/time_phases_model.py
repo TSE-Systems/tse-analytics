@@ -8,7 +8,7 @@ from tse_analytics.core.messaging.messages import DatasetChangedMessage
 
 
 class TimePhasesModel(QAbstractTableModel):
-    header = ("Name", "Start timestamp")
+    header = ("Name", "Start timestamp", "Exclude")
 
     def __init__(self, items: list[TimePhase], parent=None):
         super().__init__(parent)
@@ -18,7 +18,7 @@ class TimePhasesModel(QAbstractTableModel):
     def data(self, index: QModelIndex, role: Qt.ItemDataRole):
         if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
             item = self.items[index.row()]
-            values = (item.name, item.start_timestamp.strftime("%Y-%m-%d %H:%M:%S"))
+            values = (item.name, item.start_timestamp.strftime("%Y-%m-%d %H:%M:%S"), item.exclude)
             return values[index.column()]
 
     def setData(self, index: QModelIndex, value, role: Qt.ItemDataRole):
@@ -29,6 +29,13 @@ class TimePhasesModel(QAbstractTableModel):
             elif index.column() == 1:
                 try:
                     item.start_timestamp = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+                    # Manager.data.selected_dataset.set_time_phases(self.items)
+                    Manager.messenger.broadcast(DatasetChangedMessage(self, Manager.data.selected_dataset))
+                except ValueError:
+                    return False
+            elif index.column() == 2:
+                try:
+                    item.exclude = value
                     # Manager.data.selected_dataset.set_time_phases(self.items)
                     Manager.messenger.broadcast(DatasetChangedMessage(self, Manager.data.selected_dataset))
                 except ValueError:

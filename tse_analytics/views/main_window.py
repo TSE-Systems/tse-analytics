@@ -1,8 +1,8 @@
 import os
 from functools import partial
 
-import PySide6QtAds
 import psutil
+import PySide6QtAds
 from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QCloseEvent, QIcon
 from PySide6.QtWidgets import QApplication, QComboBox, QFileDialog, QLabel, QMainWindow, QWidget
@@ -54,7 +54,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         self.process = psutil.Process(os.getpid())
-        self.setAttribute(Qt.WA_DeleteOnClose)
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
         self.ui_timer = QTimer(self)
         self.ui_timer.timeout.connect(self.update_memory_usage)

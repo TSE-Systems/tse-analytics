@@ -172,7 +172,6 @@ class Ui_MealDetailsSettingsWidget(object):
     # setupUi
 
     def retranslateUi(self, MealDetailsSettingsWidget):
-        MealDetailsSettingsWidget.setWindowTitle(QCoreApplication.translate("MealDetailsSettingsWidget", u"Form", None))
         self.groupBoxAnalysisType.setTitle(QCoreApplication.translate("MealDetailsSettingsWidget", u"Analysis Type", None))
         self.radioButtonSequentialType.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Sequential", None))
         self.radioButtonIntervalType.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Interval", None))
@@ -192,5 +191,6 @@ class Ui_MealDetailsSettingsWidget(object):
         self.toolButtonDeleteDiet.setToolTip(QCoreApplication.translate("MealDetailsSettingsWidget", u"Delete selected diet", None))
 #endif // QT_CONFIG(tooltip)
         self.pushButtonResetSettings.setText(QCoreApplication.translate("MealDetailsSettingsWidget", u"Reset Settings", None))
+        pass
     # retranslateUi
 

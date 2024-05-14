@@ -16,10 +16,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QGroupBox, QHBoxLayout,
-    QHeaderView, QRadioButton, QSizePolicy, QSpacerItem,
-    QSplitter, QTableWidget, QTableWidgetItem, QToolButton,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QGroupBox,
+    QHBoxLayout, QHeaderView, QRadioButton, QSizePolicy,
+    QSpacerItem, QSplitter, QTableWidget, QTableWidgetItem,
+    QToolButton, QVBoxLayout, QWidget)
 import resources_rc
 
 class Ui_AnovaWidget(object):
@@ -76,11 +76,16 @@ class Ui_AnovaWidget(object):
         self.groupBoxMode.setObjectName(u"groupBoxMode")
         self.verticalLayout_2 = QVBoxLayout(self.groupBoxMode)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.radioButtonAnova = QRadioButton(self.groupBoxMode)
-        self.radioButtonAnova.setObjectName(u"radioButtonAnova")
-        self.radioButtonAnova.setChecked(True)
+        self.radioButtonOneWayAnova = QRadioButton(self.groupBoxMode)
+        self.radioButtonOneWayAnova.setObjectName(u"radioButtonOneWayAnova")
+        self.radioButtonOneWayAnova.setChecked(True)
 
-        self.verticalLayout_2.addWidget(self.radioButtonAnova)
+        self.verticalLayout_2.addWidget(self.radioButtonOneWayAnova)
+
+        self.radioButtonNWayAnova = QRadioButton(self.groupBoxMode)
+        self.radioButtonNWayAnova.setObjectName(u"radioButtonNWayAnova")
+
+        self.verticalLayout_2.addWidget(self.radioButtonNWayAnova)
 
         self.radioButtonRMAnova = QRadioButton(self.groupBoxMode)
         self.radioButtonRMAnova.setObjectName(u"radioButtonRMAnova")
@@ -100,6 +105,30 @@ class Ui_AnovaWidget(object):
 
         self.verticalLayout_5.addWidget(self.groupBoxMode)
 
+        self.groupBoxPAdjustment = QGroupBox(self.groupBoxSettings)
+        self.groupBoxPAdjustment.setObjectName(u"groupBoxPAdjustment")
+        self.verticalLayout_7 = QVBoxLayout(self.groupBoxPAdjustment)
+        self.verticalLayout_7.setObjectName(u"verticalLayout_7")
+        self.comboBoxPAdjustment = QComboBox(self.groupBoxPAdjustment)
+        self.comboBoxPAdjustment.setObjectName(u"comboBoxPAdjustment")
+
+        self.verticalLayout_7.addWidget(self.comboBoxPAdjustment)
+
+
+        self.verticalLayout_5.addWidget(self.groupBoxPAdjustment)
+
+        self.groupBoxEffectSizeType = QGroupBox(self.groupBoxSettings)
+        self.groupBoxEffectSizeType.setObjectName(u"groupBoxEffectSizeType")
+        self.verticalLayout_6 = QVBoxLayout(self.groupBoxEffectSizeType)
+        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
+        self.comboBoxEffectSizeType = QComboBox(self.groupBoxEffectSizeType)
+        self.comboBoxEffectSizeType.setObjectName(u"comboBoxEffectSizeType")
+
+        self.verticalLayout_6.addWidget(self.comboBoxEffectSizeType)
+
+
+        self.verticalLayout_5.addWidget(self.groupBoxEffectSizeType)
+
         self.groupBoxDependentVariable = QGroupBox(self.groupBoxSettings)
         self.groupBoxDependentVariable.setObjectName(u"groupBoxDependentVariable")
         self.verticalLayout_3 = QVBoxLayout(self.groupBoxDependentVariable)
@@ -116,6 +145,7 @@ class Ui_AnovaWidget(object):
         self.tableWidgetDependentVariable.setSortingEnabled(True)
         self.tableWidgetDependentVariable.setColumnCount(3)
         self.tableWidgetDependentVariable.verticalHeader().setVisible(False)
+        self.tableWidgetDependentVariable.verticalHeader().setMinimumSectionSize(20)
         self.tableWidgetDependentVariable.verticalHeader().setDefaultSectionSize(20)
 
         self.verticalLayout_3.addWidget(self.tableWidgetDependentVariable)
@@ -139,6 +169,7 @@ class Ui_AnovaWidget(object):
         self.tableWidgetCovariates.setSortingEnabled(True)
         self.tableWidgetCovariates.setColumnCount(3)
         self.tableWidgetCovariates.verticalHeader().setVisible(False)
+        self.tableWidgetCovariates.verticalHeader().setMinimumSectionSize(20)
         self.tableWidgetCovariates.verticalHeader().setDefaultSectionSize(20)
 
         self.verticalLayout_4.addWidget(self.tableWidgetCovariates)
@@ -161,10 +192,13 @@ class Ui_AnovaWidget(object):
         self.toolButtonAnalyse.setText(QCoreApplication.translate("AnovaWidget", u"Analyze", None))
         self.groupBoxSettings.setTitle(QCoreApplication.translate("AnovaWidget", u"Settings", None))
         self.groupBoxMode.setTitle(QCoreApplication.translate("AnovaWidget", u"Mode", None))
-        self.radioButtonAnova.setText(QCoreApplication.translate("AnovaWidget", u"N-way ANOVA", None))
+        self.radioButtonOneWayAnova.setText(QCoreApplication.translate("AnovaWidget", u"One-way ANOVA", None))
+        self.radioButtonNWayAnova.setText(QCoreApplication.translate("AnovaWidget", u"N-way ANOVA", None))
         self.radioButtonRMAnova.setText(QCoreApplication.translate("AnovaWidget", u"Repeated measures ANOVA", None))
         self.radioButtonMixedAnova.setText(QCoreApplication.translate("AnovaWidget", u"Mixed-design ANOVA", None))
         self.radioButtonAncova.setText(QCoreApplication.translate("AnovaWidget", u"ANCOVA", None))
+        self.groupBoxPAdjustment.setTitle(QCoreApplication.translate("AnovaWidget", u"P-values adjustment", None))
+        self.groupBoxEffectSizeType.setTitle(QCoreApplication.translate("AnovaWidget", u"Effect size type", None))
         self.groupBoxDependentVariable.setTitle(QCoreApplication.translate("AnovaWidget", u"Dependent Variable", None))
         self.groupBoxCovariates.setTitle(QCoreApplication.translate("AnovaWidget", u"Covariates", None))
     # retranslateUi

@@ -4,14 +4,14 @@ from PySide6.QtWidgets import QGraphicsOpacityEffect, QHBoxLayout, QLabel, QWidg
 
 
 class Toast(QWidget):
-    def __init__(self, text: str, parent: QWidget, duration=2000):
+    def __init__(self, text: str, parent: QWidget, duration=None):
         super().__init__(parent)
 
         self.__parent = parent
         self.__parent.installEventFilter(self)
         self.installEventFilter(self)
         self.__duration = duration
-        self.__opacity = 0.7
+        self.__opacity = 0.8
         self.__foregroundColor = "#EEEEEE"
         self.__backgroundColor = "#444444"
 
@@ -35,8 +35,8 @@ class Toast(QWidget):
         self.setGraphicsEffect(fade_effect)
 
         self.__animation = QPropertyAnimation(fade_effect, b"opacity")
-        self.__animation.setDuration(300)
-        self.__animation.setStartValue(0.0)
+        self.__animation.setDuration(200)
+        self.__animation.setStartValue(0)
         self.__animation.setEndValue(self.__opacity)
 
         # toast background
@@ -54,14 +54,22 @@ class Toast(QWidget):
         else:
             self.__animation.setDirection(QAbstractAnimation.Direction.Forward)
             self.__animation.start(QPropertyAnimation.DeletionPolicy.KeepWhenStopped)
-            self.__timer.singleShot(self.__duration, self.__hide_toast)
+            if self.__duration is not None:
+                self.__timer.singleShot(self.__duration, self.__hide_toast)
         return self.show()
+
+    def close_toast(self):
+        self.__animation.setStartValue(self.__opacity)
+        self.__animation.setEndValue(0)
+        self.__animation.finished.connect(self.deleteLater)
+        self.__animation.setDirection(QAbstractAnimation.Direction.Backward)
+        self.__animation.start(QPropertyAnimation.DeletionPolicy.DeleteWhenStopped)
 
     def __hide_toast(self):
         self.__timer.stop()
-        self.__animation.finished.connect(lambda: self.close())
+        self.__animation.finished.connect(self.close)
         self.__animation.setDirection(QAbstractAnimation.Direction.Backward)
-        self.__animation.start(QPropertyAnimation.DeletionPolicy.KeepWhenStopped)
+        self.__animation.start(QPropertyAnimation.DeletionPolicy.DeleteWhenStopped)
 
     def setPosition(self, pos):
         geo = self.geometry()
@@ -79,17 +87,11 @@ class Toast(QWidget):
         self.setFixedWidth(self.__label.sizeHint().width() * 2)
         self.setFixedHeight(self.__label.sizeHint().height() * 2)
 
-    def __setForegroundColor(self):
-        self.__label.setStyleSheet(f"QLabel#popupLbl {{ color: {self.__foregroundColor}; padding: 5px; }}")
-
-    def __setBackgroundColor(self):
-        self.setStyleSheet(f"QWidget {{ background-color: {self.__backgroundColor}; border-radius: 5px; }}")
-
     def eventFilter(self, obj: QObject, e: QEvent) -> bool:
         if e.type() == 14:  # resize event
             self.setPosition(QPoint(self.__parent.rect().center().x(), self.__parent.rect().center().y()))
         elif isinstance(obj, Toast):
             if e.type() == 75:  # polish event
-                self.__setForegroundColor()
-                self.__setBackgroundColor()
+                self.__label.setStyleSheet(f"QLabel#popupLbl {{ color: {self.__foregroundColor}; padding: 5px; }}")
+                self.setStyleSheet(f"QWidget {{ background-color: {self.__backgroundColor}; border-radius: 5px; }}")
         return super().eventFilter(obj, e)

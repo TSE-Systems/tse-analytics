@@ -114,11 +114,11 @@ class Ui_CaloDetailsSettingsWidget(object):
     # setupUi
 
     def retranslateUi(self, CaloDetailsSettingsWidget):
-        CaloDetailsSettingsWidget.setWindowTitle(QCoreApplication.translate("CaloDetailsSettingsWidget", u"Form", None))
         self.groupBoxGeneralSettings.setTitle(QCoreApplication.translate("CaloDetailsSettingsWidget", u"General", None))
         self.iterationsLabel.setText(QCoreApplication.translate("CaloDetailsSettingsWidget", u"Iterations", None))
         self.predictionOffsetLabel.setText(QCoreApplication.translate("CaloDetailsSettingsWidget", u"Prediction Offset", None))
         self.flowLabel.setText(QCoreApplication.translate("CaloDetailsSettingsWidget", u"Flow [l/min]", None))
         self.groupBoxGasSettings.setTitle(QCoreApplication.translate("CaloDetailsSettingsWidget", u"Gas Settings", None))
+        pass
     # retranslateUi
 

@@ -15,15 +15,16 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QGroupBox, QHBoxLayout, QHeaderView,
-    QSizePolicy, QSpacerItem, QTableView, QToolButton,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QGroupBox, QHBoxLayout,
+    QHeaderView, QSizePolicy, QSpacerItem, QTableView,
+    QToolButton, QVBoxLayout, QWidget)
 import resources_rc
 
 class Ui_TimePhasesSettingsWidget(object):
     def setupUi(self, TimePhasesSettingsWidget):
         if not TimePhasesSettingsWidget.objectName():
             TimePhasesSettingsWidget.setObjectName(u"TimePhasesSettingsWidget")
+        TimePhasesSettingsWidget.resize(294, 276)
         self.verticalLayout = QVBoxLayout(TimePhasesSettingsWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.groupBoxPhases = QGroupBox(TimePhasesSettingsWidget)
@@ -32,6 +33,7 @@ class Ui_TimePhasesSettingsWidget(object):
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.tableViewTimePhases = QTableView(self.groupBoxPhases)
         self.tableViewTimePhases.setObjectName(u"tableViewTimePhases")
+        self.tableViewTimePhases.setSelectionMode(QAbstractItemView.SingleSelection)
         self.tableViewTimePhases.verticalHeader().setDefaultSectionSize(24)
 
         self.verticalLayout_2.addWidget(self.tableViewTimePhases)
