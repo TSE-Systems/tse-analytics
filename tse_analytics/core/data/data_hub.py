@@ -1,4 +1,6 @@
 import gc
+import sqlite3 as db
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -82,6 +84,16 @@ class DataHub:
         self.selected_animals = animals
         self._broadcast_data_changed()
 
+    def exclude_animals(self) -> None:
+        animal_ids = [animal.id for animal in self.selected_animals]
+        self.selected_dataset.exclude_animals(animal_ids)
+        self.selected_animals = []
+        self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
+
+    def exclude_time(self, start: datetime, end: datetime) -> None:
+        self.selected_dataset.exclude_time(start, end)
+        self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
+
     def set_selected_factor(self, factor: Factor | None) -> None:
         self.selected_factor = factor
         self._broadcast_data_changed()
@@ -106,6 +118,26 @@ class DataHub:
     def export_to_csv(self, path: str) -> None:
         if self.selected_dataset is not None:
             self.get_current_df().to_csv(path, sep=";", index=False)
+
+    def export_to_sqlite(self, path: str) -> None:
+        if self.selected_dataset is not None:
+            with db.connect(path) as connection:
+                self.get_current_df().to_sql("general", connection, if_exists="replace", index=False)
+                if self.selected_dataset.calo_details is not None:
+                    self.selected_dataset.calo_details.raw_df.to_sql(
+                        "calo_details", connection, if_exists="replace", index=False
+                    )
+                if hasattr(self.selected_dataset, "meal_details") and self.selected_dataset.meal_details is not None:
+                    self.selected_dataset.meal_details.raw_df.to_sql(
+                        "meal_details", connection, if_exists="replace", index=False
+                    )
+                if (
+                    hasattr(self.selected_dataset, "actimot_details")
+                    and self.selected_dataset.actimot_details is not None
+                ):
+                    self.selected_dataset.actimot_details.raw_df.to_sql(
+                        "actimot_details", connection, if_exists="replace", index=False
+                    )
 
     def append_fitting_results(
         self, calo_details: CaloDetails, fitting_results: dict[int, CaloDetailsFittingResult]

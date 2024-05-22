@@ -24,9 +24,7 @@ class Ui_DatasetsMergeDialog(object):
         if not DatasetsMergeDialog.objectName():
             DatasetsMergeDialog.setObjectName(u"DatasetsMergeDialog")
         DatasetsMergeDialog.resize(440, 132)
-        self._4 = QVBoxLayout(DatasetsMergeDialog)
-        self._4.setObjectName(u"_4")
-        self.verticalLayout = QVBoxLayout()
+        self.verticalLayout = QVBoxLayout(DatasetsMergeDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.groupBoxName = QGroupBox(DatasetsMergeDialog)
         self.groupBoxName.setObjectName(u"groupBoxName")
@@ -40,20 +38,17 @@ class Ui_DatasetsMergeDialog(object):
 
         self.verticalLayout.addWidget(self.groupBoxName)
 
-
-        self._4.addLayout(self.verticalLayout)
-
         self.checkBoxSingleRun = QCheckBox(DatasetsMergeDialog)
         self.checkBoxSingleRun.setObjectName(u"checkBoxSingleRun")
 
-        self._4.addWidget(self.checkBoxSingleRun)
+        self.verticalLayout.addWidget(self.checkBoxSingleRun)
 
         self.buttonBox = QDialogButtonBox(DatasetsMergeDialog)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setOrientation(Qt.Horizontal)
         self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
 
-        self._4.addWidget(self.buttonBox)
+        self.verticalLayout.addWidget(self.buttonBox)
 
 
         self.retranslateUi(DatasetsMergeDialog)

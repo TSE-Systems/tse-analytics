@@ -12,6 +12,10 @@ class DatasetTreeItem(TreeItem):
         self.dataset = dataset
         self.meta = dataset.meta
 
+    def rename_dataset(self, name: str) -> None:
+        self.dataset.name = name
+        self.name = name
+
     @property
     def icon(self):
         return QIcon(":/icons/icons8-sheets-16.png")

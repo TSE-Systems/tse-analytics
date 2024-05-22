@@ -5,7 +5,7 @@ import psutil
 import PySide6QtAds
 from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QCloseEvent, QIcon
-from PySide6.QtWidgets import QApplication, QComboBox, QFileDialog, QLabel, QMainWindow, QWidget
+from PySide6.QtWidgets import QApplication, QComboBox, QDialog, QFileDialog, QLabel, QMainWindow, QMessageBox, QWidget
 
 from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.helper import LAYOUT_VERSION, show_help
@@ -24,6 +24,7 @@ from tse_analytics.views.analysis.timeseries.timeseries_widget import Timeseries
 from tse_analytics.views.data.data_plot_widget import DataPlotWidget
 from tse_analytics.views.data.data_table_widget import DataTableWidget
 from tse_analytics.views.datasets.datasets_tree_view import DatasetsTreeView
+from tse_analytics.views.exclude_time_dialog import ExcludeTimeDialog
 from tse_analytics.views.help.help_widget import HelpWidget
 from tse_analytics.views.info.info_widget import InfoWidget
 from tse_analytics.views.log_widget import LogWidget
@@ -177,11 +178,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionImportDataset.triggered.connect(self.import_dataset_dialog)
         self.actionOpenWorkspace.triggered.connect(self.load_workspace_dialog)
         self.actionSaveWorkspace.triggered.connect(self.save_workspace_dialog)
-        self.actionExportExcel.triggered.connect(self.export_excel_dialog)
         self.actionExportCsv.triggered.connect(self.export_csv_dialog)
+        self.actionExportExcel.triggered.connect(self.export_excel_dialog)
+        self.actionExportSQLite.triggered.connect(self.export_sqlite_dialog)
         self.actionResetLayout.triggered.connect(self.__reset_layout)
         self.actionExit.triggered.connect(lambda: QApplication.exit())
         self.actionCompareRuns.triggered.connect(self.__compare_runs)
+        self.actionExcludeAnimals.triggered.connect(self.__exclude_animals)
+        self.actionExcludeTime.triggered.connect(self.__exclude_time)
         self.actionHelp.triggered.connect(lambda: show_help(self, "main.md"))
         self.actionAbout.triggered.connect(self.__show_about_dialog)
 
@@ -289,6 +293,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if filename:
             Manager.data.export_to_csv(filename)
 
+    def export_sqlite_dialog(self):
+        filename, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export to SQLite",
+            Manager.data.selected_dataset.name if Manager.data.selected_dataset is not None else "",
+            "SQLite Files (*.db)",
+        )
+        if filename:
+            Manager.data.export_to_sqlite(filename)
+
     def update_memory_usage(self):
         # return the memory usage in MB
         mem = self.process.memory_info()[0] / float(2**20)
@@ -304,12 +318,32 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionCompareRuns.setEnabled(
             Manager.data.selected_dataset is not None and Manager.data.selected_dataset.runs_count > 1
         )
+        self.actionExcludeAnimals.setEnabled(Manager.data.selected_dataset is not None)
+        self.actionExcludeTime.setEnabled(Manager.data.selected_dataset is not None)
 
     def __compare_runs(self):
         if self.compare_runs_widget is None:
             self.compare_runs_widget = CompareRunsWidget(self)
             self.compare_runs_widget.setWindowFlag(Qt.WindowType.Tool)
         self.compare_runs_widget.show()
+
+    def __exclude_animals(self):
+        if (
+            QMessageBox.question(self, "Exclude Animals", "Do you really want to exclude selected animals?")
+            == QMessageBox.StandardButton.Yes
+        ):
+            Manager.data.exclude_animals()
+
+    def __exclude_time(self):
+        min_datetime = Manager.data.selected_dataset.start_timestamp
+        max_datetime = Manager.data.selected_dataset.end_timestamp
+        dialog = ExcludeTimeDialog(min_datetime, max_datetime, self)
+        result = dialog.exec()
+        if result == QDialog.DialogCode.Accepted:
+            start = dialog.dateTimeEditStart.dateTime().toPython()
+            end = dialog.dateTimeEditEnd.dateTime().toPython()
+            Manager.data.exclude_time(start, end)
+        dialog.destroy()
 
     def __show_about_dialog(self):
         dlg = AboutDialog(self)

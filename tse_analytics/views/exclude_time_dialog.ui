@@ -1,36 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DatasetsMergeDialog</class>
- <widget class="QDialog" name="DatasetsMergeDialog">
+ <class>ExcludeTimeDialog</class>
+ <widget class="QDialog" name="ExcludeTimeDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>440</width>
-    <height>132</height>
+    <height>106</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Merge Datasets</string>
+   <string>Exclude Time</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QGroupBox" name="groupBoxName">
      <property name="title">
-      <string>Merged dataset name</string>
+      <string>Select time range to exclude</string>
      </property>
-     <layout class="QVBoxLayout" name="_3">
+     <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QLineEdit" name="lineEditName"/>
+       <widget class="QDateTimeEdit" name="dateTimeEditStart">
+        <property name="displayFormat">
+         <string>yyyy-MM-dd HH:mm:ss</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QDateTimeEdit" name="dateTimeEditEnd">
+        <property name="displayFormat">
+         <string>yyyy-MM-dd HH:mm:ss</string>
+        </property>
+       </widget>
       </item>
      </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QCheckBox" name="checkBoxSingleRun">
-     <property name="text">
-      <string>Merge as a single run</string>
-     </property>
     </widget>
    </item>
    <item>
@@ -50,7 +54,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>DatasetsMergeDialog</receiver>
+   <receiver>ExcludeTimeDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -66,7 +70,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>DatasetsMergeDialog</receiver>
+   <receiver>ExcludeTimeDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

@@ -1,6 +1,8 @@
+from datetime import datetime
 from typing import Any, Literal
 
 import pandas as pd
+from PySide6.QtCore import QDateTime
 
 from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.shared import Animal, Factor, Group, Variable
@@ -45,6 +47,11 @@ class Dataset:
         return first_value
 
     @property
+    def end_timestamp(self) -> pd.Timestamp:
+        last_value = self.original_df["DateTime"].iat[-1]
+        return last_value
+
+    @property
     def runs_count(self) -> int | None:
         return self.active_df["Run"].value_counts().count()
 
@@ -63,9 +70,39 @@ class Dataset:
             groups[group.name] = group
         return groups
 
-    def filter_by_animals(self, animal_ids: list[int]) -> pd.DataFrame:
-        df = self.active_df[self.active_df["Animal"].isin(animal_ids)]
-        return df
+    def exclude_animals(self, animal_ids: list[int]) -> None:
+        # Remove animals from factor's groups definitions
+        for factor in self.factors.values():
+            for group in factor.groups:
+                group_set = set(group.animal_ids)
+                filtered_set = group_set.difference(animal_ids)
+                group.animal_ids = list(filtered_set)
+
+        for animal_id in animal_ids:
+            self.animals.pop(animal_id)
+
+        new_meta_animals = []
+        for item in self.meta["Animals"]:
+            if item["id"] not in animal_ids:
+                new_meta_animals.append(item)
+        self.meta["Animals"] = new_meta_animals
+
+        self.original_df = self.original_df[~self.original_df["Animal"].isin(animal_ids)]
+        self.active_df = self.active_df[~self.active_df["Animal"].isin(animal_ids)]
+        if hasattr(self, "calo_details") and self.calo_details is not None:
+            self.calo_details.raw_df = self.calo_details.raw_df[~self.calo_details.raw_df["Animal"].isin(animal_ids)]
+        if hasattr(self, "meal_details") and self.meal_details is not None:
+            self.meal_details.raw_df = self.meal_details.raw_df[~self.meal_details.raw_df["Animal"].isin(animal_ids)]
+        if hasattr(self, "actimot_details") and self.actimot_details is not None:
+            self.actimot_details.raw_df = self.actimot_details.raw_df[
+                ~self.actimot_details.raw_df["Animal"].isin(animal_ids)
+            ]
+
+    def exclude_time(self, range_start: datetime, range_end: datetime) -> None:
+        self.original_df = self.original_df[
+            (self.original_df["DateTime"] < range_start) | (self.original_df["DateTime"] > range_end)]
+        self.active_df = self.active_df[
+            (self.active_df["DateTime"] < range_start) | (self.active_df["DateTime"] > range_end)]
 
     def filter_by_boxes(self, box_ids: list[int]) -> pd.DataFrame:
         df = self.active_df[self.active_df["Box"].isin(box_ids)]

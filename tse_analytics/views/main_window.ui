@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>1472</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -38,8 +38,9 @@
     <addaction name="separator"/>
     <addaction name="actionImportDataset"/>
     <addaction name="separator"/>
-    <addaction name="actionExportExcel"/>
     <addaction name="actionExportCsv"/>
+    <addaction name="actionExportExcel"/>
+    <addaction name="actionExportSQLite"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -61,6 +62,8 @@
      <string>&amp;Tools</string>
     </property>
     <addaction name="actionCompareRuns"/>
+    <addaction name="actionExcludeAnimals"/>
+    <addaction name="actionExcludeTime"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTools"/>
@@ -161,11 +164,6 @@
     <string>Reset Layout</string>
    </property>
   </action>
-  <action name="actionewfw">
-   <property name="text">
-    <string>ewfw</string>
-   </property>
-  </action>
   <action name="actionExportCsv">
    <property name="icon">
     <iconset resource="../../resources/resources.qrc">
@@ -193,6 +191,40 @@
    </property>
    <property name="text">
     <string>Help</string>
+   </property>
+  </action>
+  <action name="actionExportSQLite">
+   <property name="icon">
+    <iconset resource="../../resources/resources.qrc">
+     <normaloff>:/icons/icons8-export-16.png</normaloff>:/icons/icons8-export-16.png</iconset>
+   </property>
+   <property name="text">
+    <string>Export to SQLite</string>
+   </property>
+   <property name="toolTip">
+    <string>Export to SQLite...</string>
+   </property>
+  </action>
+  <action name="actionExcludeAnimals">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Exclude Animals...</string>
+   </property>
+   <property name="toolTip">
+    <string>Exclude animals</string>
+   </property>
+  </action>
+  <action name="actionExcludeTime">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Exclude Time...</string>
+   </property>
+   <property name="toolTip">
+    <string>Exclude time</string>
    </property>
   </action>
  </widget>

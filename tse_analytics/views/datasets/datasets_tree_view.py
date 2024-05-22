@@ -68,19 +68,18 @@ class DatasetsTreeView(QTreeView):
         menu = QMenu(self)
 
         if level == 1:
-            if len(indexes) == 1:
-                action = menu.addAction("Import meal details...")
-                action.triggered.connect(partial(self.__import_meal_details, indexes))
+            menu.addAction("Import meal details...").triggered.connect(partial(self.__import_meal_details, indexes))
+            menu.addAction("Import ActiMot details...").triggered.connect(
+                partial(self.__import_actimot_details, indexes)
+            )
 
-                action_actimot = menu.addAction("Import ActiMot details...")
-                action_actimot.triggered.connect(partial(self.__import_actimot_details, indexes))
+            if not LicenseManager.is_feature_missing("CurveFitting"):
+                action = menu.addAction("Import calo details...")
+                action.triggered.connect(partial(self.__import_calo_details, indexes))
 
-                if not LicenseManager.is_feature_missing("CurveFitting"):
-                    action = menu.addAction("Import calo details...")
-                    action.triggered.connect(partial(self.__import_calo_details, indexes))
+            menu.addSeparator()
 
-            action = menu.addAction("Adjust time...")
-            action.triggered.connect(partial(self.__adjust_dataset_time, indexes))
+            menu.addAction("Adjust time...").triggered.connect(partial(self.__adjust_dataset_time, indexes))
 
             action = menu.addAction("Merge datasets...")
             items = self.model().workspace_tree_item.child_items
@@ -93,8 +92,9 @@ class DatasetsTreeView(QTreeView):
             else:
                 action.triggered.connect(partial(self.__merge_datasets, indexes))
 
-            action = menu.addAction("Remove datasets")
-            action.triggered.connect(partial(self.__remove_datasets, indexes))
+            menu.addAction("Remove dataset").triggered.connect(partial(self.__remove_dataset, indexes))
+            menu.addAction("Clone dataset...").triggered.connect(partial(self.__clone_dataset, indexes))
+            menu.addAction("Rename dataset...").triggered.connect(partial(self.__rename_dataset, indexes))
 
         menu.exec_(self.viewport().mapToGlobal(position))
 
@@ -157,8 +157,29 @@ class DatasetsTreeView(QTreeView):
         if ok:
             Manager.data.adjust_dataset_time(indexes, delta)
 
-    def __remove_datasets(self, indexes: list[QModelIndex]):
+    def __remove_dataset(self, indexes: list[QModelIndex]):
         Manager.remove_dataset(indexes)
+
+    def __rename_dataset(self, indexes: list[QModelIndex]):
+        selected_index = indexes[0]
+        if selected_index.isValid():
+            item = selected_index.model().getItem(selected_index)
+            name, ok = QInputDialog.getText(
+                self, "Enter dataset name", "Name", QLineEdit.EchoMode.Normal, item.dataset.name
+            )
+            if ok:
+                item.rename_dataset(name)
+
+    def __clone_dataset(self, indexes: list[QModelIndex]):
+        selected_index = indexes[0]
+        if selected_index.isValid():
+            item = selected_index.model().getItem(selected_index)
+            dataset = item.dataset
+            name, ok = QInputDialog.getText(
+                self, "Enter new dataset name", "Name", QLineEdit.EchoMode.Normal, f"Clone of {dataset.name}"
+            )
+            if ok:
+                Manager.clone_dataset(dataset, name)
 
     def _treeview_current_changed(self, current: QModelIndex, previous: QModelIndex):
         if current.isValid():
@@ -175,21 +196,21 @@ class DatasetsTreeView(QTreeView):
         if index.isValid():
             item = index.model().getItem(index)
             if isinstance(item, CaloDetailsTreeItem):
-                dlg = CaloDetailsDialog(item.calo_details, self)
-                result = dlg.exec()
+                dialog = CaloDetailsDialog(item.calo_details, self)
+                result = dialog.exec()
                 if result == QDialog.DialogCode.Accepted:
-                    Manager.data.append_fitting_results(item.calo_details, dlg.fitting_results)
+                    Manager.data.append_fitting_results(item.calo_details, dialog.fitting_results)
             elif isinstance(item, MealDetailsTreeItem):
-                dlg = MealDetailsDialog(item.meal_details, self)
-                result = dlg.exec()
+                dialog = MealDetailsDialog(item.meal_details, self)
+                result = dialog.exec()
                 if result == QDialog.DialogCode.Accepted:
                     pass
             elif isinstance(item, ActimotTreeItem):
-                dlg = ActimotDialog(item.actimot_details, self)
+                dialog = ActimotDialog(item.actimot_details, self)
                 # TODO: check other cases!!
-                dlg.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-                result = dlg.exec()
-                del dlg
+                dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+                result = dialog.exec()
+                del dialog
                 # gc.collect()
                 if result == QDialog.DialogCode.Accepted:
                     pass

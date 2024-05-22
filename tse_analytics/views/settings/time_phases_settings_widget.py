@@ -46,7 +46,7 @@ class TimePhasesSettingsWidget(QWidget):
                 start_timestamp = start_timestamp + timedelta(hours=1)
             elif len(Manager.data.selected_dataset.original_df) > 0:
                 start_timestamp = Manager.data.selected_dataset.original_df["DateTime"][0]
-            time_phase = TimePhase(name=text, start_timestamp=start_timestamp, exclude=False)
+            time_phase = TimePhase(name=text, start_timestamp=start_timestamp)
             self.time_phases_model.add_time_phase(time_phase)
 
     def __delete_time_phase(self):
