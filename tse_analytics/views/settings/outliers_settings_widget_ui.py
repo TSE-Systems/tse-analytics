@@ -23,7 +23,6 @@ class Ui_OutliersSettingsWidget(object):
     def setupUi(self, OutliersSettingsWidget):
         if not OutliersSettingsWidget.objectName():
             OutliersSettingsWidget.setObjectName(u"OutliersSettingsWidget")
-        OutliersSettingsWidget.resize(546, 585)
         self.verticalLayout = QVBoxLayout(OutliersSettingsWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.scrollArea = QScrollArea(OutliersSettingsWidget)
@@ -32,7 +31,7 @@ class Ui_OutliersSettingsWidget(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 528, 567))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 188, 104))
         self.verticalLayout_3 = QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.groupBoxIQR = QGroupBox(self.scrollAreaWidgetContents)

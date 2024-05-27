@@ -24,9 +24,8 @@ class Ui_DataTableWidget(object):
     def setupUi(self, DataTableWidget):
         if not DataTableWidget.objectName():
             DataTableWidget.setObjectName(u"DataTableWidget")
-        DataTableWidget.resize(489, 630)
-        self.verticalLayout = QVBoxLayout(DataTableWidget)
-        self.verticalLayout.setObjectName(u"verticalLayout")
+        self._2 = QVBoxLayout(DataTableWidget)
+        self._2.setObjectName(u"_2")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.toolButtonResizeColumns = QToolButton(DataTableWidget)
@@ -43,7 +42,7 @@ class Ui_DataTableWidget(object):
         self.horizontalLayout.addItem(self.horizontalSpacer)
 
 
-        self.verticalLayout.addLayout(self.horizontalLayout)
+        self._2.addLayout(self.horizontalLayout)
 
         self.tableView = QTableView(DataTableWidget)
         self.tableView.setObjectName(u"tableView")
@@ -54,7 +53,7 @@ class Ui_DataTableWidget(object):
         self.tableView.verticalHeader().setMinimumSectionSize(20)
         self.tableView.verticalHeader().setDefaultSectionSize(20)
 
-        self.verticalLayout.addWidget(self.tableView)
+        self._2.addWidget(self.tableView)
 
 
         self.retranslateUi(DataTableWidget)
@@ -63,7 +62,7 @@ class Ui_DataTableWidget(object):
     # setupUi
 
     def retranslateUi(self, DataTableWidget):
-        DataTableWidget.setWindowTitle(QCoreApplication.translate("DataTableWidget", u"Form", None))
         self.toolButtonResizeColumns.setText(QCoreApplication.translate("DataTableWidget", u"Resize Columns", None))
+        pass
     # retranslateUi
 

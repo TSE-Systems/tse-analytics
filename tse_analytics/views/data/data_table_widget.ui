@@ -2,18 +2,7 @@
 <ui version="4.0">
  <class>DataTableWidget</class>
  <widget class="QWidget" name="DataTableWidget">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>489</width>
-    <height>630</height>
-   </rect>
-  </property>
-  <property name="windowTitle">
-   <string>Form</string>
-  </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="_2">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>

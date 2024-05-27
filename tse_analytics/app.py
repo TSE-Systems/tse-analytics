@@ -47,12 +47,12 @@ class App(QApplication):
         QApplication.__init__(self, args)
         self.setStyle("fusion")
         self.setOrganizationName("TSE Systems")
-        self.setOrganizationDomain("http://www.tse-systems.com")
+        self.setOrganizationDomain("https://www.tse-systems.com")
         self.setApplicationName("TSE Analytics")
         self.setWindowIcon(QIcon(":/icons/app.ico"))
 
         f = QFile(":/style.qss")
-        f.open(QFile.ReadOnly | QFile.Text)
+        f.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text)
         self.setStyleSheet(QTextStream(f).readAll())
         f.close()
 

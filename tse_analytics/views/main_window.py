@@ -36,7 +36,7 @@ from tse_analytics.views.settings.binning_settings_widget import BinningSettings
 from tse_analytics.views.settings.outliers_settings_widget import OutliersSettingsWidget
 from tse_analytics.views.tools.compare_runs_widget import CompareRunsWidget
 
-PySide6QtAds.CDockManager.setConfigFlags(PySide6QtAds.CDockManager.DefaultNonOpaqueConfig)
+PySide6QtAds.CDockManager.setConfigFlags(PySide6QtAds.CDockManager.DefaultOpaqueConfig)
 PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.ActiveTabHasCloseButton, False)
 PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.DockAreaHasCloseButton, False)
 PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.DockAreaHasUndockButton, False)
@@ -76,6 +76,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Create the dock manager. Because the parent parameter is a QMainWindow
         # the dock manager registers itself as the central widget.
         self.dock_manager = PySide6QtAds.CDockManager(self)
+        self.dock_manager.setStyleSheet("")
+
         self.default_docking_state = None
 
         data_table_dock_widget = self.__register_dock_widget(

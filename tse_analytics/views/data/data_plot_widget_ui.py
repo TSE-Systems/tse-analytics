@@ -26,7 +26,6 @@ class Ui_DataPlotWidget(object):
     def setupUi(self, DataPlotWidget):
         if not DataPlotWidget.objectName():
             DataPlotWidget.setObjectName(u"DataPlotWidget")
-        DataPlotWidget.resize(538, 607)
         self.verticalLayout = QVBoxLayout(DataPlotWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()
@@ -75,9 +74,9 @@ class Ui_DataPlotWidget(object):
     # setupUi
 
     def retranslateUi(self, DataPlotWidget):
-        DataPlotWidget.setWindowTitle(QCoreApplication.translate("DataPlotWidget", u"Form", None))
         self.label.setText(QCoreApplication.translate("DataPlotWidget", u"Variable:", None))
         self.checkBoxScatterPlot.setText(QCoreApplication.translate("DataPlotWidget", u"Scatter Plot", None))
         self.toolButtonDisplayErrors.setText(QCoreApplication.translate("DataPlotWidget", u"Display Errors", None))
+        pass
     # retranslateUi
 

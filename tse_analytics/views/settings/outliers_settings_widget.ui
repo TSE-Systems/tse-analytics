@@ -2,14 +2,6 @@
 <ui version="4.0">
  <class>OutliersSettingsWidget</class>
  <widget class="QWidget" name="OutliersSettingsWidget">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>546</width>
-    <height>585</height>
-   </rect>
-  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -27,8 +19,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>528</width>
-        <height>567</height>
+        <width>188</width>
+        <height>104</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_3">

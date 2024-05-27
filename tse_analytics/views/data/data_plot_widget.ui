@@ -2,17 +2,6 @@
 <ui version="4.0">
  <class>DataPlotWidget</class>
  <widget class="QWidget" name="DataPlotWidget">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>538</width>
-    <height>607</height>
-   </rect>
-  </property>
-  <property name="windowTitle">
-   <string>Form</string>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">

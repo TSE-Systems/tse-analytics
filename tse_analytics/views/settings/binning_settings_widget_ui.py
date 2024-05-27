@@ -27,7 +27,6 @@ class Ui_BinningSettingsWidget(object):
     def setupUi(self, BinningSettingsWidget):
         if not BinningSettingsWidget.objectName():
             BinningSettingsWidget.setObjectName(u"BinningSettingsWidget")
-        BinningSettingsWidget.resize(564, 607)
         self.verticalLayout_2 = QVBoxLayout(BinningSettingsWidget)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.scrollArea = QScrollArea(BinningSettingsWidget)
@@ -36,7 +35,7 @@ class Ui_BinningSettingsWidget(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 546, 589))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 190, 138))
         self.verticalLayout_3 = QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
