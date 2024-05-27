@@ -29,8 +29,6 @@ from tse_analytics.views.misc.toast import Toast
 
 
 class MealDetailsDialog(QDialog):
-    """MealDetails Dialog"""
-
     def __init__(self, meal_details: MealDetails, parent: QWidget | None = None):
         super().__init__(parent)
 

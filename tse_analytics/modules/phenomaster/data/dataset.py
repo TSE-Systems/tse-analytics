@@ -100,9 +100,11 @@ class Dataset:
 
     def exclude_time(self, range_start: datetime, range_end: datetime) -> None:
         self.original_df = self.original_df[
-            (self.original_df["DateTime"] < range_start) | (self.original_df["DateTime"] > range_end)]
+            (self.original_df["DateTime"] < range_start) | (self.original_df["DateTime"] > range_end)
+        ]
         self.active_df = self.active_df[
-            (self.active_df["DateTime"] < range_start) | (self.active_df["DateTime"] > range_end)]
+            (self.active_df["DateTime"] < range_start) | (self.active_df["DateTime"] > range_end)
+        ]
 
     def filter_by_boxes(self, box_ids: list[int]) -> pd.DataFrame:
         df = self.active_df[self.active_df["Box"].isin(box_ids)]

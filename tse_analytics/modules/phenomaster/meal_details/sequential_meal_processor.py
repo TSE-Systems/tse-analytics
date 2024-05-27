@@ -203,7 +203,9 @@ def __extract_sensor_episodes(
     id_ = []
     start_ = []
     duration_ = []
+    duration_minutes_ = []
     offset_ = []
+    offset_minutes_ = []
     quantity_ = []
     rate_ = []
 
@@ -212,7 +214,9 @@ def __extract_sensor_episodes(
         df = meal_events_df[meal_events_df[f"{sensor}EpisodeId"] == episode_id]
         id_.append(episode_id)
         start_.append(df["DateTime"].iloc[0])
-        offset_.append(df["DateTime"].iloc[0] - start_timestamp)
+        offset_delta = df["DateTime"].iloc[0] - start_timestamp
+        offset_.append(offset_delta)
+        offset_minutes_.append(round(offset_delta.total_seconds() / 60, 3))
 
         quantity = df[sensor].sum()
         quantity_.append(quantity)
@@ -220,9 +224,12 @@ def __extract_sensor_episodes(
         if len(df["DateTime"]) > 1:
             duration = df["DateTime"].iloc[-1] - df["DateTime"].iloc[0]
             duration_.append(duration)
-            rate_.append(quantity / (duration.total_seconds() / 60))
+            duration_minutes = round(duration.total_seconds() / 60, 3)
+            duration_minutes_.append(duration_minutes)
+            rate_.append(quantity / duration_minutes)
         else:
             duration_.append(None)
+            duration_minutes_.append(None)
             rate_.append(None)
 
     sensor_episodes_df = pd.DataFrame.from_dict({
@@ -232,8 +239,11 @@ def __extract_sensor_episodes(
         "Id": id_,
         "Start": start_,
         "Offset": offset_,
+        "Offset[minutes]": offset_minutes_,
         "Duration": duration_,
-        "Gap": None,
+        "Duration[minutes]": duration_minutes_,
+        "Gap": pd.NA,
+        "Gap[minutes]": pd.NA,
         "Quantity": quantity_,
         "Rate": rate_,
     })
@@ -243,8 +253,10 @@ def __extract_sensor_episodes(
         if index < len(episode_ids) - 1:
             current_episode = sensor_episodes_df[sensor_episodes_df["Id"] == episode_id]
             next_episode = sensor_episodes_df[sensor_episodes_df["Id"] == episode_ids[index + 1]]
-            sensor_episodes_df.loc[sensor_episodes_df["Id"] == episode_id, "Gap"] = (
-                next_episode["Start"].iloc[0] - current_episode["Start"].iloc[0] + current_episode["Duration"].iloc[0]
+            gap = next_episode["Start"].iloc[0] - current_episode["Start"].iloc[0] + current_episode["Duration"].iloc[0]
+            sensor_episodes_df.loc[sensor_episodes_df["Id"] == episode_id, "Gap"] = gap
+            sensor_episodes_df.loc[sensor_episodes_df["Id"] == episode_id, "Gap[minutes]"] = round(
+                gap.total_seconds() / 60, 3
             )
 
     return sensor_episodes_df
