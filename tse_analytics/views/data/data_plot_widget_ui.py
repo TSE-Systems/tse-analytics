@@ -40,15 +40,6 @@ class Ui_DataPlotWidget(object):
 
         self.horizontalLayout.addWidget(self.variableSelector)
 
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout.addItem(self.horizontalSpacer)
-
-        self.checkBoxScatterPlot = QCheckBox(DataPlotWidget)
-        self.checkBoxScatterPlot.setObjectName(u"checkBoxScatterPlot")
-
-        self.horizontalLayout.addWidget(self.checkBoxScatterPlot)
-
         self.toolButtonDisplayErrors = QToolButton(DataPlotWidget)
         self.toolButtonDisplayErrors.setObjectName(u"toolButtonDisplayErrors")
         icon = QIcon()
@@ -64,6 +55,15 @@ class Ui_DataPlotWidget(object):
 
         self.horizontalLayout.addWidget(self.comboBoxErrorType)
 
+        self.checkBoxScatterPlot = QCheckBox(DataPlotWidget)
+        self.checkBoxScatterPlot.setObjectName(u"checkBoxScatterPlot")
+
+        self.horizontalLayout.addWidget(self.checkBoxScatterPlot)
+
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout.addItem(self.horizontalSpacer)
+
 
         self.verticalLayout.addLayout(self.horizontalLayout)
 
@@ -75,8 +75,8 @@ class Ui_DataPlotWidget(object):
 
     def retranslateUi(self, DataPlotWidget):
         self.label.setText(QCoreApplication.translate("DataPlotWidget", u"Variable:", None))
-        self.checkBoxScatterPlot.setText(QCoreApplication.translate("DataPlotWidget", u"Scatter Plot", None))
         self.toolButtonDisplayErrors.setText(QCoreApplication.translate("DataPlotWidget", u"Display Errors", None))
+        self.checkBoxScatterPlot.setText(QCoreApplication.translate("DataPlotWidget", u"Scatter Plot", None))
         pass
     # retranslateUi
 

@@ -105,7 +105,7 @@ class DataHub:
     def _broadcast_data_changed(self):
         self.messenger.broadcast(DataChangedMessage(self))
 
-    def adjust_dataset_time(self, indexes: list[QModelIndex], delta: str) -> None:
+    def adjust_dataset_time(self, delta: str) -> None:
         if self.selected_dataset is not None:
             self.selected_dataset.adjust_time(delta)
             self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))

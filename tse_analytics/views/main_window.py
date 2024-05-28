@@ -24,7 +24,6 @@ from tse_analytics.views.analysis.timeseries.timeseries_widget import Timeseries
 from tse_analytics.views.data.data_plot_widget import DataPlotWidget
 from tse_analytics.views.data.data_table_widget import DataTableWidget
 from tse_analytics.views.datasets.datasets_tree_view import DatasetsTreeView
-from tse_analytics.views.exclude_time_dialog import ExcludeTimeDialog
 from tse_analytics.views.help.help_widget import HelpWidget
 from tse_analytics.views.info.info_widget import InfoWidget
 from tse_analytics.views.log_widget import LogWidget
@@ -35,6 +34,7 @@ from tse_analytics.views.selection.variables.variables_widget import VariablesWi
 from tse_analytics.views.settings.binning_settings_widget import BinningSettingsWidget
 from tse_analytics.views.settings.outliers_settings_widget import OutliersSettingsWidget
 from tse_analytics.views.tools.compare_runs_widget import CompareRunsWidget
+from tse_analytics.views.tools.exclude_time_dialog import ExcludeTimeDialog
 
 PySide6QtAds.CDockManager.setConfigFlags(PySide6QtAds.CDockManager.DefaultOpaqueConfig)
 PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.ActiveTabHasCloseButton, False)

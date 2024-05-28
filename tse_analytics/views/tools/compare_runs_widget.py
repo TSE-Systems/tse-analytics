@@ -1,5 +1,6 @@
 import seaborn as sns
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
+from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.manager import Manager
@@ -20,9 +21,9 @@ class CompareRunsWidget(QWidget, MessengerListener):
         self.variable = ""
         self.ui.variableSelector.currentTextChanged.connect(self.__variable_changed)
 
-        self.ui.horizontalLayout.insertWidget(
-            self.ui.horizontalLayout.count() - 1, NavigationToolbar2QT(self.ui.canvas, self)
-        )
+        plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
+        plot_toolbar.setIconSize(QSize(16, 16))
+        self.ui.horizontalLayout.insertWidget(self.ui.horizontalLayout.count() - 1, plot_toolbar)
 
         self.ui.variableSelector.set_data(Manager.data.selected_dataset.variables)
         self.__prepare_data()

@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from PySide6.QtWidgets import QDialog, QWidget
 
-from tse_analytics.views.exclude_time_dialog_ui import Ui_ExcludeTimeDialog
+from tse_analytics.views.tools.exclude_time_dialog_ui import Ui_ExcludeTimeDialog
 
 
 class ExcludeTimeDialog(QDialog, Ui_ExcludeTimeDialog):

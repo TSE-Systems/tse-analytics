@@ -20,7 +20,7 @@ class BarPlotView(QWidget):
         self._error_type = "sd"
         self._display_errors = False
 
-        self.canvas: FigureCanvasQTAgg | None = FigureCanvasQTAgg(None)
+        self.canvas = FigureCanvasQTAgg(None)
 
     def set_data(self, df: pd.DataFrame):
         self._df = df
@@ -53,11 +53,10 @@ class BarPlotView(QWidget):
         ):
             return
 
-        if self.canvas is not None:
-            self.layout().removeWidget(self.canvas)
-            self.canvas.figure.clear()
-            self.canvas.draw()
-            plt.close(self.canvas.figure)
+        self.layout().removeWidget(self.canvas)
+        self.canvas.figure.clear()
+        self.canvas.draw()
+        plt.close(self.canvas.figure)
 
         if not self._df.empty:
             match Manager.data.grouping_mode:

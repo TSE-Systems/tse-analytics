@@ -155,7 +155,7 @@ class DatasetsTreeView(QTreeView):
     def __adjust_dataset_time(self, indexes: list[QModelIndex]):
         delta, ok = QInputDialog.getText(self, "Enter time delta", "Delta", QLineEdit.EchoMode.Normal, "1 d")
         if ok:
-            Manager.data.adjust_dataset_time(indexes, delta)
+            Manager.data.adjust_dataset_time(delta)
 
     def __remove_dataset(self, indexes: list[QModelIndex]):
         Manager.remove_dataset(indexes)

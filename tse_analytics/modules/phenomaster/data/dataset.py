@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import Any, Literal
 
 import pandas as pd
-from PySide6.QtCore import QDateTime
 
 from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.shared import Animal, Factor, Group, Variable
@@ -116,9 +115,9 @@ class Dataset:
         df = df.dropna()
         return df
 
-    def adjust_time(self, delta: str) -> pd.DataFrame:
+    def adjust_time(self, delta: str) -> None:
+        self.original_df["DateTime"] = self.original_df["DateTime"] + pd.Timedelta(delta)
         self.active_df["DateTime"] = self.active_df["DateTime"] + pd.Timedelta(delta)
-        return self.active_df
 
     def set_factors(self, factors: dict[str, Factor]):
         self.factors = factors
@@ -145,7 +144,7 @@ class Dataset:
 
         self.active_df = df
 
-    def refresh_active_df(self):
+    def refresh_active_df(self) -> None:
         self.set_factors(self.factors)
 
     def __getstate__(self):

@@ -42,7 +42,7 @@ class DataPlotWidget(QWidget, MessengerListener):
 
         self.plotToolbar = NavigationToolbar2QT(self.barPlotView.canvas, self)
         self.plotToolbar.setIconSize(QSize(16, 16))
-        self.ui.horizontalLayout.insertWidget(self.ui.horizontalLayout.count(), self.plotToolbar)
+        self.ui.horizontalLayout.addWidget(self.plotToolbar)
         self.plotToolbar.hide()
 
     def register_to_messenger(self, messenger: Messenger):
@@ -115,6 +115,7 @@ class DataPlotWidget(QWidget, MessengerListener):
             self.timelinePlotView.set_variable(Manager.data.selected_variable, False)
             self.timelinePlotView.set_data(df)
             self.plotToolbar.hide()
+            self.ui.checkBoxScatterPlot.show()
         else:
             if Manager.data.binning_params.mode != self.active_binning_mode:
                 self.ui.verticalLayout.replaceWidget(self.timelinePlotView, self.barPlotView)
@@ -123,5 +124,11 @@ class DataPlotWidget(QWidget, MessengerListener):
                 self.active_binning_mode = Manager.data.binning_params.mode
             self.barPlotView.set_variable(Manager.data.selected_variable, False)
             self.barPlotView.set_data(df)
-            self.plotToolbar.canvas = self.barPlotView.canvas
-            self.plotToolbar.show()
+
+            self.ui.checkBoxScatterPlot.hide()
+            new_toolbar = NavigationToolbar2QT(self.barPlotView.canvas, self)
+            new_toolbar.setIconSize(QSize(16, 16))
+            self.plotToolbar.hide()
+            self.ui.horizontalLayout.replaceWidget(self.plotToolbar, new_toolbar)
+            self.plotToolbar.deleteLater()
+            self.plotToolbar = new_toolbar
