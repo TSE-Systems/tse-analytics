@@ -197,11 +197,15 @@ class DatasetsTreeView(QTreeView):
             item = index.model().getItem(index)
             if isinstance(item, CaloDetailsTreeItem):
                 dialog = CaloDetailsDialog(item.calo_details, self)
+                # TODO: check other cases!!
+                dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
                 result = dialog.exec()
                 if result == QDialog.DialogCode.Accepted:
                     Manager.data.append_fitting_results(item.calo_details, dialog.fitting_results)
             elif isinstance(item, MealDetailsTreeItem):
                 dialog = MealDetailsDialog(item.meal_details, self)
+                # TODO: check other cases!!
+                dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
                 result = dialog.exec()
                 if result == QDialog.DialogCode.Accepted:
                     pass

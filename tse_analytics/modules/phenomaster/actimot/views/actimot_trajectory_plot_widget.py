@@ -42,10 +42,10 @@ class ActimotTrajectoryPlotWidget(QWidget):
         self.toast = Toast(text="Processing...", parent=self, duration=None)
         self.toast.show_toast()
 
-        worker = Worker(self.work)
+        worker = Worker(self.__work)
         Manager.threadpool.start(worker)
 
-    def work(self):
+    def __work(self):
         self.ui.canvas.clear(False)
         ax = self.ui.canvas.figure.add_subplot(111)
 

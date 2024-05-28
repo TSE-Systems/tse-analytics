@@ -7,6 +7,8 @@ from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
 from PySide6.QtWidgets import QDialog, QFileDialog, QWidget
 
 from tse_analytics.core.data.shared import Variable
+from tse_analytics.core.manager import Manager
+from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details_animal_item import MealDetailsAnimalItem
 from tse_analytics.modules.phenomaster.meal_details.interval_meal_processor import process_meal_intervals
@@ -96,6 +98,7 @@ class MealDetailsDialog(QDialog):
         self.meal_intervals_df: pd.DataFrame | None = None
 
         self.__update_tabs()
+        self.toast = None
 
     def __update_tabs(self):
         settings = self.meal_details_settings_widget.get_meal_details_settings()
@@ -110,6 +113,18 @@ class MealDetailsDialog(QDialog):
     def __filter_boxes(self, selected_boxes: list[MealDetailsAnimalItem]):
         self.selected_boxes = selected_boxes
         self.__filter()
+
+    def __get_variables_subset(self) -> dict[str, Variable]:
+        variables_subset: dict[str, Variable] = {}
+        if "Drink1" in self.meal_details.variables:
+            variables_subset["Drink1"] = self.meal_details.variables["Drink1"]
+        if "Feed1" in self.meal_details.variables:
+            variables_subset["Feed1"] = self.meal_details.variables["Feed1"]
+        if "Drink2" in self.meal_details.variables:
+            variables_subset["Drink2"] = self.meal_details.variables["Drink2"]
+        if "Feed2" in self.meal_details.variables:
+            variables_subset["Feed2"] = self.meal_details.variables["Feed2"]
+        return variables_subset
 
     def __filter(self):
         events_df = self.meal_events_df
@@ -134,54 +149,41 @@ class MealDetailsDialog(QDialog):
 
         if intervals_df is not None:
             self.intervals_table_view.set_data(intervals_df)
-
-            variables_subset: dict[str, Variable] = {}
-            if "Drink1" in self.meal_details.variables:
-                variables_subset["Drink1"] = self.meal_details.variables["Drink1"]
-            if "Feed1" in self.meal_details.variables:
-                variables_subset["Feed1"] = self.meal_details.variables["Feed1"]
-            if "Drink2" in self.meal_details.variables:
-                variables_subset["Drink2"] = self.meal_details.variables["Drink2"]
-            if "Feed2" in self.meal_details.variables:
-                variables_subset["Feed2"] = self.meal_details.variables["Feed2"]
-            self.intervals_plot_widget.set_data(intervals_df, variables_subset)
+            self.intervals_plot_widget.set_data(intervals_df, self.__get_variables_subset())
 
     def __calculate(self):
-        tic = timeit.default_timer()
+        self.ui.toolButtonCalculate.setEnabled(False)
+        self.ui.toolButtonExport.setEnabled(False)
+
+        self.toast = Toast(text="Processing...", parent=self, duration=None)
+        self.toast.show_toast()
 
         meal_details_settings = self.meal_details_settings_widget.get_meal_details_settings()
         diets_dict = self.meal_details_box_selector.get_diets_dict()
 
-        variables_subset: dict[str, Variable] = {}
-        if "Drink1" in self.meal_details.variables:
-            variables_subset["Drink1"] = self.meal_details.variables["Drink1"]
-        if "Feed1" in self.meal_details.variables:
-            variables_subset["Feed1"] = self.meal_details.variables["Feed1"]
-        if "Drink2" in self.meal_details.variables:
-            variables_subset["Drink2"] = self.meal_details.variables["Drink2"]
-        if "Feed2" in self.meal_details.variables:
-            variables_subset["Feed2"] = self.meal_details.variables["Feed2"]
-
         if meal_details_settings.sequential_analysis_type:
-            self.__run_sequential_analysis(meal_details_settings, variables_subset, diets_dict)
+            worker = Worker(self.__do_sequential_analysis, meal_details_settings, diets_dict)
+            worker.signals.finished.connect(self.__sequential_analysis_finished)
         else:
-            self.__run_interval_analysis(meal_details_settings, variables_subset, diets_dict)
+            worker = Worker(self.__do_interval_analysis, meal_details_settings, diets_dict)
+            worker.signals.finished.connect(self.__interval_analysis_finished)
+        Manager.threadpool.start(worker)
 
-        self.__update_tabs()
-        self.ui.toolButtonExport.setEnabled(True)
-
-        logger.info(f"Meal analysis complete: {timeit.default_timer() - tic} sec")
-        Toast(text="Meal analysis complete.", parent=self, duration=4000).show_toast()
-
-    def __run_sequential_analysis(
+    def __do_sequential_analysis(
         self,
         meal_details_settings: MealDetailsSettings,
-        variables_subset: dict[str, Variable],
         diets_dict: dict[int, float],
     ):
+        tic = timeit.default_timer()
+
         self.meal_events_df, self.meal_episodes_df = process_meal_sequences(
             self.meal_details, meal_details_settings, diets_dict
         )
+
+        logger.info(f"Meal analysis complete: {timeit.default_timer() - tic} sec")
+
+    def __sequential_analysis_finished(self):
+        variables_subset = self.__get_variables_subset()
 
         self.meal_events_table_view.set_data(self.meal_events_df)
         self.meal_episodes_table_view.set_data(self.meal_episodes_df)
@@ -190,16 +192,32 @@ class MealDetailsDialog(QDialog):
         self.meal_episodes_gap_plot_widget.set_data(self.meal_episodes_df, variables_subset)
         self.meal_episodes_intake_plot_widget.set_data(self.meal_episodes_df, variables_subset)
 
-    def __run_interval_analysis(
+        self.__update_tabs()
+        self.ui.toolButtonExport.setEnabled(True)
+        self.ui.toolButtonCalculate.setEnabled(True)
+        self.toast.close_toast()
+
+    def __do_interval_analysis(
         self,
         meal_details_settings: MealDetailsSettings,
-        variables_subset: dict[str, Variable],
         diets_dict: dict[int, float],
     ):
+        tic = timeit.default_timer()
+
         self.meal_intervals_df = process_meal_intervals(self.meal_details, meal_details_settings, diets_dict)
+
+        logger.info(f"Meal analysis complete: {timeit.default_timer() - tic} sec")
+
+    def __interval_analysis_finished(self):
+        variables_subset = self.__get_variables_subset()
 
         self.intervals_table_view.set_data(self.meal_intervals_df)
         self.intervals_plot_widget.set_data(self.meal_intervals_df, variables_subset)
+
+        self.__update_tabs()
+        self.ui.toolButtonExport.setEnabled(True)
+        self.ui.toolButtonCalculate.setEnabled(True)
+        self.toast.close_toast()
 
     def __export_meal_data(self):
         meal_details_settings = self.meal_details_settings_widget.get_meal_details_settings()
