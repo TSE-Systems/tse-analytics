@@ -215,7 +215,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             LicenseManager.is_license_missing()
             or LicenseManager.is_license_expired()
             or LicenseManager.is_hardware_id_invalid()
-            or LicenseManager.is_feature_missing("PhenoMaster")
         ):
             self.actionImportDataset.setDisabled(True)
             self.actionExportCsv.setDisabled(True)

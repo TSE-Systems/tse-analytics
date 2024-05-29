@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "TSE Analytics"
-#define MyAppVersion "0.2.0"
+#define MyAppVersion "0.3.0"
 #define MyAppPublisher "TSE Systems"
 #define MyAppURL "https://tse-systems.com"
 #define MyAppExeName "tse-analytics.exe"

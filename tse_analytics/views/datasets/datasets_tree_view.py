@@ -68,14 +68,20 @@ class DatasetsTreeView(QTreeView):
         menu = QMenu(self)
 
         if level == 1:
-            menu.addAction("Import meal details...").triggered.connect(partial(self.__import_meal_details, indexes))
-            menu.addAction("Import ActiMot details...").triggered.connect(
-                partial(self.__import_actimot_details, indexes)
-            )
+            if not LicenseManager.is_feature_missing("Meal Analysis"):
+                menu.addAction("Import meal details...").triggered.connect(
+                    partial(self.__import_meal_details, indexes)
+                )
 
-            if not LicenseManager.is_feature_missing("CurveFitting"):
-                action = menu.addAction("Import calo details...")
-                action.triggered.connect(partial(self.__import_calo_details, indexes))
+            if not LicenseManager.is_feature_missing("Spatial Analysis"):
+                menu.addAction("Import ActiMot details...").triggered.connect(
+                    partial(self.__import_actimot_details, indexes)
+                )
+
+            if not LicenseManager.is_feature_missing("Calorimetry Analysis"):
+                menu.addAction("Import calo details...").triggered.connect(
+                    partial(self.__import_calo_details, indexes)
+                )
 
             menu.addSeparator()
 
