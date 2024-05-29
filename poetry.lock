@@ -1152,72 +1152,72 @@ numpy = ">=1.22.0"
 
 [[package]]
 name = "pyside6"
-version = "6.6.2"
+version = "6.7.1"
 description = "Python bindings for the Qt cross-platform application and UI framework"
 optional = false
-python-versions = "<3.13,>=3.8"
+python-versions = "<3.13,>=3.9"
 files = [
-    {file = "PySide6-6.6.2-cp38-abi3-macosx_11_0_universal2.whl", hash = "sha256:5bdaa27d1a921c35764d82a2ec86943488c818cb33b9e16b2784d539b45f6171"},
-    {file = "PySide6-6.6.2-cp38-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:3b6266fb29bab66526f2bbab2a6610f9f47a4df42ae6fb3713cd8329f593a561"},
-    {file = "PySide6-6.6.2-cp38-abi3-manylinux_2_31_aarch64.whl", hash = "sha256:a8200b2a1f02e42adfd1f41bc60d52d157398778b6ba232d46ad7402bc6f91ec"},
-    {file = "PySide6-6.6.2-cp38-abi3-win_amd64.whl", hash = "sha256:e359ebccd3f90fba85ebd5b93bdeadfa9e5d2fd06b3b5e8985aa5da50ca6243b"},
+    {file = "PySide6-6.7.1-cp39-abi3-macosx_11_0_universal2.whl", hash = "sha256:fb50aad5023ca6f4a4e62079aa57258f72cff65e33100849dab85087017f3041"},
+    {file = "PySide6-6.7.1-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:45a539286e3a8afafd3ebc6b3391d587ce86293564ecba3a994e335dc68fe599"},
+    {file = "PySide6-6.7.1-cp39-abi3-manylinux_2_31_aarch64.whl", hash = "sha256:98ac591d8b54844f366fe806e92437487f31250b24aaf647bd192f958e4d2afb"},
+    {file = "PySide6-6.7.1-cp39-abi3-win_amd64.whl", hash = "sha256:ea088381d99b53950c87510fd42801a3b6e21d15e7a9ff6c69f96a34a9030fbc"},
 ]
 
 [package.dependencies]
-PySide6-Addons = "6.6.2"
-PySide6-Essentials = "6.6.2"
-shiboken6 = "6.6.2"
+PySide6-Addons = "6.7.1"
+PySide6-Essentials = "6.7.1"
+shiboken6 = "6.7.1"
 
 [[package]]
 name = "pyside6-addons"
-version = "6.6.2"
+version = "6.7.1"
 description = "Python bindings for the Qt cross-platform application and UI framework (Addons)"
 optional = false
-python-versions = "<3.13,>=3.8"
+python-versions = "<3.13,>=3.9"
 files = [
-    {file = "PySide6_Addons-6.6.2-cp38-abi3-macosx_11_0_universal2.whl", hash = "sha256:4fb00bc98bc8335177eaa8f6d70ba687ab9bf00b3ee343abbc7156040f3e586d"},
-    {file = "PySide6_Addons-6.6.2-cp38-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:cbdb7393de88a916ed1e9bd8407149f911717d1e06aee04119e26042679d8cce"},
-    {file = "PySide6_Addons-6.6.2-cp38-abi3-manylinux_2_31_aarch64.whl", hash = "sha256:90f20dcf2caf69307e20d3d682cbe2b1a38e7ddb1f50f4f0e3ae4306219f8883"},
-    {file = "PySide6_Addons-6.6.2-cp38-abi3-win_amd64.whl", hash = "sha256:748151fb49d5fe760b7cf6c88c4ec851e68d66a119939567407115948bf8a08f"},
+    {file = "PySide6_Addons-6.7.1-cp39-abi3-macosx_11_0_universal2.whl", hash = "sha256:f360baa915fbd0be9beb3439e937d8accbaa56dd03c4b95f4c869d679343eb3e"},
+    {file = "PySide6_Addons-6.7.1-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:e9fbfc31e0de5075ee98d92cdbd7ccd274e4ac25100c890ae5bddfc8804a304c"},
+    {file = "PySide6_Addons-6.7.1-cp39-abi3-manylinux_2_31_aarch64.whl", hash = "sha256:e7de1210580217cf605c5ac8cb0f21ebcc51b261e6f9c90908eb596991607789"},
+    {file = "PySide6_Addons-6.7.1-cp39-abi3-win_amd64.whl", hash = "sha256:58c91a27aba1190f48200d7ec6b12422b955b1ca3f68e82fc97081561d77ba4f"},
 ]
 
 [package.dependencies]
-PySide6-Essentials = "6.6.2"
-shiboken6 = "6.6.2"
+PySide6-Essentials = "6.7.1"
+shiboken6 = "6.7.1"
 
 [[package]]
 name = "pyside6-essentials"
-version = "6.6.2"
+version = "6.7.1"
 description = "Python bindings for the Qt cross-platform application and UI framework (Essentials)"
 optional = false
-python-versions = "<3.13,>=3.8"
+python-versions = "<3.13,>=3.9"
 files = [
-    {file = "PySide6_Essentials-6.6.2-cp38-abi3-macosx_11_0_universal2.whl", hash = "sha256:41373f9b8fd17bb39a7dc7da85168508fe288955a17117c2e993339f387b23c1"},
-    {file = "PySide6_Essentials-6.6.2-cp38-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:90be2cf1a404f1c62777ccc6898895c864376f1fd68ae9f82f7622522bce5814"},
-    {file = "PySide6_Essentials-6.6.2-cp38-abi3-manylinux_2_31_aarch64.whl", hash = "sha256:11496a322138eab4579c3683d2e3afebb41435412d4109394cb2b9ddaac66fe3"},
-    {file = "PySide6_Essentials-6.6.2-cp38-abi3-win_amd64.whl", hash = "sha256:030a0565ad2d6361ed8be7826f81fe3dbb7a98330837687608e75cbede5f0ca2"},
+    {file = "PySide6_Essentials-6.7.1-cp39-abi3-macosx_11_0_universal2.whl", hash = "sha256:a527ec6d36533ad1ef04209b01d3d3d0286e0caaf26ec0fb0db601abbe738aac"},
+    {file = "PySide6_Essentials-6.7.1-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:b2d70dc4376c1b1ff5b2988a428a0ed5a889173ce9a0b56803468063d0ef7c75"},
+    {file = "PySide6_Essentials-6.7.1-cp39-abi3-manylinux_2_31_aarch64.whl", hash = "sha256:b1cc7eadccd2a3a6cf4bc789b874bd316714b8c5191ade4a710b952bd0d2cc81"},
+    {file = "PySide6_Essentials-6.7.1-cp39-abi3-win_amd64.whl", hash = "sha256:9a42670f1288759abef1bb1ce948f05acc2cc07a88df14e06467a9c43405b616"},
 ]
 
 [package.dependencies]
-shiboken6 = "6.6.2"
+shiboken6 = "6.7.1"
 
 [[package]]
 name = "pyside6-qtads"
-version = "4.2.1"
+version = "4.3.0.1"
 description = "PySide6 bindings to Qt Advanced Docking System"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "PySide6-QtAds-4.2.1.tar.gz", hash = "sha256:279253c161635baafae75b4216296114f1da871a13857994ae29f51e72bdbccb"},
-    {file = "PySide6_QtAds-4.2.1-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:4aeb5a2f1a8eabff60d45836f061ad60c6d3004b8870595f7447f697075e7464"},
-    {file = "PySide6_QtAds-4.2.1-cp38-abi3-macosx_11_0_x86_64.whl", hash = "sha256:d849b0ee4dce02e02319ac2f8ea5b136751b34a1dcb56df6f2a95a18368ab549"},
-    {file = "PySide6_QtAds-4.2.1-cp38-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:cb0fc8c0f9c7dac884a2faddd5685f9f1a0fd5b9986ac7a229a09c5554bcb6b2"},
-    {file = "PySide6_QtAds-4.2.1-cp38-abi3-win_amd64.whl", hash = "sha256:f73c49d7ff26e715495d52cbe5f8f75a54e63c793364f387c097d96325d02cfc"},
+    {file = "PySide6_QtAds-4.3.0.1-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:42cc6c7c95afa3b9a4dca363ad95906e282305fd2371f0bdab8f553ae10542fc"},
+    {file = "PySide6_QtAds-4.3.0.1-cp38-abi3-macosx_11_0_x86_64.whl", hash = "sha256:57f869b1c19cd1ddc1fd86c190e340d2f542161216af718e774409477fbf958b"},
+    {file = "PySide6_QtAds-4.3.0.1-cp38-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:0f6e103b467d25bdedc6b1ee294f957ce2887719c6e24538da244fbc05979c14"},
+    {file = "PySide6_QtAds-4.3.0.1-cp38-abi3-win_amd64.whl", hash = "sha256:f65efe138d0d6376e01a449ff96cf059d975110c48b89ac3de290c3f45195a99"},
+    {file = "pyside6_qtads-4.3.0.1.tar.gz", hash = "sha256:a95f0a9276ba81c80733ade0952f7af75516d07ce1cfbb937ddc6318b1d512b5"},
 ]
 
 [package.dependencies]
-PySide6-Essentials = "6.6.2"
-shiboken6 = "6.6.2"
+PySide6-Essentials = "6.7.1"
+shiboken6 = "6.7.1"
 
 [[package]]
 name = "pytest"
@@ -1277,28 +1277,28 @@ files = [
 
 [[package]]
 name = "ruff"
-version = "0.4.5"
+version = "0.4.6"
 description = "An extremely fast Python linter and code formatter, written in Rust."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "ruff-0.4.5-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:8f58e615dec58b1a6b291769b559e12fdffb53cc4187160a2fc83250eaf54e96"},
-    {file = "ruff-0.4.5-py3-none-macosx_11_0_arm64.whl", hash = "sha256:84dd157474e16e3a82745d2afa1016c17d27cb5d52b12e3d45d418bcc6d49264"},
-    {file = "ruff-0.4.5-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:25f483ad9d50b00e7fd577f6d0305aa18494c6af139bce7319c68a17180087f4"},
-    {file = "ruff-0.4.5-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:63fde3bf6f3ad4e990357af1d30e8ba2730860a954ea9282c95fc0846f5f64af"},
-    {file = "ruff-0.4.5-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:78e3ba4620dee27f76bbcad97067766026c918ba0f2d035c2fc25cbdd04d9c97"},
-    {file = "ruff-0.4.5-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:441dab55c568e38d02bbda68a926a3d0b54f5510095c9de7f95e47a39e0168aa"},
-    {file = "ruff-0.4.5-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:1169e47e9c4136c997f08f9857ae889d614c5035d87d38fda9b44b4338909cdf"},
-    {file = "ruff-0.4.5-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:755ac9ac2598a941512fc36a9070a13c88d72ff874a9781493eb237ab02d75df"},
-    {file = "ruff-0.4.5-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f4b02a65985be2b34b170025a8b92449088ce61e33e69956ce4d316c0fe7cce0"},
-    {file = "ruff-0.4.5-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:75a426506a183d9201e7e5664de3f6b414ad3850d7625764106f7b6d0486f0a1"},
-    {file = "ruff-0.4.5-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:6e1b139b45e2911419044237d90b60e472f57285950e1492c757dfc88259bb06"},
-    {file = "ruff-0.4.5-py3-none-musllinux_1_2_i686.whl", hash = "sha256:a6f29a8221d2e3d85ff0c7b4371c0e37b39c87732c969b4d90f3dad2e721c5b1"},
-    {file = "ruff-0.4.5-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:d6ef817124d72b54cc923f3444828ba24fa45c3164bc9e8f1813db2f3d3a8a11"},
-    {file = "ruff-0.4.5-py3-none-win32.whl", hash = "sha256:aed8166c18b1a169a5d3ec28a49b43340949e400665555b51ee06f22813ef062"},
-    {file = "ruff-0.4.5-py3-none-win_amd64.whl", hash = "sha256:b0b03c619d2b4350b4a27e34fd2ac64d0dabe1afbf43de57d0f9d8a05ecffa45"},
-    {file = "ruff-0.4.5-py3-none-win_arm64.whl", hash = "sha256:9d15de3425f53161b3f5a5658d4522e4eee5ea002bf2ac7aa380743dd9ad5fba"},
-    {file = "ruff-0.4.5.tar.gz", hash = "sha256:286eabd47e7d4d521d199cab84deca135557e6d1e0f0d01c29e757c3cb151b54"},
+    {file = "ruff-0.4.6-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:ef995583a038cd4a7edf1422c9e19118e2511b8ba0b015861b4abd26ec5367c5"},
+    {file = "ruff-0.4.6-py3-none-macosx_11_0_arm64.whl", hash = "sha256:602ebd7ad909eab6e7da65d3c091547781bb06f5f826974a53dbe563d357e53c"},
+    {file = "ruff-0.4.6-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3f9ced5cbb7510fd7525448eeb204e0a22cabb6e99a3cb160272262817d49786"},
+    {file = "ruff-0.4.6-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:04a80acfc862e0e1630c8b738e70dcca03f350bad9e106968a8108379e12b31f"},
+    {file = "ruff-0.4.6-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:be47700ecb004dfa3fd4dcdddf7322d4e632de3c06cd05329d69c45c0280e618"},
+    {file = "ruff-0.4.6-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:1ff930d6e05f444090a0139e4e13e1e2e1f02bd51bb4547734823c760c621e79"},
+    {file = "ruff-0.4.6-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:f13410aabd3b5776f9c5699f42b37a3a348d65498c4310589bc6e5c548dc8a2f"},
+    {file = "ruff-0.4.6-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:0cf5cc02d3ae52dfb0c8a946eb7a1d6ffe4d91846ffc8ce388baa8f627e3bd50"},
+    {file = "ruff-0.4.6-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ea3424793c29906407e3cf417f28fc33f689dacbbadfb52b7e9a809dd535dcef"},
+    {file = "ruff-0.4.6-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:1fa8561489fadf483ffbb091ea94b9c39a00ed63efacd426aae2f197a45e67fc"},
+    {file = "ruff-0.4.6-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:4d5b914818d8047270308fe3e85d9d7f4a31ec86c6475c9f418fbd1624d198e0"},
+    {file = "ruff-0.4.6-py3-none-musllinux_1_2_i686.whl", hash = "sha256:4f02284335c766678778475e7698b7ab83abaf2f9ff0554a07b6f28df3b5c259"},
+    {file = "ruff-0.4.6-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:3a6a0a4f4b5f54fff7c860010ab3dd81425445e37d35701a965c0248819dde7a"},
+    {file = "ruff-0.4.6-py3-none-win32.whl", hash = "sha256:9018bf59b3aa8ad4fba2b1dc0299a6e4e60a4c3bc62bbeaea222679865453062"},
+    {file = "ruff-0.4.6-py3-none-win_amd64.whl", hash = "sha256:a769ae07ac74ff1a019d6bd529426427c3e30d75bdf1e08bb3d46ac8f417326a"},
+    {file = "ruff-0.4.6-py3-none-win_arm64.whl", hash = "sha256:735a16407a1a8f58e4c5b913ad6102722e80b562dd17acb88887685ff6f20cf6"},
+    {file = "ruff-0.4.6.tar.gz", hash = "sha256:a797a87da50603f71e6d0765282098245aca6e3b94b7c17473115167d8dfb0b7"},
 ]
 
 [[package]]
@@ -1426,15 +1426,15 @@ testing = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "importlib-metad
 
 [[package]]
 name = "shiboken6"
-version = "6.6.2"
+version = "6.7.1"
 description = "Python/C++ bindings helper module"
 optional = false
-python-versions = "<3.13,>=3.8"
+python-versions = "<3.13,>=3.9"
 files = [
-    {file = "shiboken6-6.6.2-cp38-abi3-macosx_11_0_universal2.whl", hash = "sha256:531728324ad3ad4ed7b1d85d2dff548d618182d67024e16e84079f7db104590d"},
-    {file = "shiboken6-6.6.2-cp38-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:9da86622cee5e7201bafe9c5beee3c06d9168c6b8f3e2fac52c1b7df00956bff"},
-    {file = "shiboken6-6.6.2-cp38-abi3-manylinux_2_31_aarch64.whl", hash = "sha256:60dbad15901ad6fff6e198d8668091bbb2f20b82729412e5fd4d47ac86c97d42"},
-    {file = "shiboken6-6.6.2-cp38-abi3-win_amd64.whl", hash = "sha256:d4e99e7d1137a7d2c665a465b80baf820829dfba5fe474549d49b0ef81b0abf2"},
+    {file = "shiboken6-6.7.1-cp39-abi3-macosx_11_0_universal2.whl", hash = "sha256:80aa412a45d984592a865f95a6d0e39b70e41ef251d11a39880802454d9d87c8"},
+    {file = "shiboken6-6.7.1-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:6322b7a6232fc93eac0b11489007734438ae1e6213429fd6d7521d04072c2f87"},
+    {file = "shiboken6-6.7.1-cp39-abi3-manylinux_2_31_aarch64.whl", hash = "sha256:ec53bfcc4bb762bc845548410e17a09447837a3f20102efb4f91c12688648091"},
+    {file = "shiboken6-6.7.1-cp39-abi3-win_amd64.whl", hash = "sha256:a023ac2dc24c9325dbd0698bb7c21057e2361e92a2e187009820433342c882a0"},
 ]
 
 [[package]]
@@ -1627,4 +1627,4 @@ viz = ["matplotlib", "nc-time-axis", "seaborn"]
 [metadata]
 lock-version = "2.0"
 python-versions = "3.12.3"
-content-hash = "bbfdeb466897d4909a29921860c353b3dfbde714be93ddd68dda3f0335f5a5de"
+content-hash = "628da7a033877d17ba2002af2b7ea79cf99568473655d8f4414d2dbda844a1ba"
