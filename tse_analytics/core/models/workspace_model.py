@@ -1,7 +1,8 @@
 import pickle
 
-from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt, Signal
+from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt, Signal, QSettings
 
+from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.workspace import Workspace
 from tse_analytics.core.models.tree_item import TreeItem
 from tse_analytics.core.models.workspace_tree_item import WorkspaceTreeItem
@@ -175,7 +176,9 @@ class WorkspaceModel(QAbstractItemModel):
     def add_meal_details(self, dataset_index: QModelIndex, path: str):
         dataset_tree_item: DatasetTreeItem = self.getItem(dataset_index)
         if dataset_tree_item is not None and dataset_tree_item.dataset is not None:
-            meal_details = MealDetailsLoader.load(path, dataset_tree_item.dataset)
+            settings = QSettings()
+            csv_import_settings: CsvImportSettings = settings.value("CsvImportSettings", CsvImportSettings.get_default())
+            meal_details = MealDetailsLoader.load(path, dataset_tree_item.dataset, csv_import_settings)
             if meal_details is not None:
                 meal_details_tree_item = MealDetailsTreeItem(meal_details)
                 self.beginResetModel()
@@ -187,7 +190,9 @@ class WorkspaceModel(QAbstractItemModel):
     def add_actimot_details(self, dataset_index: QModelIndex, path: str):
         dataset_tree_item: DatasetTreeItem = self.getItem(dataset_index)
         if dataset_tree_item is not None and dataset_tree_item.dataset is not None:
-            actimot_details = ActimotLoader.load(path, dataset_tree_item.dataset)
+            settings = QSettings()
+            csv_import_settings: CsvImportSettings = settings.value("CsvImportSettings", CsvImportSettings.get_default())
+            actimot_details = ActimotLoader.load(path, dataset_tree_item.dataset, csv_import_settings)
             if actimot_details is not None:
                 actimot_tree_item = ActimotTreeItem(actimot_details)
                 self.beginResetModel()
@@ -199,7 +204,9 @@ class WorkspaceModel(QAbstractItemModel):
     def add_calo_details(self, dataset_index: QModelIndex, path: str):
         dataset_tree_item: DatasetTreeItem = self.getItem(dataset_index)
         if dataset_tree_item is not None and dataset_tree_item.dataset is not None:
-            calo_details = CaloDetailsLoader.load(path, dataset_tree_item.dataset)
+            settings = QSettings()
+            csv_import_settings: CsvImportSettings = settings.value("CsvImportSettings", CsvImportSettings.get_default())
+            calo_details = CaloDetailsLoader.load(path, dataset_tree_item.dataset, csv_import_settings)
             if calo_details is not None:
                 calo_details_tree_item = CaloDetailsTreeItem(calo_details)
                 self.beginResetModel()

@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.2
+## Created by: Qt User Interface Compiler version 6.7.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -78,12 +78,14 @@ class Ui_MainWindow(object):
         self.actionExcludeTime = QAction(MainWindow)
         self.actionExcludeTime.setObjectName(u"actionExcludeTime")
         self.actionExcludeTime.setEnabled(False)
+        self.actionPreferences = QAction(MainWindow)
+        self.actionPreferences.setObjectName(u"actionPreferences")
         self.centralWidget = QWidget(MainWindow)
         self.centralWidget.setObjectName(u"centralWidget")
         MainWindow.setCentralWidget(self.centralWidget)
         self.menuBar = QMenuBar(MainWindow)
         self.menuBar.setObjectName(u"menuBar")
-        self.menuBar.setGeometry(QRect(0, 0, 1472, 22))
+        self.menuBar.setGeometry(QRect(0, 0, 1472, 21))
         self.menuFile = QMenu(self.menuBar)
         self.menuFile.setObjectName(u"menuFile")
         self.menuOpenRecent = QMenu(self.menuFile)
@@ -94,18 +96,21 @@ class Ui_MainWindow(object):
         self.menuView.setObjectName(u"menuView")
         self.menuTools = QMenu(self.menuBar)
         self.menuTools.setObjectName(u"menuTools")
+        self.menuSettings = QMenu(self.menuBar)
+        self.menuSettings.setObjectName(u"menuSettings")
         MainWindow.setMenuBar(self.menuBar)
         self.statusBar = QStatusBar(MainWindow)
         self.statusBar.setObjectName(u"statusBar")
         MainWindow.setStatusBar(self.statusBar)
         self.toolBar = QToolBar(MainWindow)
         self.toolBar.setObjectName(u"toolBar")
-        self.toolBar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        MainWindow.addToolBar(Qt.TopToolBarArea, self.toolBar)
+        self.toolBar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        MainWindow.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolBar)
 
         self.menuBar.addAction(self.menuFile.menuAction())
         self.menuBar.addAction(self.menuTools.menuAction())
         self.menuBar.addAction(self.menuView.menuAction())
+        self.menuBar.addAction(self.menuSettings.menuAction())
         self.menuBar.addAction(self.menuHelp.menuAction())
         self.menuFile.addAction(self.actionOpenWorkspace)
         self.menuFile.addAction(self.menuOpenRecent.menuAction())
@@ -124,6 +129,7 @@ class Ui_MainWindow(object):
         self.menuTools.addAction(self.actionCompareRuns)
         self.menuTools.addAction(self.actionExcludeAnimals)
         self.menuTools.addAction(self.actionExcludeTime)
+        self.menuSettings.addAction(self.actionPreferences)
         self.toolBar.addAction(self.actionOpenWorkspace)
         self.toolBar.addAction(self.actionSaveWorkspace)
         self.toolBar.addSeparator()
@@ -174,11 +180,13 @@ class Ui_MainWindow(object):
 #if QT_CONFIG(tooltip)
         self.actionExcludeTime.setToolTip(QCoreApplication.translate("MainWindow", u"Exclude time", None))
 #endif // QT_CONFIG(tooltip)
+        self.actionPreferences.setText(QCoreApplication.translate("MainWindow", u"Preferences...", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"&File", None))
         self.menuOpenRecent.setTitle(QCoreApplication.translate("MainWindow", u"Open Recent", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"&Help", None))
         self.menuView.setTitle(QCoreApplication.translate("MainWindow", u"&View", None))
         self.menuTools.setTitle(QCoreApplication.translate("MainWindow", u"&Tools", None))
+        self.menuSettings.setTitle(QCoreApplication.translate("MainWindow", u"Settings", None))
         self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"ToolBar", None))
     # retranslateUi
 

@@ -1,9 +1,10 @@
 import copy
 
 from loguru import logger
-from PySide6.QtCore import QModelIndex, QThreadPool
+from PySide6.QtCore import QModelIndex, QSettings, QThreadPool
 from PySide6.QtWidgets import QWidget
 
+from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.data_hub import DataHub
 from tse_analytics.core.dataset_merger import merge_datasets
 from tse_analytics.core.licensing import LicenseManager
@@ -35,7 +36,9 @@ class Manager:
 
     @classmethod
     def import_dataset(cls, path: str) -> None:
-        dataset = DatasetLoader.load(path)
+        settings = QSettings()
+        csv_import_settings: CsvImportSettings = settings.value("CsvImportSettings", CsvImportSettings.get_default())
+        dataset = DatasetLoader.load(path, csv_import_settings)
         if dataset is not None:
             cls.workspace.add_dataset(dataset)
 

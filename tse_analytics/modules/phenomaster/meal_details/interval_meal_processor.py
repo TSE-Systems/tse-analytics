@@ -22,6 +22,10 @@ def process_meal_intervals(
         dropped_columns.append("Drink2C")
     if "Feed2C" in df.columns:
         dropped_columns.append("Feed2C")
+    if "DrinkC" in df.columns:
+        dropped_columns.append("DrinkC")
+    if "FeedC" in df.columns:
+        dropped_columns.append("FeedC")
     df.drop(dropped_columns, axis="columns", inplace=True)
 
     group_by = ["Animal", "Box"]
@@ -51,6 +55,8 @@ def process_meal_intervals(
     __add_caloric_column(result, "Feed1", diets_dict)
     # __add_caloric_column(result, "Drink2", diets_dict)
     __add_caloric_column(result, "Feed2", diets_dict)
+    # __add_caloric_column(result, "Drink", diets_dict)
+    __add_caloric_column(result, "Feed", diets_dict)
 
     return result
 

@@ -2,20 +2,18 @@ from pathlib import Path
 
 import pandas as pd
 
+from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
 
-DELIMITER = ";"
-DECIMAL = "."
-
 
 class MealDetailsLoader:
     @staticmethod
-    def load(filename: str, dataset: Dataset) -> MealDetails | None:
+    def load(filename: str, dataset: Dataset, csv_import_settings: CsvImportSettings) -> MealDetails | None:
         path = Path(filename)
         if path.is_file() and path.suffix.lower() == ".csv":
-            return MealDetailsLoader.__load_from_csv(path, dataset)
+            return MealDetailsLoader.__load_from_csv(path, dataset, csv_import_settings)
         return None
 
     @staticmethod
@@ -32,8 +30,7 @@ class MealDetailsLoader:
             variables[var.name] = var
 
     @staticmethod
-    def __load_from_csv(path: Path, dataset: Dataset):
-        columns_line = None
+    def __load_from_csv(path: Path, dataset: Dataset, csv_import_settings: CsvImportSettings):
         with open(path) as f:
             lines = f.readlines()
 
@@ -47,11 +44,19 @@ class MealDetailsLoader:
 
         raw_df = pd.read_csv(
             path,
-            delimiter=DELIMITER,
-            decimal=DECIMAL,
-            skiprows=header_line_number,  # Skip header line
+            delimiter=csv_import_settings.delimiter,
+            decimal=csv_import_settings.decimal_separator,
+            skiprows=header_line_number,  # Skip header part
             parse_dates={"DateTime": ["Date", "Time"]},
             encoding="ISO-8859-1",
+            dayfirst=csv_import_settings.day_first,
+        )
+
+        # Convert DateTime column
+        raw_df["DateTime"] = pd.to_datetime(
+            raw_df["DateTime"],
+            format="mixed",
+            dayfirst=csv_import_settings.day_first,
         )
 
         # Find box numbers
@@ -67,6 +72,8 @@ class MealDetailsLoader:
         feed1_present = "Feed1" in columns_line
         feed2_present = "Feed2" in columns_line
         weight_present = "Weight" in columns_line
+        drink_present = "Drink" in columns_line and (not drink1_present and not drink2_present)
+        feed_present = "Feed" in columns_line and (not feed1_present and not feed2_present)
 
         # Build new dataframe
         new_columns = ["DateTime", "Animal", "Box"]
@@ -86,6 +93,12 @@ class MealDetailsLoader:
         if weight_present:
             new_columns.append("Weight")
             variables["Weight"] = Variable(name="Weight", unit="[g]", description="Animal weight")
+        if drink_present:
+            new_columns.append("Drink")
+            variables["Drink"] = Variable(name="Drink", unit="[ml]", description="Drink sensor")
+        if feed_present:
+            new_columns.append("Feed")
+            variables["Feed"] = Variable(name="Feed", unit="[g]", description="Feed sensor")
 
         new_df = pd.DataFrame(columns=new_columns)
 
@@ -109,6 +122,10 @@ class MealDetailsLoader:
                 box_df["Feed2"] = raw_df[f"Box{box_number}: Feed2"]
             if weight_present:
                 box_df["Weight"] = raw_df[f"Box{box_number}: Weight"]
+            if drink_present:
+                box_df["Drink"] = raw_df[f"Box{box_number}: Drink"]
+            if feed_present:
+                box_df["Feed"] = raw_df[f"Box{box_number}: Feed"]
 
             new_df = pd.concat([new_df, box_df], ignore_index=True)
 
@@ -130,6 +147,10 @@ class MealDetailsLoader:
             MealDetailsLoader.__add_cumulative_columns(new_df, "Drink2", variables)
         if feed2_present:
             MealDetailsLoader.__add_cumulative_columns(new_df, "Feed2", variables)
+        if drink_present:
+            MealDetailsLoader.__add_cumulative_columns(new_df, "Drink", variables)
+        if feed_present:
+            MealDetailsLoader.__add_cumulative_columns(new_df, "Feed", variables)
 
         # Calo Details sampling interval
         sampling_interval = new_df.iloc[1].at["DateTime"] - new_df.iloc[0].at["DateTime"]
@@ -143,12 +164,3 @@ class MealDetailsLoader:
             sampling_interval,
         )
         return meal_details
-
-
-if __name__ == "__main__":
-    import timeit
-
-    tic = timeit.default_timer()
-    # dataset = CaloDetailsLoader.load("C:\\Data\\tse-analytics\\20221018_ANIPHY test new logiciel PM_CalR.csv")
-    # dataset = CaloDetailsLoader.load("C:\\Users\\anton\\OneDrive\\Desktop\\20221018_ANIPHY test new logiciel PM.csv")
-    print(timeit.default_timer() - tic)

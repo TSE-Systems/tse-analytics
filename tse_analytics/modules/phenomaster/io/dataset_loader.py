@@ -4,11 +4,9 @@ from pathlib import Path
 
 import pandas as pd
 
+from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.shared import Animal, Variable
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
-
-DELIMITER = ";"
-DECIMAL = "."
 
 Section = namedtuple("Section", ["lines", "section_start_index", "section_end_index"])
 
@@ -19,10 +17,10 @@ def most_frequent(lst: list):
 
 class DatasetLoader:
     @staticmethod
-    def load(filename: str) -> Dataset | None:
+    def load(filename: str, csv_import_settings: CsvImportSettings) -> Dataset | None:
         path = Path(filename)
         if path.is_file() and path.suffix.lower() == ".csv":
-            return DatasetLoader.__load_from_csv(path)
+            return DatasetLoader.__load_from_csv(path, csv_import_settings)
         return None
 
     @staticmethod
@@ -75,7 +73,7 @@ class DatasetLoader:
             variables[var.name] = var
 
     @staticmethod
-    def __load_from_csv(path: Path):
+    def __load_from_csv(path: Path, csv_import_settings: CsvImportSettings):
         with open(path) as f:
             lines = f.readlines()
 
@@ -101,26 +99,34 @@ class DatasetLoader:
         variables: dict[str, Variable] = {}
 
         for line in animal_section.lines[1:]:
-            elements = line.split(DELIMITER)
+            elements = line.split(csv_import_settings.delimiter)
             animal = Animal(
                 id=int(elements[1]),
                 box=int(elements[0]),
-                weight=float(elements[2]),
+                weight=float(elements[2].replace(",", ".")),
                 text1=elements[3],
                 text2=elements[4],
                 text3=elements[5] if len(elements) == 6 else "",
             )
             animals[animal.id] = animal
 
-        data_header = data_section.lines[0].rstrip(DELIMITER)
-        columns = data_header.split(DELIMITER)
-        data_unit_header = data_section.lines[1].rstrip(DELIMITER)
-        columns_unit = data_unit_header.split(DELIMITER)
+        data_header = data_section.lines[0].rstrip(csv_import_settings.delimiter)
+        columns = data_header.split(csv_import_settings.delimiter)
+        data_unit_header = data_section.lines[1].rstrip(csv_import_settings.delimiter)
+        columns_unit = data_unit_header.split(csv_import_settings.delimiter)
+
+        # Check if Date and Time columns are separate
+        datetime_separate = columns[0] == "Date"
 
         for i, item in enumerate(columns):
-            # Skip first 'Date', 'Time', 'Animal No.' and 'Box' columns
-            if i < 4:
-                continue
+            if datetime_separate:
+                # Skip first 'Date', 'Time', 'Animal No.' and 'Box' columns
+                if i < 4:
+                    continue
+            else:
+                # Skip first 'Date Time', 'Animal No.' and 'Box' columns
+                if i < 3:
+                    continue
             variable = Variable(name=item, unit=columns_unit[i], description="")
             variables[variable.name] = variable
 
@@ -128,21 +134,31 @@ class DatasetLoader:
         variables["Weight"] = Variable("Weight", "[g]", "Animal weight")
 
         data = data_section.lines[2:]
-        data = [line.rstrip(DELIMITER) for line in data]
+        data = [line.rstrip(csv_import_settings.delimiter) for line in data]
         csv = "\n".join(data)
+
+        parse_dates = [["Date", "Time"]] if datetime_separate else False
 
         # noinspection PyTypeChecker
         df = pd.read_csv(
             StringIO(csv),
-            delimiter=DELIMITER,
-            decimal=DECIMAL,
+            delimiter=csv_import_settings.delimiter,
+            decimal=csv_import_settings.decimal_separator,
             na_values=["-"],
             names=columns,
-            parse_dates=[["Date", "Time"]],
+            parse_dates=parse_dates,
+            dayfirst=csv_import_settings.day_first,
         )
 
         # Rename table columns
-        df.rename(columns={"Date_Time": "DateTime", "Animal No.": "Animal"}, inplace=True)
+        df.rename(columns={"Date_Time": "DateTime", "Date Time": "DateTime", "Animal No.": "Animal"}, inplace=True)
+
+        # Convert DateTime column
+        df["DateTime"] = pd.to_datetime(
+            df["DateTime"],
+            format="mixed",
+            dayfirst=csv_import_settings.day_first,
+        )
 
         # Apply categorical types
         df = df.astype({
@@ -189,9 +205,9 @@ class DatasetLoader:
         # Sort variables by name
         variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))
 
-        name = header_section.lines[0].split(DELIMITER)[0]
-        description = header_section.lines[0].split(DELIMITER)[1]
-        version = header_section.lines[1].split(DELIMITER)[1]
+        name = header_section.lines[0].split(csv_import_settings.delimiter)[0]
+        description = header_section.lines[0].split(csv_import_settings.delimiter)[1]
+        version = header_section.lines[1].split(csv_import_settings.delimiter)[1]
 
         buf = StringIO()
         df.info(buf=buf)
@@ -215,13 +231,3 @@ class DatasetLoader:
             df=df,
             sampling_interval=timedelta,
         )
-
-
-if __name__ == "__main__":
-    import timeit
-
-    tic = timeit.default_timer()
-    # dataset = DatasetLoader.load("C:\\Data\\tse-analytics\\20221018_ANIPHY test new logiciel PM_CalR.csv")
-    # dataset = DatasetLoader.load("C:\\Users\\anton\\OneDrive\\Desktop\\20221018_ANIPHY test new logiciel PM.csv")
-    dataset = DatasetLoader.load("C:\\Users\\anton\\Downloads\\2023-05-24_Test Sample Flow 0.5_90 s per box.csv")
-    print(timeit.default_timer() - tic)

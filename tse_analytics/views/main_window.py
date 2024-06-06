@@ -28,6 +28,7 @@ from tse_analytics.views.help.help_widget import HelpWidget
 from tse_analytics.views.info.info_widget import InfoWidget
 from tse_analytics.views.log_widget import LogWidget
 from tse_analytics.views.main_window_ui import Ui_MainWindow
+from tse_analytics.views.preferences_dialog import PreferencesDialog
 from tse_analytics.views.selection.animals.animals_widget import AnimalsWidget
 from tse_analytics.views.selection.factors.factors_widget import FactorsWidget
 from tse_analytics.views.selection.variables.variables_widget import VariablesWidget
@@ -193,6 +194,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionExcludeAnimals.triggered.connect(self.__exclude_animals)
         self.actionExcludeTime.triggered.connect(self.__exclude_time)
         self.actionHelp.triggered.connect(lambda: show_help(self, "main.md"))
+        self.actionPreferences.triggered.connect(self.__show_preferences_dialog)
         self.actionAbout.triggered.connect(self.__show_about_dialog)
 
         self.default_docking_state = self.dock_manager.saveState(LAYOUT_VERSION)
@@ -354,6 +356,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         dlg = AboutDialog(self)
         dlg.show()
         self.__check_license()
+
+    def __show_preferences_dialog(self):
+        dialog = PreferencesDialog(self)
+        dialog.exec()
 
     def import_dataset_dialog(self):
         path, _ = QFileDialog.getOpenFileName(

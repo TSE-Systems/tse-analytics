@@ -69,9 +69,7 @@ class DatasetsTreeView(QTreeView):
 
         if level == 1:
             if not LicenseManager.is_feature_missing("Meal Analysis"):
-                menu.addAction("Import meal details...").triggered.connect(
-                    partial(self.__import_meal_details, indexes)
-                )
+                menu.addAction("Import meal details...").triggered.connect(partial(self.__import_meal_details, indexes))
 
             if not LicenseManager.is_feature_missing("Spatial Analysis"):
                 menu.addAction("Import ActiMot details...").triggered.connect(
@@ -79,9 +77,7 @@ class DatasetsTreeView(QTreeView):
                 )
 
             if not LicenseManager.is_feature_missing("Calorimetry Analysis"):
-                menu.addAction("Import calo details...").triggered.connect(
-                    partial(self.__import_calo_details, indexes)
-                )
+                menu.addAction("Import calo details...").triggered.connect(partial(self.__import_calo_details, indexes))
 
             menu.addSeparator()
 

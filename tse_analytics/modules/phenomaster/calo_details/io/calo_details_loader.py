@@ -3,24 +3,22 @@ from pathlib import Path
 
 import pandas as pd
 
+from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.modules.phenomaster.calo_details.data.calo_details import CaloDetails
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
-DELIMITER = ";"
-DECIMAL = "."
-
 
 class CaloDetailsLoader:
     @staticmethod
-    def load(filename: str, dataset: Dataset) -> CaloDetails | None:
+    def load(filename: str, dataset: Dataset, csv_import_settings: CsvImportSettings) -> CaloDetails | None:
         path = Path(filename)
         if path.is_file() and path.suffix.lower() == ".csv":
-            return CaloDetailsLoader.__load_from_csv(path, dataset)
+            return CaloDetailsLoader.__load_from_csv(path, dataset, csv_import_settings)
         return None
 
     @staticmethod
-    def __load_from_csv(path: Path, dataset: Dataset):
+    def __load_from_csv(path: Path, dataset: Dataset, csv_import_settings: CsvImportSettings):
         columns_line = None
         with open(path) as f:
             lines = f.readlines()
@@ -35,12 +33,20 @@ class CaloDetailsLoader:
 
         df = pd.read_csv(
             path,
-            delimiter=DELIMITER,
-            decimal=DECIMAL,
-            skiprows=header_line_number,  # Skip header line
+            delimiter=csv_import_settings.delimiter,
+            decimal=csv_import_settings.decimal_separator,
+            skiprows=header_line_number,  # Skip header part
             parse_dates={"DateTime": ["Date", "Time"]},
             encoding="ISO-8859-1",
             na_values="-",
+            dayfirst=csv_import_settings.day_first,
+        )
+
+        # Convert DateTime column
+        df["DateTime"] = pd.to_datetime(
+            df["DateTime"],
+            format="mixed",
+            dayfirst=csv_import_settings.day_first,
         )
 
         # Sanitize column names
@@ -52,7 +58,7 @@ class CaloDetailsLoader:
         # Extract variables
         variables: dict[str, Variable] = {}
         if columns_line is not None:
-            columns = columns_line.split(DELIMITER)
+            columns = columns_line.split(csv_import_settings.delimiter)
             for i, item in enumerate(columns):
                 # Skip first 'Date', 'Time', 'Box' and 'Marker' columns
                 if i < 4:
@@ -128,12 +134,3 @@ class CaloDetailsLoader:
             dataset, f"Calo Details [Interval: {str(sampling_interval)}]", str(path), variables, df, sampling_interval
         )
         return calo_details
-
-
-if __name__ == "__main__":
-    import timeit
-
-    tic = timeit.default_timer()
-    # dataset = CaloDetailsLoader.load("C:\\Data\\tse-analytics\\20221018_ANIPHY test new logiciel PM_CalR.csv")
-    # dataset = CaloDetailsLoader.load("C:\\Users\\anton\\OneDrive\\Desktop\\20221018_ANIPHY test new logiciel PM.csv")
-    print(timeit.default_timer() - tic)

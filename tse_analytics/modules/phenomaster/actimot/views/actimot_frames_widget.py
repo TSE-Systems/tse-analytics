@@ -35,6 +35,9 @@ class ActimotFramesWidget(QWidget):
         if self.df is None:
             return
 
+        if "X1" not in self.df.columns:
+            return
+
         x_range = range(64)
         y_range = range(32)
 

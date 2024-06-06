@@ -124,6 +124,10 @@ class MealDetailsDialog(QDialog):
             variables_subset["Drink2"] = self.meal_details.variables["Drink2"]
         if "Feed2" in self.meal_details.variables:
             variables_subset["Feed2"] = self.meal_details.variables["Feed2"]
+        if "Drink" in self.meal_details.variables:
+            variables_subset["Drink"] = self.meal_details.variables["Drink"]
+        if "Feed" in self.meal_details.variables:
+            variables_subset["Feed"] = self.meal_details.variables["Feed"]
         return variables_subset
 
     def __filter(self):

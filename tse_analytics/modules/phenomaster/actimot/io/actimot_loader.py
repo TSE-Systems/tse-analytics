@@ -3,20 +3,18 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.modules.phenomaster.actimot.data.actimot_details import ActimotDetails
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
-DELIMITER = ";"
-DECIMAL = "."
-
 
 class ActimotLoader:
     @staticmethod
-    def load(filename: str, dataset: Dataset) -> ActimotDetails | None:
+    def load(filename: str, dataset: Dataset, csv_import_settings: CsvImportSettings) -> ActimotDetails | None:
         path = Path(filename)
         if path.is_file() and path.suffix.lower() == ".csv":
-            return ActimotLoader.__load_from_csv(path, dataset)
+            return ActimotLoader.__load_from_csv(path, dataset, csv_import_settings)
         return None
 
     @staticmethod
@@ -33,12 +31,11 @@ class ActimotLoader:
             variables[var.name] = var
 
     @staticmethod
-    def __load_from_csv(path: Path, dataset: Dataset):
-        columns_line = None
+    def __load_from_csv(path: Path, dataset: Dataset, csv_import_settings: CsvImportSettings):
         with open(path) as f:
             lines = f.readlines()
 
-            header_template = "DateTime;"
+            header_template = "Rel. [s];BoxNr;"
             # looping through each line in the file
             for idx, line in enumerate(lines):
                 if header_template in line:
@@ -46,9 +43,20 @@ class ActimotLoader:
                     columns_line = line
                     break
 
-        usecols = ["DateTime", "Rel. [s]", "BoxNr", "X (cm)", "Y (cm)", "X", "Y"]
+        datetime_column_header = columns_line.split(csv_import_settings.delimiter)[0]
+
+        usecols = [
+            datetime_column_header,
+            "Rel. [s]",
+            "BoxNr",
+            "X (cm)",
+            "Y (cm)",
+            "X",
+            "Y"
+        ]
+
         dtype = {
-            "DateTime": str,
+            datetime_column_header: str,
             "Rel. [s]": np.float64,
             "BoxNr": np.uint8,
             "X (cm)": np.float64,
@@ -57,31 +65,37 @@ class ActimotLoader:
             "Y": str,
         }
 
-        for i in range(1, 65):
-            usecols.append(f"X{i}")
-            dtype[f"X{i}"] = np.uint8
-
-        for i in range(1, 33):
-            usecols.append(f"Y{i}")
-            dtype[f"Y{i}"] = np.uint8
+        # for i in range(1, 65):
+        #     usecols.append(f"X{i}")
+        #     dtype[f"X{i}"] = np.uint8
+        #
+        # for i in range(1, 33):
+        #     usecols.append(f"Y{i}")
+        #     dtype[f"Y{i}"] = np.uint8
 
         raw_df = pd.read_csv(
             path,
-            delimiter=DELIMITER,
-            decimal=DECIMAL,
-            skiprows=header_line_number,  # Skip header line
+            delimiter=csv_import_settings.delimiter,
+            decimal=csv_import_settings.decimal_separator,
+            skiprows=header_line_number,  # Skip header part
             low_memory=True,
             usecols=usecols,
             dtype=dtype,
             na_values=["-"],
-            # parse_dates=["DateTime"],
-            # date_format="%Y-%m-%d %H:%M:%S.%f"
         )
 
-        raw_df["DateTime"] = pd.to_datetime(raw_df["DateTime"])
-
         # Rename table columns
-        raw_df.rename(columns={"BoxNr": "Box"}, inplace=True)
+        raw_df.rename(columns={
+            datetime_column_header: "DateTime",
+            "BoxNr": "Box"
+        }, inplace=True)
+
+        # Convert DateTime column
+        raw_df["DateTime"] = pd.to_datetime(
+            raw_df["DateTime"],
+            format=csv_import_settings.datetime_format if csv_import_settings.use_datetime_format else "mixed",
+            dayfirst=csv_import_settings.day_first,
+        )
 
         box_to_animal_map = {}
         for animal in dataset.animals.values():

@@ -58,10 +58,9 @@ ads--CTitleBarButton {
  *****************************************************************************/
 ads--CDockWidgetTab {
 	background: palette(base);
-	border-color: palette(light);
 	border-style: none;
-	border-width: 0 1px 0 0;
-	padding: 0 0px;
+	padding-top: 2px;
+	padding-bottom: 2px;
 }
 
 ads--CDockWidgetTab[activeTab="true"] {
