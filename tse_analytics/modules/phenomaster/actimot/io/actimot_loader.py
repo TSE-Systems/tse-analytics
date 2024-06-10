@@ -45,15 +45,7 @@ class ActimotLoader:
 
         datetime_column_header = columns_line.split(csv_import_settings.delimiter)[0]
 
-        usecols = [
-            datetime_column_header,
-            "Rel. [s]",
-            "BoxNr",
-            "X (cm)",
-            "Y (cm)",
-            "X",
-            "Y"
-        ]
+        usecols = [datetime_column_header, "Rel. [s]", "BoxNr", "X (cm)", "Y (cm)", "X", "Y"]
 
         dtype = {
             datetime_column_header: str,
@@ -85,10 +77,7 @@ class ActimotLoader:
         )
 
         # Rename table columns
-        raw_df.rename(columns={
-            datetime_column_header: "DateTime",
-            "BoxNr": "Box"
-        }, inplace=True)
+        raw_df.rename(columns={datetime_column_header: "DateTime", "BoxNr": "Box"}, inplace=True)
 
         # Convert DateTime column
         raw_df["DateTime"] = pd.to_datetime(

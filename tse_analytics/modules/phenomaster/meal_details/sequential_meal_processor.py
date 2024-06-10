@@ -270,9 +270,7 @@ def __extract_meal_events(
         meal_events_df = __find_invalid_episodes(meal_events_df, "Feed2", meal_details_settings.feeding_minimum_amount)
 
     if drink_present:
-        meal_events_df = __find_invalid_episodes(
-            meal_events_df, "Drink", meal_details_settings.drinking_minimum_amount
-        )
+        meal_events_df = __find_invalid_episodes(meal_events_df, "Drink", meal_details_settings.drinking_minimum_amount)
     if feed_present:
         meal_events_df = __find_invalid_episodes(meal_events_df, "Feed", meal_details_settings.feeding_minimum_amount)
 

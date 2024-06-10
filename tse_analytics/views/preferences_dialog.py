@@ -15,7 +15,9 @@ class PreferencesDialog(QDialog):
         self.ui.buttonBox.accepted.connect(self.__save_preferences)
 
         self.settings = QSettings()
-        csv_import_settings: CsvImportSettings = self.settings.value("CsvImportSettings", CsvImportSettings.get_default())
+        csv_import_settings: CsvImportSettings = self.settings.value(
+            "CsvImportSettings", CsvImportSettings.get_default()
+        )
 
         self.ui.lineEditDelimiter.setText(csv_import_settings.delimiter)
         self.ui.checkBoxDayFirst.setChecked(csv_import_settings.day_first)
@@ -34,7 +36,7 @@ class PreferencesDialog(QDialog):
             decimal_separator,
             self.ui.checkBoxDayFirst.isChecked(),
             self.ui.groupBoxDateTimeFormat.isChecked(),
-            self.ui.lineEditDateTimeFormat.text()
+            self.ui.lineEditDateTimeFormat.text(),
         )
 
         self.settings.setValue("CsvImportSettings", csv_import_settings)

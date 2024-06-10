@@ -177,7 +177,9 @@ class WorkspaceModel(QAbstractItemModel):
         dataset_tree_item: DatasetTreeItem = self.getItem(dataset_index)
         if dataset_tree_item is not None and dataset_tree_item.dataset is not None:
             settings = QSettings()
-            csv_import_settings: CsvImportSettings = settings.value("CsvImportSettings", CsvImportSettings.get_default())
+            csv_import_settings: CsvImportSettings = settings.value(
+                "CsvImportSettings", CsvImportSettings.get_default()
+            )
             meal_details = MealDetailsLoader.load(path, dataset_tree_item.dataset, csv_import_settings)
             if meal_details is not None:
                 meal_details_tree_item = MealDetailsTreeItem(meal_details)
@@ -191,7 +193,9 @@ class WorkspaceModel(QAbstractItemModel):
         dataset_tree_item: DatasetTreeItem = self.getItem(dataset_index)
         if dataset_tree_item is not None and dataset_tree_item.dataset is not None:
             settings = QSettings()
-            csv_import_settings: CsvImportSettings = settings.value("CsvImportSettings", CsvImportSettings.get_default())
+            csv_import_settings: CsvImportSettings = settings.value(
+                "CsvImportSettings", CsvImportSettings.get_default()
+            )
             actimot_details = ActimotLoader.load(path, dataset_tree_item.dataset, csv_import_settings)
             if actimot_details is not None:
                 actimot_tree_item = ActimotTreeItem(actimot_details)
@@ -205,7 +209,9 @@ class WorkspaceModel(QAbstractItemModel):
         dataset_tree_item: DatasetTreeItem = self.getItem(dataset_index)
         if dataset_tree_item is not None and dataset_tree_item.dataset is not None:
             settings = QSettings()
-            csv_import_settings: CsvImportSettings = settings.value("CsvImportSettings", CsvImportSettings.get_default())
+            csv_import_settings: CsvImportSettings = settings.value(
+                "CsvImportSettings", CsvImportSettings.get_default()
+            )
             calo_details = CaloDetailsLoader.load(path, dataset_tree_item.dataset, csv_import_settings)
             if calo_details is not None:
                 calo_details_tree_item = CaloDetailsTreeItem(calo_details)

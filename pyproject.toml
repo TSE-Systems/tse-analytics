@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tse-analytics"
-version = "0.3.0"
+version = "0.4.0"
 description = "TSE Analytics data analysys"
 license = "MIT"
 authors = ["Anton Rau <anton.rau@gmail.com>"]
@@ -27,8 +27,8 @@ seaborn = "0.13.2"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "1.10.0"
-pyinstaller = "6.7.0"
-pylint = "3.2.2"
+pyinstaller = "6.8.0"
+pylint = "3.2.3"
 pytest = "8.2.2"
 ruff = "0.4.8"
 
