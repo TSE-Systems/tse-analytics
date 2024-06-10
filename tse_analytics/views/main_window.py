@@ -45,9 +45,9 @@ PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.DockAreaDynami
 PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.FloatingContainerHasWidgetIcon, True)
 
 # PySide6QtAds.CDockManager.setAutoHideConfigFlags(PySide6QtAds.CDockManager.DefaultAutoHideConfig)
-PySide6QtAds.CDockManager.setAutoHideConfigFlag(PySide6QtAds.CDockManager.AutoHideFeatureEnabled, True)
-PySide6QtAds.CDockManager.setAutoHideConfigFlag(PySide6QtAds.CDockManager.DockAreaHasAutoHideButton, False)
-PySide6QtAds.CDockManager.setAutoHideConfigFlag(PySide6QtAds.CDockManager.AutoHideHasCloseButton, False)
+# PySide6QtAds.CDockManager.setAutoHideConfigFlag(PySide6QtAds.CDockManager.AutoHideFeatureEnabled, True)
+# PySide6QtAds.CDockManager.setAutoHideConfigFlag(PySide6QtAds.CDockManager.DockAreaHasAutoHideButton, False)
+# PySide6QtAds.CDockManager.setAutoHideConfigFlag(PySide6QtAds.CDockManager.AutoHideHasCloseButton, False)
 
 MAX_RECENT_FILES = 10
 
