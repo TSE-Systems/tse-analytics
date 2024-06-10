@@ -1,6 +1,6 @@
 import pickle
 
-from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt, Signal, QSettings
+from PySide6.QtCore import QAbstractItemModel, QModelIndex, QSettings, Qt, Signal
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.workspace import Workspace
@@ -135,19 +135,7 @@ class WorkspaceModel(QAbstractItemModel):
             self.workspace_tree_item = WorkspaceTreeItem(self.workspace)
             for dataset in self.workspace.datasets:
                 dataset_tree_item = DatasetTreeItem(dataset)
-
-                if hasattr(dataset, "meal_details") and dataset.meal_details is not None:
-                    meal_details_tree_item = MealDetailsTreeItem(dataset.meal_details)
-                    dataset_tree_item.add_child(meal_details_tree_item)
-
-                if hasattr(dataset, "actimot_details") and dataset.actimot_details is not None:
-                    actimot_tree_item = ActimotTreeItem(dataset.actimot_details)
-                    dataset_tree_item.add_child(actimot_tree_item)
-
-                if hasattr(dataset, "calo_details") and dataset.calo_details is not None:
-                    calo_details_tree_item = CaloDetailsTreeItem(dataset.calo_details)
-                    dataset_tree_item.add_child(calo_details_tree_item)
-
+                self.__add_children_items(dataset, dataset_tree_item)
                 self.workspace_tree_item.add_child(dataset_tree_item)
         self.endResetModel()
 
@@ -158,17 +146,7 @@ class WorkspaceModel(QAbstractItemModel):
     def add_dataset(self, dataset: Dataset):
         self.workspace.datasets.append(dataset)
         dataset_tree_item = DatasetTreeItem(dataset)
-        if hasattr(dataset, "meal_details") and dataset.meal_details is not None:
-            meal_details_tree_item = MealDetailsTreeItem(dataset.meal_details)
-            dataset_tree_item.add_child(meal_details_tree_item)
-
-        if hasattr(dataset, "actimot_details") and dataset.actimot_details is not None:
-            actimot_tree_item = ActimotTreeItem(dataset.actimot_details)
-            dataset_tree_item.add_child(actimot_tree_item)
-
-        if hasattr(dataset, "calo_details") and dataset.calo_details is not None:
-            calo_details_tree_item = CaloDetailsTreeItem(dataset.calo_details)
-            dataset_tree_item.add_child(calo_details_tree_item)
+        self.__add_children_items(dataset, dataset_tree_item)
         self.beginResetModel()
         self.workspace_tree_item.add_child(dataset_tree_item)
         self.endResetModel()
@@ -182,11 +160,10 @@ class WorkspaceModel(QAbstractItemModel):
             )
             meal_details = MealDetailsLoader.load(path, dataset_tree_item.dataset, csv_import_settings)
             if meal_details is not None:
-                meal_details_tree_item = MealDetailsTreeItem(meal_details)
-                self.beginResetModel()
                 dataset_tree_item.dataset.meal_details = meal_details
+                self.beginResetModel()
                 dataset_tree_item.clear()
-                dataset_tree_item.add_child(meal_details_tree_item)
+                self.__add_children_items(dataset_tree_item.dataset, dataset_tree_item)
                 self.endResetModel()
 
     def add_actimot_details(self, dataset_index: QModelIndex, path: str):
@@ -198,11 +175,10 @@ class WorkspaceModel(QAbstractItemModel):
             )
             actimot_details = ActimotLoader.load(path, dataset_tree_item.dataset, csv_import_settings)
             if actimot_details is not None:
-                actimot_tree_item = ActimotTreeItem(actimot_details)
-                self.beginResetModel()
                 dataset_tree_item.dataset.actimot_details = actimot_details
+                self.beginResetModel()
                 dataset_tree_item.clear()
-                dataset_tree_item.add_child(actimot_tree_item)
+                self.__add_children_items(dataset_tree_item.dataset, dataset_tree_item)
                 self.endResetModel()
 
     def add_calo_details(self, dataset_index: QModelIndex, path: str):
@@ -214,11 +190,10 @@ class WorkspaceModel(QAbstractItemModel):
             )
             calo_details = CaloDetailsLoader.load(path, dataset_tree_item.dataset, csv_import_settings)
             if calo_details is not None:
-                calo_details_tree_item = CaloDetailsTreeItem(calo_details)
-                self.beginResetModel()
                 dataset_tree_item.dataset.calo_details = calo_details
+                self.beginResetModel()
                 dataset_tree_item.clear()
-                dataset_tree_item.add_child(calo_details_tree_item)
+                self.__add_children_items(dataset_tree_item.dataset, dataset_tree_item)
                 self.endResetModel()
 
     def remove_dataset(self, indexes: list[QModelIndex]):
@@ -228,3 +203,16 @@ class WorkspaceModel(QAbstractItemModel):
             self.removeRow(row, parent=index.parent())
             self.workspace.datasets.pop(row)
         self.endResetModel()
+
+    def __add_children_items(self, dataset: Dataset, dataset_tree_item: DatasetTreeItem):
+        if hasattr(dataset, "meal_details") and dataset.meal_details is not None:
+            meal_details_tree_item = MealDetailsTreeItem(dataset.meal_details)
+            dataset_tree_item.add_child(meal_details_tree_item)
+
+        if hasattr(dataset, "actimot_details") and dataset.actimot_details is not None:
+            actimot_tree_item = ActimotTreeItem(dataset.actimot_details)
+            dataset_tree_item.add_child(actimot_tree_item)
+
+        if hasattr(dataset, "calo_details") and dataset.calo_details is not None:
+            calo_details_tree_item = CaloDetailsTreeItem(dataset.calo_details)
+            dataset_tree_item.add_child(calo_details_tree_item)

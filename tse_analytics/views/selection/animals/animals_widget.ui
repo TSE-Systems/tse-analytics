@@ -2,14 +2,6 @@
 <ui version="4.0">
  <class>AnimalsWidget</class>
  <widget class="QWidget" name="AnimalsWidget">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>489</width>
-    <height>630</height>
-   </rect>
-  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -26,7 +18,7 @@
       <bool>true</bool>
      </property>
      <attribute name="verticalHeaderDefaultSectionSize">
-      <number>20</number>
+      <number>24</number>
      </attribute>
     </widget>
    </item>
