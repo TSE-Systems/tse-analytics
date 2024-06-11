@@ -22,7 +22,6 @@ class Ui_AnimalsWidget(object):
     def setupUi(self, AnimalsWidget):
         if not AnimalsWidget.objectName():
             AnimalsWidget.setObjectName(u"AnimalsWidget")
-        AnimalsWidget.resize(489, 630)
         self.verticalLayout = QVBoxLayout(AnimalsWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.tableView = QTableView(AnimalsWidget)

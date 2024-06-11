@@ -86,7 +86,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.default_docking_state = None
 
         data_table_dock_widget = self.__register_dock_widget(
-            DataTableWidget(), "Data", QIcon(":/icons/icons8-data-sheet-16.png")
+            DataTableWidget(), "Table", QIcon(":/icons/icons8-data-sheet-16.png")
         )
         main_area = self.dock_manager.addDockWidget(PySide6QtAds.AllDockAreas, data_table_dock_widget)
 
@@ -94,6 +94,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             DataPlotWidget(), "Plot", QIcon(":/icons/icons8-line-chart-16.png")
         )
         self.dock_manager.addDockWidgetTabToArea(plot_table_dock_widget, main_area)
+
+        # data_dock_widget = self.__register_dock_widget(
+        #     DataWidget(), "Data", QIcon(":/icons/icons8-line-chart-16.png")
+        # )
+        # self.dock_manager.addDockWidgetTabToArea(data_dock_widget, main_area)
 
         histogram_dock_widget = self.__register_dock_widget(
             HistogramWidget(), "Histogram", QIcon(":/icons/icons8-histogram-16.png")

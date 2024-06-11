@@ -1,5 +1,6 @@
+import pandas as pd
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
-from PySide6.QtCore import QSize
+from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.data.binning import BinningMode
@@ -13,15 +14,17 @@ from tse_analytics.core.messaging.messages import (
 )
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
+from tse_analytics.core.models.pandas_model import PandasModel
+from tse_analytics.core.workers.worker import Worker
 from tse_analytics.views.data.bar_plot_view import BarPlotView
-from tse_analytics.views.data.data_plot_widget_ui import Ui_DataPlotWidget
+from tse_analytics.views.data.data_widget_ui import Ui_DataWidget
 from tse_analytics.views.data.timeline_plot_view import TimelinePlotView
 
 
-class DataPlotWidget(QWidget, MessengerListener):
+class DataWidget(QWidget, MessengerListener):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
-        self.ui = Ui_DataPlotWidget()
+        self.ui = Ui_DataWidget()
         self.ui.setupUi(self)
 
         self.register_to_messenger(Manager.messenger)
@@ -33,11 +36,15 @@ class DataPlotWidget(QWidget, MessengerListener):
         self.ui.variableSelector.currentTextChanged.connect(self.__variable_changed)
         self.ui.toolButtonDisplayErrors.toggled.connect(self.__display_errors)
         self.ui.checkBoxScatterPlot.stateChanged.connect(self.__set_scatter_plot)
+        self.ui.toolButtonResizeColumns.clicked.connect(self.__resize_columns_width)
+
+        self.header = self.ui.tableView.horizontalHeader()
+        self.header.sectionClicked.connect(self.__header_clicked)
 
         self.timelinePlotView = TimelinePlotView(self)
         self.barPlotView = BarPlotView(self)
 
-        self.ui.verticalLayout.addWidget(self.timelinePlotView)
+        self.ui.plotLayout.addWidget(self.timelinePlotView)
         self.active_binning_mode = BinningMode.INTERVALS
 
         self.plotToolbar = NavigationToolbar2QT(self.barPlotView.canvas, self)
@@ -45,11 +52,29 @@ class DataPlotWidget(QWidget, MessengerListener):
         self.ui.horizontalLayout.addWidget(self.plotToolbar)
         self.plotToolbar.hide()
 
+        self.df: pd.DataFrame | None = None
+
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
         messenger.subscribe(self, BinningMessage, self.__on_binning_applied)
         messenger.subscribe(self, DataChangedMessage, self.__on_data_changed)
         messenger.subscribe(self, GroupingModeChangedMessage, self.__on_grouping_mode_changed)
+
+    def __resize_columns_width(self):
+        # Pass the function to execute
+        worker = Worker(
+            self.ui.tableView.resizeColumnsToContents
+        )  # Any other args, kwargs are passed to the run function
+        # Execute
+        Manager.threadpool.start(worker)
+
+    def __header_clicked(self, logical_index: int):
+        if self.df is None:
+            return
+        self.header.setSortIndicatorShown(True)
+        order = self.header.sortIndicatorOrder() == Qt.SortOrder.AscendingOrder
+        df = self.df.sort_values(self.df.columns[logical_index], ascending=order, inplace=False)
+        self.ui.tableView.setModel(PandasModel(df))
 
     def __variable_changed(self, variable: str):
         Manager.data.selected_variable = variable
@@ -108,7 +133,7 @@ class DataPlotWidget(QWidget, MessengerListener):
 
         if Manager.data.binning_params.mode == BinningMode.INTERVALS:
             if Manager.data.binning_params.mode != self.active_binning_mode:
-                self.ui.verticalLayout.replaceWidget(self.barPlotView, self.timelinePlotView)
+                self.ui.plotLayout.replaceWidget(self.barPlotView, self.timelinePlotView)
                 self.barPlotView.hide()
                 self.timelinePlotView.show()
                 self.active_binning_mode = Manager.data.binning_params.mode
@@ -118,7 +143,7 @@ class DataPlotWidget(QWidget, MessengerListener):
             self.ui.checkBoxScatterPlot.show()
         else:
             if Manager.data.binning_params.mode != self.active_binning_mode:
-                self.ui.verticalLayout.replaceWidget(self.timelinePlotView, self.barPlotView)
+                self.ui.plotLayout.replaceWidget(self.timelinePlotView, self.barPlotView)
                 self.timelinePlotView.hide()
                 self.barPlotView.show()
                 self.active_binning_mode = Manager.data.binning_params.mode

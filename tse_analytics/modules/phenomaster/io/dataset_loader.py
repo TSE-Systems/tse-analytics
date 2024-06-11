@@ -101,6 +101,7 @@ class DatasetLoader:
         for line in animal_section.lines[1:]:
             elements = line.split(csv_import_settings.delimiter)
             animal = Animal(
+                enabled=True,
                 id=int(elements[1]),
                 box=int(elements[0]),
                 weight=float(elements[2].replace(",", ".")),

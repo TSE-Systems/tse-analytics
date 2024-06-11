@@ -14,13 +14,37 @@ class AnimalsModel(QAbstractTableModel):
         self.items = items
 
     def data(self, index: QModelIndex, role: Qt.ItemDataRole):
-        if not index.isValid():
-            return None
-        elif role != Qt.ItemDataRole.DisplayRole:
-            return None
         item = self.items[index.row()]
-        values = (item.id, item.box, item.weight, item.text1, item.text2, item.text3)
-        return values[index.column()]
+        match index.column():
+            case 0:
+                if role == Qt.ItemDataRole.DisplayRole:
+                    return item.id
+                elif role == Qt.ItemDataRole.CheckStateRole:
+                    return Qt.CheckState.Checked if item.enabled else Qt.CheckState.Unchecked
+            case 1:
+                if role == Qt.ItemDataRole.DisplayRole:
+                    return item.box
+            case 2:
+                if role == Qt.ItemDataRole.DisplayRole:
+                    return item.weight
+            case 3:
+                if role == Qt.ItemDataRole.DisplayRole:
+                    return item.text1
+            case 4:
+                if role == Qt.ItemDataRole.DisplayRole:
+                    return item.text2
+            case 5:
+                if role == Qt.ItemDataRole.DisplayRole:
+                    return item.text3
+
+    def setData(self, index: QModelIndex, value, role: Qt.ItemDataRole):
+        if index.column() == 0 and role == Qt.ItemDataRole.CheckStateRole:
+            item = self.items[index.row()]
+            item.enabled = value == Qt.CheckState.Checked.value
+            return True
+
+    def flags(self, index: QModelIndex):
+        return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsUserCheckable
 
     def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:

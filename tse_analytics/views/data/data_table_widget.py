@@ -68,7 +68,7 @@ class DataTableWidget(QWidget, MessengerListener):
         selected_variable_names = [item.name for item in Manager.data.selected_variables]
         selected_variable_names = list(set(selected_variable_names))
 
-        self.df = Manager.data.get_current_df(variables=selected_variable_names)
+        self.df = Manager.data.get_data_view_df(variables=selected_variable_names)
 
         self.ui.tableView.setModel(PandasModel(self.df))
         self.ui.tableView.setColumnWidth(0, 120)
