@@ -21,8 +21,8 @@ class AnovaWidget(QWidget, MessengerListener):
         self.ui.setupUi(self)
 
         self.help_path = "anova.md"
-        self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
-        self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
+        self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
+        self.ui.pushButtonUpdate.clicked.connect(self.__update)
 
         self.ui.groupBoxCovariates.hide()
 
@@ -65,10 +65,10 @@ class AnovaWidget(QWidget, MessengerListener):
     def __on_dataset_changed(self, message: DatasetChangedMessage):
         self.__clear()
         if message.data is None:
-            self.ui.toolButtonAnalyse.setDisabled(True)
+            self.ui.pushButtonUpdate.setDisabled(True)
             return
 
-        self.ui.toolButtonAnalyse.setDisabled(len(Manager.data.selected_dataset.factors) == 0)
+        self.ui.pushButtonUpdate.setDisabled(len(Manager.data.selected_dataset.factors) == 0)
 
         self.ui.tableWidgetDependentVariable.setRowCount(len(message.data.variables.values()))
         self.ui.tableWidgetCovariates.setRowCount(len(message.data.variables.values()))
@@ -98,12 +98,12 @@ class AnovaWidget(QWidget, MessengerListener):
             self.ui.tableWidgetCovariates.setItem(i, 2, QTableWidgetItem(variable.description))
 
     def __clear(self):
-        self.ui.toolButtonAnalyse.setDisabled(True)
+        self.ui.pushButtonUpdate.setDisabled(True)
         self.ui.webView.setHtml("")
         self.ui.tableWidgetDependentVariable.setRowCount(0)
         self.ui.tableWidgetCovariates.setRowCount(0)
 
-    def __analyze(self):
+    def __update(self):
         selected_dependent_variable_items = self.ui.tableWidgetDependentVariable.selectedItems()
         if len(selected_dependent_variable_items) == 0:
             QMessageBox.warning(

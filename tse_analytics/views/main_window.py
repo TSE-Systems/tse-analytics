@@ -13,13 +13,9 @@ from tse_analytics.core.licensing import LicenseManager
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.about_dialog import AboutDialog
 from tse_analytics.views.analysis.anova_widget import AnovaWidget
-from tse_analytics.views.analysis.correlation_widget import CorrelationWidget
-from tse_analytics.views.analysis.distribution_widget import DistributionWidget
-from tse_analytics.views.analysis.glm_widget import GlmWidget
-from tse_analytics.views.analysis.histogram_widget import HistogramWidget
-from tse_analytics.views.analysis.matrix_widget import MatrixWidget
-from tse_analytics.views.analysis.normality_widget import NormalityWidget
-from tse_analytics.views.analysis.pca_widget import PcaWidget
+from tse_analytics.views.analysis.bivariate_widget import BivariateWidget
+from tse_analytics.views.analysis.dimensionality_widget import DimensionalityWidget
+from tse_analytics.views.analysis.exploration_widget import ExplorationWidget
 from tse_analytics.views.analysis.timeseries.timeseries_widget import TimeseriesWidget
 from tse_analytics.views.data.data_plot_widget import DataPlotWidget
 from tse_analytics.views.data.data_table_widget import DataTableWidget
@@ -95,46 +91,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         self.dock_manager.addDockWidgetTabToArea(plot_table_dock_widget, main_area)
 
-        # data_dock_widget = self.__register_dock_widget(
-        #     DataWidget(), "Data", QIcon(":/icons/icons8-line-chart-16.png")
-        # )
-        # self.dock_manager.addDockWidgetTabToArea(data_dock_widget, main_area)
-
-        histogram_dock_widget = self.__register_dock_widget(
-            HistogramWidget(), "Histogram", QIcon(":/icons/icons8-histogram-16.png")
+        exploration_widget = self.__register_dock_widget(
+            ExplorationWidget(), "Exploration", QIcon(":/icons/icons8-histogram-16.png")
         )
-        self.dock_manager.addDockWidgetTabToArea(histogram_dock_widget, main_area)
+        self.dock_manager.addDockWidgetTabToArea(exploration_widget, main_area)
 
-        distribution_dock_widget = self.__register_dock_widget(
-            DistributionWidget(), "Distribution", QIcon(":/icons/icons8-bar-chart-16.png")
+        bivariate_dock_widget = self.__register_dock_widget(
+            BivariateWidget(), "Bivariate", QIcon(":/icons/icons8-scales-16.png")
         )
-        self.dock_manager.addDockWidgetTabToArea(distribution_dock_widget, main_area)
-
-        normality_dock_widget = self.__register_dock_widget(
-            NormalityWidget(), "Normality", QIcon(":/icons/icons8-approval-16.png")
-        )
-        self.dock_manager.addDockWidgetTabToArea(normality_dock_widget, main_area)
-
-        correlation_dock_widget = self.__register_dock_widget(
-            CorrelationWidget(), "Correlation", QIcon(":/icons/icons8-scales-16.png")
-        )
-        self.dock_manager.addDockWidgetTabToArea(correlation_dock_widget, main_area)
+        self.dock_manager.addDockWidgetTabToArea(bivariate_dock_widget, main_area)
 
         anova_dock_widget = self.__register_dock_widget(
-            AnovaWidget(), "AN(C)OVA", QIcon(":/icons/icons8-scales-16.png")
+            AnovaWidget(), "AN(C)OVA", QIcon(":/icons/icons8-bar-chart-16.png")
         )
         self.dock_manager.addDockWidgetTabToArea(anova_dock_widget, main_area)
 
-        glm_dock_widget = self.__register_dock_widget(GlmWidget(), "GLM", QIcon(":/icons/icons8-scales-16.png"))
-        self.dock_manager.addDockWidgetTabToArea(glm_dock_widget, main_area)
-
-        matrix_dock_widget = self.__register_dock_widget(
-            MatrixWidget(), "Matrix", QIcon(":/icons/icons8-heat-map-16.png")
+        dimensionality_dock_widget = self.__register_dock_widget(
+            DimensionalityWidget(), "Dimensionality", QIcon(":/icons/icons8-heat-map-16.png")
         )
-        self.dock_manager.addDockWidgetTabToArea(matrix_dock_widget, main_area)
-
-        pca_dock_widget = self.__register_dock_widget(PcaWidget(), "PCA", QIcon(":/icons/icons8-scales-16.png"))
-        self.dock_manager.addDockWidgetTabToArea(pca_dock_widget, main_area)
+        self.dock_manager.addDockWidgetTabToArea(dimensionality_dock_widget, main_area)
 
         timeseries_dock_widget = self.__register_dock_widget(
             TimeseriesWidget(), "Timeseries", QIcon(":/icons/time.svg")

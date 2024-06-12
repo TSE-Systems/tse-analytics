@@ -22,6 +22,7 @@ class Ui_AnimalsWidget(object):
     def setupUi(self, AnimalsWidget):
         if not AnimalsWidget.objectName():
             AnimalsWidget.setObjectName(u"AnimalsWidget")
+        AnimalsWidget.resize(274, 210)
         self.verticalLayout = QVBoxLayout(AnimalsWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.tableView = QTableView(AnimalsWidget)
@@ -29,6 +30,7 @@ class Ui_AnimalsWidget(object):
         self.tableView.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.tableView.setSortingEnabled(True)
+        self.tableView.verticalHeader().setMinimumSectionSize(20)
         self.tableView.verticalHeader().setDefaultSectionSize(20)
 
         self.verticalLayout.addWidget(self.tableView)
