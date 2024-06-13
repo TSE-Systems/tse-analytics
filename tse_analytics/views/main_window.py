@@ -19,7 +19,7 @@ from tse_analytics.views.analysis.exploration_widget import ExplorationWidget
 from tse_analytics.views.analysis.timeseries.timeseries_widget import TimeseriesWidget
 from tse_analytics.views.data.data_plot_widget import DataPlotWidget
 from tse_analytics.views.data.data_table_widget import DataTableWidget
-from tse_analytics.views.data.data_widget import DataWidget
+# from tse_analytics.views.data.data_widget import DataWidget
 from tse_analytics.views.datasets.datasets_tree_view import DatasetsTreeView
 from tse_analytics.views.help.help_widget import HelpWidget
 from tse_analytics.views.info.info_widget import InfoWidget
@@ -92,10 +92,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         self.dock_manager.addDockWidgetTabToArea(plot_table_dock_widget, main_area)
 
-        data_widget = self.__register_dock_widget(
-            DataWidget(), "Data", QIcon(":/icons/icons8-data-sheet-16.png")
-        )
-        self.dock_manager.addDockWidgetTabToArea(data_widget, main_area)
+        # data_widget = self.__register_dock_widget(
+        #     DataWidget(), "Data", QIcon(":/icons/icons8-data-sheet-16.png")
+        # )
+        # self.dock_manager.addDockWidgetTabToArea(data_widget, main_area)
 
         exploration_widget = self.__register_dock_widget(
             ExplorationWidget(), "Exploration", QIcon(":/icons/icons8-histogram-16.png")

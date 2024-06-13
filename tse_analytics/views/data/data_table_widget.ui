@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
+ <author>Anton Rau</author>
  <class>DataTableWidget</class>
  <widget class="QWidget" name="DataTableWidget">
   <layout class="QVBoxLayout" name="_2">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QToolButton" name="toolButtonResizeColumns">
+      <widget class="QLabel" name="labelGroupByFactor">
        <property name="text">
-        <string>Resize Columns</string>
+        <string>Group by factor:</string>
        </property>
-       <property name="icon">
-        <iconset resource="../../../resources/resources.qrc">
-         <normaloff>:/icons/icons8-resize-horizontal-16.png</normaloff>:/icons/icons8-resize-horizontal-16.png</iconset>
-       </property>
-       <property name="toolButtonStyle">
-        <enum>Qt::ToolButtonTextBesideIcon</enum>
+      </widget>
+     </item>
+     <item>
+      <widget class="FactorSelector" name="factorSelector">
+       <property name="enabled">
+        <bool>false</bool>
        </property>
       </widget>
      </item>
@@ -31,6 +32,17 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonResizeColumns">
+       <property name="text">
+        <string>Resize Columns</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../../../resources/resources.qrc">
+         <normaloff>:/icons/icons8-resize-horizontal-16.png</normaloff>:/icons/icons8-resize-horizontal-16.png</iconset>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -58,6 +70,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>FactorSelector</class>
+   <extends>QComboBox</extends>
+   <header>tse_analytics.views.misc.factor_selector</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../../../resources/resources.qrc"/>
  </resources>

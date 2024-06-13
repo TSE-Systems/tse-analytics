@@ -40,11 +40,6 @@ class DataWidget(QWidget, MessengerListener):
         self.ui.verticalLayout.addWidget(self.timelinePlotView)
         self.active_binning_mode = BinningMode.INTERVALS
 
-        self.plotToolbar = NavigationToolbar2QT(self.barPlotView.canvas, self)
-        self.plotToolbar.setIconSize(QSize(16, 16))
-        self.ui.horizontalLayout.addWidget(self.plotToolbar)
-        self.plotToolbar.hide()
-
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
         messenger.subscribe(self, BinningMessage, self.__on_binning_applied)

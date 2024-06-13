@@ -3,60 +3,67 @@
  <author>Anton Rau</author>
  <class>DataWidget</class>
  <widget class="QWidget" name="DataWidget">
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Variable:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="VariableSelector" name="variableSelector"/>
-     </item>
-     <item>
-      <widget class="QToolButton" name="toolButtonDisplayErrors">
-       <property name="text">
-        <string>Display Errors</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../../../resources/resources.qrc">
-         <normaloff>:/icons/icons8-sorting-16.png</normaloff>:/icons/icons8-sorting-16.png</iconset>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
-       <property name="toolButtonStyle">
-        <enum>Qt::ToolButtonTextBesideIcon</enum>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="comboBoxErrorType"/>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="checkBoxScatterPlot">
-       <property name="text">
-        <string>Scatter Plot</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
+    <widget class="QSplitter" name="splitterHorizontal">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <widget class="QSplitter" name="splitterVertical">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <widget class="DataTableWidget" name="widgetTable" native="true"/>
+      <widget class="DataPlotWidget" name="widgetPlot" native="true"/>
+     </widget>
+     <widget class="QWidget" name="widgetSettings" native="true">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QComboBox" name="comboBoxErrorType"/>
+       </item>
+       <item>
+        <widget class="QToolButton" name="toolButtonDisplayErrors">
+         <property name="text">
+          <string>Display Errors</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../resources/resources.qrc">
+           <normaloff>:/icons/icons8-sorting-16.png</normaloff>:/icons/icons8-sorting-16.png</iconset>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="toolButtonStyle">
+          <enum>Qt::ToolButtonTextBesideIcon</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="VariableSelector" name="variableSelector"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Variable:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBoxScatterPlot">
+         <property name="text">
+          <string>Scatter Plot</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
    </item>
   </layout>
  </widget>
@@ -65,6 +72,18 @@
    <class>VariableSelector</class>
    <extends>QComboBox</extends>
    <header>tse_analytics.views.misc.variable_selector</header>
+  </customwidget>
+  <customwidget>
+   <class>DataTableWidget</class>
+   <extends>QWidget</extends>
+   <header>tse_analytics.views.data.data_table_widget</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DataPlotWidget</class>
+   <extends>QWidget</extends>
+   <header>tse_analytics.views.data.data_plot_widget</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

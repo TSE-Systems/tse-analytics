@@ -26,13 +26,11 @@ class DataPlotWidget(QWidget, MessengerListener):
 
         self.register_to_messenger(Manager.messenger)
 
-        self.ui.comboBoxErrorType.addItems(["Standard deviation", "Standard error"])
-        self.ui.comboBoxErrorType.setCurrentText("Standard deviation")
-        self.ui.comboBoxErrorType.currentTextChanged.connect(self.__error_type_changed)
-
         self.ui.variableSelector.currentTextChanged.connect(self.__variable_changed)
-        self.ui.toolButtonDisplayErrors.toggled.connect(self.__display_errors)
         self.ui.checkBoxScatterPlot.stateChanged.connect(self.__set_scatter_plot)
+        self.ui.groupBoxDisplayErrors.toggled.connect(self.__display_errors)
+        self.ui.radioButtonStandardDeviation.toggled.connect(lambda: self.__error_type_changed("StandardDeviation"))
+        self.ui.radioButtonStandardError.toggled.connect(lambda: self.__error_type_changed("StandardError"))
 
         self.timelinePlotView = TimelinePlotView(self)
         self.barPlotView = BarPlotView(self)
@@ -40,10 +38,10 @@ class DataPlotWidget(QWidget, MessengerListener):
         self.ui.verticalLayout.addWidget(self.timelinePlotView)
         self.active_binning_mode = BinningMode.INTERVALS
 
-        self.plotToolbar = NavigationToolbar2QT(self.barPlotView.canvas, self)
-        self.plotToolbar.setIconSize(QSize(16, 16))
-        self.ui.horizontalLayout.addWidget(self.plotToolbar)
-        self.plotToolbar.hide()
+        self.plot_toolbar = NavigationToolbar2QT(self.barPlotView.canvas, self)
+        self.plot_toolbar.setIconSize(QSize(16, 16))
+        self.ui.widgetSettings.addWidget(self.plot_toolbar)
+        self.plot_toolbar.hide()
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
@@ -57,9 +55,9 @@ class DataPlotWidget(QWidget, MessengerListener):
 
     def __error_type_changed(self, error_type: str):
         if Manager.data.binning_params.mode == BinningMode.INTERVALS:
-            self.timelinePlotView.set_error_type("std" if error_type == "Standard deviation" else "sem")
+            self.timelinePlotView.set_error_type("std" if error_type == "StandardDeviation" else "sem")
         else:
-            self.barPlotView.set_error_type("sd" if error_type == "Standard deviation" else "se")
+            self.barPlotView.set_error_type("sd" if error_type == "StandardDeviation" else "se")
 
     def __display_errors(self, state: bool):
         if Manager.data.binning_params.mode == BinningMode.INTERVALS:
@@ -114,7 +112,7 @@ class DataPlotWidget(QWidget, MessengerListener):
                 self.active_binning_mode = Manager.data.binning_params.mode
             self.timelinePlotView.set_variable(Manager.data.selected_variable, False)
             self.timelinePlotView.set_data(df)
-            self.plotToolbar.hide()
+            self.plot_toolbar.hide()
             self.ui.checkBoxScatterPlot.show()
         else:
             if Manager.data.binning_params.mode != self.active_binning_mode:
@@ -128,7 +126,7 @@ class DataPlotWidget(QWidget, MessengerListener):
             self.ui.checkBoxScatterPlot.hide()
             new_toolbar = NavigationToolbar2QT(self.barPlotView.canvas, self)
             new_toolbar.setIconSize(QSize(16, 16))
-            self.plotToolbar.hide()
-            self.ui.horizontalLayout.replaceWidget(self.plotToolbar, new_toolbar)
-            self.plotToolbar.deleteLater()
-            self.plotToolbar = new_toolbar
+            self.plot_toolbar.hide()
+            self.ui.widgetSettings.replaceWidget(self.plot_toolbar, new_toolbar)
+            self.plot_toolbar.deleteLater()
+            self.plot_toolbar = new_toolbar

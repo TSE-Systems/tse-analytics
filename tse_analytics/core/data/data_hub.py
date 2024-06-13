@@ -237,6 +237,70 @@ class DataHub:
 
         return result
 
+    def get_data_view_df_new(
+        self,
+        variables: list[str] | None = None,
+        grouping_mode=GroupingMode.ANIMALS,
+        selected_factor: Factor | None = None,
+        dropna=False,
+    ) -> pd.DataFrame:
+        if variables is not None:
+            default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
+            factor_columns = list(self.selected_dataset.factors.keys())
+            result = self.selected_dataset.active_df[default_columns + factor_columns + variables].copy()
+        else:
+            result = self.selected_dataset.active_df.copy()
+
+        # Filter operator
+        if len(self.selected_animals) > 0:
+            operator = AnimalFilterPipeOperator(self.selected_animals)
+            result = operator.process(result)
+
+        # Outliers operator
+        if self.outliers_params.mode == OutliersMode.REMOVE:
+            if variables is None:
+                variables = list(self.selected_dataset.variables.keys())
+            operator = OutliersPipeOperator(self.outliers_params, variables)
+            result = operator.process(result)
+
+        # Binning
+        if self.binning_params.apply:
+            factor_names = list(self.selected_dataset.factors.keys())
+            match self.binning_params.mode:
+                case BinningMode.INTERVALS:
+                    operator = TimeIntervalsBinningPipeOperator(
+                        self.selected_dataset.binning_settings.time_intervals_settings,
+                        self.binning_params.operation,
+                        grouping_mode,
+                        factor_names,
+                        selected_factor,
+                    )
+                    result = operator.process(result)
+                case BinningMode.CYCLES:
+                    operator = TimeCyclesBinningPipeOperator(
+                        self.selected_dataset.binning_settings.time_cycles_settings,
+                        self.binning_params.operation,
+                        grouping_mode,
+                        factor_names,
+                        selected_factor,
+                    )
+                    result = operator.process(result)
+                case BinningMode.PHASES:
+                    operator = TimePhasesBinningPipeOperator(
+                        self.selected_dataset.binning_settings.time_phases_settings,
+                        self.binning_params.operation,
+                        grouping_mode,
+                        factor_names,
+                        selected_factor,
+                    )
+                    result = operator.process(result)
+
+        # TODO: should or should not?
+        if dropna:
+            result = result.dropna()
+
+        return result
+
     def get_data_view_df(self, variables: list[str] | None = None, dropna=False) -> pd.DataFrame:
         if variables is not None:
             default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]

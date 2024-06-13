@@ -16,8 +16,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QHBoxLayout, QHeaderView,
-    QSizePolicy, QSpacerItem, QTableView, QToolButton,
-    QVBoxLayout, QWidget)
+    QLabel, QPushButton, QSizePolicy, QSpacerItem,
+    QTableView, QVBoxLayout, QWidget)
+
+from tse_analytics.views.misc.factor_selector import FactorSelector
 import resources_rc
 
 class Ui_DataTableWidget(object):
@@ -28,18 +30,28 @@ class Ui_DataTableWidget(object):
         self._2.setObjectName(u"_2")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.toolButtonResizeColumns = QToolButton(DataTableWidget)
-        self.toolButtonResizeColumns.setObjectName(u"toolButtonResizeColumns")
-        icon = QIcon()
-        icon.addFile(u":/icons/icons8-resize-horizontal-16.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.toolButtonResizeColumns.setIcon(icon)
-        self.toolButtonResizeColumns.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self.labelGroupByFactor = QLabel(DataTableWidget)
+        self.labelGroupByFactor.setObjectName(u"labelGroupByFactor")
 
-        self.horizontalLayout.addWidget(self.toolButtonResizeColumns)
+        self.horizontalLayout.addWidget(self.labelGroupByFactor)
+
+        self.factorSelector = FactorSelector(DataTableWidget)
+        self.factorSelector.setObjectName(u"factorSelector")
+        self.factorSelector.setEnabled(False)
+
+        self.horizontalLayout.addWidget(self.factorSelector)
 
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer)
+
+        self.pushButtonResizeColumns = QPushButton(DataTableWidget)
+        self.pushButtonResizeColumns.setObjectName(u"pushButtonResizeColumns")
+        icon = QIcon()
+        icon.addFile(u":/icons/icons8-resize-horizontal-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.pushButtonResizeColumns.setIcon(icon)
+
+        self.horizontalLayout.addWidget(self.pushButtonResizeColumns)
 
 
         self._2.addLayout(self.horizontalLayout)
@@ -62,7 +74,8 @@ class Ui_DataTableWidget(object):
     # setupUi
 
     def retranslateUi(self, DataTableWidget):
-        self.toolButtonResizeColumns.setText(QCoreApplication.translate("DataTableWidget", u"Resize Columns", None))
+        self.labelGroupByFactor.setText(QCoreApplication.translate("DataTableWidget", u"Group by factor:", None))
+        self.pushButtonResizeColumns.setText(QCoreApplication.translate("DataTableWidget", u"Resize Columns", None))
         pass
     # retranslateUi
 
