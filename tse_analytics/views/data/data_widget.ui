@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <author>Anton Rau</author>
+ <class>DataWidget</class>
+ <widget class="QWidget" name="DataWidget">
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Variable:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="VariableSelector" name="variableSelector"/>
+     </item>
+     <item>
+      <widget class="QToolButton" name="toolButtonDisplayErrors">
+       <property name="text">
+        <string>Display Errors</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../../../resources/resources.qrc">
+         <normaloff>:/icons/icons8-sorting-16.png</normaloff>:/icons/icons8-sorting-16.png</iconset>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonTextBesideIcon</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboBoxErrorType"/>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="checkBoxScatterPlot">
+       <property name="text">
+        <string>Scatter Plot</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>VariableSelector</class>
+   <extends>QComboBox</extends>
+   <header>tse_analytics.views.misc.variable_selector</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../../../resources/resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

@@ -128,7 +128,7 @@ class Ui_ExplorationWidget(object):
         self.radioButtonHistogram.setText(QCoreApplication.translate("ExplorationWidget", u"Histogram", None))
         self.radioButtonDistribution.setText(QCoreApplication.translate("ExplorationWidget", u"Distribution", None))
         self.radioButtonNormality.setText(QCoreApplication.translate("ExplorationWidget", u"Normality", None))
-        self.groupBoxSplitBy.setTitle(QCoreApplication.translate("ExplorationWidget", u"Split by", None))
+        self.groupBoxSplitBy.setTitle(QCoreApplication.translate("ExplorationWidget", u"Split by factor", None))
         self.pushButtonUpdate.setText(QCoreApplication.translate("ExplorationWidget", u"Update", None))
         self.pushButtonHelp.setText(QCoreApplication.translate("ExplorationWidget", u"Help", None))
         pass

@@ -25,8 +25,7 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
             case GroupingMode.ANIMALS:
                 group_by = ["Animal", "Box"] + self.factor_names
             case GroupingMode.FACTORS:
-                if self.selected_factor is not None:
-                    group_by = [self.selected_factor.name]
+                group_by = [self.selected_factor.name]
             case GroupingMode.RUNS:
                 group_by = ["Run"]
 
@@ -47,8 +46,7 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
             case GroupingMode.ANIMALS:
                 sort_by = ["DateTime", "Animal"]
             case GroupingMode.FACTORS:
-                if self.selected_factor is not None:
-                    sort_by = ["DateTime", self.selected_factor.name]
+                sort_by = ["DateTime", self.selected_factor.name]
             case GroupingMode.RUNS:
                 sort_by = ["DateTime", "Run"]
 

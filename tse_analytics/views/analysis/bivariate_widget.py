@@ -5,6 +5,7 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
+from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import DatasetChangedMessage
@@ -70,7 +71,12 @@ class BivariateWidget(QWidget, MessengerListener):
         y_var = self.ui.variableSelectorY.currentText()
 
         variables = [x_var] if x_var == y_var else [x_var, y_var]
-        df = Manager.data.get_current_df(variables=variables)
+        df = Manager.data.get_current_df(
+            variables=variables,
+            grouping_mode=GroupingMode.ANIMALS,
+            selected_factor=None,
+            dropna=False,
+        )
 
         selected_factor = self.ui.factorSelector.currentText()
         if selected_factor != "":
@@ -129,7 +135,12 @@ class BivariateWidget(QWidget, MessengerListener):
         hue = selected_factor if selected_factor != "" else "Animal"
 
         variables = [response] if response == covariate else [response, covariate]
-        df = Manager.data.get_current_df(variables=variables)
+        df = Manager.data.get_current_df(
+            variables=variables,
+            grouping_mode=GroupingMode.ANIMALS,
+            selected_factor=None,
+            dropna=False,
+        )
 
         df = df.groupby(by=["Animal"], as_index=False).agg({
             covariate: "mean",

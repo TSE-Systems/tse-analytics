@@ -31,16 +31,15 @@ class DataHub:
         self.messenger = messenger
 
         self.selected_dataset: Dataset | None = None
-        self.selected_factor: Factor | None = None
         self.selected_animals: list[Animal] = []
         self.selected_variables: list[Variable] = []
+        self.selected_factor: Factor | None = None
+        self.selected_variable = ""
 
         self.grouping_mode = GroupingMode.ANIMALS
 
         self.binning_params = BinningParams(False, BinningMode.INTERVALS, BinningOperation.MEAN)
         self.outliers_params = OutliersParams(OutliersMode.OFF, 3.0)
-
-        self.selected_variable = ""
 
     def clear(self):
         self.selected_dataset = None
@@ -174,7 +173,13 @@ class DataHub:
             dataset.refresh_active_df()
             self.set_selected_dataset(dataset)
 
-    def get_current_df(self, variables: list[str] | None = None, dropna=False) -> pd.DataFrame:
+    def get_current_df(
+        self,
+        variables: list[str] | None = None,
+        grouping_mode=GroupingMode.ANIMALS,
+        selected_factor: Factor | None = None,
+        dropna=False,
+    ) -> pd.DataFrame:
         if variables is not None:
             default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
             factor_columns = list(self.selected_dataset.factors.keys())
@@ -194,11 +199,6 @@ class DataHub:
             operator = OutliersPipeOperator(self.outliers_params, variables)
             result = operator.process(result)
 
-        # # Error calculation operator
-        # if calculate_error and self.selected_variable != "":
-        #     operator = ErrorPipeOperator(self.selected_variable)
-        #     result = operator.process(result)
-
         # Binning
         if self.binning_params.apply:
             factor_names = list(self.selected_dataset.factors.keys())
@@ -207,27 +207,27 @@ class DataHub:
                     operator = TimeIntervalsBinningPipeOperator(
                         self.selected_dataset.binning_settings.time_intervals_settings,
                         self.binning_params.operation,
-                        self.grouping_mode,
+                        grouping_mode,
                         factor_names,
-                        self.selected_factor,
+                        selected_factor,
                     )
                     result = operator.process(result)
                 case BinningMode.CYCLES:
                     operator = TimeCyclesBinningPipeOperator(
                         self.selected_dataset.binning_settings.time_cycles_settings,
                         self.binning_params.operation,
-                        self.grouping_mode,
+                        grouping_mode,
                         factor_names,
-                        self.selected_factor,
+                        selected_factor,
                     )
                     result = operator.process(result)
                 case BinningMode.PHASES:
                     operator = TimePhasesBinningPipeOperator(
                         self.selected_dataset.binning_settings.time_phases_settings,
                         self.binning_params.operation,
-                        self.grouping_mode,
+                        grouping_mode,
                         factor_names,
-                        self.selected_factor,
+                        selected_factor,
                     )
                     result = operator.process(result)
 

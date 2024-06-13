@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QWidget
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
+from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import DatasetChangedMessage
@@ -63,7 +64,12 @@ class DimensionalityWidget(QWidget, MessengerListener):
         color = selected_factor if self.ui.groupBoxFactor.isChecked() else "Animal"
 
         variables = [variable.name for variable in Manager.data.selected_variables]
-        df = Manager.data.get_current_df(variables=variables)
+        df = Manager.data.get_current_df(
+            variables=variables,
+            grouping_mode=GroupingMode.ANIMALS,
+            selected_factor=None,
+            dropna=False,
+        )
 
         fig = px.scatter_matrix(df, dimensions=variables, color=color)
         fig.update_traces(diagonal_visible=False)
@@ -85,7 +91,12 @@ class DimensionalityWidget(QWidget, MessengerListener):
         color_column = selected_factor if self.ui.groupBoxFactor.isChecked() else "Animal"
 
         variables = [variable.name for variable in Manager.data.selected_variables]
-        df = Manager.data.get_current_df(variables=variables, dropna=True)
+        df = Manager.data.get_current_df(
+            variables=variables,
+            grouping_mode=GroupingMode.ANIMALS,
+            selected_factor=None,
+            dropna=True,
+        )
 
         n_components = 2 if self.ui.radioButton2D.isChecked() else 3
 

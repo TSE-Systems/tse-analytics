@@ -4,6 +4,7 @@ from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
+from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import DatasetChangedMessage
@@ -65,7 +66,12 @@ class ExplorationWidget(QWidget, MessengerListener):
         self.ui.canvas.clear(False)
         ax = self.ui.canvas.figure.add_subplot(111)
 
-        df = Manager.data.get_current_df(variables=[variable])
+        df = Manager.data.get_current_df(
+            variables=[variable],
+            grouping_mode=GroupingMode.ANIMALS,
+            selected_factor=None,
+            dropna=False,
+        )
         df[by] = df[by].cat.remove_unused_categories()
 
         number_of_elements = len(df[by].cat.categories)
@@ -92,7 +98,12 @@ class ExplorationWidget(QWidget, MessengerListener):
         self.ui.canvas.clear(False)
         ax = self.ui.canvas.figure.add_subplot(111)
 
-        df = Manager.data.get_current_df(variables=[variable])
+        df = Manager.data.get_current_df(
+            variables=[variable],
+            grouping_mode=GroupingMode.ANIMALS,
+            selected_factor=None,
+            dropna=False,
+        )
         df[x] = df[x].cat.remove_unused_categories()
 
         sns.violinplot(data=df, x=x, y=variable, ax=ax)
@@ -108,7 +119,12 @@ class ExplorationWidget(QWidget, MessengerListener):
 
         self.ui.canvas.clear(False)
 
-        df = Manager.data.get_current_df(variables=[variable])
+        df = Manager.data.get_current_df(
+            variables=[variable],
+            grouping_mode=GroupingMode.ANIMALS,
+            selected_factor=None,
+            dropna=False,
+        )
         df[by] = df[by].cat.remove_unused_categories()
 
         if self.ui.groupBoxSplitBy.isChecked():

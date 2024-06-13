@@ -4,6 +4,7 @@ from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 from statsmodels.tsa.seasonal import MSTL, STL, seasonal_decompose
 
+from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.analysis.timeseries.decomposition_widget_ui import Ui_DecompositionWidget
@@ -45,7 +46,13 @@ class DecompositionWidget(QWidget):
 
         variables = [variable.name for variable in Manager.data.selected_variables]
         var_name = Manager.data.selected_variables[0].name
-        df = Manager.data.get_current_df(variables=variables, dropna=False)
+
+        df = Manager.data.get_current_df(
+            variables=variables,
+            grouping_mode=GroupingMode.ANIMALS,
+            selected_factor=None,
+            dropna=False,
+        )
 
         index = pd.DatetimeIndex(df["DateTime"])
         index = index.round("min")

@@ -38,8 +38,7 @@ class TimePhasesBinningPipeOperator(PipeOperator):
             case GroupingMode.ANIMALS:
                 group_by = ["Animal", "Box", "Bin"] + self.factor_names
             case GroupingMode.FACTORS:
-                if self.selected_factor is not None:
-                    group_by = [self.selected_factor.name, "Bin"]
+                group_by = [self.selected_factor.name, "Bin"]
             case GroupingMode.RUNS:
                 group_by = ["Run", "Bin"]
 

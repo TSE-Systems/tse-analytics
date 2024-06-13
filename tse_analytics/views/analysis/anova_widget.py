@@ -3,6 +3,7 @@ from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QMessageBox, QTableWidgetItem, QWidget
 
 from tse_analytics.core.data.binning import BinningMode
+from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import DatasetChangedMessage
@@ -239,7 +240,12 @@ class AnovaWidget(QWidget, MessengerListener):
             )
             return
 
-        df = Manager.data.get_current_df(variables=[dependent_variable], dropna=True)
+        df = Manager.data.get_current_df(
+            variables=[dependent_variable],
+            grouping_mode=GroupingMode.ANIMALS,
+            selected_factor=None,
+            dropna=True,
+        )
 
         anova = pg.rm_anova(data=df, dv=dependent_variable, within="Bin", subject="Animal", detailed=True).round(3)
 
@@ -292,7 +298,12 @@ class AnovaWidget(QWidget, MessengerListener):
 
         factor_name = Manager.data.selected_factor.name
 
-        df = Manager.data.get_current_df(variables=[dependent_variable], dropna=True)
+        df = Manager.data.get_current_df(
+            variables=[dependent_variable],
+            grouping_mode=GroupingMode.ANIMALS,
+            selected_factor=None,
+            dropna=True,
+        )
 
         anova = pg.mixed_anova(
             data=df,
