@@ -70,7 +70,7 @@ class DataTableWidget(QWidget, MessengerListener):
         selected_variable_names = [item.name for item in Manager.data.selected_variables]
         selected_variable_names = list(set(selected_variable_names))
 
-        self.df = Manager.data.get_data_view_df_new(
+        self.df = Manager.data.get_data_view_df(
             variables=selected_variable_names,
             grouping_mode=GroupingMode.ANIMALS if self.selected_factor is None else GroupingMode.FACTORS,
             selected_factor=self.selected_factor,

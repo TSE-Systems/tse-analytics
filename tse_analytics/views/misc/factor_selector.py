@@ -8,5 +8,6 @@ class FactorSelector(QComboBox):
         super().__init__(parent)
 
     def set_data(self, factors: dict[str, Factor]):
+        self.clear()
         items = [""] + list(factors.keys())
         self.addItems(items)

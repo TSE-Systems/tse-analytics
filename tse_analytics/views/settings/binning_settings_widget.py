@@ -20,19 +20,21 @@ class BinningSettingsWidget(QWidget, MessengerListener):
         self.ui.widgetTimeCyclesSettings.setVisible(False)
         self.ui.widgetTimePhasesSettings.setVisible(False)
 
+        self.ui.applyBinningCheckBox.stateChanged.connect(self.__apply_binning_changed)
+
         self.ui.binningModeComboBox.addItems([e.value for e in BinningMode])
         self.ui.binningModeComboBox.currentTextChanged.connect(self.__binning_mode_changed)
 
-        self.ui.applyBinningCheckBox.stateChanged.connect(self.__apply_binning_changed)
-
         self.ui.binningOperationComboBox.addItems([e.value for e in BinningOperation])
-        self.ui.binningOperationComboBox.setCurrentText("mean")
         self.ui.binningOperationComboBox.currentTextChanged.connect(self.__binning_operation_changed)
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
 
     def __on_dataset_changed(self, message: DatasetChangedMessage):
+        self.ui.applyBinningCheckBox.setChecked(False)
+        self.ui.binningModeComboBox.setCurrentText(BinningMode.INTERVALS.value)
+        self.ui.binningOperationComboBox.setCurrentText(BinningOperation.MEAN.value)
         if message.data is None:
             self.ui.widgetTimePhasesSettings.clear()
         else:

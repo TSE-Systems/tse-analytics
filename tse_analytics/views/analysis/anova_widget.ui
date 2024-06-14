@@ -73,6 +73,18 @@
         </widget>
        </item>
        <item>
+        <widget class="QGroupBox" name="groupBoxFactor">
+         <property name="title">
+          <string>Factor</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_8">
+          <item>
+           <widget class="FactorSelector" name="factorSelector"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QGroupBox" name="groupBoxPAdjustment">
          <property name="title">
           <string>P-values adjustment</string>
@@ -221,6 +233,11 @@
    <extends>QWidget</extends>
    <header location="global">QtWebEngineWidgets/QWebEngineView</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>FactorSelector</class>
+   <extends>QComboBox</extends>
+   <header>tse_analytics.views.misc.factor_selector</header>
   </customwidget>
  </customwidgets>
  <resources>

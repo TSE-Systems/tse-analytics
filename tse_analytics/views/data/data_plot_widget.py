@@ -9,13 +9,13 @@ from tse_analytics.core.messaging.messages import (
     BinningMessage,
     DataChangedMessage,
     DatasetChangedMessage,
-    GroupingModeChangedMessage,
 )
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.data.bar_plot_view import BarPlotView
 from tse_analytics.views.data.data_plot_widget_ui import Ui_DataPlotWidget
 from tse_analytics.views.data.timeline_plot_view import TimelinePlotView
+from tse_analytics.views.misc.toast import Toast
 
 
 class DataPlotWidget(QWidget, MessengerListener):
@@ -27,6 +27,8 @@ class DataPlotWidget(QWidget, MessengerListener):
         self.register_to_messenger(Manager.messenger)
 
         self.ui.variableSelector.currentTextChanged.connect(self.__variable_changed)
+        self.ui.groupBoxFactor.toggled.connect(self.__grouping_mode_changed)
+        self.ui.factorSelector.currentTextChanged.connect(self.__grouping_mode_changed)
         self.ui.checkBoxScatterPlot.stateChanged.connect(self.__set_scatter_plot)
         self.ui.groupBoxDisplayErrors.toggled.connect(self.__display_errors)
         self.ui.radioButtonStandardDeviation.toggled.connect(lambda: self.__error_type_changed("StandardDeviation"))
@@ -35,19 +37,18 @@ class DataPlotWidget(QWidget, MessengerListener):
         self.timelinePlotView = TimelinePlotView(self)
         self.barPlotView = BarPlotView(self)
 
-        self.ui.verticalLayout.addWidget(self.timelinePlotView)
+        self.ui.splitter.replaceWidget(0, self.timelinePlotView)
         self.active_binning_mode = BinningMode.INTERVALS
 
         self.plot_toolbar = NavigationToolbar2QT(self.barPlotView.canvas, self)
         self.plot_toolbar.setIconSize(QSize(16, 16))
-        self.ui.widgetSettings.addWidget(self.plot_toolbar)
+        self.ui.widgetSettings.layout().addWidget(self.plot_toolbar)
         self.plot_toolbar.hide()
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
         messenger.subscribe(self, BinningMessage, self.__on_binning_applied)
         messenger.subscribe(self, DataChangedMessage, self.__on_data_changed)
-        messenger.subscribe(self, GroupingModeChangedMessage, self.__on_grouping_mode_changed)
 
     def __variable_changed(self, variable: str):
         Manager.data.selected_variable = variable
@@ -71,12 +72,14 @@ class DataPlotWidget(QWidget, MessengerListener):
     def __on_dataset_changed(self, message: DatasetChangedMessage):
         if message.data is None:
             self.ui.variableSelector.clear()
+            self.ui.factorSelector.clear()
             if Manager.data.binning_params.mode == BinningMode.INTERVALS:
                 self.timelinePlotView.clear_plot()
             else:
                 self.barPlotView.clear_plot()
         else:
             self.ui.variableSelector.set_data(message.data.variables)
+            self.ui.factorSelector.set_data(message.data.factors)
             self.__assign_data()
 
     def __on_binning_applied(self, message: BinningMessage):
@@ -89,13 +92,17 @@ class DataPlotWidget(QWidget, MessengerListener):
     def __on_data_changed(self, message: DataChangedMessage):
         self.__assign_data()
 
-    def __on_grouping_mode_changed(self, message: GroupingModeChangedMessage):
+    def __grouping_mode_changed(self):
+        grouping_mode = GroupingMode.FACTORS if self.ui.groupBoxFactor.isChecked() else GroupingMode.ANIMALS
+        selected_factor_name = self.ui.factorSelector.currentText()
+        factor = Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
+        self.timelinePlotView.set_grouping_mode(grouping_mode, factor)
+        self.barPlotView.set_grouping_mode(grouping_mode, factor)
         self.__assign_data()
 
     def __assign_data(self):
-        if Manager.data.selected_variable == "" or (
-            Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None
-        ):
+        if self.ui.groupBoxFactor.isChecked() and self.ui.factorSelector.currentText() == "":
+            Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
             return
 
         df = (
@@ -106,7 +113,7 @@ class DataPlotWidget(QWidget, MessengerListener):
 
         if Manager.data.binning_params.mode == BinningMode.INTERVALS:
             if Manager.data.binning_params.mode != self.active_binning_mode:
-                self.ui.verticalLayout.replaceWidget(self.barPlotView, self.timelinePlotView)
+                self.ui.splitter.replaceWidget(0, self.timelinePlotView)
                 self.barPlotView.hide()
                 self.timelinePlotView.show()
                 self.active_binning_mode = Manager.data.binning_params.mode
@@ -116,7 +123,7 @@ class DataPlotWidget(QWidget, MessengerListener):
             self.ui.checkBoxScatterPlot.show()
         else:
             if Manager.data.binning_params.mode != self.active_binning_mode:
-                self.ui.verticalLayout.replaceWidget(self.timelinePlotView, self.barPlotView)
+                self.ui.splitter.replaceWidget(0, self.barPlotView)
                 self.timelinePlotView.hide()
                 self.barPlotView.show()
                 self.active_binning_mode = Manager.data.binning_params.mode
@@ -127,6 +134,6 @@ class DataPlotWidget(QWidget, MessengerListener):
             new_toolbar = NavigationToolbar2QT(self.barPlotView.canvas, self)
             new_toolbar.setIconSize(QSize(16, 16))
             self.plot_toolbar.hide()
-            self.ui.widgetSettings.replaceWidget(self.plot_toolbar, new_toolbar)
+            self.ui.widgetSettings.layout().replaceWidget(self.plot_toolbar, new_toolbar)
             self.plot_toolbar.deleteLater()
             self.plot_toolbar = new_toolbar

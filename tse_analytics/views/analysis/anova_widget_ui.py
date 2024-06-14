@@ -20,6 +20,8 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QGrou
     QHeaderView, QPushButton, QRadioButton, QSizePolicy,
     QSplitter, QTableWidget, QTableWidgetItem, QVBoxLayout,
     QWidget)
+
+from tse_analytics.views.misc.factor_selector import FactorSelector
 import resources_rc
 
 class Ui_AnovaWidget(object):
@@ -80,6 +82,18 @@ class Ui_AnovaWidget(object):
 
 
         self.verticalLayout_5.addWidget(self.groupBoxMode)
+
+        self.groupBoxFactor = QGroupBox(self.widgetSettings)
+        self.groupBoxFactor.setObjectName(u"groupBoxFactor")
+        self.verticalLayout_8 = QVBoxLayout(self.groupBoxFactor)
+        self.verticalLayout_8.setObjectName(u"verticalLayout_8")
+        self.factorSelector = FactorSelector(self.groupBoxFactor)
+        self.factorSelector.setObjectName(u"factorSelector")
+
+        self.verticalLayout_8.addWidget(self.factorSelector)
+
+
+        self.verticalLayout_5.addWidget(self.groupBoxFactor)
 
         self.groupBoxPAdjustment = QGroupBox(self.widgetSettings)
         self.groupBoxPAdjustment.setObjectName(u"groupBoxPAdjustment")
@@ -184,6 +198,7 @@ class Ui_AnovaWidget(object):
         self.radioButtonRMAnova.setText(QCoreApplication.translate("AnovaWidget", u"Repeated measures ANOVA", None))
         self.radioButtonMixedAnova.setText(QCoreApplication.translate("AnovaWidget", u"Mixed-design ANOVA", None))
         self.radioButtonAncova.setText(QCoreApplication.translate("AnovaWidget", u"ANCOVA", None))
+        self.groupBoxFactor.setTitle(QCoreApplication.translate("AnovaWidget", u"Factor", None))
         self.groupBoxPAdjustment.setTitle(QCoreApplication.translate("AnovaWidget", u"P-values adjustment", None))
         self.groupBoxEffectSizeType.setTitle(QCoreApplication.translate("AnovaWidget", u"Effect size type", None))
         self.groupBoxDependentVariable.setTitle(QCoreApplication.translate("AnovaWidget", u"Dependent Variable", None))

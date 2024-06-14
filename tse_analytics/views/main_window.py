@@ -5,9 +5,8 @@ import psutil
 import PySide6QtAds
 from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QCloseEvent, QIcon
-from PySide6.QtWidgets import QApplication, QComboBox, QDialog, QFileDialog, QLabel, QMainWindow, QMessageBox, QWidget
+from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QMessageBox, QWidget
 
-from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.helper import LAYOUT_VERSION, show_help
 from tse_analytics.core.licensing import LicenseManager
 from tse_analytics.core.manager import Manager
@@ -19,7 +18,6 @@ from tse_analytics.views.analysis.exploration_widget import ExplorationWidget
 from tse_analytics.views.analysis.timeseries.timeseries_widget import TimeseriesWidget
 from tse_analytics.views.data.data_plot_widget import DataPlotWidget
 from tse_analytics.views.data.data_table_widget import DataTableWidget
-# from tse_analytics.views.data.data_widget import DataWidget
 from tse_analytics.views.datasets.datasets_tree_view import DatasetsTreeView
 from tse_analytics.views.help.help_widget import HelpWidget
 from tse_analytics.views.info.info_widget import InfoWidget
@@ -69,12 +67,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.menuOpenRecent.aboutToShow.connect(self.populate_open_recent)
         self.menuTools.aboutToShow.connect(self.__tools_availability)
 
-        self.toolBar.addWidget(QLabel("Grouping Mode: "))
-        grouping_mode_combo_box = QComboBox()
-        grouping_mode_combo_box.addItems([e.value for e in GroupingMode])
-        grouping_mode_combo_box.currentTextChanged.connect(self.__grouping_mode_changed)
-        self.toolBar.addWidget(grouping_mode_combo_box)
-
         # Create the dock manager. Because the parent parameter is a QMainWindow
         # the dock manager registers itself as the central widget.
         self.dock_manager = PySide6QtAds.CDockManager(self)
@@ -83,60 +75,55 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.default_docking_state = None
 
         data_table_dock_widget = self.__register_dock_widget(
-            DataTableWidget(), "Table", QIcon(":/icons/icons8-data-sheet-16.png")
+            DataTableWidget(), "Table", QIcon(":/icons/table.png")
         )
         main_area = self.dock_manager.addDockWidget(PySide6QtAds.AllDockAreas, data_table_dock_widget)
 
-        plot_table_dock_widget = self.__register_dock_widget(
-            DataPlotWidget(), "Plot", QIcon(":/icons/icons8-line-chart-16.png")
+        data_plot_dock_widget = self.__register_dock_widget(
+            DataPlotWidget(), "Plot", QIcon(":/icons/plot.png")
         )
-        self.dock_manager.addDockWidgetTabToArea(plot_table_dock_widget, main_area)
-
-        # data_widget = self.__register_dock_widget(
-        #     DataWidget(), "Data", QIcon(":/icons/icons8-data-sheet-16.png")
-        # )
-        # self.dock_manager.addDockWidgetTabToArea(data_widget, main_area)
+        self.dock_manager.addDockWidgetTabToArea(data_plot_dock_widget, main_area)
 
         exploration_widget = self.__register_dock_widget(
-            ExplorationWidget(), "Exploration", QIcon(":/icons/icons8-histogram-16.png")
+            ExplorationWidget(), "Exploration", QIcon(":/icons/exploration.png")
         )
         self.dock_manager.addDockWidgetTabToArea(exploration_widget, main_area)
 
         bivariate_dock_widget = self.__register_dock_widget(
-            BivariateWidget(), "Bivariate", QIcon(":/icons/icons8-scales-16.png")
+            BivariateWidget(), "Bivariate", QIcon(":/icons/bivariate.png")
         )
         self.dock_manager.addDockWidgetTabToArea(bivariate_dock_widget, main_area)
 
         anova_dock_widget = self.__register_dock_widget(
-            AnovaWidget(), "AN(C)OVA", QIcon(":/icons/icons8-bar-chart-16.png")
+            AnovaWidget(), "AN(C)OVA", QIcon(":/icons/anova.png")
         )
         self.dock_manager.addDockWidgetTabToArea(anova_dock_widget, main_area)
 
         dimensionality_dock_widget = self.__register_dock_widget(
-            DimensionalityWidget(), "Dimensionality", QIcon(":/icons/icons8-heat-map-16.png")
+            DimensionalityWidget(), "Dimensionality", QIcon(":/icons/dimensionality.png")
         )
         self.dock_manager.addDockWidgetTabToArea(dimensionality_dock_widget, main_area)
 
         timeseries_dock_widget = self.__register_dock_widget(
-            TimeseriesWidget(), "Timeseries", QIcon(":/icons/time.svg")
+            TimeseriesWidget(), "Timeseries", QIcon(":/icons/timeseries.png")
         )
         self.dock_manager.addDockWidgetTabToArea(timeseries_dock_widget, main_area)
 
         datasets_dock_widget = self.__register_dock_widget(
-            DatasetsTreeView(), "Datasets", QIcon(":/icons/icons8-database-16.png")
+            DatasetsTreeView(), "Datasets", QIcon(":/icons/datasets.png")
         )
         datasets_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
         datasets_dock_area = self.dock_manager.addDockWidget(PySide6QtAds.LeftDockWidgetArea, datasets_dock_widget)
 
-        info_dock_widget = self.__register_dock_widget(InfoWidget(), "Info", QIcon(":/icons/icons8-info-16.png"))
+        info_dock_widget = self.__register_dock_widget(InfoWidget(), "Info", QIcon(":/icons/info.png"))
         info_dock_area = self.dock_manager.addDockWidget(
             PySide6QtAds.BottomDockWidgetArea, info_dock_widget, datasets_dock_area
         )
 
-        help_dock_widget = self.__register_dock_widget(HelpWidget(), "Help", QIcon(":/icons/icons8-help-16.png"))
+        help_dock_widget = self.__register_dock_widget(HelpWidget(), "Help", QIcon(":/icons/help.png"))
         self.dock_manager.addDockWidgetTabToArea(help_dock_widget, info_dock_area)
 
-        log_dock_widget = self.__register_dock_widget(LogWidget(), "Log", QIcon(":/icons/log-16.png"))
+        log_dock_widget = self.__register_dock_widget(LogWidget(), "Log", QIcon(":/icons/log.png"))
         self.dock_manager.addDockWidgetTabToArea(log_dock_widget, info_dock_area)
 
         animals_dock_widget = self.__register_dock_widget(
@@ -146,17 +133,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         selector_dock_area = self.dock_manager.addDockWidget(PySide6QtAds.RightDockWidgetArea, animals_dock_widget)
 
         factors_dock_widget = self.__register_dock_widget(
-            FactorsWidget(), "Factors", QIcon(":/icons/icons8-dog-tag-16.png")
+            FactorsWidget(), "Factors", QIcon(":/icons/factors.png")
         )
         self.dock_manager.addDockWidgetTabToArea(factors_dock_widget, selector_dock_area)
 
         variables_dock_widget = self.__register_dock_widget(
-            VariablesWidget(), "Variables", QIcon(":/icons/icons8-variable-16.png")
+            VariablesWidget(), "Variables", QIcon(":/icons/variables.png")
         )
         self.dock_manager.addDockWidgetTabToArea(variables_dock_widget, selector_dock_area)
 
         binning_dock_widget = self.__register_dock_widget(
-            BinningSettingsWidget(), "Binning", QIcon(":/icons/icons8-time-span-16.png")
+            BinningSettingsWidget(), "Binning", QIcon(":/icons/binning.png")
         )
         binning_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
         settings_dock_area = self.dock_manager.addDockWidget(
@@ -303,9 +290,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __reset_layout(self):
         self.dock_manager.restoreState(self.default_docking_state, LAYOUT_VERSION)
-
-    def __grouping_mode_changed(self, text: str):
-        Manager.data.set_grouping_mode(GroupingMode(text))
 
     def __tools_availability(self):
         self.actionCompareRuns.setEnabled(

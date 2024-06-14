@@ -3,7 +3,7 @@ import pyqtgraph as pg
 from pyqtgraph import mkPen
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.core.data.shared import GroupingMode
+from tse_analytics.core.data.shared import Factor, GroupingMode
 from tse_analytics.core.manager import Manager
 
 
@@ -13,6 +13,8 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         self._df: pd.DataFrame | None = None
         self._variable = ""
+        self._grouping_mode = GroupingMode.ANIMALS
+        self._selected_factor: Factor | None = None
         self._error_type = "std"
         self._display_errors = False
         self._scatter_plot = False
@@ -67,6 +69,10 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         if update:
             self.__update_plot()
 
+    def set_grouping_mode(self, grouping_mode: GroupingMode, selected_factor: Factor):
+        self._grouping_mode = grouping_mode
+        self._selected_factor = selected_factor
+
     def set_display_errors(self, state: bool):
         self._display_errors = state
         self.__update_plot()
@@ -88,11 +94,11 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         if (
             self._df is None
             or self._variable == ""
-            or (Manager.data.grouping_mode == GroupingMode.FACTORS and Manager.data.selected_factor is None)
+            or (self._grouping_mode == GroupingMode.FACTORS and self._selected_factor is None)
         ):
             return
 
-        match Manager.data.grouping_mode:
+        match self._grouping_mode:
             case GroupingMode.ANIMALS:
                 x_min, x_max = self.__plot_animals()
             case GroupingMode.FACTORS:
@@ -120,7 +126,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         # p1d = self.p1.plot(x, y, symbol='o', symbolSize=2, symbolPen=pen, pen=pen)
         p1d = self.p1.scatterPlot(x, y, pen=pen, size=2) if self._scatter_plot else self.p1.plot(x, y, pen=pen)
 
-        if self._display_errors and Manager.data.grouping_mode != GroupingMode.ANIMALS:
+        if self._display_errors and self._grouping_mode != GroupingMode.ANIMALS:
             # Error bars
             error_plot = pg.ErrorBarItem(beam=0.2)
             error = data["Error"].to_numpy()
@@ -163,7 +169,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         x_min = None
         x_max = None
 
-        factor_name = Manager.data.selected_factor.name
+        factor_name = self._selected_factor.name
 
         group_by = ["DateTime", factor_name]
         grouped = self._df.groupby(group_by, dropna=False, observed=False)
@@ -182,7 +188,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         data = result.reset_index()
         data.rename(columns={"Value": self._variable}, inplace=True)
 
-        groups = Manager.data.selected_factor.groups
+        groups = self._selected_factor.groups
         for i, group in enumerate(groups):
             filtered_data = data[data[factor_name] == group.name]
 

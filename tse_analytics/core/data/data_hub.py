@@ -18,7 +18,6 @@ from tse_analytics.core.messaging.messages import (
     BinningMessage,
     DataChangedMessage,
     DatasetChangedMessage,
-    GroupingModeChangedMessage,
 )
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.modules.phenomaster.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
@@ -33,17 +32,13 @@ class DataHub:
         self.selected_dataset: Dataset | None = None
         self.selected_animals: list[Animal] = []
         self.selected_variables: list[Variable] = []
-        self.selected_factor: Factor | None = None
         self.selected_variable = ""
-
-        self.grouping_mode = GroupingMode.ANIMALS
 
         self.binning_params = BinningParams(False, BinningMode.INTERVALS, BinningOperation.MEAN)
         self.outliers_params = OutliersParams(OutliersMode.OFF, 3.0)
 
     def clear(self):
         self.selected_dataset = None
-        self.selected_factor = None
         self.selected_animals.clear()
         self.selected_variables.clear()
         QPixmapCache.clear()
@@ -64,15 +59,10 @@ class DataHub:
         self.outliers_params = params
         self.messenger.broadcast(DataChangedMessage(self))
 
-    def set_grouping_mode(self, mode: GroupingMode):
-        self.grouping_mode = mode
-        self.messenger.broadcast(GroupingModeChangedMessage(self, self.grouping_mode))
-
     def set_selected_dataset(self, dataset: Dataset) -> None:
         # if self.selected_dataset is dataset:
         #     return
         self.selected_dataset = dataset
-        self.selected_factor = None
         self.selected_animals.clear()
         self.selected_variables.clear()
 
@@ -91,10 +81,6 @@ class DataHub:
     def exclude_time(self, start: datetime, end: datetime) -> None:
         self.selected_dataset.exclude_time(start, end)
         self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
-
-    def set_selected_factor(self, factor: Factor | None) -> None:
-        self.selected_factor = factor
-        self._broadcast_data_changed()
 
     def set_selected_variables(self, variables: list[Variable]) -> None:
         self.selected_variables = variables
@@ -237,7 +223,7 @@ class DataHub:
 
         return result
 
-    def get_data_view_df_new(
+    def get_data_view_df(
         self,
         variables: list[str] | None = None,
         grouping_mode=GroupingMode.ANIMALS,
@@ -301,69 +287,6 @@ class DataHub:
 
         return result
 
-    def get_data_view_df(self, variables: list[str] | None = None, dropna=False) -> pd.DataFrame:
-        if variables is not None:
-            default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
-            factor_columns = list(self.selected_dataset.factors.keys())
-            result = self.selected_dataset.active_df[default_columns + factor_columns + variables].copy()
-        else:
-            result = self.selected_dataset.active_df.copy()
-
-        # Filter operator
-        if len(self.selected_animals) > 0:
-            operator = AnimalFilterPipeOperator(self.selected_animals)
-            result = operator.process(result)
-
-        # Outliers operator
-        if self.outliers_params.mode == OutliersMode.REMOVE:
-            if variables is None:
-                variables = list(self.selected_dataset.variables.keys())
-            operator = OutliersPipeOperator(self.outliers_params, variables)
-            result = operator.process(result)
-
-        # # Error calculation operator
-        # if calculate_error and self.selected_variable != "":
-        #     operator = ErrorPipeOperator(self.selected_variable)
-        #     result = operator.process(result)
-
-        # Binning
-        if self.binning_params.apply:
-            factor_names = list(self.selected_dataset.factors.keys())
-            match self.binning_params.mode:
-                case BinningMode.INTERVALS:
-                    operator = TimeIntervalsBinningPipeOperator(
-                        self.selected_dataset.binning_settings.time_intervals_settings,
-                        self.binning_params.operation,
-                        self.grouping_mode,
-                        factor_names,
-                        self.selected_factor,
-                    )
-                    result = operator.process(result)
-                case BinningMode.CYCLES:
-                    operator = TimeCyclesBinningPipeOperator(
-                        self.selected_dataset.binning_settings.time_cycles_settings,
-                        self.binning_params.operation,
-                        self.grouping_mode,
-                        factor_names,
-                        self.selected_factor,
-                    )
-                    result = operator.process(result)
-                case BinningMode.PHASES:
-                    operator = TimePhasesBinningPipeOperator(
-                        self.selected_dataset.binning_settings.time_phases_settings,
-                        self.binning_params.operation,
-                        self.grouping_mode,
-                        factor_names,
-                        self.selected_factor,
-                    )
-                    result = operator.process(result)
-
-        # TODO: should or should not?
-        if dropna:
-            result = result.dropna()
-
-        return result
-
     def get_anova_df(self, variables: list[str] | None = None) -> pd.DataFrame:
         if variables is not None:
             default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
@@ -400,7 +323,10 @@ class DataHub:
 
         return result
 
-    def get_bar_plot_df(self, variable: str) -> pd.DataFrame:
+    def get_bar_plot_df(
+        self,
+        variable: str,
+    ) -> pd.DataFrame:
         default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin", variable]
         factor_columns = list(self.selected_dataset.factors.keys())
         result = self.selected_dataset.active_df[default_columns + factor_columns].copy()

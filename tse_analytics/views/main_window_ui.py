@@ -104,7 +104,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusBar)
         self.toolBar = QToolBar(MainWindow)
         self.toolBar.setObjectName(u"toolBar")
-        self.toolBar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.toolBar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
         MainWindow.addToolBar(Qt.TopToolBarArea, self.toolBar)
 
         self.menuBar.addAction(self.menuFile.menuAction())
@@ -134,7 +134,6 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionSaveWorkspace)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionImportDataset)
-        self.toolBar.addSeparator()
 
         self.retranslateUi(MainWindow)
 

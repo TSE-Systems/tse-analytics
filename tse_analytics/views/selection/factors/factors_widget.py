@@ -63,15 +63,16 @@ class FactorsWidget(QWidget, MessengerListener):
             Manager.messenger.broadcast(DatasetChangedMessage(self, Manager.data.selected_dataset))
 
     def __on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
-        proxy_model = self.ui.tableView.model()
-        model = proxy_model.sourceModel()
-        selected_factors: list[Factor] = []
-        for index in self.ui.tableView.selectedIndexes():
-            if index.column() != 0:
-                continue
-            if index.isValid():
-                source_index = proxy_model.mapToSource(index)
-                row = source_index.row()
-                factor = model.items[row]
-                selected_factors.append(factor)
-        Manager.data.set_selected_factor(selected_factors[0] if len(selected_factors) > 0 else None)
+        pass
+        # proxy_model = self.ui.tableView.model()
+        # model = proxy_model.sourceModel()
+        # selected_factors: list[Factor] = []
+        # for index in self.ui.tableView.selectedIndexes():
+        #     if index.column() != 0:
+        #         continue
+        #     if index.isValid():
+        #         source_index = proxy_model.mapToSource(index)
+        #         row = source_index.row()
+        #         factor = model.items[row]
+        #         selected_factors.append(factor)
+        # Manager.data.set_selected_factor(selected_factors[0] if len(selected_factors) > 0 else None)
