@@ -128,8 +128,9 @@ class AnovaWidget(QWidget, MessengerListener):
 
     def __analyze_one_way_anova(self, dependent_variable: str):
         selected_factor_name = self.ui.factorSelector.currentText()
-        selected_factor = Manager.data.selected_dataset.factors[
-            selected_factor_name] if selected_factor_name != "" else None
+        selected_factor = (
+            Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
+        )
         if selected_factor is None:
             Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
             return
@@ -267,8 +268,9 @@ class AnovaWidget(QWidget, MessengerListener):
 
     def __analyze_mixed_anova(self, dependent_variable: str):
         selected_factor_name = self.ui.factorSelector.currentText()
-        selected_factor = Manager.data.selected_dataset.factors[
-            selected_factor_name] if selected_factor_name != "" else None
+        selected_factor = (
+            Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
+        )
         if selected_factor is None:
             Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
             return
@@ -324,7 +326,9 @@ class AnovaWidget(QWidget, MessengerListener):
 
     def __analyze_ancova(self, dependent_variable: str):
         selected_factor_name = self.ui.factorSelector.currentText()
-        selected_factor = Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
+        selected_factor = (
+            Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
+        )
         if selected_factor is None:
             Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
             return

@@ -64,6 +64,35 @@
         </widget>
        </item>
        <item>
+        <widget class="QGroupBox" name="groupBoxDistribution">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="title">
+          <string>Distribution as</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_6">
+          <item>
+           <widget class="QRadioButton" name="radioButtonViolin">
+            <property name="text">
+             <string>Violin</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonBoxplot">
+            <property name="text">
+             <string>Boxplot</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QGroupBox" name="groupBoxSplitBy">
          <property name="title">
           <string>Split by factor</string>

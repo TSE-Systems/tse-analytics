@@ -19,21 +19,21 @@ class DecompositionWidget(QWidget):
         self.ui.setupUi(self)
 
         self.help_path = "timeseries-decomposition.md"
-        self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
-        self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
+        self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
+        self.ui.pushButtonUpdate.clicked.connect(self.__update)
 
         plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
         plot_toolbar.setIconSize(QSize(16, 16))
-        self.ui.horizontalLayout.insertWidget(self.ui.horizontalLayout.count() - 1, plot_toolbar)
+        self.ui.widgetSettings.layout().insertWidget(0, plot_toolbar)
 
     def set_data(self, data):
-        self.ui.toolButtonAnalyse.setDisabled(data is None)
+        self.ui.pushButtonUpdate.setDisabled(data is None)
         self.clear()
 
     def clear(self):
         self.ui.canvas.clear(True)
 
-    def __analyze(self):
+    def __update(self):
         if len(Manager.data.selected_variables) != 1:
             Toast(text="Please select a single variable.", parent=self, duration=2000).show_toast()
             return

@@ -26,6 +26,11 @@ class ExplorationWidget(QWidget, MessengerListener):
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self.__update)
 
+        self.ui.radioButtonDistribution.toggled.connect(lambda: self.ui.groupBoxDistribution.setEnabled(True))
+        self.ui.radioButtonHistogram.toggled.connect(lambda: self.ui.groupBoxDistribution.setEnabled(False))
+        self.ui.radioButtonDistribution.toggled.connect(lambda: self.ui.groupBoxDistribution.setEnabled(True))
+        self.ui.radioButtonNormality.toggled.connect(lambda: self.ui.groupBoxDistribution.setEnabled(False))
+
         plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
         plot_toolbar.setIconSize(QSize(16, 16))
         self.ui.widgetSettings.layout().insertWidget(0, plot_toolbar)
@@ -106,7 +111,13 @@ class ExplorationWidget(QWidget, MessengerListener):
         )
         df[x] = df[x].cat.remove_unused_categories()
 
-        sns.violinplot(data=df, x=x, y=variable, ax=ax)
+        if self.ui.radioButtonViolin.isChecked():
+            sns.violinplot(data=df, x=x, y=variable, ax=ax)
+        else:
+            if selected_factor != "":
+                sns.boxplot(data=df, x=x, y=variable, hue=selected_factor, gap=0.1, ax=ax)
+            else:
+                sns.boxplot(data=df, x=x, y=variable, gap=0.1, ax=ax)
 
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()

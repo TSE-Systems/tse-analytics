@@ -74,14 +74,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.default_docking_state = None
 
-        data_table_dock_widget = self.__register_dock_widget(
-            DataTableWidget(), "Table", QIcon(":/icons/table.png")
-        )
+        data_table_dock_widget = self.__register_dock_widget(DataTableWidget(), "Table", QIcon(":/icons/table.png"))
         main_area = self.dock_manager.addDockWidget(PySide6QtAds.AllDockAreas, data_table_dock_widget)
 
-        data_plot_dock_widget = self.__register_dock_widget(
-            DataPlotWidget(), "Plot", QIcon(":/icons/plot.png")
-        )
+        data_plot_dock_widget = self.__register_dock_widget(DataPlotWidget(), "Plot", QIcon(":/icons/plot.png"))
         self.dock_manager.addDockWidgetTabToArea(data_plot_dock_widget, main_area)
 
         exploration_widget = self.__register_dock_widget(
@@ -94,9 +90,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         self.dock_manager.addDockWidgetTabToArea(bivariate_dock_widget, main_area)
 
-        anova_dock_widget = self.__register_dock_widget(
-            AnovaWidget(), "AN(C)OVA", QIcon(":/icons/anova.png")
-        )
+        anova_dock_widget = self.__register_dock_widget(AnovaWidget(), "AN(C)OVA", QIcon(":/icons/anova.png"))
         self.dock_manager.addDockWidgetTabToArea(anova_dock_widget, main_area)
 
         dimensionality_dock_widget = self.__register_dock_widget(
@@ -132,9 +126,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         animals_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
         selector_dock_area = self.dock_manager.addDockWidget(PySide6QtAds.RightDockWidgetArea, animals_dock_widget)
 
-        factors_dock_widget = self.__register_dock_widget(
-            FactorsWidget(), "Factors", QIcon(":/icons/factors.png")
-        )
+        factors_dock_widget = self.__register_dock_widget(FactorsWidget(), "Factors", QIcon(":/icons/factors.png"))
         self.dock_manager.addDockWidgetTabToArea(factors_dock_widget, selector_dock_area)
 
         variables_dock_widget = self.__register_dock_widget(

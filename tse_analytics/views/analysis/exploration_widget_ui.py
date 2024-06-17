@@ -80,6 +80,25 @@ class Ui_ExplorationWidget(object):
 
         self.verticalLayout_2.addWidget(self.groupBoxPlot)
 
+        self.groupBoxDistribution = QGroupBox(self.widgetSettings)
+        self.groupBoxDistribution.setObjectName(u"groupBoxDistribution")
+        self.groupBoxDistribution.setEnabled(False)
+        self.verticalLayout_6 = QVBoxLayout(self.groupBoxDistribution)
+        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
+        self.radioButtonViolin = QRadioButton(self.groupBoxDistribution)
+        self.radioButtonViolin.setObjectName(u"radioButtonViolin")
+        self.radioButtonViolin.setChecked(True)
+
+        self.verticalLayout_6.addWidget(self.radioButtonViolin)
+
+        self.radioButtonBoxplot = QRadioButton(self.groupBoxDistribution)
+        self.radioButtonBoxplot.setObjectName(u"radioButtonBoxplot")
+
+        self.verticalLayout_6.addWidget(self.radioButtonBoxplot)
+
+
+        self.verticalLayout_2.addWidget(self.groupBoxDistribution)
+
         self.groupBoxSplitBy = QGroupBox(self.widgetSettings)
         self.groupBoxSplitBy.setObjectName(u"groupBoxSplitBy")
         self.groupBoxSplitBy.setCheckable(True)
@@ -128,6 +147,9 @@ class Ui_ExplorationWidget(object):
         self.radioButtonHistogram.setText(QCoreApplication.translate("ExplorationWidget", u"Histogram", None))
         self.radioButtonDistribution.setText(QCoreApplication.translate("ExplorationWidget", u"Distribution", None))
         self.radioButtonNormality.setText(QCoreApplication.translate("ExplorationWidget", u"Normality", None))
+        self.groupBoxDistribution.setTitle(QCoreApplication.translate("ExplorationWidget", u"Distribution as", None))
+        self.radioButtonViolin.setText(QCoreApplication.translate("ExplorationWidget", u"Violin", None))
+        self.radioButtonBoxplot.setText(QCoreApplication.translate("ExplorationWidget", u"Boxplot", None))
         self.groupBoxSplitBy.setTitle(QCoreApplication.translate("ExplorationWidget", u"Split by factor", None))
         self.pushButtonUpdate.setText(QCoreApplication.translate("ExplorationWidget", u"Update", None))
         self.pushButtonHelp.setText(QCoreApplication.translate("ExplorationWidget", u"Help", None))
