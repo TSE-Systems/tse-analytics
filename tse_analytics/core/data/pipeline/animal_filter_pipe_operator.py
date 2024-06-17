@@ -5,10 +5,10 @@ from tse_analytics.core.data.shared import Animal
 
 
 class AnimalFilterPipeOperator(PipeOperator):
-    def __init__(self, selected_animals: list[Animal]):
-        self.selected_animals = selected_animals
+    def __init__(self, animals: list[Animal]):
+        self.animals = animals
 
     def process(self, df: pd.DataFrame) -> pd.DataFrame:
-        animal_ids = [animal.id for animal in self.selected_animals]
+        animal_ids = [animal.id for animal in self.animals]
         result = df[df["Animal"].isin(animal_ids)]
         return result

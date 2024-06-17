@@ -4,6 +4,7 @@ from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 from statsmodels.tsa.seasonal import MSTL, STL, seasonal_decompose
 
+from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.analysis.timeseries.decomposition_widget_ui import Ui_DecompositionWidget
@@ -18,21 +19,21 @@ class DecompositionWidget(QWidget):
         self.ui.setupUi(self)
 
         self.help_path = "timeseries-decomposition.md"
-        self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
-        self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
+        self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
+        self.ui.pushButtonUpdate.clicked.connect(self.__update)
 
         plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
         plot_toolbar.setIconSize(QSize(16, 16))
-        self.ui.horizontalLayout.insertWidget(self.ui.horizontalLayout.count() - 1, plot_toolbar)
+        self.ui.widgetSettings.layout().insertWidget(0, plot_toolbar)
 
     def set_data(self, data):
-        self.ui.toolButtonAnalyse.setDisabled(data is None)
+        self.ui.pushButtonUpdate.setDisabled(data is None)
         self.clear()
 
     def clear(self):
         self.ui.canvas.clear(True)
 
-    def __analyze(self):
+    def __update(self):
         if len(Manager.data.selected_variables) != 1:
             Toast(text="Please select a single variable.", parent=self, duration=2000).show_toast()
             return
@@ -45,7 +46,13 @@ class DecompositionWidget(QWidget):
 
         variables = [variable.name for variable in Manager.data.selected_variables]
         var_name = Manager.data.selected_variables[0].name
-        df = Manager.data.get_current_df(variables=variables, dropna=False)
+
+        df = Manager.data.get_current_df(
+            variables=variables,
+            grouping_mode=GroupingMode.ANIMALS,
+            selected_factor=None,
+            dropna=False,
+        )
 
         index = pd.DatetimeIndex(df["DateTime"])
         index = index.round("min")

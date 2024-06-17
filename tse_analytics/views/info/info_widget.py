@@ -15,7 +15,7 @@ class InfoWidget(QTreeView, MessengerListener):
         self.horizontalScrollBar().setEnabled(True)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
-        self.setAlternatingRowColors(True)
+        # self.setAlternatingRowColors(True)
 
         self._model = JsonModel()
         self.setModel(self._model)

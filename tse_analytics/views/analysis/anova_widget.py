@@ -1,8 +1,9 @@
 import pingouin as pg
 from PySide6.QtGui import QPalette
-from PySide6.QtWidgets import QMessageBox, QTableWidgetItem, QWidget
+from PySide6.QtWidgets import QTableWidgetItem, QWidget
 
 from tse_analytics.core.data.binning import BinningMode
+from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import DatasetChangedMessage
@@ -10,6 +11,7 @@ from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.css import style
 from tse_analytics.views.analysis.anova_widget_ui import Ui_AnovaWidget
+from tse_analytics.views.misc.toast import Toast
 
 
 class AnovaWidget(QWidget, MessengerListener):
@@ -21,8 +23,8 @@ class AnovaWidget(QWidget, MessengerListener):
         self.ui.setupUi(self)
 
         self.help_path = "anova.md"
-        self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
-        self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
+        self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
+        self.ui.pushButtonUpdate.clicked.connect(self.__update)
 
         self.ui.groupBoxCovariates.hide()
 
@@ -65,10 +67,11 @@ class AnovaWidget(QWidget, MessengerListener):
     def __on_dataset_changed(self, message: DatasetChangedMessage):
         self.__clear()
         if message.data is None:
-            self.ui.toolButtonAnalyse.setDisabled(True)
+            self.ui.pushButtonUpdate.setDisabled(True)
             return
 
-        self.ui.toolButtonAnalyse.setDisabled(len(Manager.data.selected_dataset.factors) == 0)
+        self.ui.pushButtonUpdate.setDisabled(len(Manager.data.selected_dataset.factors) == 0)
+        self.ui.factorSelector.set_data(message.data.factors)
 
         self.ui.tableWidgetDependentVariable.setRowCount(len(message.data.variables.values()))
         self.ui.tableWidgetCovariates.setRowCount(len(message.data.variables.values()))
@@ -98,21 +101,16 @@ class AnovaWidget(QWidget, MessengerListener):
             self.ui.tableWidgetCovariates.setItem(i, 2, QTableWidgetItem(variable.description))
 
     def __clear(self):
-        self.ui.toolButtonAnalyse.setDisabled(True)
+        self.ui.pushButtonUpdate.setDisabled(True)
+        self.ui.factorSelector.clear()
         self.ui.webView.setHtml("")
         self.ui.tableWidgetDependentVariable.setRowCount(0)
         self.ui.tableWidgetCovariates.setRowCount(0)
 
-    def __analyze(self):
+    def __update(self):
         selected_dependent_variable_items = self.ui.tableWidgetDependentVariable.selectedItems()
         if len(selected_dependent_variable_items) == 0:
-            QMessageBox.warning(
-                self,
-                "Cannot perform analysis!",
-                "Please select dependent variable.",
-                buttons=QMessageBox.StandardButton.Abort,
-                defaultButton=QMessageBox.StandardButton.Abort,
-            )
+            Toast(text="Please select dependent variable.", parent=self, duration=2000).show_toast()
             return
 
         dependent_variable = selected_dependent_variable_items[0].text()
@@ -129,19 +127,17 @@ class AnovaWidget(QWidget, MessengerListener):
             self.__analyze_ancova(dependent_variable)
 
     def __analyze_one_way_anova(self, dependent_variable: str):
-        if Manager.data.selected_factor is None:
-            QMessageBox.warning(
-                self,
-                "Cannot perform analysis!",
-                "Please select one factor.",
-                buttons=QMessageBox.StandardButton.Abort,
-                defaultButton=QMessageBox.StandardButton.Abort,
-            )
+        selected_factor_name = self.ui.factorSelector.currentText()
+        selected_factor = (
+            Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
+        )
+        if selected_factor is None:
+            Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
             return
 
         df = Manager.data.get_anova_df(variables=[dependent_variable])
 
-        factor_name = Manager.data.selected_factor.name
+        factor_name = selected_factor.name
 
         effsize = self.eff_size[self.ui.comboBoxEffectSizeType.currentText()]
 
@@ -230,16 +226,17 @@ class AnovaWidget(QWidget, MessengerListener):
 
     def __analyze_rm_anova(self, dependent_variable: str):
         if not Manager.data.binning_params.apply or Manager.data.binning_params.mode == BinningMode.INTERVALS:
-            QMessageBox.warning(
-                self,
-                "Cannot perform analysis!",
-                "Please apply binning in Dark/Light Cycles or Time Phases mode.",
-                buttons=QMessageBox.StandardButton.Abort,
-                defaultButton=QMessageBox.StandardButton.Abort,
-            )
+            Toast(
+                text="Please apply binning in Dark/Light Cycles or Time Phases mode.", parent=self, duration=2000
+            ).show_toast()
             return
 
-        df = Manager.data.get_current_df(variables=[dependent_variable], dropna=True)
+        df = Manager.data.get_current_df(
+            variables=[dependent_variable],
+            grouping_mode=GroupingMode.ANIMALS,
+            selected_factor=None,
+            dropna=True,
+        )
 
         anova = pg.rm_anova(data=df, dv=dependent_variable, within="Bin", subject="Animal", detailed=True).round(3)
 
@@ -270,29 +267,28 @@ class AnovaWidget(QWidget, MessengerListener):
         self.ui.webView.setHtml(html)
 
     def __analyze_mixed_anova(self, dependent_variable: str):
-        if Manager.data.selected_factor is None:
-            QMessageBox.warning(
-                self,
-                "Cannot perform analysis!",
-                "Please select one factor.",
-                buttons=QMessageBox.StandardButton.Abort,
-                defaultButton=QMessageBox.StandardButton.Abort,
-            )
+        selected_factor_name = self.ui.factorSelector.currentText()
+        selected_factor = (
+            Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
+        )
+        if selected_factor is None:
+            Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
             return
 
         if not Manager.data.binning_params.apply or Manager.data.binning_params.mode == BinningMode.INTERVALS:
-            QMessageBox.warning(
-                self,
-                "Cannot perform analysis!",
-                "Please apply binning in Dark/Light Cycles or Time Phases mode.",
-                buttons=QMessageBox.StandardButton.Abort,
-                defaultButton=QMessageBox.StandardButton.Abort,
-            )
+            Toast(
+                text="Please apply binning in Dark/Light Cycles or Time Phases mode.", parent=self, duration=2000
+            ).show_toast()
             return
 
-        factor_name = Manager.data.selected_factor.name
+        factor_name = selected_factor.name
 
-        df = Manager.data.get_current_df(variables=[dependent_variable], dropna=True)
+        df = Manager.data.get_current_df(
+            variables=[dependent_variable],
+            grouping_mode=GroupingMode.ANIMALS,
+            selected_factor=None,
+            dropna=True,
+        )
 
         anova = pg.mixed_anova(
             data=df,
@@ -329,17 +325,15 @@ class AnovaWidget(QWidget, MessengerListener):
         self.ui.webView.setHtml(html)
 
     def __analyze_ancova(self, dependent_variable: str):
-        if Manager.data.selected_factor is None:
-            QMessageBox.warning(
-                self,
-                "Cannot perform analysis!",
-                "Please select one factor.",
-                buttons=QMessageBox.StandardButton.Abort,
-                defaultButton=QMessageBox.StandardButton.Abort,
-            )
+        selected_factor_name = self.ui.factorSelector.currentText()
+        selected_factor = (
+            Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
+        )
+        if selected_factor is None:
+            Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
             return
 
-        factor_name = Manager.data.selected_factor.name
+        factor_name = selected_factor.name
 
         selected_covariates_items = self.ui.tableWidgetCovariates.selectedItems()
         selected_covariates = []

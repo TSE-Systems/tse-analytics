@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>AnimalsWidget</class>
  <widget class="QWidget" name="AnimalsWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>274</width>
+    <height>210</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -17,8 +25,11 @@
      <property name="sortingEnabled">
       <bool>true</bool>
      </property>
+     <attribute name="verticalHeaderMinimumSectionSize">
+      <number>20</number>
+     </attribute>
      <attribute name="verticalHeaderDefaultSectionSize">
-      <number>24</number>
+      <number>20</number>
      </attribute>
     </widget>
    </item>

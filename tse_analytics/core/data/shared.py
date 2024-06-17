@@ -12,6 +12,7 @@ class GroupingMode(Enum):
 
 @dataclass
 class Animal:
+    enabled: bool
     id: int
     box: int
     weight: float

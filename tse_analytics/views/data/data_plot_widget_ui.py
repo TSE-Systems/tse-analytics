@@ -15,10 +15,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QHBoxLayout,
-    QLabel, QSizePolicy, QSpacerItem, QToolButton,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QGroupBox, QRadioButton,
+    QSizePolicy, QSpacerItem, QSplitter, QVBoxLayout,
+    QWidget)
 
+from tse_analytics.views.misc.factor_selector import FactorSelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 import resources_rc
 
@@ -26,46 +27,77 @@ class Ui_DataPlotWidget(object):
     def setupUi(self, DataPlotWidget):
         if not DataPlotWidget.objectName():
             DataPlotWidget.setObjectName(u"DataPlotWidget")
-        self.verticalLayout = QVBoxLayout(DataPlotWidget)
+        self.verticalLayout_2 = QVBoxLayout(DataPlotWidget)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.splitter = QSplitter(DataPlotWidget)
+        self.splitter.setObjectName(u"splitter")
+        self.splitter.setOrientation(Qt.Horizontal)
+        self.widgetPlot = QWidget(self.splitter)
+        self.widgetPlot.setObjectName(u"widgetPlot")
+        self.splitter.addWidget(self.widgetPlot)
+        self.widgetSettings = QWidget(self.splitter)
+        self.widgetSettings.setObjectName(u"widgetSettings")
+        self.widgetSettings.setMaximumSize(QSize(200, 16777215))
+        self.verticalLayout = QVBoxLayout(self.widgetSettings)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.horizontalLayout = QHBoxLayout()
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.label = QLabel(DataPlotWidget)
-        self.label.setObjectName(u"label")
-
-        self.horizontalLayout.addWidget(self.label)
-
-        self.variableSelector = VariableSelector(DataPlotWidget)
+        self.groupBoxVariable = QGroupBox(self.widgetSettings)
+        self.groupBoxVariable.setObjectName(u"groupBoxVariable")
+        self.verticalLayout_3 = QVBoxLayout(self.groupBoxVariable)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.variableSelector = VariableSelector(self.groupBoxVariable)
         self.variableSelector.setObjectName(u"variableSelector")
 
-        self.horizontalLayout.addWidget(self.variableSelector)
+        self.verticalLayout_3.addWidget(self.variableSelector)
 
-        self.toolButtonDisplayErrors = QToolButton(DataPlotWidget)
-        self.toolButtonDisplayErrors.setObjectName(u"toolButtonDisplayErrors")
-        icon = QIcon()
-        icon.addFile(u":/icons/icons8-sorting-16.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.toolButtonDisplayErrors.setIcon(icon)
-        self.toolButtonDisplayErrors.setCheckable(True)
-        self.toolButtonDisplayErrors.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
-        self.horizontalLayout.addWidget(self.toolButtonDisplayErrors)
+        self.verticalLayout.addWidget(self.groupBoxVariable)
 
-        self.comboBoxErrorType = QComboBox(DataPlotWidget)
-        self.comboBoxErrorType.setObjectName(u"comboBoxErrorType")
+        self.groupBoxFactor = QGroupBox(self.widgetSettings)
+        self.groupBoxFactor.setObjectName(u"groupBoxFactor")
+        self.groupBoxFactor.setCheckable(True)
+        self.groupBoxFactor.setChecked(False)
+        self.verticalLayout_4 = QVBoxLayout(self.groupBoxFactor)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.factorSelector = FactorSelector(self.groupBoxFactor)
+        self.factorSelector.setObjectName(u"factorSelector")
 
-        self.horizontalLayout.addWidget(self.comboBoxErrorType)
+        self.verticalLayout_4.addWidget(self.factorSelector)
 
-        self.checkBoxScatterPlot = QCheckBox(DataPlotWidget)
+
+        self.verticalLayout.addWidget(self.groupBoxFactor)
+
+        self.groupBoxDisplayErrors = QGroupBox(self.widgetSettings)
+        self.groupBoxDisplayErrors.setObjectName(u"groupBoxDisplayErrors")
+        self.groupBoxDisplayErrors.setCheckable(True)
+        self.groupBoxDisplayErrors.setChecked(False)
+        self.verticalLayout_5 = QVBoxLayout(self.groupBoxDisplayErrors)
+        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.radioButtonStandardDeviation = QRadioButton(self.groupBoxDisplayErrors)
+        self.radioButtonStandardDeviation.setObjectName(u"radioButtonStandardDeviation")
+        self.radioButtonStandardDeviation.setChecked(True)
+
+        self.verticalLayout_5.addWidget(self.radioButtonStandardDeviation)
+
+        self.radioButtonStandardError = QRadioButton(self.groupBoxDisplayErrors)
+        self.radioButtonStandardError.setObjectName(u"radioButtonStandardError")
+
+        self.verticalLayout_5.addWidget(self.radioButtonStandardError)
+
+
+        self.verticalLayout.addWidget(self.groupBoxDisplayErrors)
+
+        self.checkBoxScatterPlot = QCheckBox(self.widgetSettings)
         self.checkBoxScatterPlot.setObjectName(u"checkBoxScatterPlot")
 
-        self.horizontalLayout.addWidget(self.checkBoxScatterPlot)
+        self.verticalLayout.addWidget(self.checkBoxScatterPlot)
 
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.horizontalLayout.addItem(self.horizontalSpacer)
+        self.verticalLayout.addItem(self.verticalSpacer)
 
+        self.splitter.addWidget(self.widgetSettings)
 
-        self.verticalLayout.addLayout(self.horizontalLayout)
+        self.verticalLayout_2.addWidget(self.splitter)
 
 
         self.retranslateUi(DataPlotWidget)
@@ -74,8 +106,11 @@ class Ui_DataPlotWidget(object):
     # setupUi
 
     def retranslateUi(self, DataPlotWidget):
-        self.label.setText(QCoreApplication.translate("DataPlotWidget", u"Variable:", None))
-        self.toolButtonDisplayErrors.setText(QCoreApplication.translate("DataPlotWidget", u"Display Errors", None))
+        self.groupBoxVariable.setTitle(QCoreApplication.translate("DataPlotWidget", u"Variable", None))
+        self.groupBoxFactor.setTitle(QCoreApplication.translate("DataPlotWidget", u"Split by factor", None))
+        self.groupBoxDisplayErrors.setTitle(QCoreApplication.translate("DataPlotWidget", u"Display Errors", None))
+        self.radioButtonStandardDeviation.setText(QCoreApplication.translate("DataPlotWidget", u"Standard Deviation", None))
+        self.radioButtonStandardError.setText(QCoreApplication.translate("DataPlotWidget", u"Standard Error", None))
         self.checkBoxScatterPlot.setText(QCoreApplication.translate("DataPlotWidget", u"Scatter Plot", None))
         pass
     # retranslateUi

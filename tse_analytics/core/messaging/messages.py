@@ -69,14 +69,6 @@ class BinningMessage(Message):
         self.params = params
 
 
-class GroupingModeChangedMessage(Message):
-    """Indicates that the grouping mode is changed"""
-
-    def __init__(self, sender, mode: GroupingMode, tag=None):
-        super().__init__(sender, tag=tag)
-        self.mode = mode
-
-
 class ShowHelpMessage(Message):
     """Request to display help content"""
 
