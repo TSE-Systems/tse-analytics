@@ -26,7 +26,6 @@ class Ui_DecompositionWidget(object):
     def setupUi(self, DecompositionWidget):
         if not DecompositionWidget.objectName():
             DecompositionWidget.setObjectName(u"DecompositionWidget")
-        DecompositionWidget.resize(169, 550)
         self.verticalLayout = QVBoxLayout(DecompositionWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.splitter = QSplitter(DecompositionWidget)
@@ -141,6 +140,16 @@ class Ui_DecompositionWidget(object):
 
         self.verticalLayout_6.addWidget(self.pushButtonUpdate)
 
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout_6.addItem(self.verticalSpacer)
+
+        self.pushButtonAddReport = QPushButton(self.widgetSettings)
+        self.pushButtonAddReport.setObjectName(u"pushButtonAddReport")
+        self.pushButtonAddReport.setEnabled(False)
+
+        self.verticalLayout_6.addWidget(self.pushButtonAddReport)
+
         self.pushButtonHelp = QPushButton(self.widgetSettings)
         self.pushButtonHelp.setObjectName(u"pushButtonHelp")
         icon = QIcon()
@@ -148,10 +157,6 @@ class Ui_DecompositionWidget(object):
         self.pushButtonHelp.setIcon(icon)
 
         self.verticalLayout_6.addWidget(self.pushButtonHelp)
-
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.verticalLayout_6.addItem(self.verticalSpacer)
 
         self.splitter.addWidget(self.widgetSettings)
 
@@ -187,6 +192,7 @@ class Ui_DecompositionWidget(object):
         self.radioButtonSecondFrequency.setText(QCoreApplication.translate("DecompositionWidget", u"Second", None))
         self.periodLabel.setText(QCoreApplication.translate("DecompositionWidget", u"Period", None))
         self.pushButtonUpdate.setText(QCoreApplication.translate("DecompositionWidget", u"Update", None))
+        self.pushButtonAddReport.setText(QCoreApplication.translate("DecompositionWidget", u"Add to Report", None))
         self.pushButtonHelp.setText(QCoreApplication.translate("DecompositionWidget", u"Help", None))
         pass
     # retranslateUi

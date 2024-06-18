@@ -1,5 +1,4 @@
 from tse_analytics.core.data.binning import BinningParams
-from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.models.tree_item import TreeItem
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
@@ -75,3 +74,9 @@ class ShowHelpMessage(Message):
     def __init__(self, sender, content: str, tag=None):
         super().__init__(sender, tag=tag)
         self.content = content
+
+
+class AddToReportMessage(Message):
+    def __init__(self, sender, pdf_file_names: list[str], tag=None):
+        super().__init__(sender, tag=tag)
+        self.pdf_file_names = pdf_file_names

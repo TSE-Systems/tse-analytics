@@ -60,6 +60,7 @@ tasks:
       - pyside6-uic tse_analytics/modules/phenomaster/actimot/views/actimot_heatmap_plot_widget.ui -o tse_analytics/modules/phenomaster/actimot/views/actimot_heatmap_plot_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/actimot/views/actimot_trajectory_plot_widget.ui -o tse_analytics/modules/phenomaster/actimot/views/actimot_trajectory_plot_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/actimot/views/actimot_frames_widget.ui -o tse_analytics/modules/phenomaster/actimot/views/actimot_frames_widget_ui.py
+      - pyside6-uic tse_analytics/views/reports/reports_widget.ui -o tse_analytics/views/reports/reports_widget_ui.py
 
   clean:
     desc: remove all build, test, coverage and Python artifacts

@@ -1,13 +1,13 @@
 import pingouin as pg
 import seaborn as sns
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
-from PySide6.QtCore import QSize
+from PySide6.QtCore import QDir, QSize, QTemporaryFile
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
-from tse_analytics.core.messaging.messages import DatasetChangedMessage
+from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.exploration_widget_ui import Ui_ExplorationWidget
@@ -25,6 +25,7 @@ class ExplorationWidget(QWidget, MessengerListener):
         self.help_path = "exploration.md"
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self.__update)
+        self.ui.pushButtonAddReport.clicked.connect(self.__add_report)
 
         self.ui.radioButtonDistribution.toggled.connect(lambda: self.ui.groupBoxDistribution.setEnabled(True))
         self.ui.radioButtonHistogram.toggled.connect(lambda: self.ui.groupBoxDistribution.setEnabled(False))
@@ -40,6 +41,7 @@ class ExplorationWidget(QWidget, MessengerListener):
 
     def __on_dataset_changed(self, message: DatasetChangedMessage):
         self.ui.pushButtonUpdate.setDisabled(message.data is None)
+        self.ui.pushButtonAddReport.setDisabled(message.data is None)
         self.__clear()
         if message.data is not None:
             self.ui.variableSelector.set_data(message.data.variables)
@@ -170,3 +172,9 @@ class ExplorationWidget(QWidget, MessengerListener):
             return 2, 2
         else:
             return round(number_of_elements / 3) + 1, 3
+
+    def __add_report(self):
+        tmp_file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.pdf", self)
+        if tmp_file.open():
+            self.ui.canvas.figure.savefig(tmp_file.fileName())
+            Manager.messenger.broadcast(AddToReportMessage(self, [tmp_file.fileName()]))

@@ -1,12 +1,13 @@
 import pandas as pd
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
-from PySide6.QtCore import QSize
+from PySide6.QtCore import QDir, QSize, QTemporaryFile
 from PySide6.QtWidgets import QWidget
 from statsmodels.tsa.seasonal import MSTL, STL, seasonal_decompose
 
 from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
+from tse_analytics.core.messaging.messages import AddToReportMessage
 from tse_analytics.views.analysis.timeseries.decomposition_widget_ui import Ui_DecompositionWidget
 from tse_analytics.views.misc.toast import Toast
 
@@ -21,6 +22,7 @@ class DecompositionWidget(QWidget):
         self.help_path = "timeseries-decomposition.md"
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self.__update)
+        self.ui.pushButtonAddReport.clicked.connect(self.__add_report)
 
         plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
         plot_toolbar.setIconSize(QSize(16, 16))
@@ -28,6 +30,7 @@ class DecompositionWidget(QWidget):
 
     def set_data(self, data):
         self.ui.pushButtonUpdate.setDisabled(data is None)
+        self.ui.pushButtonAddReport.setDisabled(data is None)
         self.clear()
 
     def clear(self):
@@ -96,3 +99,9 @@ class DecompositionWidget(QWidget):
 
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()
+
+    def __add_report(self):
+        tmp_file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.pdf", self)
+        if tmp_file.open():
+            self.ui.canvas.figure.savefig(tmp_file.fileName())
+            Manager.messenger.broadcast(AddToReportMessage(self, [tmp_file.fileName()]))

@@ -1,5 +1,6 @@
 import plotly.express as px
-from PySide6.QtCore import QDir, QTemporaryFile, QUrl
+from PySide6.QtCore import QDir, QMarginsF, Qt, QTemporaryFile, QUrl
+from PySide6.QtGui import QPageLayout, QPageSize
 from PySide6.QtWidgets import QWidget
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
@@ -7,7 +8,7 @@ from sklearn.manifold import TSNE
 from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
-from tse_analytics.core.messaging.messages import DatasetChangedMessage
+from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.dimensionality_widget_ui import Ui_DimensionalityWidget
@@ -25,6 +26,7 @@ class DimensionalityWidget(QWidget, MessengerListener):
         self.help_path = "dimensionality.md"
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self.__update)
+        self.ui.pushButtonAddReport.clicked.connect(self.__add_report)
 
         self.ui.radioButtonMatrixPlot.toggled.connect(lambda: self.ui.groupBoxDimensions.setEnabled(False))
         self.ui.radioButtonPCA.toggled.connect(lambda: self.ui.groupBoxDimensions.setEnabled(True))
@@ -35,6 +37,7 @@ class DimensionalityWidget(QWidget, MessengerListener):
 
     def __on_dataset_changed(self, message: DatasetChangedMessage):
         self.ui.pushButtonUpdate.setDisabled(message.data is None)
+        self.ui.pushButtonAddReport.setDisabled(message.data is None)
         self.__clear()
         if message.data is not None:
             self.ui.factorSelector.set_data(message.data.factors)
@@ -145,3 +148,16 @@ class DimensionalityWidget(QWidget, MessengerListener):
         if file.open():
             fig.write_html(file.fileName(), include_plotlyjs=True)
             self.ui.webView.load(QUrl.fromLocalFile(file.fileName()))
+
+    def __add_report(self):
+        web_file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.pdf", self)
+        if web_file.open():
+            self.ui.webView.pdfPrintingFinished.connect(
+                lambda: Manager.messenger.broadcast(AddToReportMessage(self, [web_file.fileName()])),
+                type=Qt.ConnectionType.SingleShotConnection,
+            )
+
+            self.ui.webView.page().printToPdf(
+                web_file.fileName(),
+                layout=QPageLayout(QPageSize(QPageSize.PageSizeId.A4), QPageLayout.Orientation.Portrait, QMarginsF()),
+            )

@@ -2,13 +2,14 @@ import pingouin as pg
 import seaborn as sns
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
-from PySide6.QtCore import QSize
+from PySide6.QtCore import QDir, QMarginsF, QSize, Qt, QTemporaryFile
+from PySide6.QtGui import QPageLayout, QPageSize
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
-from tse_analytics.core.messaging.messages import DatasetChangedMessage
+from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.css import style
@@ -27,6 +28,7 @@ class BivariateWidget(QWidget, MessengerListener):
         self.help_path = "bivariate.md"
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self.__update)
+        self.ui.pushButtonAddReport.clicked.connect(self.__add_report)
 
         self.ui.radioButtonCorrelation.toggled.connect(self.__correlation_selected)
         self.ui.radioButtonRegression.toggled.connect(self.__regression_selected)
@@ -40,6 +42,7 @@ class BivariateWidget(QWidget, MessengerListener):
 
     def __on_dataset_changed(self, message: DatasetChangedMessage):
         self.ui.pushButtonUpdate.setDisabled(message.data is None)
+        self.ui.pushButtonAddReport.setDisabled(message.data is None)
         self.__clear()
         if message.data is not None:
             self.ui.variableSelectorX.set_data(message.data.variables)
@@ -181,3 +184,25 @@ class BivariateWidget(QWidget, MessengerListener):
             glm=glm.to_html(classes="mystyle"),
         )
         self.ui.webView.setHtml(html)
+
+    # def __pdf_printing_finished(self):
+    #     pass
+
+    def __add_report(self):
+        plot_file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.pdf", self)
+        if plot_file.open():
+            self.plot_toolbar.canvas.figure.savefig(plot_file.fileName())
+
+        web_file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.pdf", self)
+        if web_file.open():
+            self.ui.webView.pdfPrintingFinished.connect(
+                lambda: Manager.messenger.broadcast(
+                    AddToReportMessage(self, [plot_file.fileName(), web_file.fileName()])
+                ),
+                type=Qt.ConnectionType.SingleShotConnection,
+            )
+
+            self.ui.webView.page().printToPdf(
+                web_file.fileName(),
+                layout=QPageLayout(QPageSize(QPageSize.PageSizeId.A4), QPageLayout.Orientation.Portrait, QMarginsF()),
+            )

@@ -27,7 +27,6 @@ class Ui_DimensionalityWidget(object):
     def setupUi(self, DimensionalityWidget):
         if not DimensionalityWidget.objectName():
             DimensionalityWidget.setObjectName(u"DimensionalityWidget")
-        DimensionalityWidget.resize(162, 435)
         self.verticalLayout = QVBoxLayout(DimensionalityWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.splitter = QSplitter(DimensionalityWidget)
@@ -107,6 +106,16 @@ class Ui_DimensionalityWidget(object):
 
         self.verticalLayout_2.addWidget(self.pushButtonUpdate)
 
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout_2.addItem(self.verticalSpacer)
+
+        self.pushButtonAddReport = QPushButton(self.widgetSettings)
+        self.pushButtonAddReport.setObjectName(u"pushButtonAddReport")
+        self.pushButtonAddReport.setEnabled(False)
+
+        self.verticalLayout_2.addWidget(self.pushButtonAddReport)
+
         self.pushButtonHelp = QPushButton(self.widgetSettings)
         self.pushButtonHelp.setObjectName(u"pushButtonHelp")
         icon = QIcon()
@@ -114,10 +123,6 @@ class Ui_DimensionalityWidget(object):
         self.pushButtonHelp.setIcon(icon)
 
         self.verticalLayout_2.addWidget(self.pushButtonHelp)
-
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.verticalLayout_2.addItem(self.verticalSpacer)
 
         self.splitter.addWidget(self.widgetSettings)
 
@@ -139,6 +144,7 @@ class Ui_DimensionalityWidget(object):
         self.radioButton3D.setText(QCoreApplication.translate("DimensionalityWidget", u"3D", None))
         self.groupBoxFactor.setTitle(QCoreApplication.translate("DimensionalityWidget", u"Split by factor", None))
         self.pushButtonUpdate.setText(QCoreApplication.translate("DimensionalityWidget", u"Update", None))
+        self.pushButtonAddReport.setText(QCoreApplication.translate("DimensionalityWidget", u"Add to Report", None))
         self.pushButtonHelp.setText(QCoreApplication.translate("DimensionalityWidget", u"Help", None))
         pass
     # retranslateUi

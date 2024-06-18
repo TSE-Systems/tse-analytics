@@ -173,6 +173,12 @@ class Ui_AnovaWidget(object):
 
         self.verticalLayout_5.addWidget(self.pushButtonUpdate)
 
+        self.pushButtonAddReport = QPushButton(self.widgetSettings)
+        self.pushButtonAddReport.setObjectName(u"pushButtonAddReport")
+        self.pushButtonAddReport.setEnabled(False)
+
+        self.verticalLayout_5.addWidget(self.pushButtonAddReport)
+
         self.pushButtonHelp = QPushButton(self.widgetSettings)
         self.pushButtonHelp.setObjectName(u"pushButtonHelp")
         icon = QIcon()
@@ -204,6 +210,7 @@ class Ui_AnovaWidget(object):
         self.groupBoxDependentVariable.setTitle(QCoreApplication.translate("AnovaWidget", u"Dependent Variable", None))
         self.groupBoxCovariates.setTitle(QCoreApplication.translate("AnovaWidget", u"Covariates", None))
         self.pushButtonUpdate.setText(QCoreApplication.translate("AnovaWidget", u"Update", None))
+        self.pushButtonAddReport.setText(QCoreApplication.translate("AnovaWidget", u"Add to Report", None))
         self.pushButtonHelp.setText(QCoreApplication.translate("AnovaWidget", u"Help", None))
         pass
     # retranslateUi
