@@ -24,6 +24,7 @@ from tse_analytics.views.info.info_widget import InfoWidget
 from tse_analytics.views.log_widget import LogWidget
 from tse_analytics.views.main_window_ui import Ui_MainWindow
 from tse_analytics.views.preferences_dialog import PreferencesDialog
+from tse_analytics.views.reports.reports_widget import ReportsWidget
 from tse_analytics.views.selection.animals.animals_widget import AnimalsWidget
 from tse_analytics.views.selection.factors.factors_widget import FactorsWidget
 from tse_analytics.views.selection.variables.variables_widget import VariablesWidget
@@ -102,6 +103,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             TimeseriesWidget(), "Timeseries", QIcon(":/icons/timeseries.png")
         )
         self.dock_manager.addDockWidgetTabToArea(timeseries_dock_widget, main_area)
+
+        report_dock_widget = self.__register_dock_widget(ReportsWidget(), "Report", QIcon(":/icons/report.png"))
+        self.dock_manager.addDockWidgetTabToArea(report_dock_widget, main_area)
 
         datasets_dock_widget = self.__register_dock_widget(
             DatasetsTreeView(), "Datasets", QIcon(":/icons/datasets.png")

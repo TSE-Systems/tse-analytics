@@ -69,6 +69,16 @@ class Ui_AutocorrelationWidget(object):
 
         self.verticalLayout_6.addWidget(self.pushButtonUpdate)
 
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout_6.addItem(self.verticalSpacer)
+
+        self.pushButtonAddReport = QPushButton(self.widgetSettings)
+        self.pushButtonAddReport.setObjectName(u"pushButtonAddReport")
+        self.pushButtonAddReport.setEnabled(False)
+
+        self.verticalLayout_6.addWidget(self.pushButtonAddReport)
+
         self.pushButtonHelp = QPushButton(self.widgetSettings)
         self.pushButtonHelp.setObjectName(u"pushButtonHelp")
         icon = QIcon()
@@ -76,10 +86,6 @@ class Ui_AutocorrelationWidget(object):
         self.pushButtonHelp.setIcon(icon)
 
         self.verticalLayout_6.addWidget(self.pushButtonHelp)
-
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.verticalLayout_6.addItem(self.verticalSpacer)
 
         self.splitter.addWidget(self.widgetSettings)
 
@@ -94,6 +100,7 @@ class Ui_AutocorrelationWidget(object):
     def retranslateUi(self, AutocorrelationWidget):
         self.adjustedLabel.setText(QCoreApplication.translate("AutocorrelationWidget", u"Adjusted", None))
         self.pushButtonUpdate.setText(QCoreApplication.translate("AutocorrelationWidget", u"Update", None))
+        self.pushButtonAddReport.setText(QCoreApplication.translate("AutocorrelationWidget", u"Add to Report", None))
         self.pushButtonHelp.setText(QCoreApplication.translate("AutocorrelationWidget", u"Help", None))
         pass
     # retranslateUi

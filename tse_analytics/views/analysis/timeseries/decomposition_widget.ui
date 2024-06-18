@@ -3,14 +3,6 @@
  <author>Anton Rau</author>
  <class>DecompositionWidget</class>
  <widget class="QWidget" name="DecompositionWidget">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>169</width>
-    <height>550</height>
-   </rect>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QSplitter" name="splitter">
@@ -173,17 +165,6 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButtonHelp">
-         <property name="text">
-          <string>Help</string>
-         </property>
-         <property name="icon">
-          <iconset resource="../../../../resources/resources.qrc">
-           <normaloff>:/icons/icons8-help-16.png</normaloff>:/icons/icons8-help-16.png</iconset>
-         </property>
-        </widget>
-       </item>
-       <item>
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -195,6 +176,27 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonAddReport">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Add to Report</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonHelp">
+         <property name="text">
+          <string>Help</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../../resources/resources.qrc">
+           <normaloff>:/icons/icons8-help-16.png</normaloff>:/icons/icons8-help-16.png</iconset>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>

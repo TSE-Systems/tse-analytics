@@ -1,12 +1,13 @@
 import pingouin as pg
-from PySide6.QtGui import QPalette
+from PySide6.QtCore import QDir, QMarginsF, QTemporaryFile
+from PySide6.QtGui import QPageLayout, QPageSize, QPalette, Qt
 from PySide6.QtWidgets import QTableWidgetItem, QWidget
 
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import GroupingMode
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
-from tse_analytics.core.messaging.messages import DatasetChangedMessage
+from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.css import style
@@ -25,6 +26,7 @@ class AnovaWidget(QWidget, MessengerListener):
         self.help_path = "anova.md"
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self.__update)
+        self.ui.pushButtonAddReport.clicked.connect(self.__add_report)
 
         self.ui.groupBoxCovariates.hide()
 
@@ -71,6 +73,8 @@ class AnovaWidget(QWidget, MessengerListener):
             return
 
         self.ui.pushButtonUpdate.setDisabled(len(Manager.data.selected_dataset.factors) == 0)
+        self.ui.pushButtonAddReport.setDisabled(len(Manager.data.selected_dataset.factors) == 0)
+
         self.ui.factorSelector.set_data(message.data.factors)
 
         self.ui.tableWidgetDependentVariable.setRowCount(len(message.data.variables.values()))
@@ -377,3 +381,16 @@ class AnovaWidget(QWidget, MessengerListener):
             pairwise_tests=pairwise_tests.to_html(classes="mystyle"),
         )
         self.ui.webView.setHtml(html)
+
+    def __add_report(self):
+        web_file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.pdf", self)
+        if web_file.open():
+            self.ui.webView.pdfPrintingFinished.connect(
+                lambda: Manager.messenger.broadcast(AddToReportMessage(self, [web_file.fileName()])),
+                type=Qt.ConnectionType.SingleShotConnection,
+            )
+
+            self.ui.webView.page().printToPdf(
+                web_file.fileName(),
+                layout=QPageLayout(QPageSize(QPageSize.PageSizeId.A4), QPageLayout.Orientation.Portrait, QMarginsF()),
+            )
