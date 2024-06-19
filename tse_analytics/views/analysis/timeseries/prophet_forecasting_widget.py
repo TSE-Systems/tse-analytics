@@ -5,7 +5,7 @@ from prophet.plot import add_changepoints_to_plot
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.core.data.shared import GroupingMode
+from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.analysis.timeseries.prophet_forecasting_widget_ui import Ui_ProphetForecastingWidget
@@ -49,7 +49,7 @@ class ProphetForecastingWidget(QWidget):
 
         df = Manager.data.get_current_df(
             variables=variables,
-            grouping_mode=GroupingMode.ANIMALS,
+            split_mode=SplitMode.ANIMAL,
             selected_factor=None,
             dropna=False,
         )

@@ -3,7 +3,7 @@ from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.data.binning import BinningMode
-from tse_analytics.core.data.shared import GroupingMode
+from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import (
     BinningMessage,
@@ -51,7 +51,6 @@ class DataPlotWidget(QWidget, MessengerListener):
         messenger.subscribe(self, DataChangedMessage, self.__on_data_changed)
 
     def __variable_changed(self, variable: str):
-        Manager.data.selected_variable = variable
         self.__assign_data()
 
     def __error_type_changed(self, error_type: str):
@@ -93,7 +92,7 @@ class DataPlotWidget(QWidget, MessengerListener):
         self.__assign_data()
 
     def __grouping_mode_changed(self):
-        grouping_mode = GroupingMode.FACTORS if self.ui.groupBoxFactor.isChecked() else GroupingMode.ANIMALS
+        grouping_mode = SplitMode.FACTOR if self.ui.groupBoxFactor.isChecked() else SplitMode.ANIMAL
         selected_factor_name = self.ui.factorSelector.currentText()
         factor = Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
         self.timelinePlotView.set_grouping_mode(grouping_mode, factor)
@@ -105,10 +104,12 @@ class DataPlotWidget(QWidget, MessengerListener):
             Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
             return
 
+        selected_variable = self.ui.variableSelector.currentText()
+
         df = (
-            Manager.data.get_data_view_df(variables=[Manager.data.selected_variable])
+            Manager.data.get_data_view_df(variables=[selected_variable])
             if Manager.data.binning_params.mode == BinningMode.INTERVALS
-            else Manager.data.get_bar_plot_df(variable=Manager.data.selected_variable)
+            else Manager.data.get_bar_plot_df(variable=selected_variable)
         )
 
         if Manager.data.binning_params.mode == BinningMode.INTERVALS:
@@ -117,7 +118,7 @@ class DataPlotWidget(QWidget, MessengerListener):
                 self.barPlotView.hide()
                 self.timelinePlotView.show()
                 self.active_binning_mode = Manager.data.binning_params.mode
-            self.timelinePlotView.set_variable(Manager.data.selected_variable, False)
+            self.timelinePlotView.set_variable(selected_variable, False)
             self.timelinePlotView.set_data(df)
             self.plot_toolbar.hide()
             self.ui.checkBoxScatterPlot.show()
@@ -127,7 +128,7 @@ class DataPlotWidget(QWidget, MessengerListener):
                 self.timelinePlotView.hide()
                 self.barPlotView.show()
                 self.active_binning_mode = Manager.data.binning_params.mode
-            self.barPlotView.set_variable(Manager.data.selected_variable, False)
+            self.barPlotView.set_variable(selected_variable, False)
             self.barPlotView.set_data(df)
 
             self.ui.checkBoxScatterPlot.hide()

@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QWidget
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
-from tse_analytics.core.data.shared import GroupingMode
+from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
@@ -69,7 +69,7 @@ class DimensionalityWidget(QWidget, MessengerListener):
         variables = [variable.name for variable in Manager.data.selected_variables]
         df = Manager.data.get_current_df(
             variables=variables,
-            grouping_mode=GroupingMode.ANIMALS,
+            split_mode=SplitMode.ANIMAL,
             selected_factor=None,
             dropna=False,
         )
@@ -96,7 +96,7 @@ class DimensionalityWidget(QWidget, MessengerListener):
         variables = [variable.name for variable in Manager.data.selected_variables]
         df = Manager.data.get_current_df(
             variables=variables,
-            grouping_mode=GroupingMode.ANIMALS,
+            split_mode=SplitMode.ANIMAL,
             selected_factor=None,
             dropna=True,
         )

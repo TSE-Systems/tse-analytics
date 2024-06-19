@@ -4,10 +4,11 @@ from enum import Enum, unique
 
 
 @unique
-class GroupingMode(Enum):
-    ANIMALS = "Animals"
-    FACTORS = "Factors"
-    RUNS = "Runs"
+class SplitMode(Enum):
+    ANIMAL = "Animal"
+    FACTOR = "Factor"
+    RUN = "Run"
+    TOTAL = "Total"
 
 
 @dataclass

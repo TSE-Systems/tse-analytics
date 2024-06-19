@@ -94,19 +94,48 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBoxSplitBy">
+        <widget class="QGroupBox" name="groupBoxSplitMode">
          <property name="title">
-          <string>Split by factor</string>
+          <string>Split Mode</string>
          </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-         <property name="checked">
-          <bool>false</bool>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_5">
+         <layout class="QVBoxLayout" name="verticalLayout_7">
           <item>
-           <widget class="FactorSelector" name="factorSelector"/>
+           <widget class="QRadioButton" name="radioButtonSplitTotal">
+            <property name="text">
+             <string>Total</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonSplitByAnimal">
+            <property name="text">
+             <string>By Animal</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonSplitByRun">
+            <property name="text">
+             <string>By Run</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonSplitByFactor">
+            <property name="text">
+             <string>By Factor</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="FactorSelector" name="factorSelector">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>

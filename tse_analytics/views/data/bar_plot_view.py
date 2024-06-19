@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtWidgets import QVBoxLayout, QWidget
 
-from tse_analytics.core.data.shared import Factor, GroupingMode
+from tse_analytics.core.data.shared import Factor, SplitMode
 from tse_analytics.core.manager import Manager
 
 
@@ -17,7 +17,7 @@ class BarPlotView(QWidget):
 
         self._df: pd.DataFrame | None = None
         self._variable = ""
-        self._grouping_mode = GroupingMode.ANIMALS
+        self._grouping_mode = SplitMode.ANIMAL
         self._selected_factor: Factor | None = None
         self._error_type = "sd"
         self._display_errors = False
@@ -33,7 +33,7 @@ class BarPlotView(QWidget):
         if update:
             self._update_plot()
 
-    def set_grouping_mode(self, grouping_mode: GroupingMode, selected_factor: Factor):
+    def set_grouping_mode(self, grouping_mode: SplitMode, selected_factor: Factor):
         self._grouping_mode = grouping_mode
         self._selected_factor = selected_factor
 
@@ -54,7 +54,7 @@ class BarPlotView(QWidget):
         if (
             self._df is None
             or self._variable == ""
-            or (self._grouping_mode == GroupingMode.FACTORS and self._selected_factor is None)
+            or (self._grouping_mode == SplitMode.FACTOR and self._selected_factor is None)
             or not Manager.data.binning_params.apply
         ):
             return
@@ -66,11 +66,11 @@ class BarPlotView(QWidget):
 
         if not self._df.empty:
             match self._grouping_mode:
-                case GroupingMode.ANIMALS:
+                case SplitMode.ANIMAL:
                     x_name = "Animal"
-                case GroupingMode.FACTORS:
+                case SplitMode.FACTOR:
                     x_name = self._selected_factor.name
-                case GroupingMode.RUNS:
+                case SplitMode.RUN:
                     x_name = "Run"
 
             self._df[x_name] = self._df[x_name].cat.remove_unused_categories()

@@ -4,7 +4,7 @@ from PySide6.QtCore import QDir, QSize, QTemporaryFile
 from PySide6.QtWidgets import QWidget
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
-from tse_analytics.core.data.shared import GroupingMode
+from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage
@@ -52,7 +52,7 @@ class AutocorrelationWidget(QWidget):
 
         df = Manager.data.get_current_df(
             variables=variables,
-            grouping_mode=GroupingMode.ANIMALS,
+            split_mode=SplitMode.ANIMAL,
             selected_factor=None,
             dropna=False,
         )

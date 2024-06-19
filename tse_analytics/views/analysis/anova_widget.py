@@ -4,7 +4,7 @@ from PySide6.QtGui import QPageLayout, QPageSize, QPalette, Qt
 from PySide6.QtWidgets import QTableWidgetItem, QWidget
 
 from tse_analytics.core.data.binning import BinningMode
-from tse_analytics.core.data.shared import GroupingMode
+from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
@@ -237,7 +237,7 @@ class AnovaWidget(QWidget, MessengerListener):
 
         df = Manager.data.get_current_df(
             variables=[dependent_variable],
-            grouping_mode=GroupingMode.ANIMALS,
+            split_mode=SplitMode.ANIMAL,
             selected_factor=None,
             dropna=True,
         )
@@ -289,7 +289,7 @@ class AnovaWidget(QWidget, MessengerListener):
 
         df = Manager.data.get_current_df(
             variables=[dependent_variable],
-            grouping_mode=GroupingMode.ANIMALS,
+            split_mode=SplitMode.ANIMAL,
             selected_factor=None,
             dropna=True,
         )

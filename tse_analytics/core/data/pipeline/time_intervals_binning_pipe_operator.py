@@ -2,7 +2,7 @@ import pandas as pd
 
 from tse_analytics.core.data.binning import BinningOperation, TimeIntervalsBinningSettings
 from tse_analytics.core.data.pipeline.pipe_operator import PipeOperator
-from tse_analytics.core.data.shared import Factor, GroupingMode
+from tse_analytics.core.data.shared import Factor, SplitMode
 
 
 class TimeIntervalsBinningPipeOperator(PipeOperator):
@@ -10,7 +10,7 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
         self,
         settings: TimeIntervalsBinningSettings,
         binning_operation: BinningOperation,
-        grouping_mode: GroupingMode,
+        grouping_mode: SplitMode,
         factor_names: list[str],
         selected_factor: Factor | None,
     ):
@@ -22,11 +22,11 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
 
     def process(self, df: pd.DataFrame) -> pd.DataFrame:
         match self.grouping_mode:
-            case GroupingMode.ANIMALS:
+            case SplitMode.ANIMAL:
                 group_by = ["Animal", "Box"] + self.factor_names
-            case GroupingMode.FACTORS:
+            case SplitMode.FACTOR:
                 group_by = [self.selected_factor.name]
-            case GroupingMode.RUNS:
+            case SplitMode.RUN:
                 group_by = ["Run"]
 
         grouped = df.groupby(group_by, dropna=False, observed=False)
@@ -43,11 +43,11 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
                 result = resampler.sum(numeric_only=True)
 
         match self.grouping_mode:
-            case GroupingMode.ANIMALS:
+            case SplitMode.ANIMAL:
                 sort_by = ["DateTime", "Animal"]
-            case GroupingMode.FACTORS:
+            case SplitMode.FACTOR:
                 sort_by = ["DateTime", self.selected_factor.name]
-            case GroupingMode.RUNS:
+            case SplitMode.RUN:
                 sort_by = ["DateTime", "Run"]
 
         result.sort_values(by=sort_by, inplace=True)

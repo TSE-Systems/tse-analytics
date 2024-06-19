@@ -6,7 +6,7 @@ from PySide6.QtCore import QDir, QMarginsF, QSize, Qt, QTemporaryFile
 from PySide6.QtGui import QPageLayout, QPageSize
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.core.data.shared import GroupingMode
+from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
@@ -76,7 +76,7 @@ class BivariateWidget(QWidget, MessengerListener):
         variables = [x_var] if x_var == y_var else [x_var, y_var]
         df = Manager.data.get_current_df(
             variables=variables,
-            grouping_mode=GroupingMode.ANIMALS,
+            split_mode=SplitMode.ANIMAL,
             selected_factor=None,
             dropna=False,
         )
@@ -140,7 +140,7 @@ class BivariateWidget(QWidget, MessengerListener):
         variables = [response] if response == covariate else [response, covariate]
         df = Manager.data.get_current_df(
             variables=variables,
-            grouping_mode=GroupingMode.ANIMALS,
+            split_mode=SplitMode.ANIMAL,
             selected_factor=None,
             dropna=False,
         )

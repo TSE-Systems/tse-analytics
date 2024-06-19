@@ -13,7 +13,7 @@ from tse_analytics.core.data.pipeline.outliers_pipe_operator import OutliersPipe
 from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import TimeCyclesBinningPipeOperator
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import TimeIntervalsBinningPipeOperator
 from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import TimePhasesBinningPipeOperator
-from tse_analytics.core.data.shared import Animal, Factor, GroupingMode, Variable
+from tse_analytics.core.data.shared import Animal, Factor, SplitMode, Variable
 from tse_analytics.core.messaging.messages import (
     BinningMessage,
     DataChangedMessage,
@@ -32,7 +32,6 @@ class DataHub:
         self.selected_dataset: Dataset | None = None
         self.selected_animals: list[Animal] = []
         self.selected_variables: list[Variable] = []
-        self.selected_variable = ""
 
         self.binning_params = BinningParams(False, BinningMode.INTERVALS, BinningOperation.MEAN)
         self.outliers_params = OutliersParams(OutliersMode.OFF, 3.0)
@@ -162,7 +161,7 @@ class DataHub:
     def get_current_df(
         self,
         variables: list[str] | None = None,
-        grouping_mode=GroupingMode.ANIMALS,
+        split_mode=SplitMode.ANIMAL,
         selected_factor: Factor | None = None,
         dropna=False,
     ) -> pd.DataFrame:
@@ -193,7 +192,7 @@ class DataHub:
                     operator = TimeIntervalsBinningPipeOperator(
                         self.selected_dataset.binning_settings.time_intervals_settings,
                         self.binning_params.operation,
-                        grouping_mode,
+                        split_mode,
                         factor_names,
                         selected_factor,
                     )
@@ -202,7 +201,7 @@ class DataHub:
                     operator = TimeCyclesBinningPipeOperator(
                         self.selected_dataset.binning_settings.time_cycles_settings,
                         self.binning_params.operation,
-                        grouping_mode,
+                        split_mode,
                         factor_names,
                         selected_factor,
                     )
@@ -211,7 +210,7 @@ class DataHub:
                     operator = TimePhasesBinningPipeOperator(
                         self.selected_dataset.binning_settings.time_phases_settings,
                         self.binning_params.operation,
-                        grouping_mode,
+                        split_mode,
                         factor_names,
                         selected_factor,
                     )
@@ -226,7 +225,7 @@ class DataHub:
     def get_data_view_df(
         self,
         variables: list[str] | None = None,
-        grouping_mode=GroupingMode.ANIMALS,
+        split_mode=SplitMode.ANIMAL,
         selected_factor: Factor | None = None,
         dropna=False,
     ) -> pd.DataFrame:
@@ -257,7 +256,7 @@ class DataHub:
                     operator = TimeIntervalsBinningPipeOperator(
                         self.selected_dataset.binning_settings.time_intervals_settings,
                         self.binning_params.operation,
-                        grouping_mode,
+                        split_mode,
                         factor_names,
                         selected_factor,
                     )
@@ -266,7 +265,7 @@ class DataHub:
                     operator = TimeCyclesBinningPipeOperator(
                         self.selected_dataset.binning_settings.time_cycles_settings,
                         self.binning_params.operation,
-                        grouping_mode,
+                        split_mode,
                         factor_names,
                         selected_factor,
                     )
@@ -275,7 +274,7 @@ class DataHub:
                     operator = TimePhasesBinningPipeOperator(
                         self.selected_dataset.binning_settings.time_phases_settings,
                         self.binning_params.operation,
-                        grouping_mode,
+                        split_mode,
                         factor_names,
                         selected_factor,
                     )
@@ -312,7 +311,7 @@ class DataHub:
         operator = TimeIntervalsBinningPipeOperator(
             TimeIntervalsBinningSettings("day", 365),
             BinningOperation.MEAN,
-            GroupingMode.ANIMALS,
+            SplitMode.ANIMAL,
             factor_names,
             None,
         )

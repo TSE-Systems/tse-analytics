@@ -4,7 +4,7 @@ from PySide6.QtCore import QDir, QSize, QTemporaryFile
 from PySide6.QtWidgets import QWidget
 from statsmodels.tsa.seasonal import MSTL, STL, seasonal_decompose
 
-from tse_analytics.core.data.shared import GroupingMode
+from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage
@@ -52,7 +52,7 @@ class DecompositionWidget(QWidget):
 
         df = Manager.data.get_current_df(
             variables=variables,
-            grouping_mode=GroupingMode.ANIMALS,
+            split_mode=SplitMode.ANIMAL,
             selected_factor=None,
             dropna=False,
         )

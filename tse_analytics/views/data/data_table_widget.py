@@ -2,7 +2,7 @@ import pandas as pd
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.core.data.shared import Factor, GroupingMode
+from tse_analytics.core.data.shared import Factor, SplitMode
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import (
     BinningMessage,
@@ -72,7 +72,7 @@ class DataTableWidget(QWidget, MessengerListener):
 
         self.df = Manager.data.get_data_view_df(
             variables=selected_variable_names,
-            grouping_mode=GroupingMode.ANIMALS if self.selected_factor is None else GroupingMode.FACTORS,
+            split_mode=SplitMode.ANIMAL if self.selected_factor is None else SplitMode.FACTOR,
             selected_factor=self.selected_factor,
             dropna=False,
         )

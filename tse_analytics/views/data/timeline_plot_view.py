@@ -3,7 +3,7 @@ import pyqtgraph as pg
 from pyqtgraph import mkPen
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.core.data.shared import Factor, GroupingMode
+from tse_analytics.core.data.shared import Factor, SplitMode
 from tse_analytics.core.manager import Manager
 
 
@@ -13,7 +13,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         self._df: pd.DataFrame | None = None
         self._variable = ""
-        self._grouping_mode = GroupingMode.ANIMALS
+        self._grouping_mode = SplitMode.ANIMAL
         self._selected_factor: Factor | None = None
         self._error_type = "std"
         self._display_errors = False
@@ -69,7 +69,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         if update:
             self.__update_plot()
 
-    def set_grouping_mode(self, grouping_mode: GroupingMode, selected_factor: Factor):
+    def set_grouping_mode(self, grouping_mode: SplitMode, selected_factor: Factor):
         self._grouping_mode = grouping_mode
         self._selected_factor = selected_factor
 
@@ -94,16 +94,16 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         if (
             self._df is None
             or self._variable == ""
-            or (self._grouping_mode == GroupingMode.FACTORS and self._selected_factor is None)
+            or (self._grouping_mode == SplitMode.FACTOR and self._selected_factor is None)
         ):
             return
 
         match self._grouping_mode:
-            case GroupingMode.ANIMALS:
+            case SplitMode.ANIMAL:
                 x_min, x_max = self.__plot_animals()
-            case GroupingMode.FACTORS:
+            case SplitMode.FACTOR:
                 x_min, x_max = self.__plot_factors()
-            case GroupingMode.RUNS:
+            case SplitMode.RUN:
                 x_min, x_max = self.__plot_runs()
 
         # bound the LinearRegionItem to the plotted data
@@ -126,7 +126,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         # p1d = self.p1.plot(x, y, symbol='o', symbolSize=2, symbolPen=pen, pen=pen)
         p1d = self.p1.scatterPlot(x, y, pen=pen, size=2) if self._scatter_plot else self.p1.plot(x, y, pen=pen)
 
-        if self._display_errors and self._grouping_mode != GroupingMode.ANIMALS:
+        if self._display_errors and self._grouping_mode != SplitMode.ANIMAL:
             # Error bars
             error_plot = pg.ErrorBarItem(beam=0.2)
             error = data["Error"].to_numpy()

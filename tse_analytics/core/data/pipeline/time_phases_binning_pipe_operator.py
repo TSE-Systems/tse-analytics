@@ -2,7 +2,7 @@ import pandas as pd
 
 from tse_analytics.core.data.binning import BinningOperation, TimePhasesBinningSettings
 from tse_analytics.core.data.pipeline.pipe_operator import PipeOperator
-from tse_analytics.core.data.shared import Factor, GroupingMode
+from tse_analytics.core.data.shared import Factor, SplitMode
 
 
 class TimePhasesBinningPipeOperator(PipeOperator):
@@ -10,7 +10,7 @@ class TimePhasesBinningPipeOperator(PipeOperator):
         self,
         settings: TimePhasesBinningSettings,
         binning_operation: BinningOperation,
-        grouping_mode: GroupingMode,
+        grouping_mode: SplitMode,
         factor_names: list[str],
         selected_factor: Factor | None,
     ):
@@ -35,11 +35,11 @@ class TimePhasesBinningPipeOperator(PipeOperator):
         df["Bin"] = df["Bin"].cat.set_categories(categories, ordered=True)
 
         match self.grouping_mode:
-            case GroupingMode.ANIMALS:
+            case SplitMode.ANIMAL:
                 group_by = ["Animal", "Box", "Bin"] + self.factor_names
-            case GroupingMode.FACTORS:
+            case SplitMode.FACTOR:
                 group_by = [self.selected_factor.name, "Bin"]
-            case GroupingMode.RUNS:
+            case SplitMode.RUN:
                 group_by = ["Run", "Bin"]
 
         grouped = df.groupby(group_by, dropna=False, observed=True)
