@@ -7,9 +7,19 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QLabel" name="labelGroupByFactor">
+      <widget class="QLabel" name="labelSplitMode">
        <property name="text">
-        <string>Group by factor:</string>
+        <string>Split Mode:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboBoxSplitMode"/>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelFactor">
+       <property name="text">
+        <string>Factor:</string>
        </property>
       </widget>
      </item>

@@ -13,7 +13,7 @@ from tse_analytics.core.data.pipeline.outliers_pipe_operator import OutliersPipe
 from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import TimeCyclesBinningPipeOperator
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import TimeIntervalsBinningPipeOperator
 from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import TimePhasesBinningPipeOperator
-from tse_analytics.core.data.shared import Animal, Factor, SplitMode, Variable
+from tse_analytics.core.data.shared import Animal, SplitMode, Variable
 from tse_analytics.core.messaging.messages import (
     BinningMessage,
     DataChangedMessage,
@@ -162,7 +162,7 @@ class DataHub:
         self,
         variables: list[str] | None = None,
         split_mode=SplitMode.ANIMAL,
-        selected_factor: Factor | None = None,
+        selected_factor: str | None = None,
         dropna=False,
     ) -> pd.DataFrame:
         if variables is not None:
@@ -226,7 +226,7 @@ class DataHub:
         self,
         variables: list[str] | None = None,
         split_mode=SplitMode.ANIMAL,
-        selected_factor: Factor | None = None,
+        selected_factor: str | None = None,
         dropna=False,
     ) -> pd.DataFrame:
         if variables is not None:

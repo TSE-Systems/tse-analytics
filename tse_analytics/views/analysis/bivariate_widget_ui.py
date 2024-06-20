@@ -63,24 +63,6 @@ class Ui_BivariateWidget(object):
         self.widgetSettings.setObjectName(u"widgetSettings")
         self.verticalLayout_2 = QVBoxLayout(self.widgetSettings)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.groupBoxAnalysis = QGroupBox(self.widgetSettings)
-        self.groupBoxAnalysis.setObjectName(u"groupBoxAnalysis")
-        self.verticalLayout_3 = QVBoxLayout(self.groupBoxAnalysis)
-        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.radioButtonCorrelation = QRadioButton(self.groupBoxAnalysis)
-        self.radioButtonCorrelation.setObjectName(u"radioButtonCorrelation")
-        self.radioButtonCorrelation.setChecked(True)
-
-        self.verticalLayout_3.addWidget(self.radioButtonCorrelation)
-
-        self.radioButtonRegression = QRadioButton(self.groupBoxAnalysis)
-        self.radioButtonRegression.setObjectName(u"radioButtonRegression")
-
-        self.verticalLayout_3.addWidget(self.radioButtonRegression)
-
-
-        self.verticalLayout_2.addWidget(self.groupBoxAnalysis)
-
         self.groupBoxX = QGroupBox(self.widgetSettings)
         self.groupBoxX.setObjectName(u"groupBoxX")
         self.verticalLayout_4 = QVBoxLayout(self.groupBoxX)
@@ -105,17 +87,57 @@ class Ui_BivariateWidget(object):
 
         self.verticalLayout_2.addWidget(self.groupBoxY)
 
-        self.groupBoxFactor = QGroupBox(self.widgetSettings)
-        self.groupBoxFactor.setObjectName(u"groupBoxFactor")
-        self.verticalLayout_6 = QVBoxLayout(self.groupBoxFactor)
-        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
-        self.factorSelector = FactorSelector(self.groupBoxFactor)
+        self.groupBoxAnalysis = QGroupBox(self.widgetSettings)
+        self.groupBoxAnalysis.setObjectName(u"groupBoxAnalysis")
+        self.verticalLayout_3 = QVBoxLayout(self.groupBoxAnalysis)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.radioButtonCorrelation = QRadioButton(self.groupBoxAnalysis)
+        self.radioButtonCorrelation.setObjectName(u"radioButtonCorrelation")
+        self.radioButtonCorrelation.setChecked(True)
+
+        self.verticalLayout_3.addWidget(self.radioButtonCorrelation)
+
+        self.radioButtonRegression = QRadioButton(self.groupBoxAnalysis)
+        self.radioButtonRegression.setObjectName(u"radioButtonRegression")
+
+        self.verticalLayout_3.addWidget(self.radioButtonRegression)
+
+
+        self.verticalLayout_2.addWidget(self.groupBoxAnalysis)
+
+        self.groupBoxSplitMode = QGroupBox(self.widgetSettings)
+        self.groupBoxSplitMode.setObjectName(u"groupBoxSplitMode")
+        self.verticalLayout_7 = QVBoxLayout(self.groupBoxSplitMode)
+        self.verticalLayout_7.setObjectName(u"verticalLayout_7")
+        self.radioButtonSplitTotal = QRadioButton(self.groupBoxSplitMode)
+        self.radioButtonSplitTotal.setObjectName(u"radioButtonSplitTotal")
+
+        self.verticalLayout_7.addWidget(self.radioButtonSplitTotal)
+
+        self.radioButtonSplitByAnimal = QRadioButton(self.groupBoxSplitMode)
+        self.radioButtonSplitByAnimal.setObjectName(u"radioButtonSplitByAnimal")
+        self.radioButtonSplitByAnimal.setChecked(True)
+
+        self.verticalLayout_7.addWidget(self.radioButtonSplitByAnimal)
+
+        self.radioButtonSplitByRun = QRadioButton(self.groupBoxSplitMode)
+        self.radioButtonSplitByRun.setObjectName(u"radioButtonSplitByRun")
+
+        self.verticalLayout_7.addWidget(self.radioButtonSplitByRun)
+
+        self.radioButtonSplitByFactor = QRadioButton(self.groupBoxSplitMode)
+        self.radioButtonSplitByFactor.setObjectName(u"radioButtonSplitByFactor")
+
+        self.verticalLayout_7.addWidget(self.radioButtonSplitByFactor)
+
+        self.factorSelector = FactorSelector(self.groupBoxSplitMode)
         self.factorSelector.setObjectName(u"factorSelector")
+        self.factorSelector.setEnabled(False)
 
-        self.verticalLayout_6.addWidget(self.factorSelector)
+        self.verticalLayout_7.addWidget(self.factorSelector)
 
 
-        self.verticalLayout_2.addWidget(self.groupBoxFactor)
+        self.verticalLayout_2.addWidget(self.groupBoxSplitMode)
 
         self.pushButtonUpdate = QPushButton(self.widgetSettings)
         self.pushButtonUpdate.setObjectName(u"pushButtonUpdate")
@@ -152,12 +174,16 @@ class Ui_BivariateWidget(object):
     # setupUi
 
     def retranslateUi(self, BivariateWidget):
+        self.groupBoxX.setTitle(QCoreApplication.translate("BivariateWidget", u"X", None))
+        self.groupBoxY.setTitle(QCoreApplication.translate("BivariateWidget", u"Y", None))
         self.groupBoxAnalysis.setTitle(QCoreApplication.translate("BivariateWidget", u"Analysis", None))
         self.radioButtonCorrelation.setText(QCoreApplication.translate("BivariateWidget", u"Correlation", None))
         self.radioButtonRegression.setText(QCoreApplication.translate("BivariateWidget", u"Regression", None))
-        self.groupBoxX.setTitle(QCoreApplication.translate("BivariateWidget", u"X", None))
-        self.groupBoxY.setTitle(QCoreApplication.translate("BivariateWidget", u"Y", None))
-        self.groupBoxFactor.setTitle(QCoreApplication.translate("BivariateWidget", u"Factor", None))
+        self.groupBoxSplitMode.setTitle(QCoreApplication.translate("BivariateWidget", u"Split Mode", None))
+        self.radioButtonSplitTotal.setText(QCoreApplication.translate("BivariateWidget", u"Total", None))
+        self.radioButtonSplitByAnimal.setText(QCoreApplication.translate("BivariateWidget", u"By Animal", None))
+        self.radioButtonSplitByRun.setText(QCoreApplication.translate("BivariateWidget", u"By Run", None))
+        self.radioButtonSplitByFactor.setText(QCoreApplication.translate("BivariateWidget", u"By Factor", None))
         self.pushButtonUpdate.setText(QCoreApplication.translate("BivariateWidget", u"Update", None))
         self.pushButtonAddReport.setText(QCoreApplication.translate("BivariateWidget", u"Add to Report", None))
         self.pushButtonHelp.setText(QCoreApplication.translate("BivariateWidget", u"Help", None))

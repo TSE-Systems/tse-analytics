@@ -2,7 +2,7 @@ import pandas as pd
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.core.data.shared import Factor, SplitMode
+from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import (
     BinningMessage,
@@ -27,11 +27,14 @@ class DataTableWidget(QWidget, MessengerListener):
         self.ui.pushButtonResizeColumns.clicked.connect(self.__resize_columns_width)
         self.ui.factorSelector.currentTextChanged.connect(self.__factor_changed)
 
+        self.ui.comboBoxSplitMode.addItems(["Animal", "Run", "Factor"])
+        self.ui.comboBoxSplitMode.setCurrentText("Animal")
+        self.ui.comboBoxSplitMode.currentTextChanged.connect(self.__split_mode_changed)
+
         self.header = self.ui.tableView.horizontalHeader()
         self.header.sectionClicked.connect(self.header_clicked)
 
         self.df: pd.DataFrame | None = None
-        self.selected_factor: Factor | None = None
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
@@ -48,32 +51,43 @@ class DataTableWidget(QWidget, MessengerListener):
         if message.data is None:
             self.ui.tableView.setModel(None)
             self.ui.factorSelector.clear()
-            self.selected_factor = None
             self.df = None
         else:
-            self.ui.factorSelector.set_data(message.data.factors)
+            self.ui.factorSelector.set_data(message.data.factors, add_empty_item=False)
             self.__set_data()
 
     def __on_binning_applied(self, message: BinningMessage):
-        self.ui.factorSelector.setEnabled(message.params.apply)
         self.__set_data()
 
     def __on_data_changed(self, message: DataChangedMessage):
         self.__set_data()
 
+    def __split_mode_changed(self, split_mode_name: str):
+        self.ui.factorSelector.setEnabled(split_mode_name == "Factor")
+        self.__set_data()
+
     def __factor_changed(self, selected_factor_name: str):
-        factor = Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
-        self.selected_factor = factor
         self.__set_data()
 
     def __set_data(self):
         selected_variable_names = [item.name for item in Manager.data.selected_variables]
         selected_variable_names = list(set(selected_variable_names))
 
+        selected_factor_name = self.ui.factorSelector.currentText()
+
+        split_mode = SplitMode.TOTAL
+        match self.ui.comboBoxSplitMode.currentText():
+            case "Animal":
+                split_mode = SplitMode.ANIMAL
+            case "Run":
+                split_mode = SplitMode.RUN
+            case "Factor":
+                split_mode = SplitMode.FACTOR
+
         self.df = Manager.data.get_data_view_df(
             variables=selected_variable_names,
-            split_mode=SplitMode.ANIMAL if self.selected_factor is None else SplitMode.FACTOR,
-            selected_factor=self.selected_factor,
+            split_mode=split_mode,
+            selected_factor=selected_factor_name,
             dropna=False,
         )
 

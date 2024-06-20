@@ -13,7 +13,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         self._df: pd.DataFrame | None = None
         self._variable = ""
-        self._grouping_mode = SplitMode.ANIMAL
+        self._split_mode = SplitMode.ANIMAL
         self._selected_factor: Factor | None = None
         self._error_type = "std"
         self._display_errors = False
@@ -70,7 +70,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
             self.__update_plot()
 
     def set_grouping_mode(self, grouping_mode: SplitMode, selected_factor: Factor):
-        self._grouping_mode = grouping_mode
+        self._split_mode = grouping_mode
         self._selected_factor = selected_factor
 
     def set_display_errors(self, state: bool):
@@ -94,17 +94,19 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         if (
             self._df is None
             or self._variable == ""
-            or (self._grouping_mode == SplitMode.FACTOR and self._selected_factor is None)
+            or (self._split_mode == SplitMode.FACTOR and self._selected_factor is None)
         ):
             return
 
-        match self._grouping_mode:
+        match self._split_mode:
             case SplitMode.ANIMAL:
                 x_min, x_max = self.__plot_animals()
             case SplitMode.FACTOR:
                 x_min, x_max = self.__plot_factors()
             case SplitMode.RUN:
                 x_min, x_max = self.__plot_runs()
+            case SplitMode.TOTAL:
+                x_min, x_max = self.__plot_total()
 
         # bound the LinearRegionItem to the plotted data
         self.region.setClipItem(self.p2)
@@ -126,7 +128,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         # p1d = self.p1.plot(x, y, symbol='o', symbolSize=2, symbolPen=pen, pen=pen)
         p1d = self.p1.scatterPlot(x, y, pen=pen, size=2) if self._scatter_plot else self.p1.plot(x, y, pen=pen)
 
-        if self._display_errors and self._grouping_mode != SplitMode.ANIMAL:
+        if self._display_errors and self._split_mode != SplitMode.ANIMAL:
             # Error bars
             error_plot = pg.ErrorBarItem(beam=0.2)
             error = data["Error"].to_numpy()
@@ -234,6 +236,37 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
                 x_min = tmp_min
             if x_max is None or tmp_max > x_max:
                 x_max = tmp_max
+
+        return x_min, x_max
+
+    def __plot_total(self) -> tuple[float, float]:
+        x_min = None
+        x_max = None
+
+        group_by = ["DateTime"]
+        grouped = self._df.groupby(group_by, dropna=False, observed=False)
+
+        result = (
+            grouped.agg(
+                Value=(self._variable, Manager.data.binning_params.operation.value),
+                Error=(self._variable, self._error_type),
+            )
+            if self._display_errors
+            else grouped.agg(
+                Value=(self._variable, Manager.data.binning_params.operation.value),
+            )
+        )
+
+        data = result.reset_index()
+        data.rename(columns={"Value": self._variable}, inplace=True)
+
+        pen = mkPen(color=(1, 1), width=1)
+        tmp_min, tmp_max = self.__plot_item(data, "Total", pen)
+
+        if x_min is None or tmp_min < x_min:
+            x_min = tmp_min
+        if x_max is None or tmp_max > x_max:
+            x_max = tmp_max
 
         return x_min, x_max
 

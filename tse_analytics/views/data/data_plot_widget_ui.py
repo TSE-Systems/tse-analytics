@@ -52,19 +52,39 @@ class Ui_DataPlotWidget(object):
 
         self.verticalLayout.addWidget(self.groupBoxVariable)
 
-        self.groupBoxFactor = QGroupBox(self.widgetSettings)
-        self.groupBoxFactor.setObjectName(u"groupBoxFactor")
-        self.groupBoxFactor.setCheckable(True)
-        self.groupBoxFactor.setChecked(False)
-        self.verticalLayout_4 = QVBoxLayout(self.groupBoxFactor)
-        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.factorSelector = FactorSelector(self.groupBoxFactor)
+        self.groupBoxSplitMode = QGroupBox(self.widgetSettings)
+        self.groupBoxSplitMode.setObjectName(u"groupBoxSplitMode")
+        self.verticalLayout_7 = QVBoxLayout(self.groupBoxSplitMode)
+        self.verticalLayout_7.setObjectName(u"verticalLayout_7")
+        self.radioButtonSplitTotal = QRadioButton(self.groupBoxSplitMode)
+        self.radioButtonSplitTotal.setObjectName(u"radioButtonSplitTotal")
+
+        self.verticalLayout_7.addWidget(self.radioButtonSplitTotal)
+
+        self.radioButtonSplitByAnimal = QRadioButton(self.groupBoxSplitMode)
+        self.radioButtonSplitByAnimal.setObjectName(u"radioButtonSplitByAnimal")
+        self.radioButtonSplitByAnimal.setChecked(True)
+
+        self.verticalLayout_7.addWidget(self.radioButtonSplitByAnimal)
+
+        self.radioButtonSplitByRun = QRadioButton(self.groupBoxSplitMode)
+        self.radioButtonSplitByRun.setObjectName(u"radioButtonSplitByRun")
+
+        self.verticalLayout_7.addWidget(self.radioButtonSplitByRun)
+
+        self.radioButtonSplitByFactor = QRadioButton(self.groupBoxSplitMode)
+        self.radioButtonSplitByFactor.setObjectName(u"radioButtonSplitByFactor")
+
+        self.verticalLayout_7.addWidget(self.radioButtonSplitByFactor)
+
+        self.factorSelector = FactorSelector(self.groupBoxSplitMode)
         self.factorSelector.setObjectName(u"factorSelector")
+        self.factorSelector.setEnabled(False)
 
-        self.verticalLayout_4.addWidget(self.factorSelector)
+        self.verticalLayout_7.addWidget(self.factorSelector)
 
 
-        self.verticalLayout.addWidget(self.groupBoxFactor)
+        self.verticalLayout.addWidget(self.groupBoxSplitMode)
 
         self.groupBoxDisplayErrors = QGroupBox(self.widgetSettings)
         self.groupBoxDisplayErrors.setObjectName(u"groupBoxDisplayErrors")
@@ -107,7 +127,11 @@ class Ui_DataPlotWidget(object):
 
     def retranslateUi(self, DataPlotWidget):
         self.groupBoxVariable.setTitle(QCoreApplication.translate("DataPlotWidget", u"Variable", None))
-        self.groupBoxFactor.setTitle(QCoreApplication.translate("DataPlotWidget", u"Split by factor", None))
+        self.groupBoxSplitMode.setTitle(QCoreApplication.translate("DataPlotWidget", u"Split Mode", None))
+        self.radioButtonSplitTotal.setText(QCoreApplication.translate("DataPlotWidget", u"Total", None))
+        self.radioButtonSplitByAnimal.setText(QCoreApplication.translate("DataPlotWidget", u"By Animal", None))
+        self.radioButtonSplitByRun.setText(QCoreApplication.translate("DataPlotWidget", u"By Run", None))
+        self.radioButtonSplitByFactor.setText(QCoreApplication.translate("DataPlotWidget", u"By Factor", None))
         self.groupBoxDisplayErrors.setTitle(QCoreApplication.translate("DataPlotWidget", u"Display Errors", None))
         self.radioButtonStandardDeviation.setText(QCoreApplication.translate("DataPlotWidget", u"Standard Deviation", None))
         self.radioButtonStandardError.setText(QCoreApplication.translate("DataPlotWidget", u"Standard Error", None))

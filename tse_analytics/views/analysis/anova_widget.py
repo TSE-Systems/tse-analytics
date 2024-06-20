@@ -70,12 +70,13 @@ class AnovaWidget(QWidget, MessengerListener):
         self.__clear()
         if message.data is None:
             self.ui.pushButtonUpdate.setDisabled(True)
+            self.ui.pushButtonAddReport.setDisabled(True)
             return
 
         self.ui.pushButtonUpdate.setDisabled(len(Manager.data.selected_dataset.factors) == 0)
         self.ui.pushButtonAddReport.setDisabled(len(Manager.data.selected_dataset.factors) == 0)
 
-        self.ui.factorSelector.set_data(message.data.factors)
+        self.ui.factorSelector.set_data(message.data.factors, add_empty_item=False)
 
         self.ui.tableWidgetDependentVariable.setRowCount(len(message.data.variables.values()))
         self.ui.tableWidgetCovariates.setRowCount(len(message.data.variables.values()))

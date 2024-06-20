@@ -24,6 +24,7 @@ class DimensionalityWidget(QWidget, MessengerListener):
         self.ui.setupUi(self)
 
         self.help_path = "dimensionality.md"
+
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self.__update)
         self.ui.pushButtonAddReport.clicked.connect(self.__add_report)
@@ -31,6 +32,11 @@ class DimensionalityWidget(QWidget, MessengerListener):
         self.ui.radioButtonMatrixPlot.toggled.connect(lambda: self.ui.groupBoxDimensions.setEnabled(False))
         self.ui.radioButtonPCA.toggled.connect(lambda: self.ui.groupBoxDimensions.setEnabled(True))
         self.ui.radioButtonTSNE.toggled.connect(lambda: self.ui.groupBoxDimensions.setEnabled(True))
+
+        self.ui.radioButtonSplitTotal.toggled.connect(lambda: self.ui.factorSelector.setEnabled(False))
+        self.ui.radioButtonSplitByAnimal.toggled.connect(lambda: self.ui.factorSelector.setEnabled(False))
+        self.ui.radioButtonSplitByFactor.toggled.connect(lambda: self.ui.factorSelector.setEnabled(True))
+        self.ui.radioButtonSplitByRun.toggled.connect(lambda: self.ui.factorSelector.setEnabled(False))
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
@@ -40,7 +46,7 @@ class DimensionalityWidget(QWidget, MessengerListener):
         self.ui.pushButtonAddReport.setDisabled(message.data is None)
         self.__clear()
         if message.data is not None:
-            self.ui.factorSelector.set_data(message.data.factors)
+            self.ui.factorSelector.set_data(message.data.factors, add_empty_item=False)
 
     def __clear(self):
         self.ui.factorSelector.clear()
@@ -56,25 +62,38 @@ class DimensionalityWidget(QWidget, MessengerListener):
 
     def __update_matrix_plot(self):
         if len(Manager.data.selected_variables) < 2:
-            Toast(text="Please select at least two variables.", parent=self, duration=2000).show_toast()
+            Toast(
+                text="Please select at least two variables in Variables panel.", parent=self, duration=2000
+            ).show_toast()
             return
 
         selected_factor = self.ui.factorSelector.currentText()
-        if self.ui.groupBoxFactor.isChecked() and selected_factor == "":
-            Toast(text="Please select factor first.", parent=self, duration=2000).show_toast()
-            return
 
-        color = selected_factor if self.ui.groupBoxFactor.isChecked() else "Animal"
+        split_mode = SplitMode.TOTAL
+        by = None
+        if self.ui.radioButtonSplitByAnimal.isChecked():
+            split_mode = SplitMode.ANIMAL
+            by = "Animal"
+        elif self.ui.radioButtonSplitByRun.isChecked():
+            split_mode = SplitMode.RUN
+            by = "Run"
+        elif self.ui.radioButtonSplitByFactor.isChecked():
+            split_mode = SplitMode.FACTOR
+            by = selected_factor
+
+        if split_mode == SplitMode.FACTOR and selected_factor == "":
+            Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
+            return
 
         variables = [variable.name for variable in Manager.data.selected_variables]
         df = Manager.data.get_current_df(
             variables=variables,
-            split_mode=SplitMode.ANIMAL,
-            selected_factor=None,
+            split_mode=split_mode,
+            selected_factor=selected_factor,
             dropna=False,
         )
 
-        fig = px.scatter_matrix(df, dimensions=variables, color=color)
+        fig = px.scatter_matrix(df, dimensions=variables, color=by)
         fig.update_traces(diagonal_visible=False)
 
         file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.html", self)
@@ -83,21 +102,35 @@ class DimensionalityWidget(QWidget, MessengerListener):
             self.ui.webView.load(QUrl.fromLocalFile(file.fileName()))
 
     def __update_pca_tsne_plot(self):
-        selected_factor = self.ui.factorSelector.currentText()
-        if self.ui.groupBoxFactor.isChecked() and selected_factor == "":
-            Toast(text="Please select factor first.", parent=self, duration=2000).show_toast()
-            return
-
         if len(Manager.data.selected_variables) < 3:
+            Toast(
+                text="Please select at least three variables in Variables panel.", parent=self, duration=2000
+            ).show_toast()
             return
 
-        color_column = selected_factor if self.ui.groupBoxFactor.isChecked() else "Animal"
+        selected_factor = self.ui.factorSelector.currentText()
+
+        split_mode = SplitMode.TOTAL
+        by = None
+        if self.ui.radioButtonSplitByAnimal.isChecked():
+            split_mode = SplitMode.ANIMAL
+            by = "Animal"
+        elif self.ui.radioButtonSplitByRun.isChecked():
+            split_mode = SplitMode.RUN
+            by = "Run"
+        elif self.ui.radioButtonSplitByFactor.isChecked():
+            split_mode = SplitMode.FACTOR
+            by = selected_factor
+
+        if split_mode == SplitMode.FACTOR and selected_factor == "":
+            Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
+            return
 
         variables = [variable.name for variable in Manager.data.selected_variables]
         df = Manager.data.get_current_df(
             variables=variables,
-            split_mode=SplitMode.ANIMAL,
-            selected_factor=None,
+            split_mode=split_mode,
+            selected_factor=selected_factor,
             dropna=True,
         )
 
@@ -107,7 +140,7 @@ class DimensionalityWidget(QWidget, MessengerListener):
             pca = PCA(n_components=n_components)
             data = pca.fit_transform(df[variables])
             total_var = pca.explained_variance_ratio_.sum() * 100
-            title = f"Total Explained Variance: {total_var:.2f}%"
+            title = f"PCA. Total Explained Variance: {total_var:.2f}%"
         elif self.ui.radioButtonTSNE.isChecked():
             tsne = TSNE(n_components=n_components, random_state=0)
             data = tsne.fit_transform(df[variables])
@@ -118,12 +151,12 @@ class DimensionalityWidget(QWidget, MessengerListener):
                 data,
                 x=0,
                 y=1,
-                color=df[color_column].astype(str),
+                color=df[by] if by is not None else None,
                 title=title,
                 labels={
                     "0": "PC 1",
                     "1": "PC 2",
-                    "color": color_column,
+                    "color": by,
                 },
                 hover_name=df["Animal"],
             )
@@ -133,13 +166,13 @@ class DimensionalityWidget(QWidget, MessengerListener):
                 x=0,
                 y=1,
                 z=2,
-                color=df[color_column],
+                color=df[by] if by is not None else None,
                 title=title,
                 labels={
                     "0": "PC 1",
                     "1": "PC 2",
                     "2": "PC 3",
-                    "color": color_column,
+                    "color": by,
                 },
                 hover_name=df["Animal"],
             )

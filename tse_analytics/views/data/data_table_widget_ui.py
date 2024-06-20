@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QHBoxLayout, QHeaderView,
-    QLabel, QPushButton, QSizePolicy, QSpacerItem,
-    QTableView, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QHBoxLayout,
+    QHeaderView, QLabel, QPushButton, QSizePolicy,
+    QSpacerItem, QTableView, QVBoxLayout, QWidget)
 
 from tse_analytics.views.misc.factor_selector import FactorSelector
 import resources_rc
@@ -30,10 +30,20 @@ class Ui_DataTableWidget(object):
         self._2.setObjectName(u"_2")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.labelGroupByFactor = QLabel(DataTableWidget)
-        self.labelGroupByFactor.setObjectName(u"labelGroupByFactor")
+        self.labelSplitMode = QLabel(DataTableWidget)
+        self.labelSplitMode.setObjectName(u"labelSplitMode")
 
-        self.horizontalLayout.addWidget(self.labelGroupByFactor)
+        self.horizontalLayout.addWidget(self.labelSplitMode)
+
+        self.comboBoxSplitMode = QComboBox(DataTableWidget)
+        self.comboBoxSplitMode.setObjectName(u"comboBoxSplitMode")
+
+        self.horizontalLayout.addWidget(self.comboBoxSplitMode)
+
+        self.labelFactor = QLabel(DataTableWidget)
+        self.labelFactor.setObjectName(u"labelFactor")
+
+        self.horizontalLayout.addWidget(self.labelFactor)
 
         self.factorSelector = FactorSelector(DataTableWidget)
         self.factorSelector.setObjectName(u"factorSelector")
@@ -74,7 +84,8 @@ class Ui_DataTableWidget(object):
     # setupUi
 
     def retranslateUi(self, DataTableWidget):
-        self.labelGroupByFactor.setText(QCoreApplication.translate("DataTableWidget", u"Group by factor:", None))
+        self.labelSplitMode.setText(QCoreApplication.translate("DataTableWidget", u"Split Mode:", None))
+        self.labelFactor.setText(QCoreApplication.translate("DataTableWidget", u"Factor:", None))
         self.pushButtonResizeColumns.setText(QCoreApplication.translate("DataTableWidget", u"Resize Columns", None))
         pass
     # retranslateUi

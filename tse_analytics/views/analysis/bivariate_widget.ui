@@ -39,6 +39,30 @@
      <widget class="QWidget" name="widgetSettings" native="true">
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
+        <widget class="QGroupBox" name="groupBoxX">
+         <property name="title">
+          <string>X</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <widget class="VariableSelector" name="variableSelectorX"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBoxY">
+         <property name="title">
+          <string>Y</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_5">
+          <item>
+           <widget class="VariableSelector" name="variableSelectorY"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QGroupBox" name="groupBoxAnalysis">
          <property name="title">
           <string>Analysis</string>
@@ -65,37 +89,48 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBoxX">
+        <widget class="QGroupBox" name="groupBoxSplitMode">
          <property name="title">
-          <string>X</string>
+          <string>Split Mode</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_4">
+         <layout class="QVBoxLayout" name="verticalLayout_7">
           <item>
-           <widget class="VariableSelector" name="variableSelectorX"/>
+           <widget class="QRadioButton" name="radioButtonSplitTotal">
+            <property name="text">
+             <string>Total</string>
+            </property>
+           </widget>
           </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBoxY">
-         <property name="title">
-          <string>Y</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_5">
           <item>
-           <widget class="VariableSelector" name="variableSelectorY"/>
+           <widget class="QRadioButton" name="radioButtonSplitByAnimal">
+            <property name="text">
+             <string>By Animal</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
           </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBoxFactor">
-         <property name="title">
-          <string>Factor</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_6">
           <item>
-           <widget class="FactorSelector" name="factorSelector"/>
+           <widget class="QRadioButton" name="radioButtonSplitByRun">
+            <property name="text">
+             <string>By Run</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonSplitByFactor">
+            <property name="text">
+             <string>By Factor</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="FactorSelector" name="factorSelector">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>

@@ -86,19 +86,39 @@ class Ui_DimensionalityWidget(object):
 
         self.verticalLayout_2.addWidget(self.groupBoxDimensions)
 
-        self.groupBoxFactor = QGroupBox(self.widgetSettings)
-        self.groupBoxFactor.setObjectName(u"groupBoxFactor")
-        self.groupBoxFactor.setCheckable(True)
-        self.groupBoxFactor.setChecked(False)
-        self.verticalLayout_6 = QVBoxLayout(self.groupBoxFactor)
-        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
-        self.factorSelector = FactorSelector(self.groupBoxFactor)
+        self.groupBoxSplitMode = QGroupBox(self.widgetSettings)
+        self.groupBoxSplitMode.setObjectName(u"groupBoxSplitMode")
+        self.verticalLayout_7 = QVBoxLayout(self.groupBoxSplitMode)
+        self.verticalLayout_7.setObjectName(u"verticalLayout_7")
+        self.radioButtonSplitTotal = QRadioButton(self.groupBoxSplitMode)
+        self.radioButtonSplitTotal.setObjectName(u"radioButtonSplitTotal")
+
+        self.verticalLayout_7.addWidget(self.radioButtonSplitTotal)
+
+        self.radioButtonSplitByAnimal = QRadioButton(self.groupBoxSplitMode)
+        self.radioButtonSplitByAnimal.setObjectName(u"radioButtonSplitByAnimal")
+        self.radioButtonSplitByAnimal.setChecked(True)
+
+        self.verticalLayout_7.addWidget(self.radioButtonSplitByAnimal)
+
+        self.radioButtonSplitByRun = QRadioButton(self.groupBoxSplitMode)
+        self.radioButtonSplitByRun.setObjectName(u"radioButtonSplitByRun")
+
+        self.verticalLayout_7.addWidget(self.radioButtonSplitByRun)
+
+        self.radioButtonSplitByFactor = QRadioButton(self.groupBoxSplitMode)
+        self.radioButtonSplitByFactor.setObjectName(u"radioButtonSplitByFactor")
+
+        self.verticalLayout_7.addWidget(self.radioButtonSplitByFactor)
+
+        self.factorSelector = FactorSelector(self.groupBoxSplitMode)
         self.factorSelector.setObjectName(u"factorSelector")
+        self.factorSelector.setEnabled(False)
 
-        self.verticalLayout_6.addWidget(self.factorSelector)
+        self.verticalLayout_7.addWidget(self.factorSelector)
 
 
-        self.verticalLayout_2.addWidget(self.groupBoxFactor)
+        self.verticalLayout_2.addWidget(self.groupBoxSplitMode)
 
         self.pushButtonUpdate = QPushButton(self.widgetSettings)
         self.pushButtonUpdate.setObjectName(u"pushButtonUpdate")
@@ -142,7 +162,11 @@ class Ui_DimensionalityWidget(object):
         self.groupBoxDimensions.setTitle(QCoreApplication.translate("DimensionalityWidget", u"Dimensions", None))
         self.radioButton2D.setText(QCoreApplication.translate("DimensionalityWidget", u"2D", None))
         self.radioButton3D.setText(QCoreApplication.translate("DimensionalityWidget", u"3D", None))
-        self.groupBoxFactor.setTitle(QCoreApplication.translate("DimensionalityWidget", u"Split by factor", None))
+        self.groupBoxSplitMode.setTitle(QCoreApplication.translate("DimensionalityWidget", u"Split Mode", None))
+        self.radioButtonSplitTotal.setText(QCoreApplication.translate("DimensionalityWidget", u"Total", None))
+        self.radioButtonSplitByAnimal.setText(QCoreApplication.translate("DimensionalityWidget", u"By Animal", None))
+        self.radioButtonSplitByRun.setText(QCoreApplication.translate("DimensionalityWidget", u"By Run", None))
+        self.radioButtonSplitByFactor.setText(QCoreApplication.translate("DimensionalityWidget", u"By Factor", None))
         self.pushButtonUpdate.setText(QCoreApplication.translate("DimensionalityWidget", u"Update", None))
         self.pushButtonAddReport.setText(QCoreApplication.translate("DimensionalityWidget", u"Add to Report", None))
         self.pushButtonHelp.setText(QCoreApplication.translate("DimensionalityWidget", u"Help", None))

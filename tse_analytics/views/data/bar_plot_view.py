@@ -17,7 +17,7 @@ class BarPlotView(QWidget):
 
         self._df: pd.DataFrame | None = None
         self._variable = ""
-        self._grouping_mode = SplitMode.ANIMAL
+        self._split_mode = SplitMode.ANIMAL
         self._selected_factor: Factor | None = None
         self._error_type = "sd"
         self._display_errors = False
@@ -34,7 +34,7 @@ class BarPlotView(QWidget):
             self._update_plot()
 
     def set_grouping_mode(self, grouping_mode: SplitMode, selected_factor: Factor):
-        self._grouping_mode = grouping_mode
+        self._split_mode = grouping_mode
         self._selected_factor = selected_factor
 
     def set_display_errors(self, state: bool):
@@ -54,7 +54,7 @@ class BarPlotView(QWidget):
         if (
             self._df is None
             or self._variable == ""
-            or (self._grouping_mode == SplitMode.FACTOR and self._selected_factor is None)
+            or (self._split_mode == SplitMode.FACTOR and self._selected_factor is None)
             or not Manager.data.binning_params.apply
         ):
             return
@@ -65,15 +65,18 @@ class BarPlotView(QWidget):
         plt.close(self.canvas.figure)
 
         if not self._df.empty:
-            match self._grouping_mode:
+            match self._split_mode:
                 case SplitMode.ANIMAL:
                     x_name = "Animal"
                 case SplitMode.FACTOR:
                     x_name = self._selected_factor.name
                 case SplitMode.RUN:
                     x_name = "Run"
+                case SplitMode.TOTAL:
+                    x_name = None
 
-            self._df[x_name] = self._df[x_name].cat.remove_unused_categories()
+            if self._split_mode != SplitMode.TOTAL:
+                self._df[x_name] = self._df[x_name].cat.remove_unused_categories()
 
             facet_grid = sns.catplot(
                 data=self._df,
@@ -84,7 +87,7 @@ class BarPlotView(QWidget):
                 errorbar=self._error_type if self._display_errors else None,
             )
             # facet_grid.set_xticklabels(rotation=90)
-            facet_grid.set_titles("{col_name}")
+            # facet_grid.set_titles("{col_name}")
             self.canvas = FigureCanvasQTAgg(facet_grid.figure)
             self.canvas.updateGeometry()
             self.canvas.draw()

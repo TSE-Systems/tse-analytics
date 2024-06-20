@@ -26,9 +26,13 @@ class DataPlotWidget(QWidget, MessengerListener):
 
         self.register_to_messenger(Manager.messenger)
 
+        self.ui.radioButtonSplitTotal.toggled.connect(self.__split_mode_changed)
+        self.ui.radioButtonSplitByAnimal.toggled.connect(self.__split_mode_changed)
+        self.ui.radioButtonSplitByFactor.toggled.connect(self.__split_mode_changed)
+        self.ui.radioButtonSplitByRun.toggled.connect(self.__split_mode_changed)
+
         self.ui.variableSelector.currentTextChanged.connect(self.__variable_changed)
-        self.ui.groupBoxFactor.toggled.connect(self.__grouping_mode_changed)
-        self.ui.factorSelector.currentTextChanged.connect(self.__grouping_mode_changed)
+        self.ui.factorSelector.currentTextChanged.connect(self.__split_mode_changed)
         self.ui.checkBoxScatterPlot.stateChanged.connect(self.__set_scatter_plot)
         self.ui.groupBoxDisplayErrors.toggled.connect(self.__display_errors)
         self.ui.radioButtonStandardDeviation.toggled.connect(lambda: self.__error_type_changed("StandardDeviation"))
@@ -78,7 +82,7 @@ class DataPlotWidget(QWidget, MessengerListener):
                 self.barPlotView.clear_plot()
         else:
             self.ui.variableSelector.set_data(message.data.variables)
-            self.ui.factorSelector.set_data(message.data.factors)
+            self.ui.factorSelector.set_data(message.data.factors, add_empty_item=False)
             self.__assign_data()
 
     def __on_binning_applied(self, message: BinningMessage):
@@ -91,16 +95,36 @@ class DataPlotWidget(QWidget, MessengerListener):
     def __on_data_changed(self, message: DataChangedMessage):
         self.__assign_data()
 
-    def __grouping_mode_changed(self):
-        grouping_mode = SplitMode.FACTOR if self.ui.groupBoxFactor.isChecked() else SplitMode.ANIMAL
+    def __split_mode_changed(self):
         selected_factor_name = self.ui.factorSelector.currentText()
+
+        split_mode = SplitMode.TOTAL
+        if self.ui.radioButtonSplitByAnimal.isChecked():
+            split_mode = SplitMode.ANIMAL
+        elif self.ui.radioButtonSplitByRun.isChecked():
+            split_mode = SplitMode.RUN
+        elif self.ui.radioButtonSplitByFactor.isChecked():
+            split_mode = SplitMode.FACTOR
+
+        self.ui.factorSelector.setEnabled(split_mode == SplitMode.FACTOR)
+
         factor = Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
-        self.timelinePlotView.set_grouping_mode(grouping_mode, factor)
-        self.barPlotView.set_grouping_mode(grouping_mode, factor)
+        self.timelinePlotView.set_grouping_mode(split_mode, factor)
+        self.barPlotView.set_grouping_mode(split_mode, factor)
         self.__assign_data()
 
     def __assign_data(self):
-        if self.ui.groupBoxFactor.isChecked() and self.ui.factorSelector.currentText() == "":
+        selected_factor_name = self.ui.factorSelector.currentText()
+
+        split_mode = SplitMode.TOTAL
+        if self.ui.radioButtonSplitByAnimal.isChecked():
+            split_mode = SplitMode.ANIMAL
+        elif self.ui.radioButtonSplitByRun.isChecked():
+            split_mode = SplitMode.RUN
+        elif self.ui.radioButtonSplitByFactor.isChecked():
+            split_mode = SplitMode.FACTOR
+
+        if split_mode == SplitMode.FACTOR and selected_factor_name == "":
             Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
             return
 
