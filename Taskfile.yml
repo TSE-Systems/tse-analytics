@@ -82,6 +82,7 @@ tasks:
 
   create-setup:
     cmds:
+      - poetry install
       - pyinstaller --clean setup/tse-analytics.spec
 
   freeze:

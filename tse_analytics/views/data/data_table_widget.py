@@ -27,7 +27,7 @@ class DataTableWidget(QWidget, MessengerListener):
         self.ui.pushButtonResizeColumns.clicked.connect(self.__resize_columns_width)
         self.ui.factorSelector.currentTextChanged.connect(self.__factor_changed)
 
-        self.ui.comboBoxSplitMode.addItems(["Animal", "Run", "Factor"])
+        self.ui.comboBoxSplitMode.addItems(["Total", "Animal", "Run", "Factor"])
         self.ui.comboBoxSplitMode.setCurrentText("Animal")
         self.ui.comboBoxSplitMode.currentTextChanged.connect(self.__split_mode_changed)
 

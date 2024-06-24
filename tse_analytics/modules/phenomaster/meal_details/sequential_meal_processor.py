@@ -142,32 +142,33 @@ def __extract_meal_events(
                             feed1_episode_last_timestamp = timestamp
 
         if drink2_present:
-            if drink2_episode_last_timestamp is None:
-                # First measurement
-                drink2_episode_start = timestamp
-                meal_events_df.at[index, "Drink2EpisodeId"] = drink2_episode_number
-                drink2_episode_last_timestamp = timestamp
-            else:
-                if drink2_episode_start is None:
+            if row["Drink2"] > 0:
+                if drink2_episode_last_timestamp is None:
+                    # First measurement
                     drink2_episode_start = timestamp
-                    if timestamp - drink2_episode_last_timestamp <= timedelta:
-                        meal_events_df.at[index, "Drink2EpisodeId"] = drink2_episode_number
-                    else:
-                        drink2_episode_number = drink2_episode_number + 1
-                        meal_events_df.at[index, "Drink2EpisodeId"] = drink2_episode_number
-                    meal_events_df.at[index, "Drink2Gap"] = timestamp - drink2_episode_last_timestamp
+                    meal_events_df.at[index, "Drink2EpisodeId"] = drink2_episode_number
                     drink2_episode_last_timestamp = timestamp
                 else:
-                    if timestamp - drink2_episode_last_timestamp <= timedelta:
-                        meal_events_df.at[index, "Drink2EpisodeId"] = drink2_episode_number
+                    if drink2_episode_start is None:
+                        drink2_episode_start = timestamp
+                        if timestamp - drink2_episode_last_timestamp <= timedelta:
+                            meal_events_df.at[index, "Drink2EpisodeId"] = drink2_episode_number
+                        else:
+                            drink2_episode_number = drink2_episode_number + 1
+                            meal_events_df.at[index, "Drink2EpisodeId"] = drink2_episode_number
                         meal_events_df.at[index, "Drink2Gap"] = timestamp - drink2_episode_last_timestamp
                         drink2_episode_last_timestamp = timestamp
                     else:
-                        drink2_episode_number = drink2_episode_number + 1
-                        meal_events_df.at[index, "Drink2EpisodeId"] = drink2_episode_number
-                        meal_events_df.at[index, "Drink2Gap"] = timestamp - drink2_episode_last_timestamp
-                        drink2_episode_start = None
-                        drink2_episode_last_timestamp = timestamp
+                        if timestamp - drink2_episode_last_timestamp <= timedelta:
+                            meal_events_df.at[index, "Drink2EpisodeId"] = drink2_episode_number
+                            meal_events_df.at[index, "Drink2Gap"] = timestamp - drink2_episode_last_timestamp
+                            drink2_episode_last_timestamp = timestamp
+                        else:
+                            drink2_episode_number = drink2_episode_number + 1
+                            meal_events_df.at[index, "Drink2EpisodeId"] = drink2_episode_number
+                            meal_events_df.at[index, "Drink2Gap"] = timestamp - drink2_episode_last_timestamp
+                            drink2_episode_start = None
+                            drink2_episode_last_timestamp = timestamp
 
         if feed2_present:
             if row["Feed2"] > 0:
@@ -199,32 +200,33 @@ def __extract_meal_events(
                             feed2_episode_last_timestamp = timestamp
 
         if drink_present:
-            if drink_episode_last_timestamp is None:
-                # First measurement
-                drink_episode_start = timestamp
-                meal_events_df.at[index, "DrinkEpisodeId"] = drink_episode_number
-                drink_episode_last_timestamp = timestamp
-            else:
-                if drink_episode_start is None:
+            if row["Drink"] > 0:
+                if drink_episode_last_timestamp is None:
+                    # First measurement
                     drink_episode_start = timestamp
-                    if timestamp - drink_episode_last_timestamp <= timedelta:
-                        meal_events_df.at[index, "DrinkEpisodeId"] = drink_episode_number
-                    else:
-                        drink_episode_number = drink_episode_number + 1
-                        meal_events_df.at[index, "DrinkEpisodeId"] = drink_episode_number
-                    meal_events_df.at[index, "DrinkGap"] = timestamp - drink_episode_last_timestamp
+                    meal_events_df.at[index, "DrinkEpisodeId"] = drink_episode_number
                     drink_episode_last_timestamp = timestamp
                 else:
-                    if timestamp - drink_episode_last_timestamp <= timedelta:
-                        meal_events_df.at[index, "DrinkEpisodeId"] = drink_episode_number
+                    if drink_episode_start is None:
+                        drink_episode_start = timestamp
+                        if timestamp - drink_episode_last_timestamp <= timedelta:
+                            meal_events_df.at[index, "DrinkEpisodeId"] = drink_episode_number
+                        else:
+                            drink_episode_number = drink_episode_number + 1
+                            meal_events_df.at[index, "DrinkEpisodeId"] = drink_episode_number
                         meal_events_df.at[index, "DrinkGap"] = timestamp - drink_episode_last_timestamp
                         drink_episode_last_timestamp = timestamp
                     else:
-                        drink_episode_number = drink_episode_number + 1
-                        meal_events_df.at[index, "DrinkEpisodeId"] = drink_episode_number
-                        meal_events_df.at[index, "DrinkGap"] = timestamp - drink_episode_last_timestamp
-                        drink_episode_start = None
-                        drink_episode_last_timestamp = timestamp
+                        if timestamp - drink_episode_last_timestamp <= timedelta:
+                            meal_events_df.at[index, "DrinkEpisodeId"] = drink_episode_number
+                            meal_events_df.at[index, "DrinkGap"] = timestamp - drink_episode_last_timestamp
+                            drink_episode_last_timestamp = timestamp
+                        else:
+                            drink_episode_number = drink_episode_number + 1
+                            meal_events_df.at[index, "DrinkEpisodeId"] = drink_episode_number
+                            meal_events_df.at[index, "DrinkGap"] = timestamp - drink_episode_last_timestamp
+                            drink_episode_start = None
+                            drink_episode_last_timestamp = timestamp
 
         if feed_present:
             if row["Feed"] > 0:
