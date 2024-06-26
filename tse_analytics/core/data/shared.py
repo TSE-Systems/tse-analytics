@@ -14,8 +14,8 @@ class SplitMode(Enum):
 @dataclass
 class Animal:
     enabled: bool
-    id: int
-    box: int
+    id: str
+    box: str
     weight: float
     text1: str
     text2: str
@@ -28,7 +28,7 @@ class Animal:
 @dataclass
 class Group:
     name: str
-    animal_ids: list[int] = field(default_factory=list)
+    animal_ids: list[str] = field(default_factory=list)
 
 
 @dataclass

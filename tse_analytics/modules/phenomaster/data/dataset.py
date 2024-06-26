@@ -16,7 +16,7 @@ class Dataset:
         name: str,
         path: str,
         meta: dict | list[dict],
-        animals: dict[int, Animal],
+        animals: dict[str, Animal],
         variables: dict[str, Variable],
         df: pd.DataFrame,
         sampling_interval: pd.Timedelta,
@@ -56,7 +56,7 @@ class Dataset:
 
     def extract_groups_from_field(self, field: Literal["text1", "text2", "text3"] = "text1") -> dict[str, Group]:
         """Extract groups assignment from Text1, Text2 or Text3 field"""
-        groups_dict: dict[str, list[int]] = {}
+        groups_dict: dict[str, list[str]] = {}
         for animal in self.animals.values():
             group_name = getattr(animal, field)
             if group_name not in groups_dict:
@@ -69,7 +69,7 @@ class Dataset:
             groups[group.name] = group
         return groups
 
-    def exclude_animals(self, animal_ids: list[int]) -> None:
+    def exclude_animals(self, animal_ids: list[str]) -> None:
         # Remove animals from factor's groups definitions
         for factor in self.factors.values():
             for group in factor.groups:
@@ -105,10 +105,6 @@ class Dataset:
             (self.active_df["DateTime"] < range_start) | (self.active_df["DateTime"] > range_end)
         ]
 
-    def filter_by_boxes(self, box_ids: list[int]) -> pd.DataFrame:
-        df = self.active_df[self.active_df["Box"].isin(box_ids)]
-        return df
-
     def filter_by_groups(self, groups: list[Group]) -> pd.DataFrame:
         group_ids = [group.name for group in groups]
         df = self.active_df[self.active_df["Group"].isin(group_ids)]
@@ -128,7 +124,7 @@ class Dataset:
         animal_ids = df["Animal"].unique()
 
         for factor in self.factors.values():
-            animal_factor_map: dict[int, Any] = {}
+            animal_factor_map: dict[str, Any] = {}
             for animal_id in animal_ids:
                 animal_factor_map[animal_id] = pd.NA
 
@@ -136,7 +132,7 @@ class Dataset:
                 for animal_id in group.animal_ids:
                     animal_factor_map[animal_id] = group.name
 
-            df[factor.name] = df["Animal"].astype(int)
+            df[factor.name] = df["Animal"].astype(str)
             # df[factor.name].replace(animal_factor_map, inplace=True)
             # df[factor.name] = df[factor.name].replace(animal_factor_map)
             df.replace({factor.name: animal_factor_map}, inplace=True)

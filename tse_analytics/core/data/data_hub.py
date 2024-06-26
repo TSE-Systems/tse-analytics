@@ -123,7 +123,7 @@ class DataHub:
                     )
 
     def append_fitting_results(
-        self, calo_details: CaloDetails, fitting_results: dict[int, CaloDetailsFittingResult]
+        self, calo_details: CaloDetails, fitting_results: dict[str, CaloDetailsFittingResult]
     ) -> None:
         if calo_details is not None and len(fitting_results) > 0:
             dataset = calo_details.dataset
@@ -138,6 +138,7 @@ class DataHub:
                 for _index, row in result.df.iterrows():
                     bin_number = row["Bin"]
 
+                    # TODO: TODO: check int -> str conversion for general table!
                     active_df.loc[
                         active_df[(active_df["Box"] == result.box_number) & (active_df["Bin"] == bin_number)].index[0],
                         ["O2-p", "CO2-p", "VO2(3)-p", "VCO2(3)-p", "RER-p", "H(3)-p"],

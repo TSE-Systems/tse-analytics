@@ -70,6 +70,9 @@ class DataTableWidget(QWidget, MessengerListener):
         self.__set_data()
 
     def __set_data(self):
+        if Manager.data.selected_dataset is None:
+            return
+
         selected_variable_names = [item.name for item in Manager.data.selected_variables]
         selected_variable_names = list(set(selected_variable_names))
 

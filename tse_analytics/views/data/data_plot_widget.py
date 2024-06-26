@@ -15,7 +15,7 @@ from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.data.bar_plot_view import BarPlotView
 from tse_analytics.views.data.data_plot_widget_ui import Ui_DataPlotWidget
 from tse_analytics.views.data.timeline_plot_view import TimelinePlotView
-from tse_analytics.views.misc.toast import Toast
+from tse_analytics.views.misc.notification import Notification
 
 
 class DataPlotWidget(QWidget, MessengerListener):
@@ -114,6 +114,9 @@ class DataPlotWidget(QWidget, MessengerListener):
         self.__assign_data()
 
     def __assign_data(self):
+        if Manager.data.selected_dataset is None:
+            return
+
         selected_factor_name = self.ui.factorSelector.currentText()
 
         split_mode = SplitMode.TOTAL
@@ -125,7 +128,7 @@ class DataPlotWidget(QWidget, MessengerListener):
             split_mode = SplitMode.FACTOR
 
         if split_mode == SplitMode.FACTOR and selected_factor_name == "":
-            Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
+            Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
             return
 
         selected_variable = self.ui.variableSelector.currentText()

@@ -19,7 +19,7 @@ from tse_analytics.modules.phenomaster.actimot.views.actimot_settings_widget imp
 from tse_analytics.modules.phenomaster.actimot.views.actimot_stream_plot_widget import ActimotStreamPlotWidget
 from tse_analytics.modules.phenomaster.actimot.views.actimot_table_view import ActimotTableView
 from tse_analytics.modules.phenomaster.actimot.views.actimot_trajectory_plot_widget import ActimotTrajectoryPlotWidget
-from tse_analytics.views.misc.toast import Toast
+from tse_analytics.views.misc.notification import Notification
 
 
 class ActimotDialog(QDialog):
@@ -119,7 +119,7 @@ class ActimotDialog(QDialog):
         self.ui.toolButtonExport.setEnabled(True)
 
         logger.info(f"Actimot analysis complete: {timeit.default_timer() - tic} sec")
-        Toast(text="Actimot analysis complete.", parent=self, duration=4000).show_toast()
+        Notification(text="Actimot analysis complete.", parent=self, duration=4000).show_notification()
 
     def __export_data(self):
         settings = self.actimot_settings_widget.get_settings()

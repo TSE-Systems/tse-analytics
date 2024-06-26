@@ -12,7 +12,7 @@ from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetCha
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.dimensionality_widget_ui import Ui_DimensionalityWidget
-from tse_analytics.views.misc.toast import Toast
+from tse_analytics.views.misc.notification import Notification
 
 
 class DimensionalityWidget(QWidget, MessengerListener):
@@ -62,9 +62,9 @@ class DimensionalityWidget(QWidget, MessengerListener):
 
     def __update_matrix_plot(self):
         if len(Manager.data.selected_variables) < 2:
-            Toast(
+            Notification(
                 text="Please select at least two variables in Variables panel.", parent=self, duration=2000
-            ).show_toast()
+            ).show_notification()
             return
 
         selected_factor = self.ui.factorSelector.currentText()
@@ -82,7 +82,7 @@ class DimensionalityWidget(QWidget, MessengerListener):
             by = selected_factor
 
         if split_mode == SplitMode.FACTOR and selected_factor == "":
-            Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
+            Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
             return
 
         variables = [variable.name for variable in Manager.data.selected_variables]
@@ -103,9 +103,9 @@ class DimensionalityWidget(QWidget, MessengerListener):
 
     def __update_pca_tsne_plot(self):
         if len(Manager.data.selected_variables) < 3:
-            Toast(
+            Notification(
                 text="Please select at least three variables in Variables panel.", parent=self, duration=2000
-            ).show_toast()
+            ).show_notification()
             return
 
         selected_factor = self.ui.factorSelector.currentText()
@@ -123,7 +123,7 @@ class DimensionalityWidget(QWidget, MessengerListener):
             by = selected_factor
 
         if split_mode == SplitMode.FACTOR and selected_factor == "":
-            Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
+            Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
             return
 
         variables = [variable.name for variable in Manager.data.selected_variables]

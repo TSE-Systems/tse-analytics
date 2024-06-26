@@ -14,7 +14,7 @@ from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.css import style
 from tse_analytics.views.analysis.bivariate_widget_ui import Ui_BivariateWidget
-from tse_analytics.views.misc.toast import Toast
+from tse_analytics.views.misc.notification import Notification
 
 
 class BivariateWidget(QWidget, MessengerListener):
@@ -158,11 +158,11 @@ class BivariateWidget(QWidget, MessengerListener):
             by = selected_factor
 
         if split_mode == SplitMode.ANIMAL:
-            Toast(text="Please select another split mode.", parent=self, duration=2000).show_toast()
+            Notification(text="Please select another split mode.", parent=self, duration=2000).show_notification()
             return
 
         if split_mode == SplitMode.FACTOR and selected_factor == "":
-            Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
+            Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
             return
 
         covariate = self.ui.variableSelectorX.currentText()

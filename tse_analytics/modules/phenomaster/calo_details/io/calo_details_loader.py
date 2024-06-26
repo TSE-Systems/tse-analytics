@@ -49,6 +49,11 @@ class CaloDetailsLoader:
             dayfirst=csv_import_settings.day_first,
         )
 
+        # convert types
+        df = df.astype({
+            "Box": "str",
+        })
+
         # Sanitize column names
         new_column_names = {}
         for column in df.columns.values:

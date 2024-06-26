@@ -95,15 +95,15 @@ class DatasetLoader:
             group_section.section_end_index + 1 if group_section is not None else animal_section.section_end_index + 1,
         )
 
-        animals: dict[int, Animal] = {}
+        animals: dict[str, Animal] = {}
         variables: dict[str, Variable] = {}
 
         for line in animal_section.lines[1:]:
             elements = line.split(csv_import_settings.delimiter)
             animal = Animal(
                 enabled=True,
-                id=int(elements[1]),
-                box=int(elements[0]),
+                id=elements[1],
+                box=elements[0],
                 weight=float(elements[2].replace(",", ".")),
                 text1=elements[3],
                 text2=elements[4],
@@ -162,6 +162,11 @@ class DatasetLoader:
         )
 
         # Apply categorical types
+        df = df.astype({
+            "Animal": "str",
+            "Box": "str",
+        })
+
         df = df.astype({
             "Animal": "category",
             "Box": "category",

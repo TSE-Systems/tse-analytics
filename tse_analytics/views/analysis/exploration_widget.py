@@ -11,7 +11,7 @@ from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetCha
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.exploration_widget_ui import Ui_ExplorationWidget
-from tse_analytics.views.misc.toast import Toast
+from tse_analytics.views.misc.notification import Notification
 
 
 class ExplorationWidget(QWidget, MessengerListener):
@@ -59,7 +59,7 @@ class ExplorationWidget(QWidget, MessengerListener):
 
     def __update(self):
         if self.ui.radioButtonSplitByFactor.isChecked() and self.ui.factorSelector.currentText() == "":
-            Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
+            Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
             return
 
         if self.ui.radioButtonHistogram.isChecked():

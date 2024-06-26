@@ -12,7 +12,7 @@ from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.css import style
 from tse_analytics.views.analysis.anova_widget_ui import Ui_AnovaWidget
-from tse_analytics.views.misc.toast import Toast
+from tse_analytics.views.misc.notification import Notification
 
 
 class AnovaWidget(QWidget, MessengerListener):
@@ -115,7 +115,7 @@ class AnovaWidget(QWidget, MessengerListener):
     def __update(self):
         selected_dependent_variable_items = self.ui.tableWidgetDependentVariable.selectedItems()
         if len(selected_dependent_variable_items) == 0:
-            Toast(text="Please select dependent variable.", parent=self, duration=2000).show_toast()
+            Notification(text="Please select dependent variable.", parent=self, duration=2000).show_notification()
             return
 
         dependent_variable = selected_dependent_variable_items[0].text()
@@ -137,7 +137,7 @@ class AnovaWidget(QWidget, MessengerListener):
             Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
         )
         if selected_factor is None:
-            Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
+            Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
             return
 
         df = Manager.data.get_anova_df(variables=[dependent_variable])
@@ -231,9 +231,9 @@ class AnovaWidget(QWidget, MessengerListener):
 
     def __analyze_rm_anova(self, dependent_variable: str):
         if not Manager.data.binning_params.apply or Manager.data.binning_params.mode == BinningMode.INTERVALS:
-            Toast(
+            Notification(
                 text="Please apply binning in Dark/Light Cycles or Time Phases mode.", parent=self, duration=2000
-            ).show_toast()
+            ).show_notification()
             return
 
         df = Manager.data.get_current_df(
@@ -277,13 +277,13 @@ class AnovaWidget(QWidget, MessengerListener):
             Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
         )
         if selected_factor is None:
-            Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
+            Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
             return
 
         if not Manager.data.binning_params.apply or Manager.data.binning_params.mode == BinningMode.INTERVALS:
-            Toast(
+            Notification(
                 text="Please apply binning in Dark/Light Cycles or Time Phases mode.", parent=self, duration=2000
-            ).show_toast()
+            ).show_notification()
             return
 
         factor_name = selected_factor.name
@@ -335,7 +335,7 @@ class AnovaWidget(QWidget, MessengerListener):
             Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
         )
         if selected_factor is None:
-            Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
+            Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
             return
 
         factor_name = selected_factor.name
