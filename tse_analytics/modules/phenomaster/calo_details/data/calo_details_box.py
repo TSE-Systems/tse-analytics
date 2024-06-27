@@ -22,7 +22,7 @@ def get_ref_box_number(box: int, boxes: list[int]) -> int | None:
     if gap_index is None:
         return None
 
-    ref_boxes = boxes[gap_index + 1:]
+    ref_boxes = boxes[gap_index + 1 :]
     if box in ref_boxes:
         return None
 

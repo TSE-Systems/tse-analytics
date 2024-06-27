@@ -15,9 +15,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtPdfWidgets import QPdfView
 from PySide6.QtWidgets import (QApplication, QHBoxLayout, QPushButton, QSizePolicy,
-    QSpacerItem, QVBoxLayout, QWidget)
+    QSpacerItem, QTextEdit, QVBoxLayout, QWidget)
 import resources_rc
 
 class Ui_ReportsWidget(object):
@@ -48,15 +47,10 @@ class Ui_ReportsWidget(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout)
 
-        self.pdfView = QPdfView(ReportsWidget)
-        self.pdfView.setObjectName(u"pdfView")
-        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.pdfView.sizePolicy().hasHeightForWidth())
-        self.pdfView.setSizePolicy(sizePolicy)
+        self.textEdit = QTextEdit(ReportsWidget)
+        self.textEdit.setObjectName(u"textEdit")
 
-        self.verticalLayout.addWidget(self.pdfView)
+        self.verticalLayout.addWidget(self.textEdit)
 
 
         self.retranslateUi(ReportsWidget)

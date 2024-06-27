@@ -39,25 +39,10 @@
     </layout>
    </item>
    <item>
-    <widget class="QPdfView" name="pdfView" native="true">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-    </widget>
+    <widget class="QTextEdit" name="textEdit"/>
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QPdfView</class>
-   <extends>QWidget</extends>
-   <header>PySide6.QtPdfWidgets</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="../../../resources/resources.qrc"/>
  </resources>

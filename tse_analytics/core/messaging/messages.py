@@ -77,6 +77,6 @@ class ShowHelpMessage(Message):
 
 
 class AddToReportMessage(Message):
-    def __init__(self, sender, pdf_file_names: list[str], tag=None):
+    def __init__(self, sender, content, tag=None):
         super().__init__(sender, tag=tag)
-        self.pdf_file_names = pdf_file_names
+        self.content = content

@@ -1,6 +1,9 @@
+import base64
+from io import BytesIO
+
 import plotly.express as px
-from PySide6.QtCore import QDir, QMarginsF, Qt, QTemporaryFile, QUrl
-from PySide6.QtGui import QPageLayout, QPageSize
+from PySide6.QtCore import QDir, QMarginsF, Qt, QTemporaryFile, QUrl, QByteArray, QBuffer, QIODevice
+from PySide6.QtGui import QPageLayout, QPageSize, QPixmap
 from PySide6.QtWidgets import QWidget
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
@@ -183,14 +186,16 @@ class DimensionalityWidget(QWidget, MessengerListener):
             self.ui.webView.load(QUrl.fromLocalFile(file.fileName()))
 
     def __add_report(self):
-        web_file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.pdf", self)
-        if web_file.open():
-            self.ui.webView.pdfPrintingFinished.connect(
-                lambda: Manager.messenger.broadcast(AddToReportMessage(self, [web_file.fileName()])),
-                type=Qt.ConnectionType.SingleShotConnection,
-            )
+        size = self.ui.webView.contentsRect()
+        pixmap = QPixmap(size.width(), size.height())
+        self.ui.webView.render(pixmap)
 
-            self.ui.webView.page().printToPdf(
-                web_file.fileName(),
-                layout=QPageLayout(QPageSize(QPageSize.PageSizeId.A4), QPageLayout.Orientation.Portrait, QMarginsF()),
-            )
+        ba = QByteArray()
+        buff = QBuffer(ba)
+        buff.open(QIODevice.OpenModeFlag.WriteOnly)
+        pixmap.save(buff, "PNG")
+
+        io = BytesIO(ba.data())
+        encoded = base64.b64encode(io.getvalue()).decode("utf-8")
+        html = f"<img src='data:image/png;base64,{encoded}'>"
+        Manager.messenger.broadcast(AddToReportMessage(self, html))

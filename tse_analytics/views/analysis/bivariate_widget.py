@@ -1,9 +1,11 @@
+import base64
+from io import BytesIO
+
 import pingouin as pg
 import seaborn as sns
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
-from PySide6.QtCore import QDir, QMarginsF, QSize, Qt, QTemporaryFile
-from PySide6.QtGui import QPageLayout, QPageSize
+from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.data.shared import SplitMode
@@ -43,6 +45,8 @@ class BivariateWidget(QWidget, MessengerListener):
         self.plot_toolbar.setIconSize(QSize(16, 16))
         self.ui.widgetSettings.layout().insertWidget(0, self.plot_toolbar)
 
+        self.html_content = ""
+
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
 
@@ -60,6 +64,7 @@ class BivariateWidget(QWidget, MessengerListener):
         self.ui.variableSelectorY.clear()
         self.ui.factorSelector.clear()
         self.ui.webView.setHtml("")
+        self.html_content = ""
 
     def __correlation_selected(self):
         self.ui.groupBoxX.setTitle("X")
@@ -138,12 +143,12 @@ class BivariateWidget(QWidget, MessengerListener):
             </html>
             """
 
-        html = html_template.format(
+        self.html_content = html_template.format(
             style=style,
             t_test=t_test.to_html(classes="mystyle"),
             corr=corr.to_html(classes="mystyle"),
         )
-        self.ui.webView.setHtml(html)
+        self.ui.webView.setHtml(self.html_content)
 
     def __update_regression(self):
         selected_factor = self.ui.factorSelector.currentText()
@@ -220,27 +225,22 @@ class BivariateWidget(QWidget, MessengerListener):
                 </html>
                 """
 
-        html = html_template.format(
+        self.html_content = html_template.format(
             style=style,
             glm=glm.to_html(classes="mystyle"),
         )
-        self.ui.webView.setHtml(html)
+        self.ui.webView.setHtml(self.html_content)
 
     def __add_report(self):
-        plot_file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.pdf", self)
-        if plot_file.open():
-            self.plot_toolbar.canvas.figure.savefig(plot_file.fileName())
+        if self.html_content == "":
+            return
 
-        web_file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.pdf", self)
-        if web_file.open():
-            self.ui.webView.pdfPrintingFinished.connect(
-                lambda: Manager.messenger.broadcast(
-                    AddToReportMessage(self, [plot_file.fileName(), web_file.fileName()])
-                ),
-                type=Qt.ConnectionType.SingleShotConnection,
-            )
+        io = BytesIO()
+        self.plot_toolbar.canvas.figure.savefig(io, format="png")
+        encoded = base64.b64encode(io.getvalue()).decode("utf-8")
 
-            self.ui.webView.page().printToPdf(
-                web_file.fileName(),
-                layout=QPageLayout(QPageSize(QPageSize.PageSizeId.A4), QPageLayout.Orientation.Portrait, QMarginsF()),
-            )
+        html = f"<img src='data:image/png;base64,{encoded}'>"
+        html += "\n<br/>\n"
+        html += self.html_content
+
+        Manager.messenger.broadcast(AddToReportMessage(self, html))

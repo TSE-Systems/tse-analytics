@@ -135,9 +135,7 @@ class DataPlotWidget(QWidget, MessengerListener):
 
         df = (
             Manager.data.get_data_view_df(
-                variables=[selected_variable],
-                split_mode=split_mode,
-                selected_factor=selected_factor_name
+                variables=[selected_variable], split_mode=split_mode, selected_factor=selected_factor_name
             )
             if Manager.data.binning_params.mode == BinningMode.INTERVALS
             else Manager.data.get_bar_plot_df(variable=selected_variable)

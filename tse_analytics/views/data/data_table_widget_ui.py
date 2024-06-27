@@ -17,7 +17,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QHBoxLayout,
     QHeaderView, QLabel, QPushButton, QSizePolicy,
-    QSpacerItem, QTableView, QVBoxLayout, QWidget)
+    QSpacerItem, QSplitter, QTableView, QTextEdit,
+    QVBoxLayout, QWidget)
 
 from tse_analytics.views.misc.factor_selector import FactorSelector
 import resources_rc
@@ -26,8 +27,8 @@ class Ui_DataTableWidget(object):
     def setupUi(self, DataTableWidget):
         if not DataTableWidget.objectName():
             DataTableWidget.setObjectName(u"DataTableWidget")
-        self._2 = QVBoxLayout(DataTableWidget)
-        self._2.setObjectName(u"_2")
+        self.verticalLayout = QVBoxLayout(DataTableWidget)
+        self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.labelSplitMode = QLabel(DataTableWidget)
@@ -63,19 +64,39 @@ class Ui_DataTableWidget(object):
 
         self.horizontalLayout.addWidget(self.pushButtonResizeColumns)
 
+        self.pushButtonAddReport = QPushButton(DataTableWidget)
+        self.pushButtonAddReport.setObjectName(u"pushButtonAddReport")
+        self.pushButtonAddReport.setEnabled(False)
 
-        self._2.addLayout(self.horizontalLayout)
+        self.horizontalLayout.addWidget(self.pushButtonAddReport)
 
-        self.tableView = QTableView(DataTableWidget)
+
+        self.verticalLayout.addLayout(self.horizontalLayout)
+
+        self.splitter = QSplitter(DataTableWidget)
+        self.splitter.setObjectName(u"splitter")
+        self.splitter.setOrientation(Qt.Vertical)
+        self.tableView = QTableView(self.splitter)
         self.tableView.setObjectName(u"tableView")
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(1)
+        sizePolicy.setHeightForWidth(self.tableView.sizePolicy().hasHeightForWidth())
+        self.tableView.setSizePolicy(sizePolicy)
         self.tableView.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.tableView.setSelectionMode(QAbstractItemView.SingleSelection)
         self.tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.tableView.setSortingEnabled(True)
+        self.splitter.addWidget(self.tableView)
         self.tableView.verticalHeader().setMinimumSectionSize(20)
         self.tableView.verticalHeader().setDefaultSectionSize(20)
+        self.textEdit = QTextEdit(self.splitter)
+        self.textEdit.setObjectName(u"textEdit")
+        self.textEdit.setUndoRedoEnabled(False)
+        self.textEdit.setReadOnly(True)
+        self.splitter.addWidget(self.textEdit)
 
-        self._2.addWidget(self.tableView)
+        self.verticalLayout.addWidget(self.splitter)
 
 
         self.retranslateUi(DataTableWidget)
@@ -87,6 +108,7 @@ class Ui_DataTableWidget(object):
         self.labelSplitMode.setText(QCoreApplication.translate("DataTableWidget", u"Split Mode:", None))
         self.labelFactor.setText(QCoreApplication.translate("DataTableWidget", u"Factor:", None))
         self.pushButtonResizeColumns.setText(QCoreApplication.translate("DataTableWidget", u"Resize Columns", None))
+        self.pushButtonAddReport.setText(QCoreApplication.translate("DataTableWidget", u"Add Descriptives to Report", None))
         pass
     # retranslateUi
 

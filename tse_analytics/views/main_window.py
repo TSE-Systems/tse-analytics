@@ -130,9 +130,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         animals_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
         animals_dock_area = self.dock_manager.addDockWidget(PySide6QtAds.RightDockWidgetArea, animals_dock_widget)
 
-        factors_dock_widget = self.__register_dock_widget(
-            FactorsWidget(), "Factors", QIcon(":/icons/factors.png")
-        )
+        factors_dock_widget = self.__register_dock_widget(FactorsWidget(), "Factors", QIcon(":/icons/factors.png"))
         factors_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
         selector_dock_area = self.dock_manager.addDockWidget(
             PySide6QtAds.BottomDockWidgetArea, factors_dock_widget, animals_dock_area

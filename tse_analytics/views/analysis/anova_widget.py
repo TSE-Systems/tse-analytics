@@ -1,6 +1,5 @@
 import pingouin as pg
-from PySide6.QtCore import QDir, QMarginsF, QTemporaryFile
-from PySide6.QtGui import QPageLayout, QPageSize, QPalette, Qt
+from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QTableWidgetItem, QWidget
 
 from tse_analytics.core.data.binning import BinningMode
@@ -63,6 +62,8 @@ class AnovaWidget(QWidget, MessengerListener):
         self.ui.comboBoxEffectSizeType.addItems(self.eff_size.keys())
         self.ui.comboBoxEffectSizeType.setCurrentText("Hedges g")
 
+        self.html_content = ""
+
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
 
@@ -111,6 +112,7 @@ class AnovaWidget(QWidget, MessengerListener):
         self.ui.webView.setHtml("")
         self.ui.tableWidgetDependentVariable.setRowCount(0)
         self.ui.tableWidgetCovariates.setRowCount(0)
+        self.html_content = ""
 
     def __update(self):
         selected_dependent_variable_items = self.ui.tableWidgetDependentVariable.selectedItems()
@@ -183,7 +185,7 @@ class AnovaWidget(QWidget, MessengerListener):
                 </html>
                 """
 
-        html = html_template.format(
+        self.html_content = html_template.format(
             style=style,
             anova=anova.to_html(classes="mystyle"),
             anova_header=anova_header,
@@ -192,7 +194,7 @@ class AnovaWidget(QWidget, MessengerListener):
             post_hoc_test=post_hoc_test.to_html(classes="mystyle"),
             post_hoc_test_header=post_hoc_test_header,
         )
-        self.ui.webView.setHtml(html)
+        self.ui.webView.setHtml(self.html_content)
 
     def __analyze_n_way_anova(self, dependent_variable: str):
         df = Manager.data.get_anova_df(variables=[dependent_variable])
@@ -222,12 +224,12 @@ class AnovaWidget(QWidget, MessengerListener):
                 </html>
                 """
 
-        html = html_template.format(
+        self.html_content = html_template.format(
             style=style,
             anova_header=anova_header,
             anova=anova.to_html(classes="mystyle"),
         )
-        self.ui.webView.setHtml(html)
+        self.ui.webView.setHtml(self.html_content)
 
     def __analyze_rm_anova(self, dependent_variable: str):
         if not Manager.data.binning_params.apply or Manager.data.binning_params.mode == BinningMode.INTERVALS:
@@ -264,12 +266,12 @@ class AnovaWidget(QWidget, MessengerListener):
                 </html>
                 """
 
-        html = html_template.format(
+        self.html_content = html_template.format(
             style=style,
             anova=anova.to_html(classes="mystyle"),
             pairwise_tests=pairwise_tests.to_html(classes="mystyle"),
         )
-        self.ui.webView.setHtml(html)
+        self.ui.webView.setHtml(self.html_content)
 
     def __analyze_mixed_anova(self, dependent_variable: str):
         selected_factor_name = self.ui.factorSelector.currentText()
@@ -322,12 +324,12 @@ class AnovaWidget(QWidget, MessengerListener):
                 </html>
                 """
 
-        html = html_template.format(
+        self.html_content = html_template.format(
             style=style,
             anova=anova.to_html(classes="mystyle"),
             pairwise_tests=pairwise_tests.to_html(classes="mystyle"),
         )
-        self.ui.webView.setHtml(html)
+        self.ui.webView.setHtml(self.html_content)
 
     def __analyze_ancova(self, dependent_variable: str):
         selected_factor_name = self.ui.factorSelector.currentText()
@@ -376,22 +378,15 @@ class AnovaWidget(QWidget, MessengerListener):
                         </html>
                         """
 
-        html = html_template.format(
+        self.html_content = html_template.format(
             style=style,
             ancova=ancova.to_html(classes="mystyle"),
             pairwise_tests=pairwise_tests.to_html(classes="mystyle"),
         )
-        self.ui.webView.setHtml(html)
+        self.ui.webView.setHtml(self.html_content)
 
     def __add_report(self):
-        web_file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.pdf", self)
-        if web_file.open():
-            self.ui.webView.pdfPrintingFinished.connect(
-                lambda: Manager.messenger.broadcast(AddToReportMessage(self, [web_file.fileName()])),
-                type=Qt.ConnectionType.SingleShotConnection,
-            )
+        if self.html_content == "":
+            return
 
-            self.ui.webView.page().printToPdf(
-                web_file.fileName(),
-                layout=QPageLayout(QPageSize(QPageSize.PageSizeId.A4), QPageLayout.Orientation.Portrait, QMarginsF()),
-            )
+        Manager.messenger.broadcast(AddToReportMessage(self, self.html_content))
