@@ -16,7 +16,7 @@ class CaloDetailsBoxesModel(QAbstractTableModel):
             item = self.items[index.row()]
             values = (item.box, item.ref_box)
             value = values[index.column()]
-            return value if value is not None else None
+            return int(value) if value is not None else None
 
     def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:

@@ -90,6 +90,9 @@ class BivariateWidget(QWidget, MessengerListener):
             by = "Run"
         elif self.ui.radioButtonSplitByFactor.isChecked():
             split_mode = SplitMode.FACTOR
+            if selected_factor == "":
+                Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
+                return
             by = selected_factor
 
         variables = [x_var] if x_var == y_var else [x_var, y_var]

@@ -81,7 +81,7 @@ class CaloDetailsDialog(QDialog):
         self.selected_boxes: list[CaloDetailsBox] = []
         self.selected_bins: list[int] = []
 
-        self.fitting_results: dict[str, CaloDetailsFittingResult] = {}
+        self.fitting_results: dict[int, CaloDetailsFittingResult] = {}
 
     def __filter_boxes(self, selected_boxes: list[CaloDetailsBox]):
         self.selected_boxes = selected_boxes

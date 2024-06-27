@@ -50,7 +50,7 @@ class ActimotLoader:
         dtype = {
             datetime_column_header: str,
             "Rel. [s]": np.float64,
-            "BoxNr": str,
+            "BoxNr": np.uint8,
             "X (cm)": np.float64,
             "Y (cm)": np.float64,
             "X": str,
@@ -98,7 +98,7 @@ class ActimotLoader:
             None,
         )
 
-        new_df["Animal"] = new_df["Box"].astype(str)
+        new_df["Animal"] = new_df["Box"].astype(int)
         new_df.replace({"Animal": box_to_animal_map}, inplace=True)
 
         new_df = new_df.sort_values(["Box", "DateTime"])

@@ -64,4 +64,4 @@ class AnimalsWidget(QWidget, MessengerListener):
         Manager.data.set_selected_animals(selected_animals)
 
     def minimumSizeHint(self):
-        return QSize(200, 40)
+        return QSize(300, 100)

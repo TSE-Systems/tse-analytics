@@ -76,4 +76,4 @@ class BinningSettingsWidget(QWidget, MessengerListener):
         Manager.data.apply_binning(params)
 
     def minimumSizeHint(self):
-        return QSize(200, 40)
+        return QSize(300, 70)

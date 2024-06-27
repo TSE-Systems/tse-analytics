@@ -6,7 +6,7 @@ from tse_analytics.modules.phenomaster.calo_details.fitting_params import Fittin
 class CaloDetailsFittingResult:
     def __init__(
         self,
-        box_number: str,
+        box_number: int,
         params: FittingParams,
         df: pd.DataFrame,
     ):

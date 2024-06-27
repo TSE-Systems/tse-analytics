@@ -103,7 +103,7 @@ class DatasetLoader:
             animal = Animal(
                 enabled=True,
                 id=elements[1],
-                box=elements[0],
+                box=int(elements[0]),
                 weight=float(elements[2].replace(",", ".")),
                 text1=elements[3],
                 text2=elements[4],
@@ -164,7 +164,6 @@ class DatasetLoader:
         # Apply categorical types
         df = df.astype({
             "Animal": "str",
-            "Box": "str",
         })
 
         df = df.astype({

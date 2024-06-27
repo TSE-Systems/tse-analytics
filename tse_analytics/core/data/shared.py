@@ -15,7 +15,7 @@ class SplitMode(Enum):
 class Animal:
     enabled: bool
     id: str
-    box: str
+    box: int
     weight: float
     text1: str
     text2: str

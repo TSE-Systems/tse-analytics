@@ -37,14 +37,12 @@ class CaloDetailsBoxSelector(QTableView):
         self.selectionModel().selectionChanged.connect(self.__on_selection_changed)
 
     def set_data(self, dataset: Dataset):
-        all_box_ids = list(dataset.calo_details.raw_df["Box"].unique())
+        all_box_numbers = list(dataset.calo_details.raw_df["Box"].unique())
         boxes: list[CaloDetailsBox] = []
 
-        all_box_numbers = sorted([int(i) for i in all_box_ids])
-
-        for box in all_box_ids:
-            ref_box = get_ref_box_number(int(box), all_box_numbers)
-            boxes.append(CaloDetailsBox(box, str(ref_box)))
+        for box in all_box_numbers:
+            ref_box = get_ref_box_number(box, all_box_numbers)
+            boxes.append(CaloDetailsBox(box, ref_box))
         model = CaloDetailsBoxesModel(boxes)
         self.model().setSourceModel(model)
         # self.resizeColumnsToContents()

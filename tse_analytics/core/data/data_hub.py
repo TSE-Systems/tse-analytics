@@ -123,7 +123,7 @@ class DataHub:
                     )
 
     def append_fitting_results(
-        self, calo_details: CaloDetails, fitting_results: dict[str, CaloDetailsFittingResult]
+        self, calo_details: CaloDetails, fitting_results: dict[int, CaloDetailsFittingResult]
     ) -> None:
         if calo_details is not None and len(fitting_results) > 0:
             dataset = calo_details.dataset

@@ -63,7 +63,7 @@ class MealDetailsLoader:
         box_numbers = []
         for column in raw_df.columns.values:
             if "Box" in column:
-                box_numbers.append(column.split(":")[0].replace("Box", ""))
+                box_numbers.append(int(column.split(":")[0].replace("Box", "")))
         box_numbers = list(set(box_numbers))
 
         # Check available variables

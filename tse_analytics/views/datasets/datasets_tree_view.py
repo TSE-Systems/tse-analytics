@@ -222,4 +222,4 @@ class DatasetsTreeView(QTreeView):
                     pass
 
     def minimumSizeHint(self):
-        return QSize(200, 40)
+        return QSize(300, 50)

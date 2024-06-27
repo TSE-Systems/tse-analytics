@@ -1,8 +1,8 @@
 class CaloDetailsBox:
     def __init__(
         self,
-        box: str,
-        ref_box: str | None,
+        box: int,
+        ref_box: int | None,
     ):
         self.box = box
         self.ref_box = ref_box
