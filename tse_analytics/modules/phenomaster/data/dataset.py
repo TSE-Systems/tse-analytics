@@ -69,6 +69,39 @@ class Dataset:
             groups[group.name] = group
         return groups
 
+    def __rename_animal_df(self, df: pd.DataFrame, old_id: str, animal: Animal) -> pd.DataFrame:
+        df = df.astype({
+            "Animal": str,
+        })
+        df.loc[df["Animal"] == old_id, "Animal"] = animal.id
+        df = df.astype({
+            "Animal": "category",
+        })
+        return df
+
+    def rename_animal(self, old_id: str, animal: Animal) -> None:
+        self.original_df = self.__rename_animal_df(self.original_df, old_id, animal)
+        self.active_df = self.__rename_animal_df(self.active_df, old_id, animal)
+
+        if self.meal_details is not None:
+            self.meal_details.raw_df = self.__rename_animal_df(self.meal_details.raw_df, old_id, animal)
+        if self.calo_details is not None:
+            self.calo_details.raw_df = self.__rename_animal_df(self.calo_details.raw_df, old_id, animal)
+        if self.actimot_details is not None:
+            self.actimot_details.raw_df = self.__rename_animal_df(self.actimot_details.raw_df, old_id, animal)
+
+        # Rename animal in factor's groups definitions
+        for factor in self.factors.values():
+            for group in factor.groups:
+                for i, animal_id in enumerate(group.animal_ids):
+                    if animal_id == old_id:
+                        group.animal_ids[i] = animal.id
+
+        # Rename animal in metadata
+        for item in self.meta["Animals"]:
+            if item["id"] == old_id:
+                item["id"] = animal.id
+
     def exclude_animals(self, animal_ids: list[str]) -> None:
         # Remove animals from factor's groups definitions
         for factor in self.factors.values():
@@ -88,11 +121,11 @@ class Dataset:
 
         self.original_df = self.original_df[~self.original_df["Animal"].isin(animal_ids)]
         self.active_df = self.active_df[~self.active_df["Animal"].isin(animal_ids)]
-        if hasattr(self, "calo_details") and self.calo_details is not None:
+        if self.calo_details is not None:
             self.calo_details.raw_df = self.calo_details.raw_df[~self.calo_details.raw_df["Animal"].isin(animal_ids)]
-        if hasattr(self, "meal_details") and self.meal_details is not None:
+        if self.meal_details is not None:
             self.meal_details.raw_df = self.meal_details.raw_df[~self.meal_details.raw_df["Animal"].isin(animal_ids)]
-        if hasattr(self, "actimot_details") and self.actimot_details is not None:
+        if self.actimot_details is not None:
             self.actimot_details.raw_df = self.actimot_details.raw_df[
                 ~self.actimot_details.raw_df["Animal"].isin(animal_ids)
             ]

@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
 from tse_analytics.core.data.shared import Animal
+from tse_analytics.core.manager import Manager
 
 
 class AnimalsModel(QAbstractTableModel):
@@ -17,7 +18,7 @@ class AnimalsModel(QAbstractTableModel):
         item = self.items[index.row()]
         match index.column():
             case 0:
-                if role == Qt.ItemDataRole.DisplayRole:
+                if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
                     return item.id
                 elif role == Qt.ItemDataRole.CheckStateRole:
                     return Qt.CheckState.Checked if item.enabled else Qt.CheckState.Unchecked
@@ -38,13 +39,30 @@ class AnimalsModel(QAbstractTableModel):
                     return item.text3
 
     def setData(self, index: QModelIndex, value, role: Qt.ItemDataRole):
-        if index.column() == 0 and role == Qt.ItemDataRole.CheckStateRole:
-            item = self.items[index.row()]
-            item.enabled = value == Qt.CheckState.Checked.value
-            return True
+        match index.column():
+            case 0:
+                if role == Qt.ItemDataRole.CheckStateRole:
+                    item = self.items[index.row()]
+                    item.enabled = value == Qt.CheckState.Checked.value
+                    return True
+                elif role == Qt.ItemDataRole.EditRole:
+                    item = self.items[index.row()]
+                    old_id = item.id
+                    item.id = value
+                    Manager.data.rename_animal(old_id, item)
+                    return True
 
     def flags(self, index: QModelIndex):
-        return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsUserCheckable
+        match index.column():
+            case 0:
+                return (
+                    Qt.ItemFlag.ItemIsSelectable
+                    | Qt.ItemFlag.ItemIsEnabled
+                    | Qt.ItemFlag.ItemIsUserCheckable
+                    | Qt.ItemFlag.ItemIsEditable
+                )
+            case _:
+                return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
 
     def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:

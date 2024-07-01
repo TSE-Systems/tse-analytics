@@ -67,6 +67,10 @@ class DataHub:
 
         self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
 
+    def rename_animal(self, old_id: str, animal: Animal) -> None:
+        self.selected_dataset.rename_animal(old_id, animal)
+        self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
+
     def set_selected_animals(self, animals: list[Animal]) -> None:
         self.selected_animals = animals
         self._broadcast_data_changed()
