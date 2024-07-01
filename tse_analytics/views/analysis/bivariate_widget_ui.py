@@ -15,10 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import (QApplication, QGroupBox, QPushButton, QRadioButton,
-    QSizePolicy, QSpacerItem, QSplitter, QVBoxLayout,
-    QWidget)
+    QSizePolicy, QSpacerItem, QSplitter, QTextEdit,
+    QVBoxLayout, QWidget)
 
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.factor_selector import FactorSelector
@@ -46,18 +45,15 @@ class Ui_BivariateWidget(object):
         self.canvas.setObjectName(u"canvas")
         sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(2)
+        sizePolicy1.setVerticalStretch(1)
         sizePolicy1.setHeightForWidth(self.canvas.sizePolicy().hasHeightForWidth())
         self.canvas.setSizePolicy(sizePolicy1)
         self.splitterVertical.addWidget(self.canvas)
-        self.webView = QWebEngineView(self.splitterVertical)
-        self.webView.setObjectName(u"webView")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(1)
-        sizePolicy2.setHeightForWidth(self.webView.sizePolicy().hasHeightForWidth())
-        self.webView.setSizePolicy(sizePolicy2)
-        self.splitterVertical.addWidget(self.webView)
+        self.textEdit = QTextEdit(self.splitterVertical)
+        self.textEdit.setObjectName(u"textEdit")
+        self.textEdit.setUndoRedoEnabled(False)
+        self.textEdit.setReadOnly(True)
+        self.splitterVertical.addWidget(self.textEdit)
         self.splitterHorizontal.addWidget(self.splitterVertical)
         self.widgetSettings = QWidget(self.splitterHorizontal)
         self.widgetSettings.setObjectName(u"widgetSettings")

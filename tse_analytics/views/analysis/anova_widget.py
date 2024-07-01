@@ -9,7 +9,7 @@ from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
-from tse_analytics.css import style
+from tse_analytics.css import style_descriptive_table
 from tse_analytics.views.analysis.anova_widget_ui import Ui_AnovaWidget
 from tse_analytics.views.misc.notification import Notification
 
@@ -62,7 +62,7 @@ class AnovaWidget(QWidget, MessengerListener):
         self.ui.comboBoxEffectSizeType.addItems(self.eff_size.keys())
         self.ui.comboBoxEffectSizeType.setCurrentText("Hedges g")
 
-        self.html_content = ""
+        self.ui.textEdit.document().setDefaultStyleSheet(style_descriptive_table)
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
@@ -109,10 +109,9 @@ class AnovaWidget(QWidget, MessengerListener):
     def __clear(self):
         self.ui.pushButtonUpdate.setDisabled(True)
         self.ui.factorSelector.clear()
-        self.ui.webView.setHtml("")
+        self.ui.textEdit.document().clear()
         self.ui.tableWidgetDependentVariable.setRowCount(0)
         self.ui.tableWidgetCovariates.setRowCount(0)
-        self.html_content = ""
 
     def __update(self):
         selected_dependent_variable_items = self.ui.tableWidgetDependentVariable.selectedItems()
@@ -167,34 +166,26 @@ class AnovaWidget(QWidget, MessengerListener):
             anova_header = "One-way Welch ANOVA"
 
         html_template = """
-                <html>
-                  <head>
-                    {style}
-                  </head>
-                  <body>
-                    <h3>Assumptions check</h3>
-                    <h4>Univariate normality test</h4>
-                    {normality}
-                    <h4>Homoscedasticity (equality of variance)</h4>
-                    {homoscedasticity}
-                    <h3>{anova_header}</h3>
-                    {anova}
-                    <h3>{post_hoc_test_header}</h3>
-                    {post_hoc_test}
-                  </body>
-                </html>
+                <h1>Assumptions check</h1>
+                <h2>Univariate normality test</h2>
+                {normality}
+                <h2>Homoscedasticity (equality of variance)</h2>
+                {homoscedasticity}
+                <h1>{anova_header}</h1>
+                {anova}
+                <h2>{post_hoc_test_header}</h2>
+                {post_hoc_test}
                 """
 
-        self.html_content = html_template.format(
-            style=style,
-            anova=anova.to_html(classes="mystyle"),
+        html = html_template.format(
+            anova=anova.to_html(),
             anova_header=anova_header,
-            normality=normality.to_html(classes="mystyle"),
-            homoscedasticity=homoscedasticity.to_html(classes="mystyle"),
-            post_hoc_test=post_hoc_test.to_html(classes="mystyle"),
+            normality=normality.to_html(),
+            homoscedasticity=homoscedasticity.to_html(),
+            post_hoc_test=post_hoc_test.to_html(),
             post_hoc_test_header=post_hoc_test_header,
         )
-        self.ui.webView.setHtml(self.html_content)
+        self.ui.textEdit.document().setHtml(html)
 
     def __analyze_n_way_anova(self, dependent_variable: str):
         df = Manager.data.get_anova_df(variables=[dependent_variable])
@@ -213,23 +204,15 @@ class AnovaWidget(QWidget, MessengerListener):
         anova = pg.anova(data=df, dv=dependent_variable, between=factor_names, detailed=True).round(3)
 
         html_template = """
-                <html>
-                  <head>
-                    {style}
-                  </head>
-                  <body>
-                    <h3>{anova_header}</h3>
-                    {anova}
-                  </body>
-                </html>
+                <h1>{anova_header}</h1>
+                {anova}
                 """
 
-        self.html_content = html_template.format(
-            style=style,
+        html = html_template.format(
             anova_header=anova_header,
-            anova=anova.to_html(classes="mystyle"),
+            anova=anova.to_html(),
         )
-        self.ui.webView.setHtml(self.html_content)
+        self.ui.textEdit.document().setHtml(html)
 
     def __analyze_rm_anova(self, dependent_variable: str):
         if not Manager.data.binning_params.apply or Manager.data.binning_params.mode == BinningMode.INTERVALS:
@@ -253,25 +236,17 @@ class AnovaWidget(QWidget, MessengerListener):
         ).round(3)
 
         html_template = """
-                <html>
-                  <head>
-                    {style}
-                  </head>
-                  <body>
-                    <h3>Repeated measures one-way ANOVA</h3>
-                    {anova}
-                    <h3>Pairwise tests</h3>
-                    {pairwise_tests}
-                  </body>
-                </html>
+                <h1>Repeated measures one-way ANOVA</h1>
+                {anova}
+                <h2>Pairwise tests</h2>
+                {pairwise_tests}
                 """
 
-        self.html_content = html_template.format(
-            style=style,
-            anova=anova.to_html(classes="mystyle"),
-            pairwise_tests=pairwise_tests.to_html(classes="mystyle"),
+        html = html_template.format(
+            anova=anova.to_html(),
+            pairwise_tests=pairwise_tests.to_html(),
         )
-        self.ui.webView.setHtml(self.html_content)
+        self.ui.textEdit.document().setHtml(html)
 
     def __analyze_mixed_anova(self, dependent_variable: str):
         selected_factor_name = self.ui.factorSelector.currentText()
@@ -311,25 +286,17 @@ class AnovaWidget(QWidget, MessengerListener):
         ).round(3)
 
         html_template = """
-                <html>
-                  <head>
-                    {style}
-                  </head>
-                  <body>
-                    <h3>Mixed-design ANOVA</h3>
-                    {anova}
-                    <h3>Pairwise tests</h3>
-                    {pairwise_tests}
-                  </body>
-                </html>
+                <h1>Mixed-design ANOVA</h1>
+                {anova}
+                <h2>Pairwise tests</h2>
+                {pairwise_tests}
                 """
 
-        self.html_content = html_template.format(
-            style=style,
-            anova=anova.to_html(classes="mystyle"),
-            pairwise_tests=pairwise_tests.to_html(classes="mystyle"),
+        html = html_template.format(
+            anova=anova.to_html(),
+            pairwise_tests=pairwise_tests.to_html(),
         )
-        self.ui.webView.setHtml(self.html_content)
+        self.ui.textEdit.document().setHtml(html)
 
     def __analyze_ancova(self, dependent_variable: str):
         selected_factor_name = self.ui.factorSelector.currentText()
@@ -365,28 +332,17 @@ class AnovaWidget(QWidget, MessengerListener):
         ).round(3)
 
         html_template = """
-                        <html>
-                          <head>
-                            {style}
-                          </head>
-                          <body>
-                            <h3>ANCOVA</h3>
-                            {ancova}
-                            <h3>Pairwise tests</h3>
-                            {pairwise_tests}
-                          </body>
-                        </html>
+                        <h1>ANCOVA</h1>
+                        {ancova}
+                        <h2>Pairwise tests</h2>
+                        {pairwise_tests}
                         """
 
-        self.html_content = html_template.format(
-            style=style,
-            ancova=ancova.to_html(classes="mystyle"),
-            pairwise_tests=pairwise_tests.to_html(classes="mystyle"),
+        html = html_template.format(
+            ancova=ancova.to_html(),
+            pairwise_tests=pairwise_tests.to_html(),
         )
-        self.ui.webView.setHtml(self.html_content)
+        self.ui.textEdit.document().setHtml(html)
 
     def __add_report(self):
-        if self.html_content == "":
-            return
-
-        Manager.messenger.broadcast(AddToReportMessage(self, self.html_content))
+        Manager.messenger.broadcast(AddToReportMessage(self, self.ui.textEdit.toHtml()))

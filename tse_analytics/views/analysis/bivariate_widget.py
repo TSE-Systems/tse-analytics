@@ -14,7 +14,7 @@ from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
-from tse_analytics.css import style
+from tse_analytics.css import style_descriptive_table
 from tse_analytics.views.analysis.bivariate_widget_ui import Ui_BivariateWidget
 from tse_analytics.views.misc.notification import Notification
 
@@ -45,7 +45,7 @@ class BivariateWidget(QWidget, MessengerListener):
         self.plot_toolbar.setIconSize(QSize(16, 16))
         self.ui.widgetSettings.layout().insertWidget(0, self.plot_toolbar)
 
-        self.html_content = ""
+        self.ui.textEdit.document().setDefaultStyleSheet(style_descriptive_table)
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
@@ -63,8 +63,7 @@ class BivariateWidget(QWidget, MessengerListener):
         self.ui.variableSelectorX.clear()
         self.ui.variableSelectorY.clear()
         self.ui.factorSelector.clear()
-        self.ui.webView.setHtml("")
-        self.html_content = ""
+        self.ui.textEdit.document().clear()
 
     def __correlation_selected(self):
         self.ui.groupBoxX.setTitle("X")
@@ -129,26 +128,17 @@ class BivariateWidget(QWidget, MessengerListener):
         corr = pg.pairwise_corr(data=df, columns=[x_var, y_var], method="pearson")
 
         html_template = """
-            <html>
-              <head>
-                <title>HTML Pandas Dataframe with CSS</title>
-                {style}
-              </head>
-              <body>
-                <h3>t-test</h3>
-                {t_test}
-                <h3>Pearson correlation</h3>
-                {corr}
-              </body>
-            </html>
+            <h1>t-test</h1>
+            {t_test}
+            <h1>Pearson correlation</h1>
+            {corr}
             """
 
-        self.html_content = html_template.format(
-            style=style,
-            t_test=t_test.to_html(classes="mystyle"),
-            corr=corr.to_html(classes="mystyle"),
+        html = html_template.format(
+            t_test=t_test.to_html(),
+            corr=corr.to_html(),
         )
-        self.ui.webView.setHtml(self.html_content)
+        self.ui.textEdit.document().setHtml(html)
 
     def __update_regression(self):
         selected_factor = self.ui.factorSelector.currentText()
@@ -214,33 +204,22 @@ class BivariateWidget(QWidget, MessengerListener):
         glm = pg.linear_regression(df[[covariate]], df[response], remove_na=True)
 
         html_template = """
-                <html>
-                  <head>
-                    {style}
-                  </head>
-                  <body>
-                    <h3>GLM</h3>
-                    {glm}
-                  </body>
-                </html>
+                <h1>GLM</h1>
+                {glm}
                 """
 
-        self.html_content = html_template.format(
-            style=style,
-            glm=glm.to_html(classes="mystyle"),
+        html = html_template.format(
+            glm=glm.to_html(),
         )
-        self.ui.webView.setHtml(self.html_content)
+        self.ui.textEdit.document().setHtml(html)
 
     def __add_report(self):
-        if self.html_content == "":
-            return
-
         io = BytesIO()
         self.plot_toolbar.canvas.figure.savefig(io, format="png")
         encoded = base64.b64encode(io.getvalue()).decode("utf-8")
 
         html = f"<img src='data:image/png;base64,{encoded}'>"
         html += "\n<br/>\n"
-        html += self.html_content
+        html += self.ui.textEdit.toHtml()
 
         Manager.messenger.broadcast(AddToReportMessage(self, html))

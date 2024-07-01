@@ -4,6 +4,7 @@ from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
+from tse_analytics.css import style_descriptive_table
 from tse_analytics.views.reports.reports_widget_ui import Ui_ReportsWidget
 
 
@@ -18,6 +19,8 @@ class ReportsWidget(QWidget, MessengerListener):
         self.ui.pushButtonClear.clicked.connect(self.__clear_report)
         self.ui.pushButtonExport.clicked.connect(self.__export_report)
 
+        self.ui.textEdit.document().setDefaultStyleSheet(style_descriptive_table)
+
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
         messenger.subscribe(self, AddToReportMessage, self.__add_to_report)
@@ -29,13 +32,13 @@ class ReportsWidget(QWidget, MessengerListener):
         self.ui.textEdit.append(message.content)
 
     def __clear_report(self):
-        self.ui.textEdit.clear()
+        self.ui.textEdit.document().clear()
 
     def __export_report(self):
         filename, _ = QFileDialog.getSaveFileName(self, "Export report", "", "HTML Files (*.html)")
         if filename:
             with open(filename, "w") as file:
-                file.write(self.ui.textEdit.toHtml())
+                file.write(self.ui.textEdit.document().toHtml())
 
             # printer = QPrinter(QPrinter.PrinterMode.HighResolution)
             # printer.setOutputFormat(QPrinter.OutputFormat.PdfFormat)
