@@ -44,7 +44,7 @@ class MealDetailsBoxSelector(QTableView):
         self.customContextMenuRequested.connect(self.__open_context_menu)
 
     def set_data(self, dataset: Dataset):
-        items: dict[int, MealDetailsAnimalItem] = {}
+        items: dict[str, MealDetailsAnimalItem] = {}
         for animal in dataset.animals.values():
             items[animal.id] = MealDetailsAnimalItem(animal.box, animal.id, pd.NA, {})
         animal_ids = list(items.keys())
@@ -101,5 +101,5 @@ class MealDetailsBoxSelector(QTableView):
         indexes = [self.model().mapToSource(index) for index in self.selectedIndexes()]
         self.model().sourceModel().set_diet(indexes, caloric_value)
 
-    def get_diets_dict(self) -> dict[int, float]:
+    def get_diets_dict(self) -> dict[str, float]:
         return self.model().sourceModel().get_diets_dict()

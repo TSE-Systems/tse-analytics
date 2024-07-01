@@ -1,6 +1,5 @@
 import pingouin as pg
-from PySide6.QtCore import QDir, QMarginsF, QTemporaryFile
-from PySide6.QtGui import QPageLayout, QPageSize, QPalette, Qt
+from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QTableWidgetItem, QWidget
 
 from tse_analytics.core.data.binning import BinningMode
@@ -12,7 +11,7 @@ from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.css import style
 from tse_analytics.views.analysis.anova_widget_ui import Ui_AnovaWidget
-from tse_analytics.views.misc.toast import Toast
+from tse_analytics.views.misc.notification import Notification
 
 
 class AnovaWidget(QWidget, MessengerListener):
@@ -63,6 +62,8 @@ class AnovaWidget(QWidget, MessengerListener):
         self.ui.comboBoxEffectSizeType.addItems(self.eff_size.keys())
         self.ui.comboBoxEffectSizeType.setCurrentText("Hedges g")
 
+        self.html_content = ""
+
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
 
@@ -111,11 +112,12 @@ class AnovaWidget(QWidget, MessengerListener):
         self.ui.webView.setHtml("")
         self.ui.tableWidgetDependentVariable.setRowCount(0)
         self.ui.tableWidgetCovariates.setRowCount(0)
+        self.html_content = ""
 
     def __update(self):
         selected_dependent_variable_items = self.ui.tableWidgetDependentVariable.selectedItems()
         if len(selected_dependent_variable_items) == 0:
-            Toast(text="Please select dependent variable.", parent=self, duration=2000).show_toast()
+            Notification(text="Please select dependent variable.", parent=self, duration=2000).show_notification()
             return
 
         dependent_variable = selected_dependent_variable_items[0].text()
@@ -137,7 +139,7 @@ class AnovaWidget(QWidget, MessengerListener):
             Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
         )
         if selected_factor is None:
-            Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
+            Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
             return
 
         df = Manager.data.get_anova_df(variables=[dependent_variable])
@@ -183,7 +185,7 @@ class AnovaWidget(QWidget, MessengerListener):
                 </html>
                 """
 
-        html = html_template.format(
+        self.html_content = html_template.format(
             style=style,
             anova=anova.to_html(classes="mystyle"),
             anova_header=anova_header,
@@ -192,7 +194,7 @@ class AnovaWidget(QWidget, MessengerListener):
             post_hoc_test=post_hoc_test.to_html(classes="mystyle"),
             post_hoc_test_header=post_hoc_test_header,
         )
-        self.ui.webView.setHtml(html)
+        self.ui.webView.setHtml(self.html_content)
 
     def __analyze_n_way_anova(self, dependent_variable: str):
         df = Manager.data.get_anova_df(variables=[dependent_variable])
@@ -222,18 +224,18 @@ class AnovaWidget(QWidget, MessengerListener):
                 </html>
                 """
 
-        html = html_template.format(
+        self.html_content = html_template.format(
             style=style,
             anova_header=anova_header,
             anova=anova.to_html(classes="mystyle"),
         )
-        self.ui.webView.setHtml(html)
+        self.ui.webView.setHtml(self.html_content)
 
     def __analyze_rm_anova(self, dependent_variable: str):
         if not Manager.data.binning_params.apply or Manager.data.binning_params.mode == BinningMode.INTERVALS:
-            Toast(
+            Notification(
                 text="Please apply binning in Dark/Light Cycles or Time Phases mode.", parent=self, duration=2000
-            ).show_toast()
+            ).show_notification()
             return
 
         df = Manager.data.get_current_df(
@@ -264,12 +266,12 @@ class AnovaWidget(QWidget, MessengerListener):
                 </html>
                 """
 
-        html = html_template.format(
+        self.html_content = html_template.format(
             style=style,
             anova=anova.to_html(classes="mystyle"),
             pairwise_tests=pairwise_tests.to_html(classes="mystyle"),
         )
-        self.ui.webView.setHtml(html)
+        self.ui.webView.setHtml(self.html_content)
 
     def __analyze_mixed_anova(self, dependent_variable: str):
         selected_factor_name = self.ui.factorSelector.currentText()
@@ -277,13 +279,13 @@ class AnovaWidget(QWidget, MessengerListener):
             Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
         )
         if selected_factor is None:
-            Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
+            Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
             return
 
         if not Manager.data.binning_params.apply or Manager.data.binning_params.mode == BinningMode.INTERVALS:
-            Toast(
+            Notification(
                 text="Please apply binning in Dark/Light Cycles or Time Phases mode.", parent=self, duration=2000
-            ).show_toast()
+            ).show_notification()
             return
 
         factor_name = selected_factor.name
@@ -322,12 +324,12 @@ class AnovaWidget(QWidget, MessengerListener):
                 </html>
                 """
 
-        html = html_template.format(
+        self.html_content = html_template.format(
             style=style,
             anova=anova.to_html(classes="mystyle"),
             pairwise_tests=pairwise_tests.to_html(classes="mystyle"),
         )
-        self.ui.webView.setHtml(html)
+        self.ui.webView.setHtml(self.html_content)
 
     def __analyze_ancova(self, dependent_variable: str):
         selected_factor_name = self.ui.factorSelector.currentText()
@@ -335,7 +337,7 @@ class AnovaWidget(QWidget, MessengerListener):
             Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
         )
         if selected_factor is None:
-            Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
+            Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
             return
 
         factor_name = selected_factor.name
@@ -376,22 +378,15 @@ class AnovaWidget(QWidget, MessengerListener):
                         </html>
                         """
 
-        html = html_template.format(
+        self.html_content = html_template.format(
             style=style,
             ancova=ancova.to_html(classes="mystyle"),
             pairwise_tests=pairwise_tests.to_html(classes="mystyle"),
         )
-        self.ui.webView.setHtml(html)
+        self.ui.webView.setHtml(self.html_content)
 
     def __add_report(self):
-        web_file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.pdf", self)
-        if web_file.open():
-            self.ui.webView.pdfPrintingFinished.connect(
-                lambda: Manager.messenger.broadcast(AddToReportMessage(self, [web_file.fileName()])),
-                type=Qt.ConnectionType.SingleShotConnection,
-            )
+        if self.html_content == "":
+            return
 
-            self.ui.webView.page().printToPdf(
-                web_file.fileName(),
-                layout=QPageLayout(QPageSize(QPageSize.PageSizeId.A4), QPageLayout.Orientation.Portrait, QMarginsF()),
-            )
+        Manager.messenger.broadcast(AddToReportMessage(self, self.html_content))

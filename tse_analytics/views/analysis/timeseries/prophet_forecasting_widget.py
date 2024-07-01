@@ -9,7 +9,7 @@ from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.analysis.timeseries.prophet_forecasting_widget_ui import Ui_ProphetForecastingWidget
-from tse_analytics.views.misc.toast import Toast
+from tse_analytics.views.misc.notification import Notification
 
 
 class ProphetForecastingWidget(QWidget):
@@ -36,11 +36,11 @@ class ProphetForecastingWidget(QWidget):
 
     def __analyze(self):
         if len(Manager.data.selected_variables) != 1:
-            Toast(text="Please select a single variable.", parent=self, duration=2000).show_toast()
+            Notification(text="Please select a single variable.", parent=self, duration=2000).show_notification()
             return
 
         if len(Manager.data.selected_animals) != 1:
-            Toast(text="Please select a single animal.", parent=self, duration=2000).show_toast()
+            Notification(text="Please select a single animal.", parent=self, duration=2000).show_notification()
             return
 
         self.ui.canvas.clear(False)

@@ -8,7 +8,7 @@ from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.phenomaster.actimot.views.actimot_trajectory_plot_widget_ui import (
     Ui_ActimotTrajectoryPlotWidget,
 )
-from tse_analytics.views.misc.toast import Toast
+from tse_analytics.views.misc.notification import Notification
 
 
 class ActimotTrajectoryPlotWidget(QWidget):
@@ -39,8 +39,8 @@ class ActimotTrajectoryPlotWidget(QWidget):
             return
 
         self.ui.toolButtonCalculate.setEnabled(False)
-        self.toast = Toast(text="Processing...", parent=self, duration=None)
-        self.toast.show_toast()
+        self.toast = Notification(text="Processing...", parent=self, duration=None)
+        self.toast.show_notification()
 
         worker = Worker(self.__work)
         Manager.threadpool.start(worker)
@@ -58,5 +58,5 @@ class ActimotTrajectoryPlotWidget(QWidget):
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()
 
-        self.toast.close_toast()
+        self.toast.close_notification()
         self.ui.toolButtonCalculate.setEnabled(True)

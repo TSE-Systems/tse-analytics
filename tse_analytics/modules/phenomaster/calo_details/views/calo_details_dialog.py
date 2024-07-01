@@ -21,7 +21,7 @@ from tse_analytics.modules.phenomaster.calo_details.views.calo_details_rer_widge
 from tse_analytics.modules.phenomaster.calo_details.views.calo_details_settings_widget import CaloDetailsSettingsWidget
 from tse_analytics.modules.phenomaster.calo_details.views.calo_details_table_view import CaloDetailsTableView
 from tse_analytics.modules.phenomaster.calo_details.views.calo_details_test_fit_widget import CaloDetailsTestFitWidget
-from tse_analytics.views.misc.toast import Toast
+from tse_analytics.views.misc.notification import Notification
 
 
 class CaloDetailsDialog(QDialog):
@@ -132,6 +132,8 @@ class CaloDetailsDialog(QDialog):
             if calo_details_box.ref_box is None:
                 continue
 
+            # TODO: check int -> str conversion for general table!
+            # general_df = active_df[active_df["Box"] == str(calo_details_box.box)].copy()
             general_df = active_df[active_df["Box"] == calo_details_box.box].copy()
             details_df = raw_df[raw_df["Box"] == calo_details_box.box].copy()
             ref_details_df = raw_df[raw_df["Box"] == calo_details_box.ref_box].copy()
@@ -150,7 +152,7 @@ class CaloDetailsDialog(QDialog):
                 self.fitting_results[result.box_number] = result
 
         logger.info(f"Processing complete: {timeit.default_timer() - tic} sec")
-        Toast(text="Processing complete.", parent=self, duration=4000).show_toast()
+        Notification(text="Processing complete.", parent=self, duration=4000).show_notification()
 
     def hideEvent(self, event: QCloseEvent) -> None:
         settings = QSettings()

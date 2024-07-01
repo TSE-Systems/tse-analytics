@@ -1,6 +1,9 @@
+import base64
+from io import BytesIO
+
 import pandas as pd
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
-from PySide6.QtCore import QDir, QSize, QTemporaryFile
+from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
@@ -9,7 +12,7 @@ from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage
 from tse_analytics.views.analysis.timeseries.autocorrelation_widget_ui import Ui_AutocorrelationWidget
-from tse_analytics.views.misc.toast import Toast
+from tse_analytics.views.misc.notification import Notification
 
 
 class AutocorrelationWidget(QWidget):
@@ -38,11 +41,11 @@ class AutocorrelationWidget(QWidget):
 
     def __update(self):
         if len(Manager.data.selected_variables) != 1:
-            Toast(text="Please select a single variable.", parent=self, duration=2000).show_toast()
+            Notification(text="Please select a single variable.", parent=self, duration=2000).show_notification()
             return
 
         if len(Manager.data.selected_animals) != 1:
-            Toast(text="Please select a single animal.", parent=self, duration=2000).show_toast()
+            Notification(text="Please select a single animal.", parent=self, duration=2000).show_notification()
             return
 
         self.ui.canvas.clear(False)
@@ -72,7 +75,8 @@ class AutocorrelationWidget(QWidget):
         self.ui.canvas.draw()
 
     def __add_report(self):
-        tmp_file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.pdf", self)
-        if tmp_file.open():
-            self.ui.canvas.figure.savefig(tmp_file.fileName())
-            Manager.messenger.broadcast(AddToReportMessage(self, [tmp_file.fileName()]))
+        io = BytesIO()
+        self.ui.canvas.figure.savefig(io, format="png")
+        encoded = base64.b64encode(io.getvalue()).decode("utf-8")
+        html = f"<img src='data:image/png;base64,{encoded}'>"
+        Manager.messenger.broadcast(AddToReportMessage(self, html))

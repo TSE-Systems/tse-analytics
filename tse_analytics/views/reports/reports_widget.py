@@ -1,7 +1,3 @@
-from pypdf import PdfWriter
-from PySide6.QtCore import QDir, QTemporaryFile
-from PySide6.QtPdf import QPdfDocument
-from PySide6.QtPdfWidgets import QPdfView
 from PySide6.QtWidgets import QFileDialog, QWidget
 
 from tse_analytics.core.manager import Manager
@@ -22,13 +18,6 @@ class ReportsWidget(QWidget, MessengerListener):
         self.ui.pushButtonClear.clicked.connect(self.__clear_report)
         self.ui.pushButtonExport.clicked.connect(self.__export_report)
 
-        self.ui.pdfView.setPageMode(QPdfView.PageMode.MultiPage)
-
-        self.report_file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.pdf", self)
-        self.pdf_writer = PdfWriter()
-        self.pdf_document = QPdfDocument(self)
-        self.ui.pdfView.setDocument(self.pdf_document)
-
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
         messenger.subscribe(self, AddToReportMessage, self.__add_to_report)
@@ -37,22 +26,19 @@ class ReportsWidget(QWidget, MessengerListener):
         self.__clear_report()
 
     def __add_to_report(self, message: AddToReportMessage):
-        for pdf_file in message.pdf_file_names:
-            self.pdf_writer.append(pdf_file)
-        if self.report_file.open():
-            self.pdf_writer.write(self.report_file.fileName())
-        # self.pdf_writer.close()
-        self.pdf_document.load(self.report_file.fileName())
+        self.ui.textEdit.append(message.content)
 
     def __clear_report(self):
-        self.pdf_writer = PdfWriter()
-        if self.report_file.open():
-            self.pdf_writer.write(self.report_file.fileName())
-        self.pdf_document.load(self.report_file.fileName())
+        self.ui.textEdit.clear()
 
     def __export_report(self):
-        if len(self.pdf_writer.pages) > 0:
-            filename, _ = QFileDialog.getSaveFileName(self, "Export report", "", "PDF Files (*.pdf)")
-            if filename:
-                self.pdf_writer.write(filename)
-                self.pdf_writer.close()
+        filename, _ = QFileDialog.getSaveFileName(self, "Export report", "", "HTML Files (*.html)")
+        if filename:
+            with open(filename, "w") as file:
+                file.write(self.ui.textEdit.toHtml())
+
+            # printer = QPrinter(QPrinter.PrinterMode.HighResolution)
+            # printer.setOutputFormat(QPrinter.OutputFormat.PdfFormat)
+            # printer.setOutputFileName(filename)
+            # # doc.setPageSize(printer.pageRect().size()); // This is necessary if you want to hide the page number
+            # self.ui.textEdit.document().print_(printer)

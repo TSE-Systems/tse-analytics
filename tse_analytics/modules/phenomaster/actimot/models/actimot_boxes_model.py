@@ -1,4 +1,3 @@
-import pandas as pd
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
 from tse_analytics.modules.phenomaster.actimot.data.actimot_animal_item import ActimotAnimalItem
@@ -20,8 +19,6 @@ class ActimotBoxesModel(QAbstractTableModel):
                     return item.animal
                 case 1:
                     return item.box
-                case 2:
-                    return item.diet
                 case _:
                     return item.factors[self.header[column]]
 
@@ -34,16 +31,3 @@ class ActimotBoxesModel(QAbstractTableModel):
 
     def columnCount(self, parent):
         return len(self.header)
-
-    def clear_diets(self, indexes: list[QModelIndex]):
-        rows = {index.row() for index in indexes}
-        for row in rows:
-            self.items[row].diet = pd.NA
-
-    def set_diet(self, indexes: list[QModelIndex], diet: float):
-        rows = {index.row() for index in indexes}
-        for row in rows:
-            self.items[row].diet = diet
-
-    def get_diets_dict(self):
-        return {item.box: item.diet for item in self.items}

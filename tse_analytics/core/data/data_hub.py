@@ -67,6 +67,10 @@ class DataHub:
 
         self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
 
+    def rename_animal(self, old_id: str, animal: Animal) -> None:
+        self.selected_dataset.rename_animal(old_id, animal)
+        self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
+
     def set_selected_animals(self, animals: list[Animal]) -> None:
         self.selected_animals = animals
         self._broadcast_data_changed()
@@ -138,6 +142,7 @@ class DataHub:
                 for _index, row in result.df.iterrows():
                     bin_number = row["Bin"]
 
+                    # TODO: TODO: check int -> str conversion for general table!
                     active_df.loc[
                         active_df[(active_df["Box"] == result.box_number) & (active_df["Bin"] == bin_number)].index[0],
                         ["O2-p", "CO2-p", "VO2(3)-p", "VCO2(3)-p", "RER-p", "H(3)-p"],

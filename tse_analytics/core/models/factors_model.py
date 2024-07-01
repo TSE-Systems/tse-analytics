@@ -12,13 +12,15 @@ class FactorsModel(QAbstractTableModel):
         self.items = items
 
     def data(self, index: QModelIndex, role: Qt.ItemDataRole):
-        if not index.isValid():
-            return None
-        elif role != Qt.ItemDataRole.DisplayRole:
-            return None
         item = self.items[index.row()]
-        values = (item.name, len(item.groups))
-        return values[index.column()]
+        match index.column():
+            case 0:
+                if role == Qt.ItemDataRole.DisplayRole:
+                    return item.name
+            case 1:
+                if role == Qt.ItemDataRole.DisplayRole:
+                    group_names = [group.name for group in item.groups]
+                    return f"{",".join(group_names)}"
 
     def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:

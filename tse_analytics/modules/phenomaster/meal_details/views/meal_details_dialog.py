@@ -27,7 +27,7 @@ from tse_analytics.modules.phenomaster.meal_details.views.meal_episodes_offset_p
     MealEpisodesOffsetPlotWidget,
 )
 from tse_analytics.modules.phenomaster.meal_details.views.meal_intervals_plot_widget import MealIntervalsPlotWidget
-from tse_analytics.views.misc.toast import Toast
+from tse_analytics.views.misc.notification import Notification
 
 
 class MealDetailsDialog(QDialog):
@@ -159,8 +159,8 @@ class MealDetailsDialog(QDialog):
         self.ui.toolButtonCalculate.setEnabled(False)
         self.ui.toolButtonExport.setEnabled(False)
 
-        self.toast = Toast(text="Processing...", parent=self, duration=None)
-        self.toast.show_toast()
+        self.toast = Notification(text="Processing...", parent=self, duration=None)
+        self.toast.show_notification()
 
         meal_details_settings = self.meal_details_settings_widget.get_meal_details_settings()
         diets_dict = self.meal_details_box_selector.get_diets_dict()
@@ -176,7 +176,7 @@ class MealDetailsDialog(QDialog):
     def __do_sequential_analysis(
         self,
         meal_details_settings: MealDetailsSettings,
-        diets_dict: dict[int, float],
+        diets_dict: dict[str, float],
     ):
         tic = timeit.default_timer()
 
@@ -199,7 +199,7 @@ class MealDetailsDialog(QDialog):
         self.__update_tabs()
         self.ui.toolButtonExport.setEnabled(True)
         self.ui.toolButtonCalculate.setEnabled(True)
-        self.toast.close_toast()
+        self.toast.close_notification()
 
     def __do_interval_analysis(
         self,
@@ -221,7 +221,7 @@ class MealDetailsDialog(QDialog):
         self.__update_tabs()
         self.ui.toolButtonExport.setEnabled(True)
         self.ui.toolButtonCalculate.setEnabled(True)
-        self.toast.close_toast()
+        self.toast.close_notification()
 
     def __export_meal_data(self):
         meal_details_settings = self.meal_details_settings_widget.get_meal_details_settings()

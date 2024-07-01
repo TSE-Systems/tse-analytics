@@ -1,3 +1,5 @@
+from functools import partial
+
 from PySide6.QtCore import QItemSelection, QSize, QSortFilterProxyModel, Qt
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QWidget
@@ -38,6 +40,9 @@ class AnimalsWidget(QWidget, MessengerListener):
         self.ui.tableView.sortByColumn(0, Qt.SortOrder.AscendingOrder)
         self.ui.tableView.selectionModel().selectionChanged.connect(self.__on_selection_changed)
 
+        self.ui.toolButtonCheckAll.clicked.connect(partial(self.__set_animals_state, True))
+        self.ui.toolButtonUncheckAll.clicked.connect(partial(self.__set_animals_state, False))
+
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
 
@@ -63,5 +68,14 @@ class AnimalsWidget(QWidget, MessengerListener):
                 selected_animals.append(animal)
         Manager.data.set_selected_animals(selected_animals)
 
+    def __set_animals_state(self, state: bool) -> None:
+        if Manager.data.selected_dataset is None:
+            return
+
+        self.ui.tableView.model().beginResetModel()
+        for animal in Manager.data.selected_dataset.animals.values():
+            animal.enabled = state
+        self.ui.tableView.model().endResetModel()
+
     def minimumSizeHint(self):
-        return QSize(200, 40)
+        return QSize(300, 100)

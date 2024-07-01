@@ -16,7 +16,7 @@ class Dataset:
         name: str,
         path: str,
         meta: dict | list[dict],
-        animals: dict[int, Animal],
+        animals: dict[str, Animal],
         variables: dict[str, Variable],
         df: pd.DataFrame,
         sampling_interval: pd.Timedelta,
@@ -56,7 +56,7 @@ class Dataset:
 
     def extract_groups_from_field(self, field: Literal["text1", "text2", "text3"] = "text1") -> dict[str, Group]:
         """Extract groups assignment from Text1, Text2 or Text3 field"""
-        groups_dict: dict[str, list[int]] = {}
+        groups_dict: dict[str, list[str]] = {}
         for animal in self.animals.values():
             group_name = getattr(animal, field)
             if group_name not in groups_dict:
@@ -69,7 +69,40 @@ class Dataset:
             groups[group.name] = group
         return groups
 
-    def exclude_animals(self, animal_ids: list[int]) -> None:
+    def __rename_animal_df(self, df: pd.DataFrame, old_id: str, animal: Animal) -> pd.DataFrame:
+        df = df.astype({
+            "Animal": str,
+        })
+        df.loc[df["Animal"] == old_id, "Animal"] = animal.id
+        df = df.astype({
+            "Animal": "category",
+        })
+        return df
+
+    def rename_animal(self, old_id: str, animal: Animal) -> None:
+        self.original_df = self.__rename_animal_df(self.original_df, old_id, animal)
+        self.active_df = self.__rename_animal_df(self.active_df, old_id, animal)
+
+        if self.meal_details is not None:
+            self.meal_details.raw_df = self.__rename_animal_df(self.meal_details.raw_df, old_id, animal)
+        if self.calo_details is not None:
+            self.calo_details.raw_df = self.__rename_animal_df(self.calo_details.raw_df, old_id, animal)
+        if self.actimot_details is not None:
+            self.actimot_details.raw_df = self.__rename_animal_df(self.actimot_details.raw_df, old_id, animal)
+
+        # Rename animal in factor's groups definitions
+        for factor in self.factors.values():
+            for group in factor.groups:
+                for i, animal_id in enumerate(group.animal_ids):
+                    if animal_id == old_id:
+                        group.animal_ids[i] = animal.id
+
+        # Rename animal in metadata
+        for item in self.meta["Animals"]:
+            if item["id"] == old_id:
+                item["id"] = animal.id
+
+    def exclude_animals(self, animal_ids: list[str]) -> None:
         # Remove animals from factor's groups definitions
         for factor in self.factors.values():
             for group in factor.groups:
@@ -88,11 +121,11 @@ class Dataset:
 
         self.original_df = self.original_df[~self.original_df["Animal"].isin(animal_ids)]
         self.active_df = self.active_df[~self.active_df["Animal"].isin(animal_ids)]
-        if hasattr(self, "calo_details") and self.calo_details is not None:
+        if self.calo_details is not None:
             self.calo_details.raw_df = self.calo_details.raw_df[~self.calo_details.raw_df["Animal"].isin(animal_ids)]
-        if hasattr(self, "meal_details") and self.meal_details is not None:
+        if self.meal_details is not None:
             self.meal_details.raw_df = self.meal_details.raw_df[~self.meal_details.raw_df["Animal"].isin(animal_ids)]
-        if hasattr(self, "actimot_details") and self.actimot_details is not None:
+        if self.actimot_details is not None:
             self.actimot_details.raw_df = self.actimot_details.raw_df[
                 ~self.actimot_details.raw_df["Animal"].isin(animal_ids)
             ]
@@ -104,10 +137,6 @@ class Dataset:
         self.active_df = self.active_df[
             (self.active_df["DateTime"] < range_start) | (self.active_df["DateTime"] > range_end)
         ]
-
-    def filter_by_boxes(self, box_ids: list[int]) -> pd.DataFrame:
-        df = self.active_df[self.active_df["Box"].isin(box_ids)]
-        return df
 
     def filter_by_groups(self, groups: list[Group]) -> pd.DataFrame:
         group_ids = [group.name for group in groups]
@@ -128,7 +157,7 @@ class Dataset:
         animal_ids = df["Animal"].unique()
 
         for factor in self.factors.values():
-            animal_factor_map: dict[int, Any] = {}
+            animal_factor_map: dict[str, Any] = {}
             for animal_id in animal_ids:
                 animal_factor_map[animal_id] = pd.NA
 
@@ -136,7 +165,7 @@ class Dataset:
                 for animal_id in group.animal_ids:
                     animal_factor_map[animal_id] = group.name
 
-            df[factor.name] = df["Animal"].astype(int)
+            df[factor.name] = df["Animal"].astype(str)
             # df[factor.name].replace(animal_factor_map, inplace=True)
             # df[factor.name] = df[factor.name].replace(animal_factor_map)
             df.replace({factor.name: animal_factor_map}, inplace=True)

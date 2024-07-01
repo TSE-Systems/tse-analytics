@@ -38,7 +38,7 @@ class ActimotBoxSelector(QTableView):
         self.selectionModel().selectionChanged.connect(self.__on_selection_changed)
 
     def set_data(self, dataset: Dataset):
-        items: dict[int, ActimotAnimalItem] = {}
+        items: dict[str, ActimotAnimalItem] = {}
         for animal in dataset.animals.values():
             items[animal.id] = ActimotAnimalItem(animal.box, animal.id, {})
         animal_ids = list(items.keys())

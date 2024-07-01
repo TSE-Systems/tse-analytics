@@ -1,7 +1,10 @@
+import base64
+from io import BytesIO
+
 import pingouin as pg
 import seaborn as sns
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
-from PySide6.QtCore import QDir, QSize, QTemporaryFile
+from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.data.shared import SplitMode
@@ -11,7 +14,7 @@ from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetCha
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.exploration_widget_ui import Ui_ExplorationWidget
-from tse_analytics.views.misc.toast import Toast
+from tse_analytics.views.misc.notification import Notification
 
 
 class ExplorationWidget(QWidget, MessengerListener):
@@ -59,7 +62,7 @@ class ExplorationWidget(QWidget, MessengerListener):
 
     def __update(self):
         if self.ui.radioButtonSplitByFactor.isChecked() and self.ui.factorSelector.currentText() == "":
-            Toast(text="Please select factor.", parent=self, duration=2000).show_toast()
+            Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
             return
 
         if self.ui.radioButtonHistogram.isChecked():
@@ -223,7 +226,8 @@ class ExplorationWidget(QWidget, MessengerListener):
             return round(number_of_elements / 3) + 1, 3
 
     def __add_report(self):
-        tmp_file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.pdf", self)
-        if tmp_file.open():
-            self.ui.canvas.figure.savefig(tmp_file.fileName())
-            Manager.messenger.broadcast(AddToReportMessage(self, [tmp_file.fileName()]))
+        io = BytesIO()
+        self.ui.canvas.figure.savefig(io, format="png")
+        encoded = base64.b64encode(io.getvalue()).decode("utf-8")
+        html = f"<img src='data:image/png;base64,{encoded}'>"
+        Manager.messenger.broadcast(AddToReportMessage(self, html))
