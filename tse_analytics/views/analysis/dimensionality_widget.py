@@ -2,8 +2,8 @@ import base64
 from io import BytesIO
 
 import plotly.express as px
-from PySide6.QtCore import QDir, QMarginsF, Qt, QTemporaryFile, QUrl, QByteArray, QBuffer, QIODevice
-from PySide6.QtGui import QPageLayout, QPageSize, QPixmap
+from PySide6.QtCore import QBuffer, QByteArray, QDir, QIODevice, QTemporaryFile, QUrl
+from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QWidget
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
@@ -191,9 +191,9 @@ class DimensionalityWidget(QWidget, MessengerListener):
         self.ui.webView.render(pixmap)
 
         ba = QByteArray()
-        buff = QBuffer(ba)
-        buff.open(QIODevice.OpenModeFlag.WriteOnly)
-        pixmap.save(buff, "PNG")
+        buffer = QBuffer(ba)
+        buffer.open(QIODevice.OpenModeFlag.WriteOnly)
+        pixmap.save(buffer, "PNG")
 
         io = BytesIO(ba.data())
         encoded = base64.b64encode(io.getvalue()).decode("utf-8")

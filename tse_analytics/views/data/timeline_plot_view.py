@@ -1,6 +1,11 @@
+import base64
+from io import BytesIO
+
 import pandas as pd
 import pyqtgraph as pg
 from pyqtgraph import mkPen
+from pyqtgraph.exporters import ImageExporter
+from PySide6.QtCore import QBuffer, QByteArray, QIODevice
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.data.shared import Factor, SplitMode
@@ -127,6 +132,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         # p1d = self.p1.plot(x, y, symbol='o', symbolSize=2, symbolPen=pen, pen=pen)
         p1d = self.p1.scatterPlot(x, y, pen=pen, size=2) if self._scatter_plot else self.p1.plot(x, y, pen=pen)
+        self.p1.setTitle(self._variable)
 
         if self._display_errors and self._split_mode != SplitMode.ANIMAL:
             # Error bars
@@ -279,3 +285,17 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         self._df = None
         self._variable = None
         self._display_errors = False
+
+    def get_report(self) -> str:
+        exporter = ImageExporter(self.p1)
+        img = exporter.export(toBytes=True)
+
+        ba = QByteArray()
+        buffer = QBuffer(ba)
+        buffer.open(QIODevice.OpenModeFlag.WriteOnly)
+        img.save(buffer, "PNG")
+
+        io = BytesIO(ba.data())
+        encoded = base64.b64encode(io.getvalue()).decode("utf-8")
+        html = f"<img src='data:image/png;base64,{encoded}'>"
+        return html

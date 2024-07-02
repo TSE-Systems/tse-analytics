@@ -6,6 +6,7 @@ from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import (
+    AddToReportMessage,
     BinningMessage,
     DataChangedMessage,
     DatasetChangedMessage,
@@ -37,6 +38,8 @@ class DataPlotWidget(QWidget, MessengerListener):
         self.ui.groupBoxDisplayErrors.toggled.connect(self.__display_errors)
         self.ui.radioButtonStandardDeviation.toggled.connect(lambda: self.__error_type_changed("StandardDeviation"))
         self.ui.radioButtonStandardError.toggled.connect(lambda: self.__error_type_changed("StandardError"))
+
+        self.ui.pushButtonAddReport.clicked.connect(self.__add_report)
 
         self.timelinePlotView = TimelinePlotView(self)
         self.barPlotView = BarPlotView(self)
@@ -73,6 +76,7 @@ class DataPlotWidget(QWidget, MessengerListener):
         self.timelinePlotView.set_scatter_plot(state)
 
     def __on_dataset_changed(self, message: DatasetChangedMessage):
+        self.ui.pushButtonAddReport.setDisabled(message.data is None)
         if message.data is None:
             self.ui.variableSelector.clear()
             self.ui.factorSelector.clear()
@@ -167,3 +171,11 @@ class DataPlotWidget(QWidget, MessengerListener):
             self.ui.widgetSettings.layout().replaceWidget(self.plot_toolbar, new_toolbar)
             self.plot_toolbar.deleteLater()
             self.plot_toolbar = new_toolbar
+
+    def __add_report(self):
+        html = (
+            self.timelinePlotView.get_report()
+            if Manager.data.binning_params.mode == BinningMode.INTERVALS
+            else self.barPlotView.get_report()
+        )
+        Manager.messenger.broadcast(AddToReportMessage(self, html))

@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QGroupBox, QRadioButton,
-    QSizePolicy, QSpacerItem, QSplitter, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QGroupBox, QPushButton,
+    QRadioButton, QSizePolicy, QSpacerItem, QSplitter,
+    QVBoxLayout, QWidget)
 
 from tse_analytics.views.misc.factor_selector import FactorSelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
@@ -115,6 +115,12 @@ class Ui_DataPlotWidget(object):
 
         self.verticalLayout.addItem(self.verticalSpacer)
 
+        self.pushButtonAddReport = QPushButton(self.widgetSettings)
+        self.pushButtonAddReport.setObjectName(u"pushButtonAddReport")
+        self.pushButtonAddReport.setEnabled(False)
+
+        self.verticalLayout.addWidget(self.pushButtonAddReport)
+
         self.splitter.addWidget(self.widgetSettings)
 
         self.verticalLayout_2.addWidget(self.splitter)
@@ -136,6 +142,7 @@ class Ui_DataPlotWidget(object):
         self.radioButtonStandardDeviation.setText(QCoreApplication.translate("DataPlotWidget", u"Standard Deviation", None))
         self.radioButtonStandardError.setText(QCoreApplication.translate("DataPlotWidget", u"Standard Error", None))
         self.checkBoxScatterPlot.setText(QCoreApplication.translate("DataPlotWidget", u"Scatter Plot", None))
+        self.pushButtonAddReport.setText(QCoreApplication.translate("DataPlotWidget", u"Add to Report", None))
         pass
     # retranslateUi
 

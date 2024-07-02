@@ -1,3 +1,6 @@
+import base64
+from io import BytesIO
+
 import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
@@ -92,3 +95,10 @@ class BarPlotView(QWidget):
             self.canvas.updateGeometry()
             self.canvas.draw()
             self.layout().addWidget(self.canvas)
+
+    def get_report(self) -> str:
+        io = BytesIO()
+        self.canvas.figure.savefig(io, format="png")
+        encoded = base64.b64encode(io.getvalue()).decode("utf-8")
+        html = f"<img src='data:image/png;base64,{encoded}'>"
+        return html

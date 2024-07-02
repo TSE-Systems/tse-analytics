@@ -205,14 +205,14 @@ class WorkspaceModel(QAbstractItemModel):
         self.endResetModel()
 
     def __add_children_items(self, dataset: Dataset, dataset_tree_item: DatasetTreeItem):
-        if hasattr(dataset, "meal_details") and dataset.meal_details is not None:
+        if dataset.meal_details is not None:
             meal_details_tree_item = MealDetailsTreeItem(dataset.meal_details)
             dataset_tree_item.add_child(meal_details_tree_item)
 
-        if hasattr(dataset, "actimot_details") and dataset.actimot_details is not None:
+        if dataset.actimot_details is not None:
             actimot_tree_item = ActimotTreeItem(dataset.actimot_details)
             dataset_tree_item.add_child(actimot_tree_item)
 
-        if hasattr(dataset, "calo_details") and dataset.calo_details is not None:
+        if dataset.calo_details is not None:
             calo_details_tree_item = CaloDetailsTreeItem(dataset.calo_details)
             dataset_tree_item.add_child(calo_details_tree_item)

@@ -42,7 +42,7 @@ class ExplorationWidget(QWidget, MessengerListener):
 
         plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
         plot_toolbar.setIconSize(QSize(16, 16))
-        self.ui.widgetSettings.layout().insertWidget(0, plot_toolbar)
+        self.ui.widgetSettings.layout().addWidget(plot_toolbar)
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)

@@ -15,8 +15,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QHBoxLayout, QPushButton, QSizePolicy,
-    QSpacerItem, QTextEdit, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QSizePolicy, QTextEdit, QVBoxLayout,
+    QWidget)
 import resources_rc
 
 class Ui_ReportsWidget(object):
@@ -25,32 +25,10 @@ class Ui_ReportsWidget(object):
             ReportsWidget.setObjectName(u"ReportsWidget")
         self.verticalLayout = QVBoxLayout(ReportsWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.horizontalLayout = QHBoxLayout()
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.pushButtonClear = QPushButton(ReportsWidget)
-        self.pushButtonClear.setObjectName(u"pushButtonClear")
+        self.editor = QTextEdit(ReportsWidget)
+        self.editor.setObjectName(u"editor")
 
-        self.horizontalLayout.addWidget(self.pushButtonClear)
-
-        self.pushButtonExport = QPushButton(ReportsWidget)
-        self.pushButtonExport.setObjectName(u"pushButtonExport")
-        icon = QIcon()
-        icon.addFile(u":/icons/icons8-save-16.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.pushButtonExport.setIcon(icon)
-
-        self.horizontalLayout.addWidget(self.pushButtonExport)
-
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout.addItem(self.horizontalSpacer)
-
-
-        self.verticalLayout.addLayout(self.horizontalLayout)
-
-        self.textEdit = QTextEdit(ReportsWidget)
-        self.textEdit.setObjectName(u"textEdit")
-
-        self.verticalLayout.addWidget(self.textEdit)
+        self.verticalLayout.addWidget(self.editor)
 
 
         self.retranslateUi(ReportsWidget)
@@ -59,8 +37,6 @@ class Ui_ReportsWidget(object):
     # setupUi
 
     def retranslateUi(self, ReportsWidget):
-        self.pushButtonClear.setText(QCoreApplication.translate("ReportsWidget", u"Clear Report", None))
-        self.pushButtonExport.setText(QCoreApplication.translate("ReportsWidget", u"Export Report...", None))
         pass
     # retranslateUi
 

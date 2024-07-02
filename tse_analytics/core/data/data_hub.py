@@ -114,14 +114,11 @@ class DataHub:
                     self.selected_dataset.calo_details.raw_df.to_sql(
                         "calo_details", connection, if_exists="replace", index=False
                     )
-                if hasattr(self.selected_dataset, "meal_details") and self.selected_dataset.meal_details is not None:
+                if self.selected_dataset.meal_details is not None:
                     self.selected_dataset.meal_details.raw_df.to_sql(
                         "meal_details", connection, if_exists="replace", index=False
                     )
-                if (
-                    hasattr(self.selected_dataset, "actimot_details")
-                    and self.selected_dataset.actimot_details is not None
-                ):
+                if self.selected_dataset.actimot_details is not None:
                     self.selected_dataset.actimot_details.raw_df.to_sql(
                         "actimot_details", connection, if_exists="replace", index=False
                     )

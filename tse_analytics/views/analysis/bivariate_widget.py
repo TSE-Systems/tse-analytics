@@ -43,7 +43,7 @@ class BivariateWidget(QWidget, MessengerListener):
 
         self.plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
         self.plot_toolbar.setIconSize(QSize(16, 16))
-        self.ui.widgetSettings.layout().insertWidget(0, self.plot_toolbar)
+        self.ui.widgetSettings.layout().addWidget(self.plot_toolbar)
 
         self.ui.textEdit.document().setDefaultStyleSheet(style_descriptive_table)
 

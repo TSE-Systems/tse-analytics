@@ -40,6 +40,8 @@ class Dataset:
         self.meal_details: MealDetails | None = None
         self.actimot_details: ActimotDetails | None = None
 
+        self.report = ""
+
     @property
     def start_timestamp(self) -> pd.Timestamp:
         first_value = self.original_df["DateTime"].iat[0]
