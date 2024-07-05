@@ -15,8 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QSizePolicy, QTextEdit, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QSizePolicy, QVBoxLayout, QWidget)
+
+from tse_analytics.views.misc.custom_text_edit import CustomTextEdit
 import resources_rc
 
 class Ui_ReportsWidget(object):
@@ -25,7 +26,7 @@ class Ui_ReportsWidget(object):
             ReportsWidget.setObjectName(u"ReportsWidget")
         self.verticalLayout = QVBoxLayout(ReportsWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.editor = QTextEdit(ReportsWidget)
+        self.editor = CustomTextEdit(ReportsWidget)
         self.editor.setObjectName(u"editor")
 
         self.verticalLayout.addWidget(self.editor)

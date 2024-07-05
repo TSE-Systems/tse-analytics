@@ -5,10 +5,17 @@
  <widget class="QWidget" name="ReportsWidget">
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QTextEdit" name="editor"/>
+    <widget class="CustomTextEdit" name="editor"/>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CustomTextEdit</class>
+   <extends>QTextEdit</extends>
+   <header>tse_analytics.views.misc.custom_text_edit</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../../../resources/resources.qrc"/>
  </resources>
