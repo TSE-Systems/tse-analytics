@@ -1,15 +1,17 @@
+from pathlib import Path
+
 from PySide6.QtCore import QSettings
 from PySide6.QtWidgets import QDialog, QWidget
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
-from tse_analytics.views.preferences_dialog_ui import Ui_PreferencesDialog
+from tse_analytics.views.import_csv_dialog_ui import Ui_ImportCsvDialog
 
 
-class PreferencesDialog(QDialog):
-    def __init__(self, parent: QWidget | None = None):
+class ImportCsvDialog(QDialog):
+    def __init__(self, filename: str, parent: QWidget | None = None):
         super().__init__(parent)
 
-        self.ui = Ui_PreferencesDialog()
+        self.ui = Ui_ImportCsvDialog()
         self.ui.setupUi(self)
 
         self.ui.buttonBox.accepted.connect(self.__save_preferences)
@@ -18,6 +20,12 @@ class PreferencesDialog(QDialog):
         csv_import_settings: CsvImportSettings = self.settings.value(
             "CsvImportSettings", CsvImportSettings.get_default()
         )
+
+        path = Path(filename)
+        if path.is_file() and path.suffix.lower() == ".csv":
+            with open(path) as f:
+                content = f.read(1024 * 1024)
+                self.ui.plainTextEditOverview.setPlainText(content)
 
         self.ui.lineEditDelimiter.setText(csv_import_settings.delimiter)
         self.ui.checkBoxDayFirst.setChecked(csv_import_settings.day_first)

@@ -25,6 +25,7 @@ from tse_analytics.modules.phenomaster.meal_details.models.meal_details_tree_ite
 from tse_analytics.modules.phenomaster.meal_details.views.meal_details_dialog import MealDetailsDialog
 from tse_analytics.modules.phenomaster.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.views.datasets_merge_dialog import DatasetsMergeDialog
+from tse_analytics.views.import_csv_dialog import ImportCsvDialog
 
 
 class DatasetsTreeView(QTreeView):
@@ -127,8 +128,12 @@ class DatasetsTreeView(QTreeView):
         )
         if path:
             if len(indexes) == 1:
-                selected_dataset_index = indexes[0]
-                Manager.import_meal_details(selected_dataset_index, path)
+                dialog = ImportCsvDialog(path, self)
+                # TODO: check other cases!!
+                dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+                if dialog.exec() == QDialog.DialogCode.Accepted:
+                    selected_dataset_index = indexes[0]
+                    Manager.import_meal_details(selected_dataset_index, path)
 
     def __import_actimot_details(self, indexes: list[QModelIndex]):
         path, _ = QFileDialog.getOpenFileName(
@@ -139,8 +144,12 @@ class DatasetsTreeView(QTreeView):
         )
         if path:
             if len(indexes) == 1:
-                selected_dataset_index = indexes[0]
-                Manager.import_actimot_details(selected_dataset_index, path)
+                dialog = ImportCsvDialog(path, self)
+                # TODO: check other cases!!
+                dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+                if dialog.exec() == QDialog.DialogCode.Accepted:
+                    selected_dataset_index = indexes[0]
+                    Manager.import_actimot_details(selected_dataset_index, path)
 
     def __import_calo_details(self, indexes: list[QModelIndex]):
         path, _ = QFileDialog.getOpenFileName(
@@ -151,8 +160,12 @@ class DatasetsTreeView(QTreeView):
         )
         if path:
             if len(indexes) == 1:
-                selected_dataset_index = indexes[0]
-                Manager.import_calo_details(selected_dataset_index, path)
+                dialog = ImportCsvDialog(path, self)
+                # TODO: check other cases!!
+                dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+                if dialog.exec() == QDialog.DialogCode.Accepted:
+                    selected_dataset_index = indexes[0]
+                    Manager.import_calo_details(selected_dataset_index, path)
 
     def __adjust_dataset_time(self, indexes: list[QModelIndex]):
         delta, ok = QInputDialog.getText(self, "Enter time delta", "Delta", QLineEdit.EchoMode.Normal, "1 d")

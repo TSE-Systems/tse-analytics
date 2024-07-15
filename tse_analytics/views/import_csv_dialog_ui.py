@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'preferences_dialog.ui'
+## Form generated from reading UI file 'import_csv_dialog.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.6.2
 ##
@@ -17,17 +17,32 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDialog,
     QDialogButtonBox, QGroupBox, QHBoxLayout, QLabel,
-    QLineEdit, QRadioButton, QSizePolicy, QVBoxLayout,
-    QWidget)
+    QLineEdit, QPlainTextEdit, QRadioButton, QSizePolicy,
+    QVBoxLayout, QWidget)
 
-class Ui_PreferencesDialog(object):
-    def setupUi(self, PreferencesDialog):
-        if not PreferencesDialog.objectName():
-            PreferencesDialog.setObjectName(u"PreferencesDialog")
-        PreferencesDialog.resize(446, 395)
-        self.verticalLayout = QVBoxLayout(PreferencesDialog)
+class Ui_ImportCsvDialog(object):
+    def setupUi(self, ImportCsvDialog):
+        if not ImportCsvDialog.objectName():
+            ImportCsvDialog.setObjectName(u"ImportCsvDialog")
+        ImportCsvDialog.resize(948, 397)
+        self.verticalLayout = QVBoxLayout(ImportCsvDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.groupBoxCsvImportSettings = QGroupBox(PreferencesDialog)
+        self.horizontalLayout = QHBoxLayout()
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.plainTextEditOverview = QPlainTextEdit(ImportCsvDialog)
+        self.plainTextEditOverview.setObjectName(u"plainTextEditOverview")
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        sizePolicy.setHorizontalStretch(1)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.plainTextEditOverview.sizePolicy().hasHeightForWidth())
+        self.plainTextEditOverview.setSizePolicy(sizePolicy)
+        self.plainTextEditOverview.setUndoRedoEnabled(False)
+        self.plainTextEditOverview.setLineWrapMode(QPlainTextEdit.NoWrap)
+        self.plainTextEditOverview.setReadOnly(True)
+
+        self.horizontalLayout.addWidget(self.plainTextEditOverview)
+
+        self.groupBoxCsvImportSettings = QGroupBox(ImportCsvDialog)
         self.groupBoxCsvImportSettings.setObjectName(u"groupBoxCsvImportSettings")
         self.verticalLayout_3 = QVBoxLayout(self.groupBoxCsvImportSettings)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
@@ -93,33 +108,36 @@ class Ui_PreferencesDialog(object):
         self.verticalLayout_3.addWidget(self.groupBoxDateTimeSettings)
 
 
-        self.verticalLayout.addWidget(self.groupBoxCsvImportSettings)
+        self.horizontalLayout.addWidget(self.groupBoxCsvImportSettings)
 
-        self.buttonBox = QDialogButtonBox(PreferencesDialog)
+
+        self.verticalLayout.addLayout(self.horizontalLayout)
+
+        self.buttonBox = QDialogButtonBox(ImportCsvDialog)
         self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setOrientation(Qt.Orientation.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
+        self.buttonBox.setOrientation(Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
 
         self.verticalLayout.addWidget(self.buttonBox)
 
 
-        self.retranslateUi(PreferencesDialog)
-        self.buttonBox.accepted.connect(PreferencesDialog.accept)
-        self.buttonBox.rejected.connect(PreferencesDialog.reject)
+        self.retranslateUi(ImportCsvDialog)
+        self.buttonBox.accepted.connect(ImportCsvDialog.accept)
+        self.buttonBox.rejected.connect(ImportCsvDialog.reject)
 
-        QMetaObject.connectSlotsByName(PreferencesDialog)
+        QMetaObject.connectSlotsByName(ImportCsvDialog)
     # setupUi
 
-    def retranslateUi(self, PreferencesDialog):
-        PreferencesDialog.setWindowTitle(QCoreApplication.translate("PreferencesDialog", u"Preferences", None))
-        self.groupBoxCsvImportSettings.setTitle(QCoreApplication.translate("PreferencesDialog", u"CSV Import Settings", None))
-        self.groupBoxDelimiter.setTitle(QCoreApplication.translate("PreferencesDialog", u"Column Delimiter", None))
-        self.groupBoxDecimalSeparator.setTitle(QCoreApplication.translate("PreferencesDialog", u"Decimal Separator", None))
-        self.radioButtonPoint.setText(QCoreApplication.translate("PreferencesDialog", u"Point [.]", None))
-        self.radioButtonComma.setText(QCoreApplication.translate("PreferencesDialog", u"Comma [,]", None))
-        self.groupBoxDateTimeSettings.setTitle(QCoreApplication.translate("PreferencesDialog", u"DateTime Settings", None))
-        self.checkBoxDayFirst.setText(QCoreApplication.translate("PreferencesDialog", u"Day first (DD/MM format dates, international and European format)", None))
-        self.groupBoxDateTimeFormat.setTitle(QCoreApplication.translate("PreferencesDialog", u"Use exact DateTime format", None))
-        self.labelExample.setText(QCoreApplication.translate("PreferencesDialog", u"Example: %Y-%m-%d %H:%M:%S.%f", None))
+    def retranslateUi(self, ImportCsvDialog):
+        ImportCsvDialog.setWindowTitle(QCoreApplication.translate("ImportCsvDialog", u"Import CSV File", None))
+        self.groupBoxCsvImportSettings.setTitle(QCoreApplication.translate("ImportCsvDialog", u"CSV Import Settings", None))
+        self.groupBoxDelimiter.setTitle(QCoreApplication.translate("ImportCsvDialog", u"Column Delimiter", None))
+        self.groupBoxDecimalSeparator.setTitle(QCoreApplication.translate("ImportCsvDialog", u"Decimal Separator", None))
+        self.radioButtonPoint.setText(QCoreApplication.translate("ImportCsvDialog", u"Point [.]", None))
+        self.radioButtonComma.setText(QCoreApplication.translate("ImportCsvDialog", u"Comma [,]", None))
+        self.groupBoxDateTimeSettings.setTitle(QCoreApplication.translate("ImportCsvDialog", u"DateTime Settings", None))
+        self.checkBoxDayFirst.setText(QCoreApplication.translate("ImportCsvDialog", u"Day first (DD/MM international and European format)", None))
+        self.groupBoxDateTimeFormat.setTitle(QCoreApplication.translate("ImportCsvDialog", u"Use exact DateTime format", None))
+        self.labelExample.setText(QCoreApplication.translate("ImportCsvDialog", u"Example: %Y-%m-%d %H:%M:%S.%f", None))
     # retranslateUi
 
