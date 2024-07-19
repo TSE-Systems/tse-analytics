@@ -32,9 +32,7 @@ class CustomTextEdit(QTextEdit):
                 file_ext = os.path.splitext(str(u.toLocalFile()))[1].lower()
                 if u.isLocalFile() and file_ext in IMAGE_EXTENSIONS:
                     image = QImage(u.toLocalFile())
-                    document.addResource(
-                        QTextDocument.ResourceType.ImageResource, u, image
-                    )
+                    document.addResource(QTextDocument.ResourceType.ImageResource, u, image)
                     cursor.insertImage(u.toLocalFile())
 
                 else:
