@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QInputDialog,
     QLineEdit,
     QMenu,
+    QMessageBox,
     QTreeView,
     QWidget,
 )
@@ -23,7 +24,7 @@ from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.modules.phenomaster.meal_details.models.meal_details_tree_item import MealDetailsTreeItem
 from tse_analytics.modules.phenomaster.meal_details.views.meal_details_dialog import MealDetailsDialog
 from tse_analytics.modules.phenomaster.models.dataset_tree_item import DatasetTreeItem
-from tse_analytics.views.datasets_merge_dialog import DatasetsMergeDialog
+from tse_analytics.views.datasets.datasets_merge_dialog import DatasetsMergeDialog
 from tse_analytics.views.import_csv_dialog import ImportCsvDialog
 
 
@@ -52,6 +53,7 @@ class DatasetsTreeView(QTreeView):
         self.customContextMenuRequested.connect(self.__open_menu)
         self.selectionModel().selectionChanged.connect(self._treeview_selection_changed)
         self.selectionModel().currentChanged.connect(self._treeview_current_changed)
+        # Manager.workspace.checkedItemChanged.connect(self._checked_item_changed)
         self.doubleClicked.connect(self._treeview_double_clicked)
 
     def __open_menu(self, position):
@@ -104,12 +106,23 @@ class DatasetsTreeView(QTreeView):
             if item.checked:
                 checked_datasets.append(item.dataset)
 
-        dlg = DatasetsMergeDialog(self)
-        result = dlg.exec()
-        if result == QDialog.DialogCode.Accepted:
-            new_dataset_name = dlg.lineEditName.text()
-            single_run = dlg.checkBoxSingleRun.isChecked()
-            Manager.merge_datasets(new_dataset_name, checked_datasets, single_run, self)
+        # check variables compatibility
+        first_variables_set = checked_datasets[0].variables
+        for dataset in checked_datasets:
+            if dataset.variables != first_variables_set:
+                QMessageBox.critical(
+                    self,
+                    "Cannot merge datasets!",
+                    "List of variables should be the same.",
+                    buttons=QMessageBox.StandardButton.Abort,
+                    defaultButton=QMessageBox.StandardButton.Abort,
+                )
+                return
+
+        dialog = DatasetsMergeDialog(checked_datasets, self)
+        # TODO: check other cases!!
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             # uncheck all datasets
             items = self.model().workspace_tree_item.child_items
             for item in items:
@@ -201,6 +214,9 @@ class DatasetsTreeView(QTreeView):
 
     def _treeview_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
         # indexes = selected.indexes()
+        pass
+
+    def _checked_item_changed(self, item, state: bool):
         pass
 
     def _treeview_double_clicked(self, index: QModelIndex):

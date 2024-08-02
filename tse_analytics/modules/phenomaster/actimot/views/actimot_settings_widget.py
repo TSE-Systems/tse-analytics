@@ -1,4 +1,3 @@
-from PySide6.QtCore import QTime
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.modules.phenomaster.actimot.actimot_settings import ActimotSettings
@@ -23,25 +22,6 @@ class ActimotSettingsWidget(QWidget):
         self.__set_settings(actimot_settings)
 
     def __set_settings(self, actimot_settings: ActimotSettings):
-        # self.__set_analysis_type(meal_details_settings.sequential_analysis_type)
-        # self.ui.radioButtonSequentialType.setChecked(meal_details_settings.sequential_analysis_type)
-        # self.ui.radioButtonIntervalType.setChecked(not meal_details_settings.sequential_analysis_type)
-        # self.ui.intermealIntervalTimeEdit.setTime(
-        #     QTime(
-        #         meal_details_settings.intermeal_interval.hour,
-        #         meal_details_settings.intermeal_interval.minute,
-        #         meal_details_settings.intermeal_interval.second,
-        #     )
-        # )
-        # self.ui.drinkingMinimumAmountDoubleSpinBox.setValue(meal_details_settings.drinking_minimum_amount)
-        # self.ui.feedingMinimumAmountDoubleSpinBox.setValue(meal_details_settings.feeding_minimum_amount)
-        # self.ui.fixedIntervalTimeEdit.setTime(
-        #     QTime(
-        #         meal_details_settings.fixed_interval.hour,
-        #         meal_details_settings.fixed_interval.minute,
-        #         meal_details_settings.fixed_interval.second,
-        #     )
-        # )
         pass
 
     def __set_analysis_type(self, sequential_meal_analysis: bool):

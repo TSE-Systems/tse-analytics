@@ -17,7 +17,7 @@ from tse_analytics.modules.phenomaster.models.dataset_tree_item import DatasetTr
 
 
 class WorkspaceModel(QAbstractItemModel):
-    checked_item_changed = Signal(TreeItem)
+    checkedItemChanged = Signal(TreeItem, bool)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -111,7 +111,7 @@ class WorkspaceModel(QAbstractItemModel):
         item = self.getItem(index)
         if role == Qt.ItemDataRole.CheckStateRole:
             item.checked = not item.checked
-            self.checked_item_changed.emit(item)
+            self.checkedItemChanged.emit(item, item.checked)
             return True
         else:
             return False

@@ -94,7 +94,7 @@ class DataHub:
 
     def adjust_dataset_time(self, delta: str) -> None:
         if self.selected_dataset is not None:
-            self.selected_dataset.adjust_time(delta)
+            self.selected_dataset.adjust_time(pd.Timedelta(delta))
             self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
 
     def export_to_excel(self, path: str) -> None:

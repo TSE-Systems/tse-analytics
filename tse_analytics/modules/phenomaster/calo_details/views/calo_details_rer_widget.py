@@ -21,13 +21,13 @@ class CaloDetailsRerWidget(QWidget):
 
         self.fitting_result: CaloDetailsFittingResult | None = None
 
-    def __variable_changed(self, variable: str):
+    def __variable_changed(self, variable: str) -> None:
         self.set_data(self.fitting_result)
 
-    def clear(self):
+    def clear(self) -> None:
         self.ui.canvas.clear(True)
 
-    def set_data(self, fitting_result: CaloDetailsFittingResult):
+    def set_data(self, fitting_result: CaloDetailsFittingResult) -> None:
         self.fitting_result = fitting_result
 
         if self.fitting_result is None:

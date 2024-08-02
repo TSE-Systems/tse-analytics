@@ -2,7 +2,6 @@ import copy
 
 from loguru import logger
 from PySide6.QtCore import QModelIndex, QSettings, QThreadPool
-from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.data_hub import DataHub
@@ -59,11 +58,11 @@ class Manager:
 
     @classmethod
     def merge_datasets(
-        cls, new_dataset_name: str, datasets: list[Dataset], single_run: bool, parent_widget: QWidget
+        cls, new_dataset_name: str, datasets: list[Dataset], single_run: bool, continuous_mode: bool
     ) -> None:
-        result_dataset = merge_datasets(new_dataset_name, datasets, single_run, parent_widget)
-        if result_dataset is not None:
-            cls.workspace.add_dataset(result_dataset)
+        merged_dataset = merge_datasets(new_dataset_name, datasets, single_run, continuous_mode)
+        if merged_dataset is not None:
+            cls.workspace.add_dataset(merged_dataset)
 
     @classmethod
     def clone_dataset(cls, original_dataset: Dataset, new_dataset_name: str) -> None:
