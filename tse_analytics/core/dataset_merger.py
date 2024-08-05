@@ -13,10 +13,7 @@ def merge_datasets(
 
 
 def __merge_continuous(new_dataset_name: str, datasets: list[Dataset], single_run: bool) -> Dataset | None:
-    # sort datasets by start time
-    datasets.sort(key=lambda x: x.start_timestamp)
-
-    dfs = [x.original_df.copy() for x in datasets]
+    dfs = [x.original_df for x in datasets]
 
     # reassign run number
     if not single_run:
@@ -36,6 +33,10 @@ def __merge_continuous(new_dataset_name: str, datasets: list[Dataset], single_ru
     new_df["Bin"] = (new_df["Timedelta"] / timedelta).round().astype(int)
 
     # convert categorical types
+    new_df = new_df.astype({
+        "Animal": str,
+    })
+
     new_df = new_df.astype({
         "Animal": "category",
         "Box": "category",
@@ -64,10 +65,7 @@ def __merge_continuous(new_dataset_name: str, datasets: list[Dataset], single_ru
 
 
 def __merge_overlap(new_dataset_name: str, datasets: list[Dataset], single_run: bool) -> Dataset | None:
-    # sort datasets by start time
-    datasets.sort(key=lambda x: x.start_timestamp)
-
-    dfs = [x.original_df.copy() for x in datasets]
+    dfs = [x.original_df for x in datasets]
 
     # reassign run number
     if not single_run:
@@ -79,14 +77,19 @@ def __merge_overlap(new_dataset_name: str, datasets: list[Dataset], single_run: 
     if single_run:
         new_df["Run"] = 1
 
-    # reassign bin and timedelta
-    start_date_time = new_df["DateTime"][0]
+    # Drop DataTime column because of the overlap mode
+    new_df.drop(columns=["DateTime"], inplace=True)
+
     # find minimum sampling interval
     timedelta = min(dataset.sampling_interval for dataset in datasets)
-    new_df["Timedelta"] = new_df["DateTime"] - start_date_time
+    # new_df["Timedelta"] = new_df["DateTime"] - start_date_time
     new_df["Bin"] = (new_df["Timedelta"] / timedelta).round().astype(int)
 
     # convert categorical types
+    new_df = new_df.astype({
+        "Animal": str,
+    })
+
     new_df = new_df.astype({
         "Animal": "category",
         "Box": "category",

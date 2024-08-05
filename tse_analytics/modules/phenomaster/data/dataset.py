@@ -109,6 +109,10 @@ class Dataset:
             if item["id"] == old_id:
                 item["id"] = animal.id
 
+        # Rename animal in dictionary
+        self.animals.pop(old_id)
+        self.animals[animal.id] = animal
+
     def exclude_animals(self, animal_ids: list[str]) -> None:
         # Remove animals from factor's groups definitions
         for factor in self.factors.values():
