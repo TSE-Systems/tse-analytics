@@ -78,7 +78,7 @@ def __merge_overlap(new_dataset_name: str, datasets: list[Dataset], single_run: 
         new_df["Run"] = 1
 
     # Drop DataTime column because of the overlap mode
-    new_df.drop(columns=["DateTime"], inplace=True)
+    # new_df.drop(columns=["DateTime"], inplace=True)
 
     # find minimum sampling interval
     timedelta = min(dataset.sampling_interval for dataset in datasets)

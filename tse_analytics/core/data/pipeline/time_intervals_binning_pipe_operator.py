@@ -34,7 +34,7 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
         grouped = df.groupby(group_by, dropna=False, observed=False)
 
         timedelta = pd.Timedelta(f"{self.settings.delta}{self.settings.unit}")
-        resampler = grouped.resample(timedelta, on="DateTime", origin="start")
+        resampler = grouped.resample(timedelta, on="Timedelta", origin="start")
 
         match self.binning_operation:
             case BinningOperation.MEAN:
@@ -46,21 +46,21 @@ class TimeIntervalsBinningPipeOperator(PipeOperator):
 
         match self.split_mode:
             case SplitMode.ANIMAL:
-                sort_by = ["DateTime", "Animal"]
+                sort_by = ["Timedelta", "Animal"]
             case SplitMode.FACTOR:
-                sort_by = ["DateTime", self.selected_factor_name]
+                sort_by = ["Timedelta", self.selected_factor_name]
             case SplitMode.RUN:
-                sort_by = ["DateTime", "Run"]
+                sort_by = ["Timedelta", "Run"]
             case SplitMode.TOTAL:
-                sort_by = ["Bin"]
+                sort_by = ["Timedelta"]
 
         result.sort_values(by=sort_by, inplace=True)
 
         # the inverse of groupby, reset_index
         result = result.reset_index()
 
-        start_date_time = result["DateTime"].iloc[0]
-        result["Timedelta"] = result["DateTime"] - start_date_time
+        # start_date_time = result["DateTime"].iloc[0]
+        # result["Timedelta"] = result["DateTime"] - start_date_time
 
         result["Bin"] = (result["Timedelta"] / timedelta).round().astype(int)
         result = result.astype({"Bin": "category"})

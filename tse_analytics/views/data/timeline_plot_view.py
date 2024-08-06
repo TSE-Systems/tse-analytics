@@ -1,6 +1,7 @@
 import base64
 from io import BytesIO
 
+import numpy as np
 import pandas as pd
 import pyqtgraph as pg
 from pyqtgraph import mkPen
@@ -10,6 +11,7 @@ from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.data.shared import Factor, SplitMode
 from tse_analytics.core.manager import Manager
+from tse_analytics.views.misc.TimedeltaAxisItem import TimedeltaAxisItem
 
 
 class TimelinePlotView(pg.GraphicsLayoutWidget):
@@ -35,13 +37,15 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         # customize the averaged curve that can be activated from the context menu
         self.p1.avgPen = pg.mkPen("#FFFFFF")
         self.p1.avgShadowPen = pg.mkPen("#8080DD", width=10)
-        self.p1.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
+        # self.p1.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
+        self.p1.setAxisItems({"bottom": TimedeltaAxisItem()})
         self.p1.showGrid(x=True, y=True)
 
         self.legend = self.p1.addLegend((10, 10))
 
         self.p2: pg.PlotItem = self.addPlot(row=1, col=0)
-        self.p2.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
+        # self.p2.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
+        self.p2.setAxisItems({"bottom": TimedeltaAxisItem()})
         self.p2.showGrid(x=True, y=True)
 
         self.region = pg.LinearRegionItem()
@@ -67,6 +71,10 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
     def set_data(self, df: pd.DataFrame):
         self._df = df
+
+        unique_deltas = self._df["Timedelta"].unique()
+        TimedeltaAxisItem.sampling_interval = unique_deltas[1] - unique_deltas[0]
+
         self.__update_plot()
 
     def set_variable(self, variable: str, update: bool):
@@ -120,10 +128,10 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         self.update()
 
     def __plot_item(self, data: pd.DataFrame, name: str, pen):
-        x = (data["DateTime"] - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
-        # x = filtered_data["Bin"]
+        # x = (data["DateTime"] - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
+        x = data["Bin"]
 
-        x = x.to_numpy()
+        x = x.to_numpy(dtype=np.int64)
         tmp_min = x.min()
         tmp_max = x.max()
 
@@ -179,7 +187,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         factor_name = self._selected_factor.name
 
-        group_by = ["DateTime", factor_name]
+        group_by = ["Bin", factor_name]
         grouped = self._df.groupby(group_by, dropna=False, observed=False)
 
         result = (
@@ -214,7 +222,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         x_min = None
         x_max = None
 
-        group_by = ["DateTime", "Run"]
+        group_by = ["Bin", "Run"]
         grouped = self._df.groupby(group_by, dropna=False, observed=False)
 
         result = (
@@ -249,7 +257,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         x_min = None
         x_max = None
 
-        group_by = ["DateTime"]
+        group_by = ["Bin"]
         grouped = self._df.groupby(group_by, dropna=False, observed=False)
 
         result = (
