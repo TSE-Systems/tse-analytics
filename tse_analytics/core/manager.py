@@ -1,4 +1,5 @@
 import copy
+from pathlib import Path
 
 from loguru import logger
 from PySide6.QtCore import QModelIndex, QSettings, QThreadPool
@@ -9,7 +10,8 @@ from tse_analytics.core.dataset_merger import merge_datasets
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.models.workspace_model import WorkspaceModel
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
-from tse_analytics.modules.phenomaster.io.dataset_loader import DatasetLoader
+from tse_analytics.modules.phenomaster.io.csv_dataset_loader import CsvDatasetLoader
+from tse_analytics.modules.phenomaster.io.tse_dataset_loader import TseDatasetLoader
 
 
 class Manager:
@@ -32,10 +34,16 @@ class Manager:
         cls.workspace.save_workspace(path)
 
     @classmethod
-    def import_dataset(cls, path: str) -> None:
+    def import_csv_dataset(cls, path: Path) -> None:
         settings = QSettings()
         csv_import_settings: CsvImportSettings = settings.value("CsvImportSettings", CsvImportSettings.get_default())
-        dataset = DatasetLoader.load(path, csv_import_settings)
+        dataset = CsvDatasetLoader.load(path, csv_import_settings)
+        if dataset is not None:
+            cls.workspace.add_dataset(dataset)
+
+    @classmethod
+    def import_tse_dataset(cls, path: Path) -> None:
+        dataset = TseDatasetLoader.load(path)
         if dataset is not None:
             cls.workspace.add_dataset(dataset)
 

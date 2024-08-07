@@ -1,5 +1,6 @@
 import os
 from functools import partial
+from pathlib import Path
 
 import psutil
 import PySide6QtAds
@@ -306,18 +307,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         dlg.show()
 
     def import_dataset_dialog(self):
-        path, _ = QFileDialog.getOpenFileName(
+        filename, _ = QFileDialog.getOpenFileName(
             self,
             "Import dataset",
             "",
-            "Dataset Files (*.csv)",
+            "TSE Dataset Files (*.tse);;CSV Files (*.csv)",
         )
-        if path:
-            dialog = ImportCsvDialog(path, self)
-            # TODO: check other cases!!
-            dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-            if dialog.exec() == QDialog.DialogCode.Accepted:
-                Manager.import_dataset(path)
+        if filename:
+            path = Path(filename)
+            if path.is_file():
+                if path.suffix.lower() == ".csv":
+                    dialog = ImportCsvDialog(path, self)
+                    # TODO: check other cases!!
+                    dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+                    if dialog.exec() == QDialog.DialogCode.Accepted:
+                        Manager.import_csv_dataset(path)
+                elif path.suffix.lower() == ".tse":
+                    Manager.import_tse_dataset(path)
 
     @property
     def ok_to_quit(self):

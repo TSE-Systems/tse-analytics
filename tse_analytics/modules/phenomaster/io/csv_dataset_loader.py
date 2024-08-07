@@ -15,13 +15,10 @@ def most_frequent(lst: list):
     return max(set(lst), key=lst.count)
 
 
-class DatasetLoader:
+class CsvDatasetLoader:
     @staticmethod
-    def load(filename: str, csv_import_settings: CsvImportSettings) -> Dataset | None:
-        path = Path(filename)
-        if path.is_file() and path.suffix.lower() == ".csv":
-            return DatasetLoader.__load_from_csv(path, csv_import_settings)
-        return None
+    def load(path: Path, csv_import_settings: CsvImportSettings) -> Dataset | None:
+        return CsvDatasetLoader.__load_from_csv(path, csv_import_settings)
 
     @staticmethod
     def __get_header_section(lines: list[str]):
@@ -80,17 +77,17 @@ class DatasetLoader:
         # lines = [line.strip().rstrip(DELIMITER) for line in lines]
         lines = [line.strip() for line in lines]
 
-        header_section = DatasetLoader.__get_header_section(lines)
-        animal_section = DatasetLoader.__get_animal_section(lines, header_section.section_end_index + 1)
-        sample_interval_section = DatasetLoader.__get_sample_interval_section(
+        header_section = CsvDatasetLoader.__get_header_section(lines)
+        animal_section = CsvDatasetLoader.__get_animal_section(lines, header_section.section_end_index + 1)
+        sample_interval_section = CsvDatasetLoader.__get_sample_interval_section(
             lines, animal_section.section_end_index + 1
         )
         group_section = (
-            DatasetLoader.__get_group_section(lines, sample_interval_section.section_end_index + 1)
+            CsvDatasetLoader.__get_group_section(lines, sample_interval_section.section_end_index + 1)
             if sample_interval_section is not None
             else None
         )
-        data_section = DatasetLoader.__get_data_section(
+        data_section = CsvDatasetLoader.__get_data_section(
             lines,
             group_section.section_end_index + 1 if group_section is not None else animal_section.section_end_index + 1,
         )
@@ -182,8 +179,8 @@ class DatasetLoader:
         df.reset_index(drop=True, inplace=True)
 
         # Calculate cumulative values
-        DatasetLoader.__add_cumulative_columns(df, "Drink", variables)
-        DatasetLoader.__add_cumulative_columns(df, "Feed", variables)
+        CsvDatasetLoader.__add_cumulative_columns(df, "Drink", variables)
+        CsvDatasetLoader.__add_cumulative_columns(df, "Feed", variables)
 
         start_date_time = df["DateTime"][0]
         df.insert(loc=1, column="Timedelta", value=df["DateTime"] - start_date_time)

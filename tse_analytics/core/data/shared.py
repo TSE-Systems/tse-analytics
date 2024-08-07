@@ -42,6 +42,7 @@ class Variable:
     name: str
     unit: str
     description: str
+    type: str
 
     def get_dict(self):
         return self.__dict__
