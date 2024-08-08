@@ -311,7 +311,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self,
             "Import dataset",
             "",
-            "TSE Dataset Files (*.tse);;CSV Files (*.csv)",
+            "Data Files (*.tse *.csv);;TSE Dataset Files (*.tse);;CSV Files (*.csv)",
         )
         if filename:
             path = Path(filename)

@@ -66,7 +66,7 @@ class CsvDatasetLoader:
         for col in cols:
             cumulative_col_name = col + "C"
             df[cumulative_col_name] = df.groupby("Box", observed=False)[col].transform(pd.Series.cumsum)
-            var = Variable(name=cumulative_col_name, unit=variables[col].unit, description=f"{col} (cumulative)")
+            var = Variable(name=cumulative_col_name, unit=variables[col].unit, description=f"{col} (cumulative)", type="float64")
             variables[var.name] = var
 
     @staticmethod
@@ -125,11 +125,11 @@ class CsvDatasetLoader:
                 # Skip first 'Date Time', 'Animal No.' and 'Box' columns
                 if i < 3:
                     continue
-            variable = Variable(name=item, unit=columns_unit[i], description="")
+            variable = Variable(name=item, unit=columns_unit[i], description="", type="")
             variables[variable.name] = variable
 
         # Add Weight variable
-        variables["Weight"] = Variable("Weight", "[g]", "Animal weight")
+        variables["Weight"] = Variable("Weight", "[g]", "Animal weight", type="float64")
 
         data = data_section.lines[2:]
         data = [line.rstrip(csv_import_settings.delimiter) for line in data]
@@ -209,7 +209,11 @@ class CsvDatasetLoader:
 
         name = header_section.lines[0].split(csv_import_settings.delimiter)[0]
         description = header_section.lines[0].split(csv_import_settings.delimiter)[1]
-        version = header_section.lines[1].split(csv_import_settings.delimiter)[1]
+        version_section = header_section.lines[1].split(csv_import_settings.delimiter)
+        if len(version_section) > 1:
+            version = version_section[1]
+        else:
+            version = version_section[0]
 
         buf = StringIO()
         df.info(buf=buf)
