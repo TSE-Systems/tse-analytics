@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import pandas as pd
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
 from tse_analytics.core.data.shared import TimePhase
@@ -18,7 +19,7 @@ class TimePhasesModel(QAbstractTableModel):
     def data(self, index: QModelIndex, role: Qt.ItemDataRole):
         if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
             item = self.items[index.row()]
-            values = (item.name, item.start_timestamp.strftime("%Y-%m-%d %H:%M:%S"))
+            values = (item.name, str(item.start_timestamp))
             return values[index.column()]
 
     def setData(self, index: QModelIndex, value, role: Qt.ItemDataRole):
@@ -28,7 +29,7 @@ class TimePhasesModel(QAbstractTableModel):
                 item.name = value
             elif index.column() == 1:
                 try:
-                    item.start_timestamp = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+                    item.start_timestamp = pd.to_timedelta(value)
                     # Manager.data.selected_dataset.set_time_phases(self.items)
                     Manager.messenger.broadcast(DatasetChangedMessage(self, Manager.data.selected_dataset))
                 except ValueError:

@@ -89,7 +89,7 @@ class BarPlotView(QWidget):
                 kind="bar",
                 errorbar=self._error_type if self._display_errors else None,
             )
-            # facet_grid.set_xticklabels(rotation=90)
+            facet_grid.set_xticklabels(rotation=75)
             # facet_grid.set_titles("{col_name}")
             self.canvas = FigureCanvasQTAgg(facet_grid.figure)
             self.canvas.updateGeometry()

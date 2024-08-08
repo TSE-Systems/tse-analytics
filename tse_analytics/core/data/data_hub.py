@@ -362,7 +362,7 @@ class DataHub:
 
             result["Bin"] = None
             for phase in self.selected_dataset.binning_settings.time_phases_settings.time_phases:
-                result.loc[result["DateTime"] >= phase.start_timestamp, "Bin"] = phase.name
+                result.loc[result["Timedelta"] >= phase.start_timestamp, "Bin"] = phase.name
 
             result["Bin"] = result["Bin"].astype("category")
             result.drop(columns=["DateTime"], inplace=True)

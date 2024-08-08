@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
-from datetime import datetime
 from enum import Enum, unique
+
+import pandas as pd
 
 
 @unique
@@ -51,7 +52,7 @@ class Variable:
 @dataclass
 class TimePhase:
     name: str
-    start_timestamp: datetime
+    start_timestamp: pd.Timedelta
 
 
 @dataclass

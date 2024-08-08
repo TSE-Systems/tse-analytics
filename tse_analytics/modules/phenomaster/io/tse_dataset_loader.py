@@ -232,7 +232,9 @@ class TseDatasetLoader:
                 dtype=dtypes,
                 chunksize=CHUNK_SIZE,
             ):
-                chunk["X"] = np.left_shift(chunk["X2"].to_numpy(dtype=np.uint64), 32) + chunk["X1"].to_numpy(dtype=np.uint64)
+                chunk["X"] = np.left_shift(chunk["X2"].to_numpy(dtype=np.uint64), 32) + chunk["X1"].to_numpy(
+                    dtype=np.uint64
+                )
                 chunk.rename(columns={"Y1": "Y"}, inplace=True)
                 chunk.drop(columns=["X1", "X2"], inplace=True)
                 df = pd.concat([df, chunk], ignore_index=True)

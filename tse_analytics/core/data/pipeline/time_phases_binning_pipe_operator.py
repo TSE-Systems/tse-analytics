@@ -25,7 +25,7 @@ class TimePhasesBinningPipeOperator(PipeOperator):
 
         df["Bin"] = None
         for phase in self.settings.time_phases:
-            df.loc[df["DateTime"] >= phase.start_timestamp, "Bin"] = phase.name
+            df.loc[df["Timedelta"] >= phase.start_timestamp, "Bin"] = phase.name
 
         df["Bin"] = df["Bin"].astype("category")
         df.drop(columns=["DateTime"], inplace=True)

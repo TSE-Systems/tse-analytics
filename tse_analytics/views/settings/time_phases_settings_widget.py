@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+import pandas as pd
 from PySide6.QtWidgets import QHeaderView, QInputDialog, QWidget
 
 from tse_analytics.core.data.binning import TimePhasesBinningSettings
@@ -40,12 +41,10 @@ class TimePhasesSettingsWidget(QWidget):
             return
         text, result = QInputDialog.getText(self, "Add Time Phase", "Please enter unique phase name:")
         if result:
-            start_timestamp = datetime.now()
+            start_timestamp = pd.Timedelta("0 days 00:00:00")
             if len(self.time_phases_model.items) > 0:
                 start_timestamp = self.time_phases_model.items[-1].start_timestamp
-                start_timestamp = start_timestamp + timedelta(hours=1)
-            elif len(Manager.data.selected_dataset.original_df) > 0:
-                start_timestamp = Manager.data.selected_dataset.original_df["DateTime"].iloc[0]
+                start_timestamp = start_timestamp + pd.to_timedelta(1, unit="hours")
             time_phase = TimePhase(name=text, start_timestamp=start_timestamp)
             self.time_phases_model.add_time_phase(time_phase)
 
