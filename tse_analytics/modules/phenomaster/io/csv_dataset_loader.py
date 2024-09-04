@@ -66,7 +66,9 @@ class CsvDatasetLoader:
         for col in cols:
             cumulative_col_name = col + "C"
             df[cumulative_col_name] = df.groupby("Box", observed=False)[col].transform(pd.Series.cumsum)
-            var = Variable(name=cumulative_col_name, unit=variables[col].unit, description=f"{col} (cumulative)", type="float64")
+            var = Variable(
+                name=cumulative_col_name, unit=variables[col].unit, description=f"{col} (cumulative)", type="float64"
+            )
             variables[var.name] = var
 
     @staticmethod

@@ -27,17 +27,18 @@ class DataPlotWidget(QWidget, MessengerListener):
 
         self.register_to_messenger(Manager.messenger)
 
-        self.ui.radioButtonSplitTotal.toggled.connect(self.__split_mode_changed)
-        self.ui.radioButtonSplitByAnimal.toggled.connect(self.__split_mode_changed)
-        self.ui.radioButtonSplitByFactor.toggled.connect(self.__split_mode_changed)
-        self.ui.radioButtonSplitByRun.toggled.connect(self.__split_mode_changed)
+        self.ui.radioButtonSplitTotal.toggled.connect(self.__split_mode_toggled)
+        self.ui.radioButtonSplitByAnimal.toggled.connect(self.__split_mode_toggled)
+        self.ui.radioButtonSplitByFactor.toggled.connect(self.__split_mode_toggled)
+        self.ui.radioButtonSplitByRun.toggled.connect(self.__split_mode_toggled)
 
         self.ui.variableSelector.currentTextChanged.connect(self.__variable_changed)
-        self.ui.factorSelector.currentTextChanged.connect(self.__split_mode_changed)
+        # self.ui.factorSelector.currentTextChanged.connect(self.__split_mode_changed)
+        self.ui.factorSelector.currentTextChanged.connect(self.__factor_changed)
         self.ui.checkBoxScatterPlot.stateChanged.connect(self.__set_scatter_plot)
-        self.ui.groupBoxDisplayErrors.toggled.connect(self.__display_errors)
-        self.ui.radioButtonStandardDeviation.toggled.connect(lambda: self.__error_type_changed("StandardDeviation"))
-        self.ui.radioButtonStandardError.toggled.connect(lambda: self.__error_type_changed("StandardError"))
+        self.ui.groupBoxDisplayErrors.toggled.connect(self.__display_errors_toggled)
+        self.ui.radioButtonStandardDeviation.toggled.connect(self.__error_type_std_toggled)
+        self.ui.radioButtonStandardError.toggled.connect(self.__error_type_ste_toggled)
 
         self.ui.pushButtonAddReport.clicked.connect(self.__add_report)
 
@@ -60,17 +61,30 @@ class DataPlotWidget(QWidget, MessengerListener):
     def __variable_changed(self, variable: str):
         self.__assign_data()
 
-    def __error_type_changed(self, error_type: str):
-        if Manager.data.binning_params.mode == BinningMode.INTERVALS:
-            self.timelinePlotView.set_error_type("std" if error_type == "StandardDeviation" else "sem")
-        else:
-            self.barPlotView.set_error_type("sd" if error_type == "StandardDeviation" else "se")
+    def __factor_changed(self, factor_name: str):
+        self.__assign_data()
 
-    def __display_errors(self, state: bool):
+    def __error_type_std_toggled(self, toggled: bool):
+        if not toggled:
+            return
         if Manager.data.binning_params.mode == BinningMode.INTERVALS:
-            self.timelinePlotView.set_display_errors(state)
+            self.timelinePlotView.set_error_type("std")
         else:
-            self.barPlotView.set_display_errors(state)
+            self.barPlotView.set_error_type("sd")
+
+    def __error_type_ste_toggled(self, toggled: bool):
+        if not toggled:
+            return
+        if Manager.data.binning_params.mode == BinningMode.INTERVALS:
+            self.timelinePlotView.set_error_type("sem")
+        else:
+            self.barPlotView.set_error_type("se")
+
+    def __display_errors_toggled(self, toggled: bool):
+        if Manager.data.binning_params.mode == BinningMode.INTERVALS:
+            self.timelinePlotView.set_display_errors(toggled)
+        else:
+            self.barPlotView.set_display_errors(toggled)
 
     def __set_scatter_plot(self, state: bool):
         self.timelinePlotView.set_scatter_plot(state)
@@ -99,7 +113,10 @@ class DataPlotWidget(QWidget, MessengerListener):
     def __on_data_changed(self, message: DataChangedMessage):
         self.__assign_data()
 
-    def __split_mode_changed(self):
+    def __split_mode_toggled(self, toggled: bool):
+        if not toggled:
+            return
+
         selected_factor_name = self.ui.factorSelector.currentText()
 
         split_mode = SplitMode.TOTAL

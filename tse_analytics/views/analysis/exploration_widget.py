@@ -31,14 +31,28 @@ class ExplorationWidget(QWidget, MessengerListener):
         self.ui.pushButtonUpdate.clicked.connect(self.__update)
         self.ui.pushButtonAddReport.clicked.connect(self.__add_report)
 
-        self.ui.radioButtonHistogram.toggled.connect(lambda: self.ui.groupBoxDistribution.setEnabled(False))
-        self.ui.radioButtonDistribution.toggled.connect(lambda: self.ui.groupBoxDistribution.setEnabled(True))
-        self.ui.radioButtonNormality.toggled.connect(lambda: self.ui.groupBoxDistribution.setEnabled(False))
+        self.ui.radioButtonHistogram.toggled.connect(
+            lambda toggled: self.ui.groupBoxDistribution.setEnabled(False) if toggled else None
+        )
+        self.ui.radioButtonDistribution.toggled.connect(
+            lambda toggled: self.ui.groupBoxDistribution.setEnabled(True) if toggled else None
+        )
+        self.ui.radioButtonNormality.toggled.connect(
+            lambda toggled: self.ui.groupBoxDistribution.setEnabled(False) if toggled else None
+        )
 
-        self.ui.radioButtonSplitTotal.toggled.connect(lambda: self.ui.factorSelector.setEnabled(False))
-        self.ui.radioButtonSplitByAnimal.toggled.connect(lambda: self.ui.factorSelector.setEnabled(False))
-        self.ui.radioButtonSplitByFactor.toggled.connect(lambda: self.ui.factorSelector.setEnabled(True))
-        self.ui.radioButtonSplitByRun.toggled.connect(lambda: self.ui.factorSelector.setEnabled(False))
+        self.ui.radioButtonSplitTotal.toggled.connect(
+            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
+        )
+        self.ui.radioButtonSplitByAnimal.toggled.connect(
+            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
+        )
+        self.ui.radioButtonSplitByFactor.toggled.connect(
+            lambda toggled: self.ui.factorSelector.setEnabled(True) if toggled else None
+        )
+        self.ui.radioButtonSplitByRun.toggled.connect(
+            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
+        )
 
         plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
         plot_toolbar.setIconSize(QSize(16, 16))

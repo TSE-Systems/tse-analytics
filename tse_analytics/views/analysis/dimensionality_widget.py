@@ -32,14 +32,28 @@ class DimensionalityWidget(QWidget, MessengerListener):
         self.ui.pushButtonUpdate.clicked.connect(self.__update)
         self.ui.pushButtonAddReport.clicked.connect(self.__add_report)
 
-        self.ui.radioButtonMatrixPlot.toggled.connect(lambda: self.ui.groupBoxDimensions.setEnabled(False))
-        self.ui.radioButtonPCA.toggled.connect(lambda: self.ui.groupBoxDimensions.setEnabled(True))
-        self.ui.radioButtonTSNE.toggled.connect(lambda: self.ui.groupBoxDimensions.setEnabled(True))
+        self.ui.radioButtonMatrixPlot.toggled.connect(
+            lambda toggled: self.ui.groupBoxDimensions.setEnabled(False) if toggled else None
+        )
+        self.ui.radioButtonPCA.toggled.connect(
+            lambda toggled: self.ui.groupBoxDimensions.setEnabled(True) if toggled else None
+        )
+        self.ui.radioButtonTSNE.toggled.connect(
+            lambda toggled: self.ui.groupBoxDimensions.setEnabled(True) if toggled else None
+        )
 
-        self.ui.radioButtonSplitTotal.toggled.connect(lambda: self.ui.factorSelector.setEnabled(False))
-        self.ui.radioButtonSplitByAnimal.toggled.connect(lambda: self.ui.factorSelector.setEnabled(False))
-        self.ui.radioButtonSplitByFactor.toggled.connect(lambda: self.ui.factorSelector.setEnabled(True))
-        self.ui.radioButtonSplitByRun.toggled.connect(lambda: self.ui.factorSelector.setEnabled(False))
+        self.ui.radioButtonSplitTotal.toggled.connect(
+            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
+        )
+        self.ui.radioButtonSplitByAnimal.toggled.connect(
+            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
+        )
+        self.ui.radioButtonSplitByFactor.toggled.connect(
+            lambda toggled: self.ui.factorSelector.setEnabled(True) if toggled else None
+        )
+        self.ui.radioButtonSplitByRun.toggled.connect(
+            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
+        )
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)

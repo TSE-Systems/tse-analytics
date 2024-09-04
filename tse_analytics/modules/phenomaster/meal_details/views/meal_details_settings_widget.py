@@ -18,7 +18,7 @@ class MealDetailsSettingsWidget(QWidget):
         self.ui.setupUi(self)
 
         self.ui.pushButtonResetSettings.clicked.connect(self.__reset_settings)
-        self.ui.radioButtonSequentialType.toggled.connect(lambda state: self.__set_analysis_type(state))
+        self.ui.radioButtonSequentialType.toggled.connect(lambda toggled: self.__set_analysis_type(toggled))
 
         self.ui.toolButtonAddDiet.clicked.connect(self.__add_diet)
         self.ui.toolButtonDeleteDiet.clicked.connect(self.__delete_diet)

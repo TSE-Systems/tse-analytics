@@ -32,11 +32,21 @@ class AnovaWidget(QWidget, MessengerListener):
         self.ui.tableWidgetDependentVariable.setHorizontalHeaderLabels(["Name", "Unit", "Description"])
         self.ui.tableWidgetCovariates.setHorizontalHeaderLabels(["Name", "Unit", "Description"])
 
-        self.ui.radioButtonOneWayAnova.toggled.connect(lambda: self.ui.groupBoxCovariates.hide())
-        self.ui.radioButtonNWayAnova.toggled.connect(lambda: self.ui.groupBoxCovariates.hide())
-        self.ui.radioButtonRMAnova.toggled.connect(lambda: self.ui.groupBoxCovariates.hide())
-        self.ui.radioButtonMixedAnova.toggled.connect(lambda: self.ui.groupBoxCovariates.hide())
-        self.ui.radioButtonAncova.toggled.connect(lambda: self.ui.groupBoxCovariates.show())
+        self.ui.radioButtonOneWayAnova.toggled.connect(
+            lambda toggled: self.ui.groupBoxCovariates.hide() if toggled else None
+        )
+        self.ui.radioButtonNWayAnova.toggled.connect(
+            lambda toggled: self.ui.groupBoxCovariates.hide() if toggled else None
+        )
+        self.ui.radioButtonRMAnova.toggled.connect(
+            lambda toggled: self.ui.groupBoxCovariates.hide() if toggled else None
+        )
+        self.ui.radioButtonMixedAnova.toggled.connect(
+            lambda toggled: self.ui.groupBoxCovariates.hide() if toggled else None
+        )
+        self.ui.radioButtonAncova.toggled.connect(
+            lambda toggled: self.ui.groupBoxCovariates.show() if toggled else None
+        )
 
         self.p_adjustment = {
             "No correction": "none",

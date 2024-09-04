@@ -36,10 +36,18 @@ class BivariateWidget(QWidget, MessengerListener):
         self.ui.radioButtonCorrelation.toggled.connect(self.__correlation_selected)
         self.ui.radioButtonRegression.toggled.connect(self.__regression_selected)
 
-        self.ui.radioButtonSplitTotal.toggled.connect(lambda: self.ui.factorSelector.setEnabled(False))
-        self.ui.radioButtonSplitByAnimal.toggled.connect(lambda: self.ui.factorSelector.setEnabled(False))
-        self.ui.radioButtonSplitByFactor.toggled.connect(lambda: self.ui.factorSelector.setEnabled(True))
-        self.ui.radioButtonSplitByRun.toggled.connect(lambda: self.ui.factorSelector.setEnabled(False))
+        self.ui.radioButtonSplitTotal.toggled.connect(
+            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
+        )
+        self.ui.radioButtonSplitByAnimal.toggled.connect(
+            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
+        )
+        self.ui.radioButtonSplitByFactor.toggled.connect(
+            lambda toggled: self.ui.factorSelector.setEnabled(True) if toggled else None
+        )
+        self.ui.radioButtonSplitByRun.toggled.connect(
+            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
+        )
 
         self.plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
         self.plot_toolbar.setIconSize(QSize(16, 16))
@@ -65,11 +73,15 @@ class BivariateWidget(QWidget, MessengerListener):
         self.ui.factorSelector.clear()
         self.ui.textEdit.document().clear()
 
-    def __correlation_selected(self):
+    def __correlation_selected(self, toggled: bool):
+        if not toggled:
+            return
         self.ui.groupBoxX.setTitle("X")
         self.ui.groupBoxY.setTitle("Y")
 
-    def __regression_selected(self):
+    def __regression_selected(self, toggled: bool):
+        if not toggled:
+            return
         self.ui.groupBoxX.setTitle("Covariate")
         self.ui.groupBoxY.setTitle("Response")
 

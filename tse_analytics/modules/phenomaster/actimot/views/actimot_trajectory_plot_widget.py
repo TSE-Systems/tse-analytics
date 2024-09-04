@@ -19,7 +19,7 @@ class ActimotTrajectoryPlotWidget(QWidget):
         self.ui.setupUi(self)
 
         self.ui.toolButtonCalculate.clicked.connect(self.__update_plot)
-        self.ui.checkBoxDrawNPoints.toggled.connect(lambda state: self.ui.spinBoxN.setEnabled(state))
+        self.ui.checkBoxDrawNPoints.toggled.connect(lambda toggled: self.ui.spinBoxN.setEnabled(toggled))
 
         plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
         plot_toolbar.setIconSize(QSize(16, 16))

@@ -1,5 +1,3 @@
-from datetime import datetime
-
 import pandas as pd
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
