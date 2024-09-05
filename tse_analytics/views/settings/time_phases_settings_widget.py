@@ -15,8 +15,8 @@ class TimePhasesSettingsWidget(QWidget):
         self.ui = Ui_TimePhasesSettingsWidget()
         self.ui.setupUi(self)
 
-        self.ui.toolButtonAddPhase.clicked.connect(self.__add_time_phase)
-        self.ui.toolButtonDeletePhase.clicked.connect(self.__delete_time_phase)
+        self.ui.toolButtonAddPhase.clicked.connect(self._add_time_phase)
+        self.ui.toolButtonDeletePhase.clicked.connect(self._delete_time_phase)
 
         self.time_phases_model = TimePhasesModel([])
         self.ui.tableViewTimePhases.setModel(self.time_phases_model)
@@ -34,7 +34,7 @@ class TimePhasesSettingsWidget(QWidget):
         # Trigger refresh.
         self.time_phases_model.layoutChanged.emit()
 
-    def __add_time_phase(self):
+    def _add_time_phase(self):
         if Manager.data.selected_dataset is None:
             return
         text, result = QInputDialog.getText(self, "Add Time Phase", "Please enter unique phase name:")
@@ -46,7 +46,7 @@ class TimePhasesSettingsWidget(QWidget):
             time_phase = TimePhase(name=text, start_timestamp=start_timestamp)
             self.time_phases_model.add_time_phase(time_phase)
 
-    def __delete_time_phase(self):
+    def _delete_time_phase(self):
         if Manager.data.selected_dataset is None:
             return
         indexes = self.ui.tableViewTimePhases.selectedIndexes()

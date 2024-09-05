@@ -13,7 +13,7 @@ class CaloDetailsRerWidget(QWidget):
         self.ui.setupUi(self)
 
         self.ui.comboBoxVariable.addItems(["RER", "O2", "Ref.O2", "CO2", "Ref.CO2", "VO2(3)", "VCO2(3)", "H(3)"])
-        self.ui.comboBoxVariable.currentTextChanged.connect(self.__variable_changed)
+        self.ui.comboBoxVariable.currentTextChanged.connect(self._variable_changed)
 
         self.ui.horizontalLayout.insertWidget(
             self.ui.horizontalLayout.count(), NavigationToolbar2QT(self.ui.canvas, self)
@@ -21,7 +21,7 @@ class CaloDetailsRerWidget(QWidget):
 
         self.fitting_result: CaloDetailsFittingResult | None = None
 
-    def __variable_changed(self, variable: str) -> None:
+    def _variable_changed(self, variable: str) -> None:
         self.set_data(self.fitting_result)
 
     def clear(self) -> None:

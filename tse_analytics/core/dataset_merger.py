@@ -7,12 +7,12 @@ def merge_datasets(
     new_dataset_name: str, datasets: list[Dataset], single_run: bool, continuous_mode: bool
 ) -> Dataset | None:
     if continuous_mode:
-        return __merge_continuous(new_dataset_name, datasets, single_run)
+        return _merge_continuous(new_dataset_name, datasets, single_run)
     else:
-        return __merge_overlap(new_dataset_name, datasets, single_run)
+        return _merge_overlap(new_dataset_name, datasets, single_run)
 
 
-def __merge_continuous(new_dataset_name: str, datasets: list[Dataset], single_run: bool) -> Dataset | None:
+def _merge_continuous(new_dataset_name: str, datasets: list[Dataset], single_run: bool) -> Dataset | None:
     dfs = [x.original_df for x in datasets]
 
     # reassign run number
@@ -64,7 +64,7 @@ def __merge_continuous(new_dataset_name: str, datasets: list[Dataset], single_ru
     return result
 
 
-def __merge_overlap(new_dataset_name: str, datasets: list[Dataset], single_run: bool) -> Dataset | None:
+def _merge_overlap(new_dataset_name: str, datasets: list[Dataset], single_run: bool) -> Dataset | None:
     dfs = [x.original_df for x in datasets]
 
     # reassign run number

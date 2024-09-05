@@ -56,8 +56,8 @@ class ActimotDialog(QDialog):
         self.actimot_heatmap_plot_widget = ActimotHeatmapPlotWidget()
         self.ui.tabWidget.addTab(self.actimot_heatmap_plot_widget, "Heatmap")
 
-        self.ui.toolButtonCalculate.clicked.connect(self.__calculate)
-        self.ui.toolButtonExport.clicked.connect(self.__export_data)
+        self.ui.toolButtonCalculate.clicked.connect(self._calculate)
+        self.ui.toolButtonExport.clicked.connect(self._export_data)
 
         self.actimot_settings_widget = ActimotSettingsWidget()
         try:
@@ -67,7 +67,7 @@ class ActimotDialog(QDialog):
             actimot_settings = ActimotSettings.get_default()
             self.actimot_settings_widget.set_data(self.actimot_details.dataset, actimot_settings)
 
-        self.actimot_box_selector = ActimotBoxSelector(self.__filter_boxes, self.actimot_settings_widget)
+        self.actimot_box_selector = ActimotBoxSelector(self._filter_boxes, self.actimot_settings_widget)
         self.actimot_box_selector.set_data(actimot_details.dataset)
 
         self.ui.toolBox.removeItem(0)
@@ -78,11 +78,11 @@ class ActimotDialog(QDialog):
 
         self.actimot_events_df = self.actimot_details.raw_df
 
-    def __filter_boxes(self, selected_boxes: list[ActimotAnimalItem]):
+    def _filter_boxes(self, selected_boxes: list[ActimotAnimalItem]):
         self.selected_boxes = selected_boxes
-        self.__filter()
+        self._filter()
 
-    def __filter(self):
+    def _filter(self):
         events_df = self.actimot_events_df
 
         if len(self.selected_boxes) > 0:
@@ -92,7 +92,7 @@ class ActimotDialog(QDialog):
         self.actimot_table_view.set_data(events_df)
         self.actimot_plot_widget.set_data(events_df)
 
-    def __calculate(self):
+    def _calculate(self):
         tic = timeit.default_timer()
 
         actimot_settings = self.actimot_settings_widget.get_settings()
@@ -121,7 +121,7 @@ class ActimotDialog(QDialog):
         logger.info(f"Actimot analysis complete: {timeit.default_timer() - tic} sec")
         Notification(text="Actimot analysis complete.", parent=self, duration=4000).show_notification()
 
-    def __export_data(self):
+    def _export_data(self):
         settings = self.actimot_settings_widget.get_settings()
         filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "ActimotEvents", "CSV Files (*.csv)")
         if filename:

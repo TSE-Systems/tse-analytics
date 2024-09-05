@@ -23,7 +23,7 @@ class DatasetsMergeDialog(QDialog):
         self.ui = Ui_DatasetsMergeDialog()
         self.ui.setupUi(self)
 
-        self.ui.buttonBox.accepted.connect(self.__accepted)
+        self.ui.buttonBox.accepted.connect(self._accepted)
 
         self.datasets = deepcopy(datasets)
 
@@ -36,12 +36,12 @@ class DatasetsMergeDialog(QDialog):
         self.ui.tableWidget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.ui.tableWidget.setRowCount(len(self.datasets))
 
-        self.__update_table()
+        self._update_table()
         self.ui.tableWidget.resizeColumnsToContents()
 
         self.ui.lineEditName.setText(f"{self.datasets[0].name} (merged)")
 
-    def __update_table(self):
+    def _update_table(self):
         for i, dataset in enumerate(self.datasets):
             self.ui.tableWidget.setItem(i, 0, QTableWidgetItem(dataset.name))
             self.ui.tableWidget.setItem(i, 1, QTableWidgetItem(str(dataset.start_timestamp)))
@@ -50,18 +50,18 @@ class DatasetsMergeDialog(QDialog):
             self.ui.tableWidget.setItem(i, 4, QTableWidgetItem(str(dataset.sampling_interval)))
 
             adjust_button = QPushButton("Adjust...")
-            adjust_button.clicked.connect(partial(self.__adjust_dataset, dataset))
+            adjust_button.clicked.connect(partial(self._adjust_dataset, dataset))
             self.ui.tableWidget.setCellWidget(i, 5, adjust_button)
 
-    def __adjust_dataset(self, dataset: Dataset):
+    def _adjust_dataset(self, dataset: Dataset):
         max_sampling_interval = max(dataset.sampling_interval for dataset in self.datasets)
         dialog = AdjustDatasetDialog(dataset, max_sampling_interval, self)
         # TODO: check other cases!!
         dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         if dialog.exec() == QDialog.DialogCode.Accepted:
-            self.__update_table()
+            self._update_table()
 
-    def __accepted(self):
+    def _accepted(self):
         new_dataset_name = self.ui.lineEditName.text()
         single_run = self.ui.checkBoxSingleRun.isChecked()
         continuous_mode = self.ui.radioButtonContinuousMode.isChecked()

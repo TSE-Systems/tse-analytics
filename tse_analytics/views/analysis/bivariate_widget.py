@@ -30,11 +30,11 @@ class BivariateWidget(QWidget, MessengerListener):
         self.help_path = "bivariate.md"
 
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
-        self.ui.pushButtonUpdate.clicked.connect(self.__update)
-        self.ui.pushButtonAddReport.clicked.connect(self.__add_report)
+        self.ui.pushButtonUpdate.clicked.connect(self._update)
+        self.ui.pushButtonAddReport.clicked.connect(self._add_report)
 
-        self.ui.radioButtonCorrelation.toggled.connect(self.__correlation_selected)
-        self.ui.radioButtonRegression.toggled.connect(self.__regression_selected)
+        self.ui.radioButtonCorrelation.toggled.connect(self._correlation_selected)
+        self.ui.radioButtonRegression.toggled.connect(self._regression_selected)
 
         self.ui.radioButtonSplitTotal.toggled.connect(
             lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
@@ -56,42 +56,42 @@ class BivariateWidget(QWidget, MessengerListener):
         self.ui.textEdit.document().setDefaultStyleSheet(style_descriptive_table)
 
     def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
+        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
 
-    def __on_dataset_changed(self, message: DatasetChangedMessage):
+    def _on_dataset_changed(self, message: DatasetChangedMessage):
         self.ui.pushButtonUpdate.setDisabled(message.data is None)
         self.ui.pushButtonAddReport.setDisabled(message.data is None)
-        self.__clear()
+        self._clear()
         if message.data is not None:
             self.ui.variableSelectorX.set_data(message.data.variables)
             self.ui.variableSelectorY.set_data(message.data.variables)
             self.ui.factorSelector.set_data(message.data.factors, add_empty_item=False)
 
-    def __clear(self):
+    def _clear(self):
         self.ui.variableSelectorX.clear()
         self.ui.variableSelectorY.clear()
         self.ui.factorSelector.clear()
         self.ui.textEdit.document().clear()
 
-    def __correlation_selected(self, toggled: bool):
+    def _correlation_selected(self, toggled: bool):
         if not toggled:
             return
         self.ui.groupBoxX.setTitle("X")
         self.ui.groupBoxY.setTitle("Y")
 
-    def __regression_selected(self, toggled: bool):
+    def _regression_selected(self, toggled: bool):
         if not toggled:
             return
         self.ui.groupBoxX.setTitle("Covariate")
         self.ui.groupBoxY.setTitle("Response")
 
-    def __update(self):
+    def _update(self):
         if self.ui.radioButtonCorrelation.isChecked():
-            self.__update_correlation()
+            self._update_correlation()
         elif self.ui.radioButtonRegression.isChecked():
-            self.__update_regression()
+            self._update_regression()
 
-    def __update_correlation(self):
+    def _update_correlation(self):
         x_var = self.ui.variableSelectorX.currentText()
         y_var = self.ui.variableSelectorY.currentText()
         selected_factor = self.ui.factorSelector.currentText()
@@ -152,7 +152,7 @@ class BivariateWidget(QWidget, MessengerListener):
         )
         self.ui.textEdit.document().setHtml(html)
 
-    def __update_regression(self):
+    def _update_regression(self):
         selected_factor = self.ui.factorSelector.currentText()
 
         split_mode = SplitMode.TOTAL
@@ -225,7 +225,7 @@ class BivariateWidget(QWidget, MessengerListener):
         )
         self.ui.textEdit.document().setHtml(html)
 
-    def __add_report(self):
+    def _add_report(self):
         io = BytesIO()
         self.plot_toolbar.canvas.figure.savefig(io, format="png")
         encoded = base64.b64encode(io.getvalue()).decode("utf-8")

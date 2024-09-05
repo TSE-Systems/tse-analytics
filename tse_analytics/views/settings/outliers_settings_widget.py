@@ -14,12 +14,12 @@ class OutliersSettingsWidget(QWidget):
         self.ui.setupUi(self)
 
         self.ui.outliersModeComboBox.addItems([e.value for e in OutliersMode])
-        self.ui.outliersModeComboBox.currentTextChanged.connect(self.__outliers_mode_changed)
+        self.ui.outliersModeComboBox.currentTextChanged.connect(self._outliers_mode_changed)
 
         self.ui.doubleSpinBoxCoefficient.setValue(Manager.data.outliers_params.coefficient)
-        self.ui.doubleSpinBoxCoefficient.valueChanged.connect(self.__coefficient_changed)
+        self.ui.doubleSpinBoxCoefficient.valueChanged.connect(self._coefficient_changed)
 
-    def __outliers_mode_changed(self, value: OutliersMode):
+    def _outliers_mode_changed(self, value: OutliersMode):
         match value:
             case OutliersMode.OFF.value:
                 pass
@@ -27,12 +27,12 @@ class OutliersSettingsWidget(QWidget):
                 pass
             case OutliersMode.REMOVE.value:
                 pass
-        self.__outliers_params_changed()
+        self._outliers_params_changed()
 
-    def __coefficient_changed(self, value: int):
-        self.__outliers_params_changed()
+    def _coefficient_changed(self, value: int):
+        self._outliers_params_changed()
 
-    def __outliers_params_changed(self):
+    def _outliers_params_changed(self):
         mode = OutliersMode(self.ui.outliersModeComboBox.currentText())
         outliers_coefficient = self.ui.doubleSpinBoxCoefficient.value()
 

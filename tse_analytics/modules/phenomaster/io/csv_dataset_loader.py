@@ -18,15 +18,15 @@ def most_frequent(lst: list):
 class CsvDatasetLoader:
     @staticmethod
     def load(path: Path, csv_import_settings: CsvImportSettings) -> Dataset | None:
-        return CsvDatasetLoader.__load_from_csv(path, csv_import_settings)
+        return CsvDatasetLoader._load_from_csv(path, csv_import_settings)
 
     @staticmethod
-    def __get_header_section(lines: list[str]):
+    def _get_header_section(lines: list[str]):
         section = [lines[0], lines[1]]
         return Section(section, 0, 1)
 
     @staticmethod
-    def __get_animal_section(lines: list[str], start_index: int):
+    def _get_animal_section(lines: list[str], start_index: int):
         trimmed_lines = lines[start_index:]
         section_end_index = None
         for idx, line in enumerate(trimmed_lines):
@@ -37,7 +37,7 @@ class CsvDatasetLoader:
         return Section(section, start_index, section_end_index)
 
     @staticmethod
-    def __get_sample_interval_section(lines: list[str], start_index: int):
+    def _get_sample_interval_section(lines: list[str], start_index: int):
         line = lines[start_index]
         if "Sample Interval;" in line:
             return Section([line], start_index, start_index + 1)
@@ -45,7 +45,7 @@ class CsvDatasetLoader:
             return None
 
     @staticmethod
-    def __get_group_section(lines: list[str], start_index: int):
+    def _get_group_section(lines: list[str], start_index: int):
         trimmed_lines = lines[start_index:]
         section_end_index = None
         for idx, line in enumerate(trimmed_lines):
@@ -56,12 +56,12 @@ class CsvDatasetLoader:
         return Section(section, start_index, section_end_index)
 
     @staticmethod
-    def __get_data_section(lines: list[str], start_index: int):
+    def _get_data_section(lines: list[str], start_index: int):
         section = lines[start_index:]
         return Section(section, start_index, len(lines))
 
     @staticmethod
-    def __add_cumulative_columns(df: pd.DataFrame, origin_name: str, variables: dict[str, Variable]):
+    def _add_cumulative_columns(df: pd.DataFrame, origin_name: str, variables: dict[str, Variable]):
         cols = [col for col in df.columns if origin_name in col]
         for col in cols:
             cumulative_col_name = col + "C"
@@ -72,24 +72,24 @@ class CsvDatasetLoader:
             variables[var.name] = var
 
     @staticmethod
-    def __load_from_csv(path: Path, csv_import_settings: CsvImportSettings):
+    def _load_from_csv(path: Path, csv_import_settings: CsvImportSettings):
         with open(path) as f:
             lines = f.readlines()
 
         # lines = [line.strip().rstrip(DELIMITER) for line in lines]
         lines = [line.strip() for line in lines]
 
-        header_section = CsvDatasetLoader.__get_header_section(lines)
-        animal_section = CsvDatasetLoader.__get_animal_section(lines, header_section.section_end_index + 1)
-        sample_interval_section = CsvDatasetLoader.__get_sample_interval_section(
+        header_section = CsvDatasetLoader._get_header_section(lines)
+        animal_section = CsvDatasetLoader._get_animal_section(lines, header_section.section_end_index + 1)
+        sample_interval_section = CsvDatasetLoader._get_sample_interval_section(
             lines, animal_section.section_end_index + 1
         )
         group_section = (
-            CsvDatasetLoader.__get_group_section(lines, sample_interval_section.section_end_index + 1)
+            CsvDatasetLoader._get_group_section(lines, sample_interval_section.section_end_index + 1)
             if sample_interval_section is not None
             else None
         )
-        data_section = CsvDatasetLoader.__get_data_section(
+        data_section = CsvDatasetLoader._get_data_section(
             lines,
             group_section.section_end_index + 1 if group_section is not None else animal_section.section_end_index + 1,
         )
@@ -127,7 +127,7 @@ class CsvDatasetLoader:
                 # Skip first 'Date Time', 'Animal No.' and 'Box' columns
                 if i < 3:
                     continue
-            variable = Variable(name=item, unit=columns_unit[i], description="", type="")
+            variable = Variable(name=item, unit=columns_unit[i], description="", type="float64")
             variables[variable.name] = variable
 
         # Add Weight variable
@@ -181,8 +181,8 @@ class CsvDatasetLoader:
         df.reset_index(drop=True, inplace=True)
 
         # Calculate cumulative values
-        CsvDatasetLoader.__add_cumulative_columns(df, "Drink", variables)
-        CsvDatasetLoader.__add_cumulative_columns(df, "Feed", variables)
+        CsvDatasetLoader._add_cumulative_columns(df, "Drink", variables)
+        CsvDatasetLoader._add_cumulative_columns(df, "Feed", variables)
 
         start_date_time = df["DateTime"][0]
         df.insert(loc=1, column="Timedelta", value=df["DateTime"] - start_date_time)

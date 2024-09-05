@@ -39,8 +39,8 @@ class ReportsWidget(QWidget, MessengerListener):
         self.ui = Ui_ReportsWidget()
         self.ui.setupUi(self)
 
-        self.ui.editor.textChanged.connect(self.__report_changed)
-        self.ui.editor.selectionChanged.connect(self.__update_format)
+        self.ui.editor.textChanged.connect(self._report_changed)
+        self.ui.editor.selectionChanged.connect(self._update_format)
 
         self.ui.editor.document().setDefaultStyleSheet(style_descriptive_table)
 
@@ -49,17 +49,17 @@ class ReportsWidget(QWidget, MessengerListener):
 
         new_action = QAction(QIcon(":/icons/icons8-file-16.png"), "New Report", self)
         new_action.setStatusTip("New report")
-        new_action.triggered.connect(self.__new_report)
+        new_action.triggered.connect(self._new_report)
         toolbar.addAction(new_action)
 
         save_action = QAction(QIcon(":/icons/icons8-save-16.png"), "Save", self)
         save_action.setStatusTip("Save current report")
-        save_action.triggered.connect(self.__save_report)
+        save_action.triggered.connect(self._save_report)
         toolbar.addAction(save_action)
 
         print_action = QAction(QIcon(":/icons/icons8-print-16.png"), "Print", self)
         print_action.setStatusTip("Print current report")
-        print_action.triggered.connect(self.__print)
+        print_action.triggered.connect(self._print)
         toolbar.addAction(print_action)
 
         toolbar.addSeparator()
@@ -220,32 +220,32 @@ class ReportsWidget(QWidget, MessengerListener):
         self.layout().insertWidget(0, toolbar)
 
         # Initialize.
-        self.__update_format()
+        self._update_format()
 
     def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
-        messenger.subscribe(self, AddToReportMessage, self.__add_to_report)
+        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
+        messenger.subscribe(self, AddToReportMessage, self._add_to_report)
 
-    def __on_dataset_changed(self, message: DatasetChangedMessage):
+    def _on_dataset_changed(self, message: DatasetChangedMessage):
         if message.data is not None:
             self.ui.editor.document().setHtml(message.data.report)
 
-    def __add_to_report(self, message: AddToReportMessage):
+    def _add_to_report(self, message: AddToReportMessage):
         self.ui.editor.append(message.content)
 
-    def __new_report(self):
+    def _new_report(self):
         self.ui.editor.document().clear()
 
-    def __report_changed(self):
+    def _report_changed(self):
         if Manager.data.selected_dataset is not None:
             Manager.data.selected_dataset.report = self.ui.editor.toHtml()
 
-    def __print(self):
+    def _print(self):
         dlg = QPrintDialog()
         if dlg.exec():
             self.ui.editor.document().print_(dlg.printer())
 
-    def __save_report(self):
+    def _save_report(self):
         filename, _ = QFileDialog.getSaveFileName(self, "Save Report", "", "HTML Files (*.html)")
         if filename:
             with open(filename, "w") as file:
@@ -257,18 +257,18 @@ class ReportsWidget(QWidget, MessengerListener):
             # # doc.setPageSize(printer.pageRect().size()); // This is necessary if you want to hide the page number
             # self.ui.textEdit.document().print_(printer)
 
-    def __block_signals(self, objects, b):
+    def _block_signals(self, objects, b):
         for o in objects:
             o.blockSignals(b)
 
-    def __update_format(self):
+    def _update_format(self):
         """
         Update the font format toolbar/actions when a new text selection is made. This is necessary to keep
         toolbars/etc. in sync with the current edit state.
         :return:
         """
         # Disable signals for all format widgets, so changing values here does not trigger further formatting.
-        self.__block_signals(self._format_actions, True)
+        self._block_signals(self._format_actions, True)
 
         self.fonts.setCurrentFont(self.ui.editor.currentFont())
         # Nasty, but we get the font-size as a float but want it was an int
@@ -283,4 +283,4 @@ class ReportsWidget(QWidget, MessengerListener):
         self.alignr_action.setChecked(self.ui.editor.alignment() == Qt.AlignmentFlag.AlignRight)
         self.alignj_action.setChecked(self.ui.editor.alignment() == Qt.AlignmentFlag.AlignJustify)
 
-        self.__block_signals(self._format_actions, False)
+        self._block_signals(self._format_actions, False)

@@ -75,12 +75,12 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         unique_deltas = self._df["Timedelta"].unique()
         TimedeltaAxisItem.sampling_interval = unique_deltas[1] - unique_deltas[0]
 
-        self.__update_plot()
+        self._update_plot()
 
     def set_variable(self, variable: str, update: bool):
         self._variable = variable
         if update:
-            self.__update_plot()
+            self._update_plot()
 
     def set_grouping_mode(self, grouping_mode: SplitMode, selected_factor: Factor):
         self._split_mode = grouping_mode
@@ -88,17 +88,17 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
     def set_display_errors(self, state: bool):
         self._display_errors = state
-        self.__update_plot()
+        self._update_plot()
 
     def set_error_type(self, error_type: str):
         self._error_type = error_type
-        self.__update_plot()
+        self._update_plot()
 
     def set_scatter_plot(self, state: bool):
         self._scatter_plot = state
-        self.__update_plot()
+        self._update_plot()
 
-    def __update_plot(self):
+    def _update_plot(self):
         self.plot_data_items.clear()
         self.p1.clear()
         self.p2.clearPlots()

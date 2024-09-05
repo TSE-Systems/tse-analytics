@@ -12,25 +12,25 @@ class ActimotSettingsWidget(QWidget):
         self.ui = Ui_ActimotSettingsWidget()
         self.ui.setupUi(self)
 
-        self.ui.pushButtonResetSettings.clicked.connect(self.__reset_settings)
-        self.ui.radioButtonSequentialType.toggled.connect(lambda toggled: self.__set_analysis_type(toggled))
+        self.ui.pushButtonResetSettings.clicked.connect(self._reset_settings)
+        self.ui.radioButtonSequentialType.toggled.connect(lambda toggled: self._set_analysis_type(toggled))
 
         self.dataset: Dataset | None = None
 
     def set_data(self, dataset: Dataset, actimot_settings: ActimotSettings):
         self.dataset = dataset
-        self.__set_settings(actimot_settings)
+        self._set_settings(actimot_settings)
 
-    def __set_settings(self, actimot_settings: ActimotSettings):
+    def _set_settings(self, actimot_settings: ActimotSettings):
         pass
 
-    def __set_analysis_type(self, sequential_meal_analysis: bool):
+    def _set_analysis_type(self, sequential_meal_analysis: bool):
         self.ui.groupBoxSequentialSettings.setVisible(sequential_meal_analysis)
         self.ui.groupBoxIntervalSettings.setVisible(not sequential_meal_analysis)
 
-    def __reset_settings(self):
+    def _reset_settings(self):
         settings = ActimotSettings.get_default()
-        self.__set_settings(settings)
+        self._set_settings(settings)
 
     def get_settings(self) -> ActimotSettings:
         return ActimotSettings()

@@ -29,34 +29,34 @@ class TimeseriesWidget(QWidget, MessengerListener):
         self.help_path = "timeseries.md"
 
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
-        self.ui.pushButtonUpdate.clicked.connect(self.__update)
-        self.ui.pushButtonAddReport.clicked.connect(self.__add_report)
+        self.ui.pushButtonUpdate.clicked.connect(self._update)
+        self.ui.pushButtonAddReport.clicked.connect(self._add_report)
 
         plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
         plot_toolbar.setIconSize(QSize(16, 16))
         self.ui.widgetSettings.layout().addWidget(plot_toolbar)
 
     def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
+        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
 
-    def __on_dataset_changed(self, message: DatasetChangedMessage):
+    def _on_dataset_changed(self, message: DatasetChangedMessage):
         self.ui.pushButtonUpdate.setDisabled(message.data is None)
         self.ui.pushButtonAddReport.setDisabled(message.data is None)
-        self.__clear()
+        self._clear()
         if message.data is not None:
             self.ui.variableSelector.set_data(message.data.variables)
 
-    def __clear(self):
+    def _clear(self):
         self.ui.variableSelector.clear()
         self.ui.canvas.clear(True)
 
-    def __update(self):
+    def _update(self):
         if self.ui.radioButtonDecomposition.isChecked():
-            self.__update_decomposition()
+            self._update_decomposition()
         elif self.ui.radioButtonAutocorrelation.isChecked():
             self.__update_autocorrelation()
 
-    def __update_decomposition(self):
+    def _update_decomposition(self):
         variable = self.ui.variableSelector.currentText()
         if variable == "":
             Notification(text="Please select a variable.", parent=self, duration=2000).show_notification()
@@ -168,7 +168,7 @@ class TimeseriesWidget(QWidget, MessengerListener):
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()
 
-    def __add_report(self):
+    def _add_report(self):
         io = BytesIO()
         self.ui.canvas.figure.savefig(io, format="png")
         encoded = base64.b64encode(io.getvalue()).decode("utf-8")

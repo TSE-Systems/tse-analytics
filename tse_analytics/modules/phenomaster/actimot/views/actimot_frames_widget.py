@@ -14,7 +14,7 @@ class ActimotFramesWidget(QWidget):
         self.ui = Ui_ActimotFramesWidget()
         self.ui.setupUi(self)
 
-        self.ui.horizontalSlider.valueChanged.connect(self.__slider_value_changed)
+        self.ui.horizontalSlider.valueChanged.connect(self._slider_value_changed)
 
         self.df: pd.DataFrame | None = None
         self.frame_number: int = 0
@@ -22,16 +22,16 @@ class ActimotFramesWidget(QWidget):
     def set_data(self, df: pd.DataFrame) -> None:
         self.df = df
         self.ui.horizontalSlider.setMaximum(df.shape[0] - 1)
-        self.__update_plot()
+        self._update_plot()
 
     def resizeEvent(self, e):
-        self.__update_plot()
+        self._update_plot()
 
-    def __slider_value_changed(self, value: int):
+    def _slider_value_changed(self, value: int):
         self.frame_number = value
-        self.__update_plot()
+        self._update_plot()
 
-    def __update_plot(self):
+    def _update_plot(self):
         if self.df is None:
             return
 

@@ -73,8 +73,8 @@ class MealDetailsDialog(QDialog):
             self.meal_episodes_intake_plot_widget, "Episodes Intake"
         )
 
-        self.ui.toolButtonCalculate.clicked.connect(self.__calculate)
-        self.ui.toolButtonExport.clicked.connect(self.__export_meal_data)
+        self.ui.toolButtonCalculate.clicked.connect(self._calculate)
+        self.ui.toolButtonExport.clicked.connect(self._export_meal_data)
 
         self.meal_details_settings_widget = MealDetailsSettingsWidget()
         try:
@@ -84,7 +84,7 @@ class MealDetailsDialog(QDialog):
             meal_details_settings = MealDetailsSettings.get_default()
             self.meal_details_settings_widget.set_data(self.meal_details.dataset, meal_details_settings)
 
-        self.meal_details_box_selector = MealDetailsBoxSelector(self.__filter_boxes, self.meal_details_settings_widget)
+        self.meal_details_box_selector = MealDetailsBoxSelector(self._filter_boxes, self.meal_details_settings_widget)
         self.meal_details_box_selector.set_data(meal_details.dataset)
 
         self.ui.toolBox.removeItem(0)
@@ -97,10 +97,10 @@ class MealDetailsDialog(QDialog):
         self.meal_episodes_df: pd.DataFrame | None = None
         self.meal_intervals_df: pd.DataFrame | None = None
 
-        self.__update_tabs()
+        self._update_tabs()
         self.toast = None
 
-    def __update_tabs(self):
+    def _update_tabs(self):
         settings = self.meal_details_settings_widget.get_meal_details_settings()
         self.ui.tabWidget.setTabVisible(self.episodes_table_tab_index, settings.sequential_analysis_type)
         self.ui.tabWidget.setTabVisible(self.episodes_offset_tab_index, settings.sequential_analysis_type)
@@ -110,11 +110,11 @@ class MealDetailsDialog(QDialog):
         self.ui.tabWidget.setTabVisible(self.intervals_table_tab_index, not settings.sequential_analysis_type)
         self.ui.tabWidget.setTabVisible(self.intervals_plot_tab_index, not settings.sequential_analysis_type)
 
-    def __filter_boxes(self, selected_boxes: list[MealDetailsAnimalItem]):
+    def _filter_boxes(self, selected_boxes: list[MealDetailsAnimalItem]):
         self.selected_boxes = selected_boxes
-        self.__filter()
+        self._filter()
 
-    def __get_variables_subset(self) -> dict[str, Variable]:
+    def _get_variables_subset(self) -> dict[str, Variable]:
         variables_subset: dict[str, Variable] = {}
         if "Drink1" in self.meal_details.variables:
             variables_subset["Drink1"] = self.meal_details.variables["Drink1"]
@@ -130,7 +130,7 @@ class MealDetailsDialog(QDialog):
             variables_subset["Feed"] = self.meal_details.variables["Feed"]
         return variables_subset
 
-    def __filter(self):
+    def _filter(self):
         events_df = self.meal_events_df
         episodes_df = self.meal_episodes_df
         intervals_df = self.meal_intervals_df
@@ -153,9 +153,9 @@ class MealDetailsDialog(QDialog):
 
         if intervals_df is not None:
             self.intervals_table_view.set_data(intervals_df)
-            self.intervals_plot_widget.set_data(intervals_df, self.__get_variables_subset())
+            self.intervals_plot_widget.set_data(intervals_df, self._get_variables_subset())
 
-    def __calculate(self):
+    def _calculate(self):
         self.ui.toolButtonCalculate.setEnabled(False)
         self.ui.toolButtonExport.setEnabled(False)
 
@@ -166,14 +166,14 @@ class MealDetailsDialog(QDialog):
         diets_dict = self.meal_details_box_selector.get_diets_dict()
 
         if meal_details_settings.sequential_analysis_type:
-            worker = Worker(self.__do_sequential_analysis, meal_details_settings, diets_dict)
-            worker.signals.finished.connect(self.__sequential_analysis_finished)
+            worker = Worker(self._do_sequential_analysis, meal_details_settings, diets_dict)
+            worker.signals.finished.connect(self._sequential_analysis_finished)
         else:
-            worker = Worker(self.__do_interval_analysis, meal_details_settings, diets_dict)
-            worker.signals.finished.connect(self.__interval_analysis_finished)
+            worker = Worker(self._do_interval_analysis, meal_details_settings, diets_dict)
+            worker.signals.finished.connect(self._interval_analysis_finished)
         Manager.threadpool.start(worker)
 
-    def __do_sequential_analysis(
+    def _do_sequential_analysis(
         self,
         meal_details_settings: MealDetailsSettings,
         diets_dict: dict[str, float],
@@ -186,8 +186,8 @@ class MealDetailsDialog(QDialog):
 
         logger.info(f"Meal analysis complete: {timeit.default_timer() - tic} sec")
 
-    def __sequential_analysis_finished(self):
-        variables_subset = self.__get_variables_subset()
+    def _sequential_analysis_finished(self):
+        variables_subset = self._get_variables_subset()
 
         self.meal_events_table_view.set_data(self.meal_events_df)
         self.meal_episodes_table_view.set_data(self.meal_episodes_df)
@@ -196,12 +196,12 @@ class MealDetailsDialog(QDialog):
         self.meal_episodes_gap_plot_widget.set_data(self.meal_episodes_df, variables_subset)
         self.meal_episodes_intake_plot_widget.set_data(self.meal_episodes_df, variables_subset)
 
-        self.__update_tabs()
+        self._update_tabs()
         self.ui.toolButtonExport.setEnabled(True)
         self.ui.toolButtonCalculate.setEnabled(True)
         self.toast.close_notification()
 
-    def __do_interval_analysis(
+    def _do_interval_analysis(
         self,
         meal_details_settings: MealDetailsSettings,
         diets_dict: dict[int, float],
@@ -212,18 +212,18 @@ class MealDetailsDialog(QDialog):
 
         logger.info(f"Meal analysis complete: {timeit.default_timer() - tic} sec")
 
-    def __interval_analysis_finished(self):
-        variables_subset = self.__get_variables_subset()
+    def _interval_analysis_finished(self):
+        variables_subset = self._get_variables_subset()
 
         self.intervals_table_view.set_data(self.meal_intervals_df)
         self.intervals_plot_widget.set_data(self.meal_intervals_df, variables_subset)
 
-        self.__update_tabs()
+        self._update_tabs()
         self.ui.toolButtonExport.setEnabled(True)
         self.ui.toolButtonCalculate.setEnabled(True)
         self.toast.close_notification()
 
-    def __export_meal_data(self):
+    def _export_meal_data(self):
         meal_details_settings = self.meal_details_settings_widget.get_meal_details_settings()
         if meal_details_settings.sequential_analysis_type and self.meal_episodes_df is not None:
             filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "MealEpisodes", "CSV Files (*.csv)")

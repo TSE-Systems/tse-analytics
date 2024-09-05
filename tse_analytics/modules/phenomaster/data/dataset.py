@@ -76,7 +76,7 @@ class Dataset:
             groups[group.name] = group
         return groups
 
-    def __rename_animal_df(self, df: pd.DataFrame, old_id: str, animal: Animal) -> pd.DataFrame:
+    def _rename_animal_df(self, df: pd.DataFrame, old_id: str, animal: Animal) -> pd.DataFrame:
         df = df.astype({
             "Animal": str,
         })
@@ -87,15 +87,15 @@ class Dataset:
         return df
 
     def rename_animal(self, old_id: str, animal: Animal) -> None:
-        self.original_df = self.__rename_animal_df(self.original_df, old_id, animal)
-        self.active_df = self.__rename_animal_df(self.active_df, old_id, animal)
+        self.original_df = self._rename_animal_df(self.original_df, old_id, animal)
+        self.active_df = self._rename_animal_df(self.active_df, old_id, animal)
 
         if self.meal_details is not None:
-            self.meal_details.raw_df = self.__rename_animal_df(self.meal_details.raw_df, old_id, animal)
+            self.meal_details.raw_df = self._rename_animal_df(self.meal_details.raw_df, old_id, animal)
         if self.calo_details is not None:
-            self.calo_details.raw_df = self.__rename_animal_df(self.calo_details.raw_df, old_id, animal)
+            self.calo_details.raw_df = self._rename_animal_df(self.calo_details.raw_df, old_id, animal)
         if self.actimot_details is not None:
-            self.actimot_details.raw_df = self.__rename_animal_df(self.actimot_details.raw_df, old_id, animal)
+            self.actimot_details.raw_df = self._rename_animal_df(self.actimot_details.raw_df, old_id, animal)
 
         # Rename animal in factor's groups definitions
         for factor in self.factors.values():

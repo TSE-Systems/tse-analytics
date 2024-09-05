@@ -27,13 +27,13 @@ class DataTableWidget(QWidget, MessengerListener):
         self.ui = Ui_DataTableWidget()
         self.ui.setupUi(self)
 
-        self.ui.pushButtonResizeColumns.clicked.connect(self.__resize_columns_width)
-        self.ui.factorSelector.currentTextChanged.connect(self.__factor_changed)
-        self.ui.pushButtonAddReport.clicked.connect(self.__add_report)
+        self.ui.pushButtonResizeColumns.clicked.connect(self._resize_columns_width)
+        self.ui.factorSelector.currentTextChanged.connect(self._factor_changed)
+        self.ui.pushButtonAddReport.clicked.connect(self._add_report)
 
         self.ui.comboBoxSplitMode.addItems(["Total", "Animal", "Run", "Factor"])
         self.ui.comboBoxSplitMode.setCurrentText("Animal")
-        self.ui.comboBoxSplitMode.currentTextChanged.connect(self.__split_mode_changed)
+        self.ui.comboBoxSplitMode.currentTextChanged.connect(self._split_mode_changed)
 
         self.header = self.ui.tableView.horizontalHeader()
         self.header.sectionClicked.connect(self.header_clicked)
@@ -43,17 +43,17 @@ class DataTableWidget(QWidget, MessengerListener):
         self.df: pd.DataFrame | None = None
 
     def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
-        messenger.subscribe(self, BinningMessage, self.__on_binning_applied)
-        messenger.subscribe(self, DataChangedMessage, self.__on_data_changed)
+        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
+        messenger.subscribe(self, BinningMessage, self._on_binning_applied)
+        messenger.subscribe(self, DataChangedMessage, self._on_data_changed)
 
-    def __resize_columns_width(self):
+    def _resize_columns_width(self):
         worker = Worker(
             self.ui.tableView.resizeColumnsToContents
         )  # Any other args, kwargs are passed to the run function
         Manager.threadpool.start(worker)
 
-    def __on_dataset_changed(self, message: DatasetChangedMessage):
+    def _on_dataset_changed(self, message: DatasetChangedMessage):
         if message.data is None:
             self.ui.tableView.setModel(None)
             self.ui.textEdit.document().clear()
@@ -61,22 +61,22 @@ class DataTableWidget(QWidget, MessengerListener):
             self.df = None
         else:
             self.ui.factorSelector.set_data(message.data.factors, add_empty_item=False)
-            self.__set_data()
+            self._set_data()
 
-    def __on_binning_applied(self, message: BinningMessage):
-        self.__set_data()
+    def _on_binning_applied(self, message: BinningMessage):
+        self._set_data()
 
-    def __on_data_changed(self, message: DataChangedMessage):
-        self.__set_data()
+    def _on_data_changed(self, message: DataChangedMessage):
+        self._set_data()
 
-    def __split_mode_changed(self, split_mode_name: str):
+    def _split_mode_changed(self, split_mode_name: str):
         self.ui.factorSelector.setEnabled(split_mode_name == "Factor")
-        self.__set_data()
+        self._set_data()
 
-    def __factor_changed(self, selected_factor_name: str):
-        self.__set_data()
+    def _factor_changed(self, selected_factor_name: str):
+        self._set_data()
 
-    def __set_data(self):
+    def _set_data(self):
         if Manager.data.selected_dataset is None:
             return
 
@@ -125,6 +125,6 @@ class DataTableWidget(QWidget, MessengerListener):
         df = self.df.sort_values(self.df.columns[logical_index], ascending=order, inplace=False)
         self.ui.tableView.setModel(PandasModel(df))
 
-    def __add_report(self):
+    def _add_report(self):
         content = self.ui.textEdit.document().toHtml()
         Manager.messenger.broadcast(AddToReportMessage(self, content))

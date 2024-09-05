@@ -13,11 +13,11 @@ class MealDetailsLoader:
     def load(filename: str, dataset: Dataset, csv_import_settings: CsvImportSettings) -> MealDetails | None:
         path = Path(filename)
         if path.is_file() and path.suffix.lower() == ".csv":
-            return MealDetailsLoader.__load_from_csv(path, dataset, csv_import_settings)
+            return MealDetailsLoader._load_from_csv(path, dataset, csv_import_settings)
         return None
 
     @staticmethod
-    def __add_cumulative_columns(df: pd.DataFrame, origin_name: str, variables: dict[str, Variable]):
+    def _add_cumulative_columns(df: pd.DataFrame, origin_name: str, variables: dict[str, Variable]):
         cols = [col for col in df.columns if origin_name in col]
         for col in cols:
             cumulative_col_name = col + "C"
@@ -26,11 +26,13 @@ class MealDetailsLoader:
                 cumulative_col_name,
                 df.groupby("Box", observed=False)[col].transform(pd.Series.cumsum),
             )
-            var = Variable(name=cumulative_col_name, unit=variables[col].unit, description=f"{col} (cumulative)")
+            var = Variable(
+                name=cumulative_col_name, unit=variables[col].unit, description=f"{col} (cumulative)", type="float64"
+            )
             variables[var.name] = var
 
     @staticmethod
-    def __load_from_csv(path: Path, dataset: Dataset, csv_import_settings: CsvImportSettings):
+    def _load_from_csv(path: Path, dataset: Dataset, csv_import_settings: CsvImportSettings):
         with open(path) as f:
             lines = f.readlines()
 
@@ -80,25 +82,25 @@ class MealDetailsLoader:
         variables: dict[str, Variable] = {}
         if drink1_present:
             new_columns.append("Drink1")
-            variables["Drink1"] = Variable(name="Drink1", unit="[ml]", description="Drink1 sensor")
+            variables["Drink1"] = Variable(name="Drink1", unit="[ml]", description="Drink1 sensor", type="float64")
         if feed1_present:
             new_columns.append("Feed1")
-            variables["Feed1"] = Variable(name="Feed1", unit="[g]", description="Feed1 sensor")
+            variables["Feed1"] = Variable(name="Feed1", unit="[g]", description="Feed1 sensor", type="float64")
         if drink2_present:
             new_columns.append("Drink2")
-            variables["Drink2"] = Variable(name="Drink2", unit="[ml]", description="Drink2 sensor")
+            variables["Drink2"] = Variable(name="Drink2", unit="[ml]", description="Drink2 sensor", type="float64")
         if feed2_present:
             new_columns.append("Feed2")
-            variables["Feed2"] = Variable(name="Feed2", unit="[g]", description="Feed2 sensor")
+            variables["Feed2"] = Variable(name="Feed2", unit="[g]", description="Feed2 sensor", type="float64")
         if weight_present:
             new_columns.append("Weight")
-            variables["Weight"] = Variable(name="Weight", unit="[g]", description="Animal weight")
+            variables["Weight"] = Variable(name="Weight", unit="[g]", description="Animal weight", type="float64")
         if drink_present:
             new_columns.append("Drink")
-            variables["Drink"] = Variable(name="Drink", unit="[ml]", description="Drink sensor")
+            variables["Drink"] = Variable(name="Drink", unit="[ml]", description="Drink sensor", type="float64")
         if feed_present:
             new_columns.append("Feed")
-            variables["Feed"] = Variable(name="Feed", unit="[g]", description="Feed sensor")
+            variables["Feed"] = Variable(name="Feed", unit="[g]", description="Feed sensor", type="float64")
 
         new_df = pd.DataFrame(columns=new_columns)
 
@@ -140,17 +142,17 @@ class MealDetailsLoader:
 
         # Calculate cumulative values
         if drink1_present:
-            MealDetailsLoader.__add_cumulative_columns(new_df, "Drink1", variables)
+            MealDetailsLoader._add_cumulative_columns(new_df, "Drink1", variables)
         if feed1_present:
-            MealDetailsLoader.__add_cumulative_columns(new_df, "Feed1", variables)
+            MealDetailsLoader._add_cumulative_columns(new_df, "Feed1", variables)
         if drink2_present:
-            MealDetailsLoader.__add_cumulative_columns(new_df, "Drink2", variables)
+            MealDetailsLoader._add_cumulative_columns(new_df, "Drink2", variables)
         if feed2_present:
-            MealDetailsLoader.__add_cumulative_columns(new_df, "Feed2", variables)
+            MealDetailsLoader._add_cumulative_columns(new_df, "Feed2", variables)
         if drink_present:
-            MealDetailsLoader.__add_cumulative_columns(new_df, "Drink", variables)
+            MealDetailsLoader._add_cumulative_columns(new_df, "Drink", variables)
         if feed_present:
-            MealDetailsLoader.__add_cumulative_columns(new_df, "Feed", variables)
+            MealDetailsLoader._add_cumulative_columns(new_df, "Feed", variables)
 
         # Calo Details sampling interval
         sampling_interval = new_df.iloc[1].at["DateTime"] - new_df.iloc[0].at["DateTime"]

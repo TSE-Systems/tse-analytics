@@ -13,7 +13,7 @@ class AdjustDatasetDialog(QDialog):
         self.ui = Ui_AdjustDatasetDialog()
         self.ui.setupUi(self)
 
-        self.ui.buttonBox.accepted.connect(self.__accepted)
+        self.ui.buttonBox.accepted.connect(self._accepted)
 
         self.dataset = dataset
 
@@ -30,13 +30,13 @@ class AdjustDatasetDialog(QDialog):
         self.ui.dateTimeEditEnd.setMaximumDateTime(dataset.end_timestamp)
         self.ui.dateTimeEditEnd.setDateTime(dataset.end_timestamp)
 
-    def __resample(self):
+    def _resample(self):
         resampling_interval = pd.to_timedelta(
             self.ui.timeEditResamplingInterval.time().msecsSinceStartOfDay(), unit="ms"
         )
         self.dataset.resample(resampling_interval)
 
-    def __shift_time(self):
+    def _shift_time(self):
         delta = pd.to_timedelta(self.ui.spinBoxTimeShiftDays.value(), unit="d") + pd.to_timedelta(
             self.ui.timeEditTimeShift.time().msecsSinceStartOfDay(), unit="ms"
         )
@@ -44,17 +44,17 @@ class AdjustDatasetDialog(QDialog):
             delta = -delta
         self.dataset.adjust_time(delta)
 
-    def __trim_time(self):
+    def _trim_time(self):
         start = self.ui.dateTimeEditStart.dateTime().toPython()
         end = self.ui.dateTimeEditEnd.dateTime().toPython()
         self.dataset.trim_time(start, end)
 
-    def __accepted(self):
+    def _accepted(self):
         if self.ui.groupBoxTrimTime.isChecked():
-            self.__trim_time()
+            self._trim_time()
 
         if self.ui.groupBoxTimeShift.isChecked():
-            self.__shift_time()
+            self._shift_time()
 
         if self.ui.groupBoxResampling.isChecked():
-            self.__resample()
+            self._resample()

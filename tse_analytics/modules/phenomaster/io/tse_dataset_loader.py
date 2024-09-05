@@ -17,11 +17,11 @@ CHUNK_SIZE = 1000000
 class TseDatasetLoader:
     @staticmethod
     def load(path: Path) -> Dataset | None:
-        metadata = TseDatasetLoader.__read_metadata(path)
-        animals = TseDatasetLoader.__get_animals(metadata["animals"])
-        # factors = TseDatasetLoader.__get_factors(metadata["groups"])
+        metadata = TseDatasetLoader._read_metadata(path)
+        animals = TseDatasetLoader._get_animals(metadata["animals"])
+        # factors = TseDatasetLoader._get_factors(metadata["groups"])
 
-        main_table_df, main_table_vars, main_table_sampling_interval = TseDatasetLoader.__read_main_table(
+        main_table_df, main_table_vars, main_table_sampling_interval = TseDatasetLoader._read_main_table(
             path, metadata["tables"], animals
         )
 
@@ -37,13 +37,13 @@ class TseDatasetLoader:
 
         # Import ActoMot raw data if present
         # if "actimot_raw" in metadata["tables"]:
-        #     actimot_details = TseDatasetLoader.__read_actimot_raw(path, metadata["tables"], dataset)
+        #     actimot_details = TseDatasetLoader._read_actimot_raw(path, metadata["tables"], dataset)
         #     dataset.actimot_details = actimot_details
 
         return dataset
 
     @staticmethod
-    def __read_metadata(path: Path) -> dict:
+    def _read_metadata(path: Path) -> dict:
         with sqlite3.connect(path, check_same_thread=False) as connection:
             df = pd.read_sql_query(
                 "SELECT * from metadata",
@@ -71,7 +71,7 @@ class TseDatasetLoader:
         return metadata
 
     @staticmethod
-    def __get_animals(data: dict) -> dict[str, Animal]:
+    def _get_animals(data: dict) -> dict[str, Animal]:
         animals: dict[str, Animal] = {}
         for item in data.values():
             animal = Animal(
@@ -87,7 +87,7 @@ class TseDatasetLoader:
         return animals
 
     @staticmethod
-    def __get_factors(data: dict) -> dict[str, Factor]:
+    def _get_factors(data: dict) -> dict[str, Factor]:
         factors: dict[str, Factor] = {}
         for item in data.values():
             factor = Factor(name=item["id"])
@@ -95,7 +95,7 @@ class TseDatasetLoader:
         return factors
 
     @staticmethod
-    def __add_cumulative_columns(df: pd.DataFrame, origin_name: str, variables: dict[str, Variable]):
+    def _add_cumulative_columns(df: pd.DataFrame, origin_name: str, variables: dict[str, Variable]):
         cols = [col for col in df.columns if origin_name in col]
         for col in cols:
             cumulative_col_name = col + "C"
@@ -106,7 +106,7 @@ class TseDatasetLoader:
             variables[var.name] = var
 
     @staticmethod
-    def __read_main_table(
+    def _read_main_table(
         path: Path, metadata: dict, animals: dict[str, Animal]
     ) -> tuple[pd.DataFrame, dict[str, Variable], pd.Timedelta]:
         metadata = metadata["main_table"]
@@ -164,8 +164,8 @@ class TseDatasetLoader:
         df.reset_index(drop=True, inplace=True)
 
         # Calculate cumulative values
-        TseDatasetLoader.__add_cumulative_columns(df, "Drink", variables)
-        TseDatasetLoader.__add_cumulative_columns(df, "Feed", variables)
+        TseDatasetLoader._add_cumulative_columns(df, "Drink", variables)
+        TseDatasetLoader._add_cumulative_columns(df, "Feed", variables)
 
         # Add Timedelta and Bin columns
         start_date_time = df.iloc[0]["DateTime"]
@@ -199,7 +199,7 @@ class TseDatasetLoader:
         return df, variables, sample_interval
 
     @staticmethod
-    def __read_actimot_raw(path: Path, metadata: dict, dataset: Dataset) -> ActimotDetails:
+    def _read_actimot_raw(path: Path, metadata: dict, dataset: Dataset) -> ActimotDetails:
         metadata = metadata["actimot_raw"]
 
         sample_interval = pd.Timedelta(metadata["sample_interval"])

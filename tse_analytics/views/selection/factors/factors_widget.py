@@ -37,14 +37,14 @@ class FactorsWidget(QWidget, MessengerListener):
         proxy_model.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.ui.tableView.setModel(proxy_model)
         self.ui.tableView.sortByColumn(0, Qt.SortOrder.AscendingOrder)
-        self.ui.tableView.selectionModel().selectionChanged.connect(self.__on_selection_changed)
+        # self.ui.tableView.selectionModel().selectionChanged.connect(self._on_selection_changed)
 
-        self.ui.toolButtonEditFactors.clicked.connect(self.__edit_factors)
+        self.ui.toolButtonEditFactors.clicked.connect(self._edit_factors)
 
     def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
+        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
 
-    def __on_dataset_changed(self, message: DatasetChangedMessage):
+    def _on_dataset_changed(self, message: DatasetChangedMessage):
         if message.data is None:
             self.ui.tableView.model().setSourceModel(None)
         else:
@@ -52,7 +52,7 @@ class FactorsWidget(QWidget, MessengerListener):
             self.ui.tableView.model().setSourceModel(model)
             self.ui.tableView.resizeColumnsToContents()
 
-    def __edit_factors(self):
+    def _edit_factors(self):
         dlg = FactorsDialog(self)
         result = dlg.exec()
         if result == QDialog.DialogCode.Accepted:
@@ -62,7 +62,7 @@ class FactorsWidget(QWidget, MessengerListener):
             Manager.data.selected_dataset.set_factors(factors)
             Manager.messenger.broadcast(DatasetChangedMessage(self, Manager.data.selected_dataset))
 
-    def __on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
+    def _on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
         pass
         # proxy_model = self.ui.tableView.model()
         # model = proxy_model.sourceModel()

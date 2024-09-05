@@ -25,8 +25,6 @@ from tse_analytics.views.misc.notification import Notification
 
 
 class CaloDetailsDialog(QDialog):
-    """CaloDetails Dialog"""
-
     def __init__(self, calo_details: CaloDetails, parent: QWidget | None = None):
         super().__init__(parent)
 
@@ -49,14 +47,14 @@ class CaloDetailsDialog(QDialog):
 
         self.ui.toolBox.removeItem(0)
 
-        self.ui.toolButtonCalculate.clicked.connect(self.__calculate)
-        self.ui.toolButtonResetSettings.clicked.connect(self.__reset_settings)
+        self.ui.toolButtonCalculate.clicked.connect(self._calculate)
+        self.ui.toolButtonResetSettings.clicked.connect(self._reset_settings)
 
-        self.calo_details_box_selector = CaloDetailsBoxSelector(self.__filter_boxes)
+        self.calo_details_box_selector = CaloDetailsBoxSelector(self._filter_boxes)
         self.calo_details_box_selector.set_data(calo_details.dataset)
         self.ui.toolBox.addItem(self.calo_details_box_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Boxes")
 
-        self.calo_details_bin_selector = CaloDetailsBinSelector(self.__filter_bins)
+        self.calo_details_bin_selector = CaloDetailsBinSelector(self._filter_bins)
         self.calo_details_bin_selector.set_data(calo_details.dataset)
         self.ui.toolBox.addItem(self.calo_details_bin_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Bins")
 
@@ -83,9 +81,9 @@ class CaloDetailsDialog(QDialog):
 
         self.fitting_results: dict[int, CaloDetailsFittingResult] = {}
 
-    def __filter_boxes(self, selected_boxes: list[CaloDetailsBox]):
+    def _filter_boxes(self, selected_boxes: list[CaloDetailsBox]):
         self.selected_boxes = selected_boxes
-        self.__filter()
+        self._filter()
 
         if len(selected_boxes) == 1:
             if selected_boxes[0].box in self.fitting_results:
@@ -93,11 +91,11 @@ class CaloDetailsDialog(QDialog):
             else:
                 self.calo_details_rer_widget.clear()
 
-    def __filter_bins(self, selected_bins: list[int]):
+    def _filter_bins(self, selected_bins: list[int]):
         self.selected_bins = selected_bins
-        self.__filter()
+        self._filter()
 
-    def __filter(self):
+    def _filter(self):
         df = self.calo_details.raw_df
 
         if len(self.selected_boxes) > 0:
@@ -111,11 +109,11 @@ class CaloDetailsDialog(QDialog):
         self.calo_details_plot_widget.set_data(df)
         self.calo_details_test_fit_widget.set_data(df)
 
-    def __reset_settings(self):
+    def _reset_settings(self):
         calo_details_settings = CaloDetailsSettings.get_default()
         self.calo_details_settings_widget.set_settings(calo_details_settings)
 
-    def __calculate(self):
+    def _calculate(self):
         calo_details_settings = self.calo_details_settings_widget.get_calo_details_settings()
 
         # remove last bin

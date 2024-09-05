@@ -17,13 +17,13 @@ class CaloDetailsTestFitWidget(QWidget):
         self.ui = Ui_CaloDetailsTestFitWidget()
         self.ui.setupUi(self)
 
-        self.ui.toolButtonFit.clicked.connect(self.__test_fit)
+        self.ui.toolButtonFit.clicked.connect(self._test_fit)
 
         action = QAction("O2", self)
-        action.triggered.connect(self.__export_o2)
+        action.triggered.connect(self._export_o2)
         self.ui.toolButtonExport.addAction(action)
         action = QAction("CO2", self)
-        action.triggered.connect(self.__export_co2)
+        action.triggered.connect(self._export_co2)
         self.ui.toolButtonExport.addAction(action)
 
         self.ui.horizontalLayout.insertWidget(
@@ -36,13 +36,13 @@ class CaloDetailsTestFitWidget(QWidget):
     def set_data(self, df: pd.DataFrame):
         self.df = df
 
-    def __export_o2(self):
-        self.__export_test_bin("O2")
+    def _export_o2(self):
+        self._export_test_bin("O2")
 
-    def __export_co2(self):
-        self.__export_test_bin("CO2")
+    def _export_co2(self):
+        self._export_test_bin("CO2")
 
-    def __export_test_bin(self, gas_name: str):
+    def _export_test_bin(self, gas_name: str):
         if self.df is None:
             return
 
@@ -61,7 +61,7 @@ class CaloDetailsTestFitWidget(QWidget):
         if filename:
             training_data.to_csv(filename, sep=";", index=False, header=False)
 
-    def __test_fit(self):
+    def _test_fit(self):
         if self.df is None:
             return
 

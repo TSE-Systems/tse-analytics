@@ -14,11 +14,11 @@ class ActimotLoader:
     def load(filename: str, dataset: Dataset, csv_import_settings: CsvImportSettings) -> ActimotDetails | None:
         path = Path(filename)
         if path.is_file() and path.suffix.lower() == ".csv":
-            return ActimotLoader.__load_from_csv(path, dataset, csv_import_settings)
+            return ActimotLoader._load_from_csv(path, dataset, csv_import_settings)
         return None
 
     @staticmethod
-    def __add_cumulative_columns(df: pd.DataFrame, origin_name: str, variables: dict[str, Variable]):
+    def _add_cumulative_columns(df: pd.DataFrame, origin_name: str, variables: dict[str, Variable]):
         cols = [col for col in df.columns if origin_name in col]
         for col in cols:
             cumulative_col_name = col + "C"
@@ -27,11 +27,13 @@ class ActimotLoader:
                 cumulative_col_name,
                 df.groupby("Box", observed=False)[col].transform(pd.Series.cumsum),
             )
-            var = Variable(name=cumulative_col_name, unit=variables[col].unit, description=f"{col} (cumulative)")
+            var = Variable(
+                name=cumulative_col_name, unit=variables[col].unit, description=f"{col} (cumulative)", type="float64"
+            )
             variables[var.name] = var
 
     @staticmethod
-    def __load_from_csv(path: Path, dataset: Dataset, csv_import_settings: CsvImportSettings):
+    def _load_from_csv(path: Path, dataset: Dataset, csv_import_settings: CsvImportSettings):
         with open(path) as f:
             lines = f.readlines()
 
