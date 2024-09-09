@@ -1,3 +1,4 @@
+from copy import deepcopy
 from datetime import datetime
 from typing import Any, Literal
 
@@ -53,6 +54,10 @@ class Dataset:
         return last_value
 
     @property
+    def duration(self) -> pd.Timedelta:
+        return self.end_timestamp - self.start_timestamp
+
+    @property
     def runs_count(self) -> int | None:
         return self.active_df["Run"].value_counts().count()
 
@@ -71,7 +76,7 @@ class Dataset:
             groups[group.name] = group
         return groups
 
-    def __rename_animal_df(self, df: pd.DataFrame, old_id: str, animal: Animal) -> pd.DataFrame:
+    def _rename_animal_df(self, df: pd.DataFrame, old_id: str, animal: Animal) -> pd.DataFrame:
         df = df.astype({
             "Animal": str,
         })
@@ -82,15 +87,15 @@ class Dataset:
         return df
 
     def rename_animal(self, old_id: str, animal: Animal) -> None:
-        self.original_df = self.__rename_animal_df(self.original_df, old_id, animal)
-        self.active_df = self.__rename_animal_df(self.active_df, old_id, animal)
+        self.original_df = self._rename_animal_df(self.original_df, old_id, animal)
+        self.active_df = self._rename_animal_df(self.active_df, old_id, animal)
 
         if self.meal_details is not None:
-            self.meal_details.raw_df = self.__rename_animal_df(self.meal_details.raw_df, old_id, animal)
+            self.meal_details.raw_df = self._rename_animal_df(self.meal_details.raw_df, old_id, animal)
         if self.calo_details is not None:
-            self.calo_details.raw_df = self.__rename_animal_df(self.calo_details.raw_df, old_id, animal)
+            self.calo_details.raw_df = self._rename_animal_df(self.calo_details.raw_df, old_id, animal)
         if self.actimot_details is not None:
-            self.actimot_details.raw_df = self.__rename_animal_df(self.actimot_details.raw_df, old_id, animal)
+            self.actimot_details.raw_df = self._rename_animal_df(self.actimot_details.raw_df, old_id, animal)
 
         # Rename animal in factor's groups definitions
         for factor in self.factors.values():
@@ -103,6 +108,10 @@ class Dataset:
         for item in self.meta["Animals"]:
             if item["id"] == old_id:
                 item["id"] = animal.id
+
+        # Rename animal in dictionary
+        self.animals.pop(old_id)
+        self.animals[animal.id] = animal
 
     def exclude_animals(self, animal_ids: list[str]) -> None:
         # Remove animals from factor's groups definitions
@@ -140,15 +149,41 @@ class Dataset:
             (self.active_df["DateTime"] < range_start) | (self.active_df["DateTime"] > range_end)
         ]
 
+    def trim_time(self, range_start: datetime, range_end: datetime) -> None:
+        self.original_df = self.original_df[
+            (self.original_df["DateTime"] >= range_start) & (self.original_df["DateTime"] <= range_end)
+        ]
+        self.active_df = self.active_df[
+            (self.active_df["DateTime"] >= range_start) & (self.active_df["DateTime"] <= range_end)
+        ]
+
+    def resample(self, resampling_interval: pd.Timedelta) -> None:
+        group_by = ["Animal", "Box"]
+
+        original_result = self.original_df.groupby(group_by, dropna=False, observed=False)
+        original_result = original_result.resample(resampling_interval, on="DateTime", origin="start").mean(
+            numeric_only=True
+        )
+        original_result.sort_values(by=["DateTime", "Animal"], inplace=True)
+        # the inverse of groupby, reset_index
+        original_result = original_result.reset_index()
+        original_result["Timedelta"] = original_result["DateTime"] - original_result["DateTime"].iloc[0]
+        original_result["Bin"] = (original_result["Timedelta"] / resampling_interval).round().astype(int)
+        self.original_df = original_result.astype({"Bin": "category"})
+
+        self.sampling_interval = resampling_interval
+
+        self.refresh_active_df()
+
     def filter_by_groups(self, groups: list[Group]) -> pd.DataFrame:
         group_ids = [group.name for group in groups]
         df = self.active_df[self.active_df["Group"].isin(group_ids)]
         df = df.dropna()
         return df
 
-    def adjust_time(self, delta: str) -> None:
-        self.original_df["DateTime"] = self.original_df["DateTime"] + pd.Timedelta(delta)
-        self.active_df["DateTime"] = self.active_df["DateTime"] + pd.Timedelta(delta)
+    def adjust_time(self, delta: pd.Timedelta) -> None:
+        self.original_df["DateTime"] = self.original_df["DateTime"] + delta
+        self.active_df["DateTime"] = self.active_df["DateTime"] + delta
 
     def set_factors(self, factors: dict[str, Factor]):
         self.factors = factors
@@ -186,3 +221,6 @@ class Dataset:
     def __setstate__(self, state):
         self.__dict__.update(state)
         self.refresh_active_df()
+
+    def clone(self):
+        return deepcopy(self)

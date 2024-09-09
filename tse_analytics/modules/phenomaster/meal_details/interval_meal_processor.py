@@ -51,17 +51,17 @@ def process_meal_intervals(
     result["Bin"] = (result["Timedelta"] / timedelta).round().astype(int)
     result = result.astype({"Bin": "category"})
 
-    # __add_caloric_column(result, "Drink1", diets_dict)
-    __add_caloric_column(result, "Feed1", diets_dict)
-    # __add_caloric_column(result, "Drink2", diets_dict)
-    __add_caloric_column(result, "Feed2", diets_dict)
-    # __add_caloric_column(result, "Drink", diets_dict)
-    __add_caloric_column(result, "Feed", diets_dict)
+    # _add_caloric_column(result, "Drink1", diets_dict)
+    _add_caloric_column(result, "Feed1", diets_dict)
+    # _add_caloric_column(result, "Drink2", diets_dict)
+    _add_caloric_column(result, "Feed2", diets_dict)
+    # _add_caloric_column(result, "Drink", diets_dict)
+    _add_caloric_column(result, "Feed", diets_dict)
 
     return result
 
 
-def __add_caloric_column(df: pd.DataFrame, origin_column: str, diets_dict: dict[int, float]) -> pd.DataFrame:
+def _add_caloric_column(df: pd.DataFrame, origin_column: str, diets_dict: dict[int, float]) -> pd.DataFrame:
     if origin_column in df.columns:
         df.insert(df.columns.get_loc(origin_column) + 1, f"{origin_column}-kcal", df["Box"].astype(int))
         df.replace({f"{origin_column}-kcal": diets_dict}, inplace=True)

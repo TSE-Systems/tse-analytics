@@ -73,7 +73,6 @@ class Ui_TimePhasesSettingsWidget(object):
     # setupUi
 
     def retranslateUi(self, TimePhasesSettingsWidget):
-        TimePhasesSettingsWidget.setWindowTitle(QCoreApplication.translate("TimePhasesSettingsWidget", u"Form", None))
         self.groupBoxPhases.setTitle(QCoreApplication.translate("TimePhasesSettingsWidget", u"Time Phases", None))
 #if QT_CONFIG(tooltip)
         self.toolButtonAddPhase.setToolTip(QCoreApplication.translate("TimePhasesSettingsWidget", u"Add time phase", None))
@@ -81,5 +80,6 @@ class Ui_TimePhasesSettingsWidget(object):
 #if QT_CONFIG(tooltip)
         self.toolButtonDeletePhase.setToolTip(QCoreApplication.translate("TimePhasesSettingsWidget", u"Delete selected time phase", None))
 #endif // QT_CONFIG(tooltip)
+        pass
     # retranslateUi
 

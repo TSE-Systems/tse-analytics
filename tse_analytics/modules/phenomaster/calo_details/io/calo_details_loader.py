@@ -14,11 +14,11 @@ class CaloDetailsLoader:
     def load(filename: str, dataset: Dataset, csv_import_settings: CsvImportSettings) -> CaloDetails | None:
         path = Path(filename)
         if path.is_file() and path.suffix.lower() == ".csv":
-            return CaloDetailsLoader.__load_from_csv(path, dataset, csv_import_settings)
+            return CaloDetailsLoader._load_from_csv(path, dataset, csv_import_settings)
         return None
 
     @staticmethod
-    def __load_from_csv(path: Path, dataset: Dataset, csv_import_settings: CsvImportSettings):
+    def _load_from_csv(path: Path, dataset: Dataset, csv_import_settings: CsvImportSettings):
         columns_line = None
         with open(path) as f:
             lines = f.readlines()
@@ -68,7 +68,7 @@ class CaloDetailsLoader:
                 var_unit = ""
                 if len(elements) == 2:
                     var_unit = elements[1]
-                variable = Variable(name=var_name, unit=var_unit, description="")
+                variable = Variable(name=var_name, unit=var_unit, description="", type="float64")
                 variables[variable.name] = variable
 
         # Calo Details sampling interval

@@ -24,19 +24,29 @@ class AnovaWidget(QWidget, MessengerListener):
 
         self.help_path = "anova.md"
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
-        self.ui.pushButtonUpdate.clicked.connect(self.__update)
-        self.ui.pushButtonAddReport.clicked.connect(self.__add_report)
+        self.ui.pushButtonUpdate.clicked.connect(self._update)
+        self.ui.pushButtonAddReport.clicked.connect(self._add_report)
 
         self.ui.groupBoxCovariates.hide()
 
         self.ui.tableWidgetDependentVariable.setHorizontalHeaderLabels(["Name", "Unit", "Description"])
         self.ui.tableWidgetCovariates.setHorizontalHeaderLabels(["Name", "Unit", "Description"])
 
-        self.ui.radioButtonOneWayAnova.toggled.connect(lambda: self.ui.groupBoxCovariates.hide())
-        self.ui.radioButtonNWayAnova.toggled.connect(lambda: self.ui.groupBoxCovariates.hide())
-        self.ui.radioButtonRMAnova.toggled.connect(lambda: self.ui.groupBoxCovariates.hide())
-        self.ui.radioButtonMixedAnova.toggled.connect(lambda: self.ui.groupBoxCovariates.hide())
-        self.ui.radioButtonAncova.toggled.connect(lambda: self.ui.groupBoxCovariates.show())
+        self.ui.radioButtonOneWayAnova.toggled.connect(
+            lambda toggled: self.ui.groupBoxCovariates.hide() if toggled else None
+        )
+        self.ui.radioButtonNWayAnova.toggled.connect(
+            lambda toggled: self.ui.groupBoxCovariates.hide() if toggled else None
+        )
+        self.ui.radioButtonRMAnova.toggled.connect(
+            lambda toggled: self.ui.groupBoxCovariates.hide() if toggled else None
+        )
+        self.ui.radioButtonMixedAnova.toggled.connect(
+            lambda toggled: self.ui.groupBoxCovariates.hide() if toggled else None
+        )
+        self.ui.radioButtonAncova.toggled.connect(
+            lambda toggled: self.ui.groupBoxCovariates.show() if toggled else None
+        )
 
         self.p_adjustment = {
             "No correction": "none",
@@ -65,10 +75,10 @@ class AnovaWidget(QWidget, MessengerListener):
         self.ui.textEdit.document().setDefaultStyleSheet(style_descriptive_table)
 
     def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
+        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
 
-    def __on_dataset_changed(self, message: DatasetChangedMessage):
-        self.__clear()
+    def _on_dataset_changed(self, message: DatasetChangedMessage):
+        self._clear()
         if message.data is None:
             self.ui.pushButtonUpdate.setDisabled(True)
             self.ui.pushButtonAddReport.setDisabled(True)
@@ -106,14 +116,14 @@ class AnovaWidget(QWidget, MessengerListener):
             self.ui.tableWidgetDependentVariable.setItem(i, 2, QTableWidgetItem(variable.description))
             self.ui.tableWidgetCovariates.setItem(i, 2, QTableWidgetItem(variable.description))
 
-    def __clear(self):
+    def _clear(self):
         self.ui.pushButtonUpdate.setDisabled(True)
         self.ui.factorSelector.clear()
         self.ui.textEdit.document().clear()
         self.ui.tableWidgetDependentVariable.setRowCount(0)
         self.ui.tableWidgetCovariates.setRowCount(0)
 
-    def __update(self):
+    def _update(self):
         selected_dependent_variable_items = self.ui.tableWidgetDependentVariable.selectedItems()
         if len(selected_dependent_variable_items) == 0:
             Notification(text="Please select dependent variable.", parent=self, duration=2000).show_notification()
@@ -122,17 +132,17 @@ class AnovaWidget(QWidget, MessengerListener):
         dependent_variable = selected_dependent_variable_items[0].text()
 
         if self.ui.radioButtonOneWayAnova.isChecked():
-            self.__analyze_one_way_anova(dependent_variable)
+            self._analyze_one_way_anova(dependent_variable)
         elif self.ui.radioButtonNWayAnova.isChecked():
-            self.__analyze_n_way_anova(dependent_variable)
+            self._analyze_n_way_anova(dependent_variable)
         elif self.ui.radioButtonRMAnova.isChecked():
-            self.__analyze_rm_anova(dependent_variable)
+            self._analyze_rm_anova(dependent_variable)
         elif self.ui.radioButtonMixedAnova.isChecked():
-            self.__analyze_mixed_anova(dependent_variable)
+            self._analyze_mixed_anova(dependent_variable)
         elif self.ui.radioButtonAncova.isChecked():
-            self.__analyze_ancova(dependent_variable)
+            self._analyze_ancova(dependent_variable)
 
-    def __analyze_one_way_anova(self, dependent_variable: str):
+    def _analyze_one_way_anova(self, dependent_variable: str):
         selected_factor_name = self.ui.factorSelector.currentText()
         selected_factor = (
             Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
@@ -187,7 +197,7 @@ class AnovaWidget(QWidget, MessengerListener):
         )
         self.ui.textEdit.document().setHtml(html)
 
-    def __analyze_n_way_anova(self, dependent_variable: str):
+    def _analyze_n_way_anova(self, dependent_variable: str):
         df = Manager.data.get_anova_df(variables=[dependent_variable])
 
         factor_names = list(Manager.data.selected_dataset.factors.keys())
@@ -214,7 +224,7 @@ class AnovaWidget(QWidget, MessengerListener):
         )
         self.ui.textEdit.document().setHtml(html)
 
-    def __analyze_rm_anova(self, dependent_variable: str):
+    def _analyze_rm_anova(self, dependent_variable: str):
         if not Manager.data.binning_params.apply or Manager.data.binning_params.mode == BinningMode.INTERVALS:
             Notification(
                 text="Please apply binning in Dark/Light Cycles or Time Phases mode.", parent=self, duration=2000
@@ -248,7 +258,7 @@ class AnovaWidget(QWidget, MessengerListener):
         )
         self.ui.textEdit.document().setHtml(html)
 
-    def __analyze_mixed_anova(self, dependent_variable: str):
+    def _analyze_mixed_anova(self, dependent_variable: str):
         selected_factor_name = self.ui.factorSelector.currentText()
         selected_factor = (
             Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
@@ -298,7 +308,7 @@ class AnovaWidget(QWidget, MessengerListener):
         )
         self.ui.textEdit.document().setHtml(html)
 
-    def __analyze_ancova(self, dependent_variable: str):
+    def _analyze_ancova(self, dependent_variable: str):
         selected_factor_name = self.ui.factorSelector.currentText()
         selected_factor = (
             Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
@@ -344,5 +354,5 @@ class AnovaWidget(QWidget, MessengerListener):
         )
         self.ui.textEdit.document().setHtml(html)
 
-    def __add_report(self):
+    def _add_report(self):
         Manager.messenger.broadcast(AddToReportMessage(self, self.ui.textEdit.toHtml()))

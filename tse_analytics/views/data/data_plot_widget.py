@@ -27,19 +27,20 @@ class DataPlotWidget(QWidget, MessengerListener):
 
         self.register_to_messenger(Manager.messenger)
 
-        self.ui.radioButtonSplitTotal.toggled.connect(self.__split_mode_changed)
-        self.ui.radioButtonSplitByAnimal.toggled.connect(self.__split_mode_changed)
-        self.ui.radioButtonSplitByFactor.toggled.connect(self.__split_mode_changed)
-        self.ui.radioButtonSplitByRun.toggled.connect(self.__split_mode_changed)
+        self.ui.radioButtonSplitTotal.toggled.connect(self._split_mode_toggled)
+        self.ui.radioButtonSplitByAnimal.toggled.connect(self._split_mode_toggled)
+        self.ui.radioButtonSplitByFactor.toggled.connect(self._split_mode_toggled)
+        self.ui.radioButtonSplitByRun.toggled.connect(self._split_mode_toggled)
 
-        self.ui.variableSelector.currentTextChanged.connect(self.__variable_changed)
-        self.ui.factorSelector.currentTextChanged.connect(self.__split_mode_changed)
-        self.ui.checkBoxScatterPlot.stateChanged.connect(self.__set_scatter_plot)
-        self.ui.groupBoxDisplayErrors.toggled.connect(self.__display_errors)
-        self.ui.radioButtonStandardDeviation.toggled.connect(lambda: self.__error_type_changed("StandardDeviation"))
-        self.ui.radioButtonStandardError.toggled.connect(lambda: self.__error_type_changed("StandardError"))
+        self.ui.variableSelector.currentTextChanged.connect(self._variable_changed)
+        # self.ui.factorSelector.currentTextChanged.connect(self._split_mode_changed)
+        self.ui.factorSelector.currentTextChanged.connect(self._factor_changed)
+        self.ui.checkBoxScatterPlot.stateChanged.connect(self._set_scatter_plot)
+        self.ui.groupBoxDisplayErrors.toggled.connect(self._display_errors_toggled)
+        self.ui.radioButtonStandardDeviation.toggled.connect(self._error_type_std_toggled)
+        self.ui.radioButtonStandardError.toggled.connect(self._error_type_ste_toggled)
 
-        self.ui.pushButtonAddReport.clicked.connect(self.__add_report)
+        self.ui.pushButtonAddReport.clicked.connect(self._add_report)
 
         self.timelinePlotView = TimelinePlotView(self)
         self.barPlotView = BarPlotView(self)
@@ -53,29 +54,42 @@ class DataPlotWidget(QWidget, MessengerListener):
         self.plot_toolbar.hide()
 
     def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
-        messenger.subscribe(self, BinningMessage, self.__on_binning_applied)
-        messenger.subscribe(self, DataChangedMessage, self.__on_data_changed)
+        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
+        messenger.subscribe(self, BinningMessage, self._on_binning_applied)
+        messenger.subscribe(self, DataChangedMessage, self._on_data_changed)
 
-    def __variable_changed(self, variable: str):
-        self.__assign_data()
+    def _variable_changed(self, variable: str):
+        self._assign_data()
 
-    def __error_type_changed(self, error_type: str):
+    def _factor_changed(self, factor_name: str):
+        self._assign_data()
+
+    def _error_type_std_toggled(self, toggled: bool):
+        if not toggled:
+            return
         if Manager.data.binning_params.mode == BinningMode.INTERVALS:
-            self.timelinePlotView.set_error_type("std" if error_type == "StandardDeviation" else "sem")
+            self.timelinePlotView.set_error_type("std")
         else:
-            self.barPlotView.set_error_type("sd" if error_type == "StandardDeviation" else "se")
+            self.barPlotView.set_error_type("sd")
 
-    def __display_errors(self, state: bool):
+    def _error_type_ste_toggled(self, toggled: bool):
+        if not toggled:
+            return
         if Manager.data.binning_params.mode == BinningMode.INTERVALS:
-            self.timelinePlotView.set_display_errors(state)
+            self.timelinePlotView.set_error_type("sem")
         else:
-            self.barPlotView.set_display_errors(state)
+            self.barPlotView.set_error_type("se")
 
-    def __set_scatter_plot(self, state: bool):
+    def _display_errors_toggled(self, toggled: bool):
+        if Manager.data.binning_params.mode == BinningMode.INTERVALS:
+            self.timelinePlotView.set_display_errors(toggled)
+        else:
+            self.barPlotView.set_display_errors(toggled)
+
+    def _set_scatter_plot(self, state: bool):
         self.timelinePlotView.set_scatter_plot(state)
 
-    def __on_dataset_changed(self, message: DatasetChangedMessage):
+    def _on_dataset_changed(self, message: DatasetChangedMessage):
         self.ui.pushButtonAddReport.setDisabled(message.data is None)
         if message.data is None:
             self.ui.variableSelector.clear()
@@ -87,19 +101,22 @@ class DataPlotWidget(QWidget, MessengerListener):
         else:
             self.ui.variableSelector.set_data(message.data.variables)
             self.ui.factorSelector.set_data(message.data.factors, add_empty_item=False)
-            self.__assign_data()
+            self._assign_data()
 
-    def __on_binning_applied(self, message: BinningMessage):
+    def _on_binning_applied(self, message: BinningMessage):
         if message.params.apply:
-            self.__assign_data()
+            self._assign_data()
         else:
             if Manager.data.binning_params.mode == BinningMode.INTERVALS:
-                self.__assign_data()
+                self._assign_data()
 
-    def __on_data_changed(self, message: DataChangedMessage):
-        self.__assign_data()
+    def _on_data_changed(self, message: DataChangedMessage):
+        self._assign_data()
 
-    def __split_mode_changed(self):
+    def _split_mode_toggled(self, toggled: bool):
+        if not toggled:
+            return
+
         selected_factor_name = self.ui.factorSelector.currentText()
 
         split_mode = SplitMode.TOTAL
@@ -115,9 +132,9 @@ class DataPlotWidget(QWidget, MessengerListener):
         factor = Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
         self.timelinePlotView.set_grouping_mode(split_mode, factor)
         self.barPlotView.set_grouping_mode(split_mode, factor)
-        self.__assign_data()
+        self._assign_data()
 
-    def __assign_data(self):
+    def _assign_data(self):
         if Manager.data.selected_dataset is None:
             return
 
@@ -172,7 +189,7 @@ class DataPlotWidget(QWidget, MessengerListener):
             self.plot_toolbar.deleteLater()
             self.plot_toolbar = new_toolbar
 
-    def __add_report(self):
+    def _add_report(self):
         html = (
             self.timelinePlotView.get_report()
             if Manager.data.binning_params.mode == BinningMode.INTERVALS

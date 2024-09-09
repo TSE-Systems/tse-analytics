@@ -8,24 +8,22 @@ from tse_analytics.views.import_csv_dialog_ui import Ui_ImportCsvDialog
 
 
 class ImportCsvDialog(QDialog):
-    def __init__(self, filename: str, parent: QWidget | None = None):
+    def __init__(self, path: Path, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.ui = Ui_ImportCsvDialog()
         self.ui.setupUi(self)
 
-        self.ui.buttonBox.accepted.connect(self.__save_preferences)
+        self.ui.buttonBox.accepted.connect(self._save_preferences)
 
         self.settings = QSettings()
         csv_import_settings: CsvImportSettings = self.settings.value(
             "CsvImportSettings", CsvImportSettings.get_default()
         )
 
-        path = Path(filename)
-        if path.is_file() and path.suffix.lower() == ".csv":
-            with open(path) as f:
-                content = f.read(1024 * 1024)
-                self.ui.plainTextEditOverview.setPlainText(content)
+        with open(path) as f:
+            content = f.read(1024 * 1024)
+            self.ui.plainTextEditOverview.setPlainText(content)
 
         self.ui.lineEditDelimiter.setText(csv_import_settings.delimiter)
         self.ui.checkBoxDayFirst.setChecked(csv_import_settings.day_first)
@@ -36,7 +34,7 @@ class ImportCsvDialog(QDialog):
         else:
             self.ui.radioButtonPoint.setChecked(True)
 
-    def __save_preferences(self):
+    def _save_preferences(self):
         decimal_separator = "." if self.ui.radioButtonPoint.isChecked() else ","
 
         csv_import_settings = CsvImportSettings(

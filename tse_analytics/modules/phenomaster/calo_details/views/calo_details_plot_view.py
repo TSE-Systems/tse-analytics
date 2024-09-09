@@ -59,13 +59,13 @@ class CaloDetailsPlotView(pg.GraphicsLayoutWidget):
 
     def set_data(self, df: pd.DataFrame):
         self._df = df
-        self.__update_plot()
+        self._update_plot()
 
     def set_variable(self, variable: str):
         self._variable = variable
-        self.__update_plot()
+        self._update_plot()
 
-    def __update_plot(self):
+    def _update_plot(self):
         self.plot_data_items.clear()
         self.p1.clear()
         self.p2.clearPlots()

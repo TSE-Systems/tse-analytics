@@ -17,13 +17,13 @@ class CaloDetailsTestFitWidget(QWidget):
         self.ui = Ui_CaloDetailsTestFitWidget()
         self.ui.setupUi(self)
 
-        self.ui.toolButtonFit.clicked.connect(self.__test_fit)
+        self.ui.toolButtonFit.clicked.connect(self._test_fit)
 
         action = QAction("O2", self)
-        action.triggered.connect(self.__export_o2)
+        action.triggered.connect(self._export_o2)
         self.ui.toolButtonExport.addAction(action)
         action = QAction("CO2", self)
-        action.triggered.connect(self.__export_co2)
+        action.triggered.connect(self._export_co2)
         self.ui.toolButtonExport.addAction(action)
 
         self.ui.horizontalLayout.insertWidget(
@@ -36,13 +36,13 @@ class CaloDetailsTestFitWidget(QWidget):
     def set_data(self, df: pd.DataFrame):
         self.df = df
 
-    def __export_o2(self):
-        self.__export_test_bin("O2")
+    def _export_o2(self):
+        self._export_test_bin("O2")
 
-    def __export_co2(self):
-        self.__export_test_bin("CO2")
+    def _export_co2(self):
+        self._export_test_bin("CO2")
 
-    def __export_test_bin(self, gas_name: str):
+    def _export_test_bin(self, gas_name: str):
         if self.df is None:
             return
 
@@ -61,7 +61,7 @@ class CaloDetailsTestFitWidget(QWidget):
         if filename:
             training_data.to_csv(filename, sep=";", index=False, header=False)
 
-    def __test_fit(self):
+    def _test_fit(self):
         if self.df is None:
             return
 
@@ -109,6 +109,46 @@ class CaloDetailsTestFitWidget(QWidget):
             label="Measured",
         )
         ax[0].plot(predicted_input_o2, predicted_output_o2, "r-", label="Predicted")
+
+        # O2 calculations
+        o2_first = self.df["O2"].iloc[0]
+        o2_last = self.df["O2"].iloc[-1]
+        o2_t90 = 0
+
+        o2_descending = o2_last < o2_first
+        if o2_descending:
+            o2_y90 = (o2_first - o2_last) * 0.9
+            for index, row in self.df.iterrows():
+                if row["O2"] < o2_first - o2_y90:
+                    o2_t90 = row["Offset"]
+                    break
+        else:
+            o2_y90 = (o2_last - o2_first) * 0.9
+            for index, row in self.df.iterrows():
+                if row["O2"] > o2_first + o2_y90:
+                    o2_t90 = row["Offset"]
+                    break
+
+        # CO2 calculations
+        co2_first = self.df["CO2"].iloc[0]
+        co2_last = self.df["CO2"].iloc[-1]
+        co2_t90 = 0
+
+        co2_descending = co2_last < co2_first
+        if co2_descending:
+            co2_y90 = (co2_first - co2_last) * 0.9
+            for index, row in self.df.iterrows():
+                if row["CO2"] < co2_first - co2_y90:
+                    co2_t90 = row["Offset"]
+                    break
+        else:
+            co2_y90 = (co2_last - co2_first) * 0.9
+            for index, row in self.df.iterrows():
+                if row["CO2"] > co2_first + co2_y90:
+                    co2_t90 = row["Offset"]
+                    break
+
+        self.ui.labelT90.setText(f"T90 [O2: {o2_t90}, CO2: {co2_t90}]")
 
         self.df.plot(
             x="Offset",

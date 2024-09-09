@@ -1,5 +1,6 @@
 import os
 from functools import partial
+from pathlib import Path
 
 import psutil
 import PySide6QtAds
@@ -48,8 +49,6 @@ MAX_RECENT_FILES = 10
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    """Main Window."""
-
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
@@ -65,7 +64,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.statusBar.addPermanentWidget(self.memory_usage_label)
 
         self.menuOpenRecent.aboutToShow.connect(self.populate_open_recent)
-        self.menuTools.aboutToShow.connect(self.__tools_availability)
+        self.menuTools.aboutToShow.connect(self._tools_availability)
 
         # Create the dock manager. Because the parent parameter is a QMainWindow
         # the dock manager registers itself as the central widget.
@@ -74,74 +73,72 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.default_docking_state = None
 
-        data_table_dock_widget = self.__register_dock_widget(DataTableWidget(), "Table", QIcon(":/icons/table.png"))
+        data_table_dock_widget = self._register_dock_widget(DataTableWidget(), "Table", QIcon(":/icons/table.png"))
         main_area = self.dock_manager.addDockWidget(PySide6QtAds.AllDockAreas, data_table_dock_widget)
 
-        data_plot_dock_widget = self.__register_dock_widget(DataPlotWidget(), "Plot", QIcon(":/icons/plot.png"))
+        data_plot_dock_widget = self._register_dock_widget(DataPlotWidget(), "Plot", QIcon(":/icons/plot.png"))
         self.dock_manager.addDockWidgetTabToArea(data_plot_dock_widget, main_area)
 
-        exploration_widget = self.__register_dock_widget(
+        exploration_widget = self._register_dock_widget(
             ExplorationWidget(), "Exploration", QIcon(":/icons/exploration.png")
         )
         self.dock_manager.addDockWidgetTabToArea(exploration_widget, main_area)
 
-        bivariate_dock_widget = self.__register_dock_widget(
+        bivariate_dock_widget = self._register_dock_widget(
             BivariateWidget(), "Bivariate", QIcon(":/icons/bivariate.png")
         )
         self.dock_manager.addDockWidgetTabToArea(bivariate_dock_widget, main_area)
 
-        anova_dock_widget = self.__register_dock_widget(AnovaWidget(), "AN(C)OVA", QIcon(":/icons/anova.png"))
+        anova_dock_widget = self._register_dock_widget(AnovaWidget(), "AN(C)OVA", QIcon(":/icons/anova.png"))
         self.dock_manager.addDockWidgetTabToArea(anova_dock_widget, main_area)
 
-        dimensionality_dock_widget = self.__register_dock_widget(
+        dimensionality_dock_widget = self._register_dock_widget(
             DimensionalityWidget(), "Dimensionality", QIcon(":/icons/dimensionality.png")
         )
         self.dock_manager.addDockWidgetTabToArea(dimensionality_dock_widget, main_area)
 
-        timeseries_dock_widget = self.__register_dock_widget(
+        timeseries_dock_widget = self._register_dock_widget(
             TimeseriesWidget(), "Timeseries", QIcon(":/icons/timeseries.png")
         )
         self.dock_manager.addDockWidgetTabToArea(timeseries_dock_widget, main_area)
 
-        report_dock_widget = self.__register_dock_widget(ReportsWidget(), "Report", QIcon(":/icons/report.png"))
+        report_dock_widget = self._register_dock_widget(ReportsWidget(), "Report", QIcon(":/icons/report.png"))
         self.dock_manager.addDockWidgetTabToArea(report_dock_widget, main_area)
 
-        datasets_dock_widget = self.__register_dock_widget(
-            DatasetsTreeView(), "Datasets", QIcon(":/icons/datasets.png")
-        )
+        datasets_dock_widget = self._register_dock_widget(DatasetsTreeView(), "Datasets", QIcon(":/icons/datasets.png"))
         datasets_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
         datasets_dock_area = self.dock_manager.addDockWidget(PySide6QtAds.LeftDockWidgetArea, datasets_dock_widget)
 
-        info_dock_widget = self.__register_dock_widget(InfoWidget(), "Info", QIcon(":/icons/info.png"))
+        info_dock_widget = self._register_dock_widget(InfoWidget(), "Info", QIcon(":/icons/info.png"))
         info_dock_area = self.dock_manager.addDockWidget(
             PySide6QtAds.BottomDockWidgetArea, info_dock_widget, datasets_dock_area
         )
 
-        help_dock_widget = self.__register_dock_widget(HelpWidget(), "Help", QIcon(":/icons/help.png"))
+        help_dock_widget = self._register_dock_widget(HelpWidget(), "Help", QIcon(":/icons/help.png"))
         self.dock_manager.addDockWidgetTabToArea(help_dock_widget, info_dock_area)
 
-        log_dock_widget = self.__register_dock_widget(LogWidget(), "Log", QIcon(":/icons/log.png"))
+        log_dock_widget = self._register_dock_widget(LogWidget(), "Log", QIcon(":/icons/log.png"))
         self.dock_manager.addDockWidgetTabToArea(log_dock_widget, info_dock_area)
 
-        animals_dock_widget = self.__register_dock_widget(
+        animals_dock_widget = self._register_dock_widget(
             AnimalsWidget(), "Animals", QIcon(":/icons/icons8-rat-silhouette-16.png")
         )
         animals_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
         animals_dock_area = self.dock_manager.addDockWidget(PySide6QtAds.RightDockWidgetArea, animals_dock_widget)
 
-        factors_dock_widget = self.__register_dock_widget(FactorsWidget(), "Factors", QIcon(":/icons/factors.png"))
+        factors_dock_widget = self._register_dock_widget(FactorsWidget(), "Factors", QIcon(":/icons/factors.png"))
         factors_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
         selector_dock_area = self.dock_manager.addDockWidget(
             PySide6QtAds.BottomDockWidgetArea, factors_dock_widget, animals_dock_area
         )
 
-        variables_dock_widget = self.__register_dock_widget(
+        variables_dock_widget = self._register_dock_widget(
             VariablesWidget(), "Variables", QIcon(":/icons/variables.png")
         )
         variables_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
         self.dock_manager.addDockWidgetTabToArea(variables_dock_widget, selector_dock_area)
 
-        binning_dock_widget = self.__register_dock_widget(
+        binning_dock_widget = self._register_dock_widget(
             BinningSettingsWidget(), "Binning", QIcon(":/icons/binning.png")
         )
         binning_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
@@ -149,7 +146,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area
         )
 
-        outliers_dock_widget = self.__register_dock_widget(
+        outliers_dock_widget = self._register_dock_widget(
             OutliersSettingsWidget(), "Outliers", QIcon(":/icons/icons8-outliers-16.png")
         )
         self.dock_manager.addDockWidgetTabToArea(outliers_dock_widget, settings_dock_area)
@@ -160,13 +157,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionExportCsv.triggered.connect(self.export_csv_dialog)
         self.actionExportExcel.triggered.connect(self.export_excel_dialog)
         self.actionExportSQLite.triggered.connect(self.export_sqlite_dialog)
-        self.actionResetLayout.triggered.connect(self.__reset_layout)
+        self.actionResetLayout.triggered.connect(self._reset_layout)
         self.actionExit.triggered.connect(lambda: QApplication.exit())
-        self.actionCompareRuns.triggered.connect(self.__compare_runs)
-        self.actionExcludeAnimals.triggered.connect(self.__exclude_animals)
-        self.actionExcludeTime.triggered.connect(self.__exclude_time)
+        self.actionCompareRuns.triggered.connect(self._compare_runs)
+        self.actionExcludeAnimals.triggered.connect(self._exclude_animals)
+        self.actionExcludeTime.triggered.connect(self._exclude_time)
         self.actionHelp.triggered.connect(lambda: show_help(self, "main.md"))
-        self.actionAbout.triggered.connect(self.__show_about_dialog)
+        self.actionAbout.triggered.connect(self._show_about_dialog)
 
         self.default_docking_state = self.dock_manager.saveState(LAYOUT_VERSION)
 
@@ -174,7 +171,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.load_settings()
 
-    def __register_dock_widget(self, widget: QWidget, title: str, icon: QIcon) -> PySide6QtAds.CDockWidget:
+    def _register_dock_widget(self, widget: QWidget, title: str, icon: QIcon) -> PySide6QtAds.CDockWidget:
         dock_widget = PySide6QtAds.CDockWidget(title)
         dock_widget.setWidget(widget)
         dock_widget.setIcon(icon)
@@ -267,30 +264,30 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         mem = self.process.memory_info()[0] / float(2**20)
         self.memory_usage_label.setText(f"Memory usage: {mem:.2f} Mb")
 
-    def __reset_layout(self):
+    def _reset_layout(self):
         self.dock_manager.restoreState(self.default_docking_state, LAYOUT_VERSION)
 
-    def __tools_availability(self):
+    def _tools_availability(self):
         self.actionCompareRuns.setEnabled(
             Manager.data.selected_dataset is not None and Manager.data.selected_dataset.runs_count > 1
         )
         self.actionExcludeAnimals.setEnabled(Manager.data.selected_dataset is not None)
         self.actionExcludeTime.setEnabled(Manager.data.selected_dataset is not None)
 
-    def __compare_runs(self):
+    def _compare_runs(self):
         if self.compare_runs_widget is None:
             self.compare_runs_widget = CompareRunsWidget(self)
             self.compare_runs_widget.setWindowFlag(Qt.WindowType.Tool)
         self.compare_runs_widget.show()
 
-    def __exclude_animals(self):
+    def _exclude_animals(self):
         if (
             QMessageBox.question(self, "Exclude Animals", "Do you really want to exclude selected animals?")
             == QMessageBox.StandardButton.Yes
         ):
             Manager.data.exclude_animals()
 
-    def __exclude_time(self):
+    def _exclude_time(self):
         min_datetime = Manager.data.selected_dataset.start_timestamp
         max_datetime = Manager.data.selected_dataset.end_timestamp
         dialog = ExcludeTimeDialog(min_datetime, max_datetime, self)
@@ -301,23 +298,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             Manager.data.exclude_time(start, end)
         dialog.destroy()
 
-    def __show_about_dialog(self):
+    def _show_about_dialog(self):
         dlg = AboutDialog(self)
         dlg.show()
 
     def import_dataset_dialog(self):
-        path, _ = QFileDialog.getOpenFileName(
+        filename, _ = QFileDialog.getOpenFileName(
             self,
             "Import dataset",
             "",
-            "Dataset Files (*.csv)",
+            "Data Files (*.tse *.csv);;TSE Dataset Files (*.tse);;CSV Files (*.csv)",
         )
-        if path:
-            dialog = ImportCsvDialog(path, self)
-            # TODO: check other cases!!
-            dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-            if dialog.exec() == QDialog.DialogCode.Accepted:
-                Manager.import_dataset(path)
+        if filename:
+            path = Path(filename)
+            if path.is_file():
+                if path.suffix.lower() == ".csv":
+                    dialog = ImportCsvDialog(path, self)
+                    # TODO: check other cases!!
+                    dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+                    if dialog.exec() == QDialog.DialogCode.Accepted:
+                        Manager.import_csv_dataset(path)
+                elif path.suffix.lower() == ".tse":
+                    Manager.import_tse_dataset(path)
 
     @property
     def ok_to_quit(self):

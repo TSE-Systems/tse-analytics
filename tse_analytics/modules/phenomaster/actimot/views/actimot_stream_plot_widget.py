@@ -15,7 +15,7 @@ class ActimotStreamPlotWidget(QWidget):
         self.ui = Ui_ActimotStreamPlotWidget()
         self.ui.setupUi(self)
 
-        self.ui.toolButtonCalculate.clicked.connect(self.__update_plot)
+        self.ui.toolButtonCalculate.clicked.connect(self._update_plot)
 
         plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
         plot_toolbar.setIconSize(QSize(16, 16))
@@ -25,9 +25,9 @@ class ActimotStreamPlotWidget(QWidget):
 
     def set_data(self, trj_df: traja.TrajaDataFrame) -> None:
         self.trj_df = trj_df
-        # self.__update_plot()
+        # self._update_plot()
 
-    def __update_plot(self):
+    def _update_plot(self):
         if self.trj_df is None:
             self.ui.canvas.clear(True)
             return

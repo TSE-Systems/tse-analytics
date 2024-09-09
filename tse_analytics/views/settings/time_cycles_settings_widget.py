@@ -13,21 +13,21 @@ class TimeCyclesSettingsWidget(QWidget):
         self.ui = Ui_TimeCyclesSettingsWidget()
         self.ui.setupUi(self)
 
-        self.ui.timeEditLightCycleStart.editingFinished.connect(self.__light_cycle_start_changed)
-        self.ui.timeEditDarkCycleStart.editingFinished.connect(self.__dark_cycle_start_changed)
+        self.ui.timeEditLightCycleStart.editingFinished.connect(self._light_cycle_start_changed)
+        self.ui.timeEditDarkCycleStart.editingFinished.connect(self._dark_cycle_start_changed)
 
     def set_data(self, time_cycles_settings: TimeCyclesBinningSettings):
         self.ui.timeEditLightCycleStart.setTime(QTime(time_cycles_settings.light_cycle_start))
         self.ui.timeEditDarkCycleStart.setTime(QTime(time_cycles_settings.dark_cycle_start))
 
-    def __light_cycle_start_changed(self):
+    def _light_cycle_start_changed(self):
         if Manager.data.selected_dataset is None:
             return
         Manager.data.selected_dataset.binning_settings.time_cycles_settings.light_cycle_start = (
             self.ui.timeEditLightCycleStart.time().toPython()
         )
 
-    def __dark_cycle_start_changed(self):
+    def _dark_cycle_start_changed(self):
         if Manager.data.selected_dataset is None:
             return
         Manager.data.selected_dataset.binning_settings.time_cycles_settings.dark_cycle_start = (

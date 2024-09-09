@@ -28,51 +28,65 @@ class ExplorationWidget(QWidget, MessengerListener):
         self.help_path = "exploration.md"
 
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
-        self.ui.pushButtonUpdate.clicked.connect(self.__update)
-        self.ui.pushButtonAddReport.clicked.connect(self.__add_report)
+        self.ui.pushButtonUpdate.clicked.connect(self._update)
+        self.ui.pushButtonAddReport.clicked.connect(self._add_report)
 
-        self.ui.radioButtonHistogram.toggled.connect(lambda: self.ui.groupBoxDistribution.setEnabled(False))
-        self.ui.radioButtonDistribution.toggled.connect(lambda: self.ui.groupBoxDistribution.setEnabled(True))
-        self.ui.radioButtonNormality.toggled.connect(lambda: self.ui.groupBoxDistribution.setEnabled(False))
+        self.ui.radioButtonHistogram.toggled.connect(
+            lambda toggled: self.ui.groupBoxDistribution.setEnabled(False) if toggled else None
+        )
+        self.ui.radioButtonDistribution.toggled.connect(
+            lambda toggled: self.ui.groupBoxDistribution.setEnabled(True) if toggled else None
+        )
+        self.ui.radioButtonNormality.toggled.connect(
+            lambda toggled: self.ui.groupBoxDistribution.setEnabled(False) if toggled else None
+        )
 
-        self.ui.radioButtonSplitTotal.toggled.connect(lambda: self.ui.factorSelector.setEnabled(False))
-        self.ui.radioButtonSplitByAnimal.toggled.connect(lambda: self.ui.factorSelector.setEnabled(False))
-        self.ui.radioButtonSplitByFactor.toggled.connect(lambda: self.ui.factorSelector.setEnabled(True))
-        self.ui.radioButtonSplitByRun.toggled.connect(lambda: self.ui.factorSelector.setEnabled(False))
+        self.ui.radioButtonSplitTotal.toggled.connect(
+            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
+        )
+        self.ui.radioButtonSplitByAnimal.toggled.connect(
+            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
+        )
+        self.ui.radioButtonSplitByFactor.toggled.connect(
+            lambda toggled: self.ui.factorSelector.setEnabled(True) if toggled else None
+        )
+        self.ui.radioButtonSplitByRun.toggled.connect(
+            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
+        )
 
         plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
         plot_toolbar.setIconSize(QSize(16, 16))
         self.ui.widgetSettings.layout().addWidget(plot_toolbar)
 
     def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
+        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
 
-    def __on_dataset_changed(self, message: DatasetChangedMessage):
+    def _on_dataset_changed(self, message: DatasetChangedMessage):
         self.ui.pushButtonUpdate.setDisabled(message.data is None)
         self.ui.pushButtonAddReport.setDisabled(message.data is None)
-        self.__clear()
+        self._clear()
         if message.data is not None:
             self.ui.variableSelector.set_data(message.data.variables)
             self.ui.factorSelector.set_data(message.data.factors, add_empty_item=False)
 
-    def __clear(self):
+    def _clear(self):
         self.ui.variableSelector.clear()
         self.ui.factorSelector.clear()
         self.ui.canvas.clear(True)
 
-    def __update(self):
+    def _update(self):
         if self.ui.radioButtonSplitByFactor.isChecked() and self.ui.factorSelector.currentText() == "":
             Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
             return
 
         if self.ui.radioButtonHistogram.isChecked():
-            self.__update_histogram_plot()
+            self._update_histogram_plot()
         elif self.ui.radioButtonDistribution.isChecked():
-            self.__update_distribution_plot()
+            self._update_distribution_plot()
         elif self.ui.radioButtonNormality.isChecked():
-            self.__update_normality_plot()
+            self._update_normality_plot()
 
-    def __update_histogram_plot(self):
+    def _update_histogram_plot(self):
         variable = self.ui.variableSelector.currentText()
         selected_factor = self.ui.factorSelector.currentText()
 
@@ -110,14 +124,14 @@ class ExplorationWidget(QWidget, MessengerListener):
             log=False,
             sharex=False,
             sharey=False,
-            layout=self.__get_plot_layout(number_of_elements),
+            layout=self._get_plot_layout(number_of_elements),
             ax=ax,
         )
 
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()
 
-    def __update_distribution_plot(self):
+    def _update_distribution_plot(self):
         variable = self.ui.variableSelector.currentText()
         selected_factor = self.ui.factorSelector.currentText()
 
@@ -154,7 +168,7 @@ class ExplorationWidget(QWidget, MessengerListener):
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()
 
-    def __update_normality_plot(self):
+    def _update_normality_plot(self):
         variable = self.ui.variableSelector.currentText()
         selected_factor = self.ui.factorSelector.currentText()
 
@@ -185,14 +199,14 @@ class ExplorationWidget(QWidget, MessengerListener):
         match split_mode:
             case SplitMode.ANIMAL:
                 animals = df["Animal"].unique()
-                nrows, ncols = self.__get_plot_layout(len(animals))
+                nrows, ncols = self._get_plot_layout(len(animals))
                 for index, animal in enumerate(animals):
                     ax = self.ui.canvas.figure.add_subplot(nrows, ncols, index + 1)
                     pg.qqplot(df[df["Animal"] == animal][variable], dist="norm", ax=ax)
                     ax.set_title(f"Animal: {animal}")
             case SplitMode.FACTOR:
                 groups = df[selected_factor].unique()
-                nrows, ncols = self.__get_plot_layout(len(groups))
+                nrows, ncols = self._get_plot_layout(len(groups))
                 for index, group in enumerate(groups):
                     # TODO: NaN check
                     if group != group:
@@ -202,7 +216,7 @@ class ExplorationWidget(QWidget, MessengerListener):
                     ax.set_title(group)
             case SplitMode.RUN:
                 runs = df["Run"].unique()
-                nrows, ncols = self.__get_plot_layout(len(runs))
+                nrows, ncols = self._get_plot_layout(len(runs))
                 for index, run in enumerate(runs):
                     ax = self.ui.canvas.figure.add_subplot(nrows, ncols, index + 1)
                     pg.qqplot(df[df["Run"] == run][variable], dist="norm", ax=ax)
@@ -215,7 +229,7 @@ class ExplorationWidget(QWidget, MessengerListener):
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()
 
-    def __get_plot_layout(self, number_of_elements: int):
+    def _get_plot_layout(self, number_of_elements: int):
         if number_of_elements == 1:
             return 1, 1
         elif number_of_elements == 2:
@@ -225,7 +239,7 @@ class ExplorationWidget(QWidget, MessengerListener):
         else:
             return round(number_of_elements / 3) + 1, 3
 
-    def __add_report(self):
+    def _add_report(self):
         io = BytesIO()
         self.ui.canvas.figure.savefig(io, format="png")
         encoded = base64.b64encode(io.getvalue()).decode("utf-8")

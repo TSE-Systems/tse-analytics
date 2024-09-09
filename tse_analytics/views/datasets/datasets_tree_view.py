@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QInputDialog,
     QLineEdit,
     QMenu,
+    QMessageBox,
     QTreeView,
     QWidget,
 )
@@ -23,7 +24,7 @@ from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.modules.phenomaster.meal_details.models.meal_details_tree_item import MealDetailsTreeItem
 from tse_analytics.modules.phenomaster.meal_details.views.meal_details_dialog import MealDetailsDialog
 from tse_analytics.modules.phenomaster.models.dataset_tree_item import DatasetTreeItem
-from tse_analytics.views.datasets_merge_dialog import DatasetsMergeDialog
+from tse_analytics.views.datasets.datasets_merge_dialog import DatasetsMergeDialog
 from tse_analytics.views.import_csv_dialog import ImportCsvDialog
 
 
@@ -49,12 +50,13 @@ class DatasetsTreeView(QTreeView):
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.setModel(Manager.workspace)
 
-        self.customContextMenuRequested.connect(self.__open_menu)
+        self.customContextMenuRequested.connect(self._open_menu)
         self.selectionModel().selectionChanged.connect(self._treeview_selection_changed)
         self.selectionModel().currentChanged.connect(self._treeview_current_changed)
+        # Manager.workspace.checkedItemChanged.connect(self._checked_item_changed)
         self.doubleClicked.connect(self._treeview_double_clicked)
 
-    def __open_menu(self, position):
+    def _open_menu(self, position):
         indexes = self.selectedIndexes()
 
         level = None
@@ -68,17 +70,17 @@ class DatasetsTreeView(QTreeView):
         menu = QMenu(self)
 
         if level == 1:
-            menu.addAction("Import meal details...").triggered.connect(partial(self.__import_meal_details, indexes))
+            menu.addAction("Import meal details...").triggered.connect(partial(self._import_meal_details, indexes))
 
             menu.addAction("Import ActiMot details...").triggered.connect(
-                partial(self.__import_actimot_details, indexes)
+                partial(self._import_actimot_details, indexes)
             )
 
-            menu.addAction("Import calo details...").triggered.connect(partial(self.__import_calo_details, indexes))
+            menu.addAction("Import calo details...").triggered.connect(partial(self._import_calo_details, indexes))
 
             menu.addSeparator()
 
-            menu.addAction("Adjust time...").triggered.connect(partial(self.__adjust_dataset_time, indexes))
+            menu.addAction("Adjust time...").triggered.connect(partial(self._adjust_dataset_time, indexes))
 
             action = menu.addAction("Merge datasets...")
             items = self.model().workspace_tree_item.child_items
@@ -89,33 +91,44 @@ class DatasetsTreeView(QTreeView):
             if checked_datasets_number < 2:
                 action.setEnabled(False)
             else:
-                action.triggered.connect(partial(self.__merge_datasets, indexes))
+                action.triggered.connect(partial(self._merge_datasets, indexes))
 
-            menu.addAction("Remove dataset").triggered.connect(partial(self.__remove_dataset, indexes))
-            menu.addAction("Clone dataset...").triggered.connect(partial(self.__clone_dataset, indexes))
-            menu.addAction("Rename dataset...").triggered.connect(partial(self.__rename_dataset, indexes))
+            menu.addAction("Remove dataset").triggered.connect(partial(self._remove_dataset, indexes))
+            menu.addAction("Clone dataset...").triggered.connect(partial(self._clone_dataset, indexes))
+            menu.addAction("Rename dataset...").triggered.connect(partial(self._rename_dataset, indexes))
 
         menu.exec_(self.viewport().mapToGlobal(position))
 
-    def __merge_datasets(self, indexes: list[QModelIndex]):
+    def _merge_datasets(self, indexes: list[QModelIndex]):
         checked_datasets: list[Dataset] = []
         items = self.model().workspace_tree_item.child_items
         for item in items:
             if item.checked:
                 checked_datasets.append(item.dataset)
 
-        dlg = DatasetsMergeDialog(self)
-        result = dlg.exec()
-        if result == QDialog.DialogCode.Accepted:
-            new_dataset_name = dlg.lineEditName.text()
-            single_run = dlg.checkBoxSingleRun.isChecked()
-            Manager.merge_datasets(new_dataset_name, checked_datasets, single_run, self)
+        # check variables compatibility
+        first_variables_set = checked_datasets[0].variables
+        for dataset in checked_datasets:
+            if dataset.variables != first_variables_set:
+                QMessageBox.critical(
+                    self,
+                    "Cannot merge datasets!",
+                    "List of variables should be the same.",
+                    buttons=QMessageBox.StandardButton.Abort,
+                    defaultButton=QMessageBox.StandardButton.Abort,
+                )
+                return
+
+        dialog = DatasetsMergeDialog(checked_datasets, self)
+        # TODO: check other cases!!
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             # uncheck all datasets
             items = self.model().workspace_tree_item.child_items
             for item in items:
                 item.checked = False
 
-    def __import_meal_details(self, indexes: list[QModelIndex]):
+    def _import_meal_details(self, indexes: list[QModelIndex]):
         path, _ = QFileDialog.getOpenFileName(
             self,
             "Import meal details",
@@ -131,7 +144,7 @@ class DatasetsTreeView(QTreeView):
                     selected_dataset_index = indexes[0]
                     Manager.import_meal_details(selected_dataset_index, path)
 
-    def __import_actimot_details(self, indexes: list[QModelIndex]):
+    def _import_actimot_details(self, indexes: list[QModelIndex]):
         path, _ = QFileDialog.getOpenFileName(
             self,
             "Import ActiMot details",
@@ -147,7 +160,7 @@ class DatasetsTreeView(QTreeView):
                     selected_dataset_index = indexes[0]
                     Manager.import_actimot_details(selected_dataset_index, path)
 
-    def __import_calo_details(self, indexes: list[QModelIndex]):
+    def _import_calo_details(self, indexes: list[QModelIndex]):
         path, _ = QFileDialog.getOpenFileName(
             self,
             "Import calo details",
@@ -163,15 +176,15 @@ class DatasetsTreeView(QTreeView):
                     selected_dataset_index = indexes[0]
                     Manager.import_calo_details(selected_dataset_index, path)
 
-    def __adjust_dataset_time(self, indexes: list[QModelIndex]):
+    def _adjust_dataset_time(self, indexes: list[QModelIndex]):
         delta, ok = QInputDialog.getText(self, "Enter time delta", "Delta", QLineEdit.EchoMode.Normal, "1 d")
         if ok:
             Manager.data.adjust_dataset_time(delta)
 
-    def __remove_dataset(self, indexes: list[QModelIndex]):
+    def _remove_dataset(self, indexes: list[QModelIndex]):
         Manager.remove_dataset(indexes)
 
-    def __rename_dataset(self, indexes: list[QModelIndex]):
+    def _rename_dataset(self, indexes: list[QModelIndex]):
         selected_index = indexes[0]
         if selected_index.isValid():
             item = selected_index.model().getItem(selected_index)
@@ -181,7 +194,7 @@ class DatasetsTreeView(QTreeView):
             if ok:
                 item.rename_dataset(name)
 
-    def __clone_dataset(self, indexes: list[QModelIndex]):
+    def _clone_dataset(self, indexes: list[QModelIndex]):
         selected_index = indexes[0]
         if selected_index.isValid():
             item = selected_index.model().getItem(selected_index)
@@ -201,6 +214,9 @@ class DatasetsTreeView(QTreeView):
 
     def _treeview_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
         # indexes = selected.indexes()
+        pass
+
+    def _checked_item_changed(self, item, state: bool):
         pass
 
     def _treeview_double_clicked(self, index: QModelIndex):

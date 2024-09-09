@@ -21,7 +21,7 @@ class ProphetForecastingWidget(QWidget):
 
         self.help_path = "timeseries-prophet.md"
         self.ui.toolButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
-        self.ui.toolButtonAnalyse.clicked.connect(self.__analyze)
+        self.ui.toolButtonAnalyse.clicked.connect(self._analyze)
 
         plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
         plot_toolbar.setIconSize(QSize(16, 16))
@@ -34,7 +34,7 @@ class ProphetForecastingWidget(QWidget):
     def clear(self):
         self.ui.canvas.clear(True)
 
-    def __analyze(self):
+    def _analyze(self):
         if len(Manager.data.selected_variables) != 1:
             Notification(text="Please select a single variable.", parent=self, duration=2000).show_notification()
             return

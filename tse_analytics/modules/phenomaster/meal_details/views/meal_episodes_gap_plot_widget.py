@@ -19,19 +19,19 @@ class MealEpisodesGapPlotWidget(QWidget):
         plot_toolbar.setIconSize(QSize(16, 16))
         self.ui.horizontalLayout.insertWidget(self.ui.horizontalLayout.count() - 1, plot_toolbar)
 
-        self.ui.variableSelector.currentTextChanged.connect(self.__variable_changed)
+        self.ui.variableSelector.currentTextChanged.connect(self._variable_changed)
 
         self.df: pd.DataFrame | None = None
 
     def set_data(self, df: pd.DataFrame, variables: dict[str, Variable]) -> None:
         self.df = df
         self.ui.variableSelector.set_data(variables)
-        self.__update_plot()
+        self._update_plot()
 
-    def __variable_changed(self, variable: str):
-        self.__update_plot()
+    def _variable_changed(self, variable: str):
+        self._update_plot()
 
-    def __update_plot(self):
+    def _update_plot(self):
         if self.df is None:
             self.ui.canvas.clear(True)
             return

@@ -38,15 +38,15 @@ class AnimalsWidget(QWidget, MessengerListener):
         proxy_model.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.ui.tableView.setModel(proxy_model)
         self.ui.tableView.sortByColumn(0, Qt.SortOrder.AscendingOrder)
-        self.ui.tableView.selectionModel().selectionChanged.connect(self.__on_selection_changed)
+        self.ui.tableView.selectionModel().selectionChanged.connect(self._on_selection_changed)
 
-        self.ui.toolButtonCheckAll.clicked.connect(partial(self.__set_animals_state, True))
-        self.ui.toolButtonUncheckAll.clicked.connect(partial(self.__set_animals_state, False))
+        self.ui.toolButtonCheckAll.clicked.connect(partial(self._set_animals_state, True))
+        self.ui.toolButtonUncheckAll.clicked.connect(partial(self._set_animals_state, False))
 
     def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
+        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
 
-    def __on_dataset_changed(self, message: DatasetChangedMessage):
+    def _on_dataset_changed(self, message: DatasetChangedMessage):
         if message.data is None:
             self.ui.tableView.model().setSourceModel(None)
         else:
@@ -54,7 +54,7 @@ class AnimalsWidget(QWidget, MessengerListener):
             self.ui.tableView.model().setSourceModel(model)
             self.ui.tableView.resizeColumnsToContents()
 
-    def __on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
+    def _on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
         proxy_model = self.ui.tableView.model()
         model = proxy_model.sourceModel()
         selected_animals: list[Animal] = []
@@ -68,7 +68,7 @@ class AnimalsWidget(QWidget, MessengerListener):
                 selected_animals.append(animal)
         Manager.data.set_selected_animals(selected_animals)
 
-    def __set_animals_state(self, state: bool) -> None:
+    def _set_animals_state(self, state: bool) -> None:
         if Manager.data.selected_dataset is None:
             return
 

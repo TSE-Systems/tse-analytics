@@ -1,8 +1,8 @@
 import copy
+from pathlib import Path
 
 from loguru import logger
 from PySide6.QtCore import QModelIndex, QSettings, QThreadPool
-from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.data_hub import DataHub
@@ -10,7 +10,8 @@ from tse_analytics.core.dataset_merger import merge_datasets
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.models.workspace_model import WorkspaceModel
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
-from tse_analytics.modules.phenomaster.io.dataset_loader import DatasetLoader
+from tse_analytics.modules.phenomaster.io.csv_dataset_loader import CsvDatasetLoader
+from tse_analytics.modules.phenomaster.io.tse_dataset_loader import TseDatasetLoader
 
 
 class Manager:
@@ -33,10 +34,16 @@ class Manager:
         cls.workspace.save_workspace(path)
 
     @classmethod
-    def import_dataset(cls, path: str) -> None:
+    def import_csv_dataset(cls, path: Path) -> None:
         settings = QSettings()
         csv_import_settings: CsvImportSettings = settings.value("CsvImportSettings", CsvImportSettings.get_default())
-        dataset = DatasetLoader.load(path, csv_import_settings)
+        dataset = CsvDatasetLoader.load(path, csv_import_settings)
+        if dataset is not None:
+            cls.workspace.add_dataset(dataset)
+
+    @classmethod
+    def import_tse_dataset(cls, path: Path) -> None:
+        dataset = TseDatasetLoader.load(path)
         if dataset is not None:
             cls.workspace.add_dataset(dataset)
 
@@ -59,11 +66,11 @@ class Manager:
 
     @classmethod
     def merge_datasets(
-        cls, new_dataset_name: str, datasets: list[Dataset], single_run: bool, parent_widget: QWidget
+        cls, new_dataset_name: str, datasets: list[Dataset], single_run: bool, continuous_mode: bool
     ) -> None:
-        result_dataset = merge_datasets(new_dataset_name, datasets, single_run, parent_widget)
-        if result_dataset is not None:
-            cls.workspace.add_dataset(result_dataset)
+        merged_dataset = merge_datasets(new_dataset_name, datasets, single_run, continuous_mode)
+        if merged_dataset is not None:
+            cls.workspace.add_dataset(merged_dataset)
 
     @classmethod
     def clone_dataset(cls, original_dataset: Dataset, new_dataset_name: str) -> None:

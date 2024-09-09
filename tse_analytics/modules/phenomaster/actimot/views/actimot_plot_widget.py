@@ -12,9 +12,9 @@ class ActimotPlotWidget(QWidget):
         self.ui = Ui_ActimotPlotWidget()
         self.ui.setupUi(self)
 
-        self.ui.variableSelector.currentTextChanged.connect(self.__variable_changed)
+        self.ui.variableSelector.currentTextChanged.connect(self._variable_changed)
 
-    def __variable_changed(self, variable: str):
+    def _variable_changed(self, variable: str):
         self.ui.plotView.set_variable(variable)
 
     def set_variables(self, variables: dict[str, Variable]):

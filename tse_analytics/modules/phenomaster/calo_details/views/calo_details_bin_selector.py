@@ -34,7 +34,7 @@ class CaloDetailsBinSelector(QTableView):
         proxy_model.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.setModel(proxy_model)
         self.sortByColumn(0, Qt.SortOrder.AscendingOrder)
-        self.selectionModel().selectionChanged.connect(self.__on_selection_changed)
+        self.selectionModel().selectionChanged.connect(self._on_selection_changed)
 
     def set_data(self, dataset: Dataset):
         bins = list(dataset.calo_details.raw_df["Bin"].unique())
@@ -42,7 +42,7 @@ class CaloDetailsBinSelector(QTableView):
         self.model().setSourceModel(model)
         # self.resizeColumnsToContents()
 
-    def __on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
+    def _on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
         proxy_model = self.model()
         model = proxy_model.sourceModel()
         selected_bins: list[int] = []

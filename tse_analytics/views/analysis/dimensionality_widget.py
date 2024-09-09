@@ -29,41 +29,55 @@ class DimensionalityWidget(QWidget, MessengerListener):
         self.help_path = "dimensionality.md"
 
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
-        self.ui.pushButtonUpdate.clicked.connect(self.__update)
-        self.ui.pushButtonAddReport.clicked.connect(self.__add_report)
+        self.ui.pushButtonUpdate.clicked.connect(self._update)
+        self.ui.pushButtonAddReport.clicked.connect(self._add_report)
 
-        self.ui.radioButtonMatrixPlot.toggled.connect(lambda: self.ui.groupBoxDimensions.setEnabled(False))
-        self.ui.radioButtonPCA.toggled.connect(lambda: self.ui.groupBoxDimensions.setEnabled(True))
-        self.ui.radioButtonTSNE.toggled.connect(lambda: self.ui.groupBoxDimensions.setEnabled(True))
+        self.ui.radioButtonMatrixPlot.toggled.connect(
+            lambda toggled: self.ui.groupBoxDimensions.setEnabled(False) if toggled else None
+        )
+        self.ui.radioButtonPCA.toggled.connect(
+            lambda toggled: self.ui.groupBoxDimensions.setEnabled(True) if toggled else None
+        )
+        self.ui.radioButtonTSNE.toggled.connect(
+            lambda toggled: self.ui.groupBoxDimensions.setEnabled(True) if toggled else None
+        )
 
-        self.ui.radioButtonSplitTotal.toggled.connect(lambda: self.ui.factorSelector.setEnabled(False))
-        self.ui.radioButtonSplitByAnimal.toggled.connect(lambda: self.ui.factorSelector.setEnabled(False))
-        self.ui.radioButtonSplitByFactor.toggled.connect(lambda: self.ui.factorSelector.setEnabled(True))
-        self.ui.radioButtonSplitByRun.toggled.connect(lambda: self.ui.factorSelector.setEnabled(False))
+        self.ui.radioButtonSplitTotal.toggled.connect(
+            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
+        )
+        self.ui.radioButtonSplitByAnimal.toggled.connect(
+            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
+        )
+        self.ui.radioButtonSplitByFactor.toggled.connect(
+            lambda toggled: self.ui.factorSelector.setEnabled(True) if toggled else None
+        )
+        self.ui.radioButtonSplitByRun.toggled.connect(
+            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
+        )
 
     def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetChangedMessage, self.__on_dataset_changed)
+        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
 
-    def __on_dataset_changed(self, message: DatasetChangedMessage):
+    def _on_dataset_changed(self, message: DatasetChangedMessage):
         self.ui.pushButtonUpdate.setDisabled(message.data is None)
         self.ui.pushButtonAddReport.setDisabled(message.data is None)
-        self.__clear()
+        self._clear()
         if message.data is not None:
             self.ui.factorSelector.set_data(message.data.factors, add_empty_item=False)
 
-    def __clear(self):
+    def _clear(self):
         self.ui.factorSelector.clear()
         self.ui.webView.setHtml("")
 
-    def __update(self):
+    def _update(self):
         if self.ui.radioButtonMatrixPlot.isChecked():
-            self.__update_matrix_plot()
+            self._update_matrix_plot()
         elif self.ui.radioButtonPCA.isChecked():
-            self.__update_pca_tsne_plot()
+            self._update_pca_tsne_plot()
         elif self.ui.radioButtonTSNE.isChecked():
-            self.__update_pca_tsne_plot()
+            self._update_pca_tsne_plot()
 
-    def __update_matrix_plot(self):
+    def _update_matrix_plot(self):
         if len(Manager.data.selected_variables) < 2:
             Notification(
                 text="Please select at least two variables in Variables panel.", parent=self, duration=2000
@@ -104,7 +118,7 @@ class DimensionalityWidget(QWidget, MessengerListener):
             fig.write_html(file.fileName(), include_plotlyjs=True)
             self.ui.webView.load(QUrl.fromLocalFile(file.fileName()))
 
-    def __update_pca_tsne_plot(self):
+    def _update_pca_tsne_plot(self):
         if len(Manager.data.selected_variables) < 3:
             Notification(
                 text="Please select at least three variables in Variables panel.", parent=self, duration=2000
@@ -185,7 +199,7 @@ class DimensionalityWidget(QWidget, MessengerListener):
             fig.write_html(file.fileName(), include_plotlyjs=True)
             self.ui.webView.load(QUrl.fromLocalFile(file.fileName()))
 
-    def __add_report(self):
+    def _add_report(self):
         size = self.ui.webView.contentsRect()
         pixmap = QPixmap(size.width(), size.height())
         self.ui.webView.render(pixmap)

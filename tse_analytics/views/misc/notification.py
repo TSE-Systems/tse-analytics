@@ -7,69 +7,69 @@ class Notification(QWidget):
     def __init__(self, text: str, parent: QWidget, duration=None):
         super().__init__(parent)
 
-        self.__parent = parent
-        self.__parent.installEventFilter(self)
+        self._parent = parent
+        self._parent.installEventFilter(self)
         self.installEventFilter(self)
-        self.__duration = duration
-        self.__opacity = 0.8
-        self.__foregroundColor = "#EEEEEE"
-        self.__backgroundColor = "#444444"
+        self._duration = duration
+        self._opacity = 0.8
+        self._foregroundColor = "#EEEEEE"
+        self._backgroundColor = "#444444"
 
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.SubWindow)
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, True)
 
         # text in toast (toast foreground)
-        self.__label = QLabel(text)
-        self.__label.setObjectName("popupLbl")
-        self.__label.setStyleSheet("QLabel#popupLbl {{ color: #EEEEEE; padding: 5px; }}")
+        self._label = QLabel(text)
+        self._label.setObjectName("popupLbl")
+        self._label.setStyleSheet("QLabel#popupLbl {{ color: #EEEEEE; padding: 5px; }}")
 
-        self.__label.setMinimumWidth(min(200, self.__label.fontMetrics().boundingRect(text).width() * 2))
-        self.__label.setMinimumHeight(self.__label.fontMetrics().boundingRect(text).height() * 2)
-        self.__label.setWordWrap(True)
+        self._label.setMinimumWidth(min(200, self._label.fontMetrics().boundingRect(text).width() * 2))
+        self._label.setMinimumHeight(self._label.fontMetrics().boundingRect(text).height() * 2)
+        self._label.setWordWrap(True)
 
-        self.__timer = QTimer(self)
+        self._timer = QTimer(self)
 
         # animation
         fade_effect = QGraphicsOpacityEffect(self)
         self.setGraphicsEffect(fade_effect)
 
-        self.__animation = QPropertyAnimation(fade_effect, b"opacity")
-        self.__animation.setDuration(200)
-        self.__animation.setStartValue(0)
-        self.__animation.setEndValue(self.__opacity)
+        self._animation = QPropertyAnimation(fade_effect, b"opacity")
+        self._animation.setDuration(200)
+        self._animation.setStartValue(0)
+        self._animation.setEndValue(self._opacity)
 
         # toast background
         layout = QHBoxLayout()
-        layout.addWidget(self.__label)
+        layout.addWidget(self._label)
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
 
         self.setStyleSheet("QWidget { background: #444444; border-radius: 5px; }")
-        self.__setNotificationSizeBasedOnTextSize()
+        self._setNotificationSizeBasedOnTextSize()
         self.setLayout(layout)
 
     def show_notification(self):
-        if self.__timer.isActive():
+        if self._timer.isActive():
             pass
         else:
-            self.__animation.setDirection(QAbstractAnimation.Direction.Forward)
-            self.__animation.start(QPropertyAnimation.DeletionPolicy.KeepWhenStopped)
-            if self.__duration is not None:
-                self.__timer.singleShot(self.__duration, self.__hide_notification)
+            self._animation.setDirection(QAbstractAnimation.Direction.Forward)
+            self._animation.start(QPropertyAnimation.DeletionPolicy.KeepWhenStopped)
+            if self._duration is not None:
+                self._timer.singleShot(self._duration, self._hide_notification)
         return self.show()
 
     def close_notification(self):
-        self.__animation.setStartValue(self.__opacity)
-        self.__animation.setEndValue(0)
-        self.__animation.finished.connect(self.deleteLater)
-        self.__animation.setDirection(QAbstractAnimation.Direction.Backward)
-        self.__animation.start(QPropertyAnimation.DeletionPolicy.DeleteWhenStopped)
+        self._animation.setStartValue(self._opacity)
+        self._animation.setEndValue(0)
+        self._animation.finished.connect(self.deleteLater)
+        self._animation.setDirection(QAbstractAnimation.Direction.Backward)
+        self._animation.start(QPropertyAnimation.DeletionPolicy.DeleteWhenStopped)
 
-    def __hide_notification(self):
-        self.__timer.stop()
-        self.__animation.finished.connect(self.close)
-        self.__animation.setDirection(QAbstractAnimation.Direction.Backward)
-        self.__animation.start(QPropertyAnimation.DeletionPolicy.DeleteWhenStopped)
+    def _hide_notification(self):
+        self._timer.stop()
+        self._animation.finished.connect(self.close)
+        self._animation.setDirection(QAbstractAnimation.Direction.Backward)
+        self._animation.start(QPropertyAnimation.DeletionPolicy.DeleteWhenStopped)
 
     def setPosition(self, pos):
         geo = self.geometry()
@@ -77,21 +77,21 @@ class Notification(QWidget):
         self.setGeometry(geo)
 
     def setAlignment(self, alignment: Qt.AlignmentFlag):
-        self.__label.setAlignment(alignment)
+        self._label.setAlignment(alignment)
 
     def setFont(self, font: QFont):
-        self.__label.setFont(font)
-        self.__setNotificationSizeBasedOnTextSize()
+        self._label.setFont(font)
+        self._setNotificationSizeBasedOnTextSize()
 
-    def __setNotificationSizeBasedOnTextSize(self):
-        self.setFixedWidth(self.__label.sizeHint().width() * 2)
-        self.setFixedHeight(self.__label.sizeHint().height() * 2)
+    def _setNotificationSizeBasedOnTextSize(self):
+        self.setFixedWidth(self._label.sizeHint().width() * 2)
+        self.setFixedHeight(self._label.sizeHint().height() * 2)
 
     def eventFilter(self, obj: QObject, e: QEvent) -> bool:
         if e.type() == 14:  # resize event
-            self.setPosition(QPoint(self.__parent.rect().center().x(), self.__parent.rect().center().y()))
+            self.setPosition(QPoint(self._parent.rect().center().x(), self._parent.rect().center().y()))
         elif isinstance(obj, Notification):
             if e.type() == 75:  # polish event
-                self.__label.setStyleSheet(f"QLabel#popupLbl {{ color: {self.__foregroundColor}; padding: 5px; }}")
-                self.setStyleSheet(f"QWidget {{ background-color: {self.__backgroundColor}; border-radius: 5px; }}")
+                self._label.setStyleSheet(f"QLabel#popupLbl {{ color: {self._foregroundColor}; padding: 5px; }}")
+                self.setStyleSheet(f"QWidget {{ background-color: {self._backgroundColor}; border-radius: 5px; }}")
         return super().eventFilter(obj, e)

@@ -34,7 +34,7 @@ class CaloDetailsBoxSelector(QTableView):
         proxy_model.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.setModel(proxy_model)
         self.sortByColumn(0, Qt.SortOrder.AscendingOrder)
-        self.selectionModel().selectionChanged.connect(self.__on_selection_changed)
+        self.selectionModel().selectionChanged.connect(self._on_selection_changed)
 
     def set_data(self, dataset: Dataset):
         all_box_numbers = list(dataset.calo_details.raw_df["Box"].unique())
@@ -47,7 +47,7 @@ class CaloDetailsBoxSelector(QTableView):
         self.model().setSourceModel(model)
         # self.resizeColumnsToContents()
 
-    def __on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
+    def _on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
         proxy_model = self.model()
         model = proxy_model.sourceModel()
         selected_boxes: list[CaloDetailsBox] = []

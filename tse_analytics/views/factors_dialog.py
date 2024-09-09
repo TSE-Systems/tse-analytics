@@ -7,8 +7,6 @@ from tse_analytics.views.factors_dialog_ui import Ui_FactorsDialog
 
 
 class FactorsDialog(QDialog, Ui_FactorsDialog):
-    """Factors Dialog"""
-
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.setupUi(self)

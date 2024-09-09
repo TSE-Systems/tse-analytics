@@ -4,7 +4,7 @@ from tse_analytics.modules.phenomaster.meal_details.data.meal_details import Mea
 from tse_analytics.modules.phenomaster.meal_details.meal_details_settings import MealDetailsSettings
 
 
-def __find_invalid_episodes(meal_events_df: pd.DataFrame, sensor: str, minimum_amount: float):
+def _find_invalid_episodes(meal_events_df: pd.DataFrame, sensor: str, minimum_amount: float):
     episode_id_column = f"{sensor}EpisodeId"
     episodes_ids = list(meal_events_df[episode_id_column].unique())
     for episode_id in episodes_ids:
@@ -15,7 +15,7 @@ def __find_invalid_episodes(meal_events_df: pd.DataFrame, sensor: str, minimum_a
     return meal_events_df
 
 
-def __extract_meal_events(
+def _extract_meal_events(
     df: pd.DataFrame,
     meal_details_settings: MealDetailsSettings,
     drink1_present: bool,
@@ -258,28 +258,24 @@ def __extract_meal_events(
                             feed_episode_last_timestamp = timestamp
 
     if drink1_present:
-        meal_events_df = __find_invalid_episodes(
-            meal_events_df, "Drink1", meal_details_settings.drinking_minimum_amount
-        )
+        meal_events_df = _find_invalid_episodes(meal_events_df, "Drink1", meal_details_settings.drinking_minimum_amount)
     if feed1_present:
-        meal_events_df = __find_invalid_episodes(meal_events_df, "Feed1", meal_details_settings.feeding_minimum_amount)
+        meal_events_df = _find_invalid_episodes(meal_events_df, "Feed1", meal_details_settings.feeding_minimum_amount)
 
     if drink2_present:
-        meal_events_df = __find_invalid_episodes(
-            meal_events_df, "Drink2", meal_details_settings.drinking_minimum_amount
-        )
+        meal_events_df = _find_invalid_episodes(meal_events_df, "Drink2", meal_details_settings.drinking_minimum_amount)
     if feed2_present:
-        meal_events_df = __find_invalid_episodes(meal_events_df, "Feed2", meal_details_settings.feeding_minimum_amount)
+        meal_events_df = _find_invalid_episodes(meal_events_df, "Feed2", meal_details_settings.feeding_minimum_amount)
 
     if drink_present:
-        meal_events_df = __find_invalid_episodes(meal_events_df, "Drink", meal_details_settings.drinking_minimum_amount)
+        meal_events_df = _find_invalid_episodes(meal_events_df, "Drink", meal_details_settings.drinking_minimum_amount)
     if feed_present:
-        meal_events_df = __find_invalid_episodes(meal_events_df, "Feed", meal_details_settings.feeding_minimum_amount)
+        meal_events_df = _find_invalid_episodes(meal_events_df, "Feed", meal_details_settings.feeding_minimum_amount)
 
     return meal_events_df
 
 
-def __extract_sensor_episodes(
+def _extract_sensor_episodes(
     animal_no: int, box_no: int, start_timestamp: pd.Timestamp, meal_events_df: pd.DataFrame, sensor: str
 ) -> pd.DataFrame:
     id_ = []
@@ -344,7 +340,7 @@ def __extract_sensor_episodes(
     return sensor_episodes_df
 
 
-def __extract_meal_episodes(
+def _extract_meal_episodes(
     animal_no: int,
     box_no: int,
     start_timestamp: pd.Timestamp,
@@ -359,42 +355,42 @@ def __extract_meal_episodes(
     meal_episodes_df = None
 
     if drink1_present:
-        drink1_episodes_df = __extract_sensor_episodes(animal_no, box_no, start_timestamp, meal_events_df, "Drink1")
+        drink1_episodes_df = _extract_sensor_episodes(animal_no, box_no, start_timestamp, meal_events_df, "Drink1")
         if meal_episodes_df is None:
             meal_episodes_df = drink1_episodes_df
         else:
             meal_episodes_df = pd.concat([meal_episodes_df, drink1_episodes_df], ignore_index=True)
 
     if feed1_present:
-        feed1_episodes_df = __extract_sensor_episodes(animal_no, box_no, start_timestamp, meal_events_df, "Feed1")
+        feed1_episodes_df = _extract_sensor_episodes(animal_no, box_no, start_timestamp, meal_events_df, "Feed1")
         if meal_episodes_df is None:
             meal_episodes_df = feed1_episodes_df
         else:
             meal_episodes_df = pd.concat([meal_episodes_df, feed1_episodes_df], ignore_index=True)
 
     if drink2_present:
-        drink2_episodes_df = __extract_sensor_episodes(animal_no, box_no, start_timestamp, meal_events_df, "Drink2")
+        drink2_episodes_df = _extract_sensor_episodes(animal_no, box_no, start_timestamp, meal_events_df, "Drink2")
         if meal_episodes_df is None:
             meal_episodes_df = drink2_episodes_df
         else:
             meal_episodes_df = pd.concat([meal_episodes_df, drink2_episodes_df], ignore_index=True)
 
     if feed2_present:
-        feed2_episodes_df = __extract_sensor_episodes(animal_no, box_no, start_timestamp, meal_events_df, "Feed2")
+        feed2_episodes_df = _extract_sensor_episodes(animal_no, box_no, start_timestamp, meal_events_df, "Feed2")
         if meal_episodes_df is None:
             meal_episodes_df = feed2_episodes_df
         else:
             meal_episodes_df = pd.concat([meal_episodes_df, feed2_episodes_df], ignore_index=True)
 
     if drink_present:
-        drink_episodes_df = __extract_sensor_episodes(animal_no, box_no, start_timestamp, meal_events_df, "Drink")
+        drink_episodes_df = _extract_sensor_episodes(animal_no, box_no, start_timestamp, meal_events_df, "Drink")
         if meal_episodes_df is None:
             meal_episodes_df = drink_episodes_df
         else:
             meal_episodes_df = pd.concat([meal_episodes_df, drink_episodes_df], ignore_index=True)
 
     if feed_present:
-        feed_episodes_df = __extract_sensor_episodes(animal_no, box_no, start_timestamp, meal_events_df, "Feed")
+        feed_episodes_df = _extract_sensor_episodes(animal_no, box_no, start_timestamp, meal_events_df, "Feed")
         if meal_episodes_df is None:
             meal_episodes_df = feed_episodes_df
         else:
@@ -403,7 +399,7 @@ def __extract_meal_episodes(
     return meal_episodes_df
 
 
-def __process_box(
+def _process_box(
     box_number: int,
     animal_number: int,
     meal_details_df: pd.DataFrame,
@@ -417,7 +413,7 @@ def __process_box(
     drink_present = "Drink" in meal_details_df.columns and (not drink1_present and not drink2_present)
     feed_present = "Feed" in meal_details_df.columns and (not feed1_present and not feed2_present)
 
-    meal_events_df = __extract_meal_events(
+    meal_events_df = _extract_meal_events(
         meal_details_df,
         meal_details_settings,
         drink1_present,
@@ -428,7 +424,7 @@ def __process_box(
         feed_present,
     )
 
-    meal_episodes_df = __extract_meal_episodes(
+    meal_episodes_df = _extract_meal_episodes(
         animal_number,
         box_number,
         start_timestamp,
@@ -459,7 +455,7 @@ def process_meal_sequences(
     for box_number in all_box_numbers:
         df = meal_details.raw_df[meal_details.raw_df["Box"] == box_number]
 
-        meal_events_df, meal_episodes_df = __process_box(
+        meal_events_df, meal_episodes_df = _process_box(
             box_number,
             box_to_animal_map[box_number],
             df,

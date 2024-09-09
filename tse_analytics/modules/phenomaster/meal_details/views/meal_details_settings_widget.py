@@ -17,26 +17,26 @@ class MealDetailsSettingsWidget(QWidget):
         self.ui = Ui_MealDetailsSettingsWidget()
         self.ui.setupUi(self)
 
-        self.ui.pushButtonResetSettings.clicked.connect(self.__reset_settings)
-        self.ui.radioButtonSequentialType.toggled.connect(lambda state: self.__set_analysis_type(state))
+        self.ui.pushButtonResetSettings.clicked.connect(self._reset_settings)
+        self.ui.radioButtonSequentialType.toggled.connect(lambda toggled: self._set_analysis_type(toggled))
 
-        self.ui.toolButtonAddDiet.clicked.connect(self.__add_diet)
-        self.ui.toolButtonDeleteDiet.clicked.connect(self.__delete_diet)
+        self.ui.toolButtonAddDiet.clicked.connect(self._add_diet)
+        self.ui.toolButtonDeleteDiet.clicked.connect(self._delete_diet)
 
         self.dataset: Dataset | None = None
         self.diets_model: DietsModel | None = None
 
     def set_data(self, dataset: Dataset, meal_details_settings: MealDetailsSettings):
         self.dataset = dataset
-        self.__set_settings(meal_details_settings)
+        self._set_settings(meal_details_settings)
 
         self.diets_model = DietsModel(meal_details_settings.diets)
         self.ui.tableViewDiets.setModel(self.diets_model)
         header = self.ui.tableViewDiets.horizontalHeader()
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
 
-    def __set_settings(self, meal_details_settings: MealDetailsSettings):
-        self.__set_analysis_type(meal_details_settings.sequential_analysis_type)
+    def _set_settings(self, meal_details_settings: MealDetailsSettings):
+        self._set_analysis_type(meal_details_settings.sequential_analysis_type)
         self.ui.radioButtonSequentialType.setChecked(meal_details_settings.sequential_analysis_type)
         self.ui.radioButtonIntervalType.setChecked(not meal_details_settings.sequential_analysis_type)
         self.ui.intermealIntervalTimeEdit.setTime(
@@ -56,21 +56,21 @@ class MealDetailsSettingsWidget(QWidget):
             )
         )
 
-    def __set_analysis_type(self, sequential_meal_analysis: bool):
+    def _set_analysis_type(self, sequential_meal_analysis: bool):
         self.ui.groupBoxSequentialSettings.setVisible(sequential_meal_analysis)
         self.ui.groupBoxIntervalSettings.setVisible(not sequential_meal_analysis)
 
-    def __reset_settings(self):
+    def _reset_settings(self):
         meal_details_settings = MealDetailsSettings.get_default()
-        self.__set_settings(meal_details_settings)
+        self._set_settings(meal_details_settings)
 
-    def __add_diet(self):
+    def _add_diet(self):
         text, result = QInputDialog.getText(self, "Add Animal Diet", "Please enter diet name:")
         if result:
             diet = AnimalDiet(name=text, caloric_value=0.0)
             self.diets_model.add_diet(diet)
 
-    def __delete_diet(self):
+    def _delete_diet(self):
         indexes = self.ui.tableViewDiets.selectedIndexes()
         if indexes:
             # Indexes is a single-item list in single-select mode.

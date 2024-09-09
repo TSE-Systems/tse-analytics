@@ -1,24 +1,18 @@
-import gc
 import sqlite3 as db
 from datetime import datetime
 
 import numpy as np
 import pandas as pd
-from PySide6.QtGui import QPixmapCache
 
 from tse_analytics.core.data.binning import BinningMode, BinningOperation, BinningParams, TimeIntervalsBinningSettings
 from tse_analytics.core.data.outliers import OutliersMode, OutliersParams
-from tse_analytics.core.data.pipeline.animal_filter_pipe_operator import AnimalFilterPipeOperator
-from tse_analytics.core.data.pipeline.outliers_pipe_operator import OutliersPipeOperator
-from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import TimeCyclesBinningPipeOperator
-from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import TimeIntervalsBinningPipeOperator
-from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import TimePhasesBinningPipeOperator
+from tse_analytics.core.data.pipeline.animal_filter_pipe_operator import filter_animals
+from tse_analytics.core.data.pipeline.outliers_pipe_operator import process_outliers
+from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import process_time_cycles_binning
+from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
+from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import process_time_phases_binning
 from tse_analytics.core.data.shared import Animal, SplitMode, Variable
-from tse_analytics.core.messaging.messages import (
-    BinningMessage,
-    DataChangedMessage,
-    DatasetChangedMessage,
-)
+from tse_analytics.core.messaging.messages import BinningMessage, DataChangedMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.modules.phenomaster.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
 from tse_analytics.modules.phenomaster.calo_details.data.calo_details import CaloDetails
@@ -40,8 +34,6 @@ class DataHub:
         self.selected_dataset = None
         self.selected_animals.clear()
         self.selected_variables.clear()
-        QPixmapCache.clear()
-        gc.collect()
 
         self.messenger.broadcast(DatasetChangedMessage(self, None))
 
@@ -94,7 +86,7 @@ class DataHub:
 
     def adjust_dataset_time(self, delta: str) -> None:
         if self.selected_dataset is not None:
-            self.selected_dataset.adjust_time(delta)
+            self.selected_dataset.adjust_time(pd.Timedelta(delta))
             self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
 
     def export_to_excel(self, path: str) -> None:
@@ -146,17 +138,17 @@ class DataHub:
                     ] = [row["O2-p"], row["CO2-p"], row["VO2(3)-p"], row["VCO2(3)-p"], row["RER-p"], row["H(3)-p"]]
 
             if "O2-p" not in dataset.variables:
-                dataset.variables["O2-p"] = Variable("O2-p", "[%]", "Predicted O2")
+                dataset.variables["O2-p"] = Variable("O2-p", "[%]", "Predicted O2", type="float64")
             if "CO2-p" not in dataset.variables:
-                dataset.variables["CO2-p"] = Variable("CO2-p", "[%]", "Predicted CO2")
+                dataset.variables["CO2-p"] = Variable("CO2-p", "[%]", "Predicted CO2", type="float64")
             if "VO2(3)-p" not in dataset.variables:
-                dataset.variables["VO2(3)-p"] = Variable("VO2(3)-p", "[ml/h]", "Predicted VO2(3)")
+                dataset.variables["VO2(3)-p"] = Variable("VO2(3)-p", "[ml/h]", "Predicted VO2(3)", type="float64")
             if "VCO2(3)-p" not in dataset.variables:
-                dataset.variables["VCO2(3)-p"] = Variable("VCO2(3)-p", "[ml/h]", "Predicted VCO2(3)")
+                dataset.variables["VCO2(3)-p"] = Variable("VCO2(3)-p", "[ml/h]", "Predicted VCO2(3)", type="float64")
             if "RER-p" not in dataset.variables:
-                dataset.variables["RER-p"] = Variable("RER-p", "", "Predicted RER")
+                dataset.variables["RER-p"] = Variable("RER-p", "", "Predicted RER", type="float64")
             if "H(3)-p" not in dataset.variables:
-                dataset.variables["H(3)-p"] = Variable("H(3)-p", "[kcal/h]", "Predicted H(3)")
+                dataset.variables["H(3)-p"] = Variable("H(3)-p", "[kcal/h]", "Predicted H(3)", type="float64")
             dataset.refresh_active_df()
             self.set_selected_dataset(dataset)
 
@@ -176,47 +168,45 @@ class DataHub:
 
         # Filter operator
         animals = [animal for animal in self.selected_dataset.animals.values() if animal.enabled]
-        operator = AnimalFilterPipeOperator(animals)
-        result = operator.process(result)
+        result = filter_animals(result, animals)
 
         # Outliers operator
         if self.outliers_params.mode == OutliersMode.REMOVE:
             if variables is None:
                 variables = list(self.selected_dataset.variables.keys())
-            operator = OutliersPipeOperator(self.outliers_params, variables)
-            result = operator.process(result)
+            result = process_outliers(result, self.outliers_params, variables)
 
         # Binning
         if self.binning_params.apply:
             factor_names = list(self.selected_dataset.factors.keys())
             match self.binning_params.mode:
                 case BinningMode.INTERVALS:
-                    operator = TimeIntervalsBinningPipeOperator(
+                    result = process_time_interval_binning(
+                        result,
                         self.selected_dataset.binning_settings.time_intervals_settings,
                         self.binning_params.operation,
                         split_mode,
                         factor_names,
                         selected_factor,
                     )
-                    result = operator.process(result)
                 case BinningMode.CYCLES:
-                    operator = TimeCyclesBinningPipeOperator(
+                    result = process_time_cycles_binning(
+                        result,
                         self.selected_dataset.binning_settings.time_cycles_settings,
                         self.binning_params.operation,
                         split_mode,
                         factor_names,
                         selected_factor,
                     )
-                    result = operator.process(result)
                 case BinningMode.PHASES:
-                    operator = TimePhasesBinningPipeOperator(
+                    result = process_time_phases_binning(
+                        result,
                         self.selected_dataset.binning_settings.time_phases_settings,
                         self.binning_params.operation,
                         split_mode,
                         factor_names,
                         selected_factor,
                     )
-                    result = operator.process(result)
 
         # TODO: should or should not?
         if dropna:
@@ -240,47 +230,45 @@ class DataHub:
 
         # Filter operator
         if len(self.selected_animals) > 0:
-            operator = AnimalFilterPipeOperator(self.selected_animals)
-            result = operator.process(result)
+            result = filter_animals(result, self.selected_animals)
 
         # Outliers operator
         if self.outliers_params.mode == OutliersMode.REMOVE:
             if variables is None:
                 variables = list(self.selected_dataset.variables.keys())
-            operator = OutliersPipeOperator(self.outliers_params, variables)
-            result = operator.process(result)
+            result = process_outliers(result, self.outliers_params, variables)
 
         # Binning
         if self.binning_params.apply:
             factor_names = list(self.selected_dataset.factors.keys())
             match self.binning_params.mode:
                 case BinningMode.INTERVALS:
-                    operator = TimeIntervalsBinningPipeOperator(
+                    result = process_time_interval_binning(
+                        result,
                         self.selected_dataset.binning_settings.time_intervals_settings,
                         self.binning_params.operation,
                         split_mode,
                         factor_names,
                         selected_factor,
                     )
-                    result = operator.process(result)
                 case BinningMode.CYCLES:
-                    operator = TimeCyclesBinningPipeOperator(
+                    result = process_time_cycles_binning(
+                        result,
                         self.selected_dataset.binning_settings.time_cycles_settings,
                         self.binning_params.operation,
                         split_mode,
                         factor_names,
                         selected_factor,
                     )
-                    result = operator.process(result)
                 case BinningMode.PHASES:
-                    operator = TimePhasesBinningPipeOperator(
+                    result = process_time_phases_binning(
+                        result,
                         self.selected_dataset.binning_settings.time_phases_settings,
                         self.binning_params.operation,
                         split_mode,
                         factor_names,
                         selected_factor,
                     )
-                    result = operator.process(result)
 
         # TODO: should or should not?
         if dropna:
@@ -298,26 +286,24 @@ class DataHub:
 
         # Filter operator
         animals = [animal for animal in self.selected_dataset.animals.values() if animal.enabled]
-        operator = AnimalFilterPipeOperator(animals)
-        result = operator.process(result)
+        result = filter_animals(result, animals)
 
         # Outliers operator
         if self.outliers_params.mode == OutliersMode.REMOVE:
             if variables is None:
                 variables = list(self.selected_dataset.variables.keys())
-            operator = OutliersPipeOperator(self.outliers_params, variables)
-            result = operator.process(result)
+            result = process_outliers(result, self.outliers_params, variables)
 
         # Binning
         factor_names = list(self.selected_dataset.factors.keys())
-        operator = TimeIntervalsBinningPipeOperator(
+        result = process_time_interval_binning(
+            result,
             TimeIntervalsBinningSettings("day", 365),
             BinningOperation.MEAN,
             SplitMode.ANIMAL,
             factor_names,
             None,
         )
-        result = operator.process(result)
 
         # TODO: should or should not?
         result = result.dropna()
@@ -334,13 +320,11 @@ class DataHub:
 
         # Filter operator
         if len(self.selected_animals) > 0:
-            operator = AnimalFilterPipeOperator(self.selected_animals)
-            result = operator.process(result)
+            result = filter_animals(result, self.selected_animals)
 
         # Outliers operator
         if self.outliers_params.mode == OutliersMode.REMOVE:
-            operator = OutliersPipeOperator(self.outliers_params, [variable])
-            result = operator.process(result)
+            result = process_outliers(result, self.outliers_params, [variable])
 
         if self.binning_params.mode == BinningMode.CYCLES:
 
@@ -362,7 +346,7 @@ class DataHub:
 
             result["Bin"] = None
             for phase in self.selected_dataset.binning_settings.time_phases_settings.time_phases:
-                result.loc[result["DateTime"] >= phase.start_timestamp, "Bin"] = phase.name
+                result.loc[result["Timedelta"] >= phase.start_timestamp, "Bin"] = phase.name
 
             result["Bin"] = result["Bin"].astype("category")
             result.drop(columns=["DateTime"], inplace=True)

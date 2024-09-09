@@ -1,6 +1,7 @@
 import base64
 from io import BytesIO
 
+import numpy as np
 import pandas as pd
 import pyqtgraph as pg
 from pyqtgraph import mkPen
@@ -10,6 +11,7 @@ from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.data.shared import Factor, SplitMode
 from tse_analytics.core.manager import Manager
+from tse_analytics.views.misc.TimedeltaAxisItem import TimedeltaAxisItem
 
 
 class TimelinePlotView(pg.GraphicsLayoutWidget):
@@ -35,13 +37,15 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         # customize the averaged curve that can be activated from the context menu
         self.p1.avgPen = pg.mkPen("#FFFFFF")
         self.p1.avgShadowPen = pg.mkPen("#8080DD", width=10)
-        self.p1.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
+        # self.p1.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
+        self.p1.setAxisItems({"bottom": TimedeltaAxisItem()})
         self.p1.showGrid(x=True, y=True)
 
         self.legend = self.p1.addLegend((10, 10))
 
         self.p2: pg.PlotItem = self.addPlot(row=1, col=0)
-        self.p2.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
+        # self.p2.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
+        self.p2.setAxisItems({"bottom": TimedeltaAxisItem()})
         self.p2.showGrid(x=True, y=True)
 
         self.region = pg.LinearRegionItem()
@@ -67,12 +71,16 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
     def set_data(self, df: pd.DataFrame):
         self._df = df
-        self.__update_plot()
+
+        unique_deltas = self._df["Timedelta"].unique()
+        TimedeltaAxisItem.sampling_interval = unique_deltas[1] - unique_deltas[0]
+
+        self._update_plot()
 
     def set_variable(self, variable: str, update: bool):
         self._variable = variable
         if update:
-            self.__update_plot()
+            self._update_plot()
 
     def set_grouping_mode(self, grouping_mode: SplitMode, selected_factor: Factor):
         self._split_mode = grouping_mode
@@ -80,17 +88,17 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
     def set_display_errors(self, state: bool):
         self._display_errors = state
-        self.__update_plot()
+        self._update_plot()
 
     def set_error_type(self, error_type: str):
         self._error_type = error_type
-        self.__update_plot()
+        self._update_plot()
 
     def set_scatter_plot(self, state: bool):
         self._scatter_plot = state
-        self.__update_plot()
+        self._update_plot()
 
-    def __update_plot(self):
+    def _update_plot(self):
         self.plot_data_items.clear()
         self.p1.clear()
         self.p2.clearPlots()
@@ -105,13 +113,13 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         match self._split_mode:
             case SplitMode.ANIMAL:
-                x_min, x_max = self.__plot_animals()
+                x_min, x_max = self._plot_animals()
             case SplitMode.FACTOR:
-                x_min, x_max = self.__plot_factors()
+                x_min, x_max = self._plot_factors()
             case SplitMode.RUN:
-                x_min, x_max = self.__plot_runs()
+                x_min, x_max = self._plot_runs()
             case SplitMode.TOTAL:
-                x_min, x_max = self.__plot_total()
+                x_min, x_max = self._plot_total()
 
         # bound the LinearRegionItem to the plotted data
         self.region.setClipItem(self.p2)
@@ -119,11 +127,11 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         self.update()
 
-    def __plot_item(self, data: pd.DataFrame, name: str, pen):
-        x = (data["DateTime"] - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
-        # x = filtered_data["Bin"]
+    def _plot_item(self, data: pd.DataFrame, name: str, pen):
+        # x = (data["DateTime"] - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
+        x = data["Bin"]
 
-        x = x.to_numpy()
+        x = x.to_numpy(dtype=np.int64)
         tmp_min = x.min()
         tmp_max = x.max()
 
@@ -150,7 +158,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         return tmp_min, tmp_max
 
-    def __plot_animals(self) -> tuple[float, float]:
+    def _plot_animals(self) -> tuple[float, float]:
         x_min = None
         x_max = None
 
@@ -164,7 +172,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
             filtered_data = self._df[self._df["Animal"] == animal.id]
 
             pen = mkPen(color=(i, len(animals)), width=1)
-            tmp_min, tmp_max = self.__plot_item(filtered_data, f"Animal {animal.id}", pen)
+            tmp_min, tmp_max = self._plot_item(filtered_data, f"Animal {animal.id}", pen)
 
             if x_min is None or tmp_min < x_min:
                 x_min = tmp_min
@@ -173,13 +181,13 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         return x_min, x_max
 
-    def __plot_factors(self) -> tuple[float, float]:
+    def _plot_factors(self) -> tuple[float, float]:
         x_min = None
         x_max = None
 
         factor_name = self._selected_factor.name
 
-        group_by = ["DateTime", factor_name]
+        group_by = ["Bin", factor_name]
         grouped = self._df.groupby(group_by, dropna=False, observed=False)
 
         result = (
@@ -201,7 +209,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
             filtered_data = data[data[factor_name] == group.name]
 
             pen = mkPen(color=(i, len(groups)), width=1)
-            tmp_min, tmp_max = self.__plot_item(filtered_data, f"{group.name}", pen)
+            tmp_min, tmp_max = self._plot_item(filtered_data, f"{group.name}", pen)
 
             if x_min is None or tmp_min < x_min:
                 x_min = tmp_min
@@ -210,11 +218,11 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         return x_min, x_max
 
-    def __plot_runs(self) -> tuple[float, float]:
+    def _plot_runs(self) -> tuple[float, float]:
         x_min = None
         x_max = None
 
-        group_by = ["DateTime", "Run"]
+        group_by = ["Bin", "Run"]
         grouped = self._df.groupby(group_by, dropna=False, observed=False)
 
         result = (
@@ -236,7 +244,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
             filtered_data = data[data["Run"] == run]
 
             pen = mkPen(color=(i, len(runs)), width=1)
-            tmp_min, tmp_max = self.__plot_item(filtered_data, f"Run {run}", pen)
+            tmp_min, tmp_max = self._plot_item(filtered_data, f"Run {run}", pen)
 
             if x_min is None or tmp_min < x_min:
                 x_min = tmp_min
@@ -245,11 +253,11 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         return x_min, x_max
 
-    def __plot_total(self) -> tuple[float, float]:
+    def _plot_total(self) -> tuple[float, float]:
         x_min = None
         x_max = None
 
-        group_by = ["DateTime"]
+        group_by = ["Bin"]
         grouped = self._df.groupby(group_by, dropna=False, observed=False)
 
         result = (
@@ -267,7 +275,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         data.rename(columns={"Value": self._variable}, inplace=True)
 
         pen = mkPen(color=(1, 1), width=1)
-        tmp_min, tmp_max = self.__plot_item(data, "Total", pen)
+        tmp_min, tmp_max = self._plot_item(data, "Total", pen)
 
         if x_min is None or tmp_min < x_min:
             x_min = tmp_min
