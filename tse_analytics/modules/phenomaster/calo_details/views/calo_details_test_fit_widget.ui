@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
+ <author>Anton Rau</author>
  <class>CaloDetailsTestFitWidget</class>
  <widget class="QWidget" name="CaloDetailsTestFitWidget">
   <property name="geometry">
@@ -45,6 +46,9 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelT90"/>
      </item>
     </layout>
    </item>

@@ -15,8 +15,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QHBoxLayout, QSizePolicy, QSpacerItem,
-    QToolButton, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QSizePolicy,
+    QSpacerItem, QToolButton, QVBoxLayout, QWidget)
 
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 
@@ -43,6 +43,11 @@ class Ui_CaloDetailsTestFitWidget(object):
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer)
+
+        self.labelT90 = QLabel(CaloDetailsTestFitWidget)
+        self.labelT90.setObjectName(u"labelT90")
+
+        self.horizontalLayout.addWidget(self.labelT90)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout)

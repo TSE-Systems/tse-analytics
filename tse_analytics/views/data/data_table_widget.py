@@ -93,6 +93,8 @@ class DataTableWidget(QWidget, MessengerListener):
                 split_mode = SplitMode.RUN
             case "Factor":
                 split_mode = SplitMode.FACTOR
+                if selected_factor_name == "":
+                    return
 
         self.df = Manager.data.get_data_view_df(
             variables=selected_variable_names,

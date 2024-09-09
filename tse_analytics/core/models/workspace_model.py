@@ -135,7 +135,7 @@ class WorkspaceModel(QAbstractItemModel):
             self.workspace_tree_item = WorkspaceTreeItem(self.workspace)
             for dataset in self.workspace.datasets:
                 dataset_tree_item = DatasetTreeItem(dataset)
-                self.__add_children_items(dataset, dataset_tree_item)
+                self._add_children_items(dataset, dataset_tree_item)
                 self.workspace_tree_item.add_child(dataset_tree_item)
         self.endResetModel()
 
@@ -146,7 +146,7 @@ class WorkspaceModel(QAbstractItemModel):
     def add_dataset(self, dataset: Dataset):
         self.workspace.datasets.append(dataset)
         dataset_tree_item = DatasetTreeItem(dataset)
-        self.__add_children_items(dataset, dataset_tree_item)
+        self._add_children_items(dataset, dataset_tree_item)
         self.beginResetModel()
         self.workspace_tree_item.add_child(dataset_tree_item)
         self.endResetModel()
@@ -163,7 +163,7 @@ class WorkspaceModel(QAbstractItemModel):
                 dataset_tree_item.dataset.meal_details = meal_details
                 self.beginResetModel()
                 dataset_tree_item.clear()
-                self.__add_children_items(dataset_tree_item.dataset, dataset_tree_item)
+                self._add_children_items(dataset_tree_item.dataset, dataset_tree_item)
                 self.endResetModel()
 
     def add_actimot_details(self, dataset_index: QModelIndex, path: str):
@@ -178,7 +178,7 @@ class WorkspaceModel(QAbstractItemModel):
                 dataset_tree_item.dataset.actimot_details = actimot_details
                 self.beginResetModel()
                 dataset_tree_item.clear()
-                self.__add_children_items(dataset_tree_item.dataset, dataset_tree_item)
+                self._add_children_items(dataset_tree_item.dataset, dataset_tree_item)
                 self.endResetModel()
 
     def add_calo_details(self, dataset_index: QModelIndex, path: str):
@@ -193,7 +193,7 @@ class WorkspaceModel(QAbstractItemModel):
                 dataset_tree_item.dataset.calo_details = calo_details
                 self.beginResetModel()
                 dataset_tree_item.clear()
-                self.__add_children_items(dataset_tree_item.dataset, dataset_tree_item)
+                self._add_children_items(dataset_tree_item.dataset, dataset_tree_item)
                 self.endResetModel()
 
     def remove_dataset(self, indexes: list[QModelIndex]):
@@ -204,7 +204,7 @@ class WorkspaceModel(QAbstractItemModel):
             self.workspace.datasets.pop(row)
         self.endResetModel()
 
-    def __add_children_items(self, dataset: Dataset, dataset_tree_item: DatasetTreeItem):
+    def _add_children_items(self, dataset: Dataset, dataset_tree_item: DatasetTreeItem):
         if dataset.meal_details is not None:
             meal_details_tree_item = MealDetailsTreeItem(dataset.meal_details)
             dataset_tree_item.add_child(meal_details_tree_item)

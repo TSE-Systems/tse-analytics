@@ -18,7 +18,7 @@ class ActimotTrajectoryPlotWidget(QWidget):
         self.ui = Ui_ActimotTrajectoryPlotWidget()
         self.ui.setupUi(self)
 
-        self.ui.toolButtonCalculate.clicked.connect(self.__update_plot)
+        self.ui.toolButtonCalculate.clicked.connect(self._update_plot)
         self.ui.checkBoxDrawNPoints.toggled.connect(lambda toggled: self.ui.spinBoxN.setEnabled(toggled))
 
         plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
@@ -33,7 +33,7 @@ class ActimotTrajectoryPlotWidget(QWidget):
         self.trj_df = trj_df
         # self._update_plot()
 
-    def __update_plot(self):
+    def _update_plot(self):
         if self.trj_df is None:
             self.ui.canvas.clear(True)
             return
@@ -42,10 +42,10 @@ class ActimotTrajectoryPlotWidget(QWidget):
         self.toast = Notification(text="Processing...", parent=self, duration=None)
         self.toast.show_notification()
 
-        worker = Worker(self.__work)
+        worker = Worker(self._work)
         Manager.threadpool.start(worker)
 
-    def __work(self):
+    def _work(self):
         self.ui.canvas.clear(False)
         ax = self.ui.canvas.figure.add_subplot(111)
 

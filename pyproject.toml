@@ -28,7 +28,7 @@ seaborn = "0.13.2"
 [tool.poetry.group.dev.dependencies]
 mypy = "1.11.2"
 pyinstaller = "6.10.0"
-ruff = "0.6.3"
+ruff = "0.6.4"
 pefile = "2023.2.7" # Temporary fix. See: https://github.com/erocarrera/pefile/issues/420
 
 [build-system]

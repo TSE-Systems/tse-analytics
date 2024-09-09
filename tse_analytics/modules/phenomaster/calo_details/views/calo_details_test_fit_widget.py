@@ -110,6 +110,46 @@ class CaloDetailsTestFitWidget(QWidget):
         )
         ax[0].plot(predicted_input_o2, predicted_output_o2, "r-", label="Predicted")
 
+        # O2 calculations
+        o2_first = self.df["O2"].iloc[0]
+        o2_last = self.df["O2"].iloc[-1]
+        o2_t90 = 0
+
+        o2_descending = o2_last < o2_first
+        if o2_descending:
+            o2_y90 = (o2_first - o2_last) * 0.9
+            for index, row in self.df.iterrows():
+                if row["O2"] < o2_first - o2_y90:
+                    o2_t90 = row["Offset"]
+                    break
+        else:
+            o2_y90 = (o2_last - o2_first) * 0.9
+            for index, row in self.df.iterrows():
+                if row["O2"] > o2_first + o2_y90:
+                    o2_t90 = row["Offset"]
+                    break
+
+        # CO2 calculations
+        co2_first = self.df["CO2"].iloc[0]
+        co2_last = self.df["CO2"].iloc[-1]
+        co2_t90 = 0
+
+        co2_descending = co2_last < co2_first
+        if co2_descending:
+            co2_y90 = (co2_first - co2_last) * 0.9
+            for index, row in self.df.iterrows():
+                if row["CO2"] < co2_first - co2_y90:
+                    co2_t90 = row["Offset"]
+                    break
+        else:
+            co2_y90 = (co2_last - co2_first) * 0.9
+            for index, row in self.df.iterrows():
+                if row["CO2"] > co2_first + co2_y90:
+                    co2_t90 = row["Offset"]
+                    break
+
+        self.ui.labelT90.setText(f"T90 [O2: {o2_t90}, CO2: {co2_t90}]")
+
         self.df.plot(
             x="Offset",
             y="CO2",

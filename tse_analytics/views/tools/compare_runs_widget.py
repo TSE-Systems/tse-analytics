@@ -20,26 +20,26 @@ class CompareRunsWidget(QWidget, MessengerListener):
         self.ui.setupUi(self)
 
         self.variable = ""
-        self.ui.variableSelector.currentTextChanged.connect(self.__variable_changed)
+        self.ui.variableSelector.currentTextChanged.connect(self._variable_changed)
 
         plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
         plot_toolbar.setIconSize(QSize(16, 16))
         self.ui.horizontalLayout.insertWidget(self.ui.horizontalLayout.count() - 1, plot_toolbar)
 
         self.ui.variableSelector.set_data(Manager.data.selected_dataset.variables)
-        self.__prepare_data()
+        self._prepare_data()
 
     def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DataChangedMessage, self.__on_data_changed)
+        messenger.subscribe(self, DataChangedMessage, self._on_data_changed)
 
-    def __on_data_changed(self, message: DataChangedMessage):
+    def _on_data_changed(self, message: DataChangedMessage):
         pass
 
-    def __variable_changed(self, variable: str):
+    def _variable_changed(self, variable: str):
         self.variable = variable
-        self.__prepare_data()
+        self._prepare_data()
 
-    def __prepare_data(self):
+    def _prepare_data(self):
         df = Manager.data.get_current_df(
             variables=[self.variable],
             split_mode=SplitMode.ANIMAL,

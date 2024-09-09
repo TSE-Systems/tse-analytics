@@ -14,7 +14,7 @@ class ImportCsvDialog(QDialog):
         self.ui = Ui_ImportCsvDialog()
         self.ui.setupUi(self)
 
-        self.ui.buttonBox.accepted.connect(self.__save_preferences)
+        self.ui.buttonBox.accepted.connect(self._save_preferences)
 
         self.settings = QSettings()
         csv_import_settings: CsvImportSettings = self.settings.value(
@@ -34,7 +34,7 @@ class ImportCsvDialog(QDialog):
         else:
             self.ui.radioButtonPoint.setChecked(True)
 
-    def __save_preferences(self):
+    def _save_preferences(self):
         decimal_separator = "." if self.ui.radioButtonPoint.isChecked() else ","
 
         csv_import_settings = CsvImportSettings(

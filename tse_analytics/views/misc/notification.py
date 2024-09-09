@@ -34,10 +34,10 @@ class Notification(QWidget):
         fade_effect = QGraphicsOpacityEffect(self)
         self.setGraphicsEffect(fade_effect)
 
-        self.__animation = QPropertyAnimation(fade_effect, b"opacity")
-        self.__animation.setDuration(200)
-        self.__animation.setStartValue(0)
-        self.__animation.setEndValue(self._opacity)
+        self._animation = QPropertyAnimation(fade_effect, b"opacity")
+        self._animation.setDuration(200)
+        self._animation.setStartValue(0)
+        self._animation.setEndValue(self._opacity)
 
         # toast background
         layout = QHBoxLayout()
@@ -52,24 +52,24 @@ class Notification(QWidget):
         if self._timer.isActive():
             pass
         else:
-            self.__animation.setDirection(QAbstractAnimation.Direction.Forward)
-            self.__animation.start(QPropertyAnimation.DeletionPolicy.KeepWhenStopped)
+            self._animation.setDirection(QAbstractAnimation.Direction.Forward)
+            self._animation.start(QPropertyAnimation.DeletionPolicy.KeepWhenStopped)
             if self._duration is not None:
                 self._timer.singleShot(self._duration, self._hide_notification)
         return self.show()
 
     def close_notification(self):
-        self.__animation.setStartValue(self._opacity)
-        self.__animation.setEndValue(0)
-        self.__animation.finished.connect(self.deleteLater)
-        self.__animation.setDirection(QAbstractAnimation.Direction.Backward)
-        self.__animation.start(QPropertyAnimation.DeletionPolicy.DeleteWhenStopped)
+        self._animation.setStartValue(self._opacity)
+        self._animation.setEndValue(0)
+        self._animation.finished.connect(self.deleteLater)
+        self._animation.setDirection(QAbstractAnimation.Direction.Backward)
+        self._animation.start(QPropertyAnimation.DeletionPolicy.DeleteWhenStopped)
 
     def _hide_notification(self):
         self._timer.stop()
-        self.__animation.finished.connect(self.close)
-        self.__animation.setDirection(QAbstractAnimation.Direction.Backward)
-        self.__animation.start(QPropertyAnimation.DeletionPolicy.DeleteWhenStopped)
+        self._animation.finished.connect(self.close)
+        self._animation.setDirection(QAbstractAnimation.Direction.Backward)
+        self._animation.start(QPropertyAnimation.DeletionPolicy.DeleteWhenStopped)
 
     def setPosition(self, pos):
         geo = self.geometry()

@@ -54,7 +54,7 @@ class TimeseriesWidget(QWidget, MessengerListener):
         if self.ui.radioButtonDecomposition.isChecked():
             self._update_decomposition()
         elif self.ui.radioButtonAutocorrelation.isChecked():
-            self.__update_autocorrelation()
+            self._update_autocorrelation()
 
     def _update_decomposition(self):
         variable = self.ui.variableSelector.currentText()
@@ -127,7 +127,7 @@ class TimeseriesWidget(QWidget, MessengerListener):
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()
 
-    def __update_autocorrelation(self):
+    def _update_autocorrelation(self):
         variable = self.ui.variableSelector.currentText()
         if variable == "":
             Notification(text="Please select a variable.", parent=self, duration=2000).show_notification()
