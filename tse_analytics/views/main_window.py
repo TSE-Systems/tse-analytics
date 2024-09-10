@@ -156,7 +156,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionSaveWorkspace.triggered.connect(self.save_workspace_dialog)
         self.actionExportCsv.triggered.connect(self.export_csv_dialog)
         self.actionExportExcel.triggered.connect(self.export_excel_dialog)
-        self.actionExportSQLite.triggered.connect(self.export_sqlite_dialog)
         self.actionResetLayout.triggered.connect(self._reset_layout)
         self.actionExit.triggered.connect(lambda: QApplication.exit())
         self.actionCompareRuns.triggered.connect(self._compare_runs)
@@ -248,16 +247,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "", "Excel Files (*.csv)")
         if filename:
             Manager.data.export_to_csv(filename)
-
-    def export_sqlite_dialog(self):
-        filename, _ = QFileDialog.getSaveFileName(
-            self,
-            "Export to SQLite",
-            Manager.data.selected_dataset.name if Manager.data.selected_dataset is not None else "",
-            "SQLite Files (*.db)",
-        )
-        if filename:
-            Manager.data.export_to_sqlite(filename)
 
     def update_memory_usage(self):
         # return the memory usage in MB

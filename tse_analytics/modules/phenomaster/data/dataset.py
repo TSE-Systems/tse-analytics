@@ -2,7 +2,6 @@ from copy import deepcopy
 from datetime import datetime
 from typing import Any, Literal
 
-import pandas as pd
 import polars as pl
 
 from tse_analytics.core.data.binning import BinningSettings
@@ -21,7 +20,7 @@ class Dataset:
         animals: dict[str, Animal],
         variables: dict[str, Variable],
         df: pl.DataFrame,
-        sampling_interval: pd.Timedelta,
+        sampling_interval: pl.Duration,
     ):
         self.name = name
         self.path = path
@@ -45,22 +44,22 @@ class Dataset:
         self.report = ""
 
     @property
-    def start_timestamp(self) -> pd.Timestamp:
-        first_value = self.original_df["DateTime"].iat[0]
+    def start_timestamp(self) -> pl.Datetime:
+        first_value = self.original_df.item(0, "DateTime")
         return first_value
 
     @property
-    def end_timestamp(self) -> pd.Timestamp:
-        last_value = self.original_df["DateTime"].iat[-1]
+    def end_timestamp(self) -> pl.Datetime:
+        last_value = self.original_df.item(-1, "DateTime")
         return last_value
 
     @property
-    def duration(self) -> pd.Timedelta:
+    def duration(self) -> pl.Duration:
         return self.end_timestamp - self.start_timestamp
 
     @property
     def runs_count(self) -> int | None:
-        return self.active_df["Run"].value_counts().count()
+        return self.active_df.n_unique()
 
     def extract_groups_from_field(self, field: Literal["text1", "text2", "text3"] = "text1") -> dict[str, Group]:
         """Extract groups assignment from Text1, Text2 or Text3 field"""
@@ -77,7 +76,7 @@ class Dataset:
             groups[group.name] = group
         return groups
 
-    def _rename_animal_df(self, df: pd.DataFrame, old_id: str, animal: Animal) -> pd.DataFrame:
+    def _rename_animal_df(self, df: pl.DataFrame, old_id: str, animal: Animal) -> pl.DataFrame:
         df = df.astype({
             "Animal": str,
         })
@@ -158,7 +157,7 @@ class Dataset:
             (self.active_df["DateTime"] >= range_start) & (self.active_df["DateTime"] <= range_end)
         ]
 
-    def resample(self, resampling_interval: pd.Timedelta) -> None:
+    def resample(self, resampling_interval: pl.Duration) -> None:
         group_by = ["Animal", "Box"]
 
         original_result = self.original_df.groupby(group_by, dropna=False, observed=False)
@@ -176,13 +175,7 @@ class Dataset:
 
         self.refresh_active_df()
 
-    def filter_by_groups(self, groups: list[Group]) -> pd.DataFrame:
-        group_ids = [group.name for group in groups]
-        df = self.active_df[self.active_df["Group"].isin(group_ids)]
-        df = df.dropna()
-        return df
-
-    def adjust_time(self, delta: pd.Timedelta) -> None:
+    def adjust_time(self, delta: pl.Duration) -> None:
         self.original_df["DateTime"] = self.original_df["DateTime"] + delta
         self.active_df["DateTime"] = self.active_df["DateTime"] + delta
 
@@ -190,24 +183,24 @@ class Dataset:
         self.factors = factors
 
         # TODO: should be copy?
-        df = self.original_df.copy()
+        df = self.original_df.clone()
 
         animal_ids = df["Animal"].unique()
 
         for factor in self.factors.values():
             animal_factor_map: dict[str, Any] = {}
             for animal_id in animal_ids:
-                animal_factor_map[animal_id] = pd.NA
+                animal_factor_map[animal_id] = pl.Null
 
             for group in factor.groups:
                 for animal_id in group.animal_ids:
                     animal_factor_map[animal_id] = group.name
 
-            df[factor.name] = df["Animal"].astype(str)
+            df[factor.name] = df["Animal"].cast(pl.String)
             # df[factor.name].replace(animal_factor_map, inplace=True)
             # df[factor.name] = df[factor.name].replace(animal_factor_map)
-            df.replace({factor.name: animal_factor_map}, inplace=True)
-            df[factor.name] = df[factor.name].astype("category")
+            df.replace({factor.name: animal_factor_map})
+            df[factor.name] = df[factor.name].cast(pl.Categorical)
 
         self.active_df = df
 

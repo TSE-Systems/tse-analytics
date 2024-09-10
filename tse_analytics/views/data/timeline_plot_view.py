@@ -1,14 +1,14 @@
 import base64
 from io import BytesIO
 
-import numpy as np
-import pandas as pd
+import polars as pl
 import pyqtgraph as pg
 from pyqtgraph import mkPen
 from pyqtgraph.exporters import ImageExporter
 from PySide6.QtCore import QBuffer, QByteArray, QIODevice
 from PySide6.QtWidgets import QWidget
 
+from tse_analytics.core.data.binning import BinningOperation
 from tse_analytics.core.data.shared import Factor, SplitMode
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.misc.TimedeltaAxisItem import TimedeltaAxisItem
@@ -18,7 +18,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
     def __init__(self, parent: QWidget, title="Plot"):
         super().__init__(parent, title=title)
 
-        self._df: pd.DataFrame | None = None
+        self._df: pl.DataFrame | None = None
         self._variable = ""
         self._split_mode = SplitMode.ANIMAL
         self._selected_factor: Factor | None = None
@@ -69,7 +69,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         rgn = viewRange[0]
         self.region.setRegion(rgn)
 
-    def set_data(self, df: pd.DataFrame):
+    def set_data(self, df: pl.DataFrame):
         self._df = df
 
         unique_deltas = self._df["Timedelta"].unique()
@@ -127,15 +127,12 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         self.update()
 
-    def _plot_item(self, data: pd.DataFrame, name: str, pen):
-        # x = (data["DateTime"] - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
-        x = data["Bin"]
+    def _plot_item(self, data: pl.DataFrame, name: str, pen):
+        x = data["Bin"].to_numpy()
 
-        x = x.to_numpy(dtype=np.int64)
         tmp_min = x.min()
         tmp_max = x.max()
 
-        # y = data[self._variable].to_numpy()
         y = data[self._variable].to_numpy()
 
         # p1d = self.p1.plot(x, y, symbol='o', symbolSize=2, symbolPen=pen, pen=pen)
@@ -169,7 +166,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         )
 
         for i, animal in enumerate(animals):
-            filtered_data = self._df[self._df["Animal"] == animal.id]
+            filtered_data = self._df.filter(pl.col("Animal") == animal.id)
 
             pen = mkPen(color=(i, len(animals)), width=1)
             tmp_min, tmp_max = self._plot_item(filtered_data, f"Animal {animal.id}", pen)
@@ -187,26 +184,24 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         factor_name = self._selected_factor.name
 
-        group_by = ["Bin", factor_name]
-        grouped = self._df.groupby(group_by, dropna=False, observed=False)
+        match Manager.data.binning_params.operation:
+            case BinningOperation.MEAN:
+                expr = pl.mean(self._variable)
+            case BinningOperation.MEDIAN:
+                expr = pl.median(self._variable)
+            case _:
+                expr = pl.sum(self._variable)
 
-        result = (
-            grouped.agg(
-                Value=(self._variable, Manager.data.binning_params.operation.value),
-                Error=(self._variable, self._error_type),
-            )
-            if self._display_errors
-            else grouped.agg(
-                Value=(self._variable, Manager.data.binning_params.operation.value),
-            )
-        )
-
-        data = result.reset_index()
-        data.rename(columns={"Value": self._variable}, inplace=True)
+        if self._display_errors:
+            data = self._df.group_by(["Bin", factor_name], maintain_order=True).agg(
+                expr,
+                Error=pl.std(self._variable))
+        else:
+            data = self._df.group_by(["Bin", factor_name], maintain_order=True).agg(expr)
 
         groups = self._selected_factor.groups
         for i, group in enumerate(groups):
-            filtered_data = data[data[factor_name] == group.name]
+            filtered_data = data.filter(pl.col(factor_name) == group.name)
 
             pen = mkPen(color=(i, len(groups)), width=1)
             tmp_min, tmp_max = self._plot_item(filtered_data, f"{group.name}", pen)
@@ -222,26 +217,35 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         x_min = None
         x_max = None
 
-        group_by = ["Bin", "Run"]
-        grouped = self._df.groupby(group_by, dropna=False, observed=False)
+        match Manager.data.binning_params.operation:
+            case BinningOperation.MEAN:
+                expr = pl.mean(self._variable)
+            case BinningOperation.MEDIAN:
+                expr = pl.median(self._variable)
+            case _:
+                expr = pl.sum(self._variable)
 
-        result = (
-            grouped.agg(
-                Value=(self._variable, Manager.data.binning_params.operation.value),
-                Error=(self._variable, self._error_type),
-            )
-            if self._display_errors
-            else grouped.agg(
-                Value=(self._variable, Manager.data.binning_params.operation.value),
-            )
-        )
+        if self._display_errors:
+            data = self._df.group_by(["Bin", "Run"], maintain_order=True).agg(
+                expr,
+                Error=pl.std(self._variable))
+        else:
+            data = self._df.group_by(["Bin", "Run"], maintain_order=True).agg(expr)
 
-        data = result.reset_index()
-        data.rename(columns={"Value": self._variable}, inplace=True)
+        # result = (
+        #     grouped.agg(
+        #         Value=(self._variable, Manager.data.binning_params.operation.value),
+        #         Error=(self._variable, self._error_type),
+        #     )
+        #     if self._display_errors
+        #     else grouped.agg(
+        #         Value=(self._variable, Manager.data.binning_params.operation.value),
+        #     )
+        # )
 
         runs = self._df["Run"].unique()
         for i, run in enumerate(runs):
-            filtered_data = data[data["Run"] == run]
+            filtered_data = data.filter(pl.col("Run") == run)
 
             pen = mkPen(color=(i, len(runs)), width=1)
             tmp_min, tmp_max = self._plot_item(filtered_data, f"Run {run}", pen)
@@ -257,22 +261,20 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         x_min = None
         x_max = None
 
-        group_by = ["Bin"]
-        grouped = self._df.groupby(group_by, dropna=False, observed=False)
+        match Manager.data.binning_params.operation:
+            case BinningOperation.MEAN:
+                expr = pl.mean(self._variable)
+            case BinningOperation.MEDIAN:
+                expr = pl.median(self._variable)
+            case _:
+                expr = pl.sum(self._variable)
 
-        result = (
-            grouped.agg(
-                Value=(self._variable, Manager.data.binning_params.operation.value),
-                Error=(self._variable, self._error_type),
-            )
-            if self._display_errors
-            else grouped.agg(
-                Value=(self._variable, Manager.data.binning_params.operation.value),
-            )
-        )
-
-        data = result.reset_index()
-        data.rename(columns={"Value": self._variable}, inplace=True)
+        if self._display_errors:
+            data = self._df.group_by(["Bin"], maintain_order=True).agg(
+                expr,
+                Error=pl.std(self._variable))
+        else:
+            data = self._df.group_by(["Bin"], maintain_order=True).agg(expr)
 
         pen = mkPen(color=(1, 1), width=1)
         tmp_min, tmp_max = self._plot_item(data, "Total", pen)

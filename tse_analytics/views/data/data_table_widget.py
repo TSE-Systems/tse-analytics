@@ -1,5 +1,5 @@
 import numpy as np
-import pandas as pd
+import polars as pl
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget
 
@@ -13,7 +13,7 @@ from tse_analytics.core.messaging.messages import (
 )
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
-from tse_analytics.core.models.pandas_model import PandasModel
+from tse_analytics.core.models.polars_model import PolarsModel
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.css import style_descriptive_table
 from tse_analytics.views.data.data_table_widget_ui import Ui_DataTableWidget
@@ -40,7 +40,7 @@ class DataTableWidget(QWidget, MessengerListener):
 
         self.ui.textEdit.document().setDefaultStyleSheet(style_descriptive_table)
 
-        self.df: pd.DataFrame | None = None
+        self.df: pl.DataFrame | None = None
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
@@ -104,18 +104,14 @@ class DataTableWidget(QWidget, MessengerListener):
         )
 
         if len(selected_variable_names) > 0:
-            descriptive = (
-                np.round(self.df[selected_variable_names].describe(), 3)
-                .T[["count", "mean", "std", "min", "max"]]
-                .to_html()
-            )
+            descriptive = self.df.select(selected_variable_names).describe()._repr_html_()
             self.ui.textEdit.document().setHtml(descriptive)
             self.ui.pushButtonAddReport.setEnabled(True)
         else:
             self.ui.textEdit.document().clear()
             self.ui.pushButtonAddReport.setEnabled(False)
 
-        self.ui.tableView.setModel(PandasModel(self.df))
+        self.ui.tableView.setModel(PolarsModel(self.df))
         self.ui.tableView.setColumnWidth(0, 120)
         self.header.setSortIndicatorShown(False)
 
@@ -125,7 +121,7 @@ class DataTableWidget(QWidget, MessengerListener):
         self.header.setSortIndicatorShown(True)
         order = self.header.sortIndicatorOrder() == Qt.SortOrder.AscendingOrder
         df = self.df.sort_values(self.df.columns[logical_index], ascending=order, inplace=False)
-        self.ui.tableView.setModel(PandasModel(df))
+        self.ui.tableView.setModel(PolarsModel(df))
 
     def _add_report(self):
         content = self.ui.textEdit.document().toHtml()

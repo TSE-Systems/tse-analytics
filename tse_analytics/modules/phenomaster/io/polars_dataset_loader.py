@@ -1,19 +1,13 @@
 import json
-import sqlite3
-
-import pandas as pd
-import polars as pl
-from datetime import datetime, timedelta
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
+import polars as pl
 
 from tse_analytics.core.data.shared import Animal, Factor, Variable
 from tse_analytics.modules.phenomaster.actimot.data.actimot_details import ActimotDetails
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
-
-DELPHI_EPOCH = datetime(1899, 12, 30)
-CHUNK_SIZE = 1000000
 
 
 def import_tse_dataset(path: Path) -> Dataset | None:
@@ -36,9 +30,9 @@ def import_tse_dataset(path: Path) -> Dataset | None:
     )
 
     # Import ActoMot raw data if present
-    if "actimot_raw" in metadata["tables"]:
-        actimot_details = _read_actimot_raw(path, metadata["tables"], dataset)
-        dataset.actimot_details = actimot_details
+    # if "actimot_raw" in metadata["tables"]:
+    #     actimot_details = _read_actimot_raw(path, metadata["tables"], dataset)
+    #     dataset.actimot_details = actimot_details
 
     return dataset
 
@@ -94,15 +88,18 @@ def _get_factors(data: dict) -> dict[str, Factor]:
     return factors
 
 
-def _add_cumulative_columns(df: pl.DataFrame, origin_name: str, variables: dict[str, Variable]):
+def _add_cumulative_columns(df: pl.DataFrame, origin_name: str, variables: dict[str, Variable]) -> pl.DataFrame:
     cols = [col for col in df.columns if origin_name in col]
     for col in cols:
         cumulative_col_name = col + "C"
-        df[cumulative_col_name] = df.groupby("Box", observed=False)[col].transform(pd.Series.cumsum)
+        df = df.with_columns(
+            pl.col(col).cum_sum().alias(cumulative_col_name),
+        )
         var = Variable(
             name=cumulative_col_name, unit=variables[col].unit, description=f"{col} (cumulative)", type="float64"
         )
         variables[var.name] = var
+    return df
 
 
 def _read_main_table(
@@ -153,8 +150,8 @@ def _read_main_table(
     df = df.sort(["DateTime", "Box"], descending=False)
 
     # Calculate cumulative values
-    # _add_cumulative_columns(df, "Drink", variables)
-    # _add_cumulative_columns(df, "Feed", variables)
+    df = _add_cumulative_columns(df, "Drink", variables)
+    df = _add_cumulative_columns(df, "Feed", variables)
 
     # Add Timedelta and Bin columns
     start_date_time = df.item(0, "DateTime")

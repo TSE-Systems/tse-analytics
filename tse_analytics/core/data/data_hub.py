@@ -1,8 +1,7 @@
-import sqlite3 as db
 from datetime import datetime
 
 import numpy as np
-import pandas as pd
+import polars as pl
 
 from tse_analytics.core.data.binning import BinningMode, BinningOperation, BinningParams, TimeIntervalsBinningSettings
 from tse_analytics.core.data.outliers import OutliersMode, OutliersParams
@@ -51,8 +50,6 @@ class DataHub:
         self.messenger.broadcast(DataChangedMessage(self))
 
     def set_selected_dataset(self, dataset: Dataset) -> None:
-        # if self.selected_dataset is dataset:
-        #     return
         self.selected_dataset = dataset
         self.selected_animals.clear()
         self.selected_variables.clear()
@@ -86,34 +83,16 @@ class DataHub:
 
     def adjust_dataset_time(self, delta: str) -> None:
         if self.selected_dataset is not None:
-            self.selected_dataset.adjust_time(pd.Timedelta(delta))
+            self.selected_dataset.adjust_time(pl.Duration(delta))
             self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
 
     def export_to_excel(self, path: str) -> None:
         if self.selected_dataset is not None:
-            with pd.ExcelWriter(path) as writer:
-                self.get_current_df().to_excel(writer, sheet_name="Data")
+            self.get_current_df().write_excel(path, worksheet="Data")
 
     def export_to_csv(self, path: str) -> None:
         if self.selected_dataset is not None:
-            self.get_current_df().to_csv(path, sep=";", index=False)
-
-    def export_to_sqlite(self, path: str) -> None:
-        if self.selected_dataset is not None:
-            with db.connect(path) as connection:
-                self.get_current_df().to_sql("general", connection, if_exists="replace", index=False)
-                if self.selected_dataset.calo_details is not None:
-                    self.selected_dataset.calo_details.raw_df.to_sql(
-                        "calo_details", connection, if_exists="replace", index=False
-                    )
-                if self.selected_dataset.meal_details is not None:
-                    self.selected_dataset.meal_details.raw_df.to_sql(
-                        "meal_details", connection, if_exists="replace", index=False
-                    )
-                if self.selected_dataset.actimot_details is not None:
-                    self.selected_dataset.actimot_details.raw_df.to_sql(
-                        "actimot_details", connection, if_exists="replace", index=False
-                    )
+            self.get_current_df().write_csv(path, separator=";")
 
     def append_fitting_results(
         self, calo_details: CaloDetails, fitting_results: dict[int, CaloDetailsFittingResult]
@@ -158,7 +137,7 @@ class DataHub:
         split_mode=SplitMode.ANIMAL,
         selected_factor: str | None = None,
         dropna=False,
-    ) -> pd.DataFrame:
+    ) -> pl.DataFrame:
         if variables is not None:
             default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
             factor_columns = list(self.selected_dataset.factors.keys())
@@ -220,13 +199,12 @@ class DataHub:
         split_mode=SplitMode.ANIMAL,
         selected_factor: str | None = None,
         dropna=False,
-    ) -> pd.DataFrame:
-        if variables is not None:
-            default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
-            factor_columns = list(self.selected_dataset.factors.keys())
-            result = self.selected_dataset.active_df[default_columns + factor_columns + variables].copy()
-        else:
-            result = self.selected_dataset.active_df.copy()
+    ) -> pl.DataFrame:
+        factor_columns = list(self.selected_dataset.factors.keys())
+        columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"] + factor_columns
+        if len(variables) > 0:
+            columns = columns + variables
+        result = self.selected_dataset.active_df.select(columns)
 
         # Filter operator
         if len(self.selected_animals) > 0:
@@ -276,7 +254,7 @@ class DataHub:
 
         return result
 
-    def get_anova_df(self, variables: list[str] | None = None) -> pd.DataFrame:
+    def get_anova_df(self, variables: list[str] | None = None) -> pl.DataFrame:
         if variables is not None:
             default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
             factor_columns = list(self.selected_dataset.factors.keys())
@@ -313,7 +291,7 @@ class DataHub:
     def get_bar_plot_df(
         self,
         variable: str,
-    ) -> pd.DataFrame:
+    ) -> pl.DataFrame:
         default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin", variable]
         factor_columns = list(self.selected_dataset.factors.keys())
         result = self.selected_dataset.active_df[default_columns + factor_columns].copy()
