@@ -36,9 +36,9 @@ class TseDatasetLoader:
         )
 
         # Import ActoMot raw data if present
-        # if "actimot_raw" in metadata["tables"]:
-        #     actimot_details = TseDatasetLoader._read_actimot_raw(path, metadata["tables"], dataset)
-        #     dataset.actimot_details = actimot_details
+        if "actimot_raw" in metadata["tables"]:
+            actimot_details = TseDatasetLoader._read_actimot_raw(path, metadata["tables"], dataset)
+            dataset.actimot_details = actimot_details
 
         return dataset
 
@@ -46,7 +46,7 @@ class TseDatasetLoader:
     def _read_metadata(path: Path) -> dict:
         with sqlite3.connect(path, check_same_thread=False) as connection:
             df = pd.read_sql_query(
-                "SELECT * from metadata",
+                "SELECT * FROM metadata",
                 connection,
             )
             metadata_str = df.iloc[0]["json"]
@@ -137,7 +137,7 @@ class TseDatasetLoader:
         df = pd.DataFrame()
         with sqlite3.connect(path, check_same_thread=False) as connection:
             for chunk in pd.read_sql_query(
-                "SELECT * from main_table",
+                "SELECT * FROM main_table",
                 connection,
                 parse_dates={
                     "DateTime": {
@@ -221,7 +221,7 @@ class TseDatasetLoader:
         df = pd.DataFrame()
         with sqlite3.connect(path, check_same_thread=False) as connection:
             for chunk in pd.read_sql_query(
-                "SELECT * from actimot_raw",
+                "SELECT * FROM actimot_raw",
                 connection,
                 parse_dates={
                     "DateTime": {

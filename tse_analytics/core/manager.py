@@ -1,4 +1,5 @@
 import copy
+import timeit
 from pathlib import Path
 
 from loguru import logger
@@ -11,6 +12,7 @@ from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.models.workspace_model import WorkspaceModel
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.modules.phenomaster.io.csv_dataset_loader import CsvDatasetLoader
+from tse_analytics.modules.phenomaster.io.polars_dataset_loader import import_tse_dataset
 from tse_analytics.modules.phenomaster.io.tse_dataset_loader import TseDatasetLoader
 
 
@@ -43,7 +45,10 @@ class Manager:
 
     @classmethod
     def import_tse_dataset(cls, path: Path) -> None:
-        dataset = TseDatasetLoader.load(path)
+        tic = timeit.default_timer()
+        # dataset = TseDatasetLoader.load(path)
+        dataset = import_tse_dataset(path)
+        print(f"Import complete: {timeit.default_timer() - tic} sec")
         if dataset is not None:
             cls.workspace.add_dataset(dataset)
 

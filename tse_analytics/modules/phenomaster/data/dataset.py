@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Any, Literal
 
 import pandas as pd
+import polars as pl
 
 from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.shared import Animal, Factor, Group, Variable
@@ -19,7 +20,7 @@ class Dataset:
         meta: dict | list[dict],
         animals: dict[str, Animal],
         variables: dict[str, Variable],
-        df: pd.DataFrame,
+        df: pl.DataFrame,
         sampling_interval: pd.Timedelta,
     ):
         self.name = name
@@ -31,7 +32,7 @@ class Dataset:
         self.variables = variables
 
         self.original_df = df
-        self.active_df = self.original_df.copy()
+        self.active_df = self.original_df.clone()
         self.sampling_interval = sampling_interval
 
         self.factors: dict[str, Factor] = {}
