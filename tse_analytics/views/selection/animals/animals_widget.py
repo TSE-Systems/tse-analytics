@@ -21,24 +21,24 @@ class AnimalsWidget(QWidget, MessengerListener):
         self.ui = Ui_AnimalsWidget()
         self.ui.setupUi(self)
 
-        pal = self.ui.tableView.palette()
-        pal.setColor(
-            QPalette.ColorGroup.Inactive,
-            QPalette.ColorRole.Highlight,
-            pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Highlight),
-        )
-        pal.setColor(
-            QPalette.ColorGroup.Inactive,
-            QPalette.ColorRole.HighlightedText,
-            pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.HighlightedText),
-        )
-        self.ui.tableView.setPalette(pal)
+        # pal = self.ui.tableView.palette()
+        # pal.setColor(
+        #     QPalette.ColorGroup.Inactive,
+        #     QPalette.ColorRole.Highlight,
+        #     pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Highlight),
+        # )
+        # pal.setColor(
+        #     QPalette.ColorGroup.Inactive,
+        #     QPalette.ColorRole.HighlightedText,
+        #     pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.HighlightedText),
+        # )
+        # self.ui.tableView.setPalette(pal)
 
         proxy_model = QSortFilterProxyModel()
         proxy_model.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.ui.tableView.setModel(proxy_model)
         self.ui.tableView.sortByColumn(0, Qt.SortOrder.AscendingOrder)
-        self.ui.tableView.selectionModel().selectionChanged.connect(self._on_selection_changed)
+        # self.ui.tableView.selectionModel().selectionChanged.connect(self._on_selection_changed)
 
         self.ui.toolButtonCheckAll.clicked.connect(partial(self._set_animals_state, True))
         self.ui.toolButtonUncheckAll.clicked.connect(partial(self._set_animals_state, False))
@@ -66,7 +66,7 @@ class AnimalsWidget(QWidget, MessengerListener):
                 row = source_index.row()
                 animal = model.items[row]
                 selected_animals.append(animal)
-        Manager.data.set_selected_animals(selected_animals)
+        # Manager.data.set_selected_animals(selected_animals)
 
     def _set_animals_state(self, state: bool) -> None:
         if Manager.data.selected_dataset is None:
@@ -76,6 +76,7 @@ class AnimalsWidget(QWidget, MessengerListener):
         for animal in Manager.data.selected_dataset.animals.values():
             animal.enabled = state
         self.ui.tableView.model().endResetModel()
+        Manager.data.set_selected_animals()
 
     def minimumSizeHint(self):
         return QSize(300, 100)

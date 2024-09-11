@@ -24,7 +24,6 @@ class DataHub:
         self.messenger = messenger
 
         self.selected_dataset: Dataset | None = None
-        self.selected_animals: list[Animal] = []
         self.selected_variables: list[Variable] = []
 
         self.binning_params = BinningParams(False, BinningMode.INTERVALS, BinningOperation.MEAN)
@@ -32,7 +31,6 @@ class DataHub:
 
     def clear(self):
         self.selected_dataset = None
-        self.selected_animals.clear()
         self.selected_variables.clear()
 
         self.messenger.broadcast(DatasetChangedMessage(self, None))
@@ -54,7 +52,6 @@ class DataHub:
         # if self.selected_dataset is dataset:
         #     return
         self.selected_dataset = dataset
-        self.selected_animals.clear()
         self.selected_variables.clear()
 
         self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
@@ -63,14 +60,12 @@ class DataHub:
         self.selected_dataset.rename_animal(old_id, animal)
         self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
 
-    def set_selected_animals(self, animals: list[Animal]) -> None:
-        self.selected_animals = animals
+    def set_selected_animals(self) -> None:
         self._broadcast_data_changed()
 
     def exclude_animals(self) -> None:
-        animal_ids = [animal.id for animal in self.selected_animals]
+        animal_ids = [animal.id for animal in self.selected_dataset.animals.values() if not animal.enabled]
         self.selected_dataset.exclude_animals(animal_ids)
-        self.selected_animals = []
         self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
 
     def exclude_time(self, start: datetime, end: datetime) -> None:
@@ -167,8 +162,9 @@ class DataHub:
             result = self.selected_dataset.active_df.copy()
 
         # Filter operator
-        animals = [animal for animal in self.selected_dataset.animals.values() if animal.enabled]
-        result = filter_animals(result, animals)
+        animal_ids = [animal.id for animal in self.selected_dataset.animals.values() if animal.enabled]
+        if len(animal_ids) != len(self.selected_dataset.animals):
+            result = filter_animals(result, animal_ids)
 
         # Outliers operator
         if self.outliers_params.mode == OutliersMode.REMOVE:
@@ -229,8 +225,9 @@ class DataHub:
             result = self.selected_dataset.active_df.copy()
 
         # Filter operator
-        if len(self.selected_animals) > 0:
-            result = filter_animals(result, self.selected_animals)
+        animal_ids = [animal.id for animal in self.selected_dataset.animals.values() if animal.enabled]
+        if len(animal_ids) != len(self.selected_dataset.animals):
+            result = filter_animals(result, animal_ids)
 
         # Outliers operator
         if self.outliers_params.mode == OutliersMode.REMOVE:
@@ -285,8 +282,9 @@ class DataHub:
             result = self.selected_dataset.active_df.copy()
 
         # Filter operator
-        animals = [animal for animal in self.selected_dataset.animals.values() if animal.enabled]
-        result = filter_animals(result, animals)
+        animal_ids = [animal.id for animal in self.selected_dataset.animals.values() if animal.enabled]
+        if len(animal_ids) != len(self.selected_dataset.animals):
+            result = filter_animals(result, animal_ids)
 
         # Outliers operator
         if self.outliers_params.mode == OutliersMode.REMOVE:
@@ -319,8 +317,9 @@ class DataHub:
         result = self.selected_dataset.active_df[default_columns + factor_columns].copy()
 
         # Filter operator
-        if len(self.selected_animals) > 0:
-            result = filter_animals(result, self.selected_animals)
+        animal_ids = [animal.id for animal in self.selected_dataset.animals.values() if animal.enabled]
+        if len(animal_ids) != len(self.selected_dataset.animals):
+            result = filter_animals(result, animal_ids)
 
         # Outliers operator
         if self.outliers_params.mode == OutliersMode.REMOVE:

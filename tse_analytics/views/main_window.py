@@ -282,7 +282,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def _exclude_animals(self):
         if (
-            QMessageBox.question(self, "Exclude Animals", "Do you really want to exclude selected animals?")
+            QMessageBox.question(self, "Exclude Animals", "Do you really want to exclude unchecked animals?")
             == QMessageBox.StandardButton.Yes
         ):
             Manager.data.exclude_animals()

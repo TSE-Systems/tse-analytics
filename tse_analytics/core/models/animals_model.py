@@ -44,6 +44,7 @@ class AnimalsModel(QAbstractTableModel):
                 if role == Qt.ItemDataRole.CheckStateRole:
                     item = self.items[index.row()]
                     item.enabled = value == Qt.CheckState.Checked.value
+                    Manager.data.set_selected_animals()
                     return True
                 elif role == Qt.ItemDataRole.EditRole:
                     item = self.items[index.row()]

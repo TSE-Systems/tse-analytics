@@ -24,7 +24,6 @@ class Dataset:
     ):
         self.name = name
         self.path = path
-
         self.meta = meta
 
         self.animals = animals
@@ -45,12 +44,12 @@ class Dataset:
 
     @property
     def start_timestamp(self) -> pd.Timestamp:
-        first_value = self.original_df["DateTime"].iat[0]
+        first_value = self.original_df.at[0, "DateTime"]
         return first_value
 
     @property
     def end_timestamp(self) -> pd.Timestamp:
-        last_value = self.original_df["DateTime"].iat[-1]
+        last_value = self.original_df.at[self.original_df.index[-1], "DateTime"]
         return last_value
 
     @property
@@ -105,9 +104,17 @@ class Dataset:
                         group.animal_ids[i] = animal.id
 
         # Rename animal in metadata
-        for item in self.meta["Animals"]:
-            if item["id"] == old_id:
-                item["id"] = animal.id
+        if "Animals" in self.meta:
+            for item in self.meta["Animals"]:
+                if item["id"] == old_id:
+                    item["id"] = animal.id
+        elif "animals" in self.meta:
+            new_dict = {}
+            for item in self.meta["animals"].values():
+                if item["id"] == old_id:
+                    item["id"] = animal.id
+                new_dict[item["id"]] = item
+            self.meta["animals"] = new_dict
 
         # Rename animal in dictionary
         self.animals.pop(old_id)

@@ -22,12 +22,4 @@ class MealDetails:
 
     @property
     def start_timestamp(self):
-        first_value = self.raw_df["DateTime"].iat[0]
-        return first_value
-
-    def __getstate__(self):
-        state = self.__dict__.copy()
-        return state
-
-    def __setstate__(self, state):
-        self.__dict__.update(state)
+        return self.raw_df.at[0, "DateTime"]

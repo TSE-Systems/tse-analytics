@@ -69,8 +69,15 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         rgn = viewRange[0]
         self.region.setRegion(rgn)
 
-    def set_data(self, df: pd.DataFrame):
+    def set_data(self, df: pd.DataFrame) -> None:
         self._df = df
+
+        if self._df.empty:
+            self.plot_data_items.clear()
+            self.p1.clear()
+            self.p2.clearPlots()
+            self.legend.clear()
+            return
 
         unique_deltas = self._df["Timedelta"].unique()
         TimedeltaAxisItem.sampling_interval = unique_deltas[1] - unique_deltas[0]
@@ -162,11 +169,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         x_min = None
         x_max = None
 
-        animals = (
-            Manager.data.selected_animals
-            if len(Manager.data.selected_animals) > 0
-            else Manager.data.selected_dataset.animals.values()
-        )
+        animals = [animal for animal in Manager.data.selected_dataset.animals.values() if animal.enabled]
 
         for i, animal in enumerate(animals):
             filtered_data = self._df[self._df["Animal"] == animal.id]

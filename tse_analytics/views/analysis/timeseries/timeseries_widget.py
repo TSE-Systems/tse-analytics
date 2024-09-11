@@ -62,13 +62,11 @@ class TimeseriesWidget(QWidget, MessengerListener):
             Notification(text="Please select a variable.", parent=self, duration=2000).show_notification()
             return
 
-        if len(Manager.data.selected_animals) != 1:
-            Notification(
-                text="Please select an animal in Animals panel.", parent=self, duration=2000
-            ).show_notification()
+        animal_ids = [animal.id for animal in Manager.data.selected_dataset.animals.values() if animal.enabled]
+        if len(animal_ids) != 1:
+            Notification(text="Please check a single animal in the Animal panel.", parent=self, duration=2000).show_notification()
             return
-
-        animal_name = Manager.data.selected_animals[0].id
+        animal_name = animal_ids[0]
 
         self.ui.canvas.clear(False)
 
@@ -133,13 +131,12 @@ class TimeseriesWidget(QWidget, MessengerListener):
             Notification(text="Please select a variable.", parent=self, duration=2000).show_notification()
             return
 
-        if len(Manager.data.selected_animals) != 1:
-            Notification(
-                text="Please select an animal in Animals panel.", parent=self, duration=2000
-            ).show_notification()
+        animal_ids = [animal.id for animal in Manager.data.selected_dataset.animals.values() if animal.enabled]
+        if len(animal_ids) != 1:
+            Notification(text="Please check a single animal in the Animal panel.", parent=self,
+                         duration=2000).show_notification()
             return
-
-        animal_name = Manager.data.selected_animals[0].id
+        animal_name = animal_ids[0]
 
         self.ui.canvas.clear(False)
 

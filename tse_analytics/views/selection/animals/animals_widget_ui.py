@@ -23,6 +23,7 @@ class Ui_AnimalsWidget(object):
     def setupUi(self, AnimalsWidget):
         if not AnimalsWidget.objectName():
             AnimalsWidget.setObjectName(u"AnimalsWidget")
+        AnimalsWidget.resize(274, 241)
         self.verticalLayout = QVBoxLayout(AnimalsWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.toolbar = QHBoxLayout()
@@ -47,7 +48,7 @@ class Ui_AnimalsWidget(object):
         self.tableView = QTableView(AnimalsWidget)
         self.tableView.setObjectName(u"tableView")
         self.tableView.setEditTriggers(QAbstractItemView.DoubleClicked)
-        self.tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.tableView.setSelectionMode(QAbstractItemView.NoSelection)
         self.tableView.setSortingEnabled(True)
         self.tableView.verticalHeader().setMinimumSectionSize(20)
         self.tableView.verticalHeader().setDefaultSectionSize(20)
