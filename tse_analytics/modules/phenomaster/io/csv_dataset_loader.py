@@ -20,9 +20,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Data
 
     header_section = _get_header_section(lines)
     animal_section = _get_animal_section(lines, header_section.section_end_index + 1)
-    sample_interval_section = _get_sample_interval_section(
-        lines, animal_section.section_end_index + 1
-    )
+    sample_interval_section = _get_sample_interval_section(lines, animal_section.section_end_index + 1)
     group_section = (
         _get_group_section(lines, sample_interval_section.section_end_index + 1)
         if sample_interval_section is not None
@@ -159,14 +157,20 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Data
     buf = StringIO()
     df.info(buf=buf)
     meta = {
-        "Name": name,
-        "Description": description,
-        "Version": version,
-        "Path": str(path),
-        "Animals": [v.get_dict() for i, (k, v) in enumerate(animals.items())],
-        "Variables": [v.get_dict() for i, (k, v) in enumerate(variables.items())],
-        "Sampling Interval": str(timedelta),
-        "Data": [buf.getvalue()],
+        "experiment": {
+            "filename": name,
+            "origin_file": str(path),
+            "experiment_no": description,
+            "pm_version": version,
+        },
+        "animals": {k: v.get_dict() for (k, v) in animals.items()},
+        "tables": {
+            "main_table": {
+                "id": "main_table",
+                "sample_interval": str(timedelta),
+                "columns": {k: v.get_dict() for (k, v) in variables.items()},
+            }
+        },
     }
 
     return Dataset(

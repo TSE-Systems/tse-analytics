@@ -15,14 +15,18 @@ def process_time_interval_binning(
     match split_mode:
         case SplitMode.ANIMAL:
             group_by = ["Animal", "Box"] + factor_names
+            sort_by = ["Timedelta", "Animal"]
             grouped = df.groupby(group_by, dropna=False, observed=False)
         case SplitMode.FACTOR:
             group_by = [selected_factor_name]
+            sort_by = ["Timedelta", selected_factor_name]
             grouped = df.groupby(group_by, dropna=False, observed=False)
         case SplitMode.RUN:
             group_by = ["Run"]
+            sort_by = ["Timedelta", "Run"]
             grouped = df.groupby(group_by, dropna=False, observed=False)
         case _:
+            sort_by = ["Timedelta"]
             grouped = df
 
     timedelta = pd.Timedelta(f"{settings.delta}{settings.unit}")
@@ -35,16 +39,6 @@ def process_time_interval_binning(
             result = resampler.median(numeric_only=True)
         case _:
             result = resampler.sum(numeric_only=True)
-
-    match split_mode:
-        case SplitMode.ANIMAL:
-            sort_by = ["Timedelta", "Animal"]
-        case SplitMode.FACTOR:
-            sort_by = ["Timedelta", selected_factor_name]
-        case SplitMode.RUN:
-            sort_by = ["Timedelta", "Run"]
-        case _:
-            sort_by = ["Timedelta"]
 
     result.sort_values(by=sort_by, inplace=True)
 

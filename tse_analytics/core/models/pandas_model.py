@@ -11,6 +11,8 @@ class PandasModel(QAbstractTableModel):
     Class to populate a table view with a pandas dataframe
     """
 
+    color = QColor("#f4a582")
+
     def __init__(self, dataframe, parent=None):
         QAbstractTableModel.__init__(self, parent)
         self._data = np.array(dataframe.values)
@@ -40,7 +42,7 @@ class PandasModel(QAbstractTableModel):
                             iqr = q3 - q1
                             coef = Manager.data.outliers_params.coefficient
                             if (value < (q1 - coef * iqr)) or (value > (q3 + coef * iqr)):
-                                return QColor("#f4a582")
+                                return PandasModel.color
         return None
 
     def headerData(self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):

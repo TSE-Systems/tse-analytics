@@ -19,9 +19,7 @@ def load_tse_dataset(path: Path) -> Dataset | None:
     animals = _get_animals(metadata["animals"])
     # factors = TseDatasetLoader._get_factors(metadata["groups"])
 
-    main_table_df, main_table_vars, main_table_sampling_interval = _read_main_table(
-        path, metadata["tables"], animals
-    )
+    main_table_df, main_table_vars, main_table_sampling_interval = _read_main_table(path, metadata["tables"], animals)
 
     dataset = Dataset(
         name=metadata["experiment"]["experiment_no"],
@@ -56,9 +54,7 @@ def _read_metadata(path: Path) -> dict:
 
     # Convert time intervals from [ms] to Timedeltas
     metadata["experiment"]["runtime"] = str(pd.to_timedelta(metadata["experiment"]["runtime"], unit="ms"))
-    metadata["experiment"]["cycle_interval"] = str(
-        pd.to_timedelta(metadata["experiment"]["cycle_interval"], unit="ms")
-    )
+    metadata["experiment"]["cycle_interval"] = str(pd.to_timedelta(metadata["experiment"]["cycle_interval"], unit="ms"))
 
     if "main_table" in metadata["tables"]:
         metadata["tables"]["main_table"]["sample_interval"] = str(

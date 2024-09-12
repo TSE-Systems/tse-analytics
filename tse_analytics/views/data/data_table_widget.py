@@ -100,7 +100,6 @@ class DataTableWidget(QWidget, MessengerListener):
             variables=selected_variable_names,
             split_mode=split_mode,
             selected_factor=selected_factor_name,
-            dropna=False,
         )
 
         if len(selected_variable_names) > 0:
@@ -116,7 +115,6 @@ class DataTableWidget(QWidget, MessengerListener):
             self.ui.pushButtonAddReport.setEnabled(False)
 
         self.ui.tableView.setModel(PandasModel(self.df))
-        self.ui.tableView.setColumnWidth(0, 120)
         self.header.setSortIndicatorShown(False)
 
     def header_clicked(self, logical_index: int):

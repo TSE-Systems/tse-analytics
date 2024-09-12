@@ -42,9 +42,7 @@ class ProphetForecastingWidget(QWidget):
         animal_ids = [animal.id for animal in Manager.data.selected_dataset.animals.values() if animal.enabled]
         if len(animal_ids) != 1:
             Notification(
-                text="Please check a single animal in the Animal panel.",
-                parent=self,
-                duration=2000
+                text="Please check a single animal in the Animal panel.", parent=self, duration=2000
             ).show_notification()
             return
         animal_name = animal_ids[0]

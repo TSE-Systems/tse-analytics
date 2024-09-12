@@ -37,7 +37,6 @@ class DataHub:
     def apply_binning(self, params: BinningParams) -> None:
         if self.selected_dataset is None:
             return
-
         self.binning_params = params
         self.messenger.broadcast(BinningMessage(self, self.binning_params))
 
@@ -190,7 +189,6 @@ class DataHub:
         variables: list[str] | None = None,
         split_mode=SplitMode.ANIMAL,
         selected_factor: str | None = None,
-        dropna=False,
     ) -> pd.DataFrame:
         if variables is not None:
             default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
@@ -241,10 +239,6 @@ class DataHub:
                         factor_names,
                         selected_factor,
                     )
-
-        # TODO: should or should not?
-        if dropna:
-            result = result.dropna()
 
         return result
 

@@ -56,10 +56,6 @@ class Dataset:
     def duration(self) -> pd.Timedelta:
         return self.end_timestamp - self.start_timestamp
 
-    @property
-    def runs_count(self) -> int | None:
-        return self.active_df["Run"].value_counts().count()
-
     def extract_groups_from_field(self, field: Literal["text1", "text2", "text3"] = "text1") -> dict[str, Group]:
         """Extract groups assignment from Text1, Text2 or Text3 field"""
         groups_dict: dict[str, list[str]] = {}
@@ -104,17 +100,12 @@ class Dataset:
                         group.animal_ids[i] = animal.id
 
         # Rename animal in metadata
-        if "Animals" in self.meta:
-            for item in self.meta["Animals"]:
-                if item["id"] == old_id:
-                    item["id"] = animal.id
-        elif "animals" in self.meta:
-            new_dict = {}
-            for item in self.meta["animals"].values():
-                if item["id"] == old_id:
-                    item["id"] = animal.id
-                new_dict[item["id"]] = item
-            self.meta["animals"] = new_dict
+        new_dict = {}
+        for item in self.meta["animals"].values():
+            if item["id"] == old_id:
+                item["id"] = animal.id
+            new_dict[item["id"]] = item
+        self.meta["animals"] = new_dict
 
         # Rename animal in dictionary
         self.animals.pop(old_id)
@@ -132,10 +123,10 @@ class Dataset:
             self.animals.pop(animal_id)
 
         new_meta_animals = []
-        for item in self.meta["Animals"]:
+        for item in self.meta["animals"]:
             if item["id"] not in animal_ids:
                 new_meta_animals.append(item)
-        self.meta["Animals"] = new_meta_animals
+        self.meta["animals"] = new_meta_animals
 
         self.original_df = self.original_df[~self.original_df["Animal"].isin(animal_ids)]
         self.active_df = self.active_df[~self.active_df["Animal"].isin(animal_ids)]
@@ -181,12 +172,6 @@ class Dataset:
         self.sampling_interval = resampling_interval
 
         self.refresh_active_df()
-
-    def filter_by_groups(self, groups: list[Group]) -> pd.DataFrame:
-        group_ids = [group.name for group in groups]
-        df = self.active_df[self.active_df["Group"].isin(group_ids)]
-        df = df.dropna()
-        return df
 
     def adjust_time(self, delta: pd.Timedelta) -> None:
         self.original_df["DateTime"] = self.original_df["DateTime"] + delta
