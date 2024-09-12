@@ -30,7 +30,6 @@ from tse_analytics.views.selection.factors.factors_widget import FactorsWidget
 from tse_analytics.views.selection.variables.variables_widget import VariablesWidget
 from tse_analytics.views.settings.binning_settings_widget import BinningSettingsWidget
 from tse_analytics.views.settings.outliers_settings_widget import OutliersSettingsWidget
-from tse_analytics.views.tools.compare_runs_widget import CompareRunsWidget
 from tse_analytics.views.tools.exclude_time_dialog import ExcludeTimeDialog
 
 PySide6QtAds.CDockManager.setConfigFlags(PySide6QtAds.CDockManager.DefaultOpaqueConfig)
@@ -156,18 +155,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionSaveWorkspace.triggered.connect(self.save_workspace_dialog)
         self.actionExportCsv.triggered.connect(self.export_csv_dialog)
         self.actionExportExcel.triggered.connect(self.export_excel_dialog)
-        self.actionExportSQLite.triggered.connect(self.export_sqlite_dialog)
         self.actionResetLayout.triggered.connect(self._reset_layout)
         self.actionExit.triggered.connect(lambda: QApplication.exit())
-        self.actionCompareRuns.triggered.connect(self._compare_runs)
         self.actionExcludeAnimals.triggered.connect(self._exclude_animals)
         self.actionExcludeTime.triggered.connect(self._exclude_time)
         self.actionHelp.triggered.connect(lambda: show_help(self, "main.md"))
         self.actionAbout.triggered.connect(self._show_about_dialog)
 
         self.default_docking_state = self.dock_manager.saveState(LAYOUT_VERSION)
-
-        self.compare_runs_widget: CompareRunsWidget | None = None
 
         self.load_settings()
 
@@ -249,16 +244,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if filename:
             Manager.data.export_to_csv(filename)
 
-    def export_sqlite_dialog(self):
-        filename, _ = QFileDialog.getSaveFileName(
-            self,
-            "Export to SQLite",
-            Manager.data.selected_dataset.name if Manager.data.selected_dataset is not None else "",
-            "SQLite Files (*.db)",
-        )
-        if filename:
-            Manager.data.export_to_sqlite(filename)
-
     def update_memory_usage(self):
         # return the memory usage in MB
         mem = self.process.memory_info()[0] / float(2**20)
@@ -268,17 +253,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dock_manager.restoreState(self.default_docking_state, LAYOUT_VERSION)
 
     def _tools_availability(self):
-        self.actionCompareRuns.setEnabled(
-            Manager.data.selected_dataset is not None and Manager.data.selected_dataset.runs_count > 1
-        )
         self.actionExcludeAnimals.setEnabled(Manager.data.selected_dataset is not None)
         self.actionExcludeTime.setEnabled(Manager.data.selected_dataset is not None)
-
-    def _compare_runs(self):
-        if self.compare_runs_widget is None:
-            self.compare_runs_widget = CompareRunsWidget(self)
-            self.compare_runs_widget.setWindowFlag(Qt.WindowType.Tool)
-        self.compare_runs_widget.show()
 
     def _exclude_animals(self):
         if (

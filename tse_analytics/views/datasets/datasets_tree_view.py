@@ -24,6 +24,7 @@ from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.modules.phenomaster.meal_details.models.meal_details_tree_item import MealDetailsTreeItem
 from tse_analytics.modules.phenomaster.meal_details.views.meal_details_dialog import MealDetailsDialog
 from tse_analytics.modules.phenomaster.models.dataset_tree_item import DatasetTreeItem
+from tse_analytics.views.datasets.adjust_dataset_dialog import AdjustDatasetDialog
 from tse_analytics.views.datasets.datasets_merge_dialog import DatasetsMergeDialog
 from tse_analytics.views.import_csv_dialog import ImportCsvDialog
 
@@ -51,7 +52,7 @@ class DatasetsTreeView(QTreeView):
         self.setModel(Manager.workspace)
 
         self.customContextMenuRequested.connect(self._open_menu)
-        self.selectionModel().selectionChanged.connect(self._treeview_selection_changed)
+        # self.selectionModel().selectionChanged.connect(self._treeview_selection_changed)
         self.selectionModel().currentChanged.connect(self._treeview_current_changed)
         # Manager.workspace.checkedItemChanged.connect(self._checked_item_changed)
         self.doubleClicked.connect(self._treeview_double_clicked)
@@ -80,7 +81,7 @@ class DatasetsTreeView(QTreeView):
 
             menu.addSeparator()
 
-            menu.addAction("Adjust time...").triggered.connect(partial(self._adjust_dataset_time, indexes))
+            menu.addAction("Adjust dataset...").triggered.connect(partial(self._adjust_dataset, indexes))
 
             action = menu.addAction("Merge datasets...")
             items = self.model().workspace_tree_item.child_items
@@ -176,10 +177,14 @@ class DatasetsTreeView(QTreeView):
                     selected_dataset_index = indexes[0]
                     Manager.import_calo_details(selected_dataset_index, path)
 
-    def _adjust_dataset_time(self, indexes: list[QModelIndex]):
-        delta, ok = QInputDialog.getText(self, "Enter time delta", "Delta", QLineEdit.EchoMode.Normal, "1 d")
-        if ok:
-            Manager.data.adjust_dataset_time(delta)
+    def _adjust_dataset(self, indexes: list[QModelIndex]):
+        selected_index = indexes[0]
+        dataset = selected_index.model().getItem(selected_index).dataset
+        dialog = AdjustDatasetDialog(dataset, dataset.sampling_interval, self)
+        # TODO: check other cases!!
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            Manager.data.set_selected_dataset(dataset)
 
     def _remove_dataset(self, indexes: list[QModelIndex]):
         Manager.remove_dataset(indexes)

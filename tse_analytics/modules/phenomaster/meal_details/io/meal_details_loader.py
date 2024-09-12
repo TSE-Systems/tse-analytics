@@ -159,7 +159,7 @@ class MealDetailsLoader:
 
         meal_details = MealDetails(
             dataset,
-            f"Meal Details [Interval: {str(sampling_interval)}]",
+            f"Meal [sampling: {str(sampling_interval)}]",
             str(path),
             variables,
             new_df,

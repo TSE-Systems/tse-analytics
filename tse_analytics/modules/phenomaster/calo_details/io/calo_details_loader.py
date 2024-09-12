@@ -131,6 +131,6 @@ class CaloDetailsLoader:
         df.insert(3, "Offset", offsets)
 
         calo_details = CaloDetails(
-            dataset, f"Calo Details [Interval: {str(sampling_interval)}]", str(path), variables, df, sampling_interval
+            dataset, f"Calo [sampling: {str(sampling_interval)}]", str(path), variables, df, sampling_interval
         )
         return calo_details

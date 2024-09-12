@@ -1,4 +1,3 @@
-import sqlite3 as db
 from datetime import datetime
 
 import numpy as np
@@ -29,28 +28,26 @@ class DataHub:
         self.binning_params = BinningParams(False, BinningMode.INTERVALS, BinningOperation.MEAN)
         self.outliers_params = OutliersParams(OutliersMode.OFF, 3.0)
 
-    def clear(self):
+    def clear(self) -> None:
         self.selected_dataset = None
         self.selected_variables.clear()
 
         self.messenger.broadcast(DatasetChangedMessage(self, None))
 
-    def apply_binning(self, params: BinningParams):
+    def apply_binning(self, params: BinningParams) -> None:
         if self.selected_dataset is None:
             return
 
         self.binning_params = params
         self.messenger.broadcast(BinningMessage(self, self.binning_params))
 
-    def apply_outliers(self, params: OutliersParams):
+    def apply_outliers(self, params: OutliersParams) -> None:
         if self.selected_dataset is None:
             return
         self.outliers_params = params
         self.messenger.broadcast(DataChangedMessage(self))
 
     def set_selected_dataset(self, dataset: Dataset) -> None:
-        # if self.selected_dataset is dataset:
-        #     return
         self.selected_dataset = dataset
         self.selected_variables.clear()
 
@@ -76,13 +73,8 @@ class DataHub:
         self.selected_variables = variables
         self._broadcast_data_changed()
 
-    def _broadcast_data_changed(self):
+    def _broadcast_data_changed(self) -> None:
         self.messenger.broadcast(DataChangedMessage(self))
-
-    def adjust_dataset_time(self, delta: str) -> None:
-        if self.selected_dataset is not None:
-            self.selected_dataset.adjust_time(pd.Timedelta(delta))
-            self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
 
     def export_to_excel(self, path: str) -> None:
         if self.selected_dataset is not None:
@@ -92,23 +84,6 @@ class DataHub:
     def export_to_csv(self, path: str) -> None:
         if self.selected_dataset is not None:
             self.get_current_df().to_csv(path, sep=";", index=False)
-
-    def export_to_sqlite(self, path: str) -> None:
-        if self.selected_dataset is not None:
-            with db.connect(path) as connection:
-                self.get_current_df().to_sql("general", connection, if_exists="replace", index=False)
-                if self.selected_dataset.calo_details is not None:
-                    self.selected_dataset.calo_details.raw_df.to_sql(
-                        "calo_details", connection, if_exists="replace", index=False
-                    )
-                if self.selected_dataset.meal_details is not None:
-                    self.selected_dataset.meal_details.raw_df.to_sql(
-                        "meal_details", connection, if_exists="replace", index=False
-                    )
-                if self.selected_dataset.actimot_details is not None:
-                    self.selected_dataset.actimot_details.raw_df.to_sql(
-                        "actimot_details", connection, if_exists="replace", index=False
-                    )
 
     def append_fitting_results(
         self, calo_details: CaloDetails, fitting_results: dict[int, CaloDetailsFittingResult]

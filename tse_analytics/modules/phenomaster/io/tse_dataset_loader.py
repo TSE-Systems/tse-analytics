@@ -245,7 +245,7 @@ def _read_actimot_raw(path: Path, metadata: dict, dataset: Dataset) -> ActimotDe
 
     actimot_details = ActimotDetails(
         dataset,
-        f"ActiMot Details [Interval: {str(sample_interval)}]",
+        f"ActiMot [sampling: {str(sample_interval)}]",
         str(path),
         variables,
         df,

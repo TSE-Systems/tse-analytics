@@ -165,13 +165,13 @@ class Dataset:
         ]
 
     def resample(self, resampling_interval: pd.Timedelta) -> None:
-        group_by = ["Animal", "Box"]
+        group_by = ["Animal", "Box", "Run"]
 
         original_result = self.original_df.groupby(group_by, dropna=False, observed=False)
         original_result = original_result.resample(resampling_interval, on="DateTime", origin="start").mean(
             numeric_only=True
         )
-        original_result.sort_values(by=["DateTime", "Animal"], inplace=True)
+        original_result.sort_values(by=["DateTime", "Box"], inplace=True)
         # the inverse of groupby, reset_index
         original_result = original_result.reset_index()
         original_result["Timedelta"] = original_result["DateTime"] - original_result["DateTime"].iloc[0]

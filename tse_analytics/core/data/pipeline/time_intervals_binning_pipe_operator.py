@@ -22,7 +22,7 @@ def process_time_interval_binning(
         case SplitMode.RUN:
             group_by = ["Run"]
             grouped = df.groupby(group_by, dropna=False, observed=False)
-        case SplitMode.TOTAL:
+        case _:
             grouped = df
 
     timedelta = pd.Timedelta(f"{settings.delta}{settings.unit}")
@@ -33,7 +33,7 @@ def process_time_interval_binning(
             result = resampler.mean(numeric_only=True)
         case BinningOperation.MEDIAN:
             result = resampler.median(numeric_only=True)
-        case BinningOperation.SUM:
+        case _:
             result = resampler.sum(numeric_only=True)
 
     match split_mode:
@@ -43,7 +43,7 @@ def process_time_interval_binning(
             sort_by = ["Timedelta", selected_factor_name]
         case SplitMode.RUN:
             sort_by = ["Timedelta", "Run"]
-        case SplitMode.TOTAL:
+        case _:
             sort_by = ["Timedelta"]
 
     result.sort_values(by=sort_by, inplace=True)

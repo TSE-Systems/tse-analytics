@@ -119,7 +119,7 @@ class ActimotLoader:
 
         actimot_details = ActimotDetails(
             dataset,
-            f"ActiMot Details [Interval: {str(sampling_interval)}]",
+            f"ActiMot [sampling: {str(sampling_interval)}]",
             str(path),
             variables,
             new_df,
