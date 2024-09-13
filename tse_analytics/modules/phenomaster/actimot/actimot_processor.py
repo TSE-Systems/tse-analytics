@@ -32,6 +32,6 @@ def process_actimot_data(actimot_details: ActimotDetails, actimot_settings: Acti
     result["Timedelta"] = result["DateTime"] - start_date_time
 
     result["Bin"] = (result["Timedelta"] / timedelta).round().astype(int)
-    result = result.astype({"Bin": "category"})
+    # result = result.astype({"Bin": "category"})
 
     return result

@@ -119,7 +119,7 @@ class BivariateWidget(QWidget, MessengerListener):
             dropna=False,
         )
 
-        if split_mode != SplitMode.TOTAL:
+        if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:
             df[by] = df[by].cat.remove_unused_categories()
 
         joint_grid = sns.jointplot(data=df, x=x_var, y=y_var, hue=by)

@@ -1,6 +1,7 @@
 from copy import deepcopy
 from datetime import datetime
 from typing import Any, Literal
+from uuid import uuid4
 
 import pandas as pd
 
@@ -22,6 +23,7 @@ class Dataset:
         df: pd.DataFrame,
         sampling_interval: pd.Timedelta,
     ):
+        self.id = uuid4()
         self.name = name
         self.path = path
         self.meta = meta
@@ -167,7 +169,7 @@ class Dataset:
         original_result = original_result.reset_index()
         original_result["Timedelta"] = original_result["DateTime"] - original_result["DateTime"].iloc[0]
         original_result["Bin"] = (original_result["Timedelta"] / resampling_interval).round().astype(int)
-        self.original_df = original_result.astype({"Bin": "category"})
+        # self.original_df = original_result.astype({"Bin": "category"})
 
         self.sampling_interval = resampling_interval
 

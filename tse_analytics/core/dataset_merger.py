@@ -39,9 +39,6 @@ def _merge_continuous(new_dataset_name: str, datasets: list[Dataset], single_run
 
     new_df = new_df.astype({
         "Animal": "category",
-        "Box": "category",
-        "Bin": "category",
-        "Run": "category",
     })
 
     new_path = ""
@@ -92,9 +89,6 @@ def _merge_overlap(new_dataset_name: str, datasets: list[Dataset], single_run: b
 
     new_df = new_df.astype({
         "Animal": "category",
-        "Box": "category",
-        "Bin": "category",
-        "Run": "category",
     })
 
     new_path = ""

@@ -49,7 +49,7 @@ def process_meal_intervals(
     result["Timedelta"] = result["DateTime"] - start_date_time
 
     result["Bin"] = (result["Timedelta"] / timedelta).round().astype(int)
-    result = result.astype({"Bin": "category"})
+    # result = result.astype({"Bin": "category"})
 
     # _add_caloric_column(result, "Drink1", diets_dict)
     _add_caloric_column(result, "Feed1", diets_dict)

@@ -44,7 +44,7 @@ class DataHub:
         if self.selected_dataset is None:
             return
         self.outliers_params = params
-        self.messenger.broadcast(DataChangedMessage(self))
+        self._broadcast_data_changed()
 
     def set_selected_dataset(self, dataset: Dataset) -> None:
         self.selected_dataset = dataset

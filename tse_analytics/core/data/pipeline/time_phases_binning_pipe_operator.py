@@ -32,7 +32,7 @@ def process_time_phases_binning(
             group_by = [selected_factor_name, "Bin"]
         case SplitMode.RUN:
             group_by = ["Run", "Bin"]
-        case SplitMode.TOTAL:
+        case _:
             group_by = ["Bin"]
 
     grouped = df.groupby(group_by, dropna=False, observed=True)
@@ -42,10 +42,10 @@ def process_time_phases_binning(
             result = grouped.mean(numeric_only=True)
         case BinningOperation.MEDIAN:
             result = grouped.median(numeric_only=True)
-        case BinningOperation.SUM:
+        case _:
             result = grouped.sum(numeric_only=True)
 
     # the inverse of groupby, reset_index
-    result = result.reset_index()
+    result.reset_index(inplace=True)
 
     return result

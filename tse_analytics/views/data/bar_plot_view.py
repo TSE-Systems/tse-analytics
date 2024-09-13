@@ -75,10 +75,10 @@ class BarPlotView(QWidget):
                     x_name = self._selected_factor.name
                 case SplitMode.RUN:
                     x_name = "Run"
-                case SplitMode.TOTAL:
+                case _:
                     x_name = None
 
-            if self._split_mode != SplitMode.TOTAL:
+            if self._split_mode != SplitMode.TOTAL and self._split_mode != SplitMode.RUN:
                 self._df[x_name] = self._df[x_name].cat.remove_unused_categories()
 
             facet_grid = sns.catplot(

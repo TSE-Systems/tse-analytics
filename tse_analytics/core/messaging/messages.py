@@ -1,3 +1,5 @@
+import pandas as pd
+
 from tse_analytics.core.data.binning import BinningParams
 from tse_analytics.core.models.tree_item import TreeItem
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
@@ -18,17 +20,16 @@ class Message:
     :attr tag: An optional string describing the message
     """
 
-    def __init__(self, sender, tag=None):
+    def __init__(self, sender):
         """Create a new message
 
         :param sender: The object sending the message
         :param tag: An optional string describing the message
         """
         self.sender = sender
-        self.tag = tag
 
     def __str__(self):
-        return "{}: {}\n\t Sent from: {}".format(type(self).__name__, self.tag or "", self.sender)
+        return "{}\n\t Sent from: {}".format(type(self).__name__, self.sender)
 
 
 class ErrorMessage(Message):
@@ -40,43 +41,61 @@ class ErrorMessage(Message):
 class SelectedTreeNodeChangedMessage(Message):
     """Indicates that the selected TreeView node has changed"""
 
-    def __init__(self, sender, node: TreeItem, tag=None):
-        super().__init__(sender, tag=tag)
+    def __init__(self, sender, node: TreeItem):
+        super().__init__(sender)
         self.node = node
 
 
 class DataChangedMessage(Message):
     """Indicates that selected data changed"""
 
-    def __init__(self, sender, tag=None):
-        super().__init__(sender, tag=tag)
+    def __init__(self, sender):
+        super().__init__(sender)
+
+
+class DataTableUpdateMessage(Message):
+    """Indicates that data table should be updated"""
+
+    def __init__(self, sender, dataset: Dataset, df: pd.DataFrame):
+        super().__init__(sender)
+        self.dataset = dataset
+        self.df = df
+
+
+class DataPlotUpdateMessage(Message):
+    """Indicates that data plot should be updated"""
+
+    def __init__(self, sender, dataset: Dataset, df: pd.DataFrame):
+        super().__init__(sender)
+        self.dataset = dataset
+        self.df = df
 
 
 class DatasetChangedMessage(Message):
     """Indicates that selected dataset is changed"""
 
-    def __init__(self, sender, dataset: Dataset | None, tag=None):
-        super().__init__(sender, tag=tag)
+    def __init__(self, sender, dataset: Dataset | None):
+        super().__init__(sender)
         self.data = dataset
 
 
 class BinningMessage(Message):
     """Binning signalling"""
 
-    def __init__(self, sender, params: BinningParams, tag=None):
-        super().__init__(sender, tag=tag)
+    def __init__(self, sender, params: BinningParams):
+        super().__init__(sender)
         self.params = params
 
 
 class ShowHelpMessage(Message):
     """Request to display help content"""
 
-    def __init__(self, sender, content: str, tag=None):
-        super().__init__(sender, tag=tag)
+    def __init__(self, sender, content: str):
+        super().__init__(sender)
         self.content = content
 
 
 class AddToReportMessage(Message):
-    def __init__(self, sender, content, tag=None):
-        super().__init__(sender, tag=tag)
+    def __init__(self, sender, content):
+        super().__init__(sender)
         self.content = content

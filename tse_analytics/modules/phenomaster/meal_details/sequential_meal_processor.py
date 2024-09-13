@@ -482,11 +482,11 @@ def process_meal_sequences(
     episodes_df = episodes_df.astype({
         "Sensor": "category",
         "Animal": "category",
-        "Box": "category",
+        "Box": int,
         "Id": int,
         "Duration": "timedelta64[ns]",
         "Gap": "timedelta64[ns]",
-        "Rate": "Float64",
+        "Rate": "float64",
     })
 
     return events_df, episodes_df

@@ -110,7 +110,7 @@ class ExplorationWidget(QWidget, MessengerListener):
         )
 
         number_of_elements = 1
-        if split_mode != SplitMode.TOTAL:
+        if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:
             df[by] = df[by].cat.remove_unused_categories()
             number_of_elements = len(df[by].cat.categories)
 
@@ -154,7 +154,7 @@ class ExplorationWidget(QWidget, MessengerListener):
             dropna=False,
         )
 
-        if split_mode != SplitMode.TOTAL:
+        if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:
             df[x] = df[x].cat.remove_unused_categories()
 
         self.ui.canvas.clear(False)
@@ -191,7 +191,7 @@ class ExplorationWidget(QWidget, MessengerListener):
             dropna=True,
         )
 
-        if split_mode != SplitMode.TOTAL:
+        if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:
             df[by] = df[by].cat.remove_unused_categories()
 
         self.ui.canvas.clear(False)

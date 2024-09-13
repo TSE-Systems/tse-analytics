@@ -137,7 +137,6 @@ class MealDetailsLoader:
         # convert categorical types
         new_df = new_df.astype({
             "Animal": "category",
-            "Box": "category",
         })
 
         # Calculate cumulative values

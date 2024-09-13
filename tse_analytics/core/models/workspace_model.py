@@ -133,7 +133,7 @@ class WorkspaceModel(QAbstractItemModel):
         with open(path, "rb") as file:
             self.workspace = pickle.load(file)
             self.workspace_tree_item = WorkspaceTreeItem(self.workspace)
-            for dataset in self.workspace.datasets:
+            for dataset in self.workspace.datasets.values():
                 dataset_tree_item = DatasetTreeItem(dataset)
                 self._add_children_items(dataset, dataset_tree_item)
                 self.workspace_tree_item.add_child(dataset_tree_item)
@@ -144,7 +144,7 @@ class WorkspaceModel(QAbstractItemModel):
             pickle.dump(self.workspace, file)
 
     def add_dataset(self, dataset: Dataset):
-        self.workspace.datasets.append(dataset)
+        self.workspace.datasets[dataset.id] = dataset
         dataset_tree_item = DatasetTreeItem(dataset)
         self._add_children_items(dataset, dataset_tree_item)
         self.beginResetModel()
@@ -199,9 +199,10 @@ class WorkspaceModel(QAbstractItemModel):
     def remove_dataset(self, indexes: list[QModelIndex]):
         self.beginResetModel()
         for index in indexes:
+            dataset_tree_item: DatasetTreeItem = self.getItem(index)
             row = index.row()
             self.removeRow(row, parent=index.parent())
-            self.workspace.datasets.pop(row)
+            self.workspace.datasets.pop(dataset_tree_item.dataset.id)
         self.endResetModel()
 
     def _add_children_items(self, dataset: Dataset, dataset_tree_item: DatasetTreeItem):

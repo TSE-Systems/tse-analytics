@@ -104,7 +104,6 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Data
 
     df = df.astype({
         "Animal": "category",
-        "Box": "category",
     })
 
     # find sampling interval
@@ -138,9 +137,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Data
 
     # convert categorical types
     df = df.astype({
-        "Bin": "category",
-        "Run": "category",
-        "Weight": "float",
+        "Weight": "float64",
     })
 
     # Sort variables by name

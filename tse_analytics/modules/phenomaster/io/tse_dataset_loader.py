@@ -154,7 +154,6 @@ def _read_main_table(
     # Convert to categorical types
     df = df.astype({
         "Animal": "category",
-        "Box": "category",
     })
 
     # Sort dataframe
@@ -186,8 +185,6 @@ def _read_main_table(
 
     # convert categorical types
     df = df.astype({
-        "Bin": "category",
-        "Run": "category",
         "Weight": "float64",
     })
 
