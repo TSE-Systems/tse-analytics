@@ -10,7 +10,6 @@ from tse_analytics.core.data.shared import Animal, Factor, Variable
 from tse_analytics.modules.phenomaster.actimot.data.actimot_details import ActimotDetails
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
-DELPHI_EPOCH = datetime(1899, 12, 30)
 CHUNK_SIZE = 1000000
 
 
@@ -33,7 +32,7 @@ def load_tse_dataset(path: Path) -> Dataset | None:
 
     # Import ActoMot raw data if present
     # if "actimot_raw" in metadata["tables"]:
-    #     actimot_details = TseDatasetLoader._read_actimot_raw(path, metadata["tables"], dataset)
+    #     actimot_details = _read_actimot_raw(path, metadata["tables"], dataset)
     #     dataset.actimot_details = actimot_details
 
     return dataset
@@ -137,16 +136,13 @@ def _read_main_table(
         for chunk in pd.read_sql_query(
             "SELECT * FROM main_table",
             connection,
-            parse_dates={
-                "DateTime": {
-                    "origin": DELPHI_EPOCH,
-                    "unit": "D",
-                }
-            },
             dtype=dtypes,
             chunksize=CHUNK_SIZE,
         ):
             df = pd.concat([df, chunk], ignore_index=True)
+
+    # Convert DateTime from POSIX format
+    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
 
     # Convert animal id to string first
     df["Animal"] = df["Animal"].astype(str)
@@ -218,12 +214,6 @@ def _read_actimot_raw(path: Path, metadata: dict, dataset: Dataset) -> ActimotDe
         for chunk in pd.read_sql_query(
             "SELECT * FROM actimot_raw",
             connection,
-            parse_dates={
-                "DateTime": {
-                    "origin": DELPHI_EPOCH,
-                    "unit": "D",
-                }
-            },
             dtype=dtypes,
             chunksize=CHUNK_SIZE,
         ):
@@ -233,6 +223,9 @@ def _read_actimot_raw(path: Path, metadata: dict, dataset: Dataset) -> ActimotDe
             chunk.rename(columns={"Y1": "Y"}, inplace=True)
             chunk.drop(columns=["X1", "X2"], inplace=True)
             df = pd.concat([df, chunk], ignore_index=True)
+
+    # Convert DateTime from POSIX format
+    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
 
     variables: dict[str, Variable] = {}
 
