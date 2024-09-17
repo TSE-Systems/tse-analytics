@@ -297,10 +297,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 elif path.suffix.lower() == ".tse":
                     Manager.import_tse_dataset(path)
 
-    @property
-    def ok_to_quit(self):
-        return True
-
     def closeEvent(self, event: QCloseEvent) -> None:
-        if self.ok_to_quit:
+        if (
+            QMessageBox.question(self, "TSE Analytics", "Do you want to quit?")
+            == QMessageBox.StandardButton.Yes
+        ):
             self.save_settings()
+            event.accept()
+        else:
+            event.ignore()

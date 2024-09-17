@@ -186,18 +186,20 @@ class BivariateWidget(QWidget, MessengerListener):
             dropna=False,
         )
 
+        agg = {
+            covariate: "mean",
+            response: "mean",
+        }
+
+        if selected_factor != "":
+            agg[selected_factor] = "first"
+
         if split_mode == SplitMode.RUN:
-            df = df.groupby(by=["Animal", "Run"], as_index=False).agg({
-                covariate: "mean",
-                response: "mean",
-                selected_factor: "first",
-            })
+            group_by = ["Animal", "Run"]
         else:
-            df = df.groupby(by=["Animal"], as_index=False).agg({
-                covariate: "mean",
-                response: "mean",
-                selected_factor: "first",
-            })
+            group_by = ["Animal"]
+
+        df = df.groupby(by=group_by, as_index=False, observed=False).agg(agg)
 
         facet_grid = sns.lmplot(data=df, x=covariate, y=response, hue=by, robust=False)
         canvas = FigureCanvasQTAgg(facet_grid.figure)

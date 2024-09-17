@@ -187,7 +187,11 @@ class DatasetsTreeView(QTreeView):
             Manager.data.set_selected_dataset(dataset)
 
     def _remove_dataset(self, indexes: list[QModelIndex]):
-        Manager.remove_dataset(indexes)
+        if (
+            QMessageBox.question(self, "Remove Dataset", "Do you really want to remove dataset?")
+            == QMessageBox.StandardButton.Yes
+        ):
+            Manager.remove_dataset(indexes)
 
     def _rename_dataset(self, indexes: list[QModelIndex]):
         selected_index = indexes[0]
