@@ -12,7 +12,7 @@ def process_time_interval_binning(
     binning_operation: BinningOperation,
     split_mode: SplitMode,
     factor_names: list[str],
-    selected_factor_name: str | None,
+    selected_factor_name: str,
 ) -> pd.DataFrame:
     if df.empty:
         return df

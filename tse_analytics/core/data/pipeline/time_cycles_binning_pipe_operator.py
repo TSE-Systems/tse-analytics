@@ -10,7 +10,7 @@ def process_time_cycles_binning(
     binning_operation: BinningOperation,
     split_mode: SplitMode,
     factor_names: list[str],
-    selected_factor_name: str | None,
+    selected_factor_name: str,
 ) -> pd.DataFrame:
     def filter_method(x):
         return "Light" if settings.light_cycle_start <= x.time() < settings.dark_cycle_start else "Dark"

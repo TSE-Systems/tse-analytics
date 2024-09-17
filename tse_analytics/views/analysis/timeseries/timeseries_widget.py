@@ -72,7 +72,7 @@ class TimeseriesWidget(QWidget, MessengerListener):
 
         self.ui.canvas.clear(False)
 
-        df = Manager.data.get_data_view_df(
+        df = Manager.data.get_timeseries_df(
             variables=[variable],
             split_mode=SplitMode.ANIMAL,
             selected_factor=None,
@@ -142,7 +142,7 @@ class TimeseriesWidget(QWidget, MessengerListener):
 
         self.ui.canvas.clear(False)
 
-        df = Manager.data.get_data_view_df(
+        df = Manager.data.get_timeseries_df(
             variables=[variable],
             split_mode=SplitMode.ANIMAL,
             selected_factor=None,

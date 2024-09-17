@@ -85,7 +85,7 @@ class DataTableWidget(QWidget, MessengerListener):
 
         selected_factor_name = self.ui.factorSelector.currentText()
 
-        split_mode = SplitMode.TOTAL
+
         match self.ui.comboBoxSplitMode.currentText():
             case "Animal":
                 split_mode = SplitMode.ANIMAL
@@ -95,8 +95,10 @@ class DataTableWidget(QWidget, MessengerListener):
                 split_mode = SplitMode.FACTOR
                 if selected_factor_name == "":
                     return
+            case _:
+                split_mode = SplitMode.TOTAL
 
-        self.df = Manager.data.get_data_view_df(
+        self.df = Manager.data.get_data_table_df(
             variables=selected_variable_names,
             split_mode=split_mode,
             selected_factor=selected_factor_name,

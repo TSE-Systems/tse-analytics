@@ -184,11 +184,117 @@ class DataHub:
 
         return result
 
-    def get_data_view_df(
+    def get_data_plot_df(
         self,
-        variables: list[str] | None = None,
-        split_mode=SplitMode.ANIMAL,
-        selected_factor: str | None = None,
+        variable: str,
+        split_mode: SplitMode,
+        selected_factor: str,
+    ) -> pd.DataFrame:
+        default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
+        factor_columns = list(self.selected_dataset.factors.keys())
+        result = self.selected_dataset.active_df[default_columns + factor_columns + [variable]].copy()
+
+        # Filter operator
+        animal_ids = [animal.id for animal in self.selected_dataset.animals.values() if animal.enabled]
+        if len(animal_ids) != len(self.selected_dataset.animals):
+            result = filter_animals(result, animal_ids)
+
+        # Outliers operator
+        if self.outliers_params.mode == OutliersMode.REMOVE:
+            result = process_outliers(result, self.outliers_params, [variable])
+
+        # Binning
+        if self.binning_params.apply:
+            factor_names = list(self.selected_dataset.factors.keys())
+            match self.binning_params.mode:
+                case BinningMode.INTERVALS:
+                    result = process_time_interval_binning(
+                        result,
+                        self.selected_dataset.binning_settings.time_intervals_settings,
+                        self.binning_params.operation,
+                        split_mode,
+                        factor_names,
+                        selected_factor,
+                    )
+                case BinningMode.CYCLES:
+                    result = process_time_cycles_binning(
+                        result,
+                        self.selected_dataset.binning_settings.time_cycles_settings,
+                        self.binning_params.operation,
+                        split_mode,
+                        factor_names,
+                        selected_factor,
+                    )
+                case BinningMode.PHASES:
+                    result = process_time_phases_binning(
+                        result,
+                        self.selected_dataset.binning_settings.time_phases_settings,
+                        self.binning_params.operation,
+                        split_mode,
+                        factor_names,
+                        selected_factor,
+                    )
+
+        return result
+
+    def get_data_table_df(
+        self,
+        variables: list[str],
+        split_mode,
+        selected_factor: str,
+    ) -> pd.DataFrame:
+        default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
+        factor_columns = list(self.selected_dataset.factors.keys())
+        result = self.selected_dataset.active_df[default_columns + factor_columns + variables].copy()
+
+        # Filter operator
+        animal_ids = [animal.id for animal in self.selected_dataset.animals.values() if animal.enabled]
+        if len(animal_ids) != len(self.selected_dataset.animals):
+            result = filter_animals(result, animal_ids)
+
+        # Outliers operator
+        if self.outliers_params.mode == OutliersMode.REMOVE:
+            result = process_outliers(result, self.outliers_params, variables)
+
+        # Binning
+        if self.binning_params.apply:
+            factor_names = list(self.selected_dataset.factors.keys())
+            match self.binning_params.mode:
+                case BinningMode.INTERVALS:
+                    result = process_time_interval_binning(
+                        result,
+                        self.selected_dataset.binning_settings.time_intervals_settings,
+                        self.binning_params.operation,
+                        split_mode,
+                        factor_names,
+                        selected_factor,
+                    )
+                case BinningMode.CYCLES:
+                    result = process_time_cycles_binning(
+                        result,
+                        self.selected_dataset.binning_settings.time_cycles_settings,
+                        self.binning_params.operation,
+                        split_mode,
+                        factor_names,
+                        selected_factor,
+                    )
+                case BinningMode.PHASES:
+                    result = process_time_phases_binning(
+                        result,
+                        self.selected_dataset.binning_settings.time_phases_settings,
+                        self.binning_params.operation,
+                        split_mode,
+                        factor_names,
+                        selected_factor,
+                    )
+
+        return result
+
+    def get_timeseries_df(
+        self,
+        variables: list[str],
+        split_mode,
+        selected_factor: str,
     ) -> pd.DataFrame:
         if variables is not None:
             default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
@@ -242,13 +348,10 @@ class DataHub:
 
         return result
 
-    def get_anova_df(self, variables: list[str] | None = None) -> pd.DataFrame:
-        if variables is not None:
-            default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
-            factor_columns = list(self.selected_dataset.factors.keys())
-            result = self.selected_dataset.active_df[default_columns + factor_columns + variables].copy()
-        else:
-            result = self.selected_dataset.active_df.copy()
+    def get_anova_df(self, variables: list[str]) -> pd.DataFrame:
+        default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
+        factor_columns = list(self.selected_dataset.factors.keys())
+        result = self.selected_dataset.active_df[default_columns + factor_columns + variables].copy()
 
         # Filter operator
         animal_ids = [animal.id for animal in self.selected_dataset.animals.values() if animal.enabled]
@@ -257,8 +360,6 @@ class DataHub:
 
         # Outliers operator
         if self.outliers_params.mode == OutliersMode.REMOVE:
-            if variables is None:
-                variables = list(self.selected_dataset.variables.keys())
             result = process_outliers(result, self.outliers_params, variables)
 
         # Binning
@@ -269,7 +370,7 @@ class DataHub:
             BinningOperation.MEAN,
             SplitMode.ANIMAL,
             factor_names,
-            None,
+            "",
         )
 
         # TODO: should or should not?
