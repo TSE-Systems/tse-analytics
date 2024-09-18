@@ -85,7 +85,6 @@ class DataTableWidget(QWidget, MessengerListener):
 
         selected_factor_name = self.ui.factorSelector.currentText()
 
-
         match self.ui.comboBoxSplitMode.currentText():
             case "Animal":
                 split_mode = SplitMode.ANIMAL

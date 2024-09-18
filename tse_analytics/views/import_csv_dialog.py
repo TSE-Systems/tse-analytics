@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from PySide6.QtCore import QSettings
 from PySide6.QtWidgets import QDialog, QWidget
 
@@ -8,7 +6,7 @@ from tse_analytics.views.import_csv_dialog_ui import Ui_ImportCsvDialog
 
 
 class ImportCsvDialog(QDialog):
-    def __init__(self, path: Path, parent: QWidget | None = None):
+    def __init__(self, path: str, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.ui = Ui_ImportCsvDialog()

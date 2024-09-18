@@ -6,6 +6,8 @@ from tse_analytics.core.messaging.messages import ShowHelpMessage
 LAYOUT_VERSION = 9
 IS_RELEASE = Path("_internal").exists()
 
+CSV_IMPORT_ENABLED = True
+
 
 def show_help(sender, filename: str):
     docs_path = Path("_internal/docs") if IS_RELEASE else Path("../docs")

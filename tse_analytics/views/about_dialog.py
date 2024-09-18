@@ -11,4 +11,4 @@ class AboutDialog(QDialog, Ui_AboutDialog):
         self.setupUi(self)
 
         version = importlib.metadata.version("tse-analytics")
-        self.labelVersion.setText(f"Version: {version}")
+        self.labelVersion.setText(f"Version {version}")

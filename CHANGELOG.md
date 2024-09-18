@@ -1,6 +1,17 @@
 TSE Analytics Change Log
 ====================================================================================================
 
+# 0.9.2 (2024-09-18)
+
+- New    -- Warnings when removing datasets or quitting the application.
+- New    -- Toolbar introduced in "Datasets" widget.
+- Change -- "Tools" menu item removed from the main menu.
+- Change -- Refactored "Adjust Dataset" dialog UI and workflow.
+- Change -- Refactored "About" widget.
+- Fix    -- Empty factor name in Bivariate widget.
+
+
+----------------------------------------------------------------------------------------------------
 # 0.9.1 (2024-09-16)
 
 - New    -- Calculation of T90 in CaloDetails dialog window.

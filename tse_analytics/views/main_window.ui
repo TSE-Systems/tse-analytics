@@ -57,15 +57,7 @@
     </property>
     <addaction name="actionResetLayout"/>
    </widget>
-   <widget class="QMenu" name="menuTools">
-    <property name="title">
-     <string>&amp;Tools</string>
-    </property>
-    <addaction name="actionExcludeAnimals"/>
-    <addaction name="actionExcludeTime"/>
-   </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuTools"/>
    <addaction name="menuView"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -181,28 +173,6 @@
    </property>
    <property name="text">
     <string>Help</string>
-   </property>
-  </action>
-  <action name="actionExcludeAnimals">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>Exclude Animals...</string>
-   </property>
-   <property name="toolTip">
-    <string>Exclude animals</string>
-   </property>
-  </action>
-  <action name="actionExcludeTime">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>Exclude Time...</string>
-   </property>
-   <property name="toolTip">
-    <string>Exclude time</string>
    </property>
   </action>
  </widget>

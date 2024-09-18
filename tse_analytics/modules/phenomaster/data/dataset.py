@@ -113,7 +113,7 @@ class Dataset:
         self.animals.pop(old_id)
         self.animals[animal.id] = animal
 
-    def exclude_animals(self, animal_ids: list[str]) -> None:
+    def exclude_animals(self, animal_ids: set[str]) -> None:
         # Remove animals from factor's groups definitions
         for factor in self.factors.values():
             for group in factor.groups:
@@ -124,10 +124,10 @@ class Dataset:
         for animal_id in animal_ids:
             self.animals.pop(animal_id)
 
-        new_meta_animals = []
-        for item in self.meta["animals"]:
+        new_meta_animals = {}
+        for item in self.meta["animals"].values():
             if item["id"] not in animal_ids:
-                new_meta_animals.append(item)
+                new_meta_animals[item["id"]] = item
         self.meta["animals"] = new_meta_animals
 
         self.original_df = self.original_df[~self.original_df["Animal"].isin(animal_ids)]

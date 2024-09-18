@@ -8,7 +8,7 @@ from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QCloseEvent, QIcon
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QMessageBox, QWidget
 
-from tse_analytics.core.helper import LAYOUT_VERSION, show_help
+from tse_analytics.core.helper import LAYOUT_VERSION, show_help, CSV_IMPORT_ENABLED
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.about_dialog import AboutDialog
 from tse_analytics.views.analysis.anova_widget import AnovaWidget
@@ -18,7 +18,7 @@ from tse_analytics.views.analysis.exploration_widget import ExplorationWidget
 from tse_analytics.views.analysis.timeseries.timeseries_widget import TimeseriesWidget
 from tse_analytics.views.data.data_plot_widget import DataPlotWidget
 from tse_analytics.views.data.data_table_widget import DataTableWidget
-from tse_analytics.views.datasets.datasets_tree_view import DatasetsTreeView
+from tse_analytics.views.datasets.datasets_widget import DatasetsWidget
 from tse_analytics.views.help.help_widget import HelpWidget
 from tse_analytics.views.import_csv_dialog import ImportCsvDialog
 from tse_analytics.views.info.info_widget import InfoWidget
@@ -30,7 +30,6 @@ from tse_analytics.views.selection.factors.factors_widget import FactorsWidget
 from tse_analytics.views.selection.variables.variables_widget import VariablesWidget
 from tse_analytics.views.settings.binning_settings_widget import BinningSettingsWidget
 from tse_analytics.views.settings.outliers_settings_widget import OutliersSettingsWidget
-from tse_analytics.views.tools.exclude_time_dialog import ExcludeTimeDialog
 
 PySide6QtAds.CDockManager.setConfigFlags(PySide6QtAds.CDockManager.DefaultOpaqueConfig)
 PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.ActiveTabHasCloseButton, False)
@@ -63,7 +62,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.statusBar.addPermanentWidget(self.memory_usage_label)
 
         self.menuOpenRecent.aboutToShow.connect(self.populate_open_recent)
-        self.menuTools.aboutToShow.connect(self._tools_availability)
 
         # Create the dock manager. Because the parent parameter is a QMainWindow
         # the dock manager registers itself as the central widget.
@@ -104,7 +102,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         report_dock_widget = self._register_dock_widget(ReportsWidget(), "Report", QIcon(":/icons/report.png"))
         self.dock_manager.addDockWidgetTabToArea(report_dock_widget, main_area)
 
-        datasets_dock_widget = self._register_dock_widget(DatasetsTreeView(), "Datasets", QIcon(":/icons/datasets.png"))
+        datasets_dock_widget = self._register_dock_widget(DatasetsWidget(), "Datasets", QIcon(":/icons/datasets.png"))
         datasets_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
         datasets_dock_area = self.dock_manager.addDockWidget(PySide6QtAds.LeftDockWidgetArea, datasets_dock_widget)
 
@@ -157,8 +155,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionExportExcel.triggered.connect(self.export_excel_dialog)
         self.actionResetLayout.triggered.connect(self._reset_layout)
         self.actionExit.triggered.connect(lambda: QApplication.exit())
-        self.actionExcludeAnimals.triggered.connect(self._exclude_animals)
-        self.actionExcludeTime.triggered.connect(self._exclude_time)
         self.actionHelp.triggered.connect(lambda: show_help(self, "main.md"))
         self.actionAbout.triggered.connect(self._show_about_dialog)
 
@@ -252,44 +248,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def _reset_layout(self):
         self.dock_manager.restoreState(self.default_docking_state, LAYOUT_VERSION)
 
-    def _tools_availability(self):
-        self.actionExcludeAnimals.setEnabled(Manager.data.selected_dataset is not None)
-        self.actionExcludeTime.setEnabled(Manager.data.selected_dataset is not None)
-
-    def _exclude_animals(self):
-        if (
-            QMessageBox.question(self, "Exclude Animals", "Do you really want to exclude unchecked animals?")
-            == QMessageBox.StandardButton.Yes
-        ):
-            Manager.data.exclude_animals()
-
-    def _exclude_time(self):
-        min_datetime = Manager.data.selected_dataset.start_timestamp
-        max_datetime = Manager.data.selected_dataset.end_timestamp
-        dialog = ExcludeTimeDialog(min_datetime, max_datetime, self)
-        result = dialog.exec()
-        if result == QDialog.DialogCode.Accepted:
-            start = dialog.dateTimeEditStart.dateTime().toPython()
-            end = dialog.dateTimeEditEnd.dateTime().toPython()
-            Manager.data.exclude_time(start, end)
-        dialog.destroy()
-
     def _show_about_dialog(self):
         dlg = AboutDialog(self)
         dlg.show()
 
     def import_dataset_dialog(self):
+        filter = (
+            "Data Files (*.tse *.csv);;TSE Dataset Files (*.tse);;CSV Files (*.csv)"
+            if CSV_IMPORT_ENABLED
+            else "TSE Dataset Files (*.tse)"
+        )
         filename, _ = QFileDialog.getOpenFileName(
             self,
             "Import dataset",
             "",
-            "Data Files (*.tse *.csv);;TSE Dataset Files (*.tse);;CSV Files (*.csv)",
+            filter,
         )
         if filename:
             path = Path(filename)
             if path.is_file():
                 if path.suffix.lower() == ".csv":
-                    dialog = ImportCsvDialog(path, self)
+                    dialog = ImportCsvDialog(str(path), self)
                     # TODO: check other cases!!
                     dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
                     if dialog.exec() == QDialog.DialogCode.Accepted:
@@ -298,10 +277,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     Manager.import_tse_dataset(path)
 
     def closeEvent(self, event: QCloseEvent) -> None:
-        if (
-            QMessageBox.question(self, "TSE Analytics", "Do you want to quit?")
-            == QMessageBox.StandardButton.Yes
-        ):
+        if QMessageBox.question(self, "TSE Analytics", "Do you want to quit?") == QMessageBox.StandardButton.Yes:
             self.save_settings()
             event.accept()
         else:

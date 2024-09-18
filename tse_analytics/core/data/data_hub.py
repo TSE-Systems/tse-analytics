@@ -1,5 +1,3 @@
-from datetime import datetime
-
 import numpy as np
 import pandas as pd
 
@@ -58,15 +56,6 @@ class DataHub:
 
     def set_selected_animals(self) -> None:
         self._broadcast_data_changed()
-
-    def exclude_animals(self) -> None:
-        animal_ids = [animal.id for animal in self.selected_dataset.animals.values() if not animal.enabled]
-        self.selected_dataset.exclude_animals(animal_ids)
-        self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
-
-    def exclude_time(self, start: datetime, end: datetime) -> None:
-        self.selected_dataset.exclude_time(start, end)
-        self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
 
     def set_selected_variables(self, variables: list[Variable]) -> None:
         self.selected_variables = variables

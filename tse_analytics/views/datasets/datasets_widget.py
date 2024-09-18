@@ -1,19 +1,21 @@
 from functools import partial
 
-from PySide6.QtCore import QItemSelection, QModelIndex, QSize, Qt
-from PySide6.QtGui import QPalette
+from PySide6.QtCore import QSize, Qt, QModelIndex, QItemSelection
+from PySide6.QtGui import QIcon, QPalette
 from PySide6.QtWidgets import (
+    QToolBar,
+    QWidget,
     QAbstractItemView,
+    QMenu,
+    QMessageBox,
     QDialog,
     QFileDialog,
     QInputDialog,
     QLineEdit,
-    QMenu,
-    QMessageBox,
-    QTreeView,
-    QWidget,
+    QToolButton,
 )
 
+from tse_analytics.core.helper import CSV_IMPORT_ENABLED
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import SelectedTreeNodeChangedMessage
 from tse_analytics.modules.phenomaster.actimot.models.actimot_tree_item import ActimotTreeItem
@@ -26,14 +28,43 @@ from tse_analytics.modules.phenomaster.meal_details.views.meal_details_dialog im
 from tse_analytics.modules.phenomaster.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.views.datasets.adjust_dataset_dialog import AdjustDatasetDialog
 from tse_analytics.views.datasets.datasets_merge_dialog import DatasetsMergeDialog
+from tse_analytics.views.datasets.datasets_widget_ui import Ui_DatasetsWidget
 from tse_analytics.views.import_csv_dialog import ImportCsvDialog
 
 
-class DatasetsTreeView(QTreeView):
-    def __init__(self, parent: QWidget = None):
+class DatasetsWidget(QWidget):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
 
-        pal = self.palette()
+        self.ui = Ui_DatasetsWidget()
+        self.ui.setupUi(self)
+
+        toolbar = QToolBar("Datasets Toolbar")
+        toolbar.setIconSize(QSize(16, 16))
+
+        if CSV_IMPORT_ENABLED:
+            self.import_button = QToolButton()
+            self.import_button.setText("Import")
+            self.import_button.setIcon(QIcon(":/icons/icons8-import-16.png"))
+            self.import_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+            self.import_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+            self.import_button.setEnabled(False)
+
+            import_menu = QMenu("Import", self.import_button)
+            import_menu.addAction("Import calo details...").triggered.connect(self._import_calo_details)
+            import_menu.addAction("Import meal details...").triggered.connect(self._import_meal_details)
+            import_menu.addAction("Import ActiMot details...").triggered.connect(self._import_actimot_details)
+            self.import_button.setMenu(import_menu)
+
+            toolbar.addWidget(self.import_button)
+
+        self.adjust_dataset_action = toolbar.addAction(QIcon(":/icons/icons8-edit-16.png"), "Adjust dataset")
+        self.adjust_dataset_action.setEnabled(False)
+        self.adjust_dataset_action.triggered.connect(self._adjust_dataset)
+
+        self.layout().insertWidget(0, toolbar)
+
+        pal = self.ui.treeView.palette()
         pal.setColor(
             QPalette.ColorGroup.Inactive,
             QPalette.ColorRole.Highlight,
@@ -44,21 +75,21 @@ class DatasetsTreeView(QTreeView):
             QPalette.ColorRole.HighlightedText,
             pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.HighlightedText),
         )
-        self.setPalette(pal)
+        self.ui.treeView.setPalette(pal)
 
-        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-        self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.setModel(Manager.workspace)
+        self.ui.treeView.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.ui.treeView.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.ui.treeView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.ui.treeView.setModel(Manager.workspace)
 
-        self.customContextMenuRequested.connect(self._open_menu)
-        # self.selectionModel().selectionChanged.connect(self._treeview_selection_changed)
-        self.selectionModel().currentChanged.connect(self._treeview_current_changed)
+        self.ui.treeView.customContextMenuRequested.connect(self._open_menu)
+        self.ui.treeView.selectionModel().selectionChanged.connect(self._treeview_selection_changed)
+        self.ui.treeView.selectionModel().currentChanged.connect(self._treeview_current_changed)
         # Manager.workspace.checkedItemChanged.connect(self._checked_item_changed)
-        self.doubleClicked.connect(self._treeview_double_clicked)
+        self.ui.treeView.doubleClicked.connect(self._treeview_double_clicked)
 
     def _open_menu(self, position):
-        indexes = self.selectedIndexes()
+        indexes = self.ui.treeView.selectedIndexes()
 
         level = None
         if len(indexes) > 0:
@@ -68,23 +99,11 @@ class DatasetsTreeView(QTreeView):
                 index = index.parent()
                 level += 1
 
-        menu = QMenu(self)
+        menu = QMenu(self.ui.treeView)
 
         if level == 1:
-            menu.addAction("Import meal details...").triggered.connect(partial(self._import_meal_details, indexes))
-
-            menu.addAction("Import ActiMot details...").triggered.connect(
-                partial(self._import_actimot_details, indexes)
-            )
-
-            menu.addAction("Import calo details...").triggered.connect(partial(self._import_calo_details, indexes))
-
-            menu.addSeparator()
-
-            menu.addAction("Adjust dataset...").triggered.connect(partial(self._adjust_dataset, indexes))
-
             action = menu.addAction("Merge datasets...")
-            items = self.model().workspace_tree_item.child_items
+            items = self.ui.treeView.model().workspace_tree_item.child_items
             checked_datasets_number = 0
             for item in items:
                 if item.checked:
@@ -92,17 +111,16 @@ class DatasetsTreeView(QTreeView):
             if checked_datasets_number < 2:
                 action.setEnabled(False)
             else:
-                action.triggered.connect(partial(self._merge_datasets, indexes))
+                action.triggered.connect(self._merge_datasets)
 
             menu.addAction("Remove dataset").triggered.connect(partial(self._remove_dataset, indexes))
             menu.addAction("Clone dataset...").triggered.connect(partial(self._clone_dataset, indexes))
-            menu.addAction("Rename dataset...").triggered.connect(partial(self._rename_dataset, indexes))
 
-        menu.exec_(self.viewport().mapToGlobal(position))
+        menu.exec_(self.ui.treeView.viewport().mapToGlobal(position))
 
-    def _merge_datasets(self, indexes: list[QModelIndex]):
+    def _merge_datasets(self):
         checked_datasets: list[Dataset] = []
-        items = self.model().workspace_tree_item.child_items
+        items = self.ui.treeView.model().workspace_tree_item.child_items
         for item in items:
             if item.checked:
                 checked_datasets.append(item.dataset)
@@ -125,11 +143,11 @@ class DatasetsTreeView(QTreeView):
         dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             # uncheck all datasets
-            items = self.model().workspace_tree_item.child_items
+            items = self.ui.treeView.model().workspace_tree_item.child_items
             for item in items:
                 item.checked = False
 
-    def _import_meal_details(self, indexes: list[QModelIndex]):
+    def _import_meal_details(self):
         path, _ = QFileDialog.getOpenFileName(
             self,
             "Import meal details",
@@ -137,15 +155,15 @@ class DatasetsTreeView(QTreeView):
             "Meal Details Files (*.csv)",
         )
         if path:
-            if len(indexes) == 1:
-                dialog = ImportCsvDialog(path, self)
-                # TODO: check other cases!!
-                dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-                if dialog.exec() == QDialog.DialogCode.Accepted:
-                    selected_dataset_index = indexes[0]
-                    Manager.import_meal_details(selected_dataset_index, path)
+            dialog = ImportCsvDialog(path, self)
+            # TODO: check other cases!!
+            dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+            if dialog.exec() == QDialog.DialogCode.Accepted:
+                indexes = self.ui.treeView.selectedIndexes()
+                selected_dataset_index = indexes[0]
+                Manager.import_meal_details(selected_dataset_index, path)
 
-    def _import_actimot_details(self, indexes: list[QModelIndex]):
+    def _import_actimot_details(self):
         path, _ = QFileDialog.getOpenFileName(
             self,
             "Import ActiMot details",
@@ -153,15 +171,15 @@ class DatasetsTreeView(QTreeView):
             "ActiMot Details Files (*.csv)",
         )
         if path:
-            if len(indexes) == 1:
-                dialog = ImportCsvDialog(path, self)
-                # TODO: check other cases!!
-                dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-                if dialog.exec() == QDialog.DialogCode.Accepted:
-                    selected_dataset_index = indexes[0]
-                    Manager.import_actimot_details(selected_dataset_index, path)
+            dialog = ImportCsvDialog(path, self)
+            # TODO: check other cases!!
+            dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+            if dialog.exec() == QDialog.DialogCode.Accepted:
+                indexes = self.ui.treeView.selectedIndexes()
+                selected_dataset_index = indexes[0]
+                Manager.import_actimot_details(selected_dataset_index, path)
 
-    def _import_calo_details(self, indexes: list[QModelIndex]):
+    def _import_calo_details(self):
         path, _ = QFileDialog.getOpenFileName(
             self,
             "Import calo details",
@@ -169,21 +187,23 @@ class DatasetsTreeView(QTreeView):
             "Calo Details Files (*.csv)",
         )
         if path:
-            if len(indexes) == 1:
-                dialog = ImportCsvDialog(path, self)
-                # TODO: check other cases!!
-                dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-                if dialog.exec() == QDialog.DialogCode.Accepted:
-                    selected_dataset_index = indexes[0]
-                    Manager.import_calo_details(selected_dataset_index, path)
+            dialog = ImportCsvDialog(path, self)
+            # TODO: check other cases!!
+            dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+            if dialog.exec() == QDialog.DialogCode.Accepted:
+                indexes = self.ui.treeView.selectedIndexes()
+                selected_dataset_index = indexes[0]
+                Manager.import_calo_details(selected_dataset_index, path)
 
-    def _adjust_dataset(self, indexes: list[QModelIndex]):
-        selected_index = indexes[0]
-        dataset = selected_index.model().getItem(selected_index).dataset
+    def _adjust_dataset(self):
+        selected_index = self.ui.treeView.selectedIndexes()[0]
+        item = selected_index.model().getItem(selected_index)
+        dataset = item.dataset
         dialog = AdjustDatasetDialog(dataset, dataset.sampling_interval, self)
         # TODO: check other cases!!
         dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         if dialog.exec() == QDialog.DialogCode.Accepted:
+            item.name = dataset.name
             Manager.data.set_selected_dataset(dataset)
 
     def _remove_dataset(self, indexes: list[QModelIndex]):
@@ -192,16 +212,8 @@ class DatasetsTreeView(QTreeView):
             == QMessageBox.StandardButton.Yes
         ):
             Manager.remove_dataset(indexes)
-
-    def _rename_dataset(self, indexes: list[QModelIndex]):
-        selected_index = indexes[0]
-        if selected_index.isValid():
-            item = selected_index.model().getItem(selected_index)
-            name, ok = QInputDialog.getText(
-                self, "Enter dataset name", "Name", QLineEdit.EchoMode.Normal, item.dataset.name
-            )
-            if ok:
-                item.rename_dataset(name)
+            self.import_button.setEnabled(False)
+            self.adjust_dataset_action.setEnabled(False)
 
     def _clone_dataset(self, indexes: list[QModelIndex]):
         selected_index = indexes[0]
@@ -222,8 +234,16 @@ class DatasetsTreeView(QTreeView):
                 Manager.data.set_selected_dataset(item.dataset)
 
     def _treeview_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
-        # indexes = selected.indexes()
-        pass
+        level = None
+        if len(selected) > 0:
+            level = 0
+            index = selected.indexes()[0]
+            while index.parent().isValid():
+                index = index.parent()
+                level += 1
+        self.adjust_dataset_action.setEnabled(level == 1)
+        if CSV_IMPORT_ENABLED:
+            self.import_button.setEnabled(level == 1)
 
     def _checked_item_changed(self, item, state: bool):
         pass
@@ -251,9 +271,8 @@ class DatasetsTreeView(QTreeView):
                 dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
                 result = dialog.exec()
                 del dialog
-                # gc.collect()
                 if result == QDialog.DialogCode.Accepted:
                     pass
 
-    def minimumSizeHint(self):
-        return QSize(300, 50)
+    def minimumSizeHint(self) -> QSize:
+        return QSize(300, 100)
