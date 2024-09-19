@@ -131,7 +131,11 @@ class Dataset:
         self.meta["animals"] = new_meta_animals
 
         self.original_df = self.original_df[~self.original_df["Animal"].isin(animal_ids)]
+        self.original_df.reset_index(inplace=True)
+
         self.active_df = self.active_df[~self.active_df["Animal"].isin(animal_ids)]
+        self.active_df.reset_index(inplace=True)
+
         if self.calo_details is not None:
             self.calo_details.raw_df = self.calo_details.raw_df[~self.calo_details.raw_df["Animal"].isin(animal_ids)]
         if self.meal_details is not None:
@@ -141,43 +145,68 @@ class Dataset:
                 ~self.actimot_details.raw_df["Animal"].isin(animal_ids)
             ]
 
+    def _reassign_df_timedelta_and_bin(self, df: pd.DataFrame, sampling_interval: pd.Timedelta) -> pd.DataFrame:
+        df.reset_index(inplace=True)
+        # Reassign bin and timedelta
+        start_date_time = df.at[0, "DateTime"]
+        df["Timedelta"] = df["DateTime"] - start_date_time
+        df["Bin"] = (df["Timedelta"] / sampling_interval).round().astype(int)
+        return df
+
     def exclude_time(self, range_start: datetime, range_end: datetime) -> None:
-        self.original_df = self.original_df[
-            (self.original_df["DateTime"] < range_start) | (self.original_df["DateTime"] > range_end)
-        ]
-        self.active_df = self.active_df[
-            (self.active_df["DateTime"] < range_start) | (self.active_df["DateTime"] > range_end)
-        ]
+        self.original_df = self._exclude_df_time(self.original_df, range_start, range_end)
+        self.active_df = self._exclude_df_time(self.active_df, range_start, range_end)
+
+    def _exclude_df_time(self, df: pd.DataFrame, range_start: datetime, range_end: datetime) -> pd.DataFrame:
+        df = df[(df["DateTime"] < range_start) | (df["DateTime"] > range_end)]
+        df = self._reassign_df_timedelta_and_bin(df, self.sampling_interval)
+        return df
 
     def trim_time(self, range_start: datetime, range_end: datetime) -> None:
-        self.original_df = self.original_df[
-            (self.original_df["DateTime"] >= range_start) & (self.original_df["DateTime"] <= range_end)
-        ]
-        self.active_df = self.active_df[
-            (self.active_df["DateTime"] >= range_start) & (self.active_df["DateTime"] <= range_end)
-        ]
+        self.original_df = self._trim_df_time(self.original_df, range_start, range_end)
+        self.active_df = self._trim_df_time(self.active_df, range_start, range_end)
+
+    def _trim_df_time(self, df: pd.DataFrame, range_start: datetime, range_end: datetime) -> pd.DataFrame:
+        df = df[(df["DateTime"] >= range_start) & (df["DateTime"] <= range_end)]
+        df = self._reassign_df_timedelta_and_bin(df, self.sampling_interval)
+        return df
 
     def resample(self, resampling_interval: pd.Timedelta) -> None:
-        group_by = ["Animal", "Box", "Run"]
+        default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
+
+        agg = {
+            "DateTime": "first",
+            "Box": "first",
+            "Run": "first",
+        }
+        for column in self.original_df.columns:
+            if column not in default_columns:
+                if self.original_df.dtypes[column].name != "category":
+                    agg[column] = "mean"
+
+        group_by = ["Animal"]
+        sort_by = ["Timedelta", "Box"]
 
         original_result = self.original_df.groupby(group_by, dropna=False, observed=False)
-        original_result = original_result.resample(resampling_interval, on="DateTime", origin="start").mean(
-            numeric_only=True
-        )
-        original_result.sort_values(by=["DateTime", "Box"], inplace=True)
-        # the inverse of groupby, reset_index
-        original_result = original_result.reset_index()
-        original_result["Timedelta"] = original_result["DateTime"] - original_result["DateTime"].iloc[0]
-        original_result["Bin"] = (original_result["Timedelta"] / resampling_interval).round().astype(int)
-        # self.original_df = original_result.astype({"Bin": "category"})
+        original_result = original_result.resample(resampling_interval, on="Timedelta", origin="start").agg(agg)
+
+        original_result.sort_values(by=sort_by, inplace=True)
+
+        original_result = self._reassign_df_timedelta_and_bin(original_result, resampling_interval)
 
         self.sampling_interval = resampling_interval
+        self.original_df = original_result
 
         self.refresh_active_df()
 
     def adjust_time(self, delta: pd.Timedelta) -> None:
-        self.original_df["DateTime"] = self.original_df["DateTime"] + delta
-        self.active_df["DateTime"] = self.active_df["DateTime"] + delta
+        self.original_df = self._adjust_df_time(self.original_df, delta)
+        self.active_df = self._adjust_df_time(self.active_df, delta)
+
+    def _adjust_df_time(self, df: pd.DataFrame, delta: pd.Timedelta) -> pd.DataFrame:
+        df["DateTime"] = df["DateTime"] + delta
+        df = self._reassign_df_timedelta_and_bin(df, self.sampling_interval)
+        return df
 
     def set_factors(self, factors: dict[str, Factor]):
         self.factors = factors
