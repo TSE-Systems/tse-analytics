@@ -1,13 +1,11 @@
-import base64
-from io import BytesIO
-
 import pandas as pd
 import seaborn as sns
+from PySide6.QtWidgets import QVBoxLayout, QWidget
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
-from PySide6.QtWidgets import QVBoxLayout, QWidget
 
 from tse_analytics.core.data.shared import Factor, SplitMode
+from tse_analytics.core.helper import get_html_image
 from tse_analytics.core.manager import Manager
 
 
@@ -97,8 +95,4 @@ class BarPlotView(QWidget):
             self.layout().addWidget(self.canvas)
 
     def get_report(self) -> str:
-        io = BytesIO()
-        self.canvas.figure.savefig(io, format="png")
-        encoded = base64.b64encode(io.getvalue()).decode("utf-8")
-        html = f"<img src='data:image/png;base64,{encoded}'>"
-        return html
+        return get_html_image(self.canvas.figure)

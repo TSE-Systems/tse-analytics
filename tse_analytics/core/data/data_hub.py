@@ -24,7 +24,7 @@ class DataHub:
         self.selected_variables: list[Variable] = []
 
         self.binning_params = BinningParams(False, BinningMode.INTERVALS, BinningOperation.MEAN)
-        self.outliers_params = OutliersParams(OutliersMode.OFF, 3.0)
+        self.outliers_params = OutliersParams(OutliersMode.OFF, 1.5)
 
     def clear(self) -> None:
         self.selected_dataset = None

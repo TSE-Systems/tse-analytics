@@ -1,14 +1,11 @@
-import base64
-from io import BytesIO
-
 import pingouin as pg
 import seaborn as sns
-from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
+from matplotlib.backends.backend_qt import NavigationToolbar2QT
 
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.helper import show_help
+from tse_analytics.core.helper import show_help, get_html_image
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
@@ -90,8 +87,6 @@ class ExplorationWidget(QWidget, MessengerListener):
         variable = self.ui.variableSelector.currentText()
         selected_factor = self.ui.factorSelector.currentText()
 
-        split_mode = SplitMode.TOTAL
-        by = None
         if self.ui.radioButtonSplitByAnimal.isChecked():
             split_mode = SplitMode.ANIMAL
             by = "Animal"
@@ -101,6 +96,9 @@ class ExplorationWidget(QWidget, MessengerListener):
         elif self.ui.radioButtonSplitByFactor.isChecked():
             split_mode = SplitMode.FACTOR
             by = selected_factor
+        else:
+            split_mode = SplitMode.TOTAL
+            by = None
 
         df = Manager.data.get_current_df(
             variables=[variable],
@@ -113,6 +111,8 @@ class ExplorationWidget(QWidget, MessengerListener):
         if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:
             df[by] = df[by].cat.remove_unused_categories()
             number_of_elements = len(df[by].cat.categories)
+        elif split_mode == SplitMode.RUN:
+            number_of_elements = df[by].nunique()
 
         self.ui.canvas.clear(False)
         ax = self.ui.canvas.figure.add_subplot(111)
@@ -240,8 +240,5 @@ class ExplorationWidget(QWidget, MessengerListener):
             return round(number_of_elements / 3) + 1, 3
 
     def _add_report(self):
-        io = BytesIO()
-        self.ui.canvas.figure.savefig(io, format="png")
-        encoded = base64.b64encode(io.getvalue()).decode("utf-8")
-        html = f"<img src='data:image/png;base64,{encoded}'>"
+        html = get_html_image(self.ui.canvas.figure)
         Manager.messenger.broadcast(AddToReportMessage(self, html))

@@ -1,5 +1,4 @@
-from PySide6.QtCore import QItemSelection, QSortFilterProxyModel, Qt
-from PySide6.QtGui import QPalette
+from PySide6.QtCore import QSortFilterProxyModel, Qt
 from PySide6.QtWidgets import QDialog, QWidget
 
 from tse_analytics.core.data.shared import Factor
@@ -20,24 +19,9 @@ class FactorsWidget(QWidget, MessengerListener):
         self.ui = Ui_FactorsWidget()
         self.ui.setupUi(self)
 
-        pal = self.ui.tableView.palette()
-        pal.setColor(
-            QPalette.ColorGroup.Inactive,
-            QPalette.ColorRole.Highlight,
-            pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Highlight),
-        )
-        pal.setColor(
-            QPalette.ColorGroup.Inactive,
-            QPalette.ColorRole.HighlightedText,
-            pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.HighlightedText),
-        )
-        self.ui.tableView.setPalette(pal)
-
         proxy_model = QSortFilterProxyModel()
         proxy_model.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.ui.tableView.setModel(proxy_model)
-        self.ui.tableView.sortByColumn(0, Qt.SortOrder.AscendingOrder)
-        # self.ui.tableView.selectionModel().selectionChanged.connect(self._on_selection_changed)
 
         self.ui.toolButtonEditFactors.clicked.connect(self._edit_factors)
 
@@ -61,18 +45,3 @@ class FactorsWidget(QWidget, MessengerListener):
                 factors[factor.name] = factor
             Manager.data.selected_dataset.set_factors(factors)
             Manager.messenger.broadcast(DatasetChangedMessage(self, Manager.data.selected_dataset))
-
-    def _on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
-        pass
-        # proxy_model = self.ui.tableView.model()
-        # model = proxy_model.sourceModel()
-        # selected_factors: list[Factor] = []
-        # for index in self.ui.tableView.selectedIndexes():
-        #     if index.column() != 0:
-        #         continue
-        #     if index.isValid():
-        #         source_index = proxy_model.mapToSource(index)
-        #         row = source_index.row()
-        #         factor = model.items[row]
-        #         selected_factors.append(factor)
-        # Manager.data.set_selected_factor(selected_factors[0] if len(selected_factors) > 0 else None)

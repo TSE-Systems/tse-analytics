@@ -6,7 +6,8 @@ class TimedeltaAxisItem(AxisItem):
 
     def __init__(self, *args, **kwargs):
         super().__init__(orientation="bottom", **kwargs)
-        self.enableAutoSIPrefix(False)
+        self.autoSIPrefix = False
+        self.fixedHeight = 18
 
     def tickStrings(self, values, scale, spacing):
         formatStrings = []

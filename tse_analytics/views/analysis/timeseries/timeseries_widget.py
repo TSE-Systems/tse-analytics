@@ -1,15 +1,12 @@
-import base64
-from io import BytesIO
-
 import pandas as pd
-from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
+from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.seasonal import MSTL, STL, seasonal_decompose
 
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.helper import show_help
+from tse_analytics.core.helper import show_help, get_html_image
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
@@ -167,8 +164,5 @@ class TimeseriesWidget(QWidget, MessengerListener):
         self.ui.canvas.draw()
 
     def _add_report(self):
-        io = BytesIO()
-        self.ui.canvas.figure.savefig(io, format="png")
-        encoded = base64.b64encode(io.getvalue()).decode("utf-8")
-        html = f"<img src='data:image/png;base64,{encoded}'>"
+        html = get_html_image(self.ui.canvas.figure)
         Manager.messenger.broadcast(AddToReportMessage(self, html))

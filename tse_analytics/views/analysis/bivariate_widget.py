@@ -1,15 +1,12 @@
-import base64
-from io import BytesIO
-
 import pingouin as pg
 import seaborn as sns
-from matplotlib.backends.backend_qt import NavigationToolbar2QT
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
+from matplotlib.backends.backend_qt import NavigationToolbar2QT
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.helper import show_help
+from tse_analytics.core.helper import show_help, get_html_image
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
@@ -228,12 +225,7 @@ class BivariateWidget(QWidget, MessengerListener):
         self.ui.textEdit.document().setHtml(html)
 
     def _add_report(self):
-        io = BytesIO()
-        self.plot_toolbar.canvas.figure.savefig(io, format="png")
-        encoded = base64.b64encode(io.getvalue()).decode("utf-8")
-
-        html = f"<img src='data:image/png;base64,{encoded}'>"
-        html += "\n<br/>\n"
+        html = get_html_image(self.ui.canvas.figure)
         html += self.ui.textEdit.toHtml()
 
         Manager.messenger.broadcast(AddToReportMessage(self, html))

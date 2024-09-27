@@ -20,7 +20,7 @@ class FactorsModel(QAbstractTableModel):
             case 1:
                 if role == Qt.ItemDataRole.DisplayRole:
                     group_names = [group.name for group in item.groups]
-                    return f"{",".join(group_names)}"
+                    return f"{", ".join(group_names)}"
 
     def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:

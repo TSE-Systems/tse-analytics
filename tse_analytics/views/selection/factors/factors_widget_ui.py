@@ -24,7 +24,6 @@ class Ui_FactorsWidget(object):
     def setupUi(self, FactorsWidget):
         if not FactorsWidget.objectName():
             FactorsWidget.setObjectName(u"FactorsWidget")
-        FactorsWidget.resize(489, 630)
         self.verticalLayout = QVBoxLayout(FactorsWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()
@@ -48,10 +47,9 @@ class Ui_FactorsWidget(object):
         self.tableView = QTableView(FactorsWidget)
         self.tableView.setObjectName(u"tableView")
         self.tableView.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.tableView.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.tableView.setSelectionMode(QAbstractItemView.NoSelection)
         self.tableView.setSortingEnabled(True)
-        self.tableView.verticalHeader().setDefaultSectionSize(20)
+        self.tableView.verticalHeader().setDefaultSectionSize(24)
 
         self.verticalLayout.addWidget(self.tableView)
 
@@ -62,7 +60,7 @@ class Ui_FactorsWidget(object):
     # setupUi
 
     def retranslateUi(self, FactorsWidget):
-        FactorsWidget.setWindowTitle(QCoreApplication.translate("FactorsWidget", u"Form", None))
         self.toolButtonEditFactors.setText(QCoreApplication.translate("FactorsWidget", u"Edit Factors", None))
+        pass
     # retranslateUi
 

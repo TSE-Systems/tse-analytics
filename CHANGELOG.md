@@ -1,6 +1,22 @@
 TSE Analytics Change Log
 ====================================================================================================
 
+# 0.9.4 (2024-09-25)
+
+- New    -- Multi-factor selection in ANOVA/ANCOVA widget.
+- New    -- Sphericity test for repeated/mixed ANOVA.
+- Change -- Redesigned post-hoc tests for different ANOVA/ANCOVA modes.
+- Change -- panda's copy_on_write mode is disabled for the time being.
+- Fix    -- Missing labels of X axis in the data plot.
+
+
+----------------------------------------------------------------------------------------------------
+# 0.9.3 (2024-09-20)
+
+- Fix    -- Histogram in "Run" split mode.
+
+
+----------------------------------------------------------------------------------------------------
 # 0.9.2 (2024-09-18)
 
 - New    -- Warnings when removing datasets or quitting the application.
@@ -9,6 +25,7 @@ TSE Analytics Change Log
 - Change -- Refactored "Adjust Dataset" dialog UI and workflow.
 - Change -- Refactored "About" widget.
 - Fix    -- Empty factor name in Bivariate widget.
+- Fix  -- Reset index and reassign Timedelta and Bin values after dataset adjustments.
 
 
 ----------------------------------------------------------------------------------------------------

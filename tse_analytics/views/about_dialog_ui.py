@@ -442,9 +442,10 @@ class Ui_AboutDialog(object):
                         "n-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"https://pandas.pydata.org/\"><span style=\" text-decoration: underline; color:#0078d4;\">pandas</span></a></li>\n"
 "<li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"https://pingouin-stats.org/\"><span style=\" text-decoration: underline; color:#0078d4;\">Pingouin</span></a></li>\n"
 "<li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"https://plotly.com/python/\"><span style=\" text-decoration: underline; color:#0078d4;\">Plotly</span></a></li>\n"
-"<li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"https://github.com/giampaolo/psutil/\"><span style=\" text-decoration: underline; color:#0078d4;\">psutil</span></a></li>\n"
-"<li style=\" margin-top:12px; margin-bottom:0px; ma"
-                        "rgin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"https://www.pyqtgraph.org/\"><span style=\" text-decoration: underline; color:#0078d4;\">PyQtGraph</span></a></li>\n"
+"<li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"https://github.com/sbi-rviot/ph_table/\"><span style=\" text-decoration: underline; color:#0078d4;\">pretty_html_table</span></a></li>\n"
+"<li style=\" margin-top:12px; margin-b"
+                        "ottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"https://github.com/giampaolo/psutil/\"><span style=\" text-decoration: underline; color:#0078d4;\">psutil</span></a></li>\n"
+"<li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"https://www.pyqtgraph.org/\"><span style=\" text-decoration: underline; color:#0078d4;\">PyQtGraph</span></a></li>\n"
 "<li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"https://seaborn.pydata.org/\"><span style=\" text-decoration: underline; color:#0078d4;\">seaborn</span></a></li></ul></body></html>", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabLibraries), QCoreApplication.translate("AboutDialog", u"Third-party libraries", None))
     # retranslateUi

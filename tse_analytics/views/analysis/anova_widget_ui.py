@@ -15,12 +15,12 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QGroupBox,
-    QHeaderView, QPushButton, QRadioButton, QSizePolicy,
-    QSplitter, QTableWidget, QTableWidgetItem, QTextEdit,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QGroupBox, QHeaderView,
+    QPushButton, QRadioButton, QSizePolicy, QSplitter,
+    QTableWidgetItem, QTextEdit, QVBoxLayout, QWidget)
 
-from tse_analytics.views.misc.factor_selector import FactorSelector
+from tse_analytics.views.misc.factors_table_widget import FactorsTableWidget
+from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 import resources_rc
 
 class Ui_AnovaWidget(object):
@@ -39,12 +39,13 @@ class Ui_AnovaWidget(object):
         self.splitter.setOrientation(Qt.Horizontal)
         self.textEdit = QTextEdit(self.splitter)
         self.textEdit.setObjectName(u"textEdit")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy1.setHorizontalStretch(1)
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.textEdit.sizePolicy().hasHeightForWidth())
         self.textEdit.setSizePolicy(sizePolicy1)
         self.textEdit.setUndoRedoEnabled(False)
+        self.textEdit.setLineWrapMode(QTextEdit.NoWrap)
         self.textEdit.setReadOnly(True)
         self.splitter.addWidget(self.textEdit)
         self.widgetSettings = QWidget(self.splitter)
@@ -84,17 +85,47 @@ class Ui_AnovaWidget(object):
 
         self.verticalLayout_5.addWidget(self.groupBoxMode)
 
-        self.groupBoxFactor = QGroupBox(self.widgetSettings)
-        self.groupBoxFactor.setObjectName(u"groupBoxFactor")
-        self.verticalLayout_8 = QVBoxLayout(self.groupBoxFactor)
+        self.groupBoxFactors = QGroupBox(self.widgetSettings)
+        self.groupBoxFactors.setObjectName(u"groupBoxFactors")
+        self.verticalLayout_8 = QVBoxLayout(self.groupBoxFactors)
         self.verticalLayout_8.setObjectName(u"verticalLayout_8")
-        self.factorSelector = FactorSelector(self.groupBoxFactor)
-        self.factorSelector.setObjectName(u"factorSelector")
+        self.tableWidgetFactors = FactorsTableWidget(self.groupBoxFactors)
+        self.tableWidgetFactors.setObjectName(u"tableWidgetFactors")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.tableWidgetFactors.sizePolicy().hasHeightForWidth())
+        self.tableWidgetFactors.setSizePolicy(sizePolicy2)
+        self.tableWidgetFactors.setMaximumSize(QSize(16777215, 100))
 
-        self.verticalLayout_8.addWidget(self.factorSelector)
+        self.verticalLayout_8.addWidget(self.tableWidgetFactors)
 
 
-        self.verticalLayout_5.addWidget(self.groupBoxFactor)
+        self.verticalLayout_5.addWidget(self.groupBoxFactors)
+
+        self.groupBoxDependentVariable = QGroupBox(self.widgetSettings)
+        self.groupBoxDependentVariable.setObjectName(u"groupBoxDependentVariable")
+        self.verticalLayout_3 = QVBoxLayout(self.groupBoxDependentVariable)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.tableWidgetDependentVariable = VariablesTableWidget(self.groupBoxDependentVariable)
+        self.tableWidgetDependentVariable.setObjectName(u"tableWidgetDependentVariable")
+
+        self.verticalLayout_3.addWidget(self.tableWidgetDependentVariable)
+
+
+        self.verticalLayout_5.addWidget(self.groupBoxDependentVariable)
+
+        self.groupBoxCovariates = QGroupBox(self.widgetSettings)
+        self.groupBoxCovariates.setObjectName(u"groupBoxCovariates")
+        self.verticalLayout_4 = QVBoxLayout(self.groupBoxCovariates)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.tableWidgetCovariates = VariablesTableWidget(self.groupBoxCovariates)
+        self.tableWidgetCovariates.setObjectName(u"tableWidgetCovariates")
+
+        self.verticalLayout_4.addWidget(self.tableWidgetCovariates)
+
+
+        self.verticalLayout_5.addWidget(self.groupBoxCovariates)
 
         self.groupBoxPAdjustment = QGroupBox(self.widgetSettings)
         self.groupBoxPAdjustment.setObjectName(u"groupBoxPAdjustment")
@@ -119,54 +150,6 @@ class Ui_AnovaWidget(object):
 
 
         self.verticalLayout_5.addWidget(self.groupBoxEffectSizeType)
-
-        self.groupBoxDependentVariable = QGroupBox(self.widgetSettings)
-        self.groupBoxDependentVariable.setObjectName(u"groupBoxDependentVariable")
-        self.verticalLayout_3 = QVBoxLayout(self.groupBoxDependentVariable)
-        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.tableWidgetDependentVariable = QTableWidget(self.groupBoxDependentVariable)
-        if (self.tableWidgetDependentVariable.columnCount() < 3):
-            self.tableWidgetDependentVariable.setColumnCount(3)
-        self.tableWidgetDependentVariable.setObjectName(u"tableWidgetDependentVariable")
-        self.tableWidgetDependentVariable.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.tableWidgetDependentVariable.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.tableWidgetDependentVariable.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.tableWidgetDependentVariable.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
-        self.tableWidgetDependentVariable.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
-        self.tableWidgetDependentVariable.setSortingEnabled(True)
-        self.tableWidgetDependentVariable.setColumnCount(3)
-        self.tableWidgetDependentVariable.verticalHeader().setVisible(False)
-        self.tableWidgetDependentVariable.verticalHeader().setMinimumSectionSize(20)
-        self.tableWidgetDependentVariable.verticalHeader().setDefaultSectionSize(20)
-
-        self.verticalLayout_3.addWidget(self.tableWidgetDependentVariable)
-
-
-        self.verticalLayout_5.addWidget(self.groupBoxDependentVariable)
-
-        self.groupBoxCovariates = QGroupBox(self.widgetSettings)
-        self.groupBoxCovariates.setObjectName(u"groupBoxCovariates")
-        self.verticalLayout_4 = QVBoxLayout(self.groupBoxCovariates)
-        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.tableWidgetCovariates = QTableWidget(self.groupBoxCovariates)
-        if (self.tableWidgetCovariates.columnCount() < 3):
-            self.tableWidgetCovariates.setColumnCount(3)
-        self.tableWidgetCovariates.setObjectName(u"tableWidgetCovariates")
-        self.tableWidgetCovariates.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.tableWidgetCovariates.setSelectionMode(QAbstractItemView.MultiSelection)
-        self.tableWidgetCovariates.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.tableWidgetCovariates.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
-        self.tableWidgetCovariates.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
-        self.tableWidgetCovariates.setSortingEnabled(True)
-        self.tableWidgetCovariates.setColumnCount(3)
-        self.tableWidgetCovariates.verticalHeader().setVisible(False)
-        self.tableWidgetCovariates.verticalHeader().setMinimumSectionSize(20)
-        self.tableWidgetCovariates.verticalHeader().setDefaultSectionSize(20)
-
-        self.verticalLayout_4.addWidget(self.tableWidgetCovariates)
-
-
-        self.verticalLayout_5.addWidget(self.groupBoxCovariates)
 
         self.pushButtonUpdate = QPushButton(self.widgetSettings)
         self.pushButtonUpdate.setObjectName(u"pushButtonUpdate")
@@ -205,11 +188,11 @@ class Ui_AnovaWidget(object):
         self.radioButtonRMAnova.setText(QCoreApplication.translate("AnovaWidget", u"Repeated measures ANOVA", None))
         self.radioButtonMixedAnova.setText(QCoreApplication.translate("AnovaWidget", u"Mixed-design ANOVA", None))
         self.radioButtonAncova.setText(QCoreApplication.translate("AnovaWidget", u"ANCOVA", None))
-        self.groupBoxFactor.setTitle(QCoreApplication.translate("AnovaWidget", u"Factor", None))
-        self.groupBoxPAdjustment.setTitle(QCoreApplication.translate("AnovaWidget", u"P-values adjustment", None))
-        self.groupBoxEffectSizeType.setTitle(QCoreApplication.translate("AnovaWidget", u"Effect size type", None))
+        self.groupBoxFactors.setTitle(QCoreApplication.translate("AnovaWidget", u"Factors", None))
         self.groupBoxDependentVariable.setTitle(QCoreApplication.translate("AnovaWidget", u"Dependent Variable", None))
         self.groupBoxCovariates.setTitle(QCoreApplication.translate("AnovaWidget", u"Covariates", None))
+        self.groupBoxPAdjustment.setTitle(QCoreApplication.translate("AnovaWidget", u"P-values adjustment", None))
+        self.groupBoxEffectSizeType.setTitle(QCoreApplication.translate("AnovaWidget", u"Effect size type", None))
         self.pushButtonUpdate.setText(QCoreApplication.translate("AnovaWidget", u"Update", None))
         self.pushButtonAddReport.setText(QCoreApplication.translate("AnovaWidget", u"Add to Report", None))
         self.pushButtonHelp.setText(QCoreApplication.translate("AnovaWidget", u"Help", None))

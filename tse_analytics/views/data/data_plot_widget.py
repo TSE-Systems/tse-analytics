@@ -33,7 +33,6 @@ class DataPlotWidget(QWidget, MessengerListener):
         self.ui.radioButtonSplitByRun.toggled.connect(self._split_mode_toggled)
 
         self.ui.variableSelector.currentTextChanged.connect(self._variable_changed)
-        # self.ui.factorSelector.currentTextChanged.connect(self._split_mode_changed)
         self.ui.factorSelector.currentTextChanged.connect(self._factor_changed)
         self.ui.checkBoxScatterPlot.stateChanged.connect(self._set_scatter_plot)
         self.ui.groupBoxDisplayErrors.toggled.connect(self._display_errors_toggled)
@@ -58,13 +57,29 @@ class DataPlotWidget(QWidget, MessengerListener):
         messenger.subscribe(self, BinningMessage, self._on_binning_applied)
         messenger.subscribe(self, DataChangedMessage, self._on_data_changed)
 
-    def _variable_changed(self, variable: str):
+    def _variable_changed(self, variable: str) -> None:
         self._assign_data()
 
-    def _factor_changed(self, factor_name: str):
+    def _get_split_mode(self) -> SplitMode:
+        if self.ui.radioButtonSplitByAnimal.isChecked():
+            return SplitMode.ANIMAL
+        elif self.ui.radioButtonSplitByRun.isChecked():
+            return SplitMode.RUN
+        elif self.ui.radioButtonSplitByFactor.isChecked():
+            return SplitMode.FACTOR
+        else:
+            return SplitMode.TOTAL
+
+    def _factor_changed(self, factor_name: str) -> None:
+        split_mode = self._get_split_mode()
+
+        selected_factor_name = self.ui.factorSelector.currentText()
+        factor = Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
+        self.timelinePlotView.set_grouping_mode(split_mode, factor)
+        self.barPlotView.set_grouping_mode(split_mode, factor)
         self._assign_data()
 
-    def _error_type_std_toggled(self, toggled: bool):
+    def _error_type_std_toggled(self, toggled: bool) -> None:
         if not toggled:
             return
         if Manager.data.binning_params.mode == BinningMode.INTERVALS:
@@ -72,7 +87,7 @@ class DataPlotWidget(QWidget, MessengerListener):
         else:
             self.barPlotView.set_error_type("sd")
 
-    def _error_type_ste_toggled(self, toggled: bool):
+    def _error_type_ste_toggled(self, toggled: bool) -> None:
         if not toggled:
             return
         if Manager.data.binning_params.mode == BinningMode.INTERVALS:
@@ -80,7 +95,7 @@ class DataPlotWidget(QWidget, MessengerListener):
         else:
             self.barPlotView.set_error_type("se")
 
-    def _display_errors_toggled(self, toggled: bool):
+    def _display_errors_toggled(self, toggled: bool) -> None:
         if Manager.data.binning_params.mode == BinningMode.INTERVALS:
             self.timelinePlotView.set_display_errors(toggled)
         else:
@@ -119,13 +134,7 @@ class DataPlotWidget(QWidget, MessengerListener):
 
         selected_factor_name = self.ui.factorSelector.currentText()
 
-        split_mode = SplitMode.TOTAL
-        if self.ui.radioButtonSplitByAnimal.isChecked():
-            split_mode = SplitMode.ANIMAL
-        elif self.ui.radioButtonSplitByRun.isChecked():
-            split_mode = SplitMode.RUN
-        elif self.ui.radioButtonSplitByFactor.isChecked():
-            split_mode = SplitMode.FACTOR
+        split_mode = self._get_split_mode()
 
         self.ui.factorSelector.setEnabled(split_mode == SplitMode.FACTOR)
 
@@ -140,13 +149,7 @@ class DataPlotWidget(QWidget, MessengerListener):
 
         selected_factor_name = self.ui.factorSelector.currentText()
 
-        split_mode = SplitMode.TOTAL
-        if self.ui.radioButtonSplitByAnimal.isChecked():
-            split_mode = SplitMode.ANIMAL
-        elif self.ui.radioButtonSplitByRun.isChecked():
-            split_mode = SplitMode.RUN
-        elif self.ui.radioButtonSplitByFactor.isChecked():
-            split_mode = SplitMode.FACTOR
+        split_mode = self._get_split_mode()
 
         if split_mode == SplitMode.FACTOR and selected_factor_name == "":
             Notification(text="Please select factor.", parent=self, duration=2000).show_notification()

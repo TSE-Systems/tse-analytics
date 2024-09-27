@@ -1,7 +1,21 @@
 # Analysis of variance (ANOVA)
 
-The output of the Tukey test shows the average difference, a confidence interval as well as whether you should reject the null hypothesis for each pair of groups at the given significance level.
-In this case, the test suggests we reject the null hypothesis for 3 pairs, with each pair including the "white" category.
-This suggests the white group is likely different from the others.
+## Possible Output
 
-The 95% confidence interval plot reinforces the results visually: only 1 other group's confidence interval overlaps the white group's confidence interval.
+- **SS:** Sums of squares
+- **MS:** Mean squares
+- **DF:** Degrees of freedom
+- **F:** F-values
+- **p-unc:** Uncorrected p-values
+- **p-corr:** Corrected p-values
+- **np2:** Partial eta-squared
+- **Paired:** indicates whether the two measurements are paired or independent
+- **Parametric:** indicates if (non)-parametric tests were used
+- **dof:** degrees of freedom
+- **ddof1:** Numerator degrees of freedom
+- **ddof2:** Denominator degrees of freedom
+- **alternative:** tail of the test
+- **p-adjust:** p-values correction method
+- **BF10:** Bayes Factor
+
+![ANOVA](anova.svg)

@@ -15,9 +15,35 @@ from tse_analytics.views.misc.TimedeltaAxisItem import TimedeltaAxisItem
 
 
 class TimelinePlotView(pg.GraphicsLayoutWidget):
-    def __init__(self, parent: QWidget, title="Plot"):
-        super().__init__(parent, title=title)
+    def __init__(self, parent: QWidget):
+        super().__init__(parent, show=False, size=None, title=None)
 
+        # Set layout proportions
+        self.ci.layout.setRowStretchFactor(0, 2)
+
+        self.p1 = self.ci.addPlot(row=0, col=0)
+        # self.p1.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
+        self.p1.setAxisItems({"bottom": TimedeltaAxisItem()})
+        self.p1.showGrid(x=True, y=True)
+
+        self.legend = self.p1.addLegend((10, 10))
+
+        self.p2 = self.ci.addPlot(row=1, col=0)
+        # self.p2.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
+        self.p2.setAxisItems({"bottom": TimedeltaAxisItem()})
+        self.p2.showGrid(x=True, y=True)
+
+        self.region = pg.LinearRegionItem()
+        # Add the LinearRegionItem to the ViewBox, but tell the ViewBox to exclude this
+        # item when doing auto-range calculations.
+        self.p2.addItem(self.region, ignoreBounds=True)
+
+        # self.p1.setAutoVisible(y=True)
+
+        self.region.sigRegionChanged.connect(self.update)
+        self.p1.sigRangeChanged.connect(self.updateRegion)
+
+        # Local variables
         self._df: pd.DataFrame | None = None
         self._variable = ""
         self._split_mode = SplitMode.ANIMAL
@@ -26,42 +52,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         self._display_errors = False
         self._scatter_plot = False
 
-        # Set layout proportions
-        self.ci.layout.setRowStretchFactor(0, 2)
-
-        self.label = self.addLabel(row=0, col=0, justify="right")
-
-        self.plot_data_items: dict[int | str, pg.PlotDataItem] = {}
-
-        self.p1: pg.PlotItem = self.addPlot(row=0, col=0)
-        # customize the averaged curve that can be activated from the context menu
-        self.p1.avgPen = pg.mkPen("#FFFFFF")
-        self.p1.avgShadowPen = pg.mkPen("#8080DD", width=10)
-        # self.p1.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
-        self.p1.setAxisItems({"bottom": TimedeltaAxisItem()})
-        self.p1.showGrid(x=True, y=True)
-
-        self.legend = self.p1.addLegend((10, 10))
-
-        self.p2: pg.PlotItem = self.addPlot(row=1, col=0)
-        # self.p2.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
-        self.p2.setAxisItems({"bottom": TimedeltaAxisItem()})
-        self.p2.showGrid(x=True, y=True)
-
-        self.region = pg.LinearRegionItem()
-        self.region.setZValue(10)
-        # Add the LinearRegionItem to the ViewBox, but tell the ViewBox to exclude this
-        # item when doing auto-range calculations.
-        self.p2.addItem(self.region, ignoreBounds=True)
-
-        self.p1.setAutoVisible(y=True)
-
-        self.region.sigRegionChanged.connect(self.update)
-
-        self.p1.sigRangeChanged.connect(self.updateRegion)
-
     def update(self):
-        self.region.setZValue(10)
         min_x, max_x = self.region.getRegion()
         self.p1.setXRange(min_x, max_x, padding=0)
 
@@ -73,7 +64,6 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         self._df = df
 
         if self._df.empty:
-            self.plot_data_items.clear()
             self.p1.clear()
             self.p2.clearPlots()
             self.legend.clear()
@@ -106,7 +96,6 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         self._update_plot()
 
     def _update_plot(self):
-        self.plot_data_items.clear()
         self.p1.clear()
         self.p2.clearPlots()
         self.legend.clear()
@@ -125,7 +114,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
                 x_min, x_max = self._plot_factors()
             case SplitMode.RUN:
                 x_min, x_max = self._plot_runs()
-            case SplitMode.TOTAL:
+            case _:
                 x_min, x_max = self._plot_total()
 
         # bound the LinearRegionItem to the plotted data
@@ -158,7 +147,6 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
             p1d.visibleChanged.connect(lambda: error_plot.setVisible(p1d.isVisible()))
 
-        self.plot_data_items[name] = p1d
         self.legend.addItem(p1d, name)
 
         self.p2.plot(x, y, pen=pen)
@@ -288,7 +276,6 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         return x_min, x_max
 
     def clear_plot(self):
-        self.plot_data_items.clear()
         self.p1.clear()
         self.p2.clearPlots()
         self.legend.clear()
