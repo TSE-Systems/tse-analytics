@@ -16,11 +16,12 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import (QApplication, QGroupBox, QPushButton, QRadioButton,
-    QSizePolicy, QSpacerItem, QSplitter, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QGroupBox, QHeaderView, QPushButton,
+    QRadioButton, QSizePolicy, QSplitter, QTableWidgetItem,
+    QVBoxLayout, QWidget)
 
 from tse_analytics.views.misc.factor_selector import FactorSelector
+from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 import resources_rc
 
 class Ui_DimensionalityWidget(object):
@@ -34,7 +35,7 @@ class Ui_DimensionalityWidget(object):
         self.splitter.setOrientation(Qt.Horizontal)
         self.webView = QWebEngineView(self.splitter)
         self.webView.setObjectName(u"webView")
-        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.webView.sizePolicy().hasHeightForWidth())
@@ -44,6 +45,20 @@ class Ui_DimensionalityWidget(object):
         self.widgetSettings.setObjectName(u"widgetSettings")
         self.verticalLayout_2 = QVBoxLayout(self.widgetSettings)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.groupBoxVariables = QGroupBox(self.widgetSettings)
+        self.groupBoxVariables.setObjectName(u"groupBoxVariables")
+        self.verticalLayout_4 = QVBoxLayout(self.groupBoxVariables)
+        self.verticalLayout_4.setSpacing(0)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.tableWidgetVariables = VariablesTableWidget(self.groupBoxVariables)
+        self.tableWidgetVariables.setObjectName(u"tableWidgetVariables")
+
+        self.verticalLayout_4.addWidget(self.tableWidgetVariables)
+
+
+        self.verticalLayout_2.addWidget(self.groupBoxVariables)
+
         self.groupBoxAnalysis = QGroupBox(self.widgetSettings)
         self.groupBoxAnalysis.setObjectName(u"groupBoxAnalysis")
         self.verticalLayout_3 = QVBoxLayout(self.groupBoxAnalysis)
@@ -126,10 +141,6 @@ class Ui_DimensionalityWidget(object):
 
         self.verticalLayout_2.addWidget(self.pushButtonUpdate)
 
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.verticalLayout_2.addItem(self.verticalSpacer)
-
         self.pushButtonAddReport = QPushButton(self.widgetSettings)
         self.pushButtonAddReport.setObjectName(u"pushButtonAddReport")
         self.pushButtonAddReport.setEnabled(False)
@@ -155,6 +166,7 @@ class Ui_DimensionalityWidget(object):
     # setupUi
 
     def retranslateUi(self, DimensionalityWidget):
+        self.groupBoxVariables.setTitle(QCoreApplication.translate("DimensionalityWidget", u"Variables", None))
         self.groupBoxAnalysis.setTitle(QCoreApplication.translate("DimensionalityWidget", u"Analysis", None))
         self.radioButtonMatrixPlot.setText(QCoreApplication.translate("DimensionalityWidget", u"Matrix Plot", None))
         self.radioButtonPCA.setText(QCoreApplication.translate("DimensionalityWidget", u"PCA", None))

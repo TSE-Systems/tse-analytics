@@ -22,7 +22,7 @@ class BinningSettingsWidget(QWidget, MessengerListener):
 
         self.ui.applyBinningCheckBox.stateChanged.connect(self._apply_binning_changed)
 
-        self.ui.binningModeComboBox.addItems([e.value for e in BinningMode])
+        self.ui.binningModeComboBox.addItems([e for e in BinningMode])
         self.ui.binningModeComboBox.currentTextChanged.connect(self._binning_mode_changed)
 
         self.ui.binningOperationComboBox.addItems([e.value for e in BinningOperation])
@@ -33,7 +33,7 @@ class BinningSettingsWidget(QWidget, MessengerListener):
 
     def _on_dataset_changed(self, message: DatasetChangedMessage):
         self.ui.applyBinningCheckBox.setChecked(False)
-        self.ui.binningModeComboBox.setCurrentText(BinningMode.INTERVALS.value)
+        self.ui.binningModeComboBox.setCurrentText(BinningMode.INTERVALS)
         self.ui.binningOperationComboBox.setCurrentText(BinningOperation.MEAN.value)
         if message.data is None:
             self.ui.widgetTimePhasesSettings.clear()
@@ -44,15 +44,15 @@ class BinningSettingsWidget(QWidget, MessengerListener):
 
     def _binning_mode_changed(self, value: BinningMode):
         match value:
-            case BinningMode.INTERVALS.value:
+            case BinningMode.INTERVALS:
                 self.ui.widgetTimeIntervalSettings.setVisible(True)
                 self.ui.widgetTimeCyclesSettings.setVisible(False)
                 self.ui.widgetTimePhasesSettings.setVisible(False)
-            case BinningMode.CYCLES.value:
+            case BinningMode.CYCLES:
                 self.ui.widgetTimeIntervalSettings.setVisible(False)
                 self.ui.widgetTimeCyclesSettings.setVisible(True)
                 self.ui.widgetTimePhasesSettings.setVisible(False)
-            case BinningMode.PHASES.value:
+            case BinningMode.PHASES:
                 self.ui.widgetTimeIntervalSettings.setVisible(False)
                 self.ui.widgetTimeCyclesSettings.setVisible(False)
                 self.ui.widgetTimePhasesSettings.setVisible(True)

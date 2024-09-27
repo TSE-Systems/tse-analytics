@@ -41,6 +41,7 @@ class DatasetsWidget(QWidget):
 
         toolbar = QToolBar("Datasets Toolbar")
         toolbar.setIconSize(QSize(16, 16))
+        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
 
         if CSV_IMPORT_ENABLED:
             self.import_button = QToolButton()
@@ -85,7 +86,6 @@ class DatasetsWidget(QWidget):
         self.ui.treeView.customContextMenuRequested.connect(self._open_menu)
         self.ui.treeView.selectionModel().selectionChanged.connect(self._treeview_selection_changed)
         self.ui.treeView.selectionModel().currentChanged.connect(self._treeview_current_changed)
-        # Manager.workspace.checkedItemChanged.connect(self._checked_item_changed)
         self.ui.treeView.doubleClicked.connect(self._treeview_double_clicked)
 
     def _open_menu(self, position):
@@ -244,9 +244,6 @@ class DatasetsWidget(QWidget):
         self.adjust_dataset_action.setEnabled(level == 1)
         if CSV_IMPORT_ENABLED:
             self.import_button.setEnabled(level == 1)
-
-    def _checked_item_changed(self, item, state: bool):
-        pass
 
     def _treeview_double_clicked(self, index: QModelIndex):
         if index.isValid():

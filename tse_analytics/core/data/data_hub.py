@@ -8,7 +8,7 @@ from tse_analytics.core.data.pipeline.outliers_pipe_operator import process_outl
 from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import process_time_cycles_binning
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import process_time_phases_binning
-from tse_analytics.core.data.shared import Animal, SplitMode, Variable
+from tse_analytics.core.data.shared import Animal, SplitMode, Variable, Aggregation
 from tse_analytics.core.messaging.messages import BinningMessage, DataChangedMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.modules.phenomaster.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
@@ -21,14 +21,12 @@ class DataHub:
         self.messenger = messenger
 
         self.selected_dataset: Dataset | None = None
-        self.selected_variables: list[Variable] = []
 
         self.binning_params = BinningParams(False, BinningMode.INTERVALS, BinningOperation.MEAN)
         self.outliers_params = OutliersParams(OutliersMode.OFF, 1.5)
 
     def clear(self) -> None:
         self.selected_dataset = None
-        self.selected_variables.clear()
 
         self.messenger.broadcast(DatasetChangedMessage(self, None))
 
@@ -46,8 +44,6 @@ class DataHub:
 
     def set_selected_dataset(self, dataset: Dataset) -> None:
         self.selected_dataset = dataset
-        self.selected_variables.clear()
-
         self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
 
     def rename_animal(self, old_id: str, animal: Animal) -> None:
@@ -55,10 +51,6 @@ class DataHub:
         self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
 
     def set_selected_animals(self) -> None:
-        self._broadcast_data_changed()
-
-    def set_selected_variables(self, variables: list[Variable]) -> None:
-        self.selected_variables = variables
         self._broadcast_data_changed()
 
     def _broadcast_data_changed(self) -> None:
@@ -96,17 +88,25 @@ class DataHub:
                     ] = [row["O2-p"], row["CO2-p"], row["VO2(3)-p"], row["VCO2(3)-p"], row["RER-p"], row["H(3)-p"]]
 
             if "O2-p" not in dataset.variables:
-                dataset.variables["O2-p"] = Variable("O2-p", "[%]", "Predicted O2", type="float64")
+                dataset.variables["O2-p"] = Variable("O2-p", "[%]", "Predicted O2", "float64", Aggregation.MEAN, False)
             if "CO2-p" not in dataset.variables:
-                dataset.variables["CO2-p"] = Variable("CO2-p", "[%]", "Predicted CO2", type="float64")
+                dataset.variables["CO2-p"] = Variable(
+                    "CO2-p", "[%]", "Predicted CO2", "float64", Aggregation.MEAN, False
+                )
             if "VO2(3)-p" not in dataset.variables:
-                dataset.variables["VO2(3)-p"] = Variable("VO2(3)-p", "[ml/h]", "Predicted VO2(3)", type="float64")
+                dataset.variables["VO2(3)-p"] = Variable(
+                    "VO2(3)-p", "[ml/h]", "Predicted VO2(3)", "float64", Aggregation.MEAN, False
+                )
             if "VCO2(3)-p" not in dataset.variables:
-                dataset.variables["VCO2(3)-p"] = Variable("VCO2(3)-p", "[ml/h]", "Predicted VCO2(3)", type="float64")
+                dataset.variables["VCO2(3)-p"] = Variable(
+                    "VCO2(3)-p", "[ml/h]", "Predicted VCO2(3)", "float64", Aggregation.MEAN, False
+                )
             if "RER-p" not in dataset.variables:
-                dataset.variables["RER-p"] = Variable("RER-p", "", "Predicted RER", type="float64")
+                dataset.variables["RER-p"] = Variable("RER-p", "", "Predicted RER", "float64", Aggregation.MEAN, False)
             if "H(3)-p" not in dataset.variables:
-                dataset.variables["H(3)-p"] = Variable("H(3)-p", "[kcal/h]", "Predicted H(3)", type="float64")
+                dataset.variables["H(3)-p"] = Variable(
+                    "H(3)-p", "[kcal/h]", "Predicted H(3)", "float64", Aggregation.MEAN, False
+                )
             dataset.refresh_active_df()
             self.set_selected_dataset(dataset)
 
@@ -356,7 +356,7 @@ class DataHub:
         result = process_time_interval_binning(
             result,
             TimeIntervalsBinningSettings("day", 365),
-            BinningOperation.MEAN,
+            Aggregation.MEAN,
             SplitMode.ANIMAL,
             factor_names,
             "",

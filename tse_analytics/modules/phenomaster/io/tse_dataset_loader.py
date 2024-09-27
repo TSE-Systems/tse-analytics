@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from tse_analytics.core.data.shared import Animal, Factor, Variable
+from tse_analytics.core.data.shared import Animal, Factor, Variable, Aggregation
 from tse_analytics.modules.phenomaster.actimot.data.actimot_details import ActimotDetails
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
@@ -98,7 +98,7 @@ def _add_cumulative_columns(df: pd.DataFrame, origin_name: str, variables: dict[
         cumulative_col_name = col + "C"
         df[cumulative_col_name] = df.groupby("Box", observed=False)[col].transform(pd.Series.cumsum)
         var = Variable(
-            name=cumulative_col_name, unit=variables[col].unit, description=f"{col} (cumulative)", type="float64"
+            cumulative_col_name, variables[col].unit, f"{col} (cumulative)", "float64", Aggregation.MEAN, False
         )
         variables[var.name] = var
 
@@ -114,12 +114,7 @@ def _read_main_table(
     variables: dict[str, Variable] = {}
     dtypes = {}
     for item in metadata["columns"].values():
-        variable = Variable(
-            name=item["id"],
-            unit=item["unit"],
-            description=item["description"],
-            type=item["type"],
-        )
+        variable = Variable(item["id"], item["unit"], item["description"], item["type"], Aggregation.MEAN, False)
         variables[variable.name] = variable
         dtypes[variable.name] = item["type"]
     # Ignore the time for "DateTime" column
@@ -169,7 +164,7 @@ def _read_main_table(
     df.insert(loc=5, column="Run", value=1)
 
     # Add Weight variable
-    variables["Weight"] = Variable(name="Weight", unit="g", description="Animal weight", type="float64")
+    variables["Weight"] = Variable("Weight", "g", "Animal weight", "float64", Aggregation.MEAN, False)
 
     # Add Weight column
     if "Weight" not in df.columns:
@@ -198,12 +193,7 @@ def _read_actimot_raw(path: Path, metadata: dict, dataset: Dataset) -> ActimotDe
     # Read variables list
     dtypes = {}
     for item in metadata["columns"].values():
-        variable = Variable(
-            name=item["id"],
-            unit=item["unit"],
-            description=item["description"],
-            type=item["type"],
-        )
+        variable = Variable(item["id"], item["unit"], item["description"], item["type"], Aggregation.MEAN, False)
         dtypes[variable.name] = item["type"]
     # Ignore the time for "DateTime" column
     dtypes.pop("DateTime")

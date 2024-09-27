@@ -1,7 +1,16 @@
 from dataclasses import dataclass, field
-from enum import Enum, unique
+from enum import Enum, unique, StrEnum
 
 import pandas as pd
+
+
+@unique
+class Aggregation(StrEnum):
+    MEAN = "mean"
+    MEDIAN = "median"
+    SUM = "sum"
+    MIN = "min"
+    MAX = "max"
 
 
 @unique
@@ -44,6 +53,8 @@ class Variable:
     unit: str
     description: str
     type: str
+    aggregation: Aggregation
+    outliers: bool
 
     def get_dict(self):
         return self.__dict__

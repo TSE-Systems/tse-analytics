@@ -3,14 +3,6 @@
  <author>Anton Rau</author>
  <class>DatasetsWidget</class>
  <widget class="QWidget" name="DatasetsWidget">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>256</width>
-    <height>233</height>
-   </rect>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
     <number>0</number>
@@ -28,7 +20,11 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QTreeView" name="treeView"/>
+    <widget class="QTreeView" name="treeView">
+     <attribute name="headerVisible">
+      <bool>false</bool>
+     </attribute>
+    </widget>
    </item>
   </layout>
  </widget>

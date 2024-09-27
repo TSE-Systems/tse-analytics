@@ -4,7 +4,7 @@ from io import BytesIO
 import plotly.express as px
 from PySide6.QtCore import QBuffer, QByteArray, QDir, QIODevice, QTemporaryFile, QUrl
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QAbstractItemView
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
@@ -27,6 +27,8 @@ class DimensionalityWidget(QWidget, MessengerListener):
         self.ui.setupUi(self)
 
         self.help_path = "dimensionality.md"
+
+        self.ui.tableWidgetVariables.set_selection_mode(QAbstractItemView.SelectionMode.MultiSelection)
 
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self._update)
@@ -61,13 +63,13 @@ class DimensionalityWidget(QWidget, MessengerListener):
     def _on_dataset_changed(self, message: DatasetChangedMessage):
         self.ui.pushButtonUpdate.setDisabled(message.data is None)
         self.ui.pushButtonAddReport.setDisabled(message.data is None)
-        self._clear()
-        if message.data is not None:
-            self.ui.factorSelector.set_data(message.data.factors, add_empty_item=False)
-
-    def _clear(self):
-        self.ui.factorSelector.clear()
         self.ui.webView.setHtml("")
+        if message.data is not None:
+            self.ui.tableWidgetVariables.set_data(message.data.variables)
+            self.ui.factorSelector.set_data(message.data.factors, add_empty_item=False)
+        else:
+            self.ui.tableWidgetVariables.clear_data()
+            self.ui.factorSelector.clear()
 
     def _update(self):
         if self.ui.radioButtonMatrixPlot.isChecked():
@@ -78,10 +80,9 @@ class DimensionalityWidget(QWidget, MessengerListener):
             self._update_pca_tsne_plot()
 
     def _update_matrix_plot(self):
-        if len(Manager.data.selected_variables) < 2:
-            Notification(
-                text="Please select at least two variables in Variables panel.", parent=self, duration=2000
-            ).show_notification()
+        selected_variable_names = self.ui.tableWidgetVariables.get_selected_variable_names()
+        if len(selected_variable_names) < 2:
+            Notification(text="Please select at least two variables.", parent=self, duration=2000).show_notification()
             return
 
         selected_factor = self.ui.factorSelector.currentText()
@@ -102,15 +103,14 @@ class DimensionalityWidget(QWidget, MessengerListener):
             Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
             return
 
-        variables = [variable.name for variable in Manager.data.selected_variables]
         df = Manager.data.get_current_df(
-            variables=variables,
+            variables=selected_variable_names,
             split_mode=split_mode,
             selected_factor=selected_factor,
             dropna=False,
         )
 
-        fig = px.scatter_matrix(df, dimensions=variables, color=by)
+        fig = px.scatter_matrix(df, dimensions=selected_variable_names, color=by)
         fig.update_traces(diagonal_visible=False)
 
         file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.html", self)
@@ -119,7 +119,8 @@ class DimensionalityWidget(QWidget, MessengerListener):
             self.ui.webView.load(QUrl.fromLocalFile(file.fileName()))
 
     def _update_pca_tsne_plot(self):
-        if len(Manager.data.selected_variables) < 3:
+        selected_variable_names = self.ui.tableWidgetVariables.get_selected_variable_names()
+        if len(selected_variable_names) < 3:
             Notification(
                 text="Please select at least three variables in Variables panel.", parent=self, duration=2000
             ).show_notification()
@@ -143,9 +144,8 @@ class DimensionalityWidget(QWidget, MessengerListener):
             Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
             return
 
-        variables = [variable.name for variable in Manager.data.selected_variables]
         df = Manager.data.get_current_df(
-            variables=variables,
+            variables=selected_variable_names,
             split_mode=split_mode,
             selected_factor=selected_factor,
             dropna=True,
@@ -155,12 +155,12 @@ class DimensionalityWidget(QWidget, MessengerListener):
 
         if self.ui.radioButtonPCA.isChecked():
             pca = PCA(n_components=n_components)
-            data = pca.fit_transform(df[variables])
+            data = pca.fit_transform(df[selected_variable_names])
             total_var = pca.explained_variance_ratio_.sum() * 100
             title = f"PCA. Total Explained Variance: {total_var:.2f}%"
         elif self.ui.radioButtonTSNE.isChecked():
             tsne = TSNE(n_components=n_components, random_state=0)
-            data = tsne.fit_transform(df[variables])
+            data = tsne.fit_transform(df[selected_variable_names])
             title = "tSNE"
 
         if n_components == 2:

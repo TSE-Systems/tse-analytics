@@ -1,8 +1,7 @@
-from PySide6.QtCore import QItemSelection, QSize, QSortFilterProxyModel, Qt
-from PySide6.QtGui import QPalette
-from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import QSize, QSortFilterProxyModel, Qt
+from PySide6.QtWidgets import QWidget, QToolBar, QComboBox, QDoubleSpinBox
 
-from tse_analytics.core.data.shared import Variable
+from tse_analytics.core.data.outliers import OutliersMode, OutliersParams
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
@@ -19,24 +18,26 @@ class VariablesWidget(QWidget, MessengerListener):
         self.ui = Ui_VariablesWidget()
         self.ui.setupUi(self)
 
-        pal = self.ui.tableView.palette()
-        pal.setColor(
-            QPalette.ColorGroup.Inactive,
-            QPalette.ColorRole.Highlight,
-            pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Highlight),
-        )
-        pal.setColor(
-            QPalette.ColorGroup.Inactive,
-            QPalette.ColorRole.HighlightedText,
-            pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.HighlightedText),
-        )
-        self.ui.tableView.setPalette(pal)
+        toolbar = QToolBar("Variables Toolbar")
+        toolbar.setIconSize(QSize(16, 16))
+        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+
+        self.outliersModeComboBox = QComboBox()
+        self.outliersModeComboBox.addItems([e.value for e in OutliersMode])
+        self.outliersModeComboBox.currentTextChanged.connect(self._outliers_mode_changed)
+        toolbar.addWidget(self.outliersModeComboBox)
+
+        self.outliersCoefficientSpinBox = QDoubleSpinBox()
+        self.outliersCoefficientSpinBox.setValue(Manager.data.outliers_params.coefficient)
+        self.outliersCoefficientSpinBox.valueChanged.connect(self._outliers_coefficient_changed)
+        toolbar.addWidget(self.outliersCoefficientSpinBox)
+
+        self.layout().insertWidget(0, toolbar)
 
         proxy_model = QSortFilterProxyModel()
         proxy_model.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.ui.tableView.setModel(proxy_model)
         self.ui.tableView.sortByColumn(0, Qt.SortOrder.AscendingOrder)
-        self.ui.tableView.selectionModel().selectionChanged.connect(self._on_selection_changed)
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
@@ -49,19 +50,17 @@ class VariablesWidget(QWidget, MessengerListener):
             self.ui.tableView.model().setSourceModel(model)
             self.ui.tableView.resizeColumnsToContents()
 
-    def _on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
-        proxy_model = self.ui.tableView.model()
-        model = proxy_model.sourceModel()
-        selected_variables: list[Variable] = []
-        for index in self.ui.tableView.selectedIndexes():
-            if index.column() != 0:
-                continue
-            if index.isValid():
-                source_index = proxy_model.mapToSource(index)
-                row = source_index.row()
-                variable = model.items[row]
-                selected_variables.append(variable)
-        Manager.data.set_selected_variables(selected_variables)
+    def _outliers_mode_changed(self, value: str):
+        self._outliers_params_changed()
+
+    def _outliers_coefficient_changed(self, value: float):
+        self._outliers_params_changed()
+
+    def _outliers_params_changed(self):
+        mode = OutliersMode(self.outliersModeComboBox.currentText())
+        outliers_coefficient = self.outliersCoefficientSpinBox.value()
+        outliers_params = OutliersParams(mode, outliers_coefficient)
+        Manager.data.apply_outliers(outliers_params)
 
     def minimumSizeHint(self):
-        return QSize(200, 40)
+        return QSize(200, 100)

@@ -29,7 +29,6 @@ from tse_analytics.views.selection.animals.animals_widget import AnimalsWidget
 from tse_analytics.views.selection.factors.factors_widget import FactorsWidget
 from tse_analytics.views.selection.variables.variables_widget import VariablesWidget
 from tse_analytics.views.settings.binning_settings_widget import BinningSettingsWidget
-from tse_analytics.views.settings.outliers_settings_widget import OutliersSettingsWidget
 
 PySide6QtAds.CDockManager.setConfigFlags(PySide6QtAds.CDockManager.DefaultOpaqueConfig)
 PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.ActiveTabHasCloseButton, False)
@@ -142,11 +141,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         settings_dock_area = self.dock_manager.addDockWidget(
             PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area
         )
-
-        outliers_dock_widget = self._register_dock_widget(
-            OutliersSettingsWidget(), "Outliers", QIcon(":/icons/icons8-outliers-16.png")
-        )
-        self.dock_manager.addDockWidgetTabToArea(outliers_dock_widget, settings_dock_area)
 
         self.actionImportDataset.triggered.connect(self.import_dataset_dialog)
         self.actionOpenWorkspace.triggered.connect(self.load_workspace_dialog)

@@ -28,15 +28,18 @@ class Ui_BinningSettingsWidget(object):
         if not BinningSettingsWidget.objectName():
             BinningSettingsWidget.setObjectName(u"BinningSettingsWidget")
         self.verticalLayout_2 = QVBoxLayout(BinningSettingsWidget)
+        self.verticalLayout_2.setSpacing(0)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.scrollArea = QScrollArea(BinningSettingsWidget)
         self.scrollArea.setObjectName(u"scrollArea")
         self.scrollArea.setFrameShape(QFrame.NoFrame)
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 190, 138))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 193, 142))
         self.verticalLayout_3 = QVBoxLayout(self.scrollAreaWidgetContents)
+        self.verticalLayout_3.setSpacing(0)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.widgetBinningOptions = QWidget(self.scrollAreaWidgetContents)
@@ -111,9 +114,9 @@ class Ui_BinningSettingsWidget(object):
     # setupUi
 
     def retranslateUi(self, BinningSettingsWidget):
-        BinningSettingsWidget.setWindowTitle(QCoreApplication.translate("BinningSettingsWidget", u"Form", None))
         self.applyBinningLabel.setText(QCoreApplication.translate("BinningSettingsWidget", u"Apply Binning", None))
         self.binningModeLabel.setText(QCoreApplication.translate("BinningSettingsWidget", u"Binning Mode", None))
         self.binningOperationLabel.setText(QCoreApplication.translate("BinningSettingsWidget", u"Binning Operation", None))
+        pass
     # retranslateUi
 

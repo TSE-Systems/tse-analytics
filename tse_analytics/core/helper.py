@@ -9,7 +9,7 @@ from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import ShowHelpMessage
 from tse_analytics.core.pretty_html_table import build_table
 
-LAYOUT_VERSION = 9
+LAYOUT_VERSION = 10
 IS_RELEASE = Path("_internal").exists()
 
 CSV_IMPORT_ENABLED = True

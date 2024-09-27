@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
-from tse_analytics.core.data.shared import Variable
+from tse_analytics.core.data.shared import Variable, Aggregation
 from tse_analytics.modules.phenomaster.actimot.data.actimot_details import ActimotDetails
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
@@ -28,7 +28,12 @@ class ActimotLoader:
                 df.groupby("Box", observed=False)[col].transform(pd.Series.cumsum),
             )
             var = Variable(
-                name=cumulative_col_name, unit=variables[col].unit, description=f"{col} (cumulative)", type="float64"
+                cumulative_col_name,
+                variables[col].unit,
+                f"{col} (cumulative)",
+                "float64",
+                Aggregation.MEAN,
+                False,
             )
             variables[var.name] = var
 

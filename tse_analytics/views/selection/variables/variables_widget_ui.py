@@ -22,14 +22,16 @@ class Ui_VariablesWidget(object):
     def setupUi(self, VariablesWidget):
         if not VariablesWidget.objectName():
             VariablesWidget.setObjectName(u"VariablesWidget")
-        VariablesWidget.resize(489, 630)
         self.verticalLayout = QVBoxLayout(VariablesWidget)
+        self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.tableView = QTableView(VariablesWidget)
         self.tableView.setObjectName(u"tableView")
-        self.tableView.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.tableView.setEditTriggers(QAbstractItemView.DoubleClicked)
+        self.tableView.setSelectionMode(QAbstractItemView.NoSelection)
         self.tableView.setSortingEnabled(True)
+        self.tableView.verticalHeader().setMinimumSectionSize(20)
         self.tableView.verticalHeader().setDefaultSectionSize(20)
 
         self.verticalLayout.addWidget(self.tableView)
@@ -41,6 +43,6 @@ class Ui_VariablesWidget(object):
     # setupUi
 
     def retranslateUi(self, VariablesWidget):
-        VariablesWidget.setWindowTitle(QCoreApplication.translate("VariablesWidget", u"Form", None))
+        pass
     # retranslateUi
 

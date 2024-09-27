@@ -1,11 +1,11 @@
 from datetime import datetime, time
-from enum import Enum, unique
+from enum import Enum, unique, StrEnum
 
 from tse_analytics.core.data.shared import TimePhase
 
 
 @unique
-class BinningMode(Enum):
+class BinningMode(StrEnum):
     INTERVALS = "Time Intervals"
     CYCLES = "Light/Dark Cycles"
     PHASES = "Time Phases"
