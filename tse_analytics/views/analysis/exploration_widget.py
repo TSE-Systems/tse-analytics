@@ -84,7 +84,7 @@ class ExplorationWidget(QWidget, MessengerListener):
             self._update_normality_plot()
 
     def _update_histogram_plot(self):
-        variable = self.ui.variableSelector.currentText()
+        variable = self.ui.variableSelector.get_selected_variable()
         selected_factor = self.ui.factorSelector.currentText()
 
         if self.ui.radioButtonSplitByAnimal.isChecked():
@@ -101,7 +101,7 @@ class ExplorationWidget(QWidget, MessengerListener):
             by = None
 
         df = Manager.data.get_current_df(
-            variables=[variable],
+            variables={variable.name: variable},
             split_mode=split_mode,
             selected_factor=selected_factor,
             dropna=False,
@@ -118,7 +118,7 @@ class ExplorationWidget(QWidget, MessengerListener):
         ax = self.ui.canvas.figure.add_subplot(111)
 
         df.hist(
-            column=[variable],
+            column=[variable.name],
             by=by,
             bins=10,
             log=False,
@@ -132,7 +132,7 @@ class ExplorationWidget(QWidget, MessengerListener):
         self.ui.canvas.draw()
 
     def _update_distribution_plot(self):
-        variable = self.ui.variableSelector.currentText()
+        variable = self.ui.variableSelector.get_selected_variable()
         selected_factor = self.ui.factorSelector.currentText()
 
         split_mode = SplitMode.TOTAL
@@ -148,7 +148,7 @@ class ExplorationWidget(QWidget, MessengerListener):
             x = selected_factor
 
         df = Manager.data.get_current_df(
-            variables=[variable],
+            variables={variable.name: variable},
             split_mode=split_mode,
             selected_factor=selected_factor,
             dropna=False,
@@ -161,15 +161,15 @@ class ExplorationWidget(QWidget, MessengerListener):
         ax = self.ui.canvas.figure.add_subplot(111)
 
         if self.ui.radioButtonViolin.isChecked():
-            sns.violinplot(data=df, x=x, y=variable, ax=ax)
+            sns.violinplot(data=df, x=x, y=variable.name, ax=ax)
         else:
-            sns.boxplot(data=df, x=x, y=variable, gap=0.1, ax=ax)
+            sns.boxplot(data=df, x=x, y=variable.name, gap=0.1, ax=ax)
 
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()
 
     def _update_normality_plot(self):
-        variable = self.ui.variableSelector.currentText()
+        variable = self.ui.variableSelector.get_selected_variable()
         selected_factor = self.ui.factorSelector.currentText()
 
         split_mode = SplitMode.TOTAL
@@ -185,7 +185,7 @@ class ExplorationWidget(QWidget, MessengerListener):
             by = selected_factor
 
         df = Manager.data.get_current_df(
-            variables=[variable],
+            variables={variable.name: variable},
             split_mode=split_mode,
             selected_factor=selected_factor,
             dropna=True,
@@ -202,7 +202,7 @@ class ExplorationWidget(QWidget, MessengerListener):
                 nrows, ncols = self._get_plot_layout(len(animals))
                 for index, animal in enumerate(animals):
                     ax = self.ui.canvas.figure.add_subplot(nrows, ncols, index + 1)
-                    pg.qqplot(df[df["Animal"] == animal][variable], dist="norm", ax=ax)
+                    pg.qqplot(df[df["Animal"] == animal][variable.name], dist="norm", ax=ax)
                     ax.set_title(f"Animal: {animal}")
             case SplitMode.FACTOR:
                 groups = df[selected_factor].unique()
@@ -212,18 +212,18 @@ class ExplorationWidget(QWidget, MessengerListener):
                     if group != group:
                         continue
                     ax = self.ui.canvas.figure.add_subplot(nrows, ncols, index + 1)
-                    pg.qqplot(df[df[selected_factor] == group][variable], dist="norm", ax=ax)
+                    pg.qqplot(df[df[selected_factor] == group][variable.name], dist="norm", ax=ax)
                     ax.set_title(group)
             case SplitMode.RUN:
                 runs = df["Run"].unique()
                 nrows, ncols = self._get_plot_layout(len(runs))
                 for index, run in enumerate(runs):
                     ax = self.ui.canvas.figure.add_subplot(nrows, ncols, index + 1)
-                    pg.qqplot(df[df["Run"] == run][variable], dist="norm", ax=ax)
+                    pg.qqplot(df[df["Run"] == run][variable.name], dist="norm", ax=ax)
                     ax.set_title(f"Run: {run}")
             case SplitMode.TOTAL:
                 ax = self.ui.canvas.figure.add_subplot(1, 1, 1)
-                pg.qqplot(df[variable], dist="norm", ax=ax)
+                pg.qqplot(df[variable.name], dist="norm", ax=ax)
                 ax.set_title("Total")
 
         self.ui.canvas.figure.tight_layout()

@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QVBoxLayout, QWidget
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 
-from tse_analytics.core.data.shared import Factor, SplitMode
+from tse_analytics.core.data.shared import Factor, SplitMode, Variable
 from tse_analytics.core.helper import get_html_image
 from tse_analytics.core.manager import Manager
 
@@ -29,12 +29,12 @@ class BarPlotView(QWidget):
         self._df = df
         self._update_plot()
 
-    def set_variable(self, variable: str, update: bool):
-        self._variable = variable
+    def set_variable(self, variable: Variable, update: bool):
+        self._variable = variable.name
         if update:
             self._update_plot()
 
-    def set_grouping_mode(self, grouping_mode: SplitMode, selected_factor: Factor):
+    def set_split_mode(self, grouping_mode: SplitMode, selected_factor: Factor):
         self._split_mode = grouping_mode
         self._selected_factor = selected_factor
 

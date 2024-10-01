@@ -89,8 +89,8 @@ class BivariateWidget(QWidget, MessengerListener):
             self._update_regression()
 
     def _update_correlation(self):
-        x_var = self.ui.variableSelectorX.currentText()
-        y_var = self.ui.variableSelectorY.currentText()
+        x_var = self.ui.variableSelectorX.get_selected_variable()
+        y_var = self.ui.variableSelectorY.get_selected_variable()
         selected_factor = self.ui.factorSelector.currentText()
 
         split_mode = SplitMode.TOTAL
@@ -108,7 +108,7 @@ class BivariateWidget(QWidget, MessengerListener):
                 return
             by = selected_factor
 
-        variables = [x_var] if x_var == y_var else [x_var, y_var]
+        variables = {x_var.name: x_var} if x_var.name == y_var.name else {x_var.name: x_var, y_var.name: y_var}
         df = Manager.data.get_current_df(
             variables=variables,
             split_mode=split_mode,
@@ -119,8 +119,8 @@ class BivariateWidget(QWidget, MessengerListener):
         if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:
             df[by] = df[by].cat.remove_unused_categories()
 
-        joint_grid = sns.jointplot(data=df, x=x_var, y=y_var, hue=by)
-        joint_grid.fig.suptitle(f"Correlation between {x_var} and {y_var}")
+        joint_grid = sns.jointplot(data=df, x=x_var.name, y=y_var.name, hue=by)
+        joint_grid.fig.suptitle(f"Correlation between {x_var.name} and {y_var.name}")
         canvas = FigureCanvasQTAgg(joint_grid.figure)
         canvas.updateGeometry()
         canvas.draw()
@@ -133,13 +133,13 @@ class BivariateWidget(QWidget, MessengerListener):
         self.plot_toolbar.deleteLater()
         self.plot_toolbar = new_toolbar
 
-        t_test = pg.ttest(df[x_var], df[y_var])
-        corr = pg.pairwise_corr(data=df, columns=[x_var, y_var], method="pearson")
+        t_test = pg.ttest(df[x_var.name], df[y_var.name])
+        corr = pg.pairwise_corr(data=df, columns=[x_var.name, y_var.name], method="pearson")
 
         html_template = """
-            <h1>t-test</h1>
+            <h2>t-test</h2>
             {t_test}
-            <h1>Pearson correlation</h1>
+            <h2>Pearson correlation</h2>
             {corr}
             """
 
@@ -172,10 +172,14 @@ class BivariateWidget(QWidget, MessengerListener):
             Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
             return
 
-        covariate = self.ui.variableSelectorX.currentText()
-        response = self.ui.variableSelectorY.currentText()
+        covariate = self.ui.variableSelectorX.get_selected_variable()
+        response = self.ui.variableSelectorY.get_selected_variable()
 
-        variables = [response] if response == covariate else [response, covariate]
+        variables = (
+            {response.name: response}
+            if response.name == covariate.name
+            else {response.name: response, covariate.name: covariate}
+        )
         df = Manager.data.get_current_df(
             variables=variables,
             split_mode=split_mode,
@@ -184,8 +188,8 @@ class BivariateWidget(QWidget, MessengerListener):
         )
 
         agg = {
-            covariate: "mean",
-            response: "mean",
+            covariate.name: "mean",
+            response.name: "mean",
         }
 
         if selected_factor != "":
@@ -198,7 +202,7 @@ class BivariateWidget(QWidget, MessengerListener):
 
         df = df.groupby(by=group_by, as_index=False, observed=False).agg(agg)
 
-        facet_grid = sns.lmplot(data=df, x=covariate, y=response, hue=by, robust=False)
+        facet_grid = sns.lmplot(data=df, x=covariate.name, y=response.name, hue=by, robust=False)
         canvas = FigureCanvasQTAgg(facet_grid.figure)
 
         canvas.updateGeometry()
@@ -212,10 +216,10 @@ class BivariateWidget(QWidget, MessengerListener):
         self.plot_toolbar.deleteLater()
         self.plot_toolbar = new_toolbar
 
-        glm = pg.linear_regression(df[[covariate]], df[response], remove_na=True)
+        glm = pg.linear_regression(df[[covariate.name]], df[response.name], remove_na=True)
 
         html_template = """
-                <h1>GLM</h1>
+                <h2>GLM</h2>
                 {glm}
                 """
 

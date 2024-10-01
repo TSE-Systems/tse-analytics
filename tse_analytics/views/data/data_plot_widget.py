@@ -75,8 +75,8 @@ class DataPlotWidget(QWidget, MessengerListener):
 
         selected_factor_name = self.ui.factorSelector.currentText()
         factor = Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
-        self.timelinePlotView.set_grouping_mode(split_mode, factor)
-        self.barPlotView.set_grouping_mode(split_mode, factor)
+        self.timelinePlotView.set_split_mode(split_mode, factor)
+        self.barPlotView.set_split_mode(split_mode, factor)
         self._assign_data()
 
     def _error_type_std_toggled(self, toggled: bool) -> None:
@@ -139,8 +139,8 @@ class DataPlotWidget(QWidget, MessengerListener):
         self.ui.factorSelector.setEnabled(split_mode == SplitMode.FACTOR)
 
         factor = Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
-        self.timelinePlotView.set_grouping_mode(split_mode, factor)
-        self.barPlotView.set_grouping_mode(split_mode, factor)
+        self.timelinePlotView.set_split_mode(split_mode, factor)
+        self.barPlotView.set_split_mode(split_mode, factor)
         self._assign_data()
 
     def _assign_data(self):
@@ -155,11 +155,13 @@ class DataPlotWidget(QWidget, MessengerListener):
             Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
             return
 
-        selected_variable = self.ui.variableSelector.currentText()
+        selected_variable = self.ui.variableSelector.get_selected_variable()
 
         df = (
             Manager.data.get_data_plot_df(
-                variable=selected_variable, split_mode=split_mode, selected_factor=selected_factor_name
+                variable=selected_variable,
+                split_mode=split_mode,
+                selected_factor=selected_factor_name,
             )
             if Manager.data.binning_params.mode == BinningMode.INTERVALS
             else Manager.data.get_bar_plot_df(variable=selected_variable)

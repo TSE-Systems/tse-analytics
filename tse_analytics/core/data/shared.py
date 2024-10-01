@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from enum import Enum, unique, StrEnum
+from enum import unique, StrEnum
 
 import pandas as pd
 
@@ -14,7 +14,7 @@ class Aggregation(StrEnum):
 
 
 @unique
-class SplitMode(Enum):
+class SplitMode(StrEnum):
     ANIMAL = "Animal"
     FACTOR = "Factor"
     RUN = "Run"
@@ -54,7 +54,7 @@ class Variable:
     description: str
     type: str
     aggregation: Aggregation
-    outliers: bool
+    remove_outliers: bool
 
     def get_dict(self):
         return self.__dict__

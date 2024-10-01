@@ -103,18 +103,18 @@ class DataTableWidget(QWidget, MessengerListener):
         if Manager.data.selected_dataset is None:
             return
 
-        selected_variable_names = self.ui.tableWidgetVariables.get_selected_variable_names()
-
+        selected_variables = self.ui.tableWidgetVariables.get_selected_variables_dict()
         split_mode = self._get_split_mode()
         selected_factor_name = self.ui.factorSelector.currentText()
 
         self.df = Manager.data.get_data_table_df(
-            variables=selected_variable_names,
+            variables=selected_variables,
             split_mode=split_mode,
             selected_factor=selected_factor_name,
         )
 
-        if len(selected_variable_names) > 0:
+        if len(selected_variables) > 0:
+            selected_variable_names = selected_variables.keys()
             descriptive = (
                 np.round(self.df[selected_variable_names].describe(), 3)
                 .T[["count", "mean", "std", "min", "max"]]
@@ -126,7 +126,7 @@ class DataTableWidget(QWidget, MessengerListener):
             self.ui.textEditDescriptiveStats.document().clear()
             self.ui.pushButtonAddReport.setEnabled(False)
 
-        self.ui.tableView.setModel(PandasModel(self.df))
+        self.ui.tableView.setModel(PandasModel(self.df, calculate=True))
         self.header.setSortIndicatorShown(False)
 
     def _header_clicked(self, logical_index: int):
@@ -135,7 +135,7 @@ class DataTableWidget(QWidget, MessengerListener):
         self.header.setSortIndicatorShown(True)
         order = self.header.sortIndicatorOrder() == Qt.SortOrder.AscendingOrder
         df = self.df.sort_values(self.df.columns[logical_index], ascending=order, inplace=False)
-        self.ui.tableView.setModel(PandasModel(df))
+        self.ui.tableView.setModel(PandasModel(df, calculate=True))
 
     def _add_report(self):
         content = self.ui.textEditDescriptiveStats.document().toHtml()

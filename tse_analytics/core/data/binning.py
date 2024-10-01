@@ -1,5 +1,5 @@
 from datetime import datetime, time
-from enum import Enum, unique, StrEnum
+from enum import unique, StrEnum
 
 from tse_analytics.core.data.shared import TimePhase
 
@@ -11,18 +11,10 @@ class BinningMode(StrEnum):
     PHASES = "Time Phases"
 
 
-@unique
-class BinningOperation(Enum):
-    MEAN = "mean"
-    MEDIAN = "median"
-    SUM = "sum"
-
-
 class BinningParams:
-    def __init__(self, apply: bool, mode: BinningMode, operation: BinningOperation):
+    def __init__(self, apply: bool, mode: BinningMode):
         self.apply = apply
         self.mode = mode
-        self.operation = operation
 
 
 class TimeIntervalsBinningSettings:

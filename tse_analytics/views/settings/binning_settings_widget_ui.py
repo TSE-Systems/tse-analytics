@@ -37,7 +37,7 @@ class Ui_BinningSettingsWidget(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 193, 142))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 193, 124))
         self.verticalLayout_3 = QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_3.setSpacing(0)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
@@ -65,16 +65,6 @@ class Ui_BinningSettingsWidget(object):
         self.binningModeComboBox.setObjectName(u"binningModeComboBox")
 
         self.formLayout.setWidget(1, QFormLayout.FieldRole, self.binningModeComboBox)
-
-        self.binningOperationLabel = QLabel(self.widgetBinningOptions)
-        self.binningOperationLabel.setObjectName(u"binningOperationLabel")
-
-        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.binningOperationLabel)
-
-        self.binningOperationComboBox = QComboBox(self.widgetBinningOptions)
-        self.binningOperationComboBox.setObjectName(u"binningOperationComboBox")
-
-        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.binningOperationComboBox)
 
 
         self.verticalLayout_3.addWidget(self.widgetBinningOptions)
@@ -116,7 +106,6 @@ class Ui_BinningSettingsWidget(object):
     def retranslateUi(self, BinningSettingsWidget):
         self.applyBinningLabel.setText(QCoreApplication.translate("BinningSettingsWidget", u"Apply Binning", None))
         self.binningModeLabel.setText(QCoreApplication.translate("BinningSettingsWidget", u"Binning Mode", None))
-        self.binningOperationLabel.setText(QCoreApplication.translate("BinningSettingsWidget", u"Binning Operation", None))
         pass
     # retranslateUi
 

@@ -6,6 +6,7 @@ from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
+from tse_analytics.core.models.aggregation_combo_box_delegate import AggregationComboBoxDelegate
 from tse_analytics.core.models.variables_model import VariablesModel
 from tse_analytics.views.selection.variables.variables_widget_ui import Ui_VariablesWidget
 
@@ -23,7 +24,7 @@ class VariablesWidget(QWidget, MessengerListener):
         toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
 
         self.outliersModeComboBox = QComboBox()
-        self.outliersModeComboBox.addItems([e.value for e in OutliersMode])
+        self.outliersModeComboBox.addItems((e for e in OutliersMode))
         self.outliersModeComboBox.currentTextChanged.connect(self._outliers_mode_changed)
         toolbar.addWidget(self.outliersModeComboBox)
 
@@ -38,6 +39,8 @@ class VariablesWidget(QWidget, MessengerListener):
         proxy_model.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.ui.tableView.setModel(proxy_model)
         self.ui.tableView.sortByColumn(0, Qt.SortOrder.AscendingOrder)
+
+        self.ui.tableView.setItemDelegateForColumn(2, AggregationComboBoxDelegate(self.ui.tableView))
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)

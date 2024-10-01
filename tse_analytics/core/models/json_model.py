@@ -44,9 +44,6 @@ class JsonModel(QAbstractItemModel):
         Return data from a json item according index and role
 
         """
-        if not index.isValid():
-            return None
-
         item = index.internalPointer()
 
         if role == Qt.ItemDataRole.DisplayRole:

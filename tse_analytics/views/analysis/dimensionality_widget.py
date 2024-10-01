@@ -80,8 +80,8 @@ class DimensionalityWidget(QWidget, MessengerListener):
             self._update_pca_tsne_plot()
 
     def _update_matrix_plot(self):
-        selected_variable_names = self.ui.tableWidgetVariables.get_selected_variable_names()
-        if len(selected_variable_names) < 2:
+        selected_variables = self.ui.tableWidgetVariables.get_selected_variables_dict()
+        if len(selected_variables) < 2:
             Notification(text="Please select at least two variables.", parent=self, duration=2000).show_notification()
             return
 
@@ -104,13 +104,13 @@ class DimensionalityWidget(QWidget, MessengerListener):
             return
 
         df = Manager.data.get_current_df(
-            variables=selected_variable_names,
+            variables=selected_variables,
             split_mode=split_mode,
             selected_factor=selected_factor,
             dropna=False,
         )
 
-        fig = px.scatter_matrix(df, dimensions=selected_variable_names, color=by)
+        fig = px.scatter_matrix(df, dimensions=list(selected_variables), color=by)
         fig.update_traces(diagonal_visible=False)
 
         file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.html", self)
@@ -119,8 +119,8 @@ class DimensionalityWidget(QWidget, MessengerListener):
             self.ui.webView.load(QUrl.fromLocalFile(file.fileName()))
 
     def _update_pca_tsne_plot(self):
-        selected_variable_names = self.ui.tableWidgetVariables.get_selected_variable_names()
-        if len(selected_variable_names) < 3:
+        selected_variables = self.ui.tableWidgetVariables.get_selected_variables_dict()
+        if len(selected_variables) < 3:
             Notification(
                 text="Please select at least three variables in Variables panel.", parent=self, duration=2000
             ).show_notification()
@@ -145,13 +145,14 @@ class DimensionalityWidget(QWidget, MessengerListener):
             return
 
         df = Manager.data.get_current_df(
-            variables=selected_variable_names,
+            variables=selected_variables,
             split_mode=split_mode,
             selected_factor=selected_factor,
             dropna=True,
         )
 
         n_components = 2 if self.ui.radioButton2D.isChecked() else 3
+        selected_variable_names = list(selected_variables)
 
         if self.ui.radioButtonPCA.isChecked():
             pca = PCA(n_components=n_components)

@@ -1,8 +1,9 @@
-from collections.abc import Sequence
+from typing import Sequence
 
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
 from tse_analytics.core.data.shared import Variable
+from tse_analytics.core.manager import Manager
 
 
 class VariablesModel(QAbstractTableModel):
@@ -27,7 +28,7 @@ class VariablesModel(QAbstractTableModel):
                     return item.aggregation
             case 3:
                 if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.CheckStateRole:
-                    return Qt.CheckState.Checked if item.outliers else Qt.CheckState.Unchecked
+                    return Qt.CheckState.Checked if item.remove_outliers else Qt.CheckState.Unchecked
             case 4:
                 if role == Qt.ItemDataRole.DisplayRole:
                     return item.description
@@ -38,13 +39,13 @@ class VariablesModel(QAbstractTableModel):
                 if role == Qt.ItemDataRole.EditRole:
                     item = self.items[index.row()]
                     item.aggregation = value
-                    # Manager.data.rename_animal(old_id, item)
+                    Manager.data.set_binning_operation()
                     return True
             case 3:
                 if role == Qt.ItemDataRole.CheckStateRole:
                     item = self.items[index.row()]
-                    item.outliers = value == Qt.CheckState.Checked.value
-                    # Manager.data.set_selected_animals()
+                    item.remove_outliers = value == Qt.CheckState.Checked.value
+                    Manager.data.apply_outliers(Manager.data.outliers_params)
                     return True
 
     def flags(self, index: QModelIndex):
@@ -61,8 +62,8 @@ class VariablesModel(QAbstractTableModel):
             return self.header[col]
         return None
 
-    def rowCount(self, parent):
+    def rowCount(self, parent) -> int:
         return len(self.items)
 
-    def columnCount(self, parent):
+    def columnCount(self, parent) -> int:
         return len(self.header)

@@ -35,10 +35,13 @@ class VariablesTableWidget(QTableWidget):
         )
         self.setPalette(pal)
 
+        self.variables: dict[str, Variable] = {}
+
     def set_selection_mode(self, mode: QAbstractItemView.SelectionMode) -> None:
         self.setSelectionMode(mode)
 
     def set_data(self, variables: dict[str, Variable]) -> None:
+        self.variables = variables
         self.setRowCount(len(variables))
         for i, variable in enumerate(variables.values()):
             self.setItem(i, 0, QTableWidgetItem(variable.name))
@@ -53,4 +56,12 @@ class VariablesTableWidget(QTableWidget):
         result = []
         for i in range(0, len(selected_items) // self._COLUMN_NUMBER):
             result.append(selected_items[i * self._COLUMN_NUMBER].text())
+        return result
+
+    def get_selected_variables_dict(self) -> dict[str, Variable]:
+        selected_items = self.selectedItems()
+        result = {}
+        for i in range(0, len(selected_items) // self._COLUMN_NUMBER):
+            var_name = selected_items[i * self._COLUMN_NUMBER].text()
+            result[var_name] = self.variables[var_name]
         return result

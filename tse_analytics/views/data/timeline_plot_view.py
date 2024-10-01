@@ -9,7 +9,7 @@ from pyqtgraph.exporters import ImageExporter
 from PySide6.QtCore import QBuffer, QByteArray, QIODevice
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.core.data.shared import Factor, SplitMode
+from tse_analytics.core.data.shared import Factor, SplitMode, Variable
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.misc.TimedeltaAxisItem import TimedeltaAxisItem
 
@@ -45,7 +45,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         # Local variables
         self._df: pd.DataFrame | None = None
-        self._variable = ""
+        self._variable: Variable | None = None
         self._split_mode = SplitMode.ANIMAL
         self._selected_factor: Factor | None = None
         self._error_type = "std"
@@ -74,12 +74,12 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         self._update_plot()
 
-    def set_variable(self, variable: str, update: bool):
+    def set_variable(self, variable: Variable, update: bool):
         self._variable = variable
         if update:
             self._update_plot()
 
-    def set_grouping_mode(self, grouping_mode: SplitMode, selected_factor: Factor):
+    def set_split_mode(self, grouping_mode: SplitMode, selected_factor: Factor):
         self._split_mode = grouping_mode
         self._selected_factor = selected_factor
 
@@ -102,7 +102,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         if (
             self._df is None
-            or self._variable == ""
+            or self._variable is None
             or (self._split_mode == SplitMode.FACTOR and self._selected_factor is None)
         ):
             return
@@ -132,11 +132,11 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         tmp_max = x.max()
 
         # y = data[self._variable].to_numpy()
-        y = data[self._variable].to_numpy()
+        y = data[self._variable.name].to_numpy()
 
         # p1d = self.p1.plot(x, y, symbol='o', symbolSize=2, symbolPen=pen, pen=pen)
         p1d = self.p1.scatterPlot(x, y, pen=pen, size=2) if self._scatter_plot else self.p1.plot(x, y, pen=pen)
-        self.p1.setTitle(self._variable)
+        self.p1.setTitle(self._variable.name)
 
         if self._display_errors and self._split_mode != SplitMode.ANIMAL:
             # Error bars
@@ -183,17 +183,17 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         result = (
             grouped.agg(
-                Value=(self._variable, Manager.data.binning_params.operation.value),
-                Error=(self._variable, self._error_type),
+                Value=(self._variable.name, self._variable.aggregation),
+                Error=(self._variable.name, self._error_type),
             )
             if self._display_errors
             else grouped.agg(
-                Value=(self._variable, Manager.data.binning_params.operation.value),
+                Value=(self._variable.name, self._variable.aggregation),
             )
         )
 
         data = result.reset_index()
-        data.rename(columns={"Value": self._variable}, inplace=True)
+        data.rename(columns={"Value": self._variable.name}, inplace=True)
 
         groups = self._selected_factor.groups
         for i, group in enumerate(groups):
@@ -218,17 +218,17 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         result = (
             grouped.agg(
-                Value=(self._variable, Manager.data.binning_params.operation.value),
-                Error=(self._variable, self._error_type),
+                Value=(self._variable.name, self._variable.aggregation),
+                Error=(self._variable.name, self._error_type),
             )
             if self._display_errors
             else grouped.agg(
-                Value=(self._variable, Manager.data.binning_params.operation.value),
+                Value=(self._variable.name, self._variable.aggregation),
             )
         )
 
         data = result.reset_index()
-        data.rename(columns={"Value": self._variable}, inplace=True)
+        data.rename(columns={"Value": self._variable.name}, inplace=True)
 
         runs = self._df["Run"].unique()
         for i, run in enumerate(runs):
@@ -253,17 +253,17 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         result = (
             grouped.agg(
-                Value=(self._variable, Manager.data.binning_params.operation.value),
-                Error=(self._variable, self._error_type),
+                Value=(self._variable.name, self._variable.aggregation),
+                Error=(self._variable.name, self._error_type),
             )
             if self._display_errors
             else grouped.agg(
-                Value=(self._variable, Manager.data.binning_params.operation.value),
+                Value=(self._variable.name, self._variable.aggregation),
             )
         )
 
         data = result.reset_index()
-        data.rename(columns={"Value": self._variable}, inplace=True)
+        data.rename(columns={"Value": self._variable.name}, inplace=True)
 
         pen = mkPen(color=(1, 1), width=1)
         tmp_min, tmp_max = self._plot_item(data, "Total", pen)
