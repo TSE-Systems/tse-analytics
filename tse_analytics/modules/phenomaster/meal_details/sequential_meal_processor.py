@@ -441,7 +441,7 @@ def _process_box(
 
 
 def process_meal_sequences(
-    meal_details: MealDetails, meal_details_settings: MealDetailsSettings, diets_dict: dict[int, float]
+    meal_details: MealDetails, meal_details_settings: MealDetailsSettings, diets_dict: dict[str, float]
 ):
     box_to_animal_map = {}
     for animal in meal_details.dataset.animals.values():

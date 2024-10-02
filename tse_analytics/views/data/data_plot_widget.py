@@ -1,9 +1,11 @@
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
+from pyqttoast import ToastPreset
 
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import SplitMode
+from tse_analytics.core.helper import make_toast
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import (
     AddToReportMessage,
@@ -16,7 +18,6 @@ from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.data.bar_plot_view import BarPlotView
 from tse_analytics.views.data.data_plot_widget_ui import Ui_DataPlotWidget
 from tse_analytics.views.data.timeline_plot_view import TimelinePlotView
-from tse_analytics.views.misc.notification import Notification
 
 
 class DataPlotWidget(QWidget, MessengerListener):
@@ -75,8 +76,8 @@ class DataPlotWidget(QWidget, MessengerListener):
 
         selected_factor_name = self.ui.factorSelector.currentText()
         factor = Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
-        self.timelinePlotView.set_grouping_mode(split_mode, factor)
-        self.barPlotView.set_grouping_mode(split_mode, factor)
+        self.timelinePlotView.set_split_mode(split_mode, factor)
+        self.barPlotView.set_split_mode(split_mode, factor)
         self._assign_data()
 
     def _error_type_std_toggled(self, toggled: bool) -> None:
@@ -139,8 +140,8 @@ class DataPlotWidget(QWidget, MessengerListener):
         self.ui.factorSelector.setEnabled(split_mode == SplitMode.FACTOR)
 
         factor = Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
-        self.timelinePlotView.set_grouping_mode(split_mode, factor)
-        self.barPlotView.set_grouping_mode(split_mode, factor)
+        self.timelinePlotView.set_split_mode(split_mode, factor)
+        self.barPlotView.set_split_mode(split_mode, factor)
         self._assign_data()
 
     def _assign_data(self):
@@ -152,14 +153,23 @@ class DataPlotWidget(QWidget, MessengerListener):
         split_mode = self._get_split_mode()
 
         if split_mode == SplitMode.FACTOR and selected_factor_name == "":
-            Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
+            make_toast(
+                self,
+                "Data Plot",
+                "Please select factor.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
             return
 
-        selected_variable = self.ui.variableSelector.currentText()
+        selected_variable = self.ui.variableSelector.get_selected_variable()
 
         df = (
             Manager.data.get_data_plot_df(
-                variable=selected_variable, split_mode=split_mode, selected_factor=selected_factor_name
+                variable=selected_variable,
+                split_mode=split_mode,
+                selected_factor_name=selected_factor_name,
             )
             if Manager.data.binning_params.mode == BinningMode.INTERVALS
             else Manager.data.get_bar_plot_df(variable=selected_variable)

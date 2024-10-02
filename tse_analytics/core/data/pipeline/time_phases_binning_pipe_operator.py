@@ -1,13 +1,15 @@
 import pandas as pd
 
-from tse_analytics.core.data.binning import BinningOperation, TimePhasesBinningSettings
-from tse_analytics.core.data.shared import SplitMode
+from tse_analytics.core.data.binning import TimePhasesBinningSettings
+from tse_analytics.core.data.shared import SplitMode, Variable
+
+default_columns = ["Timedelta", "Box", "Run"]
 
 
 def process_time_phases_binning(
     df: pd.DataFrame,
     settings: TimePhasesBinningSettings,
-    binning_operation: BinningOperation,
+    variables: dict[str, Variable],
     split_mode: SplitMode,
     factor_names: list[str],
     selected_factor_name: str,
@@ -27,23 +29,33 @@ def process_time_phases_binning(
 
     match split_mode:
         case SplitMode.ANIMAL:
-            group_by = ["Animal", "Box", "Bin"] + factor_names
+            agg = {
+                "Box": "first",
+                "Run": "first",
+            }
+            group_by = ["Animal", "Bin"] + factor_names
         case SplitMode.FACTOR:
+            agg = {
+                "Box": "first",
+                "Run": "first",
+            }
             group_by = [selected_factor_name, "Bin"]
         case SplitMode.RUN:
+            agg = {
+                "Box": "first",
+            }
             group_by = ["Run", "Bin"]
         case _:
+            agg = {
+                "Box": "first",
+                "Run": "first",
+            }
             group_by = ["Bin"]
 
-    grouped = df.groupby(group_by, dropna=False, observed=True)
+    for variable in variables.values():
+        agg[variable.name] = variable.aggregation
 
-    match binning_operation:
-        case BinningOperation.MEAN:
-            result = grouped.mean(numeric_only=True)
-        case BinningOperation.MEDIAN:
-            result = grouped.median(numeric_only=True)
-        case _:
-            result = grouped.sum(numeric_only=True)
+    result = df.groupby(group_by, dropna=False, observed=False).agg(agg)
 
     # the inverse of groupby, reset_index
     result.reset_index(inplace=True)

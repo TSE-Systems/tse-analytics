@@ -7,6 +7,7 @@ import PySide6QtAds
 from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QCloseEvent, QIcon
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QMessageBox, QWidget
+from pyqttoast import Toast, ToastPosition
 
 from tse_analytics.core.helper import LAYOUT_VERSION, show_help, CSV_IMPORT_ENABLED
 from tse_analytics.core.manager import Manager
@@ -29,7 +30,6 @@ from tse_analytics.views.selection.animals.animals_widget import AnimalsWidget
 from tse_analytics.views.selection.factors.factors_widget import FactorsWidget
 from tse_analytics.views.selection.variables.variables_widget import VariablesWidget
 from tse_analytics.views.settings.binning_settings_widget import BinningSettingsWidget
-from tse_analytics.views.settings.outliers_settings_widget import OutliersSettingsWidget
 
 PySide6QtAds.CDockManager.setConfigFlags(PySide6QtAds.CDockManager.DefaultOpaqueConfig)
 PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.ActiveTabHasCloseButton, False)
@@ -143,11 +143,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area
         )
 
-        outliers_dock_widget = self._register_dock_widget(
-            OutliersSettingsWidget(), "Outliers", QIcon(":/icons/icons8-outliers-16.png")
-        )
-        self.dock_manager.addDockWidgetTabToArea(outliers_dock_widget, settings_dock_area)
-
         self.actionImportDataset.triggered.connect(self.import_dataset_dialog)
         self.actionOpenWorkspace.triggered.connect(self.load_workspace_dialog)
         self.actionSaveWorkspace.triggered.connect(self.save_workspace_dialog)
@@ -161,6 +156,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.default_docking_state = self.dock_manager.saveState(LAYOUT_VERSION)
 
         self.load_settings()
+
+        Toast.setPositionRelativeToWidget(self)
+        Toast.setMovePositionWithWidget(True)
 
     def _register_dock_widget(self, widget: QWidget, title: str, icon: QIcon) -> PySide6QtAds.CDockWidget:
         dock_widget = PySide6QtAds.CDockWidget(title)

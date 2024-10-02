@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tse-analytics"
-version = "0.9.4"
+version = "0.10.0"
 description = "TSE Analytics data analysys"
 license = "MIT"
 authors = ["Anton Rau <anton.rau@gmail.com>"]
@@ -24,6 +24,7 @@ plotly = "5.24.1"
 psutil = "6.0.0"
 pyqtgraph = "0.13.7"
 seaborn = "0.13.2"
+pyqt-toast-notification = "^1.3.2"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "1.11.2"

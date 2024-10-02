@@ -1,5 +1,3 @@
-from functools import partial
-
 from PySide6.QtCore import QSize, Qt, QModelIndex, QItemSelection
 from PySide6.QtGui import QIcon, QPalette
 from PySide6.QtWidgets import (
@@ -41,11 +39,12 @@ class DatasetsWidget(QWidget):
 
         toolbar = QToolBar("Datasets Toolbar")
         toolbar.setIconSize(QSize(16, 16))
+        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
 
         if CSV_IMPORT_ENABLED:
             self.import_button = QToolButton()
             self.import_button.setText("Import")
-            self.import_button.setIcon(QIcon(":/icons/icons8-import-16.png"))
+            self.import_button.setIcon(QIcon(":/icons/icons8-database-import-16.png"))
             self.import_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
             self.import_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
             self.import_button.setEnabled(False)
@@ -58,9 +57,25 @@ class DatasetsWidget(QWidget):
 
             toolbar.addWidget(self.import_button)
 
-        self.adjust_dataset_action = toolbar.addAction(QIcon(":/icons/icons8-edit-16.png"), "Adjust dataset")
+        self.adjust_dataset_action = toolbar.addAction(QIcon(":/icons/icons8-adjust-16.png"), "Adjust")
+        self.adjust_dataset_action.setToolTip("Adjust selected dataset")
         self.adjust_dataset_action.setEnabled(False)
         self.adjust_dataset_action.triggered.connect(self._adjust_dataset)
+
+        self.remove_dataset_action = toolbar.addAction(QIcon(":/icons/icons8-remove-16.png"), "Remove")
+        self.remove_dataset_action.setToolTip("Remove selected dataset")
+        self.remove_dataset_action.setEnabled(False)
+        self.remove_dataset_action.triggered.connect(self._remove_dataset)
+
+        self.clone_dataset_action = toolbar.addAction(QIcon(":/icons/icons8-copy-16.png"), "Clone")
+        self.clone_dataset_action.setToolTip("Clone selected dataset")
+        self.clone_dataset_action.setEnabled(False)
+        self.clone_dataset_action.triggered.connect(self._clone_dataset)
+
+        self.merge_dataset_action = toolbar.addAction(QIcon(":/icons/icons8-merge-files-16.png"), "Merge")
+        self.merge_dataset_action.setToolTip("Merge checked datasets")
+        self.merge_dataset_action.setEnabled(False)
+        self.merge_dataset_action.triggered.connect(self._merge_datasets)
 
         self.layout().insertWidget(0, toolbar)
 
@@ -82,41 +97,38 @@ class DatasetsWidget(QWidget):
         self.ui.treeView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.ui.treeView.setModel(Manager.workspace)
 
-        self.ui.treeView.customContextMenuRequested.connect(self._open_menu)
+        # self.ui.treeView.customContextMenuRequested.connect(self._open_menu)
         self.ui.treeView.selectionModel().selectionChanged.connect(self._treeview_selection_changed)
         self.ui.treeView.selectionModel().currentChanged.connect(self._treeview_current_changed)
-        # Manager.workspace.checkedItemChanged.connect(self._checked_item_changed)
         self.ui.treeView.doubleClicked.connect(self._treeview_double_clicked)
+        Manager.workspace.checkedItemChanged.connect(self._checked_item_changed)
 
-    def _open_menu(self, position):
-        indexes = self.ui.treeView.selectedIndexes()
-
-        level = None
-        if len(indexes) > 0:
-            level = 0
-            index = indexes[0]
-            while index.parent().isValid():
-                index = index.parent()
-                level += 1
-
-        menu = QMenu(self.ui.treeView)
-
-        if level == 1:
-            action = menu.addAction("Merge datasets...")
-            items = self.ui.treeView.model().workspace_tree_item.child_items
-            checked_datasets_number = 0
-            for item in items:
-                if item.checked:
-                    checked_datasets_number += 1
-            if checked_datasets_number < 2:
-                action.setEnabled(False)
-            else:
-                action.triggered.connect(self._merge_datasets)
-
-            menu.addAction("Remove dataset").triggered.connect(partial(self._remove_dataset, indexes))
-            menu.addAction("Clone dataset...").triggered.connect(partial(self._clone_dataset, indexes))
-
-        menu.exec_(self.ui.treeView.viewport().mapToGlobal(position))
+    # def _open_menu(self, position):
+    #     indexes = self.ui.treeView.selectedIndexes()
+    #
+    #     level = None
+    #     if len(indexes) > 0:
+    #         level = 0
+    #         index = indexes[0]
+    #         while index.parent().isValid():
+    #             index = index.parent()
+    #             level += 1
+    #
+    #     menu = QMenu(self.ui.treeView)
+    #
+    #     if level == 1:
+    #         action = menu.addAction("Merge datasets...")
+    #         items = self.ui.treeView.model().workspace_tree_item.child_items
+    #         checked_datasets_number = 0
+    #         for item in items:
+    #             if item.checked:
+    #                 checked_datasets_number += 1
+    #         if checked_datasets_number < 2:
+    #             action.setEnabled(False)
+    #         else:
+    #             action.triggered.connect(self._merge_datasets)
+    #
+    #     menu.exec_(self.ui.treeView.viewport().mapToGlobal(position))
 
     def _merge_datasets(self):
         checked_datasets: list[Dataset] = []
@@ -206,17 +218,21 @@ class DatasetsWidget(QWidget):
             item.name = dataset.name
             Manager.data.set_selected_dataset(dataset)
 
-    def _remove_dataset(self, indexes: list[QModelIndex]):
+    def _remove_dataset(self):
         if (
             QMessageBox.question(self, "Remove Dataset", "Do you really want to remove dataset?")
             == QMessageBox.StandardButton.Yes
         ):
-            Manager.remove_dataset(indexes)
+            selected_indexes = self.ui.treeView.selectedIndexes()
+            Manager.remove_dataset(selected_indexes)
             self.import_button.setEnabled(False)
             self.adjust_dataset_action.setEnabled(False)
+            self.remove_dataset_action.setEnabled(False)
+            self.clone_dataset_action.setEnabled(False)
+            self.merge_dataset_action.setEnabled(False)
 
-    def _clone_dataset(self, indexes: list[QModelIndex]):
-        selected_index = indexes[0]
+    def _clone_dataset(self):
+        selected_index = self.ui.treeView.selectedIndexes()[0]
         if selected_index.isValid():
             item = selected_index.model().getItem(selected_index)
             dataset = item.dataset
@@ -242,11 +258,10 @@ class DatasetsWidget(QWidget):
                 index = index.parent()
                 level += 1
         self.adjust_dataset_action.setEnabled(level == 1)
+        self.remove_dataset_action.setEnabled(level == 1)
+        self.clone_dataset_action.setEnabled(level == 1)
         if CSV_IMPORT_ENABLED:
             self.import_button.setEnabled(level == 1)
-
-    def _checked_item_changed(self, item, state: bool):
-        pass
 
     def _treeview_double_clicked(self, index: QModelIndex):
         if index.isValid():
@@ -273,6 +288,15 @@ class DatasetsWidget(QWidget):
                 del dialog
                 if result == QDialog.DialogCode.Accepted:
                     pass
+
+    def _checked_item_changed(self, item, state: bool):
+        if isinstance(item, DatasetTreeItem):
+            items = self.ui.treeView.model().workspace_tree_item.child_items
+            checked_datasets_number = 0
+            for item in items:
+                if item.checked:
+                    checked_datasets_number += 1
+            self.merge_dataset_action.setDisabled(checked_datasets_number < 2)
 
     def minimumSizeHint(self) -> QSize:
         return QSize(300, 100)

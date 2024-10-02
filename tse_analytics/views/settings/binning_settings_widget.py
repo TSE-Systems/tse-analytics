@@ -1,7 +1,7 @@
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.core.data.binning import BinningMode, BinningOperation, BinningParams
+from tse_analytics.core.data.binning import BinningMode, BinningParams
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
@@ -22,19 +22,15 @@ class BinningSettingsWidget(QWidget, MessengerListener):
 
         self.ui.applyBinningCheckBox.stateChanged.connect(self._apply_binning_changed)
 
-        self.ui.binningModeComboBox.addItems([e.value for e in BinningMode])
+        self.ui.binningModeComboBox.addItems([e for e in BinningMode])
         self.ui.binningModeComboBox.currentTextChanged.connect(self._binning_mode_changed)
-
-        self.ui.binningOperationComboBox.addItems([e.value for e in BinningOperation])
-        self.ui.binningOperationComboBox.currentTextChanged.connect(self._binning_operation_changed)
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
 
     def _on_dataset_changed(self, message: DatasetChangedMessage):
         self.ui.applyBinningCheckBox.setChecked(False)
-        self.ui.binningModeComboBox.setCurrentText(BinningMode.INTERVALS.value)
-        self.ui.binningOperationComboBox.setCurrentText(BinningOperation.MEAN.value)
+        self.ui.binningModeComboBox.setCurrentText(BinningMode.INTERVALS)
         if message.data is None:
             self.ui.widgetTimePhasesSettings.clear()
         else:
@@ -44,21 +40,18 @@ class BinningSettingsWidget(QWidget, MessengerListener):
 
     def _binning_mode_changed(self, value: BinningMode):
         match value:
-            case BinningMode.INTERVALS.value:
+            case BinningMode.INTERVALS:
                 self.ui.widgetTimeIntervalSettings.setVisible(True)
                 self.ui.widgetTimeCyclesSettings.setVisible(False)
                 self.ui.widgetTimePhasesSettings.setVisible(False)
-            case BinningMode.CYCLES.value:
+            case BinningMode.CYCLES:
                 self.ui.widgetTimeIntervalSettings.setVisible(False)
                 self.ui.widgetTimeCyclesSettings.setVisible(True)
                 self.ui.widgetTimePhasesSettings.setVisible(False)
-            case BinningMode.PHASES.value:
+            case BinningMode.PHASES:
                 self.ui.widgetTimeIntervalSettings.setVisible(False)
                 self.ui.widgetTimeCyclesSettings.setVisible(False)
                 self.ui.widgetTimePhasesSettings.setVisible(True)
-        self._binning_params_changed()
-
-    def _binning_operation_changed(self, value: str):
         self._binning_params_changed()
 
     def _apply_binning_changed(self, value: int):
@@ -67,11 +60,9 @@ class BinningSettingsWidget(QWidget, MessengerListener):
     def _binning_params_changed(self):
         apply = self.ui.applyBinningCheckBox.isChecked()
         mode = BinningMode(self.ui.binningModeComboBox.currentText()) if apply else BinningMode.INTERVALS
-        operation = BinningOperation(self.ui.binningOperationComboBox.currentText())
         params = BinningParams(
             apply,
             mode,
-            operation,
         )
         Manager.data.apply_binning(params)
 

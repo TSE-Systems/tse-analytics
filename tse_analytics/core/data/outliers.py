@@ -1,9 +1,9 @@
-from enum import Enum, unique
+from enum import unique, StrEnum
 
 
 @unique
-class OutliersMode(Enum):
-    OFF = "Detection Off"
+class OutliersMode(StrEnum):
+    OFF = "Outliers detection off"
     HIGHLIGHT = "Highlight outliers"
     REMOVE = "Remove outliers"
 

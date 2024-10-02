@@ -15,9 +15,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QHBoxLayout, QHeaderView,
-    QSizePolicy, QSpacerItem, QTableView, QToolButton,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QHeaderView, QSizePolicy,
+    QTableView, QVBoxLayout, QWidget)
 import resources_rc
 
 class Ui_FactorsWidget(object):
@@ -25,25 +24,9 @@ class Ui_FactorsWidget(object):
         if not FactorsWidget.objectName():
             FactorsWidget.setObjectName(u"FactorsWidget")
         self.verticalLayout = QVBoxLayout(FactorsWidget)
+        self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.horizontalLayout = QHBoxLayout()
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.toolButtonEditFactors = QToolButton(FactorsWidget)
-        self.toolButtonEditFactors.setObjectName(u"toolButtonEditFactors")
-        icon = QIcon()
-        icon.addFile(u":/icons/icons8-edit-16.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.toolButtonEditFactors.setIcon(icon)
-        self.toolButtonEditFactors.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-
-        self.horizontalLayout.addWidget(self.toolButtonEditFactors)
-
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout.addItem(self.horizontalSpacer)
-
-
-        self.verticalLayout.addLayout(self.horizontalLayout)
-
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.tableView = QTableView(FactorsWidget)
         self.tableView.setObjectName(u"tableView")
         self.tableView.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -60,7 +43,6 @@ class Ui_FactorsWidget(object):
     # setupUi
 
     def retranslateUi(self, FactorsWidget):
-        self.toolButtonEditFactors.setText(QCoreApplication.translate("FactorsWidget", u"Edit Factors", None))
         pass
     # retranslateUi
 

@@ -4,16 +4,16 @@ from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from pyqttoast import ToastPreset
 
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.helper import show_help, get_html_image
+from tse_analytics.core.helper import show_help, get_html_image, make_toast
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.css import style_descriptive_table
 from tse_analytics.views.analysis.bivariate_widget_ui import Ui_BivariateWidget
-from tse_analytics.views.misc.notification import Notification
 
 
 class BivariateWidget(QWidget, MessengerListener):
@@ -89,9 +89,9 @@ class BivariateWidget(QWidget, MessengerListener):
             self._update_regression()
 
     def _update_correlation(self):
-        x_var = self.ui.variableSelectorX.currentText()
-        y_var = self.ui.variableSelectorY.currentText()
-        selected_factor = self.ui.factorSelector.currentText()
+        x_var = self.ui.variableSelectorX.get_selected_variable()
+        y_var = self.ui.variableSelectorY.get_selected_variable()
+        selected_factor_name = self.ui.factorSelector.currentText()
 
         split_mode = SplitMode.TOTAL
         by = None
@@ -103,24 +103,31 @@ class BivariateWidget(QWidget, MessengerListener):
             by = "Run"
         elif self.ui.radioButtonSplitByFactor.isChecked():
             split_mode = SplitMode.FACTOR
-            if selected_factor == "":
-                Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
+            if selected_factor_name == "":
+                make_toast(
+                    self,
+                    "Bivariate Analysis",
+                    "Please select a factor.",
+                    duration=2000,
+                    preset=ToastPreset.WARNING,
+                    show_duration_bar=True,
+                ).show()
                 return
-            by = selected_factor
+            by = selected_factor_name
 
-        variables = [x_var] if x_var == y_var else [x_var, y_var]
+        variables = {x_var.name: x_var} if x_var.name == y_var.name else {x_var.name: x_var, y_var.name: y_var}
         df = Manager.data.get_current_df(
             variables=variables,
             split_mode=split_mode,
-            selected_factor=selected_factor,
+            selected_factor_name=selected_factor_name,
             dropna=False,
         )
 
         if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:
             df[by] = df[by].cat.remove_unused_categories()
 
-        joint_grid = sns.jointplot(data=df, x=x_var, y=y_var, hue=by)
-        joint_grid.fig.suptitle(f"Correlation between {x_var} and {y_var}")
+        joint_grid = sns.jointplot(data=df, x=x_var.name, y=y_var.name, hue=by)
+        joint_grid.fig.suptitle(f"Correlation between {x_var.name} and {y_var.name}")
         canvas = FigureCanvasQTAgg(joint_grid.figure)
         canvas.updateGeometry()
         canvas.draw()
@@ -133,13 +140,13 @@ class BivariateWidget(QWidget, MessengerListener):
         self.plot_toolbar.deleteLater()
         self.plot_toolbar = new_toolbar
 
-        t_test = pg.ttest(df[x_var], df[y_var])
-        corr = pg.pairwise_corr(data=df, columns=[x_var, y_var], method="pearson")
+        t_test = pg.ttest(df[x_var.name], df[y_var.name])
+        corr = pg.pairwise_corr(data=df, columns=[x_var.name, y_var.name], method="pearson")
 
         html_template = """
-            <h1>t-test</h1>
+            <h2>t-test</h2>
             {t_test}
-            <h1>Pearson correlation</h1>
+            <h2>Pearson correlation</h2>
             {corr}
             """
 
@@ -150,7 +157,7 @@ class BivariateWidget(QWidget, MessengerListener):
         self.ui.textEdit.document().setHtml(html)
 
     def _update_regression(self):
-        selected_factor = self.ui.factorSelector.currentText()
+        selected_factor_name = self.ui.factorSelector.currentText()
 
         split_mode = SplitMode.TOTAL
         by = None
@@ -162,34 +169,52 @@ class BivariateWidget(QWidget, MessengerListener):
             by = "Run"
         elif self.ui.radioButtonSplitByFactor.isChecked():
             split_mode = SplitMode.FACTOR
-            by = selected_factor
+            by = selected_factor_name
 
         if split_mode == SplitMode.ANIMAL:
-            Notification(text="Please select another split mode.", parent=self, duration=2000).show_notification()
+            make_toast(
+                self,
+                "Bivariate Analysis",
+                "Please select another split mode.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
             return
 
-        if split_mode == SplitMode.FACTOR and selected_factor == "":
-            Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
+        if split_mode == SplitMode.FACTOR and selected_factor_name == "":
+            make_toast(
+                self,
+                "Bivariate Analysis",
+                "Please select a factor.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
             return
 
-        covariate = self.ui.variableSelectorX.currentText()
-        response = self.ui.variableSelectorY.currentText()
+        covariate = self.ui.variableSelectorX.get_selected_variable()
+        response = self.ui.variableSelectorY.get_selected_variable()
 
-        variables = [response] if response == covariate else [response, covariate]
+        variables = (
+            {response.name: response}
+            if response.name == covariate.name
+            else {response.name: response, covariate.name: covariate}
+        )
         df = Manager.data.get_current_df(
             variables=variables,
             split_mode=split_mode,
-            selected_factor=selected_factor,
+            selected_factor_name=selected_factor_name,
             dropna=False,
         )
 
         agg = {
-            covariate: "mean",
-            response: "mean",
+            covariate.name: "mean",
+            response.name: "mean",
         }
 
-        if selected_factor != "":
-            agg[selected_factor] = "first"
+        if selected_factor_name != "":
+            agg[selected_factor_name] = "first"
 
         if split_mode == SplitMode.RUN:
             group_by = ["Animal", "Run"]
@@ -198,7 +223,7 @@ class BivariateWidget(QWidget, MessengerListener):
 
         df = df.groupby(by=group_by, as_index=False, observed=False).agg(agg)
 
-        facet_grid = sns.lmplot(data=df, x=covariate, y=response, hue=by, robust=False)
+        facet_grid = sns.lmplot(data=df, x=covariate.name, y=response.name, hue=by, robust=False)
         canvas = FigureCanvasQTAgg(facet_grid.figure)
 
         canvas.updateGeometry()
@@ -212,10 +237,10 @@ class BivariateWidget(QWidget, MessengerListener):
         self.plot_toolbar.deleteLater()
         self.plot_toolbar = new_toolbar
 
-        glm = pg.linear_regression(df[[covariate]], df[response], remove_na=True)
+        glm = pg.linear_regression(df[[covariate.name]], df[response.name], remove_na=True)
 
         html_template = """
-                <h1>GLM</h1>
+                <h2>GLM</h2>
                 {glm}
                 """
 

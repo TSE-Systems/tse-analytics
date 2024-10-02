@@ -966,6 +966,20 @@ files = [
 diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
+name = "pyqt-toast-notification"
+version = "1.3.2"
+description = "A fully customizable toast notification library for PyQt and PySide"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pyqt-toast-notification-1.3.2.tar.gz", hash = "sha256:135736ec0f16bff41104dee3c60ac318e5d55ae3378bf26892c6d08c36088ae6"},
+    {file = "pyqt_toast_notification-1.3.2-py3-none-any.whl", hash = "sha256:82688101202737736d51ab6c74a573b32266ecb7c8b0002f913407bd369737d9"},
+]
+
+[package.dependencies]
+QtPy = ">=2.4.1"
+
+[[package]]
 name = "pyqtgraph"
 version = "0.13.7"
 description = "Scientific Graphics and GUI Library for Python"
@@ -1083,6 +1097,23 @@ files = [
     {file = "pywin32-ctypes-0.2.3.tar.gz", hash = "sha256:d162dc04946d704503b2edc4d55f3dba5c1d539ead017afa00142c38b9885755"},
     {file = "pywin32_ctypes-0.2.3-py3-none-any.whl", hash = "sha256:8a1513379d709975552d202d942d9837758905c8d01eb82b8bcc30918929e7b8"},
 ]
+
+[[package]]
+name = "qtpy"
+version = "2.4.1"
+description = "Provides an abstraction layer on top of the various Qt bindings (PyQt5/6 and PySide2/6)."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "QtPy-2.4.1-py3-none-any.whl", hash = "sha256:1c1d8c4fa2c884ae742b069151b0abe15b3f70491f3972698c683b8e38de839b"},
+    {file = "QtPy-2.4.1.tar.gz", hash = "sha256:a5a15ffd519550a1361bdc56ffc07fda56a6af7292f17c7b395d4083af632987"},
+]
+
+[package.dependencies]
+packaging = "*"
+
+[package.extras]
+test = ["pytest (>=6,!=7.0.0,!=7.0.1)", "pytest-cov (>=3.0.0)", "pytest-qt"]
 
 [[package]]
 name = "ruff"
@@ -1436,4 +1467,4 @@ viz = ["matplotlib", "nc-time-axis", "seaborn"]
 [metadata]
 lock-version = "2.0"
 python-versions = "3.12.6"
-content-hash = "9ce051afb5abea450e0dccbaa2d79938c0aa10dbd57b87a36e43aa1f072762d2"
+content-hash = "2f2c19f02f475944f2db898b8bbd954026961c3138ffa68ece42b84891b609ca"

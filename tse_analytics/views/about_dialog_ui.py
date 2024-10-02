@@ -446,7 +446,10 @@ class Ui_AboutDialog(object):
 "<li style=\" margin-top:12px; margin-b"
                         "ottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"https://github.com/giampaolo/psutil/\"><span style=\" text-decoration: underline; color:#0078d4;\">psutil</span></a></li>\n"
 "<li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"https://www.pyqtgraph.org/\"><span style=\" text-decoration: underline; color:#0078d4;\">PyQtGraph</span></a></li>\n"
-"<li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"https://seaborn.pydata.org/\"><span style=\" text-decoration: underline; color:#0078d4;\">seaborn</span></a></li></ul></body></html>", None))
+"<li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"https://github.com/niklashenning/pyqttoast/\"><span style=\" text-decoration: underline; color:#0078d4;\">PyQt Toast</span></a></li>\n"
+"<li style=\" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"https://seaborn.pydata.org/\"><span style=\" text-decoration: underline; color:#0078d4;\">seaborn</span></a></li>\n"
+"<li style=\" margin-top:12px; m"
+                        "argin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"https://github.com/traja-team/traja/\"><span style=\" text-decoration: underline; color:#0078d4;\">Traja</span></a></li></ul></body></html>", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabLibraries), QCoreApplication.translate("AboutDialog", u"Third-party libraries", None))
     # retranslateUi
 

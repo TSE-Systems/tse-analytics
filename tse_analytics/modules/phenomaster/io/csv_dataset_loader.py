@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
-from tse_analytics.core.data.shared import Animal, Variable
+from tse_analytics.core.data.shared import Animal, Variable, Aggregation
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
 Section = namedtuple("Section", ["lines", "section_start_index", "section_end_index"])
@@ -64,11 +64,11 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Data
             # Skip first 'Date Time', 'Animal No.' and 'Box' columns
             if i < 3:
                 continue
-        variable = Variable(name=item, unit=columns_unit[i], description="", type="float64")
+        variable = Variable(item, columns_unit[i], "", "float64", Aggregation.MEAN, False)
         variables[variable.name] = variable
 
     # Add Weight variable
-    variables["Weight"] = Variable("Weight", "[g]", "Animal weight", type="float64")
+    variables["Weight"] = Variable("Weight", "[g]", "Animal weight", "float64", Aggregation.MEAN, False)
 
     data = data_section.lines[2:]
     data = [line.rstrip(csv_import_settings.delimiter) for line in data]
@@ -227,7 +227,7 @@ def _add_cumulative_columns(df: pd.DataFrame, origin_name: str, variables: dict[
         cumulative_col_name = col + "C"
         df[cumulative_col_name] = df.groupby("Box", observed=False)[col].transform(pd.Series.cumsum)
         var = Variable(
-            name=cumulative_col_name, unit=variables[col].unit, description=f"{col} (cumulative)", type="float64"
+            cumulative_col_name, variables[col].unit, f"{col} (cumulative)", "float64", Aggregation.MEAN, False
         )
         variables[var.name] = var
 

@@ -23,13 +23,13 @@ class Ui_DatasetsWidget(object):
     def setupUi(self, DatasetsWidget):
         if not DatasetsWidget.objectName():
             DatasetsWidget.setObjectName(u"DatasetsWidget")
-        DatasetsWidget.resize(256, 233)
         self.verticalLayout = QVBoxLayout(DatasetsWidget)
         self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.treeView = QTreeView(DatasetsWidget)
         self.treeView.setObjectName(u"treeView")
+        self.treeView.header().setVisible(False)
 
         self.verticalLayout.addWidget(self.treeView)
 

@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QAbstractItemView
 
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.manager import Manager
@@ -27,18 +27,22 @@ class DataTableWidget(QWidget, MessengerListener):
         self.ui = Ui_DataTableWidget()
         self.ui.setupUi(self)
 
+        self.ui.tableWidgetVariables.set_selection_mode(QAbstractItemView.SelectionMode.MultiSelection)
+        self.ui.tableWidgetVariables.itemSelectionChanged.connect(self._variables_selection_changed)
+
+        self.ui.radioButtonSplitTotal.toggled.connect(self._split_mode_toggled)
+        self.ui.radioButtonSplitByAnimal.toggled.connect(self._split_mode_toggled)
+        self.ui.radioButtonSplitByFactor.toggled.connect(self._split_mode_toggled)
+        self.ui.radioButtonSplitByRun.toggled.connect(self._split_mode_toggled)
+
         self.ui.pushButtonResizeColumns.clicked.connect(self._resize_columns_width)
         self.ui.factorSelector.currentTextChanged.connect(self._factor_changed)
         self.ui.pushButtonAddReport.clicked.connect(self._add_report)
 
-        self.ui.comboBoxSplitMode.addItems(["Total", "Animal", "Run", "Factor"])
-        self.ui.comboBoxSplitMode.setCurrentText("Animal")
-        self.ui.comboBoxSplitMode.currentTextChanged.connect(self._split_mode_changed)
-
         self.header = self.ui.tableView.horizontalHeader()
-        self.header.sectionClicked.connect(self.header_clicked)
+        self.header.sectionClicked.connect(self._header_clicked)
 
-        self.ui.textEdit.document().setDefaultStyleSheet(style_descriptive_table)
+        self.ui.textEditDescriptiveStats.document().setDefaultStyleSheet(style_descriptive_table)
 
         self.df: pd.DataFrame | None = None
 
@@ -56,10 +60,12 @@ class DataTableWidget(QWidget, MessengerListener):
     def _on_dataset_changed(self, message: DatasetChangedMessage):
         if message.data is None:
             self.ui.tableView.setModel(None)
-            self.ui.textEdit.document().clear()
+            self.ui.tableWidgetVariables.clear_data()
+            self.ui.textEditDescriptiveStats.document().clear()
             self.ui.factorSelector.clear()
             self.df = None
         else:
+            self.ui.tableWidgetVariables.set_data(message.data.variables)
             self.ui.factorSelector.set_data(message.data.factors, add_empty_item=False)
             self._set_data()
 
@@ -69,8 +75,25 @@ class DataTableWidget(QWidget, MessengerListener):
     def _on_data_changed(self, message: DataChangedMessage):
         self._set_data()
 
-    def _split_mode_changed(self, split_mode_name: str):
-        self.ui.factorSelector.setEnabled(split_mode_name == "Factor")
+    def _variables_selection_changed(self):
+        self._set_data()
+
+    def _get_split_mode(self) -> SplitMode:
+        if self.ui.radioButtonSplitByAnimal.isChecked():
+            return SplitMode.ANIMAL
+        elif self.ui.radioButtonSplitByRun.isChecked():
+            return SplitMode.RUN
+        elif self.ui.radioButtonSplitByFactor.isChecked():
+            return SplitMode.FACTOR
+        else:
+            return SplitMode.TOTAL
+
+    def _split_mode_toggled(self, toggled: bool):
+        if not toggled:
+            return
+
+        split_mode = self._get_split_mode()
+        self.ui.factorSelector.setEnabled(split_mode == SplitMode.FACTOR)
         self._set_data()
 
     def _factor_changed(self, selected_factor_name: str):
@@ -80,52 +103,40 @@ class DataTableWidget(QWidget, MessengerListener):
         if Manager.data.selected_dataset is None:
             return
 
-        selected_variable_names = [item.name for item in Manager.data.selected_variables]
-        selected_variable_names = list(set(selected_variable_names))
-
+        selected_variables = self.ui.tableWidgetVariables.get_selected_variables_dict()
+        split_mode = self._get_split_mode()
         selected_factor_name = self.ui.factorSelector.currentText()
 
-        match self.ui.comboBoxSplitMode.currentText():
-            case "Animal":
-                split_mode = SplitMode.ANIMAL
-            case "Run":
-                split_mode = SplitMode.RUN
-            case "Factor":
-                split_mode = SplitMode.FACTOR
-                if selected_factor_name == "":
-                    return
-            case _:
-                split_mode = SplitMode.TOTAL
-
         self.df = Manager.data.get_data_table_df(
-            variables=selected_variable_names,
+            variables=selected_variables,
             split_mode=split_mode,
-            selected_factor=selected_factor_name,
+            selected_factor_name=selected_factor_name,
         )
 
-        if len(selected_variable_names) > 0:
+        if len(selected_variables) > 0:
+            selected_variable_names = selected_variables.keys()
             descriptive = (
                 np.round(self.df[selected_variable_names].describe(), 3)
                 .T[["count", "mean", "std", "min", "max"]]
                 .to_html()
             )
-            self.ui.textEdit.document().setHtml(descriptive)
+            self.ui.textEditDescriptiveStats.document().setHtml(descriptive)
             self.ui.pushButtonAddReport.setEnabled(True)
         else:
-            self.ui.textEdit.document().clear()
+            self.ui.textEditDescriptiveStats.document().clear()
             self.ui.pushButtonAddReport.setEnabled(False)
 
-        self.ui.tableView.setModel(PandasModel(self.df))
+        self.ui.tableView.setModel(PandasModel(self.df, calculate=True))
         self.header.setSortIndicatorShown(False)
 
-    def header_clicked(self, logical_index: int):
+    def _header_clicked(self, logical_index: int):
         if self.df is None:
             return
         self.header.setSortIndicatorShown(True)
         order = self.header.sortIndicatorOrder() == Qt.SortOrder.AscendingOrder
         df = self.df.sort_values(self.df.columns[logical_index], ascending=order, inplace=False)
-        self.ui.tableView.setModel(PandasModel(df))
+        self.ui.tableView.setModel(PandasModel(df, calculate=True))
 
     def _add_report(self):
-        content = self.ui.textEdit.document().toHtml()
+        content = self.ui.textEditDescriptiveStats.document().toHtml()
         Manager.messenger.broadcast(AddToReportMessage(self, content))

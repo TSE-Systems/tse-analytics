@@ -7,6 +7,7 @@ from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
 from PySide6.QtWidgets import QDialog, QFileDialog, QWidget
 
 from tse_analytics.core.data.shared import Variable
+from tse_analytics.core.helper import make_toast
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
@@ -27,7 +28,6 @@ from tse_analytics.modules.phenomaster.meal_details.views.meal_episodes_offset_p
     MealEpisodesOffsetPlotWidget,
 )
 from tse_analytics.modules.phenomaster.meal_details.views.meal_intervals_plot_widget import MealIntervalsPlotWidget
-from tse_analytics.views.misc.notification import Notification
 
 
 class MealDetailsDialog(QDialog):
@@ -159,8 +159,8 @@ class MealDetailsDialog(QDialog):
         self.ui.toolButtonCalculate.setEnabled(False)
         self.ui.toolButtonExport.setEnabled(False)
 
-        self.toast = Notification(text="Processing...", parent=self, duration=None)
-        self.toast.show_notification()
+        self.toast = make_toast(self, "Meal Analysis", "Processing...")
+        self.toast.show()
 
         meal_details_settings = self.meal_details_settings_widget.get_meal_details_settings()
         diets_dict = self.meal_details_box_selector.get_diets_dict()
@@ -199,7 +199,7 @@ class MealDetailsDialog(QDialog):
         self._update_tabs()
         self.ui.toolButtonExport.setEnabled(True)
         self.ui.toolButtonCalculate.setEnabled(True)
-        self.toast.close_notification()
+        self.toast.hide()
 
     def _do_interval_analysis(
         self,
@@ -221,7 +221,7 @@ class MealDetailsDialog(QDialog):
         self._update_tabs()
         self.ui.toolButtonExport.setEnabled(True)
         self.ui.toolButtonCalculate.setEnabled(True)
-        self.toast.close_notification()
+        self.toast.hide()
 
     def _export_meal_data(self):
         meal_details_settings = self.meal_details_settings_widget.get_meal_details_settings()

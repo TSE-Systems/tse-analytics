@@ -2,14 +2,17 @@ from base64 import b64encode
 from io import BytesIO
 from pathlib import Path
 
+from loguru import logger
 import pandas as pd
+from PySide6.QtWidgets import QWidget
 from matplotlib.figure import Figure
+from pyqttoast import Toast, ToastPreset, ToastPosition
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import ShowHelpMessage
 from tse_analytics.core.pretty_html_table import build_table
 
-LAYOUT_VERSION = 9
+LAYOUT_VERSION = 10
 IS_RELEASE = Path("_internal").exists()
 
 CSV_IMPORT_ENABLED = True
@@ -43,3 +46,36 @@ def build_df_table(df: pd.DataFrame, color="grey_light", font_size="11pt", paddi
         padding=padding,
         font_family=font_family,
     )
+
+
+def make_toast(
+    parent: QWidget,
+    title: str,
+    text: str,
+    duration=0,
+    preset=ToastPreset.INFORMATION,
+    position=ToastPosition.CENTER,
+    show_duration_bar=False,
+    echo_to_logger=False,
+) -> Toast:
+    toast = Toast(parent)
+    toast.setTitle(title)
+    toast.setText(text)
+    toast.setDuration(duration)
+    toast.applyPreset(preset)
+    toast.setPosition(position)
+    toast.setShowCloseButton(False)
+    toast.setShowDurationBar(show_duration_bar)
+    if echo_to_logger:
+        match preset:
+            case ToastPreset.INFORMATION:
+                logger.info(text)
+            case ToastPreset.WARNING:
+                logger.warning(text)
+            case ToastPreset.ERROR:
+                logger.error(text)
+            case ToastPreset.SUCCESS:
+                logger.success(text)
+            case _:
+                logger.info(text)
+    return toast

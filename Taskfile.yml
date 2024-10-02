@@ -32,7 +32,6 @@ tasks:
       - pyside6-uic tse_analytics/views/settings/time_intervals_settings_widget.ui -o tse_analytics/views/settings/time_intervals_settings_widget_ui.py
       - pyside6-uic tse_analytics/views/settings/time_cycles_settings_widget.ui -o tse_analytics/views/settings/time_cycles_settings_widget_ui.py
       - pyside6-uic tse_analytics/views/settings/time_phases_settings_widget.ui -o tse_analytics/views/settings/time_phases_settings_widget_ui.py
-      - pyside6-uic tse_analytics/views/settings/outliers_settings_widget.ui -o tse_analytics/views/settings/outliers_settings_widget_ui.py
       - pyside6-uic tse_analytics/views/settings/binning_settings_widget.ui -o tse_analytics/views/settings/binning_settings_widget_ui.py
       - pyside6-uic tse_analytics/views/analysis/exploration_widget.ui -o tse_analytics/views/analysis/exploration_widget_ui.py
       - pyside6-uic tse_analytics/views/analysis/bivariate_widget.ui -o tse_analytics/views/analysis/bivariate_widget_ui.py

@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
-from tse_analytics.core.data.shared import Variable
+from tse_analytics.core.data.shared import Variable, Aggregation
 from tse_analytics.modules.phenomaster.calo_details.data.calo_details import CaloDetails
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
@@ -68,7 +68,7 @@ class CaloDetailsLoader:
                 var_unit = ""
                 if len(elements) == 2:
                     var_unit = elements[1]
-                variable = Variable(name=var_name, unit=var_unit, description="", type="float64")
+                variable = Variable(var_name, var_unit, "", "float64", Aggregation.MEAN, False)
                 variables[variable.name] = variable
 
         # Calo Details sampling interval

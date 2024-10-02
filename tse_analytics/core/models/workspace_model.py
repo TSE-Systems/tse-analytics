@@ -78,9 +78,6 @@ class WorkspaceModel(QAbstractItemModel):
         return self.workspace_tree_item.column_count()
 
     def data(self, index: QModelIndex, role: Qt.ItemDataRole = None):
-        if not index.isValid():
-            return None
-
         item = self.getItem(index)
 
         if role == Qt.ItemDataRole.ToolTipRole:
@@ -106,8 +103,6 @@ class WorkspaceModel(QAbstractItemModel):
         return None
 
     def setData(self, index: QModelIndex, value, role=Qt.ItemDataRole.EditRole):
-        if not index.isValid():
-            return False
         item = self.getItem(index)
         if role == Qt.ItemDataRole.CheckStateRole:
             item.checked = not item.checked
@@ -117,8 +112,6 @@ class WorkspaceModel(QAbstractItemModel):
             return False
 
     def flags(self, index: QModelIndex):
-        if not index.isValid():
-            return 0
         item = index.internalPointer()
         return item.flags(index.column())
 

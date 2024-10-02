@@ -1,7 +1,7 @@
 import pandas as pd
 
-from tse_analytics.core.data.binning import BinningOperation, TimeIntervalsBinningSettings
-from tse_analytics.core.data.shared import SplitMode
+from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
+from tse_analytics.core.data.shared import SplitMode, Variable
 
 default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
 
@@ -9,7 +9,7 @@ default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
 def process_time_interval_binning(
     df: pd.DataFrame,
     settings: TimeIntervalsBinningSettings,
-    binning_operation: BinningOperation,
+    variables: dict[str, Variable],
     split_mode: SplitMode,
     factor_names: list[str],
     selected_factor_name: str,
@@ -22,10 +22,13 @@ def process_time_interval_binning(
         "Box": "first",
         "Run": "first",
     }
-    for column in df.columns:
-        if column not in default_columns:
-            if df.dtypes[column].name != "category":
-                agg[column] = binning_operation.value
+    # for column in df.columns:
+    #     if column not in default_columns:
+    #         if df.dtypes[column].name != "category":
+    #             agg[column] = variables[column].aggregation
+
+    for variable in variables.values():
+        agg[variable.name] = variable.aggregation
 
     match split_mode:
         case SplitMode.ANIMAL:
@@ -46,8 +49,7 @@ def process_time_interval_binning(
             grouped = df
 
     timedelta = pd.Timedelta(f"{settings.delta}{settings.unit}")
-    resampler = grouped.resample(timedelta, on="Timedelta", origin="start")
-    result = resampler.agg(agg)
+    result = grouped.resample(timedelta, on="Timedelta", origin="start").agg(agg)
 
     result.sort_values(by=sort_by, inplace=True)
 

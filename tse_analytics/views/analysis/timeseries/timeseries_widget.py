@@ -2,17 +2,16 @@ import pandas as pd
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
+from pyqttoast import ToastPreset
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.seasonal import MSTL, STL, seasonal_decompose
 
-from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.helper import show_help, get_html_image
+from tse_analytics.core.helper import show_help, get_html_image, make_toast
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.timeseries.timeseries_widget_ui import Ui_TimeseriesWidget
-from tse_analytics.views.misc.notification import Notification
 
 
 class TimeseriesWidget(QWidget, MessengerListener):
@@ -54,25 +53,25 @@ class TimeseriesWidget(QWidget, MessengerListener):
             self._update_autocorrelation()
 
     def _update_decomposition(self):
-        variable = self.ui.variableSelector.currentText()
-        if variable == "":
-            Notification(text="Please select a variable.", parent=self, duration=2000).show_notification()
-            return
+        variable = self.ui.variableSelector.get_selected_variable()
 
         animal_ids = [animal.id for animal in Manager.data.selected_dataset.animals.values() if animal.enabled]
         if len(animal_ids) != 1:
-            Notification(
-                text="Please check a single animal in the Animal panel.", parent=self, duration=2000
-            ).show_notification()
+            make_toast(
+                self,
+                "Timeseries Decomposition",
+                "Please check a single animal in the Animals panel.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
             return
         animal_name = animal_ids[0]
 
         self.ui.canvas.clear(False)
 
         df = Manager.data.get_timeseries_df(
-            variables=[variable],
-            split_mode=SplitMode.ANIMAL,
-            selected_factor=None,
+            variable=variable,
         )
 
         index = pd.DatetimeIndex(df["DateTime"])
@@ -80,41 +79,42 @@ class TimeseriesWidget(QWidget, MessengerListener):
         df.set_index(index, inplace=True)
         # df = df.asfreq("min")
 
-        df[variable] = df[variable].interpolate(limit_direction="both")
+        var_name = variable.name
+        df[var_name] = df[var_name].interpolate(limit_direction="both")
 
         model = "additive" if self.ui.radioButtonModelAdditive.isChecked() else "multiplicative"
         period = self.ui.periodSpinBox.value()
 
         if self.ui.radioButtonMethodNaive.isChecked():
-            result = seasonal_decompose(df[variable], period=period, model=model, extrapolate_trend="freq")
+            result = seasonal_decompose(df[var_name], period=period, model=model, extrapolate_trend="freq")
         elif self.ui.radioButtonMethodSTL.isChecked():
             result = STL(
-                endog=df[variable],
+                endog=df[var_name],
                 period=period,
             ).fit()
         elif self.ui.radioButtonMethodMSTL.isChecked():
             result = MSTL(
-                endog=df[variable],
+                endog=df[var_name],
                 periods=(60, 60 * 24),
             ).fit()
 
         axs = self.ui.canvas.figure.subplots(4, 1, sharex=True)
-        self.ui.canvas.figure.suptitle(f"Timeseries decomposition of {variable} for animal {animal_name}")
+        self.ui.canvas.figure.suptitle(f"Timeseries decomposition of {var_name} for animal {animal_name}")
 
         axs[0].plot(result.observed, label="Observed", lw=1)
-        axs[0].set_ylabel(variable)
+        axs[0].set_ylabel(var_name)
         axs[0].legend(loc="upper right")
 
         axs[1].plot(result.trend, label="Trend Component", lw=1)
-        axs[1].set_ylabel(variable)
+        axs[1].set_ylabel(var_name)
         axs[1].legend(loc="upper right")
 
         axs[2].plot(result.seasonal, label="Seasonal Component", lw=1)
-        axs[2].set_ylabel(variable)
+        axs[2].set_ylabel(var_name)
         axs[2].legend(loc="upper right")
 
         axs[3].plot(result.resid, label="Residual Component", marker=".", markersize=2, linestyle="none")
-        axs[3].set_ylabel(variable)
+        axs[3].set_ylabel(var_name)
         nobs = result.observed.shape[0]
         xlim = result.observed.index[0], result.observed.index[nobs - 1]
         axs[3].plot(xlim, (0, 0), color="#000000", zorder=-3)
@@ -124,25 +124,25 @@ class TimeseriesWidget(QWidget, MessengerListener):
         self.ui.canvas.draw()
 
     def _update_autocorrelation(self):
-        variable = self.ui.variableSelector.currentText()
-        if variable == "":
-            Notification(text="Please select a variable.", parent=self, duration=2000).show_notification()
-            return
+        variable = self.ui.variableSelector.get_selected_variable()
 
         animal_ids = [animal.id for animal in Manager.data.selected_dataset.animals.values() if animal.enabled]
         if len(animal_ids) != 1:
-            Notification(
-                text="Please check a single animal in the Animal panel.", parent=self, duration=2000
-            ).show_notification()
+            make_toast(
+                self,
+                "Timeseries Autocorrelation",
+                "Please check a single animal in the Animals panel.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
             return
         animal_name = animal_ids[0]
 
         self.ui.canvas.clear(False)
 
         df = Manager.data.get_timeseries_df(
-            variables=[variable],
-            split_mode=SplitMode.ANIMAL,
-            selected_factor=None,
+            variable=variable,
         )
 
         index = pd.DatetimeIndex(df["DateTime"])
@@ -150,15 +150,16 @@ class TimeseriesWidget(QWidget, MessengerListener):
         df.set_index(index, inplace=True)
         # df = df.asfreq("min")
 
-        df[variable] = df[variable].interpolate(limit_direction="both")
+        var_name = variable.name
+        df[var_name] = df[var_name].interpolate(limit_direction="both")
 
         axs = self.ui.canvas.figure.subplots(2, 1, sharex=True)
-        self.ui.canvas.figure.suptitle(f"Timeseries autocorrelation of {variable} for animal {animal_name}")
+        self.ui.canvas.figure.suptitle(f"Timeseries autocorrelation of {var_name} for animal {animal_name}")
 
-        plot_acf(df[variable], ax=axs[0], adjusted=False, title="Autocorrelation")
-        axs[0].set_ylabel(variable)
-        plot_pacf(df[variable], ax=axs[1], title="Partial Autocorrelation")
-        axs[1].set_ylabel(variable)
+        plot_acf(df[var_name], ax=axs[0], adjusted=False, title="Autocorrelation")
+        axs[0].set_ylabel(var_name)
+        plot_pacf(df[var_name], ax=axs[1], title="Partial Autocorrelation")
+        axs[1].set_ylabel(var_name)
 
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()

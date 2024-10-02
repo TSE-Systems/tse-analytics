@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
-from tse_analytics.core.data.shared import Variable
+from tse_analytics.core.data.shared import Variable, Aggregation
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
 
@@ -27,7 +27,7 @@ class MealDetailsLoader:
                 df.groupby("Box", observed=False)[col].transform(pd.Series.cumsum),
             )
             var = Variable(
-                name=cumulative_col_name, unit=variables[col].unit, description=f"{col} (cumulative)", type="float64"
+                cumulative_col_name, variables[col].unit, f"{col} (cumulative)", "float64", Aggregation.MEAN, False
             )
             variables[var.name] = var
 
@@ -82,25 +82,25 @@ class MealDetailsLoader:
         variables: dict[str, Variable] = {}
         if drink1_present:
             new_columns.append("Drink1")
-            variables["Drink1"] = Variable(name="Drink1", unit="[ml]", description="Drink1 sensor", type="float64")
+            variables["Drink1"] = Variable("Drink1", "[ml]", "Drink1 sensor", "float64", Aggregation.MEAN, False)
         if feed1_present:
             new_columns.append("Feed1")
-            variables["Feed1"] = Variable(name="Feed1", unit="[g]", description="Feed1 sensor", type="float64")
+            variables["Feed1"] = Variable("Feed1", "[g]", "Feed1 sensor", "float64", Aggregation.MEAN, False)
         if drink2_present:
             new_columns.append("Drink2")
-            variables["Drink2"] = Variable(name="Drink2", unit="[ml]", description="Drink2 sensor", type="float64")
+            variables["Drink2"] = Variable("Drink2", "[ml]", "Drink2 sensor", "float64", Aggregation.MEAN, False)
         if feed2_present:
             new_columns.append("Feed2")
-            variables["Feed2"] = Variable(name="Feed2", unit="[g]", description="Feed2 sensor", type="float64")
+            variables["Feed2"] = Variable("Feed2", "[g]", "Feed2 sensor", "float64", Aggregation.MEAN, False)
         if weight_present:
             new_columns.append("Weight")
-            variables["Weight"] = Variable(name="Weight", unit="[g]", description="Animal weight", type="float64")
+            variables["Weight"] = Variable("Weight", "[g]", "Animal weight", "float64", Aggregation.MEAN, False)
         if drink_present:
             new_columns.append("Drink")
-            variables["Drink"] = Variable(name="Drink", unit="[ml]", description="Drink sensor", type="float64")
+            variables["Drink"] = Variable("Drink", "[ml]", "Drink sensor", "float64", Aggregation.MEAN, False)
         if feed_present:
             new_columns.append("Feed")
-            variables["Feed"] = Variable(name="Feed", unit="[g]", description="Feed sensor", type="float64")
+            variables["Feed"] = Variable("Feed", "[g]", "Feed sensor", "float64", Aggregation.MEAN, False)
 
         new_df = pd.DataFrame(columns=new_columns)
 

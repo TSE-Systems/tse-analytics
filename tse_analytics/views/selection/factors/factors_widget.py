@@ -1,5 +1,6 @@
-from PySide6.QtCore import QSortFilterProxyModel, Qt
-from PySide6.QtWidgets import QDialog, QWidget
+from PySide6.QtCore import QSortFilterProxyModel, Qt, QSize
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QDialog, QWidget, QToolBar
 
 from tse_analytics.core.data.shared import Factor
 from tse_analytics.core.manager import Manager
@@ -19,11 +20,18 @@ class FactorsWidget(QWidget, MessengerListener):
         self.ui = Ui_FactorsWidget()
         self.ui.setupUi(self)
 
+        toolbar = QToolBar("Factors Toolbar")
+        toolbar.setIconSize(QSize(16, 16))
+        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+
+        self.edit_factors_action = toolbar.addAction(QIcon(":/icons/icons8-edit-16.png"), "Edit Factors")
+        self.edit_factors_action.triggered.connect(self._edit_factors)
+
+        self.layout().insertWidget(0, toolbar)
+
         proxy_model = QSortFilterProxyModel()
         proxy_model.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.ui.tableView.setModel(proxy_model)
-
-        self.ui.toolButtonEditFactors.clicked.connect(self._edit_factors)
 
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
