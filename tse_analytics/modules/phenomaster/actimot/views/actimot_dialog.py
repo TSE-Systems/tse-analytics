@@ -1,12 +1,14 @@
 import timeit
 
 import pandas as pd
+from pyqttoast import ToastPreset
+
 import traja
-from loguru import logger
 from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
 from PySide6.QtWidgets import QDialog, QFileDialog, QWidget
 
+from tse_analytics.core.helper import make_toast
 from tse_analytics.modules.phenomaster.actimot.actimot_settings import ActimotSettings
 from tse_analytics.modules.phenomaster.actimot.data.actimot_animal_item import ActimotAnimalItem
 from tse_analytics.modules.phenomaster.actimot.data.actimot_details import ActimotDetails
@@ -19,7 +21,6 @@ from tse_analytics.modules.phenomaster.actimot.views.actimot_settings_widget imp
 from tse_analytics.modules.phenomaster.actimot.views.actimot_stream_plot_widget import ActimotStreamPlotWidget
 from tse_analytics.modules.phenomaster.actimot.views.actimot_table_view import ActimotTableView
 from tse_analytics.modules.phenomaster.actimot.views.actimot_trajectory_plot_widget import ActimotTrajectoryPlotWidget
-from tse_analytics.views.misc.notification import Notification
 
 
 class ActimotDialog(QDialog):
@@ -118,8 +119,15 @@ class ActimotDialog(QDialog):
 
         self.ui.toolButtonExport.setEnabled(True)
 
-        logger.info(f"Actimot analysis complete: {timeit.default_timer() - tic} sec")
-        Notification(text="Actimot analysis complete.", parent=self, duration=4000).show_notification()
+        make_toast(
+            self,
+            "ActiMot Analysis",
+            f"Processing complete in {timeit.default_timer() - tic} sec.",
+            duration=4000,
+            preset=ToastPreset.SUCCESS,
+            show_duration_bar=True,
+            echo_to_logger=True,
+        ).show()
 
     def _export_data(self):
         settings = self.actimot_settings_widget.get_settings()

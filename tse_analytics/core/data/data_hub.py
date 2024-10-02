@@ -118,7 +118,7 @@ class DataHub:
         self,
         variables: dict[str, Variable] | None = None,
         split_mode=SplitMode.ANIMAL,
-        selected_factor: str | None = None,
+        selected_factor_name: str | None = None,
         dropna=False,
     ) -> pd.DataFrame:
         factor_columns = list(self.selected_dataset.factors)
@@ -147,7 +147,7 @@ class DataHub:
                         variables,
                         split_mode,
                         factor_columns,
-                        selected_factor,
+                        selected_factor_name,
                     )
                 case BinningMode.CYCLES:
                     result = process_time_cycles_binning(
@@ -156,7 +156,7 @@ class DataHub:
                         variables,
                         split_mode,
                         factor_columns,
-                        selected_factor,
+                        selected_factor_name,
                     )
                 case BinningMode.PHASES:
                     result = process_time_phases_binning(
@@ -165,7 +165,7 @@ class DataHub:
                         variables,
                         split_mode,
                         factor_columns,
-                        selected_factor,
+                        selected_factor_name,
                     )
 
         # TODO: should or should not?
@@ -178,7 +178,7 @@ class DataHub:
         self,
         variable: Variable,
         split_mode: SplitMode,
-        selected_factor: str,
+        selected_factor_name: str,
     ) -> pd.DataFrame:
         default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
         factor_columns = list(self.selected_dataset.factors)
@@ -203,7 +203,7 @@ class DataHub:
                         variables,
                         split_mode,
                         factor_columns,
-                        selected_factor,
+                        selected_factor_name,
                     )
                 case BinningMode.CYCLES:
                     result = process_time_cycles_binning(
@@ -212,7 +212,7 @@ class DataHub:
                         variables,
                         split_mode,
                         factor_columns,
-                        selected_factor,
+                        selected_factor_name,
                     )
                 case BinningMode.PHASES:
                     result = process_time_phases_binning(
@@ -221,7 +221,7 @@ class DataHub:
                         variables,
                         split_mode,
                         factor_columns,
-                        selected_factor,
+                        selected_factor_name,
                     )
 
         return result
@@ -229,8 +229,8 @@ class DataHub:
     def get_data_table_df(
         self,
         variables: dict[str, Variable],
-        split_mode,
-        selected_factor: str,
+        split_mode: SplitMode,
+        selected_factor_name: str,
     ) -> pd.DataFrame:
         default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
         factor_columns = list(self.selected_dataset.factors)
@@ -254,7 +254,7 @@ class DataHub:
                         variables,
                         split_mode,
                         factor_columns,
-                        selected_factor,
+                        selected_factor_name,
                     )
                 case BinningMode.CYCLES:
                     result = process_time_cycles_binning(
@@ -263,7 +263,7 @@ class DataHub:
                         variables,
                         split_mode,
                         factor_columns,
-                        selected_factor,
+                        selected_factor_name,
                     )
                 case BinningMode.PHASES:
                     result = process_time_phases_binning(
@@ -272,16 +272,32 @@ class DataHub:
                         variables,
                         split_mode,
                         factor_columns,
-                        selected_factor,
+                        selected_factor_name,
                     )
+        else:
+            if split_mode != SplitMode.ANIMAL:
+                match split_mode:
+                    case SplitMode.FACTOR:
+                        group_by = ["Bin", selected_factor_name]
+                    case SplitMode.RUN:
+                        group_by = ["Bin", "Run"]
+                    case _:  # Total split mode
+                        group_by = ["Bin"]
+
+                agg = {
+                    "DateTime": "first",
+                    "Timedelta": "first",
+                }
+                for variable in variables.values():
+                    agg[variable.name] = variable.aggregation
+                result = result.groupby(group_by, dropna=False, observed=False).aggregate(agg)
+                result.reset_index(inplace=True)
 
         return result
 
     def get_timeseries_df(
         self,
         variable: Variable,
-        split_mode,
-        selected_factor: str,
     ) -> pd.DataFrame:
         default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
         factor_columns = list(self.selected_dataset.factors.keys())
@@ -305,32 +321,35 @@ class DataHub:
                         result,
                         self.selected_dataset.binning_settings.time_intervals_settings,
                         variables,
-                        split_mode,
+                        SplitMode.ANIMAL,
                         factor_names,
-                        selected_factor,
+                        "",
                     )
                 case BinningMode.CYCLES:
                     result = process_time_cycles_binning(
                         result,
                         self.selected_dataset.binning_settings.time_cycles_settings,
                         variables,
-                        split_mode,
+                        SplitMode.ANIMAL,
                         factor_names,
-                        selected_factor,
+                        "",
                     )
                 case BinningMode.PHASES:
                     result = process_time_phases_binning(
                         result,
                         self.selected_dataset.binning_settings.time_phases_settings,
                         variables,
-                        split_mode,
+                        SplitMode.ANIMAL,
                         factor_names,
-                        selected_factor,
+                        "",
                     )
 
         return result
 
-    def get_anova_df(self, variables: dict[str, Variable]) -> pd.DataFrame:
+    def get_anova_df(
+        self,
+        variables: dict[str, Variable],
+    ) -> pd.DataFrame:
         default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
         factor_columns = list(self.selected_dataset.factors)
         variable_columns = list(variables)

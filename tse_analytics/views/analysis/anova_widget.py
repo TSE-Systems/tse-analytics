@@ -1,18 +1,18 @@
 import pandas as pd
 import pingouin as pg
 from PySide6.QtWidgets import QWidget, QAbstractItemView
+from pyqttoast import ToastPreset
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import SplitMode, Variable
-from tse_analytics.core.helper import show_help, get_html_image
+from tse_analytics.core.helper import show_help, get_html_image, make_toast
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.css import style_descriptive_table
 from tse_analytics.views.analysis.anova_widget_ui import Ui_AnovaWidget
-from tse_analytics.views.misc.notification import Notification
 
 
 class AnovaWidget(QWidget, MessengerListener):
@@ -126,7 +126,14 @@ class AnovaWidget(QWidget, MessengerListener):
     def _update(self):
         selected_dependent_variables = self.ui.tableWidgetDependentVariable.get_selected_variables_dict()
         if len(selected_dependent_variables) == 0:
-            Notification(text="Please select dependent variable.", parent=self, duration=2000).show_notification()
+            make_toast(
+                self,
+                "ANOVA",
+                "Please select dependent variable.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
             return
 
         if self.ui.radioButtonOneWayAnova.isChecked():
@@ -143,7 +150,14 @@ class AnovaWidget(QWidget, MessengerListener):
     def _analyze_one_way_anova(self, selected_dependent_variables: dict[str, Variable]):
         selected_factor_names = self.ui.tableWidgetFactors.get_selected_factor_names()
         if len(selected_factor_names) != 1:
-            Notification(text="Please select a single factor.", parent=self, duration=2000).show_notification()
+            make_toast(
+                self,
+                "One-way ANOVA",
+                "Please select a single factor.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
             return
 
         df = Manager.data.get_anova_df(variables=selected_dependent_variables)
@@ -220,7 +234,14 @@ class AnovaWidget(QWidget, MessengerListener):
     def _analyze_n_way_anova(self, selected_dependent_variables: dict[str, Variable]):
         selected_factor_names = self.ui.tableWidgetFactors.get_selected_factor_names()
         if len(selected_factor_names) < 2:
-            Notification(text="Please select several factors.", parent=self, duration=2000).show_notification()
+            make_toast(
+                self,
+                "N-way ANOVA",
+                "Please select several factors.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
             return
 
         df = Manager.data.get_anova_df(variables=selected_dependent_variables)
@@ -269,13 +290,20 @@ class AnovaWidget(QWidget, MessengerListener):
 
     def _analyze_rm_anova(self, selected_dependent_variables: dict[str, Variable]):
         if not Manager.data.binning_params.apply:
-            Notification(text="Please apply a proper binning first.", parent=self, duration=2000).show_notification()
+            make_toast(
+                self,
+                "Repeated Measures ANOVA",
+                "Please apply a proper binning first.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
             return
 
         df = Manager.data.get_current_df(
             variables=selected_dependent_variables,
             split_mode=SplitMode.ANIMAL,
-            selected_factor=None,
+            selected_factor_name=None,
             dropna=True,
         )
 
@@ -345,11 +373,25 @@ class AnovaWidget(QWidget, MessengerListener):
     def _analyze_mixed_anova(self, selected_dependent_variables: dict[str, Variable]):
         selected_factor_names = self.ui.tableWidgetFactors.get_selected_factor_names()
         if len(selected_factor_names) != 1:
-            Notification(text="Please select a single factor.", parent=self, duration=2000).show_notification()
+            make_toast(
+                self,
+                "Mixed ANOVA",
+                "Please select a single factor.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
             return
 
         if not Manager.data.binning_params.apply:
-            Notification(text="Please apply a proper binning first.", parent=self, duration=2000).show_notification()
+            make_toast(
+                self,
+                "Mixed ANOVA",
+                "Please apply a proper binning first.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
             return
 
         factor_name = selected_factor_names[0]
@@ -357,7 +399,7 @@ class AnovaWidget(QWidget, MessengerListener):
         df = Manager.data.get_current_df(
             variables=selected_dependent_variables,
             split_mode=SplitMode.ANIMAL,
-            selected_factor=None,
+            selected_factor_name=None,
             dropna=True,
         )
 
@@ -428,7 +470,14 @@ class AnovaWidget(QWidget, MessengerListener):
     def _analyze_ancova(self, selected_dependent_variables: dict[str, Variable]):
         selected_factor_names = self.ui.tableWidgetFactors.get_selected_factor_names()
         if len(selected_factor_names) != 1:
-            Notification(text="Please select a single factor.", parent=self, duration=2000).show_notification()
+            make_toast(
+                self,
+                "ANCOVA",
+                "Please select a single factor.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
             return
 
         factor_name = selected_factor_names[0]

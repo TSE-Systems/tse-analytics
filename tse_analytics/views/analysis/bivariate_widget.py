@@ -4,16 +4,16 @@ from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from pyqttoast import ToastPreset
 
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.helper import show_help, get_html_image
+from tse_analytics.core.helper import show_help, get_html_image, make_toast
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.css import style_descriptive_table
 from tse_analytics.views.analysis.bivariate_widget_ui import Ui_BivariateWidget
-from tse_analytics.views.misc.notification import Notification
 
 
 class BivariateWidget(QWidget, MessengerListener):
@@ -91,7 +91,7 @@ class BivariateWidget(QWidget, MessengerListener):
     def _update_correlation(self):
         x_var = self.ui.variableSelectorX.get_selected_variable()
         y_var = self.ui.variableSelectorY.get_selected_variable()
-        selected_factor = self.ui.factorSelector.currentText()
+        selected_factor_name = self.ui.factorSelector.currentText()
 
         split_mode = SplitMode.TOTAL
         by = None
@@ -103,16 +103,23 @@ class BivariateWidget(QWidget, MessengerListener):
             by = "Run"
         elif self.ui.radioButtonSplitByFactor.isChecked():
             split_mode = SplitMode.FACTOR
-            if selected_factor == "":
-                Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
+            if selected_factor_name == "":
+                make_toast(
+                    self,
+                    "Bivariate Analysis",
+                    "Please select a factor.",
+                    duration=2000,
+                    preset=ToastPreset.WARNING,
+                    show_duration_bar=True,
+                ).show()
                 return
-            by = selected_factor
+            by = selected_factor_name
 
         variables = {x_var.name: x_var} if x_var.name == y_var.name else {x_var.name: x_var, y_var.name: y_var}
         df = Manager.data.get_current_df(
             variables=variables,
             split_mode=split_mode,
-            selected_factor=selected_factor,
+            selected_factor_name=selected_factor_name,
             dropna=False,
         )
 
@@ -150,7 +157,7 @@ class BivariateWidget(QWidget, MessengerListener):
         self.ui.textEdit.document().setHtml(html)
 
     def _update_regression(self):
-        selected_factor = self.ui.factorSelector.currentText()
+        selected_factor_name = self.ui.factorSelector.currentText()
 
         split_mode = SplitMode.TOTAL
         by = None
@@ -162,14 +169,28 @@ class BivariateWidget(QWidget, MessengerListener):
             by = "Run"
         elif self.ui.radioButtonSplitByFactor.isChecked():
             split_mode = SplitMode.FACTOR
-            by = selected_factor
+            by = selected_factor_name
 
         if split_mode == SplitMode.ANIMAL:
-            Notification(text="Please select another split mode.", parent=self, duration=2000).show_notification()
+            make_toast(
+                self,
+                "Bivariate Analysis",
+                "Please select another split mode.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
             return
 
-        if split_mode == SplitMode.FACTOR and selected_factor == "":
-            Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
+        if split_mode == SplitMode.FACTOR and selected_factor_name == "":
+            make_toast(
+                self,
+                "Bivariate Analysis",
+                "Please select a factor.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
             return
 
         covariate = self.ui.variableSelectorX.get_selected_variable()
@@ -183,7 +204,7 @@ class BivariateWidget(QWidget, MessengerListener):
         df = Manager.data.get_current_df(
             variables=variables,
             split_mode=split_mode,
-            selected_factor=selected_factor,
+            selected_factor_name=selected_factor_name,
             dropna=False,
         )
 
@@ -192,8 +213,8 @@ class BivariateWidget(QWidget, MessengerListener):
             response.name: "mean",
         }
 
-        if selected_factor != "":
-            agg[selected_factor] = "first"
+        if selected_factor_name != "":
+            agg[selected_factor_name] = "first"
 
         if split_mode == SplitMode.RUN:
             group_by = ["Animal", "Run"]

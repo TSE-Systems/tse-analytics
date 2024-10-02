@@ -2,11 +2,12 @@ import os
 import timeit
 from multiprocessing import Pool
 
-from loguru import logger
 from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
 from PySide6.QtWidgets import QDialog, QWidget
+from pyqttoast import ToastPreset
 
+from tse_analytics.core.helper import make_toast
 from tse_analytics.modules.phenomaster.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
 from tse_analytics.modules.phenomaster.calo_details.calo_details_processor import process_box
 from tse_analytics.modules.phenomaster.calo_details.calo_details_settings import CaloDetailsSettings
@@ -21,7 +22,6 @@ from tse_analytics.modules.phenomaster.calo_details.views.calo_details_rer_widge
 from tse_analytics.modules.phenomaster.calo_details.views.calo_details_settings_widget import CaloDetailsSettingsWidget
 from tse_analytics.modules.phenomaster.calo_details.views.calo_details_table_view import CaloDetailsTableView
 from tse_analytics.modules.phenomaster.calo_details.views.calo_details_test_fit_widget import CaloDetailsTestFitWidget
-from tse_analytics.views.misc.notification import Notification
 
 
 class CaloDetailsDialog(QDialog):
@@ -149,8 +149,15 @@ class CaloDetailsDialog(QDialog):
                 # report the value to show progress
                 self.fitting_results[result.box_number] = result
 
-        logger.info(f"Processing complete: {timeit.default_timer() - tic} sec")
-        Notification(text="Processing complete.", parent=self, duration=4000).show_notification()
+        make_toast(
+            self,
+            "Calorimetry Analysis",
+            f"Processing complete in {timeit.default_timer() - tic} sec.",
+            duration=4000,
+            preset=ToastPreset.SUCCESS,
+            show_duration_bar=True,
+            echo_to_logger=True,
+        ).show()
 
     def hideEvent(self, event: QCloseEvent) -> None:
         settings = QSettings()

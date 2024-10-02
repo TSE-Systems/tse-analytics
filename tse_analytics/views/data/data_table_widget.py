@@ -110,7 +110,7 @@ class DataTableWidget(QWidget, MessengerListener):
         self.df = Manager.data.get_data_table_df(
             variables=selected_variables,
             split_mode=split_mode,
-            selected_factor=selected_factor_name,
+            selected_factor_name=selected_factor_name,
         )
 
         if len(selected_variables) > 0:

@@ -2,17 +2,16 @@ import pandas as pd
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
+from pyqttoast import ToastPreset
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.seasonal import MSTL, STL, seasonal_decompose
 
-from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.helper import show_help, get_html_image
+from tse_analytics.core.helper import show_help, get_html_image, make_toast
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.timeseries.timeseries_widget_ui import Ui_TimeseriesWidget
-from tse_analytics.views.misc.notification import Notification
 
 
 class TimeseriesWidget(QWidget, MessengerListener):
@@ -55,24 +54,24 @@ class TimeseriesWidget(QWidget, MessengerListener):
 
     def _update_decomposition(self):
         variable = self.ui.variableSelector.get_selected_variable()
-        if variable is None:
-            Notification(text="Please select a variable.", parent=self, duration=2000).show_notification()
-            return
 
         animal_ids = [animal.id for animal in Manager.data.selected_dataset.animals.values() if animal.enabled]
         if len(animal_ids) != 1:
-            Notification(
-                text="Please check a single animal in the Animal panel.", parent=self, duration=2000
-            ).show_notification()
+            make_toast(
+                self,
+                "Timeseries Decomposition",
+                "Please check a single animal in the Animals panel.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
             return
         animal_name = animal_ids[0]
 
         self.ui.canvas.clear(False)
 
         df = Manager.data.get_timeseries_df(
-            variables=variable,
-            split_mode=SplitMode.ANIMAL,
-            selected_factor=None,
+            variable=variable,
         )
 
         index = pd.DatetimeIndex(df["DateTime"])
@@ -81,7 +80,7 @@ class TimeseriesWidget(QWidget, MessengerListener):
         # df = df.asfreq("min")
 
         var_name = variable.name
-        df[var_name] = df[variable].interpolate(limit_direction="both")
+        df[var_name] = df[var_name].interpolate(limit_direction="both")
 
         model = "additive" if self.ui.radioButtonModelAdditive.isChecked() else "multiplicative"
         period = self.ui.periodSpinBox.value()
@@ -126,15 +125,17 @@ class TimeseriesWidget(QWidget, MessengerListener):
 
     def _update_autocorrelation(self):
         variable = self.ui.variableSelector.get_selected_variable()
-        if variable is None:
-            Notification(text="Please select a variable.", parent=self, duration=2000).show_notification()
-            return
 
         animal_ids = [animal.id for animal in Manager.data.selected_dataset.animals.values() if animal.enabled]
         if len(animal_ids) != 1:
-            Notification(
-                text="Please check a single animal in the Animal panel.", parent=self, duration=2000
-            ).show_notification()
+            make_toast(
+                self,
+                "Timeseries Autocorrelation",
+                "Please check a single animal in the Animals panel.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
             return
         animal_name = animal_ids[0]
 
@@ -142,8 +143,6 @@ class TimeseriesWidget(QWidget, MessengerListener):
 
         df = Manager.data.get_timeseries_df(
             variable=variable,
-            split_mode=SplitMode.ANIMAL,
-            selected_factor=None,
         )
 
         index = pd.DatetimeIndex(df["DateTime"])

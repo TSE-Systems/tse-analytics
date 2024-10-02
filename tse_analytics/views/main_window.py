@@ -7,6 +7,7 @@ import PySide6QtAds
 from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QCloseEvent, QIcon
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QMessageBox, QWidget
+from pyqttoast import Toast, ToastPosition
 
 from tse_analytics.core.helper import LAYOUT_VERSION, show_help, CSV_IMPORT_ENABLED
 from tse_analytics.core.manager import Manager
@@ -155,6 +156,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.default_docking_state = self.dock_manager.saveState(LAYOUT_VERSION)
 
         self.load_settings()
+
+        Toast.setPositionRelativeToWidget(self)
+        Toast.setMovePositionWithWidget(True)
 
     def _register_dock_widget(self, widget: QWidget, title: str, icon: QIcon) -> PySide6QtAds.CDockWidget:
         dock_widget = PySide6QtAds.CDockWidget(title)

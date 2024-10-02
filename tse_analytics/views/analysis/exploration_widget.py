@@ -3,15 +3,15 @@ import seaborn as sns
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
+from pyqttoast import ToastPreset
 
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.helper import show_help, get_html_image
+from tse_analytics.core.helper import show_help, get_html_image, make_toast
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.views.analysis.exploration_widget_ui import Ui_ExplorationWidget
-from tse_analytics.views.misc.notification import Notification
 
 
 class ExplorationWidget(QWidget, MessengerListener):
@@ -73,7 +73,14 @@ class ExplorationWidget(QWidget, MessengerListener):
 
     def _update(self):
         if self.ui.radioButtonSplitByFactor.isChecked() and self.ui.factorSelector.currentText() == "":
-            Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
+            make_toast(
+                self,
+                "Exploration Analysis",
+                "Please select a factor.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
             return
 
         if self.ui.radioButtonHistogram.isChecked():
@@ -85,7 +92,7 @@ class ExplorationWidget(QWidget, MessengerListener):
 
     def _update_histogram_plot(self):
         variable = self.ui.variableSelector.get_selected_variable()
-        selected_factor = self.ui.factorSelector.currentText()
+        selected_factor_name = self.ui.factorSelector.currentText()
 
         if self.ui.radioButtonSplitByAnimal.isChecked():
             split_mode = SplitMode.ANIMAL
@@ -95,7 +102,7 @@ class ExplorationWidget(QWidget, MessengerListener):
             by = "Run"
         elif self.ui.radioButtonSplitByFactor.isChecked():
             split_mode = SplitMode.FACTOR
-            by = selected_factor
+            by = selected_factor_name
         else:
             split_mode = SplitMode.TOTAL
             by = None
@@ -103,7 +110,7 @@ class ExplorationWidget(QWidget, MessengerListener):
         df = Manager.data.get_current_df(
             variables={variable.name: variable},
             split_mode=split_mode,
-            selected_factor=selected_factor,
+            selected_factor_name=selected_factor_name,
             dropna=False,
         )
 
@@ -133,7 +140,7 @@ class ExplorationWidget(QWidget, MessengerListener):
 
     def _update_distribution_plot(self):
         variable = self.ui.variableSelector.get_selected_variable()
-        selected_factor = self.ui.factorSelector.currentText()
+        selected_factor_name = self.ui.factorSelector.currentText()
 
         split_mode = SplitMode.TOTAL
         x = None
@@ -145,12 +152,12 @@ class ExplorationWidget(QWidget, MessengerListener):
             x = "Run"
         elif self.ui.radioButtonSplitByFactor.isChecked():
             split_mode = SplitMode.FACTOR
-            x = selected_factor
+            x = selected_factor_name
 
         df = Manager.data.get_current_df(
             variables={variable.name: variable},
             split_mode=split_mode,
-            selected_factor=selected_factor,
+            selected_factor_name=selected_factor_name,
             dropna=False,
         )
 
@@ -170,7 +177,7 @@ class ExplorationWidget(QWidget, MessengerListener):
 
     def _update_normality_plot(self):
         variable = self.ui.variableSelector.get_selected_variable()
-        selected_factor = self.ui.factorSelector.currentText()
+        selected_factor_name = self.ui.factorSelector.currentText()
 
         split_mode = SplitMode.TOTAL
         by = None
@@ -182,12 +189,12 @@ class ExplorationWidget(QWidget, MessengerListener):
             by = "Run"
         elif self.ui.radioButtonSplitByFactor.isChecked():
             split_mode = SplitMode.FACTOR
-            by = selected_factor
+            by = selected_factor_name
 
         df = Manager.data.get_current_df(
             variables={variable.name: variable},
             split_mode=split_mode,
-            selected_factor=selected_factor,
+            selected_factor_name=selected_factor_name,
             dropna=True,
         )
 
@@ -205,14 +212,14 @@ class ExplorationWidget(QWidget, MessengerListener):
                     pg.qqplot(df[df["Animal"] == animal][variable.name], dist="norm", ax=ax)
                     ax.set_title(f"Animal: {animal}")
             case SplitMode.FACTOR:
-                groups = df[selected_factor].unique()
+                groups = df[selected_factor_name].unique()
                 nrows, ncols = self._get_plot_layout(len(groups))
                 for index, group in enumerate(groups):
                     # TODO: NaN check
                     if group != group:
                         continue
                     ax = self.ui.canvas.figure.add_subplot(nrows, ncols, index + 1)
-                    pg.qqplot(df[df[selected_factor] == group][variable.name], dist="norm", ax=ax)
+                    pg.qqplot(df[df[selected_factor_name] == group][variable.name], dist="norm", ax=ax)
                     ax.set_title(group)
             case SplitMode.RUN:
                 runs = df["Run"].unique()

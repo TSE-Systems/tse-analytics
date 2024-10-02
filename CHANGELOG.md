@@ -1,9 +1,14 @@
 TSE Analytics Change Log
 ====================================================================================================
 
-# 0.9.5 (2024-10-01)
+# 0.10.0 (2024-10-03)
 
-- New    --
+- New    -- Aggregation operations per variable.
+- New    -- Outliers detection enabled on per-variable level.
+- New    -- New notification subsystem.
+- Change -- Outliers detection UI combined in Variables widget.
+- Change -- Datasets widget toolbar UI.
+- Fix    -- Split modes in Table data view were only working with active binning.
 
 
 ----------------------------------------------------------------------------------------------------

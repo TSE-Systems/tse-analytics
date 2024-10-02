@@ -3,12 +3,12 @@ from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
+from tse_analytics.core.helper import make_toast
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.phenomaster.actimot.views.actimot_trajectory_plot_widget_ui import (
     Ui_ActimotTrajectoryPlotWidget,
 )
-from tse_analytics.views.misc.notification import Notification
 
 
 class ActimotTrajectoryPlotWidget(QWidget):
@@ -39,10 +39,12 @@ class ActimotTrajectoryPlotWidget(QWidget):
             return
 
         self.ui.toolButtonCalculate.setEnabled(False)
-        self.toast = Notification(text="Processing...", parent=self, duration=None)
-        self.toast.show_notification()
+
+        self.toast = make_toast(self, "ActiMot Trajectory Analysis", "Processing...")
+        self.toast.show()
 
         worker = Worker(self._work)
+        worker.signals.finished.connect(self._work_finished)
         Manager.threadpool.start(worker)
 
     def _work(self):
@@ -55,8 +57,9 @@ class ActimotTrajectoryPlotWidget(QWidget):
 
         _ = traja.plot(self.trj_df, ax=ax, n_coords=n_points)
 
+    def _work_finished(self):
+        self.toast.hide()
+        self.ui.toolButtonCalculate.setEnabled(True)
+
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()
-
-        self.toast.close_notification()
-        self.ui.toolButtonCalculate.setEnabled(True)

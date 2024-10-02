@@ -5,17 +5,18 @@ import plotly.express as px
 from PySide6.QtCore import QBuffer, QByteArray, QDir, QIODevice, QTemporaryFile, QUrl
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QWidget, QAbstractItemView
+from pyqttoast import ToastPreset
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
-from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.helper import show_help
+from tse_analytics.core.data.shared import SplitMode, Variable
+from tse_analytics.core.helper import show_help, make_toast
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
+from tse_analytics.core.workers.worker import Worker
 from tse_analytics.views.analysis.dimensionality_widget_ui import Ui_DimensionalityWidget
-from tse_analytics.views.misc.notification import Notification
 
 
 class DimensionalityWidget(QWidget, MessengerListener):
@@ -57,6 +58,8 @@ class DimensionalityWidget(QWidget, MessengerListener):
             lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
         )
 
+        self.toast = None
+
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
 
@@ -82,10 +85,17 @@ class DimensionalityWidget(QWidget, MessengerListener):
     def _update_matrix_plot(self):
         selected_variables = self.ui.tableWidgetVariables.get_selected_variables_dict()
         if len(selected_variables) < 2:
-            Notification(text="Please select at least two variables.", parent=self, duration=2000).show_notification()
+            make_toast(
+                self,
+                "Dimensionality Analysis",
+                "Please select at least two variables.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
             return
 
-        selected_factor = self.ui.factorSelector.currentText()
+        selected_factor_name = self.ui.factorSelector.currentText()
 
         split_mode = SplitMode.TOTAL
         by = None
@@ -97,16 +107,23 @@ class DimensionalityWidget(QWidget, MessengerListener):
             by = "Run"
         elif self.ui.radioButtonSplitByFactor.isChecked():
             split_mode = SplitMode.FACTOR
-            by = selected_factor
+            by = selected_factor_name
 
-        if split_mode == SplitMode.FACTOR and selected_factor == "":
-            Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
+        if split_mode == SplitMode.FACTOR and selected_factor_name == "":
+            make_toast(
+                self,
+                "Dimensionality Analysis",
+                "Please select factor.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
             return
 
         df = Manager.data.get_current_df(
             variables=selected_variables,
             split_mode=split_mode,
-            selected_factor=selected_factor,
+            selected_factor_name=selected_factor_name,
             dropna=False,
         )
 
@@ -121,12 +138,17 @@ class DimensionalityWidget(QWidget, MessengerListener):
     def _update_pca_tsne_plot(self):
         selected_variables = self.ui.tableWidgetVariables.get_selected_variables_dict()
         if len(selected_variables) < 3:
-            Notification(
-                text="Please select at least three variables in Variables panel.", parent=self, duration=2000
-            ).show_notification()
+            make_toast(
+                self,
+                "Dimensionality Analysis",
+                "Please select at least three variables.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
             return
 
-        selected_factor = self.ui.factorSelector.currentText()
+        selected_factor_name = self.ui.factorSelector.currentText()
 
         split_mode = SplitMode.TOTAL
         by = None
@@ -138,16 +160,41 @@ class DimensionalityWidget(QWidget, MessengerListener):
             by = "Run"
         elif self.ui.radioButtonSplitByFactor.isChecked():
             split_mode = SplitMode.FACTOR
-            by = selected_factor
+            by = selected_factor_name
 
-        if split_mode == SplitMode.FACTOR and selected_factor == "":
-            Notification(text="Please select factor.", parent=self, duration=2000).show_notification()
+        if split_mode == SplitMode.FACTOR and selected_factor_name == "":
+            make_toast(
+                self,
+                "Dimensionality Analysis",
+                "Please select factor.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
             return
 
+        self.ui.pushButtonUpdate.setEnabled(False)
+        self.ui.pushButtonAddReport.setEnabled(False)
+
+        self.toast = make_toast(self, "Dimensionality Analysis", "Processing...")
+        self.toast.show()
+
+        worker = Worker(self._calculate_pca_tsne, selected_variables, split_mode, selected_factor_name, by)
+        worker.signals.result.connect(self._calculate_pca_tsne_result)
+        worker.signals.finished.connect(self._calculate_pca_tsne_finished)
+        Manager.threadpool.start(worker)
+
+    def _calculate_pca_tsne(
+        self,
+        selected_variables: dict[str, Variable],
+        split_mode: SplitMode,
+        selected_factor_name: str,
+        by: str,
+    ) -> str:
         df = Manager.data.get_current_df(
             variables=selected_variables,
             split_mode=split_mode,
-            selected_factor=selected_factor,
+            selected_factor_name=selected_factor_name,
             dropna=True,
         )
 
@@ -198,7 +245,15 @@ class DimensionalityWidget(QWidget, MessengerListener):
         file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.html", self)
         if file.open():
             fig.write_html(file.fileName(), include_plotlyjs=True)
-            self.ui.webView.load(QUrl.fromLocalFile(file.fileName()))
+        return file.fileName()
+
+    def _calculate_pca_tsne_result(self, filename: str):
+        self.ui.webView.load(QUrl.fromLocalFile(filename))
+
+    def _calculate_pca_tsne_finished(self):
+        self.toast.hide()
+        self.ui.pushButtonUpdate.setEnabled(True)
+        self.ui.pushButtonAddReport.setEnabled(True)
 
     def _add_report(self):
         size = self.ui.webView.contentsRect()
