@@ -1,6 +1,6 @@
 import pandas as pd
 import pingouin as pg
-from PySide6.QtWidgets import QWidget, QAbstractItemView
+from PySide6.QtWidgets import QWidget, QAbstractItemView, QMessageBox
 from pyqttoast import ToastPreset
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
@@ -289,6 +289,7 @@ class AnovaWidget(QWidget, MessengerListener):
         self.ui.textEdit.document().setHtml(html)
 
     def _analyze_rm_anova(self, selected_dependent_variables: dict[str, Variable]):
+        do_pairwise_tests = True
         if not Manager.data.binning_params.apply:
             make_toast(
                 self,
@@ -299,6 +300,16 @@ class AnovaWidget(QWidget, MessengerListener):
                 show_duration_bar=True,
             ).show()
             return
+        elif Manager.data.binning_params.mode == BinningMode.INTERVALS:
+            if (
+                QMessageBox.question(
+                    self,
+                    "Perform pairwise tests?",
+                    "Calculation of pairwise tests with many time bins can take a long time!",
+                )
+                == QMessageBox.StandardButton.No
+            ):
+                do_pairwise_tests = False
 
         df = Manager.data.get_current_df(
             variables=selected_dependent_variables,
@@ -329,19 +340,7 @@ class AnovaWidget(QWidget, MessengerListener):
             detailed=True,
         ).round(5)
 
-        if Manager.data.binning_params.mode == BinningMode.INTERVALS:
-            html_template = """
-                            <h2>Sphericity test</h2>
-                            {sphericity}
-                            <h2>Repeated measures one-way ANOVA</h2>
-                            {anova}
-                            """
-
-            html = html_template.format(
-                sphericity=sphericity.to_html(),
-                anova=anova.to_html(),
-            )
-        else:
+        if do_pairwise_tests:
             effsize = self.eff_size[self.ui.comboBoxEffectSizeType.currentText()]
 
             pairwise_tests = pg.pairwise_tests(
@@ -354,18 +353,30 @@ class AnovaWidget(QWidget, MessengerListener):
             ).round(5)
 
             html_template = """
-                            <h2>Sphericity test</h2>
-                            {sphericity}
-                            <h2>Repeated measures one-way ANOVA</h2>
-                            {anova}
-                            <h2>Pairwise post-hoc tests</h2>
-                            {pairwise_tests}
-                            """
+                                        <h2>Sphericity test</h2>
+                                        {sphericity}
+                                        <h2>Repeated measures one-way ANOVA</h2>
+                                        {anova}
+                                        <h2>Pairwise post-hoc tests</h2>
+                                        {pairwise_tests}
+                                        """
 
             html = html_template.format(
                 sphericity=sphericity.to_html(),
                 anova=anova.to_html(),
                 pairwise_tests=pairwise_tests.to_html(),
+            )
+        else:
+            html_template = """
+                                        <h2>Sphericity test</h2>
+                                        {sphericity}
+                                        <h2>Repeated measures one-way ANOVA</h2>
+                                        {anova}
+                                        """
+
+            html = html_template.format(
+                sphericity=sphericity.to_html(),
+                anova=anova.to_html(),
             )
 
         self.ui.textEdit.document().setHtml(html)
@@ -383,6 +394,7 @@ class AnovaWidget(QWidget, MessengerListener):
             ).show()
             return
 
+        do_pairwise_tests = True
         if not Manager.data.binning_params.apply:
             make_toast(
                 self,
@@ -393,6 +405,16 @@ class AnovaWidget(QWidget, MessengerListener):
                 show_duration_bar=True,
             ).show()
             return
+        elif Manager.data.binning_params.mode == BinningMode.INTERVALS:
+            if (
+                QMessageBox.question(
+                    self,
+                    "Perform pairwise tests?",
+                    "Calculation of pairwise tests with many time bins can take a long time!",
+                )
+                == QMessageBox.StandardButton.No
+            ):
+                do_pairwise_tests = False
 
         factor_name = selected_factor_names[0]
 
@@ -425,19 +447,7 @@ class AnovaWidget(QWidget, MessengerListener):
             columns=["Sphericity", "W", "Chi-square", "DOF", "p-value"],
         ).round(5)
 
-        if Manager.data.binning_params.mode == BinningMode.INTERVALS:
-            html_template = """
-                            <h2>Sphericity test</h2>
-                            {sphericity}
-                            <h2>Mixed-design ANOVA</h2>
-                            {anova}
-                            """
-
-            html = html_template.format(
-                sphericity=sphericity.to_html(),
-                anova=anova.to_html(),
-            )
-        else:
+        if do_pairwise_tests:
             effsize = self.eff_size[self.ui.comboBoxEffectSizeType.currentText()]
 
             pairwise_tests = pg.pairwise_tests(
@@ -451,18 +461,30 @@ class AnovaWidget(QWidget, MessengerListener):
             ).round(5)
 
             html_template = """
-                            <h2>Sphericity test</h2>
-                            {sphericity}
-                            <h2>Mixed-design ANOVA</h2>
-                            {anova}
-                            <h2>Pairwise post-hoc tests</h2>
-                            {pairwise_tests}
-                            """
+                                        <h2>Sphericity test</h2>
+                                        {sphericity}
+                                        <h2>Mixed-design ANOVA</h2>
+                                        {anova}
+                                        <h2>Pairwise post-hoc tests</h2>
+                                        {pairwise_tests}
+                                        """
 
             html = html_template.format(
                 sphericity=sphericity.to_html(),
                 anova=anova.to_html(),
                 pairwise_tests=pairwise_tests.to_html(),
+            )
+        else:
+            html_template = """
+                                        <h2>Sphericity test</h2>
+                                        {sphericity}
+                                        <h2>Mixed-design ANOVA</h2>
+                                        {anova}
+                                        """
+
+            html = html_template.format(
+                sphericity=sphericity.to_html(),
+                anova=anova.to_html(),
             )
 
         self.ui.textEdit.document().setHtml(html)

@@ -250,7 +250,7 @@ class BivariateWidget(QWidget, MessengerListener):
         self.ui.textEdit.document().setHtml(html)
 
     def _add_report(self):
-        html = get_html_image(self.ui.canvas.figure)
+        html = get_html_image(self.plot_toolbar.canvas.figure)
         html += self.ui.textEdit.toHtml()
 
         Manager.messenger.broadcast(AddToReportMessage(self, html))

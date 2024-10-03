@@ -6,9 +6,11 @@ TSE Analytics Change Log
 - New    -- Aggregation operations per variable.
 - New    -- Outliers detection enabled on per-variable level.
 - New    -- New notification subsystem.
+- Change -- Optional pairwise tests for repeated measures / mixed ANOVA.
 - Change -- Outliers detection UI combined in Variables widget.
 - Change -- Datasets widget toolbar UI.
 - Fix    -- Split modes in Table data view were only working with active binning.
+- Fix    -- Adding plot to report in Bivariate widget.
 
 
 ----------------------------------------------------------------------------------------------------
