@@ -36,7 +36,7 @@ class PandasModel(QAbstractTableModel):
         if role == Qt.ItemDataRole.DisplayRole:
             return str(self._data[index.row(), index.column()])
         if self.calulate and role == Qt.ItemDataRole.BackgroundRole:
-            if Manager.data.outliers_params.mode == OutliersMode.HIGHLIGHT:
+            if Manager.data.selected_dataset.outliers_settings.mode == OutliersMode.HIGHLIGHT:
                 value = self._data[index.row(), index.column()]
                 if isinstance(value, int | float):
                     var_name = str(self._cols[index.column()])
@@ -47,7 +47,7 @@ class PandasModel(QAbstractTableModel):
                         q1 = self.q1[var_name]
                         q3 = self.q3[var_name]
                         iqr = q3 - q1
-                        coef = Manager.data.outliers_params.coefficient
+                        coef = Manager.data.selected_dataset.outliers_settings.coefficient
                         if (value < (q1 - coef * iqr)) or (value > (q3 + coef * iqr)):
                             return PandasModel.color
         return None

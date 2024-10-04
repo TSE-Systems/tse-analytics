@@ -95,13 +95,13 @@ class DatasetsWidget(QWidget):
         self.ui.treeView.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.ui.treeView.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.ui.treeView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.ui.treeView.setModel(Manager.workspace)
+        self.ui.treeView.setModel(Manager.workspace_model)
 
         # self.ui.treeView.customContextMenuRequested.connect(self._open_menu)
         self.ui.treeView.selectionModel().selectionChanged.connect(self._treeview_selection_changed)
         self.ui.treeView.selectionModel().currentChanged.connect(self._treeview_current_changed)
         self.ui.treeView.doubleClicked.connect(self._treeview_double_clicked)
-        Manager.workspace.checkedItemChanged.connect(self._checked_item_changed)
+        Manager.workspace_model.checkedItemChanged.connect(self._checked_item_changed)
 
     # def _open_menu(self, position):
     #     indexes = self.ui.treeView.selectedIndexes()

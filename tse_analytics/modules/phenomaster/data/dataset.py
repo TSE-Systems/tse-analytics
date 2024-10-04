@@ -6,6 +6,7 @@ from uuid import uuid4
 import pandas as pd
 
 from tse_analytics.core.data.binning import BinningSettings
+from tse_analytics.core.data.outliers import OutliersSettings, OutliersMode
 from tse_analytics.core.data.shared import Animal, Factor, Group, Variable
 from tse_analytics.modules.phenomaster.actimot.data.actimot_details import ActimotDetails
 from tse_analytics.modules.phenomaster.calo_details.data.calo_details import CaloDetails
@@ -36,6 +37,8 @@ class Dataset:
         self.sampling_interval = sampling_interval
 
         self.factors: dict[str, Factor] = {}
+
+        self.outliers_settings = OutliersSettings(OutliersMode.OFF, 1.5)
         self.binning_settings = BinningSettings()
 
         self.calo_details: CaloDetails | None = None

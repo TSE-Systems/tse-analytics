@@ -57,9 +57,9 @@ class BarPlotView(QWidget):
             self._df is None
             or self._variable == ""
             or (self._split_mode == SplitMode.FACTOR and self._selected_factor is None)
-            or not Manager.data.binning_params.apply
+            or not Manager.data.selected_dataset.binning_settings.apply
             or (
-                Manager.data.binning_params.mode == BinningMode.PHASES
+                Manager.data.selected_dataset.binning_settings.mode == BinningMode.PHASES
                 and len(Manager.data.selected_dataset.binning_settings.time_phases_settings.time_phases) == 0
             )
         ):

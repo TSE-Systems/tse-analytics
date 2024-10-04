@@ -290,7 +290,7 @@ class AnovaWidget(QWidget, MessengerListener):
 
     def _analyze_rm_anova(self, selected_dependent_variables: dict[str, Variable]):
         do_pairwise_tests = True
-        if not Manager.data.binning_params.apply:
+        if not Manager.data.selected_dataset.binning_settings.apply:
             make_toast(
                 self,
                 "Repeated Measures ANOVA",
@@ -300,7 +300,7 @@ class AnovaWidget(QWidget, MessengerListener):
                 show_duration_bar=True,
             ).show()
             return
-        elif Manager.data.binning_params.mode == BinningMode.INTERVALS:
+        elif Manager.data.selected_dataset.binning_settings.mode == BinningMode.INTERVALS:
             if (
                 QMessageBox.question(
                     self,
@@ -395,7 +395,7 @@ class AnovaWidget(QWidget, MessengerListener):
             return
 
         do_pairwise_tests = True
-        if not Manager.data.binning_params.apply:
+        if not Manager.data.selected_dataset.binning_settings.apply:
             make_toast(
                 self,
                 "Mixed ANOVA",
@@ -405,7 +405,7 @@ class AnovaWidget(QWidget, MessengerListener):
                 show_duration_bar=True,
             ).show()
             return
-        elif Manager.data.binning_params.mode == BinningMode.INTERVALS:
+        elif Manager.data.selected_dataset.binning_settings.mode == BinningMode.INTERVALS:
             if (
                 QMessageBox.question(
                     self,

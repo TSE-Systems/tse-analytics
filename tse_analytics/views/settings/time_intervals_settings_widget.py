@@ -12,7 +12,7 @@ class TimeIntervalsSettingsWidget(QWidget):
         self.ui = Ui_TimeIntervalsSettingsWidget()
         self.ui.setupUi(self)
 
-        self.ui.unitComboBox.addItems(["day", "hour", "minute"])
+        self.ui.unitComboBox.addItems(("day", "hour", "minute"))
         self.ui.unitComboBox.currentTextChanged.connect(self._binning_unit_changed)
 
         self.ui.deltaSpinBox.valueChanged.connect(self._binning_delta_changed)

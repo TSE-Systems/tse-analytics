@@ -1,13 +1,14 @@
 from PySide6.QtCore import QSize, QSortFilterProxyModel, Qt
 from PySide6.QtWidgets import QWidget, QToolBar, QComboBox, QDoubleSpinBox
 
-from tse_analytics.core.data.outliers import OutliersMode, OutliersParams
+from tse_analytics.core.data.outliers import OutliersMode
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.models.aggregation_combo_box_delegate import AggregationComboBoxDelegate
 from tse_analytics.core.models.variables_model import VariablesModel
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.views.selection.variables.variables_widget_ui import Ui_VariablesWidget
 
 
@@ -29,7 +30,6 @@ class VariablesWidget(QWidget, MessengerListener):
         toolbar.addWidget(self.outliersModeComboBox)
 
         self.outliersCoefficientSpinBox = QDoubleSpinBox()
-        self.outliersCoefficientSpinBox.setValue(Manager.data.outliers_params.coefficient)
         self.outliersCoefficientSpinBox.valueChanged.connect(self._outliers_coefficient_changed)
         toolbar.addWidget(self.outliersCoefficientSpinBox)
 
@@ -42,28 +42,36 @@ class VariablesWidget(QWidget, MessengerListener):
 
         self.ui.tableView.setItemDelegateForColumn(2, AggregationComboBoxDelegate(self.ui.tableView))
 
+        self.dataset: Dataset | None = None
+
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
 
     def _on_dataset_changed(self, message: DatasetChangedMessage):
         if message.data is None:
+            self.dataset = None
             self.ui.tableView.model().setSourceModel(None)
+            self.outliersCoefficientSpinBox.setValue(1.5)
+            self.outliersModeComboBox.setCurrentText(OutliersMode.OFF)
         else:
-            model = VariablesModel(list(message.data.variables.values()))
+            self.dataset = message.data
+            model = VariablesModel(list(self.dataset.variables.values()))
             self.ui.tableView.model().setSourceModel(model)
             self.ui.tableView.resizeColumnsToContents()
+            self.outliersCoefficientSpinBox.setValue(self.dataset.outliers_settings.coefficient)
+            self.outliersModeComboBox.setCurrentText(self.dataset.outliers_settings.mode)
 
     def _outliers_mode_changed(self, value: str):
-        self._outliers_params_changed()
+        if self.dataset is not None:
+            outliers_settings = self.dataset.outliers_settings
+            outliers_settings.mode = OutliersMode(self.outliersModeComboBox.currentText())
+            Manager.data.apply_outliers(outliers_settings)
 
     def _outliers_coefficient_changed(self, value: float):
-        self._outliers_params_changed()
-
-    def _outliers_params_changed(self):
-        mode = OutliersMode(self.outliersModeComboBox.currentText())
-        outliers_coefficient = self.outliersCoefficientSpinBox.value()
-        outliers_params = OutliersParams(mode, outliers_coefficient)
-        Manager.data.apply_outliers(outliers_params)
+        if self.dataset is not None:
+            outliers_settings = self.dataset.outliers_settings
+            outliers_settings.coefficient = self.outliersCoefficientSpinBox.value()
+            Manager.data.apply_outliers(outliers_settings)
 
     def minimumSizeHint(self):
         return QSize(200, 100)

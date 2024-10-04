@@ -11,10 +11,13 @@ class BinningMode(StrEnum):
     PHASES = "Time Phases"
 
 
-class BinningParams:
-    def __init__(self, apply: bool, mode: BinningMode):
-        self.apply = apply
-        self.mode = mode
+class BinningSettings:
+    def __init__(self):
+        self.apply = False
+        self.mode = BinningMode.INTERVALS
+        self.time_intervals_settings = TimeIntervalsBinningSettings("hour", 1)
+        self.time_cycles_settings = TimeCyclesBinningSettings(time(7, 0), time(19, 0))
+        self.time_phases_settings = TimePhasesBinningSettings([])
 
 
 class TimeIntervalsBinningSettings:
@@ -32,10 +35,3 @@ class TimeCyclesBinningSettings:
 class TimePhasesBinningSettings:
     def __init__(self, time_phases: list[TimePhase]):
         self.time_phases = time_phases
-
-
-class BinningSettings:
-    def __init__(self):
-        self.time_intervals_settings = TimeIntervalsBinningSettings("hour", 1)
-        self.time_cycles_settings = TimeCyclesBinningSettings(time(7, 0), time(19, 0))
-        self.time_phases_settings = TimePhasesBinningSettings([])

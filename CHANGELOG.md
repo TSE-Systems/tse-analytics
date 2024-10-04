@@ -3,6 +3,7 @@ TSE Analytics Change Log
 
 # 0.10.1 (2024-10-04)
 
+- Change -- Binning and outliers settings are now parts of datasets instead of the global singleton.
 - Fix    -- Correct index reset after dataset adjustments.
 - Fix    -- Wrong aggregation calculation for some combinations of binning/splitting modes.
 

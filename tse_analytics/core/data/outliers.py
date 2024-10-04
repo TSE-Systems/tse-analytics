@@ -8,7 +8,7 @@ class OutliersMode(StrEnum):
     REMOVE = "Remove outliers"
 
 
-class OutliersParams:
+class OutliersSettings:
     def __init__(self, mode: OutliersMode, coefficient: float):
         self.mode = mode
         self.coefficient = coefficient

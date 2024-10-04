@@ -1,6 +1,6 @@
 import pandas as pd
 
-from tse_analytics.core.data.binning import BinningParams
+from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.models.tree_item import TreeItem
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
@@ -82,9 +82,9 @@ class DatasetChangedMessage(Message):
 class BinningMessage(Message):
     """Binning signalling"""
 
-    def __init__(self, sender, params: BinningParams):
+    def __init__(self, sender, settings: BinningSettings):
         super().__init__(sender)
-        self.params = params
+        self.settings = settings
 
 
 class ShowHelpMessage(Message):

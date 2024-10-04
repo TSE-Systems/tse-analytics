@@ -83,7 +83,7 @@ class DataPlotWidget(QWidget, MessengerListener):
     def _error_type_std_toggled(self, toggled: bool) -> None:
         if not toggled:
             return
-        if Manager.data.binning_params.mode == BinningMode.INTERVALS:
+        if Manager.data.selected_dataset.binning_settings.mode == BinningMode.INTERVALS:
             self.timelinePlotView.set_error_type("std")
         else:
             self.barPlotView.set_error_type("sd")
@@ -91,13 +91,13 @@ class DataPlotWidget(QWidget, MessengerListener):
     def _error_type_ste_toggled(self, toggled: bool) -> None:
         if not toggled:
             return
-        if Manager.data.binning_params.mode == BinningMode.INTERVALS:
+        if Manager.data.selected_dataset.binning_settings.mode == BinningMode.INTERVALS:
             self.timelinePlotView.set_error_type("sem")
         else:
             self.barPlotView.set_error_type("se")
 
     def _display_errors_toggled(self, toggled: bool) -> None:
-        if Manager.data.binning_params.mode == BinningMode.INTERVALS:
+        if Manager.data.selected_dataset.binning_settings.mode == BinningMode.INTERVALS:
             self.timelinePlotView.set_display_errors(toggled)
         else:
             self.barPlotView.set_display_errors(toggled)
@@ -110,7 +110,7 @@ class DataPlotWidget(QWidget, MessengerListener):
         if message.data is None:
             self.ui.variableSelector.clear()
             self.ui.factorSelector.clear()
-            if Manager.data.binning_params.mode == BinningMode.INTERVALS:
+            if Manager.data.selected_dataset.binning_settings.mode == BinningMode.INTERVALS:
                 self.timelinePlotView.clear_plot()
             else:
                 self.barPlotView.clear_plot()
@@ -120,10 +120,10 @@ class DataPlotWidget(QWidget, MessengerListener):
             self._assign_data()
 
     def _on_binning_applied(self, message: BinningMessage):
-        if message.params.apply:
+        if message.settings.apply:
             self._assign_data()
         else:
-            if Manager.data.binning_params.mode == BinningMode.INTERVALS:
+            if message.settings.mode == BinningMode.INTERVALS:
                 self._assign_data()
 
     def _on_data_changed(self, message: DataChangedMessage):
@@ -171,26 +171,26 @@ class DataPlotWidget(QWidget, MessengerListener):
                 split_mode=split_mode,
                 selected_factor_name=selected_factor_name,
             )
-            if Manager.data.binning_params.mode == BinningMode.INTERVALS
+            if Manager.data.selected_dataset.binning_settings.mode == BinningMode.INTERVALS
             else Manager.data.get_bar_plot_df(variable=selected_variable)
         )
 
-        if Manager.data.binning_params.mode == BinningMode.INTERVALS:
-            if Manager.data.binning_params.mode != self.active_binning_mode:
+        if Manager.data.selected_dataset.binning_settings.mode == BinningMode.INTERVALS:
+            if Manager.data.selected_dataset.binning_settings.mode != self.active_binning_mode:
                 self.ui.splitter.replaceWidget(0, self.timelinePlotView)
                 self.barPlotView.hide()
                 self.timelinePlotView.show()
-                self.active_binning_mode = Manager.data.binning_params.mode
+                self.active_binning_mode = Manager.data.selected_dataset.binning_settings.mode
             self.timelinePlotView.set_variable(selected_variable, False)
             self.timelinePlotView.set_data(df)
             self.plot_toolbar.hide()
             self.ui.checkBoxScatterPlot.show()
         else:
-            if Manager.data.binning_params.mode != self.active_binning_mode:
+            if Manager.data.selected_dataset.binning_settings.mode != self.active_binning_mode:
                 self.ui.splitter.replaceWidget(0, self.barPlotView)
                 self.timelinePlotView.hide()
                 self.barPlotView.show()
-                self.active_binning_mode = Manager.data.binning_params.mode
+                self.active_binning_mode = Manager.data.selected_dataset.binning_settings.mode
             self.barPlotView.set_variable(selected_variable, False)
             self.barPlotView.set_data(df)
 
@@ -205,7 +205,7 @@ class DataPlotWidget(QWidget, MessengerListener):
     def _add_report(self):
         html = (
             self.timelinePlotView.get_report()
-            if Manager.data.binning_params.mode == BinningMode.INTERVALS
+            if Manager.data.selected_dataset.binning_settings.mode == BinningMode.INTERVALS
             else self.barPlotView.get_report()
         )
         Manager.messenger.broadcast(AddToReportMessage(self, html))

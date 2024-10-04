@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 
-from tse_analytics.core.data.binning import BinningMode, BinningParams, TimeIntervalsBinningSettings
-from tse_analytics.core.data.outliers import OutliersMode, OutliersParams
+from tse_analytics.core.data.binning import BinningMode, TimeIntervalsBinningSettings, BinningSettings
+from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings
 from tse_analytics.core.data.pipeline.animal_filter_pipe_operator import filter_animals
 from tse_analytics.core.data.pipeline.outliers_pipe_operator import process_outliers
 from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import process_time_cycles_binning
@@ -22,23 +22,20 @@ class DataHub:
 
         self.selected_dataset: Dataset | None = None
 
-        self.binning_params = BinningParams(False, BinningMode.INTERVALS)
-        self.outliers_params = OutliersParams(OutliersMode.OFF, 1.5)
-
     def clear(self) -> None:
         self.selected_dataset = None
         self.messenger.broadcast(DatasetChangedMessage(self, None))
 
-    def apply_binning(self, params: BinningParams) -> None:
+    def apply_binning(self, binning_settings: BinningSettings) -> None:
         if self.selected_dataset is None:
             return
-        self.binning_params = params
-        self.messenger.broadcast(BinningMessage(self, self.binning_params))
+        self.selected_dataset.binning_settings = binning_settings
+        self.messenger.broadcast(BinningMessage(self, binning_settings))
 
-    def apply_outliers(self, params: OutliersParams) -> None:
+    def apply_outliers(self, settings: OutliersSettings) -> None:
         if self.selected_dataset is None:
             return
-        self.outliers_params = params
+        self.selected_dataset.outliers_settings = settings
         self._broadcast_data_changed()
 
     def set_selected_dataset(self, dataset: Dataset) -> None:
@@ -134,12 +131,12 @@ class DataHub:
         result = filter_animals(result, self.selected_dataset.animals)
 
         # Outliers operator
-        if self.outliers_params.mode == OutliersMode.REMOVE:
-            result = process_outliers(result, self.outliers_params, variables)
+        if self.selected_dataset.outliers_settings.mode == OutliersMode.REMOVE:
+            result = process_outliers(result, self.selected_dataset.outliers_settings, variables)
 
         # Binning
-        if self.binning_params.apply:
-            match self.binning_params.mode:
+        if self.selected_dataset.binning_settings.apply:
+            match self.selected_dataset.binning_settings.mode:
                 case BinningMode.INTERVALS:
                     result = process_time_interval_binning(
                         result,
@@ -190,12 +187,12 @@ class DataHub:
         variables = {variable.name: variable}
 
         # Outliers operator
-        if self.outliers_params.mode == OutliersMode.REMOVE:
-            result = process_outliers(result, self.outliers_params, variables)
+        if self.selected_dataset.outliers_settings.mode == OutliersMode.REMOVE:
+            result = process_outliers(result, self.selected_dataset.outliers_settings, variables)
 
         # Binning
-        if self.binning_params.apply:
-            match self.binning_params.mode:
+        if self.selected_dataset.binning_settings.apply:
+            match self.selected_dataset.binning_settings.mode:
                 case BinningMode.INTERVALS:
                     result = process_time_interval_binning(
                         result,
@@ -241,12 +238,12 @@ class DataHub:
         result = filter_animals(result, self.selected_dataset.animals)
 
         # Outliers operator
-        if self.outliers_params.mode == OutliersMode.REMOVE:
-            result = process_outliers(result, self.outliers_params, variables)
+        if self.selected_dataset.outliers_settings.mode == OutliersMode.REMOVE:
+            result = process_outliers(result, self.selected_dataset.outliers_settings, variables)
 
         # Binning
-        if self.binning_params.apply:
-            match self.binning_params.mode:
+        if self.selected_dataset.binning_settings.apply:
+            match self.selected_dataset.binning_settings.mode:
                 case BinningMode.INTERVALS:
                     result = process_time_interval_binning(
                         result,
@@ -309,13 +306,13 @@ class DataHub:
         variables = {variable.name: variable}
 
         # Outliers operator
-        if self.outliers_params.mode == OutliersMode.REMOVE:
-            result = process_outliers(result, self.outliers_params, variables)
+        if self.selected_dataset.outliers_settings.mode == OutliersMode.REMOVE:
+            result = process_outliers(result, self.selected_dataset.outliers_settings, variables)
 
         # Binning
-        if self.binning_params.apply:
+        if self.selected_dataset.binning_settings.apply:
             factor_names = list(self.selected_dataset.factors.keys())
-            match self.binning_params.mode:
+            match self.selected_dataset.binning_settings.mode:
                 case BinningMode.INTERVALS:
                     result = process_time_interval_binning(
                         result,
@@ -359,8 +356,8 @@ class DataHub:
         result = filter_animals(result, self.selected_dataset.animals)
 
         # Outliers operator
-        if self.outliers_params.mode == OutliersMode.REMOVE:
-            result = process_outliers(result, self.outliers_params, variables)
+        if self.selected_dataset.outliers_settings.mode == OutliersMode.REMOVE:
+            result = process_outliers(result, self.selected_dataset.outliers_settings, variables)
 
         # Binning
         result = process_time_interval_binning(
@@ -391,10 +388,10 @@ class DataHub:
         variables = {variable.name: variable}
 
         # Outliers operator
-        if self.outliers_params.mode == OutliersMode.REMOVE:
-            result = process_outliers(result, self.outliers_params, variables)
+        if self.selected_dataset.outliers_settings.mode == OutliersMode.REMOVE:
+            result = process_outliers(result, self.selected_dataset.outliers_settings, variables)
 
-        if self.binning_params.mode == BinningMode.CYCLES:
+        if self.selected_dataset.binning_settings.mode == BinningMode.CYCLES:
 
             def filter_method(x):
                 return (
@@ -407,7 +404,7 @@ class DataHub:
 
             result["Bin"] = result["DateTime"].apply(filter_method).astype("category")
             result.drop(columns=["DateTime"], inplace=True)
-        elif self.binning_params.mode == BinningMode.PHASES:
+        elif self.selected_dataset.binning_settings.mode == BinningMode.PHASES:
             self.selected_dataset.binning_settings.time_phases_settings.time_phases.sort(
                 key=lambda x: x.start_timestamp
             )

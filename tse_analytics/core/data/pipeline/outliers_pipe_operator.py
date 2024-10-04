@@ -1,10 +1,10 @@
 import pandas as pd
 
-from tse_analytics.core.data.outliers import OutliersParams
+from tse_analytics.core.data.outliers import OutliersSettings
 from tse_analytics.core.data.shared import Variable
 
 
-def process_outliers(df: pd.DataFrame, settings: OutliersParams, variables: dict[str, Variable]) -> pd.DataFrame:
+def process_outliers(df: pd.DataFrame, settings: OutliersSettings, variables: dict[str, Variable]) -> pd.DataFrame:
     remove_outliers_for_vars = {key: value for (key, value) in variables.items() if value.remove_outliers}
 
     if len(remove_outliers_for_vars) == 0:

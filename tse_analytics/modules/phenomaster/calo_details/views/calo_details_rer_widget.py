@@ -12,7 +12,7 @@ class CaloDetailsRerWidget(QWidget):
         self.ui = Ui_CaloDetailsRerWidget()
         self.ui.setupUi(self)
 
-        self.ui.comboBoxVariable.addItems(["RER", "O2", "Ref.O2", "CO2", "Ref.CO2", "VO2(3)", "VCO2(3)", "H(3)"])
+        self.ui.comboBoxVariable.addItems(("RER", "O2", "Ref.O2", "CO2", "Ref.CO2", "VO2(3)", "VCO2(3)", "H(3)"))
         self.ui.comboBoxVariable.currentTextChanged.connect(self._variable_changed)
 
         self.ui.horizontalLayout.insertWidget(

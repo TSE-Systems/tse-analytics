@@ -16,7 +16,7 @@ from tse_analytics.modules.phenomaster.io.tse_dataset_loader import load_tse_dat
 
 class Manager:
     messenger = Messenger()
-    workspace = WorkspaceModel()
+    workspace_model = WorkspaceModel()
     data = DataHub(messenger)
     threadpool = QThreadPool()
 
@@ -25,12 +25,12 @@ class Manager:
 
     @classmethod
     def load_workspace(cls, path: str) -> None:
-        cls.workspace.load_workspace(path)
+        cls.workspace_model.load_workspace(path)
         cls.data.clear()
 
     @classmethod
     def save_workspace(cls, path: str) -> None:
-        cls.workspace.save_workspace(path)
+        cls.workspace_model.save_workspace(path)
 
     @classmethod
     def import_csv_dataset(cls, path: Path) -> None:
@@ -38,29 +38,29 @@ class Manager:
         csv_import_settings: CsvImportSettings = settings.value("CsvImportSettings", CsvImportSettings.get_default())
         dataset = load_csv_dataset(path, csv_import_settings)
         if dataset is not None:
-            cls.workspace.add_dataset(dataset)
+            cls.workspace_model.add_dataset(dataset)
 
     @classmethod
     def import_tse_dataset(cls, path: Path) -> None:
         dataset = load_tse_dataset(path)
         if dataset is not None:
-            cls.workspace.add_dataset(dataset)
+            cls.workspace_model.add_dataset(dataset)
 
     @classmethod
     def import_meal_details(cls, dataset_index: QModelIndex, path: str) -> None:
-        cls.workspace.add_meal_details(dataset_index, path)
+        cls.workspace_model.add_meal_details(dataset_index, path)
 
     @classmethod
     def import_actimot_details(cls, dataset_index: QModelIndex, path: str) -> None:
-        cls.workspace.add_actimot_details(dataset_index, path)
+        cls.workspace_model.add_actimot_details(dataset_index, path)
 
     @classmethod
     def import_calo_details(cls, dataset_index: QModelIndex, path: str) -> None:
-        cls.workspace.add_calo_details(dataset_index, path)
+        cls.workspace_model.add_calo_details(dataset_index, path)
 
     @classmethod
     def remove_dataset(cls, indexes: list[QModelIndex]) -> None:
-        cls.workspace.remove_dataset(indexes)
+        cls.workspace_model.remove_dataset(indexes)
         cls.data.clear()
 
     @classmethod
@@ -69,11 +69,11 @@ class Manager:
     ) -> None:
         merged_dataset = merge_datasets(new_dataset_name, datasets, single_run, continuous_mode)
         if merged_dataset is not None:
-            cls.workspace.add_dataset(merged_dataset)
+            cls.workspace_model.add_dataset(merged_dataset)
 
     @classmethod
     def clone_dataset(cls, original_dataset: Dataset, new_dataset_name: str) -> None:
         new_dataset = copy.deepcopy(original_dataset)
         new_dataset.name = new_dataset_name
         if new_dataset is not None:
-            cls.workspace.add_dataset(new_dataset)
+            cls.workspace_model.add_dataset(new_dataset)
