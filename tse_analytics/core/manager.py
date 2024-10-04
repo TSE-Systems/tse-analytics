@@ -21,7 +21,6 @@ class Manager:
     threadpool = QThreadPool()
 
     def __init__(self):
-        # logging.info(f"Multithreading with maximum {Manager.threadpool.maxThreadCount()} threads")
         logger.info(f"Multithreading with maximum {Manager.threadpool.maxThreadCount()} threads")
 
     @classmethod

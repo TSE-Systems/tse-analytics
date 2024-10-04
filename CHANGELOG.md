@@ -1,6 +1,13 @@
 TSE Analytics Change Log
 ====================================================================================================
 
+# 0.10.1 (2024-10-04)
+
+- Fix    -- Correct index reset after dataset adjustments.
+- Fix    -- Wrong aggregation calculation for some combinations of binning/splitting modes.
+
+
+----------------------------------------------------------------------------------------------------
 # 0.10.0 (2024-10-03)
 
 - New    -- Aggregation operations per variable.

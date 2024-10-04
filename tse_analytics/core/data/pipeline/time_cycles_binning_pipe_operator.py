@@ -24,31 +24,24 @@ def process_time_cycles_binning(
         case SplitMode.ANIMAL:
             agg = {
                 "Box": "first",
-                "Run": "first",
             }
-            group_by = ["Animal", "Bin"] + factor_names
+            for factor_name in factor_names:
+                agg[factor_name] = "first"
+            group_by = ["Animal", "Bin"]
         case SplitMode.FACTOR:
-            agg = {
-                "Box": "first",
-                "Run": "first",
-            }
+            agg = {}
             group_by = [selected_factor_name, "Bin"]
         case SplitMode.RUN:
-            agg = {
-                "Box": "first",
-            }
+            agg = {}
             group_by = ["Run", "Bin"]
         case _:
-            agg = {
-                "Box": "first",
-                "Run": "first",
-            }
+            agg = {}
             group_by = ["Bin"]
 
     for variable in variables.values():
         agg[variable.name] = variable.aggregation
 
-    result = df.groupby(group_by, dropna=False, observed=False).agg(agg)
+    result = df.groupby(group_by, dropna=False, observed=False).agg(agg) if len(agg) != 0 else df
 
     # the inverse of groupby, reset_index
     result.reset_index(inplace=True)

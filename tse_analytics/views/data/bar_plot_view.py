@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QVBoxLayout, QWidget
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 
+from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import Factor, SplitMode, Variable
 from tse_analytics.core.helper import get_html_image
 from tse_analytics.core.manager import Manager
@@ -57,6 +58,10 @@ class BarPlotView(QWidget):
             or self._variable == ""
             or (self._split_mode == SplitMode.FACTOR and self._selected_factor is None)
             or not Manager.data.binning_params.apply
+            or (
+                Manager.data.binning_params.mode == BinningMode.PHASES
+                and len(Manager.data.selected_dataset.binning_settings.time_phases_settings.time_phases) == 0
+            )
         ):
             return
 

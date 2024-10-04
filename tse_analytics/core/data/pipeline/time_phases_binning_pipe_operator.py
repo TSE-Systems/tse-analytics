@@ -31,25 +31,18 @@ def process_time_phases_binning(
         case SplitMode.ANIMAL:
             agg = {
                 "Box": "first",
-                "Run": "first",
             }
-            group_by = ["Animal", "Bin"] + factor_names
+            for factor_name in factor_names:
+                agg[factor_name] = "first"
+            group_by = ["Animal", "Bin"]
         case SplitMode.FACTOR:
-            agg = {
-                "Box": "first",
-                "Run": "first",
-            }
+            agg = {}
             group_by = [selected_factor_name, "Bin"]
         case SplitMode.RUN:
-            agg = {
-                "Box": "first",
-            }
+            agg = {}
             group_by = ["Run", "Bin"]
         case _:
-            agg = {
-                "Box": "first",
-                "Run": "first",
-            }
+            agg = {}
             group_by = ["Bin"]
 
     for variable in variables.values():

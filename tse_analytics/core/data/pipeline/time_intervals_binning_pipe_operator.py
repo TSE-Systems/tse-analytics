@@ -17,36 +17,40 @@ def process_time_interval_binning(
     if df.empty:
         return df
 
-    agg = {
-        "DateTime": "first",
-        "Box": "first",
-        "Run": "first",
-    }
-    # for column in df.columns:
-    #     if column not in default_columns:
-    #         if df.dtypes[column].name != "category":
-    #             agg[column] = variables[column].aggregation
-
-    for variable in variables.values():
-        agg[variable.name] = variable.aggregation
-
     match split_mode:
         case SplitMode.ANIMAL:
-            group_by = ["Animal"] + factor_names
+            agg = {
+                "DateTime": "first",
+                "Box": "first",
+            }
+            for factor_name in factor_names:
+                agg[factor_name] = "first"
+            group_by = ["Animal"]
             sort_by = ["Timedelta", "Box"]
             grouped = df.groupby(group_by, dropna=False, observed=False)
         case SplitMode.FACTOR:
+            agg = {
+                "DateTime": "first",
+            }
             group_by = [selected_factor_name]
             sort_by = ["Timedelta", selected_factor_name]
             grouped = df.groupby(group_by, dropna=False, observed=False)
         case SplitMode.RUN:
-            agg.pop("Run")
+            agg = {
+                "DateTime": "first",
+            }
             group_by = ["Run"]
             sort_by = ["Timedelta", "Run"]
             grouped = df.groupby(group_by, dropna=False, observed=False)
         case _:  # Total split mode
+            agg = {
+                "DateTime": "first",
+            }
             sort_by = ["Timedelta"]
             grouped = df
+
+    for variable in variables.values():
+        agg[variable.name] = variable.aggregation
 
     timedelta = pd.Timedelta(f"{settings.delta}{settings.unit}")
     result = grouped.resample(timedelta, on="Timedelta", origin="start").agg(agg)

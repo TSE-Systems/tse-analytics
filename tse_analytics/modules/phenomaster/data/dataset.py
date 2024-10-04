@@ -131,10 +131,10 @@ class Dataset:
         self.meta["animals"] = new_meta_animals
 
         self.original_df = self.original_df[~self.original_df["Animal"].isin(animal_ids)]
-        self.original_df.reset_index(inplace=True)
+        self.original_df.reset_index(inplace=True, drop=True)
 
         self.active_df = self.active_df[~self.active_df["Animal"].isin(animal_ids)]
-        self.active_df.reset_index(inplace=True)
+        self.active_df.reset_index(inplace=True, drop=True)
 
         if self.calo_details is not None:
             self.calo_details.raw_df = self.calo_details.raw_df[~self.calo_details.raw_df["Animal"].isin(animal_ids)]
@@ -144,14 +144,6 @@ class Dataset:
             self.actimot_details.raw_df = self.actimot_details.raw_df[
                 ~self.actimot_details.raw_df["Animal"].isin(animal_ids)
             ]
-
-    def _reassign_df_timedelta_and_bin(self, df: pd.DataFrame, sampling_interval: pd.Timedelta) -> pd.DataFrame:
-        df.reset_index(inplace=True)
-        # Reassign bin and timedelta
-        start_date_time = df.at[0, "DateTime"]
-        df["Timedelta"] = df["DateTime"] - start_date_time
-        df["Bin"] = (df["Timedelta"] / sampling_interval).round().astype(int)
-        return df
 
     def exclude_time(self, range_start: datetime, range_end: datetime) -> None:
         self.original_df = self._exclude_df_time(self.original_df, range_start, range_end)
@@ -169,6 +161,14 @@ class Dataset:
     def _trim_df_time(self, df: pd.DataFrame, range_start: datetime, range_end: datetime) -> pd.DataFrame:
         df = df[(df["DateTime"] >= range_start) & (df["DateTime"] <= range_end)]
         df = self._reassign_df_timedelta_and_bin(df, self.sampling_interval)
+        return df
+
+    def _reassign_df_timedelta_and_bin(self, df: pd.DataFrame, sampling_interval: pd.Timedelta) -> pd.DataFrame:
+        df.reset_index(inplace=True, drop=True)
+        # Reassign bin and timedelta
+        start_date_time = df.at[0, "DateTime"]
+        df["Timedelta"] = df["DateTime"] - start_date_time
+        df["Bin"] = (df["Timedelta"] / sampling_interval).round().astype(int)
         return df
 
     def resample(self, resampling_interval: pd.Timedelta) -> None:
