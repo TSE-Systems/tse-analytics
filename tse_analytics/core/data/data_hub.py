@@ -30,7 +30,7 @@ class DataHub:
         if self.selected_dataset is None:
             return
         self.selected_dataset.binning_settings = binning_settings
-        self.messenger.broadcast(BinningMessage(self, binning_settings))
+        self.messenger.broadcast(BinningMessage(self, self.selected_dataset, binning_settings))
 
     def apply_outliers(self, settings: OutliersSettings) -> None:
         if self.selected_dataset is None:
@@ -53,7 +53,7 @@ class DataHub:
         self._broadcast_data_changed()
 
     def _broadcast_data_changed(self) -> None:
-        self.messenger.broadcast(DataChangedMessage(self))
+        self.messenger.broadcast(DataChangedMessage(self, self.selected_dataset))
 
     def export_to_excel(self, path: str) -> None:
         if self.selected_dataset is not None:

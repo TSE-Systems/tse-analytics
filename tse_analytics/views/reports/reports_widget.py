@@ -118,7 +118,7 @@ class ReportsWidget(QWidget, MessengerListener):
         toolbar.addWidget(self.fonts)
 
         self.fontsize = QComboBox()
-        self.fontsize.addItems((str(s) for s in FONT_SIZES))
+        self.fontsize.addItems([str(s) for s in FONT_SIZES])
 
         # Connect to the signal producing the text of the current selection. Convert the string to float
         # and set as the pointsize. We could also use the index + retrieve from FONT_SIZES.
@@ -227,8 +227,8 @@ class ReportsWidget(QWidget, MessengerListener):
         messenger.subscribe(self, AddToReportMessage, self._add_to_report)
 
     def _on_dataset_changed(self, message: DatasetChangedMessage):
-        if message.data is not None:
-            self.ui.editor.document().setHtml(message.data.report)
+        if message.dataset is not None:
+            self.ui.editor.document().setHtml(message.dataset.report)
 
     def _add_to_report(self, message: AddToReportMessage):
         self.ui.editor.append(message.content)

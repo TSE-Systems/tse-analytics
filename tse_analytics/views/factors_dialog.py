@@ -11,7 +11,7 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         super().__init__(parent)
         self.setupUi(self)
 
-        self.comboBoxFields.addItems(("text1", "text2", "text3"))
+        self.comboBoxFields.addItems(["text1", "text2", "text3"])
 
         self.factors: list[Factor] = []
 

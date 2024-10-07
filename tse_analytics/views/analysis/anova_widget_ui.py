@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'anova_widget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.2
+## Created by: Qt User Interface Compiler version 6.7.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -166,7 +166,7 @@ class Ui_AnovaWidget(object):
         self.pushButtonHelp = QPushButton(self.widgetSettings)
         self.pushButtonHelp.setObjectName(u"pushButtonHelp")
         icon = QIcon()
-        icon.addFile(u":/icons/icons8-help-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u":/icons/icons8-help-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.pushButtonHelp.setIcon(icon)
 
         self.verticalLayout_5.addWidget(self.pushButtonHelp)

@@ -106,17 +106,15 @@ class DataPlotWidget(QWidget, MessengerListener):
         self.timelinePlotView.set_scatter_plot(state)
 
     def _on_dataset_changed(self, message: DatasetChangedMessage):
-        self.ui.pushButtonAddReport.setDisabled(message.data is None)
-        if message.data is None:
+        self.ui.pushButtonAddReport.setDisabled(message.dataset is None)
+        if message.dataset is None:
             self.ui.variableSelector.clear()
             self.ui.factorSelector.clear()
-            if Manager.data.selected_dataset.binning_settings.mode == BinningMode.INTERVALS:
-                self.timelinePlotView.clear_plot()
-            else:
-                self.barPlotView.clear_plot()
+            self.timelinePlotView.clear_plot()
+            self.barPlotView.clear_plot()
         else:
-            self.ui.variableSelector.set_data(message.data.variables)
-            self.ui.factorSelector.set_data(message.data.factors, add_empty_item=False)
+            self.ui.variableSelector.set_data(message.dataset.variables)
+            self.ui.factorSelector.set_data(message.dataset.factors, add_empty_item=False)
             self._assign_data()
 
     def _on_binning_applied(self, message: BinningMessage):

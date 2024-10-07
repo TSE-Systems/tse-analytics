@@ -23,7 +23,7 @@ class BinningSettingsWidget(QWidget, MessengerListener):
 
         self.ui.applyBinningCheckBox.stateChanged.connect(self._apply_binning_changed)
 
-        self.ui.binningModeComboBox.addItems((e for e in BinningMode))
+        self.ui.binningModeComboBox.addItems([e for e in BinningMode])
         self.ui.binningModeComboBox.currentTextChanged.connect(self._binning_mode_changed)
 
         self.dataset: Dataset | None = None
@@ -32,13 +32,13 @@ class BinningSettingsWidget(QWidget, MessengerListener):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
 
     def _on_dataset_changed(self, message: DatasetChangedMessage):
-        if message.data is None:
+        if message.dataset is None:
             self.dataset = None
             self.ui.applyBinningCheckBox.setChecked(False)
             self.ui.binningModeComboBox.setCurrentText(BinningMode.INTERVALS)
             self.ui.widgetTimePhasesSettings.clear()
         else:
-            self.dataset = message.data
+            self.dataset = message.dataset
             self.ui.widgetTimeIntervalSettings.set_data(self.dataset.binning_settings.time_intervals_settings)
             self.ui.widgetTimeCyclesSettings.set_data(self.dataset.binning_settings.time_cycles_settings)
             self.ui.widgetTimePhasesSettings.set_data(self.dataset.binning_settings.time_phases_settings)

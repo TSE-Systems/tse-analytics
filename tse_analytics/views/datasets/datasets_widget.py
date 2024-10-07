@@ -103,32 +103,14 @@ class DatasetsWidget(QWidget):
         self.ui.treeView.doubleClicked.connect(self._treeview_double_clicked)
         Manager.workspace_model.checkedItemChanged.connect(self._checked_item_changed)
 
-    # def _open_menu(self, position):
-    #     indexes = self.ui.treeView.selectedIndexes()
-    #
-    #     level = None
-    #     if len(indexes) > 0:
-    #         level = 0
-    #         index = indexes[0]
-    #         while index.parent().isValid():
-    #             index = index.parent()
-    #             level += 1
-    #
-    #     menu = QMenu(self.ui.treeView)
-    #
-    #     if level == 1:
-    #         action = menu.addAction("Merge datasets...")
-    #         items = self.ui.treeView.model().workspace_tree_item.child_items
-    #         checked_datasets_number = 0
-    #         for item in items:
-    #             if item.checked:
-    #                 checked_datasets_number += 1
-    #         if checked_datasets_number < 2:
-    #             action.setEnabled(False)
-    #         else:
-    #             action.triggered.connect(self._merge_datasets)
-    #
-    #     menu.exec_(self.ui.treeView.viewport().mapToGlobal(position))
+    def _get_selected_dataset(self) -> Dataset | None:
+        selected_indexes = self.ui.treeView.selectedIndexes()
+        if len(selected_indexes) > 0:
+            selected_index = selected_indexes[0]
+            if selected_index.isValid():
+                item = selected_index.model().getItem(selected_index)
+                return item.dataset
+        return None
 
     def _merge_datasets(self):
         checked_datasets: list[Dataset] = []
@@ -232,10 +214,8 @@ class DatasetsWidget(QWidget):
             self.merge_dataset_action.setEnabled(False)
 
     def _clone_dataset(self):
-        selected_index = self.ui.treeView.selectedIndexes()[0]
-        if selected_index.isValid():
-            item = selected_index.model().getItem(selected_index)
-            dataset = item.dataset
+        dataset = self._get_selected_dataset()
+        if dataset is not None:
             name, ok = QInputDialog.getText(
                 self, "Enter new dataset name", "Name", QLineEdit.EchoMode.Normal, f"Clone of {dataset.name}"
             )

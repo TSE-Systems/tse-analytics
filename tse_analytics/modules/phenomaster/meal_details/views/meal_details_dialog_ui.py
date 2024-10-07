@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'meal_details_dialog.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.2
+## Created by: Qt User Interface Compiler version 6.7.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -33,7 +33,7 @@ class Ui_MealDetailsDialog(object):
         self.toolButtonCalculate = QToolButton(MealDetailsDialog)
         self.toolButtonCalculate.setObjectName(u"toolButtonCalculate")
         icon = QIcon()
-        icon.addFile(u":/icons/icons8-scales-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u":/icons/icons8-scales-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.toolButtonCalculate.setIcon(icon)
         self.toolButtonCalculate.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
@@ -43,7 +43,7 @@ class Ui_MealDetailsDialog(object):
         self.toolButtonExport.setObjectName(u"toolButtonExport")
         self.toolButtonExport.setEnabled(False)
         icon1 = QIcon()
-        icon1.addFile(u":/icons/icons8-export-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon1.addFile(u":/icons/icons8-export-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.toolButtonExport.setIcon(icon1)
         self.toolButtonExport.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
@@ -56,7 +56,7 @@ class Ui_MealDetailsDialog(object):
         self.toolButtonHelp = QToolButton(MealDetailsDialog)
         self.toolButtonHelp.setObjectName(u"toolButtonHelp")
         icon2 = QIcon()
-        icon2.addFile(u":/icons/icons8-help-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon2.addFile(u":/icons/icons8-help-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.toolButtonHelp.setIcon(icon2)
 
         self.toolbarLayout.addWidget(self.toolButtonHelp)

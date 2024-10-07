@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'time_phases_settings_widget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.2
+## Created by: Qt User Interface Compiler version 6.7.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -43,7 +43,7 @@ class Ui_TimePhasesSettingsWidget(object):
         self.toolButtonAddPhase = QToolButton(self.groupBoxPhases)
         self.toolButtonAddPhase.setObjectName(u"toolButtonAddPhase")
         icon = QIcon()
-        icon.addFile(u":/icons/icons8-add-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u":/icons/icons8-add-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.toolButtonAddPhase.setIcon(icon)
 
         self.horizontalLayout.addWidget(self.toolButtonAddPhase)
@@ -51,7 +51,7 @@ class Ui_TimePhasesSettingsWidget(object):
         self.toolButtonDeletePhase = QToolButton(self.groupBoxPhases)
         self.toolButtonDeletePhase.setObjectName(u"toolButtonDeletePhase")
         icon1 = QIcon()
-        icon1.addFile(u":/icons/icons8-minus-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon1.addFile(u":/icons/icons8-minus-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.toolButtonDeletePhase.setIcon(icon1)
 
         self.horizontalLayout.addWidget(self.toolButtonDeletePhase)

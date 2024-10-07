@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'adjust_dataset_dialog.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.2
+## Created by: Qt User Interface Compiler version 6.7.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -101,7 +101,7 @@ class Ui_AdjustDatasetDialog(object):
         self.radioButtonTimeShiftMinus = QRadioButton(self.groupBoxTimeShift)
         self.radioButtonTimeShiftMinus.setObjectName(u"radioButtonTimeShiftMinus")
         icon = QIcon()
-        icon.addFile(u":/icons/icons8-minus-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u":/icons/icons8-minus-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.radioButtonTimeShiftMinus.setIcon(icon)
         self.radioButtonTimeShiftMinus.setChecked(True)
 
@@ -110,7 +110,7 @@ class Ui_AdjustDatasetDialog(object):
         self.radioButtonTimeShiftPlus = QRadioButton(self.groupBoxTimeShift)
         self.radioButtonTimeShiftPlus.setObjectName(u"radioButtonTimeShiftPlus")
         icon1 = QIcon()
-        icon1.addFile(u":/icons/icons8-add-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon1.addFile(u":/icons/icons8-add-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.radioButtonTimeShiftPlus.setIcon(icon1)
 
         self.horizontalLayout.addWidget(self.radioButtonTimeShiftPlus)

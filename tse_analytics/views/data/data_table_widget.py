@@ -58,15 +58,15 @@ class DataTableWidget(QWidget, MessengerListener):
         Manager.threadpool.start(worker)
 
     def _on_dataset_changed(self, message: DatasetChangedMessage):
-        if message.data is None:
+        if message.dataset is None:
             self.ui.tableView.setModel(None)
             self.ui.tableWidgetVariables.clear_data()
             self.ui.textEditDescriptiveStats.document().clear()
             self.ui.factorSelector.clear()
             self.df = None
         else:
-            self.ui.tableWidgetVariables.set_data(message.data.variables)
-            self.ui.factorSelector.set_data(message.data.factors, add_empty_item=False)
+            self.ui.tableWidgetVariables.set_data(message.dataset.variables)
+            self.ui.factorSelector.set_data(message.dataset.factors, add_empty_item=False)
             self._set_data()
 
     def _on_binning_applied(self, message: BinningMessage):

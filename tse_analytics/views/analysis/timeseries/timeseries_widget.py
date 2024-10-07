@@ -36,11 +36,11 @@ class TimeseriesWidget(QWidget, MessengerListener):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
 
     def _on_dataset_changed(self, message: DatasetChangedMessage):
-        self.ui.pushButtonUpdate.setDisabled(message.data is None)
-        self.ui.pushButtonAddReport.setDisabled(message.data is None)
+        self.ui.pushButtonUpdate.setDisabled(message.dataset is None)
+        self.ui.pushButtonAddReport.setDisabled(message.dataset is None)
         self._clear()
-        if message.data is not None:
-            self.ui.variableSelector.set_data(message.data.variables)
+        if message.dataset is not None:
+            self.ui.variableSelector.set_data(message.dataset.variables)
 
     def _clear(self):
         self.ui.variableSelector.clear()

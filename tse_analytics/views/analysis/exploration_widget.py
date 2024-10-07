@@ -59,12 +59,12 @@ class ExplorationWidget(QWidget, MessengerListener):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
 
     def _on_dataset_changed(self, message: DatasetChangedMessage):
-        self.ui.pushButtonUpdate.setDisabled(message.data is None)
-        self.ui.pushButtonAddReport.setDisabled(message.data is None)
+        self.ui.pushButtonUpdate.setDisabled(message.dataset is None)
+        self.ui.pushButtonAddReport.setDisabled(message.dataset is None)
         self._clear()
-        if message.data is not None:
-            self.ui.variableSelector.set_data(message.data.variables)
-            self.ui.factorSelector.set_data(message.data.factors, add_empty_item=False)
+        if message.dataset is not None:
+            self.ui.variableSelector.set_data(message.dataset.variables)
+            self.ui.factorSelector.set_data(message.dataset.factors, add_empty_item=False)
 
     def _clear(self):
         self.ui.variableSelector.clear()

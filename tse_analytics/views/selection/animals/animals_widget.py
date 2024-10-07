@@ -40,10 +40,10 @@ class AnimalsWidget(QWidget, MessengerListener):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
 
     def _on_dataset_changed(self, message: DatasetChangedMessage):
-        if message.data is None:
+        if message.dataset is None:
             self.ui.tableView.model().setSourceModel(None)
         else:
-            model = AnimalsModel(list(message.data.animals.values()))
+            model = AnimalsModel(list(message.dataset.animals.values()))
             self.ui.tableView.model().setSourceModel(model)
             self.ui.tableView.resizeColumnsToContents()
 

@@ -104,7 +104,7 @@ class AnovaWidget(QWidget, MessengerListener):
 
     def _on_dataset_changed(self, message: DatasetChangedMessage):
         self._clear()
-        if message.data is None:
+        if message.dataset is None:
             self.ui.pushButtonUpdate.setDisabled(True)
             self.ui.pushButtonAddReport.setDisabled(True)
             return
@@ -112,9 +112,9 @@ class AnovaWidget(QWidget, MessengerListener):
         self.ui.pushButtonUpdate.setDisabled(len(Manager.data.selected_dataset.factors) == 0)
         self.ui.pushButtonAddReport.setDisabled(len(Manager.data.selected_dataset.factors) == 0)
 
-        self.ui.tableWidgetFactors.set_data(message.data.factors)
-        self.ui.tableWidgetDependentVariable.set_data(message.data.variables)
-        self.ui.tableWidgetCovariates.set_data(message.data.variables)
+        self.ui.tableWidgetFactors.set_data(message.dataset.factors)
+        self.ui.tableWidgetDependentVariable.set_data(message.dataset.variables)
+        self.ui.tableWidgetCovariates.set_data(message.dataset.variables)
 
     def _clear(self):
         self.ui.pushButtonUpdate.setDisabled(True)

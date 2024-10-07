@@ -37,10 +37,10 @@ class FactorsWidget(QWidget, MessengerListener):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
 
     def _on_dataset_changed(self, message: DatasetChangedMessage):
-        if message.data is None:
+        if message.dataset is None:
             self.ui.tableView.model().setSourceModel(None)
         else:
-            model = FactorsModel(list(message.data.factors.values()))
+            model = FactorsModel(list(message.dataset.factors.values()))
             self.ui.tableView.model().setSourceModel(model)
             self.ui.tableView.resizeColumnsToContents()
 

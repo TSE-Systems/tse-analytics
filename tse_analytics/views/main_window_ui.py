@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.2
+## Created by: Qt User Interface Compiler version 6.7.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -28,33 +28,33 @@ class Ui_MainWindow(object):
         self.actionExit = QAction(MainWindow)
         self.actionExit.setObjectName(u"actionExit")
         icon = QIcon()
-        icon.addFile(u":/icons/exit.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u":/icons/exit.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.actionExit.setIcon(icon)
         self.actionExit.setShortcutVisibleInContextMenu(False)
         self.actionAbout = QAction(MainWindow)
         self.actionAbout.setObjectName(u"actionAbout")
         icon1 = QIcon()
-        icon1.addFile(u":/icons/about-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon1.addFile(u":/icons/about-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.actionAbout.setIcon(icon1)
         self.actionImportDataset = QAction(MainWindow)
         self.actionImportDataset.setObjectName(u"actionImportDataset")
         icon2 = QIcon()
-        icon2.addFile(u":/icons/icons8-import-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon2.addFile(u":/icons/icons8-import-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.actionImportDataset.setIcon(icon2)
         self.actionOpenWorkspace = QAction(MainWindow)
         self.actionOpenWorkspace.setObjectName(u"actionOpenWorkspace")
         icon3 = QIcon()
-        icon3.addFile(u":/icons/icons8-opened-folder-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon3.addFile(u":/icons/icons8-opened-folder-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.actionOpenWorkspace.setIcon(icon3)
         self.actionSaveWorkspace = QAction(MainWindow)
         self.actionSaveWorkspace.setObjectName(u"actionSaveWorkspace")
         icon4 = QIcon()
-        icon4.addFile(u":/icons/icons8-save-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon4.addFile(u":/icons/icons8-save-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.actionSaveWorkspace.setIcon(icon4)
         self.actionExportExcel = QAction(MainWindow)
         self.actionExportExcel.setObjectName(u"actionExportExcel")
         icon5 = QIcon()
-        icon5.addFile(u":/icons/icons8-export-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon5.addFile(u":/icons/icons8-export-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.actionExportExcel.setIcon(icon5)
         self.actionResetLayout = QAction(MainWindow)
         self.actionResetLayout.setObjectName(u"actionResetLayout")
@@ -64,7 +64,7 @@ class Ui_MainWindow(object):
         self.actionHelp = QAction(MainWindow)
         self.actionHelp.setObjectName(u"actionHelp")
         icon6 = QIcon()
-        icon6.addFile(u":/icons/icons8-help-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon6.addFile(u":/icons/icons8-help-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.actionHelp.setIcon(icon6)
         self.centralWidget = QWidget(MainWindow)
         self.centralWidget.setObjectName(u"centralWidget")
@@ -87,7 +87,7 @@ class Ui_MainWindow(object):
         self.toolBar = QToolBar(MainWindow)
         self.toolBar.setObjectName(u"toolBar")
         self.toolBar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        MainWindow.addToolBar(Qt.TopToolBarArea, self.toolBar)
+        MainWindow.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolBar)
 
         self.menuBar.addAction(self.menuFile.menuAction())
         self.menuBar.addAction(self.menuView.menuAction())

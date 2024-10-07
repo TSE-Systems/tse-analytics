@@ -25,7 +25,7 @@ class VariablesWidget(QWidget, MessengerListener):
         toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
 
         self.outliersModeComboBox = QComboBox()
-        self.outliersModeComboBox.addItems((e for e in OutliersMode))
+        self.outliersModeComboBox.addItems([e for e in OutliersMode])
         self.outliersModeComboBox.currentTextChanged.connect(self._outliers_mode_changed)
         toolbar.addWidget(self.outliersModeComboBox)
 
@@ -48,13 +48,13 @@ class VariablesWidget(QWidget, MessengerListener):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
 
     def _on_dataset_changed(self, message: DatasetChangedMessage):
-        if message.data is None:
+        if message.dataset is None:
             self.dataset = None
             self.ui.tableView.model().setSourceModel(None)
             self.outliersCoefficientSpinBox.setValue(1.5)
             self.outliersModeComboBox.setCurrentText(OutliersMode.OFF)
         else:
-            self.dataset = message.data
+            self.dataset = message.dataset
             model = VariablesModel(list(self.dataset.variables.values()))
             self.ui.tableView.model().setSourceModel(model)
             self.ui.tableView.resizeColumnsToContents()

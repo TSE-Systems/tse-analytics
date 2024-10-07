@@ -37,5 +37,5 @@ class InfoWidget(QTreeView, MessengerListener):
             self._model.clear()
 
     def _on_dataset_changed(self, message: DatasetChangedMessage):
-        if message.data is None:
+        if message.dataset is None:
             self._model.clear()

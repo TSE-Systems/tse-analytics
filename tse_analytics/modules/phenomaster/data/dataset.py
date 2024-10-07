@@ -127,11 +127,12 @@ class Dataset:
         for animal_id in animal_ids:
             self.animals.pop(animal_id)
 
-        new_meta_animals = {}
-        for item in self.meta["animals"].values():
-            if item["id"] not in animal_ids:
-                new_meta_animals[item["id"]] = item
-        self.meta["animals"] = new_meta_animals
+        if "animals" in self.meta:
+            new_meta_animals = {}
+            for item in self.meta["animals"].values():
+                if item["id"] not in animal_ids:
+                    new_meta_animals[item["id"]] = item
+            self.meta["animals"] = new_meta_animals
 
         self.original_df = self.original_df[~self.original_df["Animal"].isin(animal_ids)]
         self.original_df.reset_index(inplace=True, drop=True)

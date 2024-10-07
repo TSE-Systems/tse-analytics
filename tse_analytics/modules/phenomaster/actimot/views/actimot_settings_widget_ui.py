@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'actimot_settings_widget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.2
+## Created by: Qt User Interface Compiler version 6.7.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -133,7 +133,7 @@ class Ui_ActimotSettingsWidget(object):
         self.toolButtonAddDiet = QToolButton(self.groupBoxDiets)
         self.toolButtonAddDiet.setObjectName(u"toolButtonAddDiet")
         icon = QIcon()
-        icon.addFile(u":/icons/icons8-add-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u":/icons/icons8-add-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.toolButtonAddDiet.setIcon(icon)
 
         self.horizontalLayout.addWidget(self.toolButtonAddDiet)
@@ -141,7 +141,7 @@ class Ui_ActimotSettingsWidget(object):
         self.toolButtonDeleteDiet = QToolButton(self.groupBoxDiets)
         self.toolButtonDeleteDiet.setObjectName(u"toolButtonDeleteDiet")
         icon1 = QIcon()
-        icon1.addFile(u":/icons/icons8-minus-16.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon1.addFile(u":/icons/icons8-minus-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.toolButtonDeleteDiet.setIcon(icon1)
 
         self.horizontalLayout.addWidget(self.toolButtonDeleteDiet)
