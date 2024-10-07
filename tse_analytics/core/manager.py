@@ -9,6 +9,7 @@ from tse_analytics.core.data.data_hub import DataHub
 from tse_analytics.core.dataset_merger import merge_datasets
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.models.workspace_model import WorkspaceModel
+from tse_analytics.core.tse_import_settings import TseImportSettings
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.modules.phenomaster.io.csv_dataset_loader import load_csv_dataset
 from tse_analytics.modules.phenomaster.io.tse_dataset_loader import load_tse_dataset
@@ -41,8 +42,8 @@ class Manager:
             cls.workspace_model.add_dataset(dataset)
 
     @classmethod
-    def import_tse_dataset(cls, path: Path) -> None:
-        dataset = load_tse_dataset(path)
+    def import_tse_dataset(cls, path: Path, import_settings: TseImportSettings) -> None:
+        dataset = load_tse_dataset(path, import_settings)
         if dataset is not None:
             cls.workspace_model.add_dataset(dataset)
 

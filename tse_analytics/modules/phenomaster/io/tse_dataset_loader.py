@@ -1,19 +1,19 @@
 import json
 import sqlite3
-from datetime import datetime
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
 from tse_analytics.core.data.shared import Animal, Factor, Variable, Aggregation
+from tse_analytics.core.tse_import_settings import TseImportSettings
 from tse_analytics.modules.phenomaster.actimot.data.actimot_details import ActimotDetails
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
 CHUNK_SIZE = 1000000
 
 
-def load_tse_dataset(path: Path) -> Dataset | None:
+def load_tse_dataset(path: Path, import_settings: TseImportSettings) -> Dataset | None:
     metadata = _read_metadata(path)
     animals = _get_animals(metadata["animals"])
     # factors = TseDatasetLoader._get_factors(metadata["groups"])
@@ -31,9 +31,10 @@ def load_tse_dataset(path: Path) -> Dataset | None:
     )
 
     # Import ActoMot raw data if present
-    # if "actimot_raw" in metadata["tables"]:
-    #     actimot_details = _read_actimot_raw(path, metadata["tables"], dataset)
-    #     dataset.actimot_details = actimot_details
+    if import_settings.import_actimot:
+        if "actimot_raw" in metadata["tables"]:
+            actimot_details = _read_actimot_raw(path, metadata["tables"], dataset)
+            dataset.actimot_details = actimot_details
 
     return dataset
 

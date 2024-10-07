@@ -7,7 +7,7 @@ import PySide6QtAds
 from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QCloseEvent, QIcon
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QMessageBox, QWidget
-from pyqttoast import Toast, ToastPosition
+from pyqttoast import Toast
 
 from tse_analytics.core.helper import LAYOUT_VERSION, show_help, CSV_IMPORT_ENABLED
 from tse_analytics.core.manager import Manager
@@ -22,6 +22,7 @@ from tse_analytics.views.data.data_table_widget import DataTableWidget
 from tse_analytics.views.datasets.datasets_widget import DatasetsWidget
 from tse_analytics.views.help.help_widget import HelpWidget
 from tse_analytics.views.import_csv_dialog import ImportCsvDialog
+from tse_analytics.views.import_tse_dialog import ImportTseDialog
 from tse_analytics.views.info.info_widget import InfoWidget
 from tse_analytics.views.log_widget import LogWidget
 from tse_analytics.views.main_window_ui import Ui_MainWindow
@@ -272,7 +273,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     if dialog.exec() == QDialog.DialogCode.Accepted:
                         Manager.import_csv_dataset(path)
                 elif path.suffix.lower() == ".tse":
-                    Manager.import_tse_dataset(path)
+                    dialog = ImportTseDialog(path, self)
+                    # TODO: check other cases!!
+                    if dialog.exec() == QDialog.DialogCode.Accepted:
+                        import_settings = dialog.get_import_settings()
+                        Manager.import_tse_dataset(path, import_settings)
+                    dialog.deleteLater()
 
     def closeEvent(self, event: QCloseEvent) -> None:
         if QMessageBox.question(self, "TSE Analytics", "Do you want to quit?") == QMessageBox.StandardButton.Yes:

@@ -1,3 +1,4 @@
+import sqlite3
 from base64 import b64encode
 from io import BytesIO
 from pathlib import Path
@@ -36,6 +37,15 @@ def get_html_image(figure: Figure) -> str:
     figure.savefig(io, format="png")
     encoded = b64encode(io.getvalue()).decode("utf-8")
     return f"<img src='data:image/png;base64,{encoded}'><br/>"
+
+
+def get_available_sqlite_tables(path: Path) -> set[str]:
+    with sqlite3.connect(path, check_same_thread=False) as connection:
+        cursor = connection.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = cursor.fetchall()
+        cursor.close()
+    return set([item[0] for item in tables])
 
 
 def build_df_table(df: pd.DataFrame, color="grey_light", font_size="11pt", padding="5px", font_family="Arial") -> str:

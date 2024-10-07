@@ -1,10 +1,12 @@
 TSE Analytics Change Log
 ====================================================================================================
 
-# 0.10.1 (2024-10-04)
+# 0.10.1 (2024-10-07)
 
 - Change -- Migration to Python 3.12.7 and Qt 6.7.3.
 - Change -- Binning and outliers settings are now parts of datasets instead of the global singleton.
+- Change -- Import settings for TSE data format.
+- Change -- Improved metadata merging.
 - Fix    -- Correct index reset after dataset adjustments.
 - Fix    -- Wrong aggregation calculation for some combinations of binning/splitting modes.
 - Fix    -- QTBUG-125149: Misplaced popup menu for reparented combo box. See: https://github.com/mborgerson/pyside6_qtads/issues/35

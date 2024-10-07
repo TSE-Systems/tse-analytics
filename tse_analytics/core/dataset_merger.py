@@ -1,5 +1,6 @@
 import pandas as pd
 
+from tse_analytics.core.data.shared import Animal, Variable
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
 
@@ -41,22 +42,18 @@ def _merge_continuous(new_dataset_name: str, datasets: list[Dataset], single_run
         "Animal": "category",
     })
 
-    new_path = ""
-    new_meta = [dataset.meta for dataset in datasets]
-    new_animals = {}
-    for animals in [dataset.animals for dataset in datasets]:
-        new_animals.update(animals)
-    new_variables = datasets[0].variables
-    new_sampling_interval = timedelta
+    new_animals = _merge_animals(datasets)
+    new_variables = _merge_variables(datasets)
+    new_meta = _merge_metadata(new_dataset_name, timedelta, new_animals, new_variables, datasets)
 
     result = Dataset(
         name=new_dataset_name,
-        path=new_path,
+        path="",
         meta=new_meta,
         animals=new_animals,
         variables=new_variables,
         df=new_df,
-        sampling_interval=new_sampling_interval,
+        sampling_interval=timedelta,
     )
     return result
 
@@ -91,21 +88,53 @@ def _merge_overlap(new_dataset_name: str, datasets: list[Dataset], single_run: b
         "Animal": "category",
     })
 
-    new_path = ""
-    new_meta = [dataset.meta for dataset in datasets]
-    new_animals = {}
-    for animals in [dataset.animals for dataset in datasets]:
-        new_animals.update(animals)
-    new_variables = datasets[0].variables
-    new_sampling_interval = timedelta
+    new_animals = _merge_animals(datasets)
+    new_variables = _merge_variables(datasets)
+    new_meta = _merge_metadata(new_dataset_name, timedelta, new_animals, new_variables, datasets)
 
     result = Dataset(
         name=new_dataset_name,
-        path=new_path,
+        path="",
         meta=new_meta,
         animals=new_animals,
         variables=new_variables,
         df=new_df,
-        sampling_interval=new_sampling_interval,
+        sampling_interval=timedelta,
     )
+    return result
+
+
+def _merge_metadata(
+    new_dataset_name: str,
+    sampling_interval: pd.Timedelta,
+    animals: dict[str, Animal],
+    variables: dict[str, Variable],
+    datasets: list[Dataset],
+) -> dict:
+    result = {
+        "experiment": {
+            "experiment_no": new_dataset_name,
+        },
+        "animals": {k: v.get_dict() for (k, v) in animals.items()},
+        "tables": {
+            "main_table": {
+                "id": "main_table",
+                "sample_interval": str(sampling_interval),
+                "columns": {k: v.get_dict() for (k, v) in variables.items()},
+            }
+        },
+        "origins": [dataset.meta for dataset in datasets]
+    }
+    return result
+
+
+def _merge_animals(datasets: list[Dataset]) -> dict[str, Animal]:
+    result: dict[str, Animal] = {}
+    for animals in [dataset.animals for dataset in datasets]:
+        result.update(animals)
+    return result
+
+
+def _merge_variables(datasets: list[Dataset]) -> dict[str, Variable]:
+    result = datasets[0].variables
     return result
