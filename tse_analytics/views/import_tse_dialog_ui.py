@@ -33,16 +33,19 @@ class Ui_ImportTseDialog(object):
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.checkBoxCalo = QCheckBox(self.groupBoxImportSettings)
         self.checkBoxCalo.setObjectName(u"checkBoxCalo")
+        self.checkBoxCalo.setEnabled(False)
 
         self.verticalLayout_3.addWidget(self.checkBoxCalo)
 
         self.checkBoxMeal = QCheckBox(self.groupBoxImportSettings)
         self.checkBoxMeal.setObjectName(u"checkBoxMeal")
+        self.checkBoxMeal.setEnabled(False)
 
         self.verticalLayout_3.addWidget(self.checkBoxMeal)
 
         self.checkBoxActiMot = QCheckBox(self.groupBoxImportSettings)
         self.checkBoxActiMot.setObjectName(u"checkBoxActiMot")
+        self.checkBoxActiMot.setEnabled(False)
 
         self.verticalLayout_3.addWidget(self.checkBoxActiMot)
 
