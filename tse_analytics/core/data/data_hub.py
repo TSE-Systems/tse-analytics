@@ -1,14 +1,14 @@
 import numpy as np
 import pandas as pd
 
-from tse_analytics.core.data.binning import BinningMode, TimeIntervalsBinningSettings, BinningSettings
+from tse_analytics.core.data.binning import BinningMode, BinningSettings, TimeIntervalsBinningSettings
 from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings
 from tse_analytics.core.data.pipeline.animal_filter_pipe_operator import filter_animals
 from tse_analytics.core.data.pipeline.outliers_pipe_operator import process_outliers
 from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import process_time_cycles_binning
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import process_time_phases_binning
-from tse_analytics.core.data.shared import Animal, SplitMode, Variable, Aggregation
+from tse_analytics.core.data.shared import Aggregation, Animal, SplitMode, Variable
 from tse_analytics.core.messaging.messages import BinningMessage, DataChangedMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.modules.phenomaster.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
@@ -72,12 +72,12 @@ class DataHub:
         if calo_details is not None and len(fitting_results) > 0:
             dataset = calo_details.dataset
             active_df = dataset.original_df
-            active_df["O2-p"] = np.NaN
-            active_df["CO2-p"] = np.NaN
-            active_df["VO2(3)-p"] = np.NaN
-            active_df["VCO2(3)-p"] = np.NaN
-            active_df["RER-p"] = np.NaN
-            active_df["H(3)-p"] = np.NaN
+            active_df["O2-p"] = np.nan
+            active_df["CO2-p"] = np.nan
+            active_df["VO2(3)-p"] = np.nan
+            active_df["VCO2(3)-p"] = np.nan
+            active_df["RER-p"] = np.nan
+            active_df["H(3)-p"] = np.nan
             for result in fitting_results.values():
                 for _index, row in result.df.iterrows():
                     bin_number = row["Bin"]

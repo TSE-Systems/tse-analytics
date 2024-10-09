@@ -1,12 +1,12 @@
 import pandas as pd
 import pingouin as pg
-from PySide6.QtWidgets import QWidget, QAbstractItemView, QMessageBox
 from pyqttoast import ToastPreset
+from PySide6.QtWidgets import QAbstractItemView, QMessageBox, QWidget
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import SplitMode, Variable
-from tse_analytics.core.helper import show_help, get_html_image, make_toast
+from tse_analytics.core.helper import get_html_image, make_toast, show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger

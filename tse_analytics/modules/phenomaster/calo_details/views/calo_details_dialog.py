@@ -2,10 +2,10 @@ import os
 import timeit
 from multiprocessing import Pool
 
+from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
 from PySide6.QtWidgets import QDialog, QWidget
-from pyqttoast import ToastPreset
 
 from tse_analytics.core.helper import make_toast
 from tse_analytics.modules.phenomaster.calo_details.calo_details_fitting_result import CaloDetailsFittingResult

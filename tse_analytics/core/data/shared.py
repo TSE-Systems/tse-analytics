@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from enum import unique, StrEnum
+from enum import StrEnum, unique
 
 import pandas as pd
 

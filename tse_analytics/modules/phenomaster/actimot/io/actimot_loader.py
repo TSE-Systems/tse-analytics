@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
-from tse_analytics.core.data.shared import Variable, Aggregation
+from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.modules.phenomaster.actimot.data.actimot_details import ActimotDetails
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 

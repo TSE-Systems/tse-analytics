@@ -3,11 +3,11 @@ from base64 import b64encode
 from io import BytesIO
 from pathlib import Path
 
-from loguru import logger
 import pandas as pd
-from PySide6.QtWidgets import QWidget
+from loguru import logger
 from matplotlib.figure import Figure
-from pyqttoast import Toast, ToastPreset, ToastPosition
+from pyqttoast import Toast, ToastPosition, ToastPreset
+from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import ShowHelpMessage
@@ -45,7 +45,7 @@ def get_available_sqlite_tables(path: Path) -> set[str]:
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
         tables = cursor.fetchall()
         cursor.close()
-    return set([item[0] for item in tables])
+    return set(list(tables))
 
 
 def build_df_table(df: pd.DataFrame, color="grey_light", font_size="11pt", padding="5px", font_family="Arial") -> str:

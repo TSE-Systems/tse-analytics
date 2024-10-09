@@ -1,5 +1,5 @@
 from PySide6.QtGui import QPalette
-from PySide6.QtWidgets import QTableWidget, QAbstractItemView, QTableWidgetItem
+from PySide6.QtWidgets import QAbstractItemView, QTableWidget, QTableWidgetItem
 
 from tse_analytics.core.data.shared import Factor
 

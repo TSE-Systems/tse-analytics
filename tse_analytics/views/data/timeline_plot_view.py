@@ -219,7 +219,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         result = (
             grouped.agg(
                 Value=(self._variable.name, self._variable.aggregation),
-                Error=(self._variable.name, self._error_type),
+                Error=(self._variable.name, np.std),
             )
             if self._display_errors
             else grouped.agg(

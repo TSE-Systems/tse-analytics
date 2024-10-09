@@ -54,7 +54,7 @@ class ActimotHeatmapPlotWidget(QWidget):
         xmin, xmax = xlim
         ymin, ymax = ylim
 
-        x, y = zip(*df.values)
+        x, y = zip(*df.values, strict=False)
 
         hist, x_edges, y_edges = np.histogram2d(x, y, bins, range=((xmin, xmax), (ymin, ymax)), density=normalize)
 

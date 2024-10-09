@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from tse_analytics.core.data.shared import Animal, Factor, Variable, Aggregation
+from tse_analytics.core.data.shared import Aggregation, Animal, Factor, Variable
 from tse_analytics.core.tse_import_settings import TseImportSettings
 from tse_analytics.modules.phenomaster.actimot.data.actimot_details import ActimotDetails
 from tse_analytics.modules.phenomaster.data.dataset import Dataset

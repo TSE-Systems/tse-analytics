@@ -1,10 +1,10 @@
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
+from pyqttoast import ToastPreset
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
-from pyqttoast import ToastPreset
 
 from tse_analytics.core.data.binning import BinningMode
-from tse_analytics.core.data.shared import SplitMode
+from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.helper import make_toast
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import (
@@ -46,7 +46,6 @@ class DataPlotWidget(QWidget, MessengerListener):
         self.barPlotView = BarPlotView(self)
 
         self.ui.splitter.replaceWidget(0, self.timelinePlotView)
-        self.active_binning_mode = BinningMode.INTERVALS
 
         self.plot_toolbar = NavigationToolbar2QT(self.barPlotView.canvas, self)
         self.plot_toolbar.setIconSize(QSize(16, 16))
@@ -73,7 +72,6 @@ class DataPlotWidget(QWidget, MessengerListener):
 
     def _factor_changed(self, factor_name: str) -> None:
         split_mode = self._get_split_mode()
-
         selected_factor_name = self.ui.factorSelector.currentText()
         factor = Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
         self.timelinePlotView.set_split_mode(split_mode, factor)
@@ -97,10 +95,8 @@ class DataPlotWidget(QWidget, MessengerListener):
             self.barPlotView.set_error_type("se")
 
     def _display_errors_toggled(self, toggled: bool) -> None:
-        if Manager.data.selected_dataset.binning_settings.mode == BinningMode.INTERVALS:
-            self.timelinePlotView.set_display_errors(toggled)
-        else:
-            self.barPlotView.set_display_errors(toggled)
+        self.timelinePlotView.set_display_errors(toggled)
+        self.barPlotView.set_display_errors(toggled)
 
     def _set_scatter_plot(self, state: bool):
         self.timelinePlotView.set_scatter_plot(state)
@@ -118,11 +114,7 @@ class DataPlotWidget(QWidget, MessengerListener):
             self._assign_data()
 
     def _on_binning_applied(self, message: BinningMessage):
-        if message.settings.apply:
-            self._assign_data()
-        else:
-            if message.settings.mode == BinningMode.INTERVALS:
-                self._assign_data()
+        self._assign_data()
 
     def _on_data_changed(self, message: DataChangedMessage):
         self._assign_data()
@@ -132,7 +124,6 @@ class DataPlotWidget(QWidget, MessengerListener):
             return
 
         selected_factor_name = self.ui.factorSelector.currentText()
-
         split_mode = self._get_split_mode()
 
         self.ui.factorSelector.setEnabled(split_mode == SplitMode.FACTOR)
@@ -147,7 +138,6 @@ class DataPlotWidget(QWidget, MessengerListener):
             return
 
         selected_factor_name = self.ui.factorSelector.currentText()
-
         split_mode = self._get_split_mode()
 
         if split_mode == SplitMode.FACTOR and selected_factor_name == "":
@@ -163,47 +153,60 @@ class DataPlotWidget(QWidget, MessengerListener):
 
         selected_variable = self.ui.variableSelector.get_selected_variable()
 
-        df = (
-            Manager.data.get_data_plot_df(
-                variable=selected_variable,
-                split_mode=split_mode,
-                selected_factor_name=selected_factor_name,
-            )
-            if Manager.data.selected_dataset.binning_settings.mode == BinningMode.INTERVALS
-            else Manager.data.get_bar_plot_df(variable=selected_variable)
-        )
-
-        if Manager.data.selected_dataset.binning_settings.mode == BinningMode.INTERVALS:
-            if Manager.data.selected_dataset.binning_settings.mode != self.active_binning_mode:
-                self.ui.splitter.replaceWidget(0, self.timelinePlotView)
-                self.barPlotView.hide()
-                self.timelinePlotView.show()
-                self.active_binning_mode = Manager.data.selected_dataset.binning_settings.mode
-            self.timelinePlotView.set_variable(selected_variable, False)
-            self.timelinePlotView.set_data(df)
-            self.plot_toolbar.hide()
-            self.ui.checkBoxScatterPlot.show()
+        if not Manager.data.selected_dataset.binning_settings.apply:
+            self._display_timeline_plot(selected_variable, split_mode, selected_factor_name)
         else:
-            if Manager.data.selected_dataset.binning_settings.mode != self.active_binning_mode:
-                self.ui.splitter.replaceWidget(0, self.barPlotView)
-                self.timelinePlotView.hide()
-                self.barPlotView.show()
-                self.active_binning_mode = Manager.data.selected_dataset.binning_settings.mode
-            self.barPlotView.set_variable(selected_variable, False)
-            self.barPlotView.set_data(df)
+            if Manager.data.selected_dataset.binning_settings.mode == BinningMode.INTERVALS:
+                self._display_timeline_plot(selected_variable, split_mode, selected_factor_name)
+            else:
+                self._display_bar_plot(selected_variable)
 
-            self.ui.checkBoxScatterPlot.hide()
-            new_toolbar = NavigationToolbar2QT(self.barPlotView.canvas, self)
-            new_toolbar.setIconSize(QSize(16, 16))
-            self.plot_toolbar.hide()
-            self.ui.widgetSettings.layout().replaceWidget(self.plot_toolbar, new_toolbar)
-            self.plot_toolbar.deleteLater()
-            self.plot_toolbar = new_toolbar
+    def _display_timeline_plot(
+        self,
+        selected_variable: Variable,
+        split_mode: SplitMode,
+        selected_factor_name: str,
+    ):
+        self.ui.splitter.replaceWidget(0, self.timelinePlotView)
+        self.barPlotView.hide()
+        self.timelinePlotView.show()
+        df = Manager.data.get_data_plot_df(
+            variable=selected_variable,
+            split_mode=split_mode,
+            selected_factor_name=selected_factor_name,
+        )
+        self.timelinePlotView.set_variable(selected_variable, False)
+        self.timelinePlotView.set_data(df)
+        self.plot_toolbar.hide()
+        self.ui.checkBoxScatterPlot.show()
+
+    def _display_bar_plot(
+        self,
+        selected_variable: Variable,
+    ):
+        self.ui.splitter.replaceWidget(0, self.barPlotView)
+        self.timelinePlotView.hide()
+        self.barPlotView.show()
+        df = Manager.data.get_bar_plot_df(
+            variable=selected_variable,
+        )
+        self.barPlotView.set_variable(selected_variable, False)
+        self.barPlotView.set_data(df)
+
+        self.ui.checkBoxScatterPlot.hide()
+        new_toolbar = NavigationToolbar2QT(self.barPlotView.canvas, self)
+        new_toolbar.setIconSize(QSize(16, 16))
+        self.plot_toolbar.hide()
+        self.ui.widgetSettings.layout().replaceWidget(self.plot_toolbar, new_toolbar)
+        self.plot_toolbar.deleteLater()
+        self.plot_toolbar = new_toolbar
 
     def _add_report(self):
-        html = (
-            self.timelinePlotView.get_report()
-            if Manager.data.selected_dataset.binning_settings.mode == BinningMode.INTERVALS
-            else self.barPlotView.get_report()
-        )
+        if not Manager.data.selected_dataset.binning_settings.apply:
+            html = self.timelinePlotView.get_report()
+        else:
+            if Manager.data.selected_dataset.binning_settings.mode == BinningMode.INTERVALS:
+                html = self.timelinePlotView.get_report()
+            else:
+                html = self.barPlotView.get_report()
         Manager.messenger.broadcast(AddToReportMessage(self, html))

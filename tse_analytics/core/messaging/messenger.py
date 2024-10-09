@@ -78,9 +78,9 @@ class Messenger:
 
         """
         if not isinstance(subscriber, MessengerListener):
-            raise InvalidSubscriber("Subscriber must be a MessengerListener: %s" % type(subscriber))
+            raise InvalidSubscriber(f"Subscriber must be a MessengerListener: {type(subscriber)}")
         if not isinstance(message_class, type) or not issubclass(message_class, Message):
-            raise InvalidMessage("message class must be a subclass of Message: %s" % type(message_class))
+            raise InvalidMessage(f"Message class must be a subclass of Message: {type(message_class)}")
         # logging.getLogger(__name__).debug("Subscribing %s to %s", subscriber, message_class.__name__)
 
         if not handler:

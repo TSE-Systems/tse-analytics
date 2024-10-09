@@ -1,6 +1,14 @@
 TSE Analytics Change Log
 ====================================================================================================
 
+# 0.10.2 (2024-10-09)
+
+- Fix    -- Unique IDs for cloned datasets.
+- Fix    -- Reset "Animal" categorical column after exclusion of animals from the dataset.
+- Fix    -- Correct recalculation of Timedelta/Bin columns after datasets adjustments.
+
+
+----------------------------------------------------------------------------------------------------
 # 0.10.1 (2024-10-07)
 
 - Change -- Migration to Python 3.12.7 and Qt 6.7.3.

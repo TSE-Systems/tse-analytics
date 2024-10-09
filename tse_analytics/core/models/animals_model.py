@@ -1,4 +1,4 @@
-from typing import Sequence
+from collections.abc import Sequence
 
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 

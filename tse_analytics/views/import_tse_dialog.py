@@ -20,7 +20,6 @@ class ImportTseDialog(QDialog):
         self.ui.checkBoxMeal.setEnabled("drinkfeed_bin" in tables)
         self.ui.checkBoxActiMot.setEnabled("actimot_raw" in tables)
 
-
     def get_import_settings(self) -> TseImportSettings:
         import_settings = TseImportSettings(
             import_calo=self.ui.checkBoxCalo.isChecked(),

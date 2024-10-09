@@ -26,7 +26,7 @@ class Message:
         self.sender = sender
 
     def __str__(self):
-        return "{}\n\t Sent from: {}".format(type(self).__name__, self.sender)
+        return f"{type(self).__name__}\n\t Sent from: {self.sender}"
 
 
 class SelectedTreeNodeChangedMessage(Message):

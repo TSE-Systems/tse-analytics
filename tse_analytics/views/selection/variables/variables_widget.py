@@ -1,5 +1,5 @@
 from PySide6.QtCore import QSize, QSortFilterProxyModel, Qt
-from PySide6.QtWidgets import QWidget, QToolBar, QComboBox, QDoubleSpinBox
+from PySide6.QtWidgets import QComboBox, QDoubleSpinBox, QToolBar, QWidget
 
 from tse_analytics.core.data.outliers import OutliersMode
 from tse_analytics.core.manager import Manager
@@ -25,7 +25,7 @@ class VariablesWidget(QWidget, MessengerListener):
         toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
 
         self.outliersModeComboBox = QComboBox()
-        self.outliersModeComboBox.addItems([e for e in OutliersMode])
+        self.outliersModeComboBox.addItems(list(OutliersMode))
         self.outliersModeComboBox.currentTextChanged.connect(self._outliers_mode_changed)
         toolbar.addWidget(self.outliersModeComboBox)
 

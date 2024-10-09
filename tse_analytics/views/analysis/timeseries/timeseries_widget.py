@@ -1,12 +1,12 @@
 import pandas as pd
-from PySide6.QtCore import QSize
-from PySide6.QtWidgets import QWidget
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
+from PySide6.QtCore import QSize
+from PySide6.QtWidgets import QWidget
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.seasonal import MSTL, STL, seasonal_decompose
 
-from tse_analytics.core.helper import show_help, get_html_image, make_toast
+from tse_analytics.core.helper import get_html_image, make_toast, show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger

@@ -1,10 +1,10 @@
-from PySide6.QtWidgets import QStyledItemDelegate, QAbstractItemView, QComboBox, QAbstractItemDelegate
+from PySide6.QtWidgets import QAbstractItemDelegate, QAbstractItemView, QComboBox, QStyledItemDelegate
 
 from tse_analytics.core.data.shared import Aggregation
 
 
 class AggregationComboBoxDelegate(QStyledItemDelegate):
-    aggregation_operations = [i for i in Aggregation]
+    aggregation_operations = list(Aggregation)
 
     def paint(self, painter, option, index):
         if isinstance(self.parent(), QAbstractItemView):

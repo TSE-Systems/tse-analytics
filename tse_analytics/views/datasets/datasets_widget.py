@@ -1,16 +1,16 @@
-from PySide6.QtCore import QSize, Qt, QModelIndex, QItemSelection
+from PySide6.QtCore import QItemSelection, QModelIndex, QSize, Qt
 from PySide6.QtGui import QIcon, QPalette
 from PySide6.QtWidgets import (
-    QToolBar,
-    QWidget,
     QAbstractItemView,
-    QMenu,
-    QMessageBox,
     QDialog,
     QFileDialog,
     QInputDialog,
     QLineEdit,
+    QMenu,
+    QMessageBox,
+    QToolBar,
     QToolButton,
+    QWidget,
 )
 
 from tse_analytics.core.helper import CSV_IMPORT_ENABLED

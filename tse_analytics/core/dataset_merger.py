@@ -123,7 +123,7 @@ def _merge_metadata(
                 "columns": {k: v.get_dict() for (k, v) in variables.items()},
             }
         },
-        "origins": [dataset.meta for dataset in datasets]
+        "origins": [dataset.meta for dataset in datasets],
     }
     return result
 

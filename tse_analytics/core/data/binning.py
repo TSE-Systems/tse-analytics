@@ -1,5 +1,5 @@
 from datetime import datetime, time
-from enum import unique, StrEnum
+from enum import StrEnum, unique
 
 from tse_analytics.core.data.shared import TimePhase
 

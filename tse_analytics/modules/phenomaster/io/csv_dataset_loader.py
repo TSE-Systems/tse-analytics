@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
-from tse_analytics.core.data.shared import Animal, Variable, Aggregation
+from tse_analytics.core.data.shared import Aggregation, Animal, Variable
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
 Section = namedtuple("Section", ["lines", "section_start_index", "section_end_index"])

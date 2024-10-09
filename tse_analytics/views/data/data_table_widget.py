@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget, QAbstractItemView
+from PySide6.QtWidgets import QAbstractItemView, QWidget
 
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.manager import Manager

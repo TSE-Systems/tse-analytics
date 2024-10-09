@@ -23,7 +23,7 @@ class BinningSettingsWidget(QWidget, MessengerListener):
 
         self.ui.applyBinningCheckBox.stateChanged.connect(self._apply_binning_changed)
 
-        self.ui.binningModeComboBox.addItems([e for e in BinningMode])
+        self.ui.binningModeComboBox.addItems(list(BinningMode))
         self.ui.binningModeComboBox.currentTextChanged.connect(self._binning_mode_changed)
 
         self.dataset: Dataset | None = None

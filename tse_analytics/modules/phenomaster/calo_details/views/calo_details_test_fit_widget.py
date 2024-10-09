@@ -118,13 +118,13 @@ class CaloDetailsTestFitWidget(QWidget):
         o2_descending = o2_last < o2_first
         if o2_descending:
             o2_y90 = (o2_first - o2_last) * 0.9
-            for index, row in self.df.iterrows():
+            for _, row in self.df.iterrows():
                 if row["O2"] < o2_first - o2_y90:
                     o2_t90 = row["Offset"]
                     break
         else:
             o2_y90 = (o2_last - o2_first) * 0.9
-            for index, row in self.df.iterrows():
+            for _, row in self.df.iterrows():
                 if row["O2"] > o2_first + o2_y90:
                     o2_t90 = row["Offset"]
                     break
@@ -137,13 +137,13 @@ class CaloDetailsTestFitWidget(QWidget):
         co2_descending = co2_last < co2_first
         if co2_descending:
             co2_y90 = (co2_first - co2_last) * 0.9
-            for index, row in self.df.iterrows():
+            for _, row in self.df.iterrows():
                 if row["CO2"] < co2_first - co2_y90:
                     co2_t90 = row["Offset"]
                     break
         else:
             co2_y90 = (co2_last - co2_first) * 0.9
-            for index, row in self.df.iterrows():
+            for _, row in self.df.iterrows():
                 if row["CO2"] > co2_first + co2_y90:
                     co2_t90 = row["Offset"]
                     break

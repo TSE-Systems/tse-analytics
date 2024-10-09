@@ -6,7 +6,7 @@ from uuid import uuid4
 import pandas as pd
 
 from tse_analytics.core.data.binning import BinningSettings
-from tse_analytics.core.data.outliers import OutliersSettings, OutliersMode
+from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings
 from tse_analytics.core.data.shared import Animal, Factor, Group, Variable
 from tse_analytics.modules.phenomaster.actimot.data.actimot_details import ActimotDetails
 from tse_analytics.modules.phenomaster.calo_details.data.calo_details import CaloDetails
@@ -135,10 +135,10 @@ class Dataset:
             self.meta["animals"] = new_meta_animals
 
         self.original_df = self.original_df[~self.original_df["Animal"].isin(animal_ids)]
+        self.original_df["Animal"] = self.original_df["Animal"].cat.remove_unused_categories()
         self.original_df.reset_index(inplace=True, drop=True)
 
-        self.active_df = self.active_df[~self.active_df["Animal"].isin(animal_ids)]
-        self.active_df.reset_index(inplace=True, drop=True)
+        self.refresh_active_df()
 
         if self.calo_details is not None:
             self.calo_details.raw_df = self.calo_details.raw_df[~self.calo_details.raw_df["Animal"].isin(animal_ids)]
@@ -169,9 +169,17 @@ class Dataset:
 
     def _reassign_df_timedelta_and_bin(self, df: pd.DataFrame, sampling_interval: pd.Timedelta) -> pd.DataFrame:
         df.reset_index(inplace=True, drop=True)
-        # Reassign bin and timedelta
-        start_date_time = df.at[0, "DateTime"]
-        df["Timedelta"] = df["DateTime"] - start_date_time
+
+        # Get unique runs numbers
+        runs = df["Run"].unique().tolist()
+
+        # Reassign timedeltas
+        for run in runs:
+            # Get start timestamp per run
+            start_date_time = df[df["Run"] == run]["DateTime"].iloc[0]
+            df.loc[df["Run"] == run, "Timedelta"] = df["DateTime"] - start_date_time
+
+        # Reassign bins numbers
         df["Bin"] = (df["Timedelta"] / sampling_interval).round().astype(int)
         return df
 
@@ -193,7 +201,7 @@ class Dataset:
 
         original_result = self.original_df.groupby(group_by, dropna=False, observed=False)
         original_result = original_result.resample(resampling_interval, on="Timedelta", origin="start").agg(agg)
-
+        original_result.reset_index(inplace=True, drop=False)
         original_result.sort_values(by=sort_by, inplace=True)
 
         original_result = self._reassign_df_timedelta_and_bin(original_result, resampling_interval)

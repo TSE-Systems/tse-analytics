@@ -1,9 +1,8 @@
 import timeit
 
 import pandas as pd
-from pyqttoast import ToastPreset
-
 import traja
+from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
 from PySide6.QtWidgets import QDialog, QFileDialog, QWidget

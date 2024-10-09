@@ -1,5 +1,6 @@
 import copy
 from pathlib import Path
+from uuid import uuid4
 
 from loguru import logger
 from PySide6.QtCore import QModelIndex, QSettings, QThreadPool
@@ -75,6 +76,7 @@ class Manager:
     @classmethod
     def clone_dataset(cls, original_dataset: Dataset, new_dataset_name: str) -> None:
         new_dataset = copy.deepcopy(original_dataset)
+        new_dataset.id = uuid4()
         new_dataset.name = new_dataset_name
         if new_dataset is not None:
             cls.workspace_model.add_dataset(new_dataset)

@@ -1,7 +1,7 @@
 from functools import partial
 
 from PySide6.QtCore import QSize, QSortFilterProxyModel, Qt
-from PySide6.QtWidgets import QWidget, QToolBar
+from PySide6.QtWidgets import QToolBar, QWidget
 
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import DatasetChangedMessage

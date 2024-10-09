@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
-from tse_analytics.core.data.shared import Variable, Aggregation
+from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.modules.phenomaster.calo_details.data.calo_details import CaloDetails
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 

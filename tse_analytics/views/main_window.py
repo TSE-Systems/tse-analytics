@@ -4,12 +4,12 @@ from pathlib import Path
 
 import psutil
 import PySide6QtAds
+from pyqttoast import Toast
 from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QCloseEvent, QIcon
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QMessageBox, QWidget
-from pyqttoast import Toast
 
-from tse_analytics.core.helper import LAYOUT_VERSION, show_help, CSV_IMPORT_ENABLED
+from tse_analytics.core.helper import CSV_IMPORT_ENABLED, LAYOUT_VERSION, show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.about_dialog import AboutDialog
 from tse_analytics.views.analysis.anova_widget import AnovaWidget
@@ -140,9 +140,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             BinningSettingsWidget(), "Binning", QIcon(":/icons/binning.png")
         )
         binning_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
-        settings_dock_area = self.dock_manager.addDockWidget(
-            PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area
-        )
+        self.dock_manager.addDockWidget(PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area)
 
         self.actionImportDataset.triggered.connect(self.import_dataset_dialog)
         self.actionOpenWorkspace.triggered.connect(self.load_workspace_dialog)

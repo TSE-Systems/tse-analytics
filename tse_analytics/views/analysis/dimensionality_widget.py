@@ -2,15 +2,15 @@ import base64
 from io import BytesIO
 
 import plotly.express as px
+from pyqttoast import ToastPreset
 from PySide6.QtCore import QBuffer, QByteArray, QDir, QIODevice, QTemporaryFile, QUrl
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import QWidget, QAbstractItemView
-from pyqttoast import ToastPreset
+from PySide6.QtWidgets import QAbstractItemView, QWidget
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
 from tse_analytics.core.data.shared import SplitMode, Variable
-from tse_analytics.core.helper import show_help, make_toast
+from tse_analytics.core.helper import make_toast, show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
@@ -127,7 +127,11 @@ class DimensionalityWidget(QWidget, MessengerListener):
             dropna=False,
         )
 
-        fig = px.scatter_matrix(df, dimensions=list(selected_variables), color=by)
+        fig = px.scatter_matrix(
+            df,
+            dimensions=list(selected_variables),
+            color=by,
+        )
         fig.update_traces(diagonal_visible=False)
 
         file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.html", self)

@@ -1,6 +1,6 @@
-from PySide6.QtCore import QSortFilterProxyModel, Qt, QSize
+from PySide6.QtCore import QSize, QSortFilterProxyModel, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QDialog, QWidget, QToolBar
+from PySide6.QtWidgets import QDialog, QToolBar, QWidget
 
 from tse_analytics.core.data.shared import Factor
 from tse_analytics.core.manager import Manager

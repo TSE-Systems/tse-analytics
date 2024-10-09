@@ -1,8 +1,8 @@
 import pandas as pd
 import seaborn as sns
-from PySide6.QtWidgets import QVBoxLayout, QWidget
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from PySide6.QtWidgets import QVBoxLayout, QWidget
 
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import Factor, SplitMode, Variable
@@ -53,6 +53,11 @@ class BarPlotView(QWidget):
         self._display_errors = False
 
     def _update_plot(self):
+        self.layout().removeWidget(self.canvas)
+        self.canvas.figure.clear()
+        self.canvas.draw()
+        plt.close(self.canvas.figure)
+
         if (
             self._df is None
             or self._variable == ""
@@ -64,11 +69,6 @@ class BarPlotView(QWidget):
             )
         ):
             return
-
-        self.layout().removeWidget(self.canvas)
-        self.canvas.figure.clear()
-        self.canvas.draw()
-        plt.close(self.canvas.figure)
 
         if not self._df.empty:
             match self._split_mode:
