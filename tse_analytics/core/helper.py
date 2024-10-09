@@ -39,13 +39,13 @@ def get_html_image(figure: Figure) -> str:
     return f"<img src='data:image/png;base64,{encoded}'><br/>"
 
 
-def get_available_sqlite_tables(path: Path) -> set[str]:
+def get_available_sqlite_tables(path: Path) -> list[str]:
     with sqlite3.connect(path, check_same_thread=False) as connection:
         cursor = connection.cursor()
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
         tables = cursor.fetchall()
         cursor.close()
-    return set(list(tables))
+    return [item[0] for item in tables]
 
 
 def build_df_table(df: pd.DataFrame, color="grey_light", font_size="11pt", padding="5px", font_family="Arial") -> str:

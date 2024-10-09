@@ -1,11 +1,13 @@
 TSE Analytics Change Log
 ====================================================================================================
 
-# 0.10.2 (2024-10-09)
+# 0.10.2 (2024-10-10)
 
+- New    -- Predefined variables parameters.
 - Fix    -- Unique IDs for cloned datasets.
 - Fix    -- Reset "Animal" categorical column after exclusion of animals from the dataset.
 - Fix    -- Correct recalculation of Timedelta/Bin columns after datasets adjustments.
+- Fix    -- Correct list of available tables when importing TSE datasets.
 
 
 ----------------------------------------------------------------------------------------------------

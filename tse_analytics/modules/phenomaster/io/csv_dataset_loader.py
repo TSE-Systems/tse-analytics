@@ -6,6 +6,7 @@ import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
+from tse_analytics.core.predefined_variables import assign_predefined_values
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
 Section = namedtuple("Section", ["lines", "section_start_index", "section_end_index"])
@@ -142,6 +143,9 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Data
 
     # Sort variables by name
     variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))
+
+    # Assign predefined variables properties
+    variables = assign_predefined_values(variables)
 
     name = header_section.lines[0].split(csv_import_settings.delimiter)[0]
     description = header_section.lines[0].split(csv_import_settings.delimiter)[1]

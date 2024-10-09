@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from tse_analytics.core.data.shared import Aggregation, Animal, Factor, Variable
+from tse_analytics.core.predefined_variables import assign_predefined_values
 from tse_analytics.core.tse_import_settings import TseImportSettings
 from tse_analytics.modules.phenomaster.actimot.data.actimot_details import ActimotDetails
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
@@ -19,6 +20,9 @@ def load_tse_dataset(path: Path, import_settings: TseImportSettings) -> Dataset 
     # factors = TseDatasetLoader._get_factors(metadata["groups"])
 
     main_table_df, main_table_vars, main_table_sampling_interval = _read_main_table(path, metadata["tables"], animals)
+
+    # Assign predefined variables properties
+    main_table_vars = assign_predefined_values(main_table_vars)
 
     dataset = Dataset(
         name=metadata["experiment"]["experiment_no"],
