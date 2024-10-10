@@ -6,6 +6,7 @@ from pyqttoast import ToastPreset
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
+from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.helper import get_html_image, make_toast, show_help
 from tse_analytics.core.manager import Manager
@@ -83,6 +84,24 @@ class BivariateWidget(QWidget, MessengerListener):
         self.ui.groupBoxY.setTitle("Response")
 
     def _update(self):
+        if (
+            Manager.data.selected_dataset.binning_settings.apply
+            and (
+                Manager.data.selected_dataset.binning_settings.mode == BinningMode.PHASES
+                or Manager.data.selected_dataset.binning_settings.mode == BinningMode.CYCLES
+            )
+            and self.ui.radioButtonSplitByRun.isChecked()
+        ):
+            make_toast(
+                self,
+                "Exploration Analysis",
+                "Split by Run not available when binning by cycles or time phases is active.",
+                duration=4000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
+            return
+
         if self.ui.radioButtonCorrelation.isChecked():
             self._update_correlation()
         elif self.ui.radioButtonRegression.isChecked():
@@ -174,7 +193,7 @@ class BivariateWidget(QWidget, MessengerListener):
         if split_mode == SplitMode.ANIMAL:
             make_toast(
                 self,
-                "Bivariate Analysis",
+                "Regression Analysis",
                 "Please select another split mode.",
                 duration=2000,
                 preset=ToastPreset.WARNING,
@@ -207,21 +226,6 @@ class BivariateWidget(QWidget, MessengerListener):
             selected_factor_name=selected_factor_name,
             dropna=False,
         )
-
-        agg = {
-            covariate.name: "mean",
-            response.name: "mean",
-        }
-
-        if selected_factor_name != "":
-            agg[selected_factor_name] = "first"
-
-        if split_mode == SplitMode.RUN:
-            group_by = ["Animal", "Run"]
-        else:
-            group_by = ["Animal"]
-
-        df = df.groupby(by=group_by, as_index=False, observed=False).agg(agg)
 
         facet_grid = sns.lmplot(data=df, x=covariate.name, y=response.name, hue=by, robust=False)
         canvas = FigureCanvasQTAgg(facet_grid.figure)

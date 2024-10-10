@@ -3,10 +3,11 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtWidgets import QVBoxLayout, QWidget
+from pyqttoast import ToastPreset
 
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import Factor, SplitMode, Variable
-from tse_analytics.core.helper import get_html_image
+from tse_analytics.core.helper import get_html_image, make_toast
 from tse_analytics.core.manager import Manager
 
 
@@ -70,6 +71,24 @@ class BarPlotView(QWidget):
         ):
             return
 
+        if (
+            Manager.data.selected_dataset.binning_settings.apply
+            and (
+                Manager.data.selected_dataset.binning_settings.mode == BinningMode.PHASES
+                or Manager.data.selected_dataset.binning_settings.mode == BinningMode.CYCLES
+            )
+            and self._split_mode == SplitMode.RUN
+        ):
+            make_toast(
+                self,
+                "Data Plot",
+                "Split by Run not available when binning by cycles or time phases is active.",
+                duration=4000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
+            return
+
         if not self._df.empty:
             match self._split_mode:
                 case SplitMode.ANIMAL:
@@ -92,7 +111,7 @@ class BarPlotView(QWidget):
                 kind="bar",
                 errorbar=self._error_type if self._display_errors else None,
             )
-            facet_grid.set_xticklabels(rotation=75)
+            facet_grid.set_xticklabels(rotation=90)
             # facet_grid.set_titles("{col_name}")
             self.canvas = FigureCanvasQTAgg(facet_grid.figure)
             self.canvas.updateGeometry()

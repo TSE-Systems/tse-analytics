@@ -231,7 +231,7 @@ def _add_cumulative_columns(df: pd.DataFrame, origin_name: str, variables: dict[
         cumulative_col_name = col + "C"
         df[cumulative_col_name] = df.groupby("Box", observed=False)[col].transform(pd.Series.cumsum)
         var = Variable(
-            cumulative_col_name, variables[col].unit, f"{col} (cumulative)", "float64", Aggregation.MEAN, False
+            cumulative_col_name, variables[col].unit, f"{col} (cumulative)", "float64", Aggregation.MAX, False
         )
         variables[var.name] = var
 

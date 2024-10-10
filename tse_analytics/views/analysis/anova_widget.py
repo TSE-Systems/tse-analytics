@@ -233,10 +233,19 @@ class AnovaWidget(QWidget, MessengerListener):
 
     def _analyze_n_way_anova(self, selected_dependent_variables: dict[str, Variable]):
         selected_factor_names = self.ui.tableWidgetFactors.get_selected_factor_names()
+
+        match len(selected_factor_names):
+            case 2:
+                anova_header = "Two-way ANOVA"
+            case 3:
+                anova_header = "Three-way ANOVA"
+            case _:
+                anova_header = "Multi-way ANOVA"
+
         if len(selected_factor_names) < 2:
             make_toast(
                 self,
-                "N-way ANOVA",
+                anova_header,
                 "Please select several factors.",
                 duration=2000,
                 preset=ToastPreset.WARNING,
@@ -257,14 +266,26 @@ class AnovaWidget(QWidget, MessengerListener):
         effsize = self.eff_size[self.ui.comboBoxEffectSizeType.currentText()]
         padjust = self.p_adjustment[self.ui.comboBoxPAdjustment.currentText()]
 
-        post_hoc_test = pg.pairwise_tests(
-            data=df,
-            dv=dependent_variable,
-            between=selected_factor_names,
-            return_desc=True,
-            effsize=effsize,
-            padjust=padjust,
-        ).round(5)
+        try:
+            post_hoc_test = pg.pairwise_tests(
+                data=df,
+                dv=dependent_variable,
+                between=selected_factor_names,
+                return_desc=True,
+                effsize=effsize,
+                padjust=padjust,
+            ).round(5)
+        except Exception as error:
+            make_toast(
+                self,
+                anova_header,
+                str(error),
+                duration=2000,
+                preset=ToastPreset.ERROR,
+                show_duration_bar=True,
+                echo_to_logger=True,
+            ).show()
+            post_hoc_test = None
 
         html_template = """
                 <h2>{anova_header}</h2>
@@ -273,18 +294,10 @@ class AnovaWidget(QWidget, MessengerListener):
                 {post_hoc_test}
                 """
 
-        match len(selected_factor_names):
-            case 2:
-                anova_header = "Two-way ANOVA"
-            case 3:
-                anova_header = "Three-way ANOVA"
-            case _:
-                anova_header = "Multi-way ANOVA"
-
         html = html_template.format(
             anova_header=anova_header,
             anova=anova.to_html(),
-            post_hoc_test=post_hoc_test.to_html(),
+            post_hoc_test=post_hoc_test.to_html() if post_hoc_test is not None else "",
         )
         self.ui.textEdit.document().setHtml(html)
 

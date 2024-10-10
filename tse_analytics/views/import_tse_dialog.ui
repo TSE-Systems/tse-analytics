@@ -17,9 +17,6 @@
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
          <widget class="QCheckBox" name="checkBoxCalo">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
           <property name="text">
            <string>Calo details data</string>
           </property>
@@ -27,9 +24,6 @@
         </item>
         <item>
          <widget class="QCheckBox" name="checkBoxMeal">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
           <property name="text">
            <string>Meal details data</string>
           </property>
@@ -37,9 +31,6 @@
         </item>
         <item>
          <widget class="QCheckBox" name="checkBoxActiMot">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
           <property name="text">
            <string>ActiMot raw data</string>
           </property>

@@ -2,8 +2,11 @@ import numpy as np
 import pandas as pd
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QAbstractItemView, QWidget
+from pyqttoast import ToastPreset
 
+from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import SplitMode
+from tse_analytics.core.helper import make_toast
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import (
     AddToReportMessage,
@@ -106,6 +109,40 @@ class DataTableWidget(QWidget, MessengerListener):
         selected_variables = self.ui.tableWidgetVariables.get_selected_variables_dict()
         split_mode = self._get_split_mode()
         selected_factor_name = self.ui.factorSelector.currentText()
+
+        if (
+            Manager.data.selected_dataset.binning_settings.apply
+            and (
+                Manager.data.selected_dataset.binning_settings.mode == BinningMode.PHASES
+                or Manager.data.selected_dataset.binning_settings.mode == BinningMode.CYCLES
+            )
+            and split_mode == SplitMode.RUN
+        ):
+            make_toast(
+                self,
+                "Data Table",
+                "Split by Run not available when binning by cycles or time phases is active.",
+                duration=4000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
+            return
+
+        if (
+            Manager.data.selected_dataset.binning_settings.apply
+            and Manager.data.selected_dataset.binning_settings.mode != BinningMode.INTERVALS
+            and split_mode != SplitMode.ANIMAL
+            and len(selected_variables) == 0
+        ):
+            make_toast(
+                self,
+                "Data Table",
+                "Please select at least one variable.",
+                duration=4000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
+            return
 
         self.df = Manager.data.get_data_table_df(
             variables=selected_variables,

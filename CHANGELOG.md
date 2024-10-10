@@ -4,6 +4,7 @@ TSE Analytics Change Log
 # 0.10.2 (2024-10-10)
 
 - New    -- Predefined variables parameters.
+- Change -- Redesigned binning/splitting (individual aggregation per variable).
 - Fix    -- Unique IDs for cloned datasets.
 - Fix    -- Reset "Animal" categorical column after exclusion of animals from the dataset.
 - Fix    -- Correct recalculation of Timedelta/Bin columns after datasets adjustments.

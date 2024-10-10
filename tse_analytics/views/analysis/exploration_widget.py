@@ -5,6 +5,7 @@ from pyqttoast import ToastPreset
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
+from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.helper import get_html_image, make_toast, show_help
 from tse_analytics.core.manager import Manager
@@ -78,6 +79,24 @@ class ExplorationWidget(QWidget, MessengerListener):
                 "Exploration Analysis",
                 "Please select a factor.",
                 duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
+            return
+
+        if (
+            Manager.data.selected_dataset.binning_settings.apply
+            and (
+                Manager.data.selected_dataset.binning_settings.mode == BinningMode.PHASES
+                or Manager.data.selected_dataset.binning_settings.mode == BinningMode.CYCLES
+            )
+            and self.ui.radioButtonSplitByRun.isChecked()
+        ):
+            make_toast(
+                self,
+                "Exploration Analysis",
+                "Split by Run not available when binning by cycles or time phases is active.",
+                duration=4000,
                 preset=ToastPreset.WARNING,
                 show_duration_bar=True,
             ).show()

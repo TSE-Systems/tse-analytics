@@ -52,6 +52,8 @@ class DataPlotWidget(QWidget, MessengerListener):
         self.ui.widgetSettings.layout().addWidget(self.plot_toolbar)
         self.plot_toolbar.hide()
 
+        self.ui.groupBoxDisplayErrors.hide()
+
     def register_to_messenger(self, messenger: Messenger):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
         messenger.subscribe(self, BinningMessage, self._on_binning_applied)
@@ -170,7 +172,7 @@ class DataPlotWidget(QWidget, MessengerListener):
         self.ui.splitter.replaceWidget(0, self.timelinePlotView)
         self.barPlotView.hide()
         self.timelinePlotView.show()
-        df = Manager.data.get_data_plot_df(
+        df = Manager.data.get_timeline_plot_df(
             variable=selected_variable,
             split_mode=split_mode,
             selected_factor_name=selected_factor_name,

@@ -1,18 +1,15 @@
 import pandas as pd
 
 from tse_analytics.core.data.binning import TimeCyclesBinningSettings
-from tse_analytics.core.data.shared import SplitMode, Variable
+from tse_analytics.core.data.shared import Variable
 
-default_columns = ["Timedelta", "Box", "Run"]
+default_columns = ["Timedelta", "Animal", "Box", "Run", "Bin"]
 
 
 def process_time_cycles_binning(
     df: pd.DataFrame,
     settings: TimeCyclesBinningSettings,
     variables: dict[str, Variable],
-    split_mode: SplitMode,
-    factor_names: list[str],
-    selected_factor_name: str,
 ) -> pd.DataFrame:
     def filter_method(x):
         return "Light" if settings.light_cycle_start <= x.time() < settings.dark_cycle_start else "Dark"
@@ -20,30 +17,19 @@ def process_time_cycles_binning(
     df["Bin"] = df["DateTime"].apply(filter_method).astype("category")
     df.drop(columns=["DateTime"], inplace=True)
 
-    match split_mode:
-        case SplitMode.ANIMAL:
-            agg = {
-                "Box": "first",
-            }
-            for factor_name in factor_names:
-                agg[factor_name] = "first"
-            group_by = ["Animal", "Bin"]
-        case SplitMode.FACTOR:
-            agg = {}
-            group_by = [selected_factor_name, "Bin"]
-        case SplitMode.RUN:
-            agg = {}
-            group_by = ["Run", "Bin"]
-        case _:
-            agg = {}
-            group_by = ["Bin"]
+    agg = {}
+    for column in df.columns:
+        if column not in default_columns:
+            if df.dtypes[column].name != "category":
+                agg[column] = variables[column].aggregation
+            else:
+                agg[column] = "first"
 
-    for variable in variables.values():
-        agg[variable.name] = variable.aggregation
+    if len(agg) == 0:
+        return df
 
-    result = df.groupby(group_by, dropna=False, observed=False).agg(agg) if len(agg) != 0 else df
-
-    # the inverse of groupby, reset_index
+    result = df.groupby(["Animal", "Bin"], dropna=False, observed=False).aggregate(agg)
+    # result.sort_values(by=["Animal", "Bin"], inplace=True)
     result.reset_index(inplace=True)
 
     return result

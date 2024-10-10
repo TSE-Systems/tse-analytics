@@ -111,6 +111,58 @@ class DataHub:
             dataset.refresh_active_df()
             self.set_selected_dataset(dataset)
 
+    def _preprocess_df(
+        self,
+        df: pd.DataFrame,
+        variables: [str, Variable],
+    ) -> pd.DataFrame:
+        # Filter animals
+        df = filter_animals(df, self.selected_dataset.animals)
+
+        # Outliers removal
+        if self.selected_dataset.outliers_settings.mode == OutliersMode.REMOVE:
+            df = process_outliers(df, self.selected_dataset.outliers_settings, variables)
+
+        return df
+
+    def _process_splitting(
+        self,
+        df: pd.DataFrame,
+        split_mode: SplitMode,
+        variables: dict[str, Variable],
+        selected_factor_name: str,
+    ) -> pd.DataFrame:
+        match split_mode:
+            case SplitMode.ANIMAL:
+                # No processing!
+                return df
+            case SplitMode.FACTOR:
+                by = ["Bin", selected_factor_name]
+            case SplitMode.RUN:
+                by = ["Bin", "Run"]
+            case _:  # Total split mode
+                by = ["Bin"]
+
+        agg = {}
+
+        if "DateTime" in df.columns:
+            agg["DateTime"] = "first"
+
+        if "Timedelta" in df.columns:
+            agg["Timedelta"] = "first"
+
+        # TODO: use means only when aggregating in split modes!
+        for variable in variables.values():
+            agg[variable.name] = "mean"
+
+        if len(agg) == 0:
+            return df
+
+        result = df.groupby(by, dropna=False, observed=False).aggregate(agg)
+        # result.sort_values(by, inplace=True)
+        result.reset_index(inplace=True)
+        return result
+
     def get_current_df(
         self,
         variables: dict[str, Variable] | None = None,
@@ -118,21 +170,16 @@ class DataHub:
         selected_factor_name: str | None = None,
         dropna=False,
     ) -> pd.DataFrame:
-        factor_columns = list(self.selected_dataset.factors)
         if variables is not None:
             default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
+            factor_columns = list(self.selected_dataset.factors)
             variable_columns = list(variables)
             result = self.selected_dataset.active_df[default_columns + factor_columns + variable_columns].copy()
         else:
             variables = self.selected_dataset.variables
             result = self.selected_dataset.active_df.copy()
 
-        # Filter operator
-        result = filter_animals(result, self.selected_dataset.animals)
-
-        # Outliers operator
-        if self.selected_dataset.outliers_settings.mode == OutliersMode.REMOVE:
-            result = process_outliers(result, self.selected_dataset.outliers_settings, variables)
+        result = self._preprocess_df(result, variables)
 
         # Binning
         if self.selected_dataset.binning_settings.apply:
@@ -142,84 +189,31 @@ class DataHub:
                         result,
                         self.selected_dataset.binning_settings.time_intervals_settings,
                         variables,
-                        split_mode,
-                        factor_columns,
-                        selected_factor_name,
                     )
                 case BinningMode.CYCLES:
                     result = process_time_cycles_binning(
                         result,
                         self.selected_dataset.binning_settings.time_cycles_settings,
                         variables,
-                        split_mode,
-                        factor_columns,
-                        selected_factor_name,
                     )
                 case BinningMode.PHASES:
                     result = process_time_phases_binning(
                         result,
                         self.selected_dataset.binning_settings.time_phases_settings,
                         variables,
-                        split_mode,
-                        factor_columns,
-                        selected_factor_name,
                     )
+
+        # Splitting
+        result = self._process_splitting(
+            result,
+            split_mode,
+            variables,
+            selected_factor_name,
+        )
 
         # TODO: should or should not?
         if dropna:
-            result = result.dropna()
-
-        return result
-
-    def get_data_plot_df(
-        self,
-        variable: Variable,
-        split_mode: SplitMode,
-        selected_factor_name: str,
-    ) -> pd.DataFrame:
-        default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
-        factor_columns = list(self.selected_dataset.factors)
-        result = self.selected_dataset.active_df[default_columns + factor_columns + [variable.name]].copy()
-
-        # Filter operator
-        result = filter_animals(result, self.selected_dataset.animals)
-
-        variables = {variable.name: variable}
-
-        # Outliers operator
-        if self.selected_dataset.outliers_settings.mode == OutliersMode.REMOVE:
-            result = process_outliers(result, self.selected_dataset.outliers_settings, variables)
-
-        # Binning
-        if self.selected_dataset.binning_settings.apply:
-            match self.selected_dataset.binning_settings.mode:
-                case BinningMode.INTERVALS:
-                    result = process_time_interval_binning(
-                        result,
-                        self.selected_dataset.binning_settings.time_intervals_settings,
-                        variables,
-                        split_mode,
-                        factor_columns,
-                        selected_factor_name,
-                    )
-                case BinningMode.CYCLES:
-                    result = process_time_cycles_binning(
-                        result,
-                        self.selected_dataset.binning_settings.time_cycles_settings,
-                        variables,
-                        split_mode,
-                        factor_columns,
-                        selected_factor_name,
-                    )
-                case BinningMode.PHASES:
-                    result = process_time_phases_binning(
-                        result,
-                        self.selected_dataset.binning_settings.time_phases_settings,
-                        variables,
-                        split_mode,
-                        factor_columns,
-                        selected_factor_name,
-                    )
+            result.dropna(inplace=True)
 
         return result
 
@@ -234,12 +228,7 @@ class DataHub:
         variable_columns = list(variables)
         result = self.selected_dataset.active_df[default_columns + factor_columns + variable_columns].copy()
 
-        # Filter operator
-        result = filter_animals(result, self.selected_dataset.animals)
-
-        # Outliers operator
-        if self.selected_dataset.outliers_settings.mode == OutliersMode.REMOVE:
-            result = process_outliers(result, self.selected_dataset.outliers_settings, variables)
+        result = self._preprocess_df(result, variables)
 
         # Binning
         if self.selected_dataset.binning_settings.apply:
@@ -249,97 +238,87 @@ class DataHub:
                         result,
                         self.selected_dataset.binning_settings.time_intervals_settings,
                         variables,
-                        split_mode,
-                        factor_columns,
-                        selected_factor_name,
                     )
                 case BinningMode.CYCLES:
                     result = process_time_cycles_binning(
                         result,
                         self.selected_dataset.binning_settings.time_cycles_settings,
                         variables,
-                        split_mode,
-                        factor_columns,
-                        selected_factor_name,
                     )
                 case BinningMode.PHASES:
                     result = process_time_phases_binning(
                         result,
                         self.selected_dataset.binning_settings.time_phases_settings,
                         variables,
-                        split_mode,
-                        factor_columns,
-                        selected_factor_name,
                     )
-        else:
-            if split_mode != SplitMode.ANIMAL:
-                match split_mode:
-                    case SplitMode.FACTOR:
-                        group_by = ["Bin", selected_factor_name]
-                    case SplitMode.RUN:
-                        group_by = ["Bin", "Run"]
-                    case _:  # Total split mode
-                        group_by = ["Bin"]
 
-                agg = {
-                    "DateTime": "first",
-                    "Timedelta": "first",
-                }
-                for variable in variables.values():
-                    agg[variable.name] = variable.aggregation
-                result = result.groupby(group_by, dropna=False, observed=False).aggregate(agg)
-                result.reset_index(inplace=True)
+        # Splitting
+        result = self._process_splitting(
+            result,
+            split_mode,
+            variables,
+            selected_factor_name,
+        )
 
         return result
 
-    def get_timeseries_df(
+    def get_timeline_plot_df(
         self,
         variable: Variable,
+        split_mode: SplitMode,
+        selected_factor_name: str,
     ) -> pd.DataFrame:
         default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
-        factor_columns = list(self.selected_dataset.factors.keys())
+        factor_columns = list(self.selected_dataset.factors)
         result = self.selected_dataset.active_df[default_columns + factor_columns + [variable.name]].copy()
-
-        # Filter operator
-        result = filter_animals(result, self.selected_dataset.animals)
 
         variables = {variable.name: variable}
 
-        # Outliers operator
-        if self.selected_dataset.outliers_settings.mode == OutliersMode.REMOVE:
-            result = process_outliers(result, self.selected_dataset.outliers_settings, variables)
+        result = self._preprocess_df(result, variables)
 
         # Binning
         if self.selected_dataset.binning_settings.apply:
-            factor_names = list(self.selected_dataset.factors.keys())
-            match self.selected_dataset.binning_settings.mode:
-                case BinningMode.INTERVALS:
-                    result = process_time_interval_binning(
-                        result,
-                        self.selected_dataset.binning_settings.time_intervals_settings,
-                        variables,
-                        SplitMode.ANIMAL,
-                        factor_names,
-                        "",
-                    )
-                case BinningMode.CYCLES:
-                    result = process_time_cycles_binning(
-                        result,
-                        self.selected_dataset.binning_settings.time_cycles_settings,
-                        variables,
-                        SplitMode.ANIMAL,
-                        factor_names,
-                        "",
-                    )
-                case BinningMode.PHASES:
-                    result = process_time_phases_binning(
-                        result,
-                        self.selected_dataset.binning_settings.time_phases_settings,
-                        variables,
-                        SplitMode.ANIMAL,
-                        factor_names,
-                        "",
-                    )
+            result = process_time_interval_binning(
+                result,
+                self.selected_dataset.binning_settings.time_intervals_settings,
+                variables,
+            )
+
+        # Splitting
+        result = self._process_splitting(
+            result,
+            split_mode,
+            variables,
+            selected_factor_name,
+        )
+
+        return result
+
+    def get_bar_plot_df(
+        self,
+        variable: Variable,
+    ) -> pd.DataFrame:
+        default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin", variable.name]
+        factor_columns = list(self.selected_dataset.factors)
+        result = self.selected_dataset.active_df[default_columns + factor_columns].copy()
+
+        variables = {variable.name: variable}
+
+        result = self._preprocess_df(result, variables)
+
+        match self.selected_dataset.binning_settings.mode:
+            case BinningMode.CYCLES:
+                result = process_time_cycles_binning(
+                    result,
+                    self.selected_dataset.binning_settings.time_cycles_settings,
+                    variables,
+                )
+            case BinningMode.PHASES:
+                result = process_time_phases_binning(
+                    result,
+                    self.selected_dataset.binning_settings.time_phases_settings,
+                    variables,
+                )
 
         return result
 
@@ -352,72 +331,37 @@ class DataHub:
         variable_columns = list(variables)
         result = self.selected_dataset.active_df[default_columns + factor_columns + variable_columns].copy()
 
-        # Filter operator
-        result = filter_animals(result, self.selected_dataset.animals)
-
-        # Outliers operator
-        if self.selected_dataset.outliers_settings.mode == OutliersMode.REMOVE:
-            result = process_outliers(result, self.selected_dataset.outliers_settings, variables)
+        result = self._preprocess_df(result, variables)
 
         # Binning
         result = process_time_interval_binning(
             result,
             TimeIntervalsBinningSettings("day", 365),
             variables,
-            SplitMode.ANIMAL,
-            factor_columns,
-            "",
         )
 
         # TODO: should or should not?
-        result = result.dropna()
+        result.dropna(inplace=True)
 
         return result
 
-    def get_bar_plot_df(
+    def get_timeseries_df(
         self,
         variable: Variable,
     ) -> pd.DataFrame:
-        default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin", variable.name]
-        factor_columns = list(self.selected_dataset.factors)
-        result = self.selected_dataset.active_df[default_columns + factor_columns].copy()
-
-        # Filter operator
-        result = filter_animals(result, self.selected_dataset.animals)
+        columns = ["DateTime", "Timedelta", "Animal", variable.name]
+        result = self.selected_dataset.active_df[columns].copy()
 
         variables = {variable.name: variable}
 
-        # Outliers operator
-        if self.selected_dataset.outliers_settings.mode == OutliersMode.REMOVE:
-            result = process_outliers(result, self.selected_dataset.outliers_settings, variables)
+        result = self._preprocess_df(result, variables)
 
-        if self.selected_dataset.binning_settings.mode == BinningMode.CYCLES:
-
-            def filter_method(x):
-                return (
-                    "Light"
-                    if self.selected_dataset.binning_settings.time_cycles_settings.light_cycle_start
-                    <= x.time()
-                    < self.selected_dataset.binning_settings.time_cycles_settings.dark_cycle_start
-                    else "Dark"
-                )
-
-            result["Bin"] = result["DateTime"].apply(filter_method).astype("category")
-            result.drop(columns=["DateTime"], inplace=True)
-        elif self.selected_dataset.binning_settings.mode == BinningMode.PHASES:
-            self.selected_dataset.binning_settings.time_phases_settings.time_phases.sort(
-                key=lambda x: x.start_timestamp
+        # Binning
+        if self.selected_dataset.binning_settings.apply:
+            result = process_time_interval_binning(
+                result,
+                self.selected_dataset.binning_settings.time_intervals_settings,
+                variables,
             )
-
-            result["Bin"] = None
-            for phase in self.selected_dataset.binning_settings.time_phases_settings.time_phases:
-                result.loc[result["Timedelta"] >= phase.start_timestamp, "Bin"] = phase.name
-
-            result["Bin"] = result["Bin"].astype("category")
-            result.drop(columns=["DateTime"], inplace=True)
-
-            # Sort category names by time
-            categories = [item.name for item in self.selected_dataset.binning_settings.time_phases_settings.time_phases]
-            result["Bin"] = result["Bin"].cat.set_categories(categories, ordered=True)
 
         return result

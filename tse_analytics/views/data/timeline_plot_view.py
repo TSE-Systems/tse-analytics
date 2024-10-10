@@ -178,22 +178,24 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         factor_name = self._selected_factor.name
 
-        group_by = ["Bin", factor_name]
-        grouped = self._df.groupby(group_by, dropna=False, observed=False)
+        # group_by = ["Bin", factor_name]
+        # grouped = self._df.groupby(group_by, dropna=False, observed=False)
+        #
+        # result = (
+        #     grouped.agg(
+        #         Value=(self._variable.name, self._variable.aggregation),
+        #         Error=(self._variable.name, self._error_type),
+        #     )
+        #     if self._display_errors
+        #     else grouped.agg(
+        #         Value=(self._variable.name, self._variable.aggregation),
+        #     )
+        # )
+        #
+        # data = result.reset_index()
+        # data.rename(columns={"Value": self._variable.name}, inplace=True)
 
-        result = (
-            grouped.agg(
-                Value=(self._variable.name, self._variable.aggregation),
-                Error=(self._variable.name, self._error_type),
-            )
-            if self._display_errors
-            else grouped.agg(
-                Value=(self._variable.name, self._variable.aggregation),
-            )
-        )
-
-        data = result.reset_index()
-        data.rename(columns={"Value": self._variable.name}, inplace=True)
+        data = self._df
 
         groups = self._selected_factor.groups
         for i, group in enumerate(groups):
@@ -213,24 +215,26 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         x_min = None
         x_max = None
 
-        group_by = ["Bin", "Run"]
-        grouped = self._df.groupby(group_by, dropna=False, observed=False)
+        # group_by = ["Bin", "Run"]
+        # grouped = self._df.groupby(group_by, dropna=False, observed=False)
+        #
+        # result = (
+        #     grouped.agg(
+        #         Value=(self._variable.name, self._variable.aggregation),
+        #         Error=(self._variable.name, np.std),
+        #     )
+        #     if self._display_errors
+        #     else grouped.agg(
+        #         Value=(self._variable.name, self._variable.aggregation),
+        #     )
+        # )
+        #
+        # data = result.reset_index()
+        # data.rename(columns={"Value": self._variable.name}, inplace=True)
 
-        result = (
-            grouped.agg(
-                Value=(self._variable.name, self._variable.aggregation),
-                Error=(self._variable.name, np.std),
-            )
-            if self._display_errors
-            else grouped.agg(
-                Value=(self._variable.name, self._variable.aggregation),
-            )
-        )
+        data = self._df
 
-        data = result.reset_index()
-        data.rename(columns={"Value": self._variable.name}, inplace=True)
-
-        runs = self._df["Run"].unique()
+        runs = data["Run"].unique()
         for i, run in enumerate(runs):
             filtered_data = data[data["Run"] == run]
 
@@ -248,22 +252,24 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         x_min = None
         x_max = None
 
-        group_by = ["Bin"]
-        grouped = self._df.groupby(group_by, dropna=False, observed=False)
+        # group_by = ["Bin"]
+        # grouped = self._df.groupby(group_by, dropna=False, observed=False)
+        #
+        # result = (
+        #     grouped.agg(
+        #         Value=(self._variable.name, self._variable.aggregation),
+        #         Error=(self._variable.name, self._error_type),
+        #     )
+        #     if self._display_errors
+        #     else grouped.agg(
+        #         Value=(self._variable.name, self._variable.aggregation),
+        #     )
+        # )
+        #
+        # data = result.reset_index()
+        # data.rename(columns={"Value": self._variable.name}, inplace=True)
 
-        result = (
-            grouped.agg(
-                Value=(self._variable.name, self._variable.aggregation),
-                Error=(self._variable.name, self._error_type),
-            )
-            if self._display_errors
-            else grouped.agg(
-                Value=(self._variable.name, self._variable.aggregation),
-            )
-        )
-
-        data = result.reset_index()
-        data.rename(columns={"Value": self._variable.name}, inplace=True)
+        data = self._df
 
         pen = mkPen(color=(1, 1), width=1)
         tmp_min, tmp_max = self._plot_item(data, "Total", pen)
