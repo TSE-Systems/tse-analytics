@@ -1,5 +1,4 @@
-from tse_analytics.core.data.shared import Variable, Aggregation
-
+from tse_analytics.core.data.shared import Aggregation, Variable
 
 predefined_variables = {
     "ActiT": Variable(

@@ -17,16 +17,15 @@ def process_time_cycles_binning(
     df["Bin"] = df["DateTime"].apply(filter_method).astype("category")
     df.drop(columns=["DateTime"], inplace=True)
 
-    agg = {}
+    agg = {
+        "Run": "first",
+    }
     for column in df.columns:
         if column not in default_columns:
             if df.dtypes[column].name != "category":
                 agg[column] = variables[column].aggregation
             else:
                 agg[column] = "first"
-
-    if len(agg) == 0:
-        return df
 
     result = df.groupby(["Animal", "Bin"], dropna=False, observed=False).aggregate(agg)
     # result.sort_values(by=["Animal", "Bin"], inplace=True)

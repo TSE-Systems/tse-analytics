@@ -31,7 +31,7 @@ class Ui_DataPlotWidget(object):
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.splitter = QSplitter(DataPlotWidget)
         self.splitter.setObjectName(u"splitter")
-        self.splitter.setOrientation(Qt.Horizontal)
+        self.splitter.setOrientation(Qt.Orientation.Horizontal)
         self.widgetPlot = QWidget(self.splitter)
         self.widgetPlot.setObjectName(u"widgetPlot")
         self.splitter.addWidget(self.widgetPlot)
@@ -92,16 +92,16 @@ class Ui_DataPlotWidget(object):
         self.groupBoxDisplayErrors.setChecked(False)
         self.verticalLayout_5 = QVBoxLayout(self.groupBoxDisplayErrors)
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
-        self.radioButtonStandardDeviation = QRadioButton(self.groupBoxDisplayErrors)
-        self.radioButtonStandardDeviation.setObjectName(u"radioButtonStandardDeviation")
-        self.radioButtonStandardDeviation.setChecked(True)
-
-        self.verticalLayout_5.addWidget(self.radioButtonStandardDeviation)
-
         self.radioButtonStandardError = QRadioButton(self.groupBoxDisplayErrors)
         self.radioButtonStandardError.setObjectName(u"radioButtonStandardError")
+        self.radioButtonStandardError.setChecked(True)
 
         self.verticalLayout_5.addWidget(self.radioButtonStandardError)
+
+        self.radioButtonStandardDeviation = QRadioButton(self.groupBoxDisplayErrors)
+        self.radioButtonStandardDeviation.setObjectName(u"radioButtonStandardDeviation")
+
+        self.verticalLayout_5.addWidget(self.radioButtonStandardDeviation)
 
 
         self.verticalLayout.addWidget(self.groupBoxDisplayErrors)
@@ -139,8 +139,8 @@ class Ui_DataPlotWidget(object):
         self.radioButtonSplitByRun.setText(QCoreApplication.translate("DataPlotWidget", u"By Run", None))
         self.radioButtonSplitByFactor.setText(QCoreApplication.translate("DataPlotWidget", u"By Factor", None))
         self.groupBoxDisplayErrors.setTitle(QCoreApplication.translate("DataPlotWidget", u"Display Errors", None))
-        self.radioButtonStandardDeviation.setText(QCoreApplication.translate("DataPlotWidget", u"Standard Deviation", None))
         self.radioButtonStandardError.setText(QCoreApplication.translate("DataPlotWidget", u"Standard Error", None))
+        self.radioButtonStandardDeviation.setText(QCoreApplication.translate("DataPlotWidget", u"Standard Deviation", None))
         self.checkBoxScatterPlot.setText(QCoreApplication.translate("DataPlotWidget", u"Scatter Plot", None))
         self.pushButtonAddReport.setText(QCoreApplication.translate("DataPlotWidget", u"Add to Report", None))
         pass

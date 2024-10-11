@@ -194,7 +194,10 @@ class Dataset:
         for column in self.original_df.columns:
             if column not in default_columns:
                 if self.original_df.dtypes[column].name != "category":
-                    agg[column] = "mean"
+                    if column in self.variables:
+                        agg[column] = self.variables[column].aggregation
+                    else:
+                        agg[column] = "mean"
 
         group_by = ["Animal"]
         sort_by = ["Timedelta", "Box"]

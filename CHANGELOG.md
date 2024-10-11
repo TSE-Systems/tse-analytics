@@ -7,8 +7,9 @@ TSE Analytics Change Log
 - Change -- Redesigned binning/splitting (individual aggregation per variable).
 - Fix    -- Unique IDs for cloned datasets.
 - Fix    -- Reset "Animal" categorical column after exclusion of animals from the dataset.
-- Fix    -- Correct recalculation of Timedelta/Bin columns after datasets adjustments.
+- Fix    -- Recalculation of Timedelta/Bin columns after datasets adjustments.
 - Fix    -- Correct list of available tables when importing TSE datasets.
+- Fix    -- Fixed display of standard errors / standard deviation in data plot.
 
 
 ----------------------------------------------------------------------------------------------------

@@ -10,6 +10,7 @@ def process_time_interval_binning(
     df: pd.DataFrame,
     settings: TimeIntervalsBinningSettings,
     variables: dict[str, Variable],
+    calculate_errors: str | None = None,
 ) -> pd.DataFrame:
     if df.empty:
         return df
@@ -27,6 +28,11 @@ def process_time_interval_binning(
                 agg[column] = variables[column].aggregation
             else:
                 agg[column] = "first"
+
+    if calculate_errors is not None:
+        var_name = list(variables.values())[0].name
+        df["Error"] = df[var_name]
+        agg["Error"] = calculate_errors
 
     result = df.groupby("Animal", dropna=False, observed=False)
     result = result.resample(timedelta, on="Timedelta", origin="start").aggregate(agg)

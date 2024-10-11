@@ -131,6 +131,7 @@ class DataHub:
         split_mode: SplitMode,
         variables: dict[str, Variable],
         selected_factor_name: str,
+        calculate_errors: str | None = None,
     ) -> pd.DataFrame:
         match split_mode:
             case SplitMode.ANIMAL:
@@ -154,6 +155,12 @@ class DataHub:
         # TODO: use means only when aggregating in split modes!
         for variable in variables.values():
             agg[variable.name] = "mean"
+
+        # Calculate error for timeline plot
+        if calculate_errors is not None:
+            var_name = list(variables.values())[0].name
+            df["Error"] = df[var_name]
+            agg["Error"] = calculate_errors
 
         if len(agg) == 0:
             return df
@@ -267,6 +274,7 @@ class DataHub:
         variable: Variable,
         split_mode: SplitMode,
         selected_factor_name: str,
+        calculate_errors: str | None,
     ) -> pd.DataFrame:
         default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
         factor_columns = list(self.selected_dataset.factors)
@@ -278,10 +286,13 @@ class DataHub:
 
         # Binning
         if self.selected_dataset.binning_settings.apply:
+            # if split_mode == SplitMode.ANIMAL:
+            #     calculate_errors = None
             result = process_time_interval_binning(
                 result,
                 self.selected_dataset.binning_settings.time_intervals_settings,
                 variables,
+                calculate_errors,
             )
 
         # Splitting
@@ -290,6 +301,7 @@ class DataHub:
             split_mode,
             variables,
             selected_factor_name,
+            calculate_errors,
         )
 
         return result

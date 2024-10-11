@@ -25,7 +25,7 @@ class ActimotStreamPlotWidget(QWidget):
 
     def set_data(self, trj_df: traja.TrajaDataFrame) -> None:
         self.trj_df = trj_df
-        # self._update_plot()
+        # self.update_plot()
 
     def _update_plot(self):
         if self.trj_df is None:

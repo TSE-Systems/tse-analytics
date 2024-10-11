@@ -9,7 +9,6 @@ from PySide6.QtWidgets import QAbstractItemView, QWidget
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
-from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.helper import make_toast, show_help
 from tse_analytics.core.manager import Manager
@@ -76,24 +75,6 @@ class DimensionalityWidget(QWidget, MessengerListener):
             self.ui.factorSelector.clear()
 
     def _update(self):
-        if (
-            Manager.data.selected_dataset.binning_settings.apply
-            and (
-                Manager.data.selected_dataset.binning_settings.mode == BinningMode.PHASES
-                or Manager.data.selected_dataset.binning_settings.mode == BinningMode.CYCLES
-            )
-            and self.ui.radioButtonSplitByRun.isChecked()
-        ):
-            make_toast(
-                self,
-                "Dimensionality Analysis",
-                "Split by Run not available when binning by cycles or time phases is active.",
-                duration=4000,
-                preset=ToastPreset.WARNING,
-                show_duration_bar=True,
-            ).show()
-            return
-
         if self.ui.radioButtonMatrixPlot.isChecked():
             self._update_matrix_plot()
         elif self.ui.radioButtonPCA.isChecked():

@@ -3,11 +3,10 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtWidgets import QVBoxLayout, QWidget
-from pyqttoast import ToastPreset
 
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import Factor, SplitMode, Variable
-from tse_analytics.core.helper import get_html_image, make_toast
+from tse_analytics.core.helper import get_html_image
 from tse_analytics.core.manager import Manager
 
 
@@ -19,33 +18,30 @@ class BarPlotView(QWidget):
         self.layout().setContentsMargins(0, 0, 0, 0)
 
         self._df: pd.DataFrame | None = None
-        self._variable = ""
+        self._variable: Variable | None = None
         self._split_mode = SplitMode.ANIMAL
         self._selected_factor: Factor | None = None
-        self._error_type = "sd"
+        self._error_type = "se"
         self._display_errors = False
 
         self.canvas = FigureCanvasQTAgg(None)
 
-    def set_data(self, df: pd.DataFrame):
+    def refresh_data(
+        self,
+        df: pd.DataFrame,
+        variable: Variable,
+        split_mode: SplitMode,
+        selected_factor: Factor,
+        display_errors: bool,
+        error_type: str,
+    ) -> None:
         self._df = df
-        self._update_plot()
-
-    def set_variable(self, variable: Variable, update: bool):
-        self._variable = variable.name
-        if update:
-            self._update_plot()
-
-    def set_split_mode(self, grouping_mode: SplitMode, selected_factor: Factor):
-        self._split_mode = grouping_mode
+        self._variable = variable
+        self._split_mode = split_mode
+        self._display_errors = display_errors
         self._selected_factor = selected_factor
-
-    def set_display_errors(self, state: bool):
-        self._display_errors = state
-        self._update_plot()
-
-    def set_error_type(self, error_type: str):
         self._error_type = error_type
+
         self._update_plot()
 
     def clear_plot(self):
@@ -61,7 +57,7 @@ class BarPlotView(QWidget):
 
         if (
             self._df is None
-            or self._variable == ""
+            or self._variable is None
             or (self._split_mode == SplitMode.FACTOR and self._selected_factor is None)
             or not Manager.data.selected_dataset.binning_settings.apply
             or (
@@ -69,24 +65,6 @@ class BarPlotView(QWidget):
                 and len(Manager.data.selected_dataset.binning_settings.time_phases_settings.time_phases) == 0
             )
         ):
-            return
-
-        if (
-            Manager.data.selected_dataset.binning_settings.apply
-            and (
-                Manager.data.selected_dataset.binning_settings.mode == BinningMode.PHASES
-                or Manager.data.selected_dataset.binning_settings.mode == BinningMode.CYCLES
-            )
-            and self._split_mode == SplitMode.RUN
-        ):
-            make_toast(
-                self,
-                "Data Plot",
-                "Split by Run not available when binning by cycles or time phases is active.",
-                duration=4000,
-                preset=ToastPreset.WARNING,
-                show_duration_bar=True,
-            ).show()
             return
 
         if not self._df.empty:
@@ -106,7 +84,7 @@ class BarPlotView(QWidget):
             facet_grid = sns.catplot(
                 data=self._df,
                 x=x_name,
-                y=self._variable,
+                y=self._variable.name,
                 col="Bin",
                 kind="bar",
                 errorbar=self._error_type if self._display_errors else None,

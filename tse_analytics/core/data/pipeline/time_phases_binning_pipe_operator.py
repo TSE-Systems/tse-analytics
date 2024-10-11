@@ -24,34 +24,15 @@ def process_time_phases_binning(
     categories = [item.name for item in settings.time_phases]
     df["Bin"] = df["Bin"].cat.set_categories(categories, ordered=True)
 
-    # match split_mode:
-    #     case SplitMode.ANIMAL:
-    #         agg = {
-    #             "Box": "first",
-    #         }
-    #         for factor_name in factor_names:
-    #             agg[factor_name] = "first"
-    #         group_by = ["Animal", "Bin"]
-    #     case SplitMode.FACTOR:
-    #         agg = {}
-    #         group_by = [selected_factor_name, "Bin"]
-    #     case SplitMode.RUN:
-    #         agg = {}
-    #         group_by = ["Run", "Bin"]
-    #     case _:
-    #         agg = {}
-    #         group_by = ["Bin"]
-
-    agg = {}
+    agg = {
+        "Run": "first",
+    }
     for column in df.columns:
         if column not in default_columns:
             if df.dtypes[column].name != "category":
                 agg[column] = variables[column].aggregation
             else:
                 agg[column] = "first"
-
-    if len(agg) == 0:
-        return df
 
     result = df.groupby(["Animal", "Bin"], dropna=False, observed=False).aggregate(agg)
     # result.sort_values(by=["Animal", "Bin"], inplace=True)
