@@ -222,15 +222,35 @@ class BivariateWidget(QWidget, MessengerListener):
         self.plot_toolbar.deleteLater()
         self.plot_toolbar = new_toolbar
 
-        glm = pg.linear_regression(df[[covariate.name]], df[response.name], remove_na=True)
+        match split_mode:
+            case SplitMode.FACTOR:
+                output = ""
+                for group in df[selected_factor_name].unique().tolist():
+                    data = df[df[selected_factor_name] == group]
+                    output = (
+                        output
+                        + f"<h3>Group: {group}</h3>"
+                        + pg.linear_regression(data[covariate.name], data[response.name], remove_na=True).to_html()
+                    )
+            case SplitMode.RUN:
+                output = ""
+                for run in df["Run"].unique().tolist():
+                    data = df[df["Run"] == run]
+                    output = (
+                        output
+                        + f"<h3>Run: {run}</h3>"
+                        + pg.linear_regression(data[covariate.name], data[response.name], remove_na=True).to_html()
+                    )
+            case _:
+                output = pg.linear_regression(df[covariate.name], df[response.name], remove_na=True).to_html()
 
         html_template = """
-                <h2>GLM</h2>
-                {glm}
+                <h2>Linear Regression</h2>
+                {output}
                 """
 
         html = html_template.format(
-            glm=glm.to_html(),
+            output=output,
         )
         self.ui.textEdit.document().setHtml(html)
 

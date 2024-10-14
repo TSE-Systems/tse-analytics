@@ -1,6 +1,16 @@
 TSE Analytics Change Log
 ====================================================================================================
 
+# 0.10.3 (2024-10-14)
+
+- New    -- Calculation of T90, T95 and T99 for O2/CO2 gases.
+- New    -- Option to reset aggregation operations and outlier setting in "Variables" panel.
+- Change -- Enable running repeated measures ANOVA even when factors are not defined.
+- Change -- Option for p value adjustment (pairwise comparison for repeated measures ANOVA).
+- Fix    -- Warning to select a proper factor for "Split by Factor" mode in Data Table view.
+
+
+----------------------------------------------------------------------------------------------------
 # 0.10.2 (2024-10-10)
 
 - New    -- Predefined variables parameters.

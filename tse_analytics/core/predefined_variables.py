@@ -201,4 +201,5 @@ def assign_predefined_values(variables: dict[str, Variable]) -> dict[str, Variab
             variable.unit = predefined_variable.unit
             variable.description = predefined_variable.description
             variable.aggregation = predefined_variable.aggregation
+            variable.remove_outliers = False
     return variables

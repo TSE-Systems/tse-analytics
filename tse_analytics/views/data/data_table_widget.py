@@ -126,6 +126,17 @@ class DataTableWidget(QWidget, MessengerListener):
             ).show()
             return
 
+        if split_mode == SplitMode.FACTOR and selected_factor_name == "":
+            make_toast(
+                self,
+                "Data Table",
+                "Please select factor.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
+            return
+
         self.df = Manager.data.get_data_table_df(
             variables=selected_variables,
             split_mode=split_mode,

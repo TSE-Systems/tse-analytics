@@ -114,41 +114,87 @@ class CaloDetailsTestFitWidget(QWidget):
         o2_first = self.df["O2"].iloc[0]
         o2_last = self.df["O2"].iloc[-1]
         o2_t90 = 0
+        o2_t95 = 0
+        o2_t99 = 0
 
         o2_descending = o2_last < o2_first
         if o2_descending:
             o2_y90 = (o2_first - o2_last) * 0.9
+            o2_y95 = (o2_first - o2_last) * 0.95
+            o2_y99 = (o2_first - o2_last) * 0.99
             for _, row in self.df.iterrows():
                 if row["O2"] < o2_first - o2_y90:
                     o2_t90 = row["Offset"]
                     break
+            for _, row in self.df.iterrows():
+                if row["O2"] < o2_first - o2_y95:
+                    o2_t95 = row["Offset"]
+                    break
+            for _, row in self.df.iterrows():
+                if row["O2"] < o2_first - o2_y99:
+                    o2_t99 = row["Offset"]
+                    break
         else:
             o2_y90 = (o2_last - o2_first) * 0.9
+            o2_y95 = (o2_last - o2_first) * 0.95
+            o2_y99 = (o2_last - o2_first) * 0.99
             for _, row in self.df.iterrows():
                 if row["O2"] > o2_first + o2_y90:
                     o2_t90 = row["Offset"]
+                    break
+            for _, row in self.df.iterrows():
+                if row["O2"] > o2_first + o2_y95:
+                    o2_t95 = row["Offset"]
+                    break
+            for _, row in self.df.iterrows():
+                if row["O2"] > o2_first + o2_y99:
+                    o2_t99 = row["Offset"]
                     break
 
         # CO2 calculations
         co2_first = self.df["CO2"].iloc[0]
         co2_last = self.df["CO2"].iloc[-1]
         co2_t90 = 0
+        co2_t95 = 0
+        co2_t99 = 0
 
         co2_descending = co2_last < co2_first
         if co2_descending:
             co2_y90 = (co2_first - co2_last) * 0.9
+            co2_y95 = (co2_first - co2_last) * 0.95
+            co2_y99 = (co2_first - co2_last) * 0.99
             for _, row in self.df.iterrows():
                 if row["CO2"] < co2_first - co2_y90:
                     co2_t90 = row["Offset"]
                     break
+            for _, row in self.df.iterrows():
+                if row["CO2"] < co2_first - co2_y95:
+                    co2_t95 = row["Offset"]
+                    break
+            for _, row in self.df.iterrows():
+                if row["CO2"] < co2_first - co2_y99:
+                    co2_t99 = row["Offset"]
+                    break
         else:
             co2_y90 = (co2_last - co2_first) * 0.9
+            co2_y95 = (co2_last - co2_first) * 0.95
+            co2_y99 = (co2_last - co2_first) * 0.99
             for _, row in self.df.iterrows():
                 if row["CO2"] > co2_first + co2_y90:
                     co2_t90 = row["Offset"]
                     break
+            for _, row in self.df.iterrows():
+                if row["CO2"] > co2_first + co2_y95:
+                    co2_t95 = row["Offset"]
+                    break
+            for _, row in self.df.iterrows():
+                if row["CO2"] > co2_first + co2_y99:
+                    co2_t99 = row["Offset"]
+                    break
 
-        self.ui.labelT90.setText(f"T90 [O2: {o2_t90}, CO2: {co2_t90}]")
+        self.ui.labelT90.setText(
+            f"T90 [O2: {o2_t90}, CO2: {co2_t90}]; T95 [O2: {o2_t95}, CO2: {co2_t95}]; T99 [O2: {o2_t99}, CO2: {co2_t99}]"
+        )
 
         self.df.plot(
             x="Offset",

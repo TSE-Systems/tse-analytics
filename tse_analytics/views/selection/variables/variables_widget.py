@@ -8,6 +8,7 @@ from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.models.aggregation_combo_box_delegate import AggregationComboBoxDelegate
 from tse_analytics.core.models.variables_model import VariablesModel
+from tse_analytics.core.predefined_variables import assign_predefined_values
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.views.selection.variables.variables_widget_ui import Ui_VariablesWidget
 
@@ -32,6 +33,8 @@ class VariablesWidget(QWidget, MessengerListener):
         self.outliersCoefficientSpinBox = QDoubleSpinBox()
         self.outliersCoefficientSpinBox.valueChanged.connect(self._outliers_coefficient_changed)
         toolbar.addWidget(self.outliersCoefficientSpinBox)
+
+        toolbar.addAction("Reset").triggered.connect(self._reset_variables)
 
         self.layout().insertWidget(0, toolbar)
 
@@ -72,6 +75,13 @@ class VariablesWidget(QWidget, MessengerListener):
             outliers_settings = self.dataset.outliers_settings
             outliers_settings.coefficient = self.outliersCoefficientSpinBox.value()
             Manager.data.apply_outliers(outliers_settings)
+
+    def _reset_variables(self):
+        if self.dataset is not None:
+            self.dataset.variables = assign_predefined_values(self.dataset.variables)
+            model = VariablesModel(list(self.dataset.variables.values()))
+            self.ui.tableView.model().setSourceModel(model)
+            self.ui.tableView.resizeColumnsToContents()
 
     def minimumSizeHint(self):
         return QSize(200, 100)

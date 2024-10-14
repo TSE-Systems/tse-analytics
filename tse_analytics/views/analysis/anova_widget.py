@@ -40,7 +40,7 @@ class AnovaWidget(QWidget, MessengerListener):
             lambda toggled: self._set_options(True, False, True, True) if toggled else None
         )
         self.ui.radioButtonRMAnova.toggled.connect(
-            lambda toggled: self._set_options(False, False, False, False) if toggled else None
+            lambda toggled: self._set_options(False, False, False, True) if toggled else None
         )
         self.ui.radioButtonMixedAnova.toggled.connect(
             lambda toggled: self._set_options(True, False, False, True) if toggled else None
@@ -109,8 +109,8 @@ class AnovaWidget(QWidget, MessengerListener):
             self.ui.pushButtonAddReport.setDisabled(True)
             return
 
-        self.ui.pushButtonUpdate.setDisabled(len(Manager.data.selected_dataset.factors) == 0)
-        self.ui.pushButtonAddReport.setDisabled(len(Manager.data.selected_dataset.factors) == 0)
+        self.ui.pushButtonUpdate.setEnabled(True)
+        self.ui.pushButtonAddReport.setEnabled(True)
 
         self.ui.tableWidgetFactors.set_data(message.dataset.factors)
         self.ui.tableWidgetDependentVariable.set_data(message.dataset.variables)
@@ -355,6 +355,7 @@ class AnovaWidget(QWidget, MessengerListener):
 
         if do_pairwise_tests:
             effsize = self.eff_size[self.ui.comboBoxEffectSizeType.currentText()]
+            padjust = self.p_adjustment[self.ui.comboBoxPAdjustment.currentText()]
 
             pairwise_tests = pg.pairwise_tests(
                 data=df,
@@ -363,6 +364,7 @@ class AnovaWidget(QWidget, MessengerListener):
                 subject="Animal",
                 return_desc=True,
                 effsize=effsize,
+                padjust=padjust,
             ).round(5)
 
             html_template = """
@@ -462,6 +464,7 @@ class AnovaWidget(QWidget, MessengerListener):
 
         if do_pairwise_tests:
             effsize = self.eff_size[self.ui.comboBoxEffectSizeType.currentText()]
+            padjust = self.p_adjustment[self.ui.comboBoxPAdjustment.currentText()]
 
             pairwise_tests = pg.pairwise_tests(
                 data=df,
@@ -471,6 +474,7 @@ class AnovaWidget(QWidget, MessengerListener):
                 subject="Animal",
                 return_desc=True,
                 effsize=effsize,
+                padjust=padjust,
             ).round(5)
 
             html_template = """
