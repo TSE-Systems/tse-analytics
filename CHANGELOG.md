@@ -1,6 +1,14 @@
 TSE Analytics Change Log
 ====================================================================================================
 
+# 0.10.4 (2024-10-15)
+
+- New    -- Option to generate new animal names with run number suffix when merging datasets in overlap mode.
+- Change -- Disable pairwise-tests for three-way (and higher) ANOVA. See: https://pingouin-stats.org/build/html/generated/pingouin.pairwise_tests.html
+- Fix    -- Sanitize variable names for N-way ANOVA (comma, bracket, and colon are not allowed in column names).
+
+
+----------------------------------------------------------------------------------------------------
 # 0.10.3 (2024-10-14)
 
 - New    -- Calculation of T90, T95 and T99 for O2/CO2 gases.

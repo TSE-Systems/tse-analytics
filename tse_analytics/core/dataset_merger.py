@@ -5,12 +5,16 @@ from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
 
 def merge_datasets(
-    new_dataset_name: str, datasets: list[Dataset], single_run: bool, continuous_mode: bool
+    new_dataset_name: str,
+    datasets: list[Dataset],
+    single_run: bool,
+    continuous_mode: bool,
+    generate_new_animal_names: bool,
 ) -> Dataset | None:
     if continuous_mode:
         return _merge_continuous(new_dataset_name, datasets, single_run)
     else:
-        return _merge_overlap(new_dataset_name, datasets, single_run)
+        return _merge_overlap(new_dataset_name, datasets, single_run, generate_new_animal_names)
 
 
 def _merge_continuous(new_dataset_name: str, datasets: list[Dataset], single_run: bool) -> Dataset | None:
@@ -58,13 +62,33 @@ def _merge_continuous(new_dataset_name: str, datasets: list[Dataset], single_run
     return result
 
 
-def _merge_overlap(new_dataset_name: str, datasets: list[Dataset], single_run: bool) -> Dataset | None:
+def _merge_overlap(
+    new_dataset_name: str,
+    datasets: list[Dataset],
+    single_run: bool,
+    generate_new_animal_names: bool,
+) -> Dataset | None:
+    if generate_new_animal_names:
+        for index, dataset in enumerate(datasets):
+            run_number = index + 1
+            new_animals = {}
+            name_map = {}
+            for animal in dataset.animals.values():
+                new_animal_id = f"{animal.id}_{run_number}"
+                name_map[animal.id] = new_animal_id
+                animal.id = new_animal_id
+                new_animals[new_animal_id] = animal
+            dataset.animals = new_animals
+            dataset.original_df["Animal"] = dataset.original_df["Animal"].astype(str)
+            dataset.original_df["Animal"] = dataset.original_df["Animal"].replace(name_map)
+            dataset.original_df["Animal"] = dataset.original_df["Animal"].astype("category")
+
     dfs = [x.original_df for x in datasets]
 
     # reassign run number
     if not single_run:
-        for run, df in enumerate(dfs):
-            df["Run"] = run + 1
+        for index, df in enumerate(dfs):
+            df["Run"] = index + 1
 
     new_df = pd.concat(dfs, ignore_index=True)
 

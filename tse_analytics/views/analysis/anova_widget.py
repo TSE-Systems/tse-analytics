@@ -256,6 +256,13 @@ class AnovaWidget(QWidget, MessengerListener):
         df = Manager.data.get_anova_df(variables=selected_dependent_variables)
 
         dependent_variable = next(iter(selected_dependent_variables.values())).name
+
+        # Sanitize variable name: comma, bracket, and colon are not allowed in column names
+        sanitized_dependent_variable = dependent_variable.replace("(", "_").replace(")", "").replace(",", "_")
+        if sanitized_dependent_variable != dependent_variable:
+            df.rename(columns={dependent_variable: sanitized_dependent_variable}, inplace=True)
+            dependent_variable = sanitized_dependent_variable
+
         anova = pg.anova(
             data=df,
             dv=dependent_variable,
@@ -266,7 +273,9 @@ class AnovaWidget(QWidget, MessengerListener):
         effsize = self.eff_size[self.ui.comboBoxEffectSizeType.currentText()]
         padjust = self.p_adjustment[self.ui.comboBoxPAdjustment.currentText()]
 
-        try:
+        if len(selected_factor_names) > 2:
+            post_hoc_test = None
+        else:
             post_hoc_test = pg.pairwise_tests(
                 data=df,
                 dv=dependent_variable,
@@ -275,17 +284,6 @@ class AnovaWidget(QWidget, MessengerListener):
                 effsize=effsize,
                 padjust=padjust,
             ).round(5)
-        except Exception as error:
-            make_toast(
-                self,
-                anova_header,
-                str(error),
-                duration=2000,
-                preset=ToastPreset.ERROR,
-                show_duration_bar=True,
-                echo_to_logger=True,
-            ).show()
-            post_hoc_test = None
 
         html_template = """
                 <h2>{anova_header}</h2>

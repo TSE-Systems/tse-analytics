@@ -67,9 +67,16 @@ class Manager:
 
     @classmethod
     def merge_datasets(
-        cls, new_dataset_name: str, datasets: list[Dataset], single_run: bool, continuous_mode: bool
+        cls,
+        new_dataset_name: str,
+        datasets: list[Dataset],
+        single_run: bool,
+        continuous_mode: bool,
+        generate_new_animal_names: bool,
     ) -> None:
-        merged_dataset = merge_datasets(new_dataset_name, datasets, single_run, continuous_mode)
+        merged_dataset = merge_datasets(
+            new_dataset_name, datasets, single_run, continuous_mode, generate_new_animal_names
+        )
         if merged_dataset is not None:
             cls.workspace_model.add_dataset(merged_dataset)
 

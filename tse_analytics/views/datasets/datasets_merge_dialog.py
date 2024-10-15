@@ -25,6 +25,14 @@ class DatasetsMergeDialog(QDialog):
 
         self.ui.buttonBox.accepted.connect(self._accepted)
 
+        self.ui.radioButtonOverlapMode.toggled.connect(
+            lambda toggled: self.ui.checkBoxGenerateAnimalNames.setEnabled(True) if toggled else None
+        )
+
+        self.ui.radioButtonContinuousMode.toggled.connect(
+            lambda toggled: self.ui.checkBoxGenerateAnimalNames.setEnabled(False) if toggled else None
+        )
+
         self.datasets = deepcopy(datasets)
 
         # sort datasets by start time
@@ -65,4 +73,5 @@ class DatasetsMergeDialog(QDialog):
         new_dataset_name = self.ui.lineEditName.text()
         single_run = self.ui.checkBoxSingleRun.isChecked()
         continuous_mode = self.ui.radioButtonContinuousMode.isChecked()
-        Manager.merge_datasets(new_dataset_name, self.datasets, single_run, continuous_mode)
+        generate_new_animal_names = self.ui.checkBoxGenerateAnimalNames.isChecked()
+        Manager.merge_datasets(new_dataset_name, self.datasets, single_run, continuous_mode, generate_new_animal_names)

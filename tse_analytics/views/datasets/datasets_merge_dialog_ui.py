@@ -37,11 +37,11 @@ class Ui_DatasetsMergeDialog(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.tableWidget.sizePolicy().hasHeightForWidth())
         self.tableWidget.setSizePolicy(sizePolicy)
-        self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.tableWidget.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.tableWidget.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.tableWidget.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
-        self.tableWidget.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.tableWidget.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.tableWidget.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.tableWidget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.tableWidget.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
+        self.tableWidget.setHorizontalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
         self.tableWidget.verticalHeader().setVisible(False)
         self.tableWidget.verticalHeader().setMinimumSectionSize(20)
         self.tableWidget.verticalHeader().setDefaultSectionSize(20)
@@ -88,14 +88,20 @@ class Ui_DatasetsMergeDialog(object):
 
         self.verticalLayout_2.addWidget(self.groupBoxMergingMode)
 
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.checkBoxGenerateAnimalNames = QCheckBox(self.widgetSettings)
+        self.checkBoxGenerateAnimalNames.setObjectName(u"checkBoxGenerateAnimalNames")
+        self.checkBoxGenerateAnimalNames.setEnabled(False)
 
-        self.verticalLayout_2.addItem(self.verticalSpacer)
+        self.verticalLayout_2.addWidget(self.checkBoxGenerateAnimalNames)
 
         self.checkBoxSingleRun = QCheckBox(self.widgetSettings)
         self.checkBoxSingleRun.setObjectName(u"checkBoxSingleRun")
 
         self.verticalLayout_2.addWidget(self.checkBoxSingleRun)
+
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout_2.addItem(self.verticalSpacer)
 
 
         self.horizontalLayout.addWidget(self.widgetSettings)
@@ -105,8 +111,8 @@ class Ui_DatasetsMergeDialog(object):
 
         self.buttonBox = QDialogButtonBox(DatasetsMergeDialog)
         self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+        self.buttonBox.setOrientation(Qt.Orientation.Horizontal)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
 
         self.verticalLayout.addWidget(self.buttonBox)
 
@@ -124,6 +130,7 @@ class Ui_DatasetsMergeDialog(object):
         self.groupBoxMergingMode.setTitle(QCoreApplication.translate("DatasetsMergeDialog", u"Merging Mode", None))
         self.radioButtonContinuousMode.setText(QCoreApplication.translate("DatasetsMergeDialog", u"Continuous", None))
         self.radioButtonOverlapMode.setText(QCoreApplication.translate("DatasetsMergeDialog", u"Overlap", None))
+        self.checkBoxGenerateAnimalNames.setText(QCoreApplication.translate("DatasetsMergeDialog", u"Add run number as suffix in animal names ", None))
 #if QT_CONFIG(tooltip)
         self.checkBoxSingleRun.setToolTip(QCoreApplication.translate("DatasetsMergeDialog", u"Merged dataset will have a Run number for all records assigned to 1", None))
 #endif // QT_CONFIG(tooltip)
