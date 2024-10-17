@@ -1,15 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
+ <author>Anton Rau</author>
  <class>ActimotSettingsWidget</class>
  <widget class="QWidget" name="ActimotSettingsWidget">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>288</width>
-    <height>392</height>
-   </rect>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
     <number>4</number>
@@ -29,7 +22,7 @@
    <item>
     <widget class="QScrollArea" name="scrollArea">
      <property name="frameShape">
-      <enum>QFrame::NoFrame</enum>
+      <enum>QFrame::Shape::NoFrame</enum>
      </property>
      <property name="widgetResizable">
       <bool>true</bool>
@@ -39,8 +32,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>266</width>
-        <height>427</height>
+        <width>284</width>
+        <height>384</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -59,167 +52,6 @@
        <property name="bottomMargin">
         <number>2</number>
        </property>
-       <item>
-        <widget class="QGroupBox" name="groupBoxAnalysisType">
-         <property name="title">
-          <string>Analysis Type</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
-          <item>
-           <widget class="QRadioButton" name="radioButtonSequentialType">
-            <property name="text">
-             <string>Sequential</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radioButtonIntervalType">
-            <property name="text">
-             <string>Interval</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBoxSequentialSettings">
-         <property name="title">
-          <string>Sequential Meal Analysis</string>
-         </property>
-         <layout class="QFormLayout" name="formLayout">
-          <item row="0" column="0">
-           <widget class="QLabel" name="intermealIntervalLabel">
-            <property name="text">
-             <string>Inter-meal Interval [hh:mm:ss]</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QTimeEdit" name="intermealIntervalTimeEdit">
-            <property name="displayFormat">
-             <string>HH:mm:ss</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="drinkingMinimumAmountLabel">
-            <property name="text">
-             <string>Drinking Minimum Amount [ml]</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QDoubleSpinBox" name="drinkingMinimumAmountDoubleSpinBox">
-            <property name="decimals">
-             <number>3</number>
-            </property>
-            <property name="singleStep">
-             <double>0.001000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="feedingMinimumAmountLabel">
-            <property name="text">
-             <string>Feeding Minimum Amount [g]</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QDoubleSpinBox" name="feedingMinimumAmountDoubleSpinBox">
-            <property name="decimals">
-             <number>3</number>
-            </property>
-            <property name="singleStep">
-             <double>0.001000000000000</double>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBoxIntervalSettings">
-         <property name="title">
-          <string>Interval Meal Analysis</string>
-         </property>
-         <layout class="QFormLayout" name="formLayout_2">
-          <item row="0" column="0">
-           <widget class="QLabel" name="fixedIntervalLabel">
-            <property name="text">
-             <string>Fixed Interval [hh:mm:ss]</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QTimeEdit" name="fixedIntervalTimeEdit">
-            <property name="displayFormat">
-             <string>HH:mm:ss</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBoxDiets">
-         <property name="title">
-          <string>Diets</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_4">
-          <item>
-           <widget class="QTableView" name="tableViewDiets">
-            <attribute name="verticalHeaderDefaultSectionSize">
-             <number>24</number>
-            </attribute>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout">
-            <item>
-             <widget class="QToolButton" name="toolButtonAddDiet">
-              <property name="toolTip">
-               <string>Add diet</string>
-              </property>
-              <property name="icon">
-               <iconset resource="../../../../../resources/resources.qrc">
-                <normaloff>:/icons/icons8-add-16.png</normaloff>:/icons/icons8-add-16.png</iconset>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QToolButton" name="toolButtonDeleteDiet">
-              <property name="toolTip">
-               <string>Delete selected diet</string>
-              </property>
-              <property name="icon">
-               <iconset resource="../../../../../resources/resources.qrc">
-                <normaloff>:/icons/icons8-minus-16.png</normaloff>:/icons/icons8-minus-16.png</iconset>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-       </item>
        <item>
         <widget class="QPushButton" name="pushButtonResetSettings">
          <property name="text">

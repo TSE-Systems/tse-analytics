@@ -7,7 +7,7 @@ from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
 from PySide6.QtWidgets import QDialog, QFileDialog, QWidget
 
 from tse_analytics.core.data.shared import Variable
-from tse_analytics.core.helper import make_toast
+from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails

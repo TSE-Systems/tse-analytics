@@ -16,21 +16,21 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QCheckBox" name="checkBoxCalo">
+         <widget class="QCheckBox" name="checkBoxCaloBin">
           <property name="text">
-           <string>Calo details data</string>
+           <string>Calo bin data</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBoxMeal">
+         <widget class="QCheckBox" name="checkBoxDrinkFeedBin">
           <property name="text">
-           <string>Meal details data</string>
+           <string>DrinkFeed bin data</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBoxActiMot">
+         <widget class="QCheckBox" name="checkBoxActiMotRaw">
           <property name="text">
            <string>ActiMot raw data</string>
           </property>

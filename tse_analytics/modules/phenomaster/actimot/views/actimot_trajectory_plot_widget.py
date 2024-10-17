@@ -3,7 +3,7 @@ from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.core.helper import make_toast
+from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.phenomaster.actimot.views.actimot_trajectory_plot_widget_ui import (

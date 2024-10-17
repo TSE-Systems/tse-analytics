@@ -25,7 +25,7 @@ class Ui_ActimotDialog(object):
     def setupUi(self, ActimotDialog):
         if not ActimotDialog.objectName():
             ActimotDialog.setObjectName(u"ActimotDialog")
-        ActimotDialog.resize(1020, 854)
+        ActimotDialog.resize(1020, 785)
         self.verticalLayout = QVBoxLayout(ActimotDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.toolbarLayout = QHBoxLayout()
@@ -35,7 +35,7 @@ class Ui_ActimotDialog(object):
         icon = QIcon()
         icon.addFile(u":/icons/icons8-scales-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.toolButtonCalculate.setIcon(icon)
-        self.toolButtonCalculate.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self.toolButtonCalculate.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
 
         self.toolbarLayout.addWidget(self.toolButtonCalculate)
 
@@ -45,7 +45,7 @@ class Ui_ActimotDialog(object):
         icon1 = QIcon()
         icon1.addFile(u":/icons/icons8-export-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.toolButtonExport.setIcon(icon1)
-        self.toolButtonExport.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self.toolButtonExport.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
 
         self.toolbarLayout.addWidget(self.toolButtonExport)
 
@@ -71,7 +71,7 @@ class Ui_ActimotDialog(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.splitter.sizePolicy().hasHeightForWidth())
         self.splitter.setSizePolicy(sizePolicy)
-        self.splitter.setOrientation(Qt.Horizontal)
+        self.splitter.setOrientation(Qt.Orientation.Horizontal)
         self.tabWidget = QTabWidget(self.splitter)
         self.tabWidget.setObjectName(u"tabWidget")
         self.splitter.addWidget(self.tabWidget)
@@ -80,7 +80,7 @@ class Ui_ActimotDialog(object):
         self.toolBox.setMaximumSize(QSize(300, 16777215))
         self.page = QWidget()
         self.page.setObjectName(u"page")
-        self.page.setGeometry(QRect(0, 0, 300, 746))
+        self.page.setGeometry(QRect(0, 0, 300, 676))
         self.toolBox.addItem(self.page, u"Page 1")
         self.splitter.addWidget(self.toolBox)
 
@@ -88,8 +88,8 @@ class Ui_ActimotDialog(object):
 
         self.buttonBox = QDialogButtonBox(ActimotDialog)
         self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Close)
+        self.buttonBox.setOrientation(Qt.Orientation.Horizontal)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Close)
 
         self.verticalLayout.addWidget(self.buttonBox)
 

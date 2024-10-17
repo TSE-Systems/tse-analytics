@@ -12,6 +12,7 @@ class ActimotBoxSelector(QTableView):
         super().__init__(parent)
         self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.setSortingEnabled(True)
         self.verticalHeader().setDefaultSectionSize(20)
 
@@ -62,7 +63,7 @@ class ActimotBoxSelector(QTableView):
     def _on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
         proxy_model = self.model()
         model = proxy_model.sourceModel()
-        selected_boxes: list[ActimotAnimalItem] = []
+        selected_box: ActimotAnimalItem = None
         for index in self.selectedIndexes():
             if index.column() != 0:
                 continue
@@ -70,5 +71,5 @@ class ActimotBoxSelector(QTableView):
                 source_index = proxy_model.mapToSource(index)
                 row = source_index.row()
                 box = model.items[row]
-                selected_boxes.append(box)
-        self.callback(selected_boxes)
+                selected_box = box
+        self.callback(selected_box)

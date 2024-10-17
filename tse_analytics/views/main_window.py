@@ -275,7 +275,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     # TODO: check other cases!!
                     if dialog.exec() == QDialog.DialogCode.Accepted:
                         import_settings = dialog.get_import_settings()
-                        Manager.import_tse_dataset(path, import_settings)
+                        Manager.import_tse_dataset(path, import_settings, self)
                     dialog.deleteLater()
 
     def closeEvent(self, event: QCloseEvent) -> None:

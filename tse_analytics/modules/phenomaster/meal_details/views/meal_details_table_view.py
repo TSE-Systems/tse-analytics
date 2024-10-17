@@ -1,7 +1,7 @@
 import pandas as pd
 from PySide6.QtWidgets import QTableView, QWidget
 
-from tse_analytics.core.models.pandas_model import PandasModel
+from tse_analytics.core.models.pandas_simple_model import PandasSimpleModel
 
 
 class MealDetailsTableView(QTableView):
@@ -10,6 +10,5 @@ class MealDetailsTableView(QTableView):
         self.verticalHeader().setDefaultSectionSize(20)
 
     def set_data(self, df: pd.DataFrame):
-        model = PandasModel(df)
+        model = PandasSimpleModel(df)
         self.setModel(model)
-        self.setColumnWidth(0, 120)

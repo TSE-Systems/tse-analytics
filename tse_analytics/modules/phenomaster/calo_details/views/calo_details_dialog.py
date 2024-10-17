@@ -7,7 +7,7 @@ from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
 from PySide6.QtWidgets import QDialog, QWidget
 
-from tse_analytics.core.helper import make_toast
+from tse_analytics.core.toaster import make_toast
 from tse_analytics.modules.phenomaster.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
 from tse_analytics.modules.phenomaster.calo_details.calo_details_processor import process_box
 from tse_analytics.modules.phenomaster.calo_details.calo_details_settings import CaloDetailsSettings

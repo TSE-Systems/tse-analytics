@@ -3,14 +3,6 @@
  <author>Anton Rau</author>
  <class>TimePhasesSettingsWidget</class>
  <widget class="QWidget" name="TimePhasesSettingsWidget">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>294</width>
-    <height>276</height>
-   </rect>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QGroupBox" name="groupBoxPhases">
@@ -21,10 +13,13 @@
       <item>
        <widget class="QTableView" name="tableViewTimePhases">
         <property name="selectionMode">
-         <enum>QAbstractItemView::SingleSelection</enum>
+         <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
         </property>
+        <attribute name="verticalHeaderMinimumSectionSize">
+         <number>20</number>
+        </attribute>
         <attribute name="verticalHeaderDefaultSectionSize">
-         <number>24</number>
+         <number>20</number>
         </attribute>
        </widget>
       </item>
@@ -55,7 +50,7 @@
         <item>
          <spacer name="horizontalSpacer">
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>

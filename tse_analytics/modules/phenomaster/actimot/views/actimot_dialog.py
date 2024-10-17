@@ -2,12 +2,16 @@ import timeit
 
 import pandas as pd
 import traja
-from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
 from PySide6.QtWidgets import QDialog, QFileDialog, QWidget
+from pyqttoast import ToastPreset
 
-from tse_analytics.core.helper import make_toast
+from tse_analytics.core.data.shared import Variable, Aggregation
+from tse_analytics.core.manager import Manager
+from tse_analytics.core.toaster import make_toast
+from tse_analytics.core.workers.worker import Worker
+from tse_analytics.modules.phenomaster.actimot.actimot_processor import calculate_trj
 from tse_analytics.modules.phenomaster.actimot.actimot_settings import ActimotSettings
 from tse_analytics.modules.phenomaster.actimot.data.actimot_animal_item import ActimotAnimalItem
 from tse_analytics.modules.phenomaster.actimot.data.actimot_details import ActimotDetails
@@ -34,32 +38,28 @@ class ActimotDialog(QDialog):
 
         self.actimot_details = actimot_details
 
-        self.actimot_table_view = ActimotTableView()
-        self.actimot_table_view.set_data(actimot_details.raw_df)
+        self.actimot_table_view = ActimotTableView(self)
         self.ui.tabWidget.addTab(self.actimot_table_view, "Events")
 
-        self.actimot_plot_widget = ActimotPlotWidget()
-        self.actimot_plot_widget.set_variables(actimot_details.variables)
-        self.actimot_plot_widget.set_data(actimot_details.raw_df)
+        self.actimot_plot_widget = ActimotPlotWidget(self)
         self.ui.tabWidget.addTab(self.actimot_plot_widget, "Events Plot")
 
-        self.actimot_frames_widget = ActimotFramesWidget()
-        self.actimot_frames_widget.set_data(actimot_details.raw_df)
+        self.actimot_frames_widget = ActimotFramesWidget(self)
         self.ui.tabWidget.addTab(self.actimot_frames_widget, "Frames")
 
-        self.actimot_trajectory_plot_widget = ActimotTrajectoryPlotWidget()
+        self.actimot_trajectory_plot_widget = ActimotTrajectoryPlotWidget(self)
         self.ui.tabWidget.addTab(self.actimot_trajectory_plot_widget, "Trajectory")
 
-        self.actimot_stream_plot_widget = ActimotStreamPlotWidget()
+        self.actimot_stream_plot_widget = ActimotStreamPlotWidget(self)
         self.ui.tabWidget.addTab(self.actimot_stream_plot_widget, "Stream")
 
-        self.actimot_heatmap_plot_widget = ActimotHeatmapPlotWidget()
+        self.actimot_heatmap_plot_widget = ActimotHeatmapPlotWidget(self)
         self.ui.tabWidget.addTab(self.actimot_heatmap_plot_widget, "Heatmap")
 
         self.ui.toolButtonCalculate.clicked.connect(self._calculate)
         self.ui.toolButtonExport.clicked.connect(self._export_data)
 
-        self.actimot_settings_widget = ActimotSettingsWidget()
+        self.actimot_settings_widget = ActimotSettingsWidget(self)
         try:
             actimot_settings = settings.value("ActimotSettings", ActimotSettings.get_default())
             self.actimot_settings_widget.set_data(self.actimot_details.dataset, actimot_settings)
@@ -67,72 +67,128 @@ class ActimotDialog(QDialog):
             actimot_settings = ActimotSettings.get_default()
             self.actimot_settings_widget.set_data(self.actimot_details.dataset, actimot_settings)
 
-        self.actimot_box_selector = ActimotBoxSelector(self._filter_boxes, self.actimot_settings_widget)
+        self.actimot_box_selector = ActimotBoxSelector(self._select_box, self.actimot_settings_widget, self)
         self.actimot_box_selector.set_data(actimot_details.dataset)
 
         self.ui.toolBox.removeItem(0)
         self.ui.toolBox.addItem(self.actimot_box_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Boxes")
         self.ui.toolBox.addItem(self.actimot_settings_widget, QIcon(":/icons/icons8-dog-tag-16.png"), "Settings")
 
-        self.selected_boxes: list[ActimotAnimalItem] = []
+        self.df: pd.DataFrame | None = None
 
-        self.actimot_events_df = self.actimot_details.raw_df
+    def _select_box(self, selected_box: ActimotAnimalItem) -> None:
+        self.ui.toolButtonExport.setEnabled(False)
 
-    def _filter_boxes(self, selected_boxes: list[ActimotAnimalItem]):
-        self.selected_boxes = selected_boxes
-        self._filter()
+        self.df = self.actimot_details.raw_df[self.actimot_details.raw_df["Box"] == selected_box.box]
 
-    def _filter(self):
-        events_df = self.actimot_events_df
+        self.actimot_table_view.set_data(self.df)
+        self.actimot_frames_widget.set_data(self.df)
 
-        if len(self.selected_boxes) > 0:
-            box_numbers = [b.box for b in self.selected_boxes]
-            events_df = events_df[events_df["Box"].isin(box_numbers)]
+    def _calculate(self) -> None:
+        if self.df is None:
+            make_toast(
+                self,
+                "ActiMot Processing",
+                "Please select a single box.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
+            return
 
-        self.actimot_table_view.set_data(events_df)
-        self.actimot_plot_widget.set_data(events_df)
-
-    def _calculate(self):
         tic = timeit.default_timer()
 
         actimot_settings = self.actimot_settings_widget.get_settings()
 
-        new_df = self.actimot_events_df[["DateTime", "X (cm)", "Y (cm)"]]
-        new_df.rename(columns={"DateTime": "time", "X (cm)": "x", "Y (cm)": "y"}, inplace=True)
-        new_df = new_df.dropna(subset=["x", "y"])
+        toast = make_toast(self, "ActiMot Processing", "Please wait...")
+        toast.show()
 
-        trj_df = traja.from_df(df=new_df)
-        trj_df.spatial_units = "cm"
+        def _work_result(result: [pd.DataFrame, traja.TrajaDataFrame]) -> None:
+            toast.hide()
 
-        preprocessed_trj = trj_df.copy()
-        preprocessed_trj["time"] = preprocessed_trj["time"].astype("int64") / 10**9
-        preprocessed_trj = traja.get_derivatives(preprocessed_trj)
+            df, trj_df = result
 
-        df = pd.concat([new_df, preprocessed_trj], ignore_index=False, axis="columns")
+            # Add custom variables
+            self.actimot_details.variables["x"] = Variable(
+                "x",
+                "cm",
+                "Centroid X",
+                "float64",
+                Aggregation.MEAN,
+                False,
+            )
 
-        self.actimot_table_view.set_data(df)
+            self.actimot_details.variables["y"] = Variable(
+                "y",
+                "cm",
+                "Centroid Y",
+                "float64",
+                Aggregation.MEAN,
+                False,
+            )
 
-        self.actimot_trajectory_plot_widget.set_data(trj_df)
-        self.actimot_stream_plot_widget.set_data(trj_df)
-        self.actimot_heatmap_plot_widget.set_data(trj_df)
+            self.actimot_details.variables["displacement"] = Variable(
+                "displacement",
+                "cm",
+                "Displacement",
+                "float64",
+                Aggregation.MEAN,
+                False,
+            )
 
-        self.ui.toolButtonExport.setEnabled(True)
+            self.actimot_details.variables["speed"] = Variable(
+                "speed",
+                "cm/s",
+                "Speed",
+                "float64",
+                Aggregation.MEAN,
+                False,
+            )
 
-        make_toast(
-            self,
-            "ActiMot Analysis",
-            f"Processing complete in {timeit.default_timer() - tic} sec.",
-            duration=4000,
-            preset=ToastPreset.SUCCESS,
-            show_duration_bar=True,
-            echo_to_logger=True,
-        ).show()
+            self.actimot_details.variables["acceleration"] = Variable(
+                "acceleration",
+                "cm/s²",
+                "Acceleration",
+                "float64",
+                Aggregation.MEAN,
+                False,
+            )
+
+            self.actimot_table_view.set_data(df)
+
+            self.actimot_plot_widget.set_variables(self.actimot_details.variables)
+            self.actimot_plot_widget.set_data(df)
+
+            self.actimot_trajectory_plot_widget.set_data(trj_df)
+            self.actimot_stream_plot_widget.set_data(trj_df)
+            self.actimot_heatmap_plot_widget.set_data(trj_df)
+
+            self.df = df
+
+            self.ui.toolButtonExport.setEnabled(True)
+
+            make_toast(
+                self,
+                "ActiMot Processing",
+                f"Processing complete in {timeit.default_timer() - tic} sec.",
+                duration=4000,
+                preset=ToastPreset.SUCCESS,
+                show_duration_bar=True,
+                echo_to_logger=True,
+            ).show()
+
+        def _work_finished() -> None:
+            pass
+
+        worker = Worker(calculate_trj, self.df, actimot_settings)
+        worker.signals.result.connect(_work_result)
+        worker.signals.finished.connect(_work_finished)
+        Manager.threadpool.start(worker)
 
     def _export_data(self):
-        settings = self.actimot_settings_widget.get_settings()
-        filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "ActimotEvents", "CSV Files (*.csv)")
+        filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "ActiMotEvents", "CSV Files (*.csv)")
         if filename:
-            self.actimot_events_df.to_csv(filename, sep=";", index=False)
+            self.df.to_csv(filename, sep=";", index=False)
 
     def hideEvent(self, event: QCloseEvent) -> None:
         settings = QSettings()

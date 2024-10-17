@@ -61,12 +61,12 @@ class App(QApplication):
         Manager()
 
 
-def handle_exception(exc_type, exc_value, exc_traceback):
+def handle_exception(exc_type, exc_value, exc_traceback) -> None:
     # logging.critical("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
     logger.opt(exception=(exc_type, exc_value, exc_traceback)).critical("Uncaught exception")
 
 
-def main():
+def main() -> None:
     # See: https://github.com/pyinstaller/pyinstaller/issues/7334#issuecomment-1357447176
     if sys.stdout is None:
         sys.stdout = open(os.devnull, "w")

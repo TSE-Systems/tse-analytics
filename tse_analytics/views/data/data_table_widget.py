@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QAbstractItemView, QWidget
 
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.helper import make_toast
+from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import (
     AddToReportMessage,

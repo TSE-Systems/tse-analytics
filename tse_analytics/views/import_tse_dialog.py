@@ -16,14 +16,14 @@ class ImportTseDialog(QDialog):
 
         tables = get_available_sqlite_tables(path)
 
-        self.ui.checkBoxCalo.setEnabled("calo_bin" in tables)
-        self.ui.checkBoxMeal.setEnabled("drinkfeed_bin" in tables)
-        self.ui.checkBoxActiMot.setEnabled("actimot_raw" in tables)
+        self.ui.checkBoxCaloBin.setEnabled("calo_bin" in tables)
+        self.ui.checkBoxDrinkFeedBin.setEnabled("drinkfeed_bin" in tables)
+        self.ui.checkBoxActiMotRaw.setEnabled("actimot_raw" in tables)
 
     def get_import_settings(self) -> TseImportSettings:
         import_settings = TseImportSettings(
-            import_calo=self.ui.checkBoxCalo.isChecked(),
-            import_meal=self.ui.checkBoxMeal.isChecked(),
-            import_actimot=self.ui.checkBoxActiMot.isChecked(),
+            import_calo_bin=self.ui.checkBoxCaloBin.isChecked(),
+            import_drinkfeed_bin=self.ui.checkBoxDrinkFeedBin.isChecked(),
+            import_actimot_raw=self.ui.checkBoxActiMotRaw.isChecked(),
         )
         return import_settings

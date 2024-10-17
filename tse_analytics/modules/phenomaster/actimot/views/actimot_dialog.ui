@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
+ <author>Anton Rau</author>
  <class>ActimotDialog</class>
  <widget class="QDialog" name="ActimotDialog">
   <property name="geometry">
@@ -7,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>1020</width>
-    <height>854</height>
+    <height>785</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,7 +27,7 @@
          <normaloff>:/icons/icons8-scales-16.png</normaloff>:/icons/icons8-scales-16.png</iconset>
        </property>
        <property name="toolButtonStyle">
-        <enum>Qt::ToolButtonTextBesideIcon</enum>
+        <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
        </property>
       </widget>
      </item>
@@ -43,14 +44,14 @@
          <normaloff>:/icons/icons8-export-16.png</normaloff>:/icons/icons8-export-16.png</iconset>
        </property>
        <property name="toolButtonStyle">
-        <enum>Qt::ToolButtonTextBesideIcon</enum>
+        <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
        </property>
       </widget>
      </item>
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -79,7 +80,7 @@
       </sizepolicy>
      </property>
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
@@ -99,7 +100,7 @@
          <x>0</x>
          <y>0</y>
          <width>300</width>
-         <height>746</height>
+         <height>676</height>
         </rect>
        </property>
        <attribute name="label">
@@ -112,10 +113,10 @@
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Close</set>
+      <set>QDialogButtonBox::StandardButton::Close</set>
      </property>
     </widget>
    </item>

@@ -6,11 +6,12 @@ from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import SplitMode, Variable
-from tse_analytics.core.helper import get_html_image, make_toast, show_help
+from tse_analytics.core.helper import get_html_image, show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
+from tse_analytics.core.toaster import make_toast
 from tse_analytics.css import style_descriptive_table
 from tse_analytics.views.analysis.anova_widget_ui import Ui_AnovaWidget
 

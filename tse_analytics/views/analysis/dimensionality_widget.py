@@ -10,11 +10,12 @@ from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
 from tse_analytics.core.data.shared import SplitMode, Variable
-from tse_analytics.core.helper import make_toast, show_help
+from tse_analytics.core.helper import show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
+from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.views.analysis.dimensionality_widget_ui import Ui_DimensionalityWidget
 

@@ -29,10 +29,11 @@ class Ui_FactorsWidget(object):
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.tableView = QTableView(FactorsWidget)
         self.tableView.setObjectName(u"tableView")
-        self.tableView.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.tableView.setSelectionMode(QAbstractItemView.NoSelection)
+        self.tableView.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.tableView.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         self.tableView.setSortingEnabled(True)
-        self.tableView.verticalHeader().setDefaultSectionSize(24)
+        self.tableView.verticalHeader().setMinimumSectionSize(20)
+        self.tableView.verticalHeader().setDefaultSectionSize(20)
 
         self.verticalLayout.addWidget(self.tableView)
 

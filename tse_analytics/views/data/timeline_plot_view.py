@@ -109,11 +109,6 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         self.update()
 
-    def set_variable(self, variable: Variable, update: bool):
-        self._variable = variable
-        if update:
-            self.update_plot()
-
     def _plot_item(self, data: pd.DataFrame, name: str, pen):
         # x = (data["DateTime"] - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
         x = data["Bin"]

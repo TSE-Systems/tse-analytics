@@ -31,20 +31,20 @@ class Ui_ImportTseDialog(object):
         self.groupBoxImportSettings.setObjectName(u"groupBoxImportSettings")
         self.verticalLayout_3 = QVBoxLayout(self.groupBoxImportSettings)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.checkBoxCalo = QCheckBox(self.groupBoxImportSettings)
-        self.checkBoxCalo.setObjectName(u"checkBoxCalo")
+        self.checkBoxCaloBin = QCheckBox(self.groupBoxImportSettings)
+        self.checkBoxCaloBin.setObjectName(u"checkBoxCaloBin")
 
-        self.verticalLayout_3.addWidget(self.checkBoxCalo)
+        self.verticalLayout_3.addWidget(self.checkBoxCaloBin)
 
-        self.checkBoxMeal = QCheckBox(self.groupBoxImportSettings)
-        self.checkBoxMeal.setObjectName(u"checkBoxMeal")
+        self.checkBoxDrinkFeedBin = QCheckBox(self.groupBoxImportSettings)
+        self.checkBoxDrinkFeedBin.setObjectName(u"checkBoxDrinkFeedBin")
 
-        self.verticalLayout_3.addWidget(self.checkBoxMeal)
+        self.verticalLayout_3.addWidget(self.checkBoxDrinkFeedBin)
 
-        self.checkBoxActiMot = QCheckBox(self.groupBoxImportSettings)
-        self.checkBoxActiMot.setObjectName(u"checkBoxActiMot")
+        self.checkBoxActiMotRaw = QCheckBox(self.groupBoxImportSettings)
+        self.checkBoxActiMotRaw.setObjectName(u"checkBoxActiMotRaw")
 
-        self.verticalLayout_3.addWidget(self.checkBoxActiMot)
+        self.verticalLayout_3.addWidget(self.checkBoxActiMotRaw)
 
 
         self.horizontalLayout.addWidget(self.groupBoxImportSettings)
@@ -70,8 +70,8 @@ class Ui_ImportTseDialog(object):
     def retranslateUi(self, ImportTseDialog):
         ImportTseDialog.setWindowTitle(QCoreApplication.translate("ImportTseDialog", u"Import Dataset", None))
         self.groupBoxImportSettings.setTitle(QCoreApplication.translate("ImportTseDialog", u"Import", None))
-        self.checkBoxCalo.setText(QCoreApplication.translate("ImportTseDialog", u"Calo details data", None))
-        self.checkBoxMeal.setText(QCoreApplication.translate("ImportTseDialog", u"Meal details data", None))
-        self.checkBoxActiMot.setText(QCoreApplication.translate("ImportTseDialog", u"ActiMot raw data", None))
+        self.checkBoxCaloBin.setText(QCoreApplication.translate("ImportTseDialog", u"Calo bin data", None))
+        self.checkBoxDrinkFeedBin.setText(QCoreApplication.translate("ImportTseDialog", u"DrinkFeed bin data", None))
+        self.checkBoxActiMotRaw.setText(QCoreApplication.translate("ImportTseDialog", u"ActiMot raw data", None))
     # retranslateUi
 

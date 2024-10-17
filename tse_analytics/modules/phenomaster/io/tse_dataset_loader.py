@@ -1,5 +1,6 @@
 import json
 import sqlite3
+from datetime import timedelta
 from pathlib import Path
 
 import numpy as np
@@ -9,9 +10,15 @@ from tse_analytics.core.data.shared import Aggregation, Animal, Factor, Variable
 from tse_analytics.core.predefined_variables import assign_predefined_values
 from tse_analytics.core.tse_import_settings import TseImportSettings
 from tse_analytics.modules.phenomaster.actimot.data.actimot_details import ActimotDetails
+from tse_analytics.modules.phenomaster.calo_details.data.calo_details import CaloDetails
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
 
 CHUNK_SIZE = 1000000
+
+ACTIMOT_RAW_TABLE = "actimot_raw"
+DRINKFEED_BIN_TABLE = "drinkfeed_bin"
+CALO_BIN_TABLE = "calo_bin"
 
 
 def load_tse_dataset(path: Path, import_settings: TseImportSettings) -> Dataset | None:
@@ -35,10 +42,22 @@ def load_tse_dataset(path: Path, import_settings: TseImportSettings) -> Dataset 
     )
 
     # Import ActoMot raw data if present
-    if import_settings.import_actimot:
-        if "actimot_raw" in metadata["tables"]:
+    if import_settings.import_actimot_raw:
+        if ACTIMOT_RAW_TABLE in metadata["tables"]:
             actimot_details = _read_actimot_raw(path, metadata["tables"], dataset)
             dataset.actimot_details = actimot_details
+
+    # Import drinkfeed bin data if present
+    if import_settings.import_drinkfeed_bin:
+        if DRINKFEED_BIN_TABLE in metadata["tables"]:
+            meal_details = _read_drinkfeed_bin(path, metadata["tables"], dataset)
+            dataset.meal_details = meal_details
+
+    # Import calo bin data if present
+    if import_settings.import_calo_bin:
+        if CALO_BIN_TABLE in metadata["tables"]:
+            calo_details = _read_calo_bin(path, metadata["tables"], dataset)
+            dataset.calo_details = calo_details
 
     return dataset
 
@@ -191,14 +210,25 @@ def _read_main_table(
 
 
 def _read_actimot_raw(path: Path, metadata: dict, dataset: Dataset) -> ActimotDetails:
-    metadata = metadata["actimot_raw"]
+    metadata = metadata[ACTIMOT_RAW_TABLE]
 
     sample_interval = pd.Timedelta(metadata["sample_interval"])
 
     # Read variables list
+    skipped_variables = ["DateTime", "Box", "X1", "X2", "Y1", "Y2", "Z1", "Z2"]
+    variables: dict[str, Variable] = {}
     dtypes = {}
     for item in metadata["columns"].values():
-        variable = Variable(item["id"], item["unit"], item["description"], item["type"], Aggregation.MEAN, False)
+        variable = Variable(
+            item["id"],
+            item["unit"],
+            item["description"],
+            item["type"],
+            Aggregation.MEAN,
+            False,
+        )
+        if variable.name not in skipped_variables:
+            variables[variable.name] = variable
         dtypes[variable.name] = item["type"]
     # Ignore the time for "DateTime" column
     dtypes.pop("DateTime")
@@ -207,7 +237,7 @@ def _read_actimot_raw(path: Path, metadata: dict, dataset: Dataset) -> ActimotDe
     df = pd.DataFrame()
     with sqlite3.connect(path, check_same_thread=False) as connection:
         for chunk in pd.read_sql_query(
-            "SELECT * FROM actimot_raw",
+            f"SELECT * FROM {ACTIMOT_RAW_TABLE}",
             connection,
             dtype=dtypes,
             chunksize=CHUNK_SIZE,
@@ -222,11 +252,9 @@ def _read_actimot_raw(path: Path, metadata: dict, dataset: Dataset) -> ActimotDe
     # Convert DateTime from POSIX format
     df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
 
-    variables: dict[str, Variable] = {}
-
     actimot_details = ActimotDetails(
         dataset,
-        f"ActiMot [sampling: {str(sample_interval)}]",
+        f"{ACTIMOT_RAW_TABLE} [sampling: {str(sample_interval)}]",
         str(path),
         variables,
         df,
@@ -234,3 +262,160 @@ def _read_actimot_raw(path: Path, metadata: dict, dataset: Dataset) -> ActimotDe
     )
 
     return actimot_details
+
+
+def _read_drinkfeed_bin(path: Path, metadata: dict, dataset: Dataset) -> MealDetails:
+    metadata = metadata[DRINKFEED_BIN_TABLE]
+
+    sample_interval = pd.Timedelta(metadata["sample_interval"])
+
+    # Read variables list
+    skipped_variables = ["DateTime", "Box"]
+    variables: dict[str, Variable] = {}
+    dtypes = {}
+    for item in metadata["columns"].values():
+        variable = Variable(
+            item["id"],
+            item["unit"],
+            item["description"],
+            item["type"],
+            Aggregation.MEAN,
+            False,
+        )
+        if variable.name not in skipped_variables:
+            variables[variable.name] = variable
+        dtypes[variable.name] = item["type"]
+    # Ignore the time for "DateTime" column
+    dtypes.pop("DateTime")
+
+    # Read measurements data
+    df = pd.DataFrame()
+    with sqlite3.connect(path, check_same_thread=False) as connection:
+        for chunk in pd.read_sql_query(
+            f"SELECT * FROM {DRINKFEED_BIN_TABLE}",
+            connection,
+            dtype=dtypes,
+            chunksize=CHUNK_SIZE,
+        ):
+            df = pd.concat([df, chunk], ignore_index=True)
+
+    # Convert DateTime from POSIX format
+    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
+
+    meal_details = MealDetails(
+        dataset,
+        f"{DRINKFEED_BIN_TABLE} [sampling: {str(sample_interval)}]",
+        str(path),
+        variables,
+        df,
+        sample_interval,
+    )
+
+    return meal_details
+
+
+def _read_calo_bin(path: Path, metadata: dict, dataset: Dataset) -> CaloDetails:
+    metadata = metadata[CALO_BIN_TABLE]
+
+    sample_interval = pd.Timedelta(metadata["sample_interval"])
+
+    # Read variables list
+    skipped_variables = ["DateTime", "Box"]
+    variables: dict[str, Variable] = {}
+    dtypes = {}
+    for item in metadata["columns"].values():
+        variable = Variable(
+            item["id"],
+            item["unit"],
+            item["description"],
+            item["type"],
+            Aggregation.MEAN,
+            False,
+        )
+        if variable.name not in skipped_variables:
+            variables[variable.name] = variable
+        dtypes[variable.name] = item["type"]
+    # Ignore the time for "DateTime" column
+    dtypes.pop("DateTime")
+
+    # Read measurements data
+    df = pd.DataFrame()
+    with sqlite3.connect(path, check_same_thread=False) as connection:
+        for chunk in pd.read_sql_query(
+            f"SELECT * FROM {CALO_BIN_TABLE}",
+            connection,
+            dtype=dtypes,
+            chunksize=CHUNK_SIZE,
+        ):
+            df = pd.concat([df, chunk], ignore_index=True)
+
+    # Convert DateTime from POSIX format
+    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
+
+    # Sort dataframe
+    df.sort_values(["Box", "DateTime"], inplace=True)
+
+    # Assign bins
+    previous_timestamp = None
+    previous_box = None
+    bins = []
+    offsets = []
+    timedeltas = []
+    time_gap = timedelta(seconds=10)
+    offset = 0
+    for row in df.itertuples():
+        timestamp = row.DateTime
+        box = row.Box
+
+        if box != previous_box:
+            start_timestamp = timestamp
+
+        if previous_timestamp is None:
+            bins = [0]
+        elif timestamp - previous_timestamp > time_gap:
+            bin_number = bins[-1]
+            bin_number = bin_number + 1
+
+            offset = 0
+
+            # reset bin number for a new box
+            if box != previous_box:
+                bin_number = 0
+
+            bins.append(bin_number)
+            start_timestamp = timestamp
+        else:
+            bin_number = bins[-1]
+
+            # reset bin number for a new box
+            if box != previous_box:
+                bin_number = 0
+                offset = 0
+
+            bins.append(bin_number)
+
+        if box != previous_box:
+            previous_box = box
+
+        td = timestamp - start_timestamp
+        timedeltas.append(td)
+
+        # offset = td.total_seconds()
+        offsets.append(offset)
+        offset = offset + 1
+        previous_timestamp = timestamp
+
+    df.insert(1, "Timedelta", timedeltas)
+    df.insert(2, "Bin", bins)
+    df.insert(3, "Offset", offsets)
+
+    calo_details = CaloDetails(
+        dataset,
+        f"{CALO_BIN_TABLE} [sampling: {str(sample_interval)}]",
+        str(path),
+        variables,
+        df,
+        sample_interval,
+    )
+
+    return calo_details

@@ -1,7 +1,9 @@
 import copy
+import timeit
 from pathlib import Path
 from uuid import uuid4
 
+from PySide6.QtWidgets import QWidget
 from loguru import logger
 from PySide6.QtCore import QModelIndex, QSettings, QThreadPool
 
@@ -10,7 +12,9 @@ from tse_analytics.core.data.data_hub import DataHub
 from tse_analytics.core.dataset_merger import merge_datasets
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.models.workspace_model import WorkspaceModel
+from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.tse_import_settings import TseImportSettings
+from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.modules.phenomaster.io.csv_dataset_loader import load_csv_dataset
 from tse_analytics.modules.phenomaster.io.tse_dataset_loader import load_tse_dataset
@@ -43,10 +47,24 @@ class Manager:
             cls.workspace_model.add_dataset(dataset)
 
     @classmethod
-    def import_tse_dataset(cls, path: Path, import_settings: TseImportSettings) -> None:
-        dataset = load_tse_dataset(path, import_settings)
-        if dataset is not None:
-            cls.workspace_model.add_dataset(dataset)
+    def import_tse_dataset(cls, path: Path, import_settings: TseImportSettings, parent: QWidget) -> None:
+        tic = timeit.default_timer()
+
+        toast = make_toast(parent, "Importing Dataset", "Please wait...")
+        toast.show()
+
+        def _work_result(dataset: Dataset) -> None:
+            if dataset is not None:
+                cls.workspace_model.add_dataset(dataset)
+
+        def _work_finished() -> None:
+            toast.hide()
+            logger.info(f"Dataset [{path}] import complete in {timeit.default_timer() - tic} sec.")
+
+        worker = Worker(load_tse_dataset, path, import_settings)
+        worker.signals.result.connect(_work_result)
+        worker.signals.finished.connect(_work_finished)
+        Manager.threadpool.start(worker)
 
     @classmethod
     def import_meal_details(cls, dataset_index: QModelIndex, path: str) -> None:

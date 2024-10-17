@@ -22,7 +22,6 @@ class Ui_ActimotFramesWidget(object):
     def setupUi(self, ActimotFramesWidget):
         if not ActimotFramesWidget.objectName():
             ActimotFramesWidget.setObjectName(u"ActimotFramesWidget")
-        ActimotFramesWidget.resize(971, 756)
         self.verticalLayout = QVBoxLayout(ActimotFramesWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()
@@ -31,11 +30,6 @@ class Ui_ActimotFramesWidget(object):
         self.labelFrameNumber.setObjectName(u"labelFrameNumber")
 
         self.horizontalLayout.addWidget(self.labelFrameNumber)
-
-        self.labelDateTime = QLabel(ActimotFramesWidget)
-        self.labelDateTime.setObjectName(u"labelDateTime")
-
-        self.horizontalLayout.addWidget(self.labelDateTime)
 
         self.labelCentroid = QLabel(ActimotFramesWidget)
         self.labelCentroid.setObjectName(u"labelCentroid")
@@ -62,8 +56,8 @@ class Ui_ActimotFramesWidget(object):
         self.horizontalSlider = QSlider(ActimotFramesWidget)
         self.horizontalSlider.setObjectName(u"horizontalSlider")
         self.horizontalSlider.setMinimumSize(QSize(0, 30))
-        self.horizontalSlider.setOrientation(Qt.Horizontal)
-        self.horizontalSlider.setTickPosition(QSlider.TicksBelow)
+        self.horizontalSlider.setOrientation(Qt.Orientation.Horizontal)
+        self.horizontalSlider.setTickPosition(QSlider.TickPosition.TicksBelow)
         self.horizontalSlider.setTickInterval(10000)
 
         self.verticalLayout.addWidget(self.horizontalSlider)
@@ -76,7 +70,6 @@ class Ui_ActimotFramesWidget(object):
 
     def retranslateUi(self, ActimotFramesWidget):
         self.labelFrameNumber.setText(QCoreApplication.translate("ActimotFramesWidget", u"Frame:", None))
-        self.labelDateTime.setText(QCoreApplication.translate("ActimotFramesWidget", u"DateTime:", None))
         self.labelCentroid.setText(QCoreApplication.translate("ActimotFramesWidget", u"Centroid:", None))
         pass
     # retranslateUi
