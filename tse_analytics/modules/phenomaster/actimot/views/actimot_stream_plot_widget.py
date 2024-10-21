@@ -1,10 +1,11 @@
-import numpy as np
-import traja
-from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
-from traja import _get_after_plot_args, _label_axes, _process_after_plot_args, coords_to_flow
+from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 
+import traja
+from tse_analytics.core.toaster import make_toast
+from tse_analytics.core.workers.task_manager import TaskManager
+from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.phenomaster.actimot.views.actimot_stream_plot_widget_ui import Ui_ActimotStreamPlotWidget
 
 
@@ -22,10 +23,11 @@ class ActimotStreamPlotWidget(QWidget):
         self.ui.horizontalLayout.insertWidget(self.ui.horizontalLayout.count() - 1, plot_toolbar)
 
         self.trj_df: traja.TrajaDataFrame | None = None
+        self.toast = None
 
-    def set_data(self, trj_df: traja.TrajaDataFrame) -> None:
+    def set_data(self, trj_df: traja.TrajaDataFrame | None) -> None:
         self.trj_df = trj_df
-        # self.update_plot()
+        self.ui.toolButtonCalculate.setEnabled(trj_df is not None)
 
     def _update_plot(self):
         if self.trj_df is None:
@@ -33,23 +35,30 @@ class ActimotStreamPlotWidget(QWidget):
             return
 
         self.ui.canvas.clear(False)
+        self.ui.toolButtonCalculate.setEnabled(False)
+
+        self.toast = make_toast(self, "ActiMot Stream", "Processing...")
+        self.toast.show()
+
+        worker = Worker(self._work)
+        worker.signals.finished.connect(self._work_finished)
+        TaskManager.start_task(worker)
+
+    def _work(self):
         ax = self.ui.canvas.figure.add_subplot(111)
 
         bins = self.ui.spinBoxBins.value()
-        cmap = "Reds"
 
-        after_plot_args, _ = _get_after_plot_args()
-        X, Y, U, V = coords_to_flow(self.trj_df, bins)
-        Z = np.sqrt(U * U + V * V)
+        _ = traja.plot_stream(
+            self.trj_df,
+            ax=ax,
+            bins=bins,
+            # cmap="Reds",
+        )
 
-        ax.contourf(X, Y, Z)
-        ax.contour(X, Y, Z, colors="k", linewidths=1, linestyles="solid")
-        ax.streamplot(X, Y, U, V, color=Z, cmap=cmap)
-
-        ax = _label_axes(self.trj_df, ax)
-        ax.set_aspect("equal")
-
-        _process_after_plot_args(**after_plot_args)
+    def _work_finished(self):
+        self.toast.hide()
+        self.ui.toolButtonCalculate.setEnabled(True)
 
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()

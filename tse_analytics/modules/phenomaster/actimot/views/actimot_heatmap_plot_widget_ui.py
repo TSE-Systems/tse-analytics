@@ -25,13 +25,13 @@ class Ui_ActimotHeatmapPlotWidget(object):
     def setupUi(self, ActimotHeatmapPlotWidget):
         if not ActimotHeatmapPlotWidget.objectName():
             ActimotHeatmapPlotWidget.setObjectName(u"ActimotHeatmapPlotWidget")
-        ActimotHeatmapPlotWidget.resize(971, 756)
         self.verticalLayout = QVBoxLayout(ActimotHeatmapPlotWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.toolButtonCalculate = QToolButton(ActimotHeatmapPlotWidget)
         self.toolButtonCalculate.setObjectName(u"toolButtonCalculate")
+        self.toolButtonCalculate.setEnabled(False)
 
         self.horizontalLayout.addWidget(self.toolButtonCalculate)
 
@@ -43,8 +43,8 @@ class Ui_ActimotHeatmapPlotWidget(object):
         self.spinBoxBins = QSpinBox(ActimotHeatmapPlotWidget)
         self.spinBoxBins.setObjectName(u"spinBoxBins")
         self.spinBoxBins.setMinimum(1)
-        self.spinBoxBins.setMaximum(1000)
-        self.spinBoxBins.setValue(32)
+        self.spinBoxBins.setMaximum(64)
+        self.spinBoxBins.setValue(64)
 
         self.horizontalLayout.addWidget(self.spinBoxBins)
 

@@ -76,7 +76,7 @@ def _rolling(df, window, step):
         count += step
 
 
-def bar_plot(trj: TrajaDataFrame, bins: Union[int, tuple] = None, **kwargs) -> Axes:
+def bar_plot(trj: TrajaDataFrame, ax: matplotlib.axes.Axes = None, bins: Union[int, tuple] = None, **kwargs) -> Axes:
     """Plot trajectory for single animal over period.
 
     Args:
@@ -95,8 +95,8 @@ def bar_plot(trj: TrajaDataFrame, bins: Union[int, tuple] = None, **kwargs) -> A
     X, Y, U, V = coords_to_flow(trj, bins)
 
     hist, _ = trip_grid(trj, bins, hist_only=True)
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection="3d")
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111, projection="3d")
     ax.set_aspect("equal")
     X = X.flatten("F")
     Y = Y.flatten("F")
@@ -136,38 +136,42 @@ def plot_rolling_hull(trj: TrajaDataFrame, window=100, step=20, areas=False, **k
             hull_areas.append(hull.area)
         plt.plot(hull_areas, **kwargs)
         plt.title(f"Rolling Trajectory Convex Hull Area\nWindow={window},Step={step}")
-        plt.ylabel(f"Area {trj.__dict__.get("spatial_units", "m")}")
+        plt.ylabel(f"Area {trj.__dict__.get('spatial_units', 'm')}")
         plt.xlabel("Frame")
     else:
         xlim, ylim = traja.trajectory._get_xylim(trj)
         plt.xlim = xlim
         plt.ylim = ylim
         for idx, hull in enumerate(hulls):
-            if hasattr(hull, "exterior"):  # Occassionally a Point object without it reaches
+            if hasattr(
+                hull, "exterior"
+            ):  # Occassionally a Point object without it reaches
                 plt.plot(*hull.exterior.xy, alpha=idx / len(hulls), c="k", **kwargs)
         ax = plt.gca()
         ax.set_aspect("equal")
         ax.set(
-            xlabel=f"x ({trj.__dict__.get("spatial_units", "m")})",
-            ylabel=f"y ({trj.__dict__.get("spatial_units", "m")})",
+            xlabel=f"x ({trj.__dict__.get('spatial_units', 'm')})",
+            ylabel=f"y ({trj.__dict__.get('spatial_units', 'm')})",
             title="Rolling Trajectory Convex Hull\nWindow={window},Step={step}",
         )
 
 
-def plot_period(trj: TrajaDataFrame, col="x", dark=(7, 19), **kwargs):
+def plot_period(trj: TrajaDataFrame, ax: matplotlib.axes.Axes = None, col="x", dark=(7, 19), **kwargs):
     time_col = traja._get_time_col(trj)
     _trj = trj.set_index(time_col)
     if col not in _trj:
         raise ValueError(f"{col} not a column in dataframe")
     series = _trj[col]
-    fig, ax = plt.subplots()
+    # fig, ax = plt.subplots()
     series.plot(ax=ax)
 
     dates = np.unique(series.index.date)
 
     nights = []
     nights.append([(date, date + timedelta(hours=dark[0])) for date in dates])
-    nights.append([(date + timedelta(hours=dark[1]), date + timedelta(days=1)) for date in dates])
+    nights.append(
+        [(date + timedelta(hours=dark[1]), date + timedelta(days=1)) for date in dates]
+    )
     for interval in nights:
         t0, t1 = interval
         ax.axvspan(t0, t1, color="gray", alpha=0.2)
@@ -180,11 +184,11 @@ def plot_period(trj: TrajaDataFrame, col="x", dark=(7, 19), **kwargs):
         plt.show()
 
 
-def plot_rolling_hull_3d(trj: TrajaDataFrame, window=100, step=20, **kwargs):
+def plot_rolling_hull_3d(trj: TrajaDataFrame, ax: matplotlib.axes.Axes = None, window=100, step=20, **kwargs):
     hulls = []
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection="3d")
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111, projection="3d")
 
     for offset, wind in _rolling(trj, window=window, step=step):
         if wind.dropna().empty:
@@ -209,8 +213,8 @@ def plot_rolling_hull_3d(trj: TrajaDataFrame, window=100, step=20, **kwargs):
         ax.plot(*xy, z)
 
     ax.set(
-        xlabel=f"{trj.__dict__.get("spatial_units", "m")}",
-        ylabel=f"{trj.__dict__.get("spatial_units", "m")}",
+        xlabel=f"{trj.__dict__.get('spatial_units', 'm')}",
+        ylabel=f"{trj.__dict__.get('spatial_units', 'm')}",
         title=f"Rolling Trajectory Convex Hull\nWindow={window},Step={step}",
     )
 
@@ -218,7 +222,7 @@ def plot_rolling_hull_3d(trj: TrajaDataFrame, window=100, step=20, **kwargs):
         plt.show()
 
 
-def plot_3d(trj: TrajaDataFrame, **kwargs) -> matplotlib.collections.PathCollection:
+def plot_3d(trj: TrajaDataFrame, ax: matplotlib.axes.Axes = None, **kwargs) -> matplotlib.collections.PathCollection:
     """Plot 3D trajectory for single identity over period.
 
     Args:
@@ -237,8 +241,8 @@ def plot_3d(trj: TrajaDataFrame, **kwargs) -> matplotlib.collections.PathCollect
 
     """
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection="3d")
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111, projection="3d")
     ax.set_xlabel("x", fontsize=15)
     ax.set_zlabel("time", fontsize=15)
     ax.set_ylabel("y", fontsize=15)
@@ -268,8 +272,7 @@ def plot(
     trj: TrajaDataFrame,
     n_coords: Optional[int] = None,
     show_time: bool = False,
-    accessor: Optional[traja.TrajaAccessor] = None,
-    ax=None,
+    ax: matplotlib.axes.Axes = None,
     **kwargs,
 ) -> matplotlib.collections.PathCollection:
     """Plot trajectory for single animal over period.
@@ -325,9 +328,9 @@ def plot(
     codes = [Path.MOVETO] + [Path.LINETO] * (len(verts) - 1)
     path = Path(verts, codes)
 
-    if not ax:
-        fig, ax = plt.subplots(figsize=figsize)
-        fig.canvas.draw()
+    # if not ax:
+    #     fig, ax = plt.subplots(figsize=figsize)
+    #     fig.canvas.draw()
 
     patch = patches.PathPatch(path, edgecolor=GRAY, facecolor="none", lw=3, alpha=0.3)
     ax.add_patch(patch)
@@ -384,24 +387,35 @@ def plot(
     # Number of color bar ticks
     CBAR_TICKS = 10 if n_coords > 20 else n_coords
     indices = np.linspace(0, n_coords - 1, CBAR_TICKS, endpoint=True, dtype=int)
-    cbar = plt.colorbar(collection, fraction=0.046, pad=0.04, orientation="vertical", label=label)
+    cbar = plt.colorbar(
+        collection, ax=ax, fraction=0.046, pad=0.04, orientation="vertical", label=label
+    )
 
     # Get colorbar labels from time
     if time_col == "index":
         if is_datetime64_any_dtype(trj.index):
-            cbar_labels = trj.index[indices].strftime("%Y-%m-%d %H:%M:%S").values.astype(str)
+            cbar_labels = (
+                trj.index[indices].strftime("%Y-%m-%d %H:%M:%S").values.astype(str)
+            )
         elif is_timedelta64_dtype(trj.index):
             if time_units in ("s", "", None):
                 cbar_labels = [round(x, 2) for x in trj.index[indices].total_seconds()]
             else:
                 logger.error("Time unit {} not yet implemented".format(time_units))
         else:
-            raise NotImplementedError("Indexing on {} is not yet implemented".format(type(trj.index)))
+            raise NotImplementedError(
+                "Indexing on {} is not yet implemented".format(type(trj.index))
+            )
     elif time_col and is_timedelta64_dtype(trj[time_col]):
         cbar_labels = trj[time_col].iloc[indices].dt.total_seconds().values
         cbar_labels = ["%.2f" % number for number in cbar_labels]
     elif time_col and is_datetime:
-        cbar_labels = trj[time_col].iloc[indices].dt.strftime("%Y-%m-%d %H:%M:%S").values.astype(str)
+        cbar_labels = (
+            trj[time_col]
+            .iloc[indices]
+            .dt.strftime("%Y-%m-%d %H:%M:%S")
+            .values.astype(str)
+        )
     else:
         # Convert frames to time
         if time_col:
@@ -500,7 +514,7 @@ def plot_pca(
     id_col: str = "id",
     bins: tuple = (8, 8),
     three_dims: bool = False,
-    ax=None,
+    ax: matplotlib.axes.Axes = None,
 ):
     """Plot PCA comparing animals ids by trip grids.
 
@@ -556,7 +570,9 @@ def plot_pca(
     # Visualize 2D projection
     for idx, animal in enumerate(X_r):
         if DIMS == 2:
-            ax.scatter(X_r[idx, 0], X_r[idx, 1], color=f"C{idx}", alpha=0.8, lw=2, label=idx)
+            ax.scatter(
+                X_r[idx, 0], X_r[idx, 1], color=f"C{idx}", alpha=0.8, lw=2, label=idx
+            )
         elif DIMS == 3:
             ax.scatter(
                 X_r[idx, 0],
@@ -667,6 +683,7 @@ def plot_quiver(
     trj: TrajaDataFrame,
     bins: Optional[Union[int, tuple]] = None,
     quiverplot_kws: dict = {},
+    ax: matplotlib.axes.Axes = None,
     **kwargs,
 ) -> Axes:
     """Plot average flow from each grid cell to neighbor.
@@ -685,8 +702,6 @@ def plot_quiver(
     X, Y, U, V = coords_to_flow(trj, bins)
     Z = np.sqrt(U * U + V * V)
 
-    fig, ax = plt.subplots()
-
     ax.quiver(X, Y, U, V, units="width", **quiverplot_kws)
     ax = _label_axes(trj, ax)
     ax.set_aspect("equal")
@@ -703,7 +718,7 @@ def plot_contour(
     contourplot_kws: dict = {},
     contourfplot_kws: dict = {},
     quiverplot_kws: dict = {},
-    ax: Axes = None,
+    ax: matplotlib.axes.Axes = None,
     **kwargs,
 ) -> Axes:
     """Plot average flow from each grid cell to neighbor.
@@ -734,7 +749,9 @@ def plot_contour(
     if filled:
         cfp = plt.contourf(X, Y, Z, **contourfplot_kws)
         plt.colorbar(cfp, ax=ax)
-    plt.contour(X, Y, Z, colors="k", linewidths=1, linestyles="solid", **contourplot_kws)
+    plt.contour(
+        X, Y, Z, colors="k", linewidths=1, linestyles="solid", **contourplot_kws
+    )
     if quiver:
         ax.quiver(X, Y, U, V, units="width", **quiverplot_kws)
 
@@ -749,6 +766,7 @@ def plot_surface(
     trj: TrajaDataFrame,
     bins: Optional[Union[int, tuple]] = None,
     cmap: str = "viridis",
+    ax: matplotlib.axes.Axes = None,
     **surfaceplot_kws: dict,
 ) -> Figure:
     """Plot surface of flow from each grid cell to neighbor in 3D.
@@ -768,8 +786,8 @@ def plot_surface(
     X, Y, U, V = coords_to_flow(trj, bins)
     Z = np.sqrt(U * U + V * V)
 
-    fig = plt.figure()
-    ax = fig.add_subplot(projection="3d")
+    # fig = plt.figure()
+    # ax = fig.add_subplot(projection="3d")
     ax.plot_surface(X, Y, Z, cmap=cmap, linewidth=0, **surfaceplot_kws)
 
     ax = _label_axes(trj, ax)
@@ -790,6 +808,7 @@ def plot_stream(
     contourfplot_kws: dict = {},
     contourplot_kws: dict = {},
     streamplot_kws: dict = {},
+    ax: matplotlib.axes.Axes = None,
     **kwargs,
 ) -> Figure:
     """Plot average flow from each grid cell to neighbor.
@@ -810,10 +829,12 @@ def plot_stream(
     X, Y, U, V = coords_to_flow(trj, bins)
     Z = np.sqrt(U * U + V * V)
 
-    fig, ax = plt.subplots()
+    # fig, ax = plt.subplots()
 
     plt.contourf(X, Y, Z, **contourfplot_kws)
-    plt.contour(X, Y, Z, colors="k", linewidths=1, linestyles="solid", **contourplot_kws)
+    plt.contour(
+        X, Y, Z, colors="k", linewidths=1, linestyles="solid", **contourplot_kws
+    )
     ax.streamplot(X, Y, U, V, color=Z, cmap=cmap, **streamplot_kws)
 
     ax = _label_axes(trj, ax)
@@ -832,6 +853,7 @@ def plot_flow(
     streamplot_kws: dict = {},
     quiverplot_kws: dict = {},
     surfaceplot_kws: dict = {},
+    ax: matplotlib.axes.Axes = None,
     **kwargs,
 ) -> Figure:
     """Plot average flow from each grid cell to neighbor.
@@ -850,11 +872,11 @@ def plot_flow(
         ax (:class:`~matplotlib.axes.Axes`): Axes of plot
     """
     if kind == "quiver":
-        return plot_quiver(trj, *args, **quiverplot_kws, **kwargs)
+        return plot_quiver(trj, ax=ax, *args, **quiverplot_kws, **kwargs)
     elif kind == "contour":
-        return plot_contour(trj, filled=False, *args, **quiverplot_kws, **kwargs)
+        return plot_contour(trj, filled=False, ax=ax, *args, **quiverplot_kws, **kwargs)
     elif kind == "contourf":
-        return plot_contour(trj, *args, **quiverplot_kws, **kwargs)
+        return plot_contour(trj, ax=ax, *args, **quiverplot_kws, **kwargs)
     elif kind == "stream":
         return plot_stream(
             trj,
@@ -862,6 +884,7 @@ def plot_flow(
             contourplot_kws=contourplot_kws,
             contourfplot_kws=contourfplot_kws,
             streamplot_kws=streamplot_kws,
+            ax=ax,
             **kwargs,
         )
     elif kind == "surface":
@@ -885,6 +908,7 @@ def trip_grid(
     spatial_units: str = None,
     normalize: bool = False,
     hist_only: bool = False,
+    ax: matplotlib.axes.Axes = None,
     **kwargs,
 ) -> Tuple[np.ndarray, PathCollection]:
     """Generate a heatmap of time spent by point-to-cell gridding.
@@ -917,7 +941,9 @@ def trip_grid(
 
     x, y = zip(*df.values)
 
-    hist, x_edges, y_edges = np.histogram2d(x, y, bins, range=((xmin, xmax), (ymin, ymax)), density=normalize)
+    hist, x_edges, y_edges = np.histogram2d(
+        x, y, bins, range=((xmin, xmax), (ymin, ymax)), density=normalize
+    )
 
     # rotate to keep y as first dimension
     hist = np.rot90(hist)
@@ -926,16 +952,17 @@ def trip_grid(
         hist = np.log(hist + np.e)
     if hist_only:  # TODO: Evaluate potential use cases or remove
         return (hist, None)
-    fig, ax = plt.subplots()
 
-    image = ax.imshow(hist, interpolation="bilinear", aspect="equal", extent=[xmin, xmax, ymin, ymax])
+    image = ax.imshow(
+        hist, interpolation="bilinear", aspect="equal", extent=[xmin, xmax, ymin, ymax], cmap="Reds"
+    )
     # TODO: Adjust colorbar ytick_labels to correspond with time
     label = "Frames" if not log else "$ln(frames)$"
     plt.colorbar(image, ax=ax, label=label)
 
     _label_axes(trj, ax)
 
-    plt.title("Time spent{}".format(" (Logarithmic)" if log else ""))
+    # plt.title("Time spent{}".format(" (Logarithmic)" if log else ""))
 
     _process_after_plot_args(**after_plot_args)
     # TODO: Add method for most common locations in grid
@@ -949,7 +976,9 @@ def _process_after_plot_args(**after_plot_args):
         plt.savefig(filepath)
 
 
-def color_dark(series: pd.Series, ax: matplotlib.axes.Axes = None, start: int = 19, end: int = 7):
+def color_dark(
+    series: pd.Series, ax: matplotlib.axes.Axes = None, start: int = 19, end: int = 7
+):
     """Color dark phase in plot.
     Args:
 
@@ -961,7 +990,9 @@ def color_dark(series: pd.Series, ax: matplotlib.axes.Axes = None, start: int = 
 
         ax (:class:`~matplotlib.axes._subplots.AxesSubplot`): Axes of plot
     """
-    assert is_datetime_or_timedelta_dtype(series.index), f"Series must have datetime index but has {type(series.index)}"
+    assert is_datetime_or_timedelta_dtype(
+        series.index
+    ), f"Series must have datetime index but has {type(series.index)}"
 
     pd.plotting.register_matplotlib_converters()  # prevents type error with axvspan
 
@@ -1013,7 +1044,9 @@ def find_runs(x: pd.Series) -> (np.ndarray, np.ndarray, np.ndarray):
 
 def fill_ci(series: pd.Series, window: Union[int, str]) -> Figure:
     """Fill confidence interval defined by SEM over mean of `window`. Window can be interval or offset, eg, '30s'."""
-    assert is_datetime_or_timedelta_dtype(series.index), f"Series index must be datetime but is {type(series.index)}"
+    assert is_datetime_or_timedelta_dtype(
+        series.index
+    ), f"Series index must be datetime but is {type(series.index)}"
     smooth_path = series.rolling(window).mean()
     path_deviation = series.rolling(window).std()
 
@@ -1045,7 +1078,9 @@ def plot_xy(xy: np.ndarray, *args: Optional, **kwargs: Optional):
     trj.traja.plot(*args, **kwargs)
 
 
-def plot_actogram(series: pd.Series, dark=(19, 7), ax: matplotlib.axes.Axes = None, **kwargs):
+def plot_actogram(
+    series: pd.Series, dark=(19, 7), ax: matplotlib.axes.Axes = None, **kwargs
+):
     """Plot activity or displacement as an actogram.
 
     .. note::
@@ -1055,7 +1090,9 @@ def plot_actogram(series: pd.Series, dark=(19, 7), ax: matplotlib.axes.Axes = No
 
     """
     assert isinstance(series, pd.Series)
-    assert is_datetime_or_timedelta_dtype(series.index), f"Series must have datetime index but has {type(series.index)}"
+    assert is_datetime_or_timedelta_dtype(
+        series.index
+    ), f"Series must have datetime index but has {type(series.index)}"
 
     after_plot_args, _ = _get_after_plot_args(**kwargs)
 
@@ -1080,7 +1117,9 @@ def _polar_bar(
     title = kwargs.pop("title", None)
     ax = ax or plt.subplot(111, projection="polar")
 
-    hist, bin_edges = np.histogram(theta, bins=np.arange(-180, 180 + bin_size, bin_size))
+    hist, bin_edges = np.histogram(
+        theta, bins=np.arange(-180, 180 + bin_size, bin_size)
+    )
     centers = np.deg2rad(np.ediff1d(bin_edges) // 2 + bin_edges[:-1])
 
     radians = np.deg2rad(theta)
@@ -1141,7 +1180,9 @@ def polar_bar(
     trj = trj[pd.notnull(trj[feature])]
     trj = trj[pd.notnull(trj.displacement)]
 
-    assert len(trj) > 0, f"Dataframe is empty after filtering for step distance threshold {threshold}"
+    assert (
+        len(trj) > 0
+    ), f"Dataframe is empty after filtering for step distance threshold {threshold}"
 
     ax = _polar_bar(
         trj.displacement,
@@ -1245,7 +1286,11 @@ def plot_transition_graph(
     except ImportError as e:
         raise ImportError(f"{e} - please install it with pip")
 
-    if isinstance(data, (traja.TrajaDataFrame)) or isinstance(data, pd.DataFrame) and "x" in data:
+    if (
+        isinstance(data, (traja.TrajaDataFrame))
+        or isinstance(data, pd.DataFrame)
+        and "x" in data
+    ):
         transition_matrix = traja.transitions(data)
         edges_wts = _get_markov_edges(pd.DataFrame(transition_matrix))
         states_ = list(range(transition_matrix.shape[0]))
@@ -1297,7 +1342,9 @@ def plot_transition_matrix(
     """
     if isinstance(data, np.ndarray):
         if data.shape[0] != data.shape[1]:
-            raise ValueError(f"Ndarray input must be square transition matrix, shape is {data.shape}")
+            raise ValueError(
+                f"Ndarray input must be square transition matrix, shape is {data.shape}"
+            )
         transition_matrix = data
     elif isinstance(data, (pd.DataFrame, traja.TrajaDataFrame)):
         transition_matrix = traja.transitions(data, **kwargs)
@@ -1340,7 +1387,9 @@ def animate(trj: TrajaDataFrame, polar: bool = True, save: bool = False):
         ax2.set_theta_zero_location("N")
         ax2.set_xticklabels(["0", "45", "90", "135", "180", "-135", "-90", "-45"])
         fig.add_subplot(ax2)
-        ax2.bar(np.zeros(XY_STEPS), np.zeros(XY_STEPS), width=np.zeros(XY_STEPS), bottom=0.0)
+        ax2.bar(
+            np.zeros(XY_STEPS), np.zeros(XY_STEPS), width=np.zeros(XY_STEPS), bottom=0.0
+        )
 
     xlim, ylim = traja.trajectory._get_xylim(trj)
     ax1.set(
@@ -1355,7 +1404,9 @@ def animate(trj: TrajaDataFrame, polar: bool = True, save: bool = False):
     rgba_colors = np.zeros((XY_STEPS, 4))
     rgba_colors[:, 0] = 1.0  # red
     rgba_colors[:, 3] = alphas
-    scat = ax1.scatter(range(XY_STEPS), range(XY_STEPS), marker=".", color=rgba_colors[:XY_STEPS])
+    scat = ax1.scatter(
+        range(XY_STEPS), range(XY_STEPS), marker=".", color=rgba_colors[:XY_STEPS]
+    )
 
     def update(frame_number):
         if frame_number < (XY_STEPS + 2):
@@ -1388,7 +1439,9 @@ def animate(trj: TrajaDataFrame, polar: bool = True, save: bool = False):
                 theta = turn_angle[start_index:ind]
                 radii = displacement[start_index:ind]
 
-                hist, bin_edges = np.histogram(theta, bins=np.arange(-180, 180 + bin_size, bin_size))
+                hist, bin_edges = np.histogram(
+                    theta, bins=np.arange(-180, 180 + bin_size, bin_size)
+                )
                 centers = np.deg2rad(np.ediff1d(bin_edges) // 2 + bin_edges[:-1])
 
                 radians = np.deg2rad(theta)
@@ -1403,7 +1456,9 @@ def animate(trj: TrajaDataFrame, polar: bool = True, save: bool = False):
                     bar.set_facecolor(plt.cm.viridis(h / max_height))
                     bar.set_alpha(0.8 * (idx / POLAR_STEPS))
                 ax2.set_theta_zero_location("N")
-                ax2.set_xticklabels(["0", "45", "90", "135", "180", "-135", "-90", "-45"])
+                ax2.set_xticklabels(
+                    ["0", "45", "90", "135", "180", "-135", "-90", "-45"]
+                )
 
     anim = FuncAnimation(fig, update, interval=10, frames=len(xy))
     if save:

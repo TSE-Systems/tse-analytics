@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QDialog, QFileDialog, QWidget
 
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.core.manager import Manager
+from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details_animal_item import MealDetailsAnimalItem
@@ -171,7 +171,7 @@ class MealDetailsDialog(QDialog):
         else:
             worker = Worker(self._do_interval_analysis, meal_details_settings, diets_dict)
             worker.signals.finished.connect(self._interval_analysis_finished)
-        Manager.threadpool.start(worker)
+        TaskManager.start_task(worker)
 
     def _do_sequential_analysis(
         self,

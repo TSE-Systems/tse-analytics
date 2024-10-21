@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from PySide6.QtGui import QPixmap, QImage
+from PySide6.QtGui import QImage, QPixmap
 
 import traja
 from tse_analytics.modules.phenomaster.actimot.actimot_settings import ActimotSettings
@@ -90,6 +90,11 @@ def calculate_trj(original_df: pd.DataFrame, actimot_settings: ActimotSettings) 
 
     trj_df = traja.from_df(df=df)
     trj_df.spatial_units = "cm"
+
+    if actimot_settings.use_smooting:
+        trj_df = traja.smooth_sg(
+            trj_df, w=actimot_settings.smoothing_window_size, p=actimot_settings.smoothing_polynomial_order
+        )
 
     preprocessed_trj = traja.get_derivatives(trj_df)
 

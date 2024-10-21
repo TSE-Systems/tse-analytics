@@ -1,6 +1,6 @@
 from loguru import logger
+from pyqttoast import Toast, ToastPosition, ToastPreset
 from PySide6.QtWidgets import QWidget
-from pyqttoast import ToastPreset, ToastPosition, Toast
 
 
 def make_toast(

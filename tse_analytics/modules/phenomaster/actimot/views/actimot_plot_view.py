@@ -1,7 +1,7 @@
 import pandas as pd
 import pyqtgraph as pg
-from PySide6.QtWidgets import QWidget
 from pyqtgraph import mkPen
+from PySide6.QtWidgets import QWidget
 
 
 class ActimotPlotView(pg.GraphicsLayoutWidget):

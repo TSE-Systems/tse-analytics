@@ -6,7 +6,6 @@ from PySide6.QtWidgets import QAbstractItemView, QWidget
 
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import (
     AddToReportMessage,
@@ -17,6 +16,8 @@ from tse_analytics.core.messaging.messages import (
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.models.pandas_model import PandasModel
+from tse_analytics.core.toaster import make_toast
+from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.css import style_descriptive_table
 from tse_analytics.views.data.data_table_widget_ui import Ui_DataTableWidget
@@ -58,7 +59,7 @@ class DataTableWidget(QWidget, MessengerListener):
         worker = Worker(
             self.ui.tableView.resizeColumnsToContents
         )  # Any other args, kwargs are passed to the run function
-        Manager.threadpool.start(worker)
+        TaskManager.start_task(worker)
 
     def _on_dataset_changed(self, message: DatasetChangedMessage):
         if message.dataset is None:

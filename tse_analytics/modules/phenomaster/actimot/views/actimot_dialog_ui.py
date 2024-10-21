@@ -30,14 +30,14 @@ class Ui_ActimotDialog(object):
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.toolbarLayout = QHBoxLayout()
         self.toolbarLayout.setObjectName(u"toolbarLayout")
-        self.toolButtonCalculate = QToolButton(ActimotDialog)
-        self.toolButtonCalculate.setObjectName(u"toolButtonCalculate")
+        self.toolButtonPreprocess = QToolButton(ActimotDialog)
+        self.toolButtonPreprocess.setObjectName(u"toolButtonPreprocess")
         icon = QIcon()
-        icon.addFile(u":/icons/icons8-scales-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.toolButtonCalculate.setIcon(icon)
-        self.toolButtonCalculate.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        icon.addFile(u":/icons/preprocess.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.toolButtonPreprocess.setIcon(icon)
+        self.toolButtonPreprocess.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
 
-        self.toolbarLayout.addWidget(self.toolButtonCalculate)
+        self.toolbarLayout.addWidget(self.toolButtonPreprocess)
 
         self.toolButtonExport = QToolButton(ActimotDialog)
         self.toolButtonExport.setObjectName(u"toolButtonExport")
@@ -106,7 +106,7 @@ class Ui_ActimotDialog(object):
 
     def retranslateUi(self, ActimotDialog):
         ActimotDialog.setWindowTitle(QCoreApplication.translate("ActimotDialog", u"Actimot Analysis", None))
-        self.toolButtonCalculate.setText(QCoreApplication.translate("ActimotDialog", u"Calculate", None))
+        self.toolButtonPreprocess.setText(QCoreApplication.translate("ActimotDialog", u"Preprocess Data", None))
         self.toolButtonExport.setText(QCoreApplication.translate("ActimotDialog", u"Export data...", None))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("ActimotDialog", u"Page 1", None))
     # retranslateUi

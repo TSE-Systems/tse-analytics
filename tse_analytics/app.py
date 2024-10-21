@@ -12,6 +12,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
 from tse_analytics.core.manager import Manager
+from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.views.main_window import MainWindow
 
 # Global configuration
@@ -56,6 +57,9 @@ class App(QApplication):
         f.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text)
         self.setStyleSheet(QTextStream(f).readAll())
         f.close()
+
+        # TaskManager singleton initialization
+        TaskManager(self)
 
         # DataManager singleton initialization
         Manager()

@@ -25,13 +25,13 @@ class Ui_ActimotTrajectoryPlotWidget(object):
     def setupUi(self, ActimotTrajectoryPlotWidget):
         if not ActimotTrajectoryPlotWidget.objectName():
             ActimotTrajectoryPlotWidget.setObjectName(u"ActimotTrajectoryPlotWidget")
-        ActimotTrajectoryPlotWidget.resize(971, 756)
         self.verticalLayout = QVBoxLayout(ActimotTrajectoryPlotWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.toolButtonCalculate = QToolButton(ActimotTrajectoryPlotWidget)
         self.toolButtonCalculate.setObjectName(u"toolButtonCalculate")
+        self.toolButtonCalculate.setEnabled(False)
 
         self.horizontalLayout.addWidget(self.toolButtonCalculate)
 

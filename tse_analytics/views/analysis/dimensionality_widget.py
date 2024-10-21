@@ -16,6 +16,7 @@ from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetCha
 from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.toaster import make_toast
+from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.views.analysis.dimensionality_widget_ui import Ui_DimensionalityWidget
 
@@ -187,7 +188,7 @@ class DimensionalityWidget(QWidget, MessengerListener):
         worker = Worker(self._calculate_pca_tsne, selected_variables, split_mode, selected_factor_name, by)
         worker.signals.result.connect(self._calculate_pca_tsne_result)
         worker.signals.finished.connect(self._calculate_pca_tsne_finished)
-        Manager.threadpool.start(worker)
+        TaskManager.start_task(worker)
 
     def _calculate_pca_tsne(
         self,

@@ -25,7 +25,6 @@ class Ui_ActimotPlotWidget(object):
     def setupUi(self, ActimotPlotWidget):
         if not ActimotPlotWidget.objectName():
             ActimotPlotWidget.setObjectName(u"ActimotPlotWidget")
-        ActimotPlotWidget.resize(538, 607)
         self.verticalLayout = QVBoxLayout(ActimotPlotWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()

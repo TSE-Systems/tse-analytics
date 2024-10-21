@@ -3,9 +3,9 @@ import timeit
 from pathlib import Path
 from uuid import uuid4
 
-from PySide6.QtWidgets import QWidget
 from loguru import logger
-from PySide6.QtCore import QModelIndex, QSettings, QThreadPool
+from PySide6.QtCore import QModelIndex, QSettings
+from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.data_hub import DataHub
@@ -14,6 +14,7 @@ from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.models.workspace_model import WorkspaceModel
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.tse_import_settings import TseImportSettings
+from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.modules.phenomaster.io.csv_dataset_loader import load_csv_dataset
@@ -24,10 +25,6 @@ class Manager:
     messenger = Messenger()
     workspace_model = WorkspaceModel()
     data = DataHub(messenger)
-    threadpool = QThreadPool()
-
-    def __init__(self):
-        logger.info(f"Multithreading with maximum {Manager.threadpool.maxThreadCount()} threads")
 
     @classmethod
     def load_workspace(cls, path: str) -> None:
@@ -64,7 +61,7 @@ class Manager:
         worker = Worker(load_tse_dataset, path, import_settings)
         worker.signals.result.connect(_work_result)
         worker.signals.finished.connect(_work_finished)
-        Manager.threadpool.start(worker)
+        TaskManager.start_task(worker)
 
     @classmethod
     def import_meal_details(cls, dataset_index: QModelIndex, path: str) -> None:

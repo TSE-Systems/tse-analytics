@@ -2,14 +2,14 @@ import timeit
 
 import pandas as pd
 import traja
+from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
 from PySide6.QtWidgets import QDialog, QFileDialog, QWidget
-from pyqttoast import ToastPreset
 
-from tse_analytics.core.data.shared import Variable, Aggregation
-from tse_analytics.core.manager import Manager
+from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.core.toaster import make_toast
+from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.phenomaster.actimot.actimot_processor import calculate_trj
 from tse_analytics.modules.phenomaster.actimot.actimot_settings import ActimotSettings
@@ -56,7 +56,7 @@ class ActimotDialog(QDialog):
         self.actimot_heatmap_plot_widget = ActimotHeatmapPlotWidget(self)
         self.ui.tabWidget.addTab(self.actimot_heatmap_plot_widget, "Heatmap")
 
-        self.ui.toolButtonCalculate.clicked.connect(self._calculate)
+        self.ui.toolButtonPreprocess.clicked.connect(self._preprocess)
         self.ui.toolButtonExport.clicked.connect(self._export_data)
 
         self.actimot_settings_widget = ActimotSettingsWidget(self)
@@ -84,12 +84,32 @@ class ActimotDialog(QDialog):
         self.actimot_table_view.set_data(self.df)
         self.actimot_frames_widget.set_data(self.df)
 
-    def _calculate(self) -> None:
+        self.actimot_trajectory_plot_widget.set_data(None)
+        self.actimot_stream_plot_widget.set_data(None)
+        self.actimot_heatmap_plot_widget.set_data(None)
+
+    def _preprocess(self) -> None:
         if self.df is None:
             make_toast(
                 self,
-                "ActiMot Processing",
+                "ActiMot Preprocessing",
                 "Please select a single box.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
+            return
+
+        actimot_settings = self.actimot_settings_widget.get_settings()
+        if (
+            actimot_settings.use_smooting
+            and actimot_settings.smoothing_window_size is not None
+            and actimot_settings.smoothing_window_size % 2 != 1
+        ):
+            make_toast(
+                self,
+                "ActiMot Preprocessing",
+                "Smoothing window size must be odd.",
                 duration=2000,
                 preset=ToastPreset.WARNING,
                 show_duration_bar=True,
@@ -98,9 +118,7 @@ class ActimotDialog(QDialog):
 
         tic = timeit.default_timer()
 
-        actimot_settings = self.actimot_settings_widget.get_settings()
-
-        toast = make_toast(self, "ActiMot Processing", "Please wait...")
+        toast = make_toast(self, "ActiMot Preprocessing", "Please wait...")
         toast.show()
 
         def _work_result(result: [pd.DataFrame, traja.TrajaDataFrame]) -> None:
@@ -169,8 +187,8 @@ class ActimotDialog(QDialog):
 
             make_toast(
                 self,
-                "ActiMot Processing",
-                f"Processing complete in {timeit.default_timer() - tic} sec.",
+                "ActiMot Preprocessing",
+                f"ActiMot preprocessing complete in {(timeit.default_timer() - tic):.3f} sec.",
                 duration=4000,
                 preset=ToastPreset.SUCCESS,
                 show_duration_bar=True,
@@ -183,7 +201,7 @@ class ActimotDialog(QDialog):
         worker = Worker(calculate_trj, self.df, actimot_settings)
         worker.signals.result.connect(_work_result)
         worker.signals.finished.connect(_work_finished)
-        Manager.threadpool.start(worker)
+        TaskManager.start_task(worker)
 
     def _export_data(self):
         filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "ActiMotEvents", "CSV Files (*.csv)")
