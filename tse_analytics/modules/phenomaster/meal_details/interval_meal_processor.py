@@ -4,6 +4,9 @@ from tse_analytics.modules.phenomaster.meal_details.data.meal_details import Mea
 from tse_analytics.modules.phenomaster.meal_details.meal_details_settings import MealDetailsSettings
 
 
+default_columns = ["DateTime", "Animal", "Box"]
+
+
 def process_meal_intervals(
     meal_details: MealDetails, meal_details_settings: MealDetailsSettings, diets_dict: dict[int, float]
 ):
@@ -28,7 +31,17 @@ def process_meal_intervals(
         dropped_columns.append("FeedC")
     df.drop(dropped_columns, axis="columns", inplace=True)
 
-    group_by = ["Animal", "Box"]
+    agg = {
+        "Box": "first",
+    }
+    for column in df.columns:
+        if column not in default_columns:
+            if df.dtypes[column].name != "category":
+                agg[column] = "sum"
+            else:
+                agg[column] = "first"
+
+    group_by = ["Animal"]
     grouped = df.groupby(group_by, dropna=False, observed=False)
 
     timedelta = pd.Timedelta(
@@ -37,13 +50,13 @@ def process_meal_intervals(
         seconds=meal_details_settings.fixed_interval.second,
     )
     resampler = grouped.resample(timedelta, on="DateTime", origin="start")
-    result = resampler.sum(numeric_only=True)
+    result = resampler.aggregate(agg)
 
     sort_by = ["DateTime", "Animal"]
     result.sort_values(by=sort_by, inplace=True)
 
     # the inverse of groupby, reset_index
-    result = result.reset_index()
+    result.reset_index(inplace=True)
 
     start_date_time = result["DateTime"][0]
     result["Timedelta"] = result["DateTime"] - start_date_time

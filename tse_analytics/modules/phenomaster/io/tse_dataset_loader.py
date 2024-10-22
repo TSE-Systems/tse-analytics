@@ -302,6 +302,15 @@ def _read_drinkfeed_bin(path: Path, metadata: dict, dataset: Dataset) -> MealDet
     # Convert DateTime from POSIX format
     df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
 
+    # Add Animal column
+    box_to_animal_map = {}
+    for animal in dataset.animals.values():
+        box_to_animal_map[animal.box] = animal.id
+    df["Animal"] = df["Box"].replace(box_to_animal_map)
+    df = df.astype({
+        "Animal": "category",
+    })
+
     meal_details = MealDetails(
         dataset,
         f"{DRINKFEED_BIN_TABLE} [sampling: {str(sample_interval)}]",
