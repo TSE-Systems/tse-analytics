@@ -1,5 +1,5 @@
 from loguru import logger
-from PySide6.QtCore import QObject, QThreadPool, QThread
+from PySide6.QtCore import QObject, QThread, QThreadPool
 
 from tse_analytics.core.workers.worker import Worker
 

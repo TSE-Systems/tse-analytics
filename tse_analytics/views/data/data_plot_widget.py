@@ -171,14 +171,17 @@ class DataPlotWidget(QWidget, MessengerListener):
             Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
         )
 
-        self.timelinePlotView.refresh_data(
-            df,
-            selected_variable,
-            split_mode,
-            display_errors,
-            selected_factor,
-            self.ui.checkBoxScatterPlot.isChecked(),
-        )
+        if not df.empty:
+            self.timelinePlotView.refresh_data(
+                df,
+                selected_variable,
+                split_mode,
+                display_errors,
+                selected_factor,
+                self.ui.checkBoxScatterPlot.isChecked(),
+            )
+        else:
+            self.timelinePlotView.clear_plot()
 
     def _display_bar_plot(
         self,

@@ -40,6 +40,11 @@ class Ui_CaloDetailsDialog(object):
 
         self.toolbarLayout.addWidget(self.toolButtonResetSettings)
 
+        self.toolButtonExport = QToolButton(CaloDetailsDialog)
+        self.toolButtonExport.setObjectName(u"toolButtonExport")
+
+        self.toolbarLayout.addWidget(self.toolButtonExport)
+
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.toolbarLayout.addItem(self.horizontalSpacer)
@@ -62,7 +67,7 @@ class Ui_CaloDetailsDialog(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.splitter.sizePolicy().hasHeightForWidth())
         self.splitter.setSizePolicy(sizePolicy)
-        self.splitter.setOrientation(Qt.Horizontal)
+        self.splitter.setOrientation(Qt.Orientation.Horizontal)
         self.tabWidget = QTabWidget(self.splitter)
         self.tabWidget.setObjectName(u"tabWidget")
         self.splitter.addWidget(self.tabWidget)
@@ -70,7 +75,7 @@ class Ui_CaloDetailsDialog(object):
         self.toolBox.setObjectName(u"toolBox")
         self.page = QWidget()
         self.page.setObjectName(u"page")
-        self.page.setGeometry(QRect(0, 0, 870, 746))
+        self.page.setGeometry(QRect(0, 0, 873, 745))
         self.toolBox.addItem(self.page, u"Page 1")
         self.splitter.addWidget(self.toolBox)
 
@@ -78,8 +83,8 @@ class Ui_CaloDetailsDialog(object):
 
         self.buttonBox = QDialogButtonBox(CaloDetailsDialog)
         self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+        self.buttonBox.setOrientation(Qt.Orientation.Horizontal)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
 
         self.verticalLayout.addWidget(self.buttonBox)
 
@@ -99,6 +104,7 @@ class Ui_CaloDetailsDialog(object):
         CaloDetailsDialog.setWindowTitle(QCoreApplication.translate("CaloDetailsDialog", u"Calo Details", None))
         self.toolButtonCalculate.setText(QCoreApplication.translate("CaloDetailsDialog", u"Calculate prediction for selected boxes", None))
         self.toolButtonResetSettings.setText(QCoreApplication.translate("CaloDetailsDialog", u"Reset default settings", None))
+        self.toolButtonExport.setText(QCoreApplication.translate("CaloDetailsDialog", u"Export selected data", None))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("CaloDetailsDialog", u"Page 1", None))
     # retranslateUi
 

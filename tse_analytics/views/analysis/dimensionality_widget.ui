@@ -7,9 +7,9 @@
    <item>
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
-     <widget class="QWebEngineView" name="webView">
+     <widget class="MplCanvas" name="canvas" native="true">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>1</horstretch>
@@ -73,35 +73,6 @@
            <widget class="QRadioButton" name="radioButtonTSNE">
             <property name="text">
              <string>t-SNE</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBoxDimensions">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="title">
-          <string>Dimensions</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_5">
-          <item>
-           <widget class="QRadioButton" name="radioButton2D">
-            <property name="text">
-             <string>2D</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="radioButton3D">
-            <property name="text">
-             <string>3D</string>
             </property>
            </widget>
           </item>
@@ -194,12 +165,6 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QWebEngineView</class>
-   <extends>QWidget</extends>
-   <header location="global">QtWebEngineWidgets/QWebEngineView</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>FactorSelector</class>
    <extends>QComboBox</extends>
    <header>tse_analytics.views.misc.factor_selector</header>
@@ -208,6 +173,12 @@
    <class>VariablesTableWidget</class>
    <extends>QTableWidget</extends>
    <header>tse_analytics.views.misc.variables_table_widget</header>
+  </customwidget>
+  <customwidget>
+   <class>MplCanvas</class>
+   <extends>QWidget</extends>
+   <header>tse_analytics.views.misc.MplCanvas</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

@@ -359,14 +359,17 @@ class DataHub:
 
     def get_timeseries_df(
         self,
+        animal: Animal,
         variable: Variable,
     ) -> pd.DataFrame:
-        columns = ["DateTime", "Timedelta", "Animal", variable.name]
-        result = self.selected_dataset.active_df[columns].copy()
+        columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", variable.name]
+        df = self.selected_dataset.active_df[columns].copy()
+        df = df[df["Animal"] == animal.id]
+        df.reset_index(drop=True, inplace=True)
 
         variables = {variable.name: variable}
 
-        result = self._preprocess_df(result, variables)
+        result = self._preprocess_df(df, variables)
 
         # Binning
         if self.selected_dataset.binning_settings.apply:

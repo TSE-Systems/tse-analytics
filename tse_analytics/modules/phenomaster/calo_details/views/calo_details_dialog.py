@@ -2,10 +2,11 @@ import os
 import timeit
 from multiprocessing import Pool
 
+import pandas as pd
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
-from PySide6.QtWidgets import QDialog, QWidget
+from PySide6.QtWidgets import QDialog, QFileDialog, QWidget
 
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.modules.phenomaster.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
@@ -49,6 +50,7 @@ class CaloDetailsDialog(QDialog):
 
         self.ui.toolButtonCalculate.clicked.connect(self._calculate)
         self.ui.toolButtonResetSettings.clicked.connect(self._reset_settings)
+        self.ui.toolButtonExport.clicked.connect(self._export)
 
         self.calo_details_box_selector = CaloDetailsBoxSelector(self._filter_boxes)
         self.calo_details_box_selector.set_data(calo_details.dataset)
@@ -96,6 +98,24 @@ class CaloDetailsDialog(QDialog):
         self._filter()
 
     def _filter(self):
+        df = self._get_selected_data()
+
+        self.calo_details_table_view.set_data(df)
+        self.calo_details_plot_widget.set_data(df)
+        self.calo_details_test_fit_widget.set_data(df)
+
+    def _reset_settings(self):
+        calo_details_settings = CaloDetailsSettings.get_default()
+        self.calo_details_settings_widget.set_settings(calo_details_settings)
+
+    def _export(self):
+        df = self._get_selected_data()
+        filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "", "CSV Files (*.csv)")
+        if filename:
+            if not df.empty:
+                df.to_csv(filename, sep=";", index=False)
+
+    def _get_selected_data(self) -> pd.DataFrame:
         df = self.calo_details.raw_df
 
         if len(self.selected_boxes) > 0:
@@ -105,13 +125,7 @@ class CaloDetailsDialog(QDialog):
         if len(self.selected_bins) > 0:
             df = df[df["Bin"].isin(self.selected_bins)]
 
-        self.calo_details_table_view.set_data(df)
-        self.calo_details_plot_widget.set_data(df)
-        self.calo_details_test_fit_widget.set_data(df)
-
-    def _reset_settings(self):
-        calo_details_settings = CaloDetailsSettings.get_default()
-        self.calo_details_settings_widget.set_settings(calo_details_settings)
+        return df
 
     def _calculate(self):
         calo_details_settings = self.calo_details_settings_widget.get_calo_details_settings()

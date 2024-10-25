@@ -3,7 +3,6 @@ import pandas as pd
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
 from tse_analytics.modules.phenomaster.meal_details.meal_details_settings import MealDetailsSettings
 
-
 default_columns = ["DateTime", "Animal", "Box"]
 
 

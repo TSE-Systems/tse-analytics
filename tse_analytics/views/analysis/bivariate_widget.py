@@ -127,7 +127,13 @@ class BivariateWidget(QWidget, MessengerListener):
         if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:
             df[by] = df[by].cat.remove_unused_categories()
 
-        joint_grid = sns.jointplot(data=df, x=x_var.name, y=y_var.name, hue=by)
+        joint_grid = sns.jointplot(
+            data=df,
+            x=x_var.name,
+            y=y_var.name,
+            hue=by,
+            marker=".",
+        )
         joint_grid.fig.suptitle(f"Correlation between {x_var.name} and {y_var.name}")
         canvas = FigureCanvasQTAgg(joint_grid.figure)
         canvas.updateGeometry()
@@ -209,7 +215,14 @@ class BivariateWidget(QWidget, MessengerListener):
             dropna=False,
         )
 
-        facet_grid = sns.lmplot(data=df, x=covariate.name, y=response.name, hue=by, robust=False)
+        facet_grid = sns.lmplot(
+            data=df,
+            x=covariate.name,
+            y=response.name,
+            hue=by,
+            robust=False,
+            markers=".",
+        )
         canvas = FigureCanvasQTAgg(facet_grid.figure)
 
         canvas.updateGeometry()

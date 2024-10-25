@@ -1,9 +1,14 @@
 TSE Analytics Change Log
 ====================================================================================================
 
-# 0.11.0 (2024-10-15)
+# 0.11.0 (2024-10-25)
 
--
+- New    -- WIP: Integration of the new TSE dataset format.
+- New    -- Local animal selection in Timeseries widget.
+- Change -- Replace Plotly with Seaborn/Matplotlib (i.e. Dimensionality widget).
+- Change -- Hide unused elements for Autocorrelation in time series analysis.
+- Change -- Disable time series analysis when binning is active.
+- Change -- Visual tweaks for multiple plots.
 
 
 ----------------------------------------------------------------------------------------------------

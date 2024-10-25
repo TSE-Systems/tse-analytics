@@ -349,7 +349,6 @@ li.checked::marker { content: &quot;\2612&quot;; }
 &lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;https://pypi.org/project/openpyxl/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0078d4;&quot;&gt;OpenPyXL&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
 &lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;https://pandas.pydata.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0078d4;&quot;&gt;pandas&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
 &lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;https://pingouin-stats.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0078d4;&quot;&gt;Pingouin&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
-&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;https://plotly.com/python/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0078d4;&quot;&gt;Plotly&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
 &lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;https://github.com/sbi-rviot/ph_table/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0078d4;&quot;&gt;pretty_html_table&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
 &lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;https://github.com/giampaolo/psutil/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0078d4;&quot;&gt;psutil&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
 &lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;https://www.pyqtgraph.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0078d4;&quot;&gt;PyQtGraph&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
@@ -369,10 +368,10 @@ li.checked::marker { content: &quot;\2612&quot;; }
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Close</set>
+      <set>QDialogButtonBox::StandardButton::Close</set>
      </property>
     </widget>
    </item>

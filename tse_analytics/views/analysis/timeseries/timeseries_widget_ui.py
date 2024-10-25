@@ -15,11 +15,13 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QFormLayout, QGroupBox, QLabel,
-    QPushButton, QRadioButton, QSizePolicy, QSpacerItem,
-    QSpinBox, QSplitter, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QFormLayout, QGroupBox, QHBoxLayout,
+    QLabel, QPushButton, QRadioButton, QSizePolicy,
+    QSpacerItem, QSpinBox, QSplitter, QVBoxLayout,
+    QWidget)
 
 from tse_analytics.views.misc.MplCanvas import MplCanvas
+from tse_analytics.views.misc.animal_selector import AnimalSelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 import resources_rc
 
@@ -36,7 +38,7 @@ class Ui_TimeseriesWidget(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.splitter.sizePolicy().hasHeightForWidth())
         self.splitter.setSizePolicy(sizePolicy)
-        self.splitter.setOrientation(Qt.Horizontal)
+        self.splitter.setOrientation(Qt.Orientation.Horizontal)
         self.canvas = MplCanvas(self.splitter)
         self.canvas.setObjectName(u"canvas")
         sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
@@ -49,6 +51,18 @@ class Ui_TimeseriesWidget(object):
         self.widgetSettings.setObjectName(u"widgetSettings")
         self.verticalLayout_6 = QVBoxLayout(self.widgetSettings)
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
+        self.groupBoxAnimal = QGroupBox(self.widgetSettings)
+        self.groupBoxAnimal.setObjectName(u"groupBoxAnimal")
+        self.horizontalLayout = QHBoxLayout(self.groupBoxAnimal)
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.animalSelector = AnimalSelector(self.groupBoxAnimal)
+        self.animalSelector.setObjectName(u"animalSelector")
+
+        self.horizontalLayout.addWidget(self.animalSelector)
+
+
+        self.verticalLayout_6.addWidget(self.groupBoxAnimal)
+
         self.groupBoxVariable = QGroupBox(self.widgetSettings)
         self.groupBoxVariable.setObjectName(u"groupBoxVariable")
         self.verticalLayout_4 = QVBoxLayout(self.groupBoxVariable)
@@ -120,34 +134,6 @@ class Ui_TimeseriesWidget(object):
 
         self.verticalLayout_6.addWidget(self.groupBoxModel)
 
-        self.groupBoxFrequency = QGroupBox(self.widgetSettings)
-        self.groupBoxFrequency.setObjectName(u"groupBoxFrequency")
-        self.verticalLayout_5 = QVBoxLayout(self.groupBoxFrequency)
-        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
-        self.radioButtonDayFrequency = QRadioButton(self.groupBoxFrequency)
-        self.radioButtonDayFrequency.setObjectName(u"radioButtonDayFrequency")
-
-        self.verticalLayout_5.addWidget(self.radioButtonDayFrequency)
-
-        self.radioButtonHourFrequency = QRadioButton(self.groupBoxFrequency)
-        self.radioButtonHourFrequency.setObjectName(u"radioButtonHourFrequency")
-
-        self.verticalLayout_5.addWidget(self.radioButtonHourFrequency)
-
-        self.radioButtonMinuteFrequency = QRadioButton(self.groupBoxFrequency)
-        self.radioButtonMinuteFrequency.setObjectName(u"radioButtonMinuteFrequency")
-        self.radioButtonMinuteFrequency.setChecked(True)
-
-        self.verticalLayout_5.addWidget(self.radioButtonMinuteFrequency)
-
-        self.radioButtonSecondFrequency = QRadioButton(self.groupBoxFrequency)
-        self.radioButtonSecondFrequency.setObjectName(u"radioButtonSecondFrequency")
-
-        self.verticalLayout_5.addWidget(self.radioButtonSecondFrequency)
-
-
-        self.verticalLayout_6.addWidget(self.groupBoxFrequency)
-
         self.formLayout = QFormLayout()
         self.formLayout.setObjectName(u"formLayout")
         self.periodLabel = QLabel(self.widgetSettings)
@@ -158,7 +144,7 @@ class Ui_TimeseriesWidget(object):
         self.periodSpinBox = QSpinBox(self.widgetSettings)
         self.periodSpinBox.setObjectName(u"periodSpinBox")
         self.periodSpinBox.setMaximum(1000000000)
-        self.periodSpinBox.setValue(60)
+        self.periodSpinBox.setValue(365)
 
         self.formLayout.setWidget(0, QFormLayout.FieldRole, self.periodSpinBox)
 
@@ -200,6 +186,7 @@ class Ui_TimeseriesWidget(object):
     # setupUi
 
     def retranslateUi(self, TimeseriesWidget):
+        self.groupBoxAnimal.setTitle(QCoreApplication.translate("TimeseriesWidget", u"Animal", None))
         self.groupBoxVariable.setTitle(QCoreApplication.translate("TimeseriesWidget", u"Variable", None))
         self.groupBoxPlot.setTitle(QCoreApplication.translate("TimeseriesWidget", u"Plot", None))
         self.radioButtonDecomposition.setText(QCoreApplication.translate("TimeseriesWidget", u"Decomposition", None))
@@ -220,12 +207,10 @@ class Ui_TimeseriesWidget(object):
         self.groupBoxModel.setTitle(QCoreApplication.translate("TimeseriesWidget", u"Model", None))
         self.radioButtonModelAdditive.setText(QCoreApplication.translate("TimeseriesWidget", u"Additive", None))
         self.radioButtonModelMultiplicative.setText(QCoreApplication.translate("TimeseriesWidget", u"Multiplicative", None))
-        self.groupBoxFrequency.setTitle(QCoreApplication.translate("TimeseriesWidget", u"Frequency", None))
-        self.radioButtonDayFrequency.setText(QCoreApplication.translate("TimeseriesWidget", u"Day", None))
-        self.radioButtonHourFrequency.setText(QCoreApplication.translate("TimeseriesWidget", u"Hour", None))
-        self.radioButtonMinuteFrequency.setText(QCoreApplication.translate("TimeseriesWidget", u"Minute", None))
-        self.radioButtonSecondFrequency.setText(QCoreApplication.translate("TimeseriesWidget", u"Second", None))
         self.periodLabel.setText(QCoreApplication.translate("TimeseriesWidget", u"Period", None))
+#if QT_CONFIG(tooltip)
+        self.periodSpinBox.setToolTip(QCoreApplication.translate("TimeseriesWidget", u"Period of the series (eg, 1 for annual, 4 for quarterly, etc)", None))
+#endif // QT_CONFIG(tooltip)
         self.pushButtonUpdate.setText(QCoreApplication.translate("TimeseriesWidget", u"Update", None))
         self.pushButtonAddReport.setText(QCoreApplication.translate("TimeseriesWidget", u"Add to Report", None))
         self.pushButtonHelp.setText(QCoreApplication.translate("TimeseriesWidget", u"Help", None))

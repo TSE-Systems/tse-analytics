@@ -233,7 +233,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             Manager.data.export_to_excel(filename)
 
     def export_csv_dialog(self):
-        filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "", "Excel Files (*.csv)")
+        filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "", "CSV Files (*.csv)")
         if filename:
             Manager.data.export_to_csv(filename)
 

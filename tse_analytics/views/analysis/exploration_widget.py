@@ -62,15 +62,13 @@ class ExplorationWidget(QWidget, MessengerListener):
     def _on_dataset_changed(self, message: DatasetChangedMessage):
         self.ui.pushButtonUpdate.setDisabled(message.dataset is None)
         self.ui.pushButtonAddReport.setDisabled(message.dataset is None)
-        self._clear()
+        self.ui.canvas.clear(True)
         if message.dataset is not None:
             self.ui.variableSelector.set_data(message.dataset.variables)
             self.ui.factorSelector.set_data(message.dataset.factors, add_empty_item=False)
-
-    def _clear(self):
-        self.ui.variableSelector.clear()
-        self.ui.factorSelector.clear()
-        self.ui.canvas.clear(True)
+        else:
+            self.ui.variableSelector.clear()
+            self.ui.factorSelector.clear()
 
     def _update(self):
         if self.ui.radioButtonSplitByFactor.isChecked() and self.ui.factorSelector.currentText() == "":
@@ -210,7 +208,12 @@ class ExplorationWidget(QWidget, MessengerListener):
                 nrows, ncols = self._get_plot_layout(len(animals))
                 for index, animal in enumerate(animals):
                     ax = self.ui.canvas.figure.add_subplot(nrows, ncols, index + 1)
-                    pg.qqplot(df[df["Animal"] == animal][variable.name], dist="norm", ax=ax)
+                    pg.qqplot(
+                        df[df["Animal"] == animal][variable.name],
+                        dist="norm",
+                        marker=".",
+                        ax=ax,
+                    )
                     ax.set_title(f"Animal: {animal}")
             case SplitMode.FACTOR:
                 groups = df[selected_factor_name].unique()
@@ -220,18 +223,33 @@ class ExplorationWidget(QWidget, MessengerListener):
                     if group != group:
                         continue
                     ax = self.ui.canvas.figure.add_subplot(nrows, ncols, index + 1)
-                    pg.qqplot(df[df[selected_factor_name] == group][variable.name], dist="norm", ax=ax)
+                    pg.qqplot(
+                        df[df[selected_factor_name] == group][variable.name],
+                        dist="norm",
+                        marker=".",
+                        ax=ax,
+                    )
                     ax.set_title(group)
             case SplitMode.RUN:
                 runs = df["Run"].unique()
                 nrows, ncols = self._get_plot_layout(len(runs))
                 for index, run in enumerate(runs):
                     ax = self.ui.canvas.figure.add_subplot(nrows, ncols, index + 1)
-                    pg.qqplot(df[df["Run"] == run][variable.name], dist="norm", ax=ax)
+                    pg.qqplot(
+                        df[df["Run"] == run][variable.name],
+                        dist="norm",
+                        marker=".",
+                        ax=ax,
+                    )
                     ax.set_title(f"Run: {run}")
             case SplitMode.TOTAL:
                 ax = self.ui.canvas.figure.add_subplot(1, 1, 1)
-                pg.qqplot(df[variable.name], dist="norm", ax=ax)
+                pg.qqplot(
+                    df[variable.name],
+                    dist="norm",
+                    marker=".",
+                    ax=ax,
+                )
                 ax.set_title("Total")
 
         self.ui.canvas.figure.tight_layout()

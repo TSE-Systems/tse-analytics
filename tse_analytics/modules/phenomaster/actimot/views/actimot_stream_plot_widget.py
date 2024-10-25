@@ -1,8 +1,8 @@
+import traja
+from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
-from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 
-import traja
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker

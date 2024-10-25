@@ -80,7 +80,11 @@ class AnovaWidget(QWidget, MessengerListener):
         messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
 
     def _set_options(
-        self, show_factors: bool, show_covariates: bool, multi_factor_selection: bool, show_p_adjustment: bool
+        self,
+        show_factors: bool,
+        show_covariates: bool,
+        multi_factor_selection: bool,
+        show_p_adjustment: bool,
     ):
         if show_factors:
             self.ui.groupBoxFactors.show()

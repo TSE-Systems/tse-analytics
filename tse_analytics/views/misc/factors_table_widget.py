@@ -43,7 +43,7 @@ class FactorsTableWidget(QTableWidget):
         for i, factor in enumerate(factors.values()):
             self.setItem(i, 0, QTableWidgetItem(factor.name))
             group_names = [group.name for group in factor.groups]
-            self.setItem(i, 1, QTableWidgetItem(f"{", ".join(group_names)}"))
+            self.setItem(i, 1, QTableWidgetItem(f"{', '.join(group_names)}"))
 
     def clear_data(self) -> None:
         self.setRowCount(0)

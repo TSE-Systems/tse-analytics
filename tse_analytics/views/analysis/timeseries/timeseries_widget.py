@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QWidget
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.seasonal import MSTL, STL, seasonal_decompose
 
+from tse_analytics.core.data.shared import Aggregation
 from tse_analytics.core.helper import get_html_image, show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
@@ -29,6 +30,23 @@ class TimeseriesWidget(QWidget, MessengerListener):
         self.ui.pushButtonUpdate.clicked.connect(self._update)
         self.ui.pushButtonAddReport.clicked.connect(self._add_report)
 
+        self.ui.radioButtonAutocorrelation.toggled.connect(
+            lambda toggled: self._set_options(False, False, False) if toggled else None
+        )
+        self.ui.radioButtonDecomposition.toggled.connect(
+            lambda toggled: self._set_options(True, True, True) if toggled else None
+        )
+
+        self.ui.radioButtonMethodNaive.toggled.connect(
+            lambda toggled: self._set_options(True, True, True) if toggled else None
+        )
+        self.ui.radioButtonMethodSTL.toggled.connect(
+            lambda toggled: self._set_options(True, False, True) if toggled else None
+        )
+        self.ui.radioButtonMethodMSTL.toggled.connect(
+            lambda toggled: self._set_options(True, False, True) if toggled else None
+        )
+
         plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
         plot_toolbar.setIconSize(QSize(16, 16))
         self.ui.widgetSettings.layout().addWidget(plot_toolbar)
@@ -39,15 +57,52 @@ class TimeseriesWidget(QWidget, MessengerListener):
     def _on_dataset_changed(self, message: DatasetChangedMessage):
         self.ui.pushButtonUpdate.setDisabled(message.dataset is None)
         self.ui.pushButtonAddReport.setDisabled(message.dataset is None)
-        self._clear()
-        if message.dataset is not None:
-            self.ui.variableSelector.set_data(message.dataset.variables)
-
-    def _clear(self):
-        self.ui.variableSelector.clear()
         self.ui.canvas.clear(True)
+        if message.dataset is not None:
+            filtered_variables = {
+                key: value
+                for (key, value) in message.dataset.variables.items()
+                if value.aggregation == Aggregation.MEAN
+            }
+            self.ui.animalSelector.set_data(message.dataset.animals)
+            self.ui.variableSelector.set_data(filtered_variables)
+        else:
+            self.ui.animalSelector.clear()
+            self.ui.variableSelector.clear()
+
+    def _set_options(
+        self,
+        show_method: bool,
+        show_model: bool,
+        show_period: bool,
+    ):
+        if show_method:
+            self.ui.groupBoxMethod.show()
+        else:
+            self.ui.groupBoxMethod.hide()
+
+        if show_model and self.ui.radioButtonMethodNaive.isChecked():
+            self.ui.groupBoxModel.show()
+        else:
+            self.ui.groupBoxModel.hide()
+
+        if show_period:
+            self.ui.periodSpinBox.show()
+        else:
+            self.ui.periodSpinBox.hide()
 
     def _update(self):
+        if Manager.data.selected_dataset.binning_settings.apply:
+            make_toast(
+                self,
+                "Timeseries Analysis",
+                "Timeseries analysis cannot be done when binning is active.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
+            return
+
         if self.ui.radioButtonDecomposition.isChecked():
             self._update_decomposition()
         elif self.ui.radioButtonAutocorrelation.isChecked():
@@ -56,38 +111,31 @@ class TimeseriesWidget(QWidget, MessengerListener):
     def _update_decomposition(self):
         variable = self.ui.variableSelector.get_selected_variable()
 
-        animal_ids = [animal.id for animal in Manager.data.selected_dataset.animals.values() if animal.enabled]
-        if len(animal_ids) != 1:
-            make_toast(
-                self,
-                "Timeseries Decomposition",
-                "Please check a single animal in the Animals panel.",
-                duration=2000,
-                preset=ToastPreset.WARNING,
-                show_duration_bar=True,
-            ).show()
-            return
-        animal_name = animal_ids[0]
+        animal = self.ui.animalSelector.get_selected_animal()
 
         self.ui.canvas.clear(False)
 
         df = Manager.data.get_timeseries_df(
+            animal=animal,
             variable=variable,
         )
 
         index = pd.DatetimeIndex(df["DateTime"])
-        index = index.round("min")
         df.set_index(index, inplace=True)
-        # df = df.asfreq("min")
 
         var_name = variable.name
         df[var_name] = df[var_name].interpolate(limit_direction="both")
 
-        model = "additive" if self.ui.radioButtonModelAdditive.isChecked() else "multiplicative"
         period = self.ui.periodSpinBox.value()
 
         if self.ui.radioButtonMethodNaive.isChecked():
-            result = seasonal_decompose(df[var_name], period=period, model=model, extrapolate_trend="freq")
+            model = "additive" if self.ui.radioButtonModelAdditive.isChecked() else "multiplicative"
+            result = seasonal_decompose(
+                df[var_name],
+                period=period,
+                model=model,
+                extrapolate_trend="freq",
+            )
         elif self.ui.radioButtonMethodSTL.isChecked():
             result = STL(
                 endog=df[var_name],
@@ -96,11 +144,11 @@ class TimeseriesWidget(QWidget, MessengerListener):
         elif self.ui.radioButtonMethodMSTL.isChecked():
             result = MSTL(
                 endog=df[var_name],
-                periods=(60, 60 * 24),
+                periods=period,
             ).fit()
 
         axs = self.ui.canvas.figure.subplots(4, 1, sharex=True)
-        self.ui.canvas.figure.suptitle(f"Timeseries decomposition of {var_name} for animal {animal_name}")
+        self.ui.canvas.figure.suptitle(f"Timeseries decomposition of {var_name} for animal {animal.id}")
 
         axs[0].plot(result.observed, label="Observed", lw=1)
         axs[0].set_ylabel(var_name)
@@ -127,35 +175,23 @@ class TimeseriesWidget(QWidget, MessengerListener):
     def _update_autocorrelation(self):
         variable = self.ui.variableSelector.get_selected_variable()
 
-        animal_ids = [animal.id for animal in Manager.data.selected_dataset.animals.values() if animal.enabled]
-        if len(animal_ids) != 1:
-            make_toast(
-                self,
-                "Timeseries Autocorrelation",
-                "Please check a single animal in the Animals panel.",
-                duration=2000,
-                preset=ToastPreset.WARNING,
-                show_duration_bar=True,
-            ).show()
-            return
-        animal_name = animal_ids[0]
+        animal = self.ui.animalSelector.get_selected_animal()
 
         self.ui.canvas.clear(False)
 
         df = Manager.data.get_timeseries_df(
+            animal=animal,
             variable=variable,
         )
 
         index = pd.DatetimeIndex(df["DateTime"])
-        index = index.round("min")
         df.set_index(index, inplace=True)
-        # df = df.asfreq("min")
 
         var_name = variable.name
         df[var_name] = df[var_name].interpolate(limit_direction="both")
 
         axs = self.ui.canvas.figure.subplots(2, 1, sharex=True)
-        self.ui.canvas.figure.suptitle(f"Timeseries autocorrelation of {var_name} for animal {animal_name}")
+        self.ui.canvas.figure.suptitle(f"Timeseries autocorrelation of {var_name} for animal {animal.id}")
 
         plot_acf(df[var_name], ax=axs[0], adjusted=False, title="Autocorrelation")
         axs[0].set_ylabel(var_name)

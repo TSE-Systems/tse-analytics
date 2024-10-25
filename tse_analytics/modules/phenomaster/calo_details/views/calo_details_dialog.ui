@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
+ <author>Anton Rau</author>
  <class>CaloDetailsDialog</class>
  <widget class="QDialog" name="CaloDetailsDialog">
   <property name="geometry">
@@ -31,9 +32,16 @@
       </widget>
      </item>
      <item>
+      <widget class="QToolButton" name="toolButtonExport">
+       <property name="text">
+        <string>Export selected data</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -62,7 +70,7 @@
       </sizepolicy>
      </property>
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
@@ -78,8 +86,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>870</width>
-         <height>746</height>
+         <width>873</width>
+         <height>745</height>
         </rect>
        </property>
        <attribute name="label">
@@ -92,10 +100,10 @@
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
      </property>
     </widget>
    </item>

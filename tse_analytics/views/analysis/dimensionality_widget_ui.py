@@ -15,11 +15,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import (QApplication, QGroupBox, QHeaderView, QPushButton,
     QRadioButton, QSizePolicy, QSplitter, QTableWidgetItem,
     QVBoxLayout, QWidget)
 
+from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.factor_selector import FactorSelector
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 import resources_rc
@@ -32,15 +32,15 @@ class Ui_DimensionalityWidget(object):
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.splitter = QSplitter(DimensionalityWidget)
         self.splitter.setObjectName(u"splitter")
-        self.splitter.setOrientation(Qt.Horizontal)
-        self.webView = QWebEngineView(self.splitter)
-        self.webView.setObjectName(u"webView")
+        self.splitter.setOrientation(Qt.Orientation.Horizontal)
+        self.canvas = MplCanvas(self.splitter)
+        self.canvas.setObjectName(u"canvas")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.webView.sizePolicy().hasHeightForWidth())
-        self.webView.setSizePolicy(sizePolicy)
-        self.splitter.addWidget(self.webView)
+        sizePolicy.setHeightForWidth(self.canvas.sizePolicy().hasHeightForWidth())
+        self.canvas.setSizePolicy(sizePolicy)
+        self.splitter.addWidget(self.canvas)
         self.widgetSettings = QWidget(self.splitter)
         self.widgetSettings.setObjectName(u"widgetSettings")
         self.verticalLayout_2 = QVBoxLayout(self.widgetSettings)
@@ -81,25 +81,6 @@ class Ui_DimensionalityWidget(object):
 
 
         self.verticalLayout_2.addWidget(self.groupBoxAnalysis)
-
-        self.groupBoxDimensions = QGroupBox(self.widgetSettings)
-        self.groupBoxDimensions.setObjectName(u"groupBoxDimensions")
-        self.groupBoxDimensions.setEnabled(False)
-        self.verticalLayout_5 = QVBoxLayout(self.groupBoxDimensions)
-        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
-        self.radioButton2D = QRadioButton(self.groupBoxDimensions)
-        self.radioButton2D.setObjectName(u"radioButton2D")
-        self.radioButton2D.setChecked(True)
-
-        self.verticalLayout_5.addWidget(self.radioButton2D)
-
-        self.radioButton3D = QRadioButton(self.groupBoxDimensions)
-        self.radioButton3D.setObjectName(u"radioButton3D")
-
-        self.verticalLayout_5.addWidget(self.radioButton3D)
-
-
-        self.verticalLayout_2.addWidget(self.groupBoxDimensions)
 
         self.groupBoxSplitMode = QGroupBox(self.widgetSettings)
         self.groupBoxSplitMode.setObjectName(u"groupBoxSplitMode")
@@ -171,9 +152,6 @@ class Ui_DimensionalityWidget(object):
         self.radioButtonMatrixPlot.setText(QCoreApplication.translate("DimensionalityWidget", u"Matrix Plot", None))
         self.radioButtonPCA.setText(QCoreApplication.translate("DimensionalityWidget", u"PCA", None))
         self.radioButtonTSNE.setText(QCoreApplication.translate("DimensionalityWidget", u"t-SNE", None))
-        self.groupBoxDimensions.setTitle(QCoreApplication.translate("DimensionalityWidget", u"Dimensions", None))
-        self.radioButton2D.setText(QCoreApplication.translate("DimensionalityWidget", u"2D", None))
-        self.radioButton3D.setText(QCoreApplication.translate("DimensionalityWidget", u"3D", None))
         self.groupBoxSplitMode.setTitle(QCoreApplication.translate("DimensionalityWidget", u"Split Mode", None))
         self.radioButtonSplitTotal.setText(QCoreApplication.translate("DimensionalityWidget", u"Total", None))
         self.radioButtonSplitByAnimal.setText(QCoreApplication.translate("DimensionalityWidget", u"By Animal", None))

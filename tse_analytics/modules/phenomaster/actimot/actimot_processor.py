@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
+import traja
 from PySide6.QtGui import QImage, QPixmap
 
-import traja
 from tse_analytics.modules.phenomaster.actimot.actimot_settings import ActimotSettings
 
 x_range = range(64)

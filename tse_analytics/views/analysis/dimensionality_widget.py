@@ -1,16 +1,14 @@
-import base64
-from io import BytesIO
-
-import plotly.express as px
+import pandas as pd
+import seaborn as sns
+from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
-from PySide6.QtCore import QBuffer, QByteArray, QDir, QIODevice, QTemporaryFile, QUrl
-from PySide6.QtGui import QPixmap
+from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QAbstractItemView, QWidget
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
 from tse_analytics.core.data.shared import SplitMode, Variable
-from tse_analytics.core.helper import show_help
+from tse_analytics.core.helper import get_html_image, show_help
 from tse_analytics.core.manager import Manager
 from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
 from tse_analytics.core.messaging.messenger import Messenger
@@ -37,16 +35,6 @@ class DimensionalityWidget(QWidget, MessengerListener):
         self.ui.pushButtonUpdate.clicked.connect(self._update)
         self.ui.pushButtonAddReport.clicked.connect(self._add_report)
 
-        self.ui.radioButtonMatrixPlot.toggled.connect(
-            lambda toggled: self.ui.groupBoxDimensions.setEnabled(False) if toggled else None
-        )
-        self.ui.radioButtonPCA.toggled.connect(
-            lambda toggled: self.ui.groupBoxDimensions.setEnabled(True) if toggled else None
-        )
-        self.ui.radioButtonTSNE.toggled.connect(
-            lambda toggled: self.ui.groupBoxDimensions.setEnabled(True) if toggled else None
-        )
-
         self.ui.radioButtonSplitTotal.toggled.connect(
             lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
         )
@@ -60,6 +48,10 @@ class DimensionalityWidget(QWidget, MessengerListener):
             lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
         )
 
+        plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
+        plot_toolbar.setIconSize(QSize(16, 16))
+        self.ui.widgetSettings.layout().addWidget(plot_toolbar)
+
         self.toast = None
 
     def register_to_messenger(self, messenger: Messenger):
@@ -68,7 +60,7 @@ class DimensionalityWidget(QWidget, MessengerListener):
     def _on_dataset_changed(self, message: DatasetChangedMessage):
         self.ui.pushButtonUpdate.setDisabled(message.dataset is None)
         self.ui.pushButtonAddReport.setDisabled(message.dataset is None)
-        self.ui.webView.setHtml("")
+        self.ui.canvas.clear(True)
         if message.dataset is not None:
             self.ui.tableWidgetVariables.set_data(message.dataset.variables)
             self.ui.factorSelector.set_data(message.dataset.factors, add_empty_item=False)
@@ -100,16 +92,12 @@ class DimensionalityWidget(QWidget, MessengerListener):
         selected_factor_name = self.ui.factorSelector.currentText()
 
         split_mode = SplitMode.TOTAL
-        by = None
         if self.ui.radioButtonSplitByAnimal.isChecked():
             split_mode = SplitMode.ANIMAL
-            by = "Animal"
         elif self.ui.radioButtonSplitByRun.isChecked():
             split_mode = SplitMode.RUN
-            by = "Run"
         elif self.ui.radioButtonSplitByFactor.isChecked():
             split_mode = SplitMode.FACTOR
-            by = selected_factor_name
 
         if split_mode == SplitMode.FACTOR and selected_factor_name == "":
             make_toast(
@@ -126,20 +114,31 @@ class DimensionalityWidget(QWidget, MessengerListener):
             variables=selected_variables,
             split_mode=split_mode,
             selected_factor_name=selected_factor_name,
-            dropna=False,
+            dropna=True,
         )
 
-        fig = px.scatter_matrix(
-            df,
-            dimensions=list(selected_variables),
-            color=by,
-        )
-        fig.update_traces(diagonal_visible=False)
+        match split_mode:
+            case SplitMode.ANIMAL:
+                colors, _ = pd.factorize(df["Animal"])
+            case SplitMode.RUN:
+                colors = df["Run"]
+            case SplitMode.FACTOR:
+                colors, _ = pd.factorize(df[selected_factor_name])
+            case _:  # Total
+                colors = None
 
-        file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.html", self)
-        if file.open():
-            fig.write_html(file.fileName(), include_plotlyjs=True)
-            self.ui.webView.load(QUrl.fromLocalFile(file.fileName()))
+        self.ui.canvas.clear(False)
+        ax = self.ui.canvas.figure.add_subplot(111)
+
+        pd.plotting.scatter_matrix(
+            frame=df[list(selected_variables)],
+            diagonal="hist",
+            c=colors,
+            ax=ax,
+        )
+
+        self.ui.canvas.figure.tight_layout()
+        self.ui.canvas.draw()
 
     def _update_pca_tsne_plot(self):
         selected_variables = self.ui.tableWidgetVariables.get_selected_variables_dict()
@@ -196,7 +195,7 @@ class DimensionalityWidget(QWidget, MessengerListener):
         split_mode: SplitMode,
         selected_factor_name: str,
         by: str,
-    ) -> str:
+    ) -> tuple[pd.DataFrame, str, str]:
         df = Manager.data.get_current_df(
             variables=selected_variables,
             split_mode=split_mode,
@@ -204,57 +203,42 @@ class DimensionalityWidget(QWidget, MessengerListener):
             dropna=True,
         )
 
-        n_components = 2 if self.ui.radioButton2D.isChecked() else 3
         selected_variable_names = list(selected_variables)
 
         if self.ui.radioButtonPCA.isChecked():
-            pca = PCA(n_components=n_components)
+            pca = PCA(n_components=2)
             data = pca.fit_transform(df[selected_variable_names])
             total_var = pca.explained_variance_ratio_.sum() * 100
             title = f"PCA. Total Explained Variance: {total_var:.2f}%"
-        elif self.ui.radioButtonTSNE.isChecked():
-            tsne = TSNE(n_components=n_components, random_state=0)
+        else:
+            tsne = TSNE(n_components=2, random_state=0)
             data = tsne.fit_transform(df[selected_variable_names])
             title = "tSNE"
 
-        if n_components == 2:
-            fig = px.scatter(
-                data,
-                x=0,
-                y=1,
-                color=df[by] if by is not None else None,
-                title=title,
-                labels={
-                    "0": "PC 1",
-                    "1": "PC 2",
-                    "color": by,
-                },
-                # hover_name=df["Animal"],
-            )
-        elif n_components == 3:
-            fig = px.scatter_3d(
-                data,
-                x=0,
-                y=1,
-                z=2,
-                color=df[by] if by is not None else None,
-                title=title,
-                labels={
-                    "0": "PC 1",
-                    "1": "PC 2",
-                    "2": "PC 3",
-                    "color": by,
-                },
-                # hover_name=df["Animal"],
-            )
+        result_df = pd.DataFrame(data=data, columns=["X", "Y"])
+        if by is not None:
+            result_df = pd.concat([result_df, df[[by]]], axis=1)
 
-        file = QTemporaryFile(f"{QDir.tempPath()}/XXXXXX.html", self)
-        if file.open():
-            fig.write_html(file.fileName(), include_plotlyjs=True)
-        return file.fileName()
+        return result_df, title, by
 
-    def _calculate_pca_tsne_result(self, filename: str):
-        self.ui.webView.load(QUrl.fromLocalFile(filename))
+    def _calculate_pca_tsne_result(self, result: tuple):
+        self.ui.canvas.clear(False)
+        ax = self.ui.canvas.figure.add_subplot(111)
+
+        df, title, by = result
+
+        sns.scatterplot(
+            data=df,
+            x="X",
+            y="Y",
+            hue=by,
+            marker=".",
+            ax=ax,
+        )
+        ax.set_title(title)
+
+        self.ui.canvas.figure.tight_layout()
+        self.ui.canvas.draw()
 
     def _calculate_pca_tsne_finished(self):
         self.toast.hide()
@@ -262,16 +246,5 @@ class DimensionalityWidget(QWidget, MessengerListener):
         self.ui.pushButtonAddReport.setEnabled(True)
 
     def _add_report(self):
-        size = self.ui.webView.contentsRect()
-        pixmap = QPixmap(size.width(), size.height())
-        self.ui.webView.render(pixmap)
-
-        ba = QByteArray()
-        buffer = QBuffer(ba)
-        buffer.open(QIODevice.OpenModeFlag.WriteOnly)
-        pixmap.save(buffer, "PNG")
-
-        io = BytesIO(ba.data())
-        encoded = base64.b64encode(io.getvalue()).decode("utf-8")
-        html = f"<img src='data:image/png;base64,{encoded}'>"
+        html = get_html_image(self.ui.canvas.figure)
         Manager.messenger.broadcast(AddToReportMessage(self, html))
