@@ -65,7 +65,7 @@ class AnovaWidget(QWidget, MessengerListener):
             "No effect size": "none",
             "Unbiased Cohen d": "cohen",
             "Hedges g": "hedges",
-            "Pearson correlation coefficient": "r",
+            # "Pearson correlation coefficient": "r",
             "Eta-square": "eta-square",
             "Odds ratio": "odds-ratio",
             "Area Under the Curve": "AUC",

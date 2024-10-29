@@ -48,7 +48,13 @@ class Messenger:
         for listener in listeners:
             listener.register_to_messenger(self)
 
-    def subscribe(self, subscriber, message_class, handler=None, filter=lambda x: True):
+    def subscribe(
+        self,
+        subscriber: MessengerListener,
+        message_class,
+        handler=None,
+        filter=lambda x: True,
+    ):
         """Subscribe an object to a type of message class.
 
         :param subscriber: The subscribing object
@@ -91,7 +97,7 @@ class Messenger:
 
         self._subscriptions[subscriber][message_class] = handler, filter
 
-    def is_subscribed(self, subscriber, message):
+    def is_subscribed(self, subscriber: MessengerListener, message: Message):
         """
         Test whether the subscriber has subscribed to a given message class
 
@@ -105,7 +111,7 @@ class Messenger:
         """
         return subscriber in self._subscriptions and message in self._subscriptions[subscriber]
 
-    def get_handler(self, subscriber, message):
+    def get_handler(self, subscriber: MessengerListener, message: Message):
         if subscriber is None:
             return None
         try:
@@ -113,7 +119,7 @@ class Messenger:
         except KeyError:
             return None
 
-    def unsubscribe(self, subscriber, message):
+    def unsubscribe(self, subscriber: MessengerListener, message: Message):
         """
         Remove a (subscriber,message) pair from subscription list.
         The handler originally attached to the subscription will
@@ -124,14 +130,14 @@ class Messenger:
         if message in self._subscriptions[subscriber]:
             self._subscriptions[subscriber].pop(message)
 
-    def unsubscribe_all(self, subscriber):
+    def unsubscribe_all(self, subscriber: MessengerListener):
         """
         Unsubscribe the object from any subscriptions.
         """
         if subscriber in self._subscriptions:
             self._subscriptions.pop(subscriber)
 
-    def _find_handlers(self, message):
+    def _find_handlers(self, message: Message):
         """Yields all (subscriber, handler) pairs that should receive a message"""
         # self._subscriptions:
         # subscriber => { message type => (filter, handler)}
@@ -171,7 +177,7 @@ class Messenger:
                 self.broadcast(message)
             self._queue = []
 
-    def broadcast(self, message):
+    def broadcast(self, message: Message):
         """Broadcasts a message to all subscribed objects.
 
         :param message: The message to broadcast
@@ -185,25 +191,6 @@ class Messenger:
             # logging.getLogger(__name__).debug("Broadcasting %s", message)
             for _subscriber, handler in self._find_handlers(message):
                 handler(message)
-
-    def __getstate__(self):
-        """Return a picklable representation of the messenger
-
-        Note: Only objects in glue.core are currently supported
-        as pickleable. Thus, any subscriptions from objects outside
-        glue.core will note be saved or restored
-        """
-        result = self.__dict__.copy()
-        result["_subscriptions"] = self._subscriptions.copy()
-        for s in self._subscriptions:
-            try:
-                module = s.__module__
-            except AttributeError:
-                module = ""
-            if not module.startswith("glue.core"):
-                # logging.getLogger(__name__).debug(f"Pickle warning: Messenger removing subscription to {s}")
-                result["_subscriptions"].pop(s)
-        return result
 
 
 def _mro_count(obj):

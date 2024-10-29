@@ -3,13 +3,14 @@ from functools import partial
 from pathlib import Path
 
 import psutil
-import PySide6QtAds
 from pyqttoast import Toast
 from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QCloseEvent, QIcon
-from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QMessageBox, QWidget
+from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QMessageBox
+from PySide6QtAds import AllDockAreas, BottomDockWidgetArea, LeftDockWidgetArea, RightDockWidgetArea
 
-from tse_analytics.core.helper import CSV_IMPORT_ENABLED, LAYOUT_VERSION, show_help
+from tse_analytics.core.helper import CSV_IMPORT_ENABLED, show_help
+from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.manager import Manager
 from tse_analytics.views.about_dialog import AboutDialog
 from tse_analytics.views.analysis.anova_widget import AnovaWidget
@@ -32,18 +33,6 @@ from tse_analytics.views.selection.factors.factors_widget import FactorsWidget
 from tse_analytics.views.selection.variables.variables_widget import VariablesWidget
 from tse_analytics.views.settings.binning_settings_widget import BinningSettingsWidget
 
-PySide6QtAds.CDockManager.setConfigFlags(PySide6QtAds.CDockManager.DefaultOpaqueConfig)
-PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.ActiveTabHasCloseButton, False)
-PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.DockAreaHasCloseButton, False)
-PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.DockAreaHasUndockButton, False)
-PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.DockAreaDynamicTabsMenuButtonVisibility, True)
-PySide6QtAds.CDockManager.setConfigFlag(PySide6QtAds.CDockManager.FloatingContainerHasWidgetIcon, True)
-
-# PySide6QtAds.CDockManager.setAutoHideConfigFlags(PySide6QtAds.CDockManager.DefaultAutoHideConfig)
-# PySide6QtAds.CDockManager.setAutoHideConfigFlag(PySide6QtAds.CDockManager.AutoHideFeatureEnabled, True)
-# PySide6QtAds.CDockManager.setAutoHideConfigFlag(PySide6QtAds.CDockManager.DockAreaHasAutoHideButton, False)
-# PySide6QtAds.CDockManager.setAutoHideConfigFlag(PySide6QtAds.CDockManager.AutoHideHasCloseButton, False)
-
 MAX_RECENT_FILES = 10
 
 
@@ -64,83 +53,86 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.menuOpenRecent.aboutToShow.connect(self.populate_open_recent)
 
-        # Create the dock manager. Because the parent parameter is a QMainWindow
+        # Initialize dock manager. Because the parent parameter is a QMainWindow
         # the dock manager registers itself as the central widget.
-        self.dock_manager = PySide6QtAds.CDockManager(self)
-        self.dock_manager.setStyleSheet("")
+        LayoutManager(self, self.menuView)
 
         self.default_docking_state = None
 
-        data_table_dock_widget = self._register_dock_widget(DataTableWidget(), "Table", QIcon(":/icons/table.png"))
-        main_area = self.dock_manager.addDockWidget(PySide6QtAds.AllDockAreas, data_table_dock_widget)
+        data_table_dock_widget = LayoutManager.register_dock_widget(
+            DataTableWidget(), "Table", QIcon(":/icons/table.png")
+        )
+        main_area = LayoutManager.add_dock_widget(AllDockAreas, data_table_dock_widget)
 
-        data_plot_dock_widget = self._register_dock_widget(DataPlotWidget(), "Plot", QIcon(":/icons/plot.png"))
-        self.dock_manager.addDockWidgetTabToArea(data_plot_dock_widget, main_area)
+        data_plot_dock_widget = LayoutManager.register_dock_widget(DataPlotWidget(), "Plot", QIcon(":/icons/plot.png"))
+        LayoutManager.add_dock_widget_tab_to_area(data_plot_dock_widget, main_area)
 
-        exploration_widget = self._register_dock_widget(
+        exploration_widget = LayoutManager.register_dock_widget(
             ExplorationWidget(), "Exploration", QIcon(":/icons/exploration.png")
         )
-        self.dock_manager.addDockWidgetTabToArea(exploration_widget, main_area)
+        LayoutManager.add_dock_widget_tab_to_area(exploration_widget, main_area)
 
-        bivariate_dock_widget = self._register_dock_widget(
+        bivariate_dock_widget = LayoutManager.register_dock_widget(
             BivariateWidget(), "Bivariate", QIcon(":/icons/bivariate.png")
         )
-        self.dock_manager.addDockWidgetTabToArea(bivariate_dock_widget, main_area)
+        LayoutManager.add_dock_widget_tab_to_area(bivariate_dock_widget, main_area)
 
-        anova_dock_widget = self._register_dock_widget(AnovaWidget(), "AN(C)OVA", QIcon(":/icons/anova.png"))
-        self.dock_manager.addDockWidgetTabToArea(anova_dock_widget, main_area)
+        anova_dock_widget = LayoutManager.register_dock_widget(AnovaWidget(), "AN(C)OVA", QIcon(":/icons/anova.png"))
+        LayoutManager.add_dock_widget_tab_to_area(anova_dock_widget, main_area)
 
-        dimensionality_dock_widget = self._register_dock_widget(
+        dimensionality_dock_widget = LayoutManager.register_dock_widget(
             DimensionalityWidget(), "Dimensionality", QIcon(":/icons/dimensionality.png")
         )
-        self.dock_manager.addDockWidgetTabToArea(dimensionality_dock_widget, main_area)
+        LayoutManager.add_dock_widget_tab_to_area(dimensionality_dock_widget, main_area)
 
-        timeseries_dock_widget = self._register_dock_widget(
+        timeseries_dock_widget = LayoutManager.register_dock_widget(
             TimeseriesWidget(), "Timeseries", QIcon(":/icons/timeseries.png")
         )
-        self.dock_manager.addDockWidgetTabToArea(timeseries_dock_widget, main_area)
+        LayoutManager.add_dock_widget_tab_to_area(timeseries_dock_widget, main_area)
 
-        report_dock_widget = self._register_dock_widget(ReportsWidget(), "Report", QIcon(":/icons/report.png"))
-        self.dock_manager.addDockWidgetTabToArea(report_dock_widget, main_area)
+        report_dock_widget = LayoutManager.register_dock_widget(ReportsWidget(), "Report", QIcon(":/icons/report.png"))
+        LayoutManager.add_dock_widget_tab_to_area(report_dock_widget, main_area)
+        main_area.setCurrentIndex(0)
 
-        datasets_dock_widget = self._register_dock_widget(DatasetsWidget(), "Datasets", QIcon(":/icons/datasets.png"))
-        datasets_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
-        datasets_dock_area = self.dock_manager.addDockWidget(PySide6QtAds.LeftDockWidgetArea, datasets_dock_widget)
+        datasets_dock_widget = LayoutManager.register_dock_widget(
+            DatasetsWidget(), "Datasets", QIcon(":/icons/datasets.png")
+        )
+        datasets_dock_area = LayoutManager.add_dock_widget(LeftDockWidgetArea, datasets_dock_widget)
 
-        info_dock_widget = self._register_dock_widget(InfoWidget(), "Info", QIcon(":/icons/info.png"))
-        info_dock_area = self.dock_manager.addDockWidget(
-            PySide6QtAds.BottomDockWidgetArea, info_dock_widget, datasets_dock_area
+        info_dock_widget = LayoutManager.register_dock_widget(InfoWidget(), "Info", QIcon(":/icons/info.png"))
+        info_dock_area = LayoutManager.add_dock_widget_to_area(
+            BottomDockWidgetArea, info_dock_widget, datasets_dock_area
         )
 
-        help_dock_widget = self._register_dock_widget(HelpWidget(), "Help", QIcon(":/icons/help.png"))
-        self.dock_manager.addDockWidgetTabToArea(help_dock_widget, info_dock_area)
+        help_dock_widget = LayoutManager.register_dock_widget(HelpWidget(), "Help", QIcon(":/icons/help.png"))
+        LayoutManager.add_dock_widget_tab_to_area(help_dock_widget, info_dock_area)
 
-        log_dock_widget = self._register_dock_widget(LogWidget(), "Log", QIcon(":/icons/log.png"))
-        self.dock_manager.addDockWidgetTabToArea(log_dock_widget, info_dock_area)
+        log_dock_widget = LayoutManager.register_dock_widget(LogWidget(), "Log", QIcon(":/icons/log.png"))
+        LayoutManager.add_dock_widget_tab_to_area(log_dock_widget, info_dock_area)
+        info_dock_area.setCurrentIndex(0)
 
-        animals_dock_widget = self._register_dock_widget(
+        animals_dock_widget = LayoutManager.register_dock_widget(
             AnimalsWidget(), "Animals", QIcon(":/icons/icons8-rat-silhouette-16.png")
         )
-        animals_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
-        animals_dock_area = self.dock_manager.addDockWidget(PySide6QtAds.RightDockWidgetArea, animals_dock_widget)
+        animals_dock_area = LayoutManager.add_dock_widget(RightDockWidgetArea, animals_dock_widget)
 
-        factors_dock_widget = self._register_dock_widget(FactorsWidget(), "Factors", QIcon(":/icons/factors.png"))
-        factors_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
-        selector_dock_area = self.dock_manager.addDockWidget(
-            PySide6QtAds.BottomDockWidgetArea, factors_dock_widget, animals_dock_area
+        factors_dock_widget = LayoutManager.register_dock_widget(
+            FactorsWidget(), "Factors", QIcon(":/icons/factors.png")
+        )
+        selector_dock_area = LayoutManager.add_dock_widget_to_area(
+            BottomDockWidgetArea, factors_dock_widget, animals_dock_area
         )
 
-        variables_dock_widget = self._register_dock_widget(
+        variables_dock_widget = LayoutManager.register_dock_widget(
             VariablesWidget(), "Variables", QIcon(":/icons/variables.png")
         )
-        variables_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
-        self.dock_manager.addDockWidgetTabToArea(variables_dock_widget, selector_dock_area)
+        LayoutManager.add_dock_widget_tab_to_area(variables_dock_widget, selector_dock_area)
+        selector_dock_area.setCurrentIndex(0)
 
-        binning_dock_widget = self._register_dock_widget(
+        binning_dock_widget = LayoutManager.register_dock_widget(
             BinningSettingsWidget(), "Binning", QIcon(":/icons/binning.png")
         )
-        binning_dock_widget.setMinimumSizeHintMode(PySide6QtAds.CDockWidget.MinimumSizeHintFromContent)
-        self.dock_manager.addDockWidget(PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area)
+        LayoutManager.add_dock_widget_to_area(BottomDockWidgetArea, binning_dock_widget, selector_dock_area)
 
         self.actionImportDataset.triggered.connect(self.import_dataset_dialog)
         self.actionOpenWorkspace.triggered.connect(self.load_workspace_dialog)
@@ -152,19 +144,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionHelp.triggered.connect(lambda: show_help(self, "main.md"))
         self.actionAbout.triggered.connect(self._show_about_dialog)
 
-        self.default_docking_state = self.dock_manager.saveState(LAYOUT_VERSION)
+        self.default_docking_state = LayoutManager.save_state()
 
         self.load_settings()
 
         Toast.setPositionRelativeToWidget(self)
         Toast.setMovePositionWithWidget(True)
-
-    def _register_dock_widget(self, widget: QWidget, title: str, icon: QIcon) -> PySide6QtAds.CDockWidget:
-        dock_widget = PySide6QtAds.CDockWidget(title)
-        dock_widget.setWidget(widget)
-        dock_widget.setIcon(icon)
-        self.menuView.insertAction(self.actionResetLayout, dock_widget.toggleViewAction())
-        return dock_widget
 
     def populate_open_recent(self):
         # Step 1. Remove the old options from the menu
@@ -202,13 +187,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         state = settings.value("MainWindow/DockingState")
         if state is not None:
-            self.dock_manager.restoreState(state, LAYOUT_VERSION)
+            LayoutManager.restore_state(state)
 
     def save_settings(self):
         settings = QSettings()
         settings.setValue("MainWindow/Geometry", self.saveGeometry())
         settings.setValue("MainWindow/State", self.saveState())
-        settings.setValue("MainWindow/DockingState", self.dock_manager.saveState(LAYOUT_VERSION))
+        settings.setValue("MainWindow/DockingState", LayoutManager.save_state())
 
     def load_workspace_dialog(self):
         file_path, _ = QFileDialog.getOpenFileName(
@@ -243,7 +228,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.memory_usage_label.setText(f"Memory usage: {mem:.2f} Mb")
 
     def _reset_layout(self):
-        self.dock_manager.restoreState(self.default_docking_state, LAYOUT_VERSION)
+        LayoutManager.restore_state(self.default_docking_state)
 
     def _show_about_dialog(self):
         dlg = AboutDialog(self)

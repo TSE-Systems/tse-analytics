@@ -29,12 +29,12 @@ class Message:
         return f"{type(self).__name__}\n\t Sent from: {self.sender}"
 
 
-class SelectedTreeNodeChangedMessage(Message):
-    """Indicates that the selected TreeView node has changed"""
+class SelectedTreeItemChangedMessage(Message):
+    """Indicates that the selected TreeView item has changed"""
 
-    def __init__(self, sender, node: TreeItem):
+    def __init__(self, sender, tree_item: TreeItem):
         super().__init__(sender)
-        self.node = node
+        self.tree_item = tree_item
 
 
 class DataChangedMessage(Message):
