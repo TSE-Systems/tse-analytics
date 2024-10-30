@@ -178,17 +178,6 @@ class BivariateWidget(QWidget, MessengerListener):
             split_mode = SplitMode.FACTOR
             by = selected_factor_name
 
-        if split_mode == SplitMode.ANIMAL:
-            make_toast(
-                self,
-                "Regression Analysis",
-                "Please select another split mode.",
-                duration=2000,
-                preset=ToastPreset.WARNING,
-                show_duration_bar=True,
-            ).show()
-            return
-
         if split_mode == SplitMode.FACTOR and selected_factor_name == "":
             make_toast(
                 self,
@@ -237,6 +226,15 @@ class BivariateWidget(QWidget, MessengerListener):
         self.plot_toolbar = new_toolbar
 
         match split_mode:
+            case SplitMode.ANIMAL:
+                output = ""
+                for animal in df["Animal"].unique().tolist():
+                    data = df[df["Animal"] == animal]
+                    output = (
+                        output
+                        + f"<h3>Animal: {animal}</h3>"
+                        + pg.linear_regression(data[covariate.name], data[response.name], remove_na=True).to_html()
+                    )
             case SplitMode.FACTOR:
                 output = ""
                 for group in df[selected_factor_name].unique().tolist():

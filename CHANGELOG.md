@@ -1,6 +1,14 @@
 TSE Analytics Change Log
 ====================================================================================================
 
+# 0.11.2 (2024-10-30)
+
+- Change -- Enable regression analysis for Split by Animal mode.
+- Fix    -- Some visual tweaks.
+
+
+----------------------------------------------------------------------------------------------------
+
 # 0.11.0 (2024-10-25)
 
 - New    -- WIP: Integration of the new TSE dataset format.

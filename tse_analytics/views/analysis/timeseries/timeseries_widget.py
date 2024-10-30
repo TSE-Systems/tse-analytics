@@ -87,8 +87,10 @@ class TimeseriesWidget(QWidget, MessengerListener):
             self.ui.groupBoxModel.hide()
 
         if show_period:
+            self.ui.periodLabel.show()
             self.ui.periodSpinBox.show()
         else:
+            self.ui.periodLabel.hide()
             self.ui.periodSpinBox.hide()
 
     def _update(self):
