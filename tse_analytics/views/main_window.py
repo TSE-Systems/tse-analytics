@@ -12,6 +12,11 @@ from PySide6QtAds import AllDockAreas, BottomDockWidgetArea, LeftDockWidgetArea,
 from tse_analytics.core.helper import CSV_IMPORT_ENABLED, show_help
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.manager import Manager
+from tse_analytics.core.toaster import make_toast
+from tse_analytics.core.workers.task_manager import TaskManager
+from tse_analytics.core.workers.worker import Worker
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.io.tse_dataset_loader import load_tse_dataset
 from tse_analytics.views.about_dialog import AboutDialog
 from tse_analytics.views.analysis.anova_widget import AnovaWidget
 from tse_analytics.views.analysis.bivariate_widget import BivariateWidget
@@ -150,6 +155,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         Toast.setPositionRelativeToWidget(self)
         Toast.setMovePositionWithWidget(True)
+        self.toast = None
 
     def populate_open_recent(self):
         # Step 1. Remove the old options from the menu
@@ -260,8 +266,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     # TODO: check other cases!!
                     if dialog.exec() == QDialog.DialogCode.Accepted:
                         import_settings = dialog.get_import_settings()
-                        Manager.import_tse_dataset(path, import_settings, self)
+
+                        self.toast = make_toast(self, "Importing Dataset", "Please wait...")
+                        self.toast.show()
+
+                        worker = Worker(load_tse_dataset, path, import_settings)
+                        worker.signals.result.connect(self._import_result)
+                        worker.signals.finished.connect(self._import_finished)
+                        TaskManager.start_task(worker)
                     dialog.deleteLater()
+
+    def _import_result(self, dataset: Dataset) -> None:
+        if dataset is not None:
+            Manager.workspace_model.add_dataset(dataset)
+
+    def _import_finished(self) -> None:
+        self.toast.hide()
 
     def closeEvent(self, event: QCloseEvent) -> None:
         if QMessageBox.question(self, "TSE Analytics", "Do you want to quit?") == QMessageBox.StandardButton.Yes:

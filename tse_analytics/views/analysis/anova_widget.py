@@ -279,7 +279,15 @@ class AnovaWidget(QWidget, MessengerListener):
         padjust = self.p_adjustment[self.ui.comboBoxPAdjustment.currentText()]
 
         if len(selected_factor_names) > 2:
-            post_hoc_test = None
+            html_template = """
+                            <h2>{anova_header}</h2>
+                            {anova}
+                            """
+
+            html = html_template.format(
+                anova_header=anova_header,
+                anova=anova.to_html(),
+            )
         else:
             post_hoc_test = pg.pairwise_tests(
                 data=df,
@@ -288,20 +296,22 @@ class AnovaWidget(QWidget, MessengerListener):
                 return_desc=True,
                 effsize=effsize,
                 padjust=padjust,
+                nan_policy="listwise",
             ).round(5)
 
-        html_template = """
-                <h2>{anova_header}</h2>
-                {anova}
-                <h2>Pairwise post-hoc tests</h2>
-                {post_hoc_test}
-                """
+            html_template = """
+                            <h2>{anova_header}</h2>
+                            {anova}
+                            <h2>Pairwise post-hoc tests</h2>
+                            {post_hoc_test}
+                            """
 
-        html = html_template.format(
-            anova_header=anova_header,
-            anova=anova.to_html(),
-            post_hoc_test=post_hoc_test.to_html() if post_hoc_test is not None else "",
-        )
+            html = html_template.format(
+                anova_header=anova_header,
+                anova=anova.to_html(),
+                post_hoc_test=post_hoc_test.to_html(),
+            )
+
         self.ui.textEdit.document().setHtml(html)
 
     def _analyze_rm_anova(self, selected_dependent_variables: dict[str, Variable]):

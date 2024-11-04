@@ -1,10 +1,12 @@
 import json
 import sqlite3
+import timeit
 from datetime import timedelta
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from loguru import logger
 
 from tse_analytics.core.data.shared import Aggregation, Animal, Factor, Variable
 from tse_analytics.core.predefined_variables import assign_predefined_values
@@ -22,6 +24,8 @@ CALO_BIN_TABLE = "calo_bin"
 
 
 def load_tse_dataset(path: Path, import_settings: TseImportSettings) -> Dataset | None:
+    tic = timeit.default_timer()
+
     metadata = _read_metadata(path)
     animals = _get_animals(metadata["animals"])
     # factors = TseDatasetLoader._get_factors(metadata["groups"])
@@ -58,6 +62,8 @@ def load_tse_dataset(path: Path, import_settings: TseImportSettings) -> Dataset 
         if CALO_BIN_TABLE in metadata["tables"]:
             calo_details = _read_calo_bin(path, metadata["tables"], dataset)
             dataset.calo_details = calo_details
+
+    logger.info(f"Import complete in {(timeit.default_timer() - tic):.3f} sec: {path}")
 
     return dataset
 
