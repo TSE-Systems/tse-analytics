@@ -23,7 +23,7 @@ class ExplorationWidget(QWidget, MessengerListener):
         self.ui = Ui_ExplorationWidget()
         self.ui.setupUi(self)
 
-        self.help_path = "exploration.md"
+        self.help_path = "Exploration-widget.md"
 
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self._update)

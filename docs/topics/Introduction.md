@@ -1,6 +1,6 @@
-# TSE Analytics
+# Introduction
 
-## Overview
+## Overview of TSE Analytics
 
 TSE Analytics is a data analysis application designed specifically to work with the data output produced by
 [TSE PhenoMaster](https://www.tse-systems.com/service/phenotype/) software. It allows a simplified management of
@@ -9,13 +9,13 @@ multiple datasets, data sharing and reproducibility of experimental results in a
 At its core, TSE Analytics provides the following functionality:
 
 - Working with multiple datasets simultaneously with the option to merge individual datasets
-and to save the whole workspace for later use.
+  and to save the whole workspace for later use.
 - Automatic extraction of meaningful metadata from the raw data (i.e. animal information, factors, variables sets)
 - Applying different data processing parameters on per-dataset level (e.g. different sampling times, etc.)
 - Data filtering on per-animal level, like exclusion of some animals from data processing.
 - User-defined flexible time binning with multiple grouping modes: animals, factors or runs.
 - Automatic handling of light/dark cycles or manual configuration of time phases
-(for instance, "fasting", "pre-feeding", "sleeping", etc.)
+  (for instance, "fasting", "pre-feeding", "sleeping", etc.)
 - Outliers detection with or without removal of the data entries.
 - Export of the pre-processed data for external downstream analysis.
 
@@ -38,7 +38,7 @@ The layout is saved when you quit application.
 
 > Default layout may be restored by clicking **View - Reset Layout** menu item.
 
-![Main Window](main.png)
+![main.png](main.png)
 
 
 ## Data structure organization in TSE Analytics
@@ -77,7 +77,7 @@ In order to import dataset, please click **File - Import Dataset** command. As s
 you will see a new entry in the *Datasets* widget. By selecting specific entry in this widget, one can switch freely
 between different datasets:
 
-![Datasets](datasets.png)
+![datasets.png](datasets.png)
 
 > **Note:** Only one dataset can be active at the time in the workspace!
 
@@ -91,7 +91,7 @@ Let's have a look at the selection widgets.
 Here users can select one or many animals from the list of all animals that were registered in the experiment. This
 allows to filter (exclude) some of them from further analysis and visualisation.
 
-![Animals](animals.png)
+![animals.png](animals.png)
 
 In order to select all animals at once, please press **CTRL-A** or drag mouse over entries you want to choose.
 To select/deselect individual entries, click on the entry holding **CTRL** key.
@@ -104,14 +104,14 @@ This widget is used to choose of one or many variables that you want to display 
 include in the downstream analysis in components that support multiple variables selection, like **Matrix** or **PCA**
 widgets.
 
-![Variables](variables.png)
+![variables.png](variables.png)
 
 Similarly to **Animals** widget, in order to select all variables at once, please press **CTRL-A** or drag mouse over
 entries you want to choose. To select/deselect individual entries, click on the entry holding **CTRL** key.
 
 ### Factors
 
-![Factors](factors.png)
+![factors.png](factors.png)
 
 ## Data analysis pipeline
 
@@ -119,9 +119,9 @@ Almost all widgets (with some exceptions mentioned later) work with the preproce
 internal data analysis pipeline.
 
 1. Raw data first goes into *Animal Filter* pipe operator. This unit obtains data only for the selected set
-of animals. Animals can be selected in **Animals** widget.
+   of animals. Animals can be selected in **Animals** widget.
 2. Second step is the outliers removal in the *Outliers* pipe operator. This unit can be activated/deactivated in the
-**Outliers** widget (see details below).
+   **Outliers** widget (see details below).
 3. Last step in the preprocessing data pipeline is *time binning* operation.
 
 > **Note**: If you observe some strange results during your analysis, please check that proper animals are selected in

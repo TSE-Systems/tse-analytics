@@ -25,7 +25,7 @@ class BivariateWidget(QWidget, MessengerListener):
         self.ui = Ui_BivariateWidget()
         self.ui.setupUi(self)
 
-        self.help_path = "bivariate.md"
+        self.help_path = "Bivariate-widget.md"
 
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self._update)

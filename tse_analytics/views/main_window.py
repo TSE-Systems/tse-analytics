@@ -146,7 +146,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionExportExcel.triggered.connect(self.export_excel_dialog)
         self.actionResetLayout.triggered.connect(self._reset_layout)
         self.actionExit.triggered.connect(lambda: QApplication.exit())
-        self.actionHelp.triggered.connect(lambda: show_help(self, "main.md"))
+        self.actionHelp.triggered.connect(lambda: show_help(self, "Introduction.md"))
         self.actionAbout.triggered.connect(self._show_about_dialog)
 
         self.default_docking_state = LayoutManager.save_state()
