@@ -26,8 +26,8 @@ seaborn = "0.13.2"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "1.13.0"
-pyinstaller = "6.11.0"
-ruff = "0.7.2"
+pyinstaller = "6.11.1"
+ruff = "0.7.3"
 
 [build-system]
 requires = ["poetry-core"]

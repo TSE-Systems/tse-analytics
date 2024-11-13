@@ -1,18 +1,19 @@
 import pandas as pd
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
+from tse_analytics.core import messaging
 from tse_analytics.core.data.shared import TimePhase
-from tse_analytics.core.manager import Manager
-from tse_analytics.core.messaging.messages import DatasetChangedMessage
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
 
 class TimePhasesModel(QAbstractTableModel):
     header = ("Name", "Start timestamp")
 
-    def __init__(self, items: list[TimePhase], parent=None):
+    def __init__(self, dataset: Dataset, parent=None):
         super().__init__(parent)
 
-        self.items = items
+        self.dataset = dataset
+        self.items = []
 
     def data(self, index: QModelIndex, role: Qt.ItemDataRole):
         if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
@@ -29,7 +30,7 @@ class TimePhasesModel(QAbstractTableModel):
                 try:
                     item.start_timestamp = pd.to_timedelta(value)
                     # Manager.data.selected_dataset.set_time_phases(self.items)
-                    Manager.messenger.broadcast(DatasetChangedMessage(self, Manager.data.selected_dataset))
+                    messaging.broadcast(messaging.DatasetChangedMessage(self, self.dataset))
                 except ValueError:
                     return False
             else:
@@ -53,10 +54,10 @@ class TimePhasesModel(QAbstractTableModel):
         self.items.append(time_phase)
         # Trigger refresh.
         self.layoutChanged.emit()
-        # Manager.messenger.broadcast(DatasetChangedMessage(self, Manager.data.selected_dataset))
+        # messaging.broadcast(DatasetChangedMessage(self, Manager.data.selected_dataset))
 
     def delete_time_phase(self, index):
         # Remove the item and refresh.
         del self.items[index.row()]
         self.layoutChanged.emit()
-        # Manager.messenger.broadcast(DatasetChangedMessage(self, Manager.data.selected_dataset))
+        # messaging.broadcast(DatasetChangedMessage(self, Manager.data.selected_dataset))

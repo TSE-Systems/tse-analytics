@@ -6,21 +6,20 @@ from pyqttoast import ToastPreset
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
+from tse_analytics.core import messaging
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.helper import get_html_image, show_help
 from tse_analytics.core.manager import Manager
-from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
-from tse_analytics.core.messaging.messenger import Messenger
-from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.css import style_descriptive_table
 from tse_analytics.views.analysis.bivariate_widget_ui import Ui_BivariateWidget
 
 
-class BivariateWidget(QWidget, MessengerListener):
+class BivariateWidget(QWidget, messaging.MessengerListener):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
-        self.register_to_messenger(Manager.messenger)
+
+        messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
 
         self.ui = Ui_BivariateWidget()
         self.ui.setupUi(self)
@@ -53,10 +52,7 @@ class BivariateWidget(QWidget, MessengerListener):
 
         self.ui.textEdit.document().setDefaultStyleSheet(style_descriptive_table)
 
-    def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
-
-    def _on_dataset_changed(self, message: DatasetChangedMessage):
+    def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
         self.ui.pushButtonUpdate.setDisabled(message.dataset is None)
         self.ui.pushButtonAddReport.setDisabled(message.dataset is None)
         self._clear()
@@ -269,5 +265,4 @@ class BivariateWidget(QWidget, MessengerListener):
     def _add_report(self):
         html = get_html_image(self.plot_toolbar.canvas.figure)
         html += self.ui.textEdit.toHtml()
-
-        Manager.messenger.broadcast(AddToReportMessage(self, html))
+        messaging.broadcast(messaging.AddToReportMessage(self, html))

@@ -3,18 +3,17 @@ from functools import partial
 from PySide6.QtCore import QSize, QSortFilterProxyModel, Qt
 from PySide6.QtWidgets import QToolBar, QWidget
 
+from tse_analytics.core import messaging
 from tse_analytics.core.manager import Manager
-from tse_analytics.core.messaging.messages import DatasetChangedMessage
-from tse_analytics.core.messaging.messenger import Messenger
-from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.models.animals_model import AnimalsModel
 from tse_analytics.views.selection.animals.animals_widget_ui import Ui_AnimalsWidget
 
 
-class AnimalsWidget(QWidget, MessengerListener):
+class AnimalsWidget(QWidget, messaging.MessengerListener):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
-        self.register_to_messenger(Manager.messenger)
+
+        messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
 
         self.ui = Ui_AnimalsWidget()
         self.ui.setupUi(self)
@@ -36,10 +35,7 @@ class AnimalsWidget(QWidget, MessengerListener):
         self.ui.tableView.setModel(proxy_model)
         self.ui.tableView.sortByColumn(0, Qt.SortOrder.AscendingOrder)
 
-    def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
-
-    def _on_dataset_changed(self, message: DatasetChangedMessage):
+    def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
         if message.dataset is None:
             self.ui.tableView.model().setSourceModel(None)
         else:

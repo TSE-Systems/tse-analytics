@@ -1,19 +1,18 @@
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
+from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.manager import Manager
-from tse_analytics.core.messaging.messages import DatasetChangedMessage
-from tse_analytics.core.messaging.messenger import Messenger
-from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.views.settings.binning_settings_widget_ui import Ui_BinningSettingsWidget
 
 
-class BinningSettingsWidget(QWidget, MessengerListener):
+class BinningSettingsWidget(QWidget, messaging.MessengerListener):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
-        self.register_to_messenger(Manager.messenger)
+
+        messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
 
         self.ui = Ui_BinningSettingsWidget()
         self.ui.setupUi(self)
@@ -28,10 +27,7 @@ class BinningSettingsWidget(QWidget, MessengerListener):
 
         self.dataset: Dataset | None = None
 
-    def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
-
-    def _on_dataset_changed(self, message: DatasetChangedMessage):
+    def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
         if message.dataset is None:
             self.dataset = None
             self.ui.applyBinningCheckBox.setChecked(False)

@@ -3,10 +3,8 @@ from PySide6.QtGui import QAction, QActionGroup, QFont, QIcon, QKeySequence, Qt
 from PySide6.QtPrintSupport import QPrintDialog
 from PySide6.QtWidgets import QComboBox, QFileDialog, QFontComboBox, QToolBar, QWidget
 
+from tse_analytics.core import messaging
 from tse_analytics.core.manager import Manager
-from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
-from tse_analytics.core.messaging.messenger import Messenger
-from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.css import style_descriptive_table
 from tse_analytics.views.reports.reports_widget_ui import Ui_ReportsWidget
 
@@ -31,10 +29,12 @@ FONT_SIZES = [
 ]
 
 
-class ReportsWidget(QWidget, MessengerListener):
+class ReportsWidget(QWidget, messaging.MessengerListener):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
-        self.register_to_messenger(Manager.messenger)
+
+        messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
+        messaging.subscribe(self, messaging.AddToReportMessage, self._add_to_report)
 
         self.ui = Ui_ReportsWidget()
         self.ui.setupUi(self)
@@ -222,15 +222,11 @@ class ReportsWidget(QWidget, MessengerListener):
         # Initialize.
         self._update_format()
 
-    def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
-        messenger.subscribe(self, AddToReportMessage, self._add_to_report)
-
-    def _on_dataset_changed(self, message: DatasetChangedMessage):
+    def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
         if message.dataset is not None:
             self.ui.editor.document().setHtml(message.dataset.report)
 
-    def _add_to_report(self, message: AddToReportMessage):
+    def _add_to_report(self, message: messaging.AddToReportMessage):
         self.ui.editor.append(message.content)
 
     def _new_report(self):

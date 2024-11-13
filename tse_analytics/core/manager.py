@@ -7,16 +7,14 @@ from PySide6.QtCore import QModelIndex, QSettings
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.data_hub import DataHub
 from tse_analytics.core.dataset_merger import merge_datasets
-from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.core.models.workspace_model import WorkspaceModel
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.modules.phenomaster.io.csv_dataset_loader import load_csv_dataset
 
 
 class Manager:
-    messenger = Messenger()
     workspace_model = WorkspaceModel()
-    data = DataHub(messenger)
+    data = DataHub()
 
     @classmethod
     def load_workspace(cls, path: str) -> None:

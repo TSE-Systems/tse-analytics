@@ -1,11 +1,9 @@
 from PySide6.QtCore import QSize, QSortFilterProxyModel, Qt
 from PySide6.QtWidgets import QComboBox, QDoubleSpinBox, QToolBar, QWidget
 
+from tse_analytics.core import messaging
 from tse_analytics.core.data.outliers import OutliersMode
 from tse_analytics.core.manager import Manager
-from tse_analytics.core.messaging.messages import DatasetChangedMessage
-from tse_analytics.core.messaging.messenger import Messenger
-from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.models.aggregation_combo_box_delegate import AggregationComboBoxDelegate
 from tse_analytics.core.models.variables_model import VariablesModel
 from tse_analytics.core.predefined_variables import assign_predefined_values
@@ -13,10 +11,11 @@ from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.views.selection.variables.variables_widget_ui import Ui_VariablesWidget
 
 
-class VariablesWidget(QWidget, MessengerListener):
+class VariablesWidget(QWidget, messaging.MessengerListener):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
-        self.register_to_messenger(Manager.messenger)
+
+        messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
 
         self.ui = Ui_VariablesWidget()
         self.ui.setupUi(self)
@@ -47,10 +46,7 @@ class VariablesWidget(QWidget, MessengerListener):
 
         self.dataset: Dataset | None = None
 
-    def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
-
-    def _on_dataset_changed(self, message: DatasetChangedMessage):
+    def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
         if message.dataset is None:
             self.dataset = None
             self.ui.tableView.model().setSourceModel(None)

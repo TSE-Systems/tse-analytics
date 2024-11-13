@@ -4,17 +4,10 @@ from pyqttoast import ToastPreset
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QAbstractItemView, QWidget
 
+from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.manager import Manager
-from tse_analytics.core.messaging.messages import (
-    AddToReportMessage,
-    BinningMessage,
-    DataChangedMessage,
-    DatasetChangedMessage,
-)
-from tse_analytics.core.messaging.messenger import Messenger
-from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.models.pandas_model import PandasModel
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
@@ -23,10 +16,13 @@ from tse_analytics.css import style_descriptive_table
 from tse_analytics.views.data.data_table_widget_ui import Ui_DataTableWidget
 
 
-class DataTableWidget(QWidget, MessengerListener):
+class DataTableWidget(QWidget, messaging.MessengerListener):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
-        self.register_to_messenger(Manager.messenger)
+
+        messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
+        messaging.subscribe(self, messaging.BinningMessage, self._on_binning_applied)
+        messaging.subscribe(self, messaging.DataChangedMessage, self._on_data_changed)
 
         self.ui = Ui_DataTableWidget()
         self.ui.setupUi(self)
@@ -50,18 +46,13 @@ class DataTableWidget(QWidget, MessengerListener):
 
         self.df: pd.DataFrame | None = None
 
-    def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
-        messenger.subscribe(self, BinningMessage, self._on_binning_applied)
-        messenger.subscribe(self, DataChangedMessage, self._on_data_changed)
-
     def _resize_columns_width(self):
         worker = Worker(
             self.ui.tableView.resizeColumnsToContents
         )  # Any other args, kwargs are passed to the run function
         TaskManager.start_task(worker)
 
-    def _on_dataset_changed(self, message: DatasetChangedMessage):
+    def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
         if message.dataset is None:
             self.ui.tableView.setModel(None)
             self.ui.tableWidgetVariables.clear_data()
@@ -73,10 +64,10 @@ class DataTableWidget(QWidget, MessengerListener):
             self.ui.factorSelector.set_data(message.dataset.factors, add_empty_item=False)
             self._set_data()
 
-    def _on_binning_applied(self, message: BinningMessage):
+    def _on_binning_applied(self, message: messaging.BinningMessage):
         self._set_data()
 
-    def _on_data_changed(self, message: DataChangedMessage):
+    def _on_data_changed(self, message: messaging.DataChangedMessage):
         self._set_data()
 
     def _variables_selection_changed(self):
@@ -170,4 +161,4 @@ class DataTableWidget(QWidget, MessengerListener):
 
     def _add_report(self):
         content = self.ui.textEditDescriptiveStats.document().toHtml()
-        Manager.messenger.broadcast(AddToReportMessage(self, content))
+        messaging.broadcast(messaging.AddToReportMessage(self, content))

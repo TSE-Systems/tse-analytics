@@ -4,22 +4,21 @@ from pyqttoast import ToastPreset
 from PySide6.QtWidgets import QAbstractItemView, QMessageBox, QWidget
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
+from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.helper import get_html_image, show_help
 from tse_analytics.core.manager import Manager
-from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
-from tse_analytics.core.messaging.messenger import Messenger
-from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.css import style_descriptive_table
 from tse_analytics.views.analysis.anova_widget_ui import Ui_AnovaWidget
 
 
-class AnovaWidget(QWidget, MessengerListener):
+class AnovaWidget(QWidget, messaging.MessengerListener):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
-        self.register_to_messenger(Manager.messenger)
+
+        messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
 
         self.ui = Ui_AnovaWidget()
         self.ui.setupUi(self)
@@ -76,9 +75,6 @@ class AnovaWidget(QWidget, MessengerListener):
 
         self.ui.textEdit.document().setDefaultStyleSheet(style_descriptive_table)
 
-    def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
-
     def _set_options(
         self,
         show_factors: bool,
@@ -107,7 +103,7 @@ class AnovaWidget(QWidget, MessengerListener):
             else QAbstractItemView.SelectionMode.SingleSelection
         )
 
-    def _on_dataset_changed(self, message: DatasetChangedMessage):
+    def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
         self._clear()
         if message.dataset is None:
             self.ui.pushButtonUpdate.setDisabled(True)
@@ -578,4 +574,4 @@ class AnovaWidget(QWidget, MessengerListener):
         self.ui.textEdit.document().setHtml(html)
 
     def _add_report(self):
-        Manager.messenger.broadcast(AddToReportMessage(self, self.ui.textEdit.toHtml()))
+        messaging.broadcast(messaging.AddToReportMessage(self, self.ui.textEdit.toHtml()))

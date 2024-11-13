@@ -3,30 +3,25 @@ from pyqttoast import ToastPreset
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
+from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.manager import Manager
-from tse_analytics.core.messaging.messages import (
-    AddToReportMessage,
-    BinningMessage,
-    DataChangedMessage,
-    DatasetChangedMessage,
-)
-from tse_analytics.core.messaging.messenger import Messenger
-from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.views.data.bar_plot_view import BarPlotView
 from tse_analytics.views.data.data_plot_widget_ui import Ui_DataPlotWidget
 from tse_analytics.views.data.timeline_plot_view import TimelinePlotView
 
 
-class DataPlotWidget(QWidget, MessengerListener):
+class DataPlotWidget(QWidget, messaging.MessengerListener):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.ui = Ui_DataPlotWidget()
         self.ui.setupUi(self)
 
-        self.register_to_messenger(Manager.messenger)
+        messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
+        messaging.subscribe(self, messaging.BinningMessage, self._on_binning_applied)
+        messaging.subscribe(self, messaging.DataChangedMessage, self._on_data_changed)
 
         self.ui.radioButtonSplitTotal.toggled.connect(self._split_mode_toggled)
         self.ui.radioButtonSplitByAnimal.toggled.connect(self._split_mode_toggled)
@@ -51,11 +46,6 @@ class DataPlotWidget(QWidget, MessengerListener):
         self.plot_toolbar.setIconSize(QSize(16, 16))
         self.ui.widgetSettings.layout().addWidget(self.plot_toolbar)
         self.plot_toolbar.hide()
-
-    def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
-        messenger.subscribe(self, BinningMessage, self._on_binning_applied)
-        messenger.subscribe(self, DataChangedMessage, self._on_data_changed)
 
     def _get_split_mode(self) -> SplitMode:
         if self.ui.radioButtonSplitByAnimal.isChecked():
@@ -89,7 +79,7 @@ class DataPlotWidget(QWidget, MessengerListener):
     def _set_scatter_plot(self, state: bool):
         self._refresh_data()
 
-    def _on_dataset_changed(self, message: DatasetChangedMessage):
+    def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
         self.ui.pushButtonAddReport.setDisabled(message.dataset is None)
         if message.dataset is None:
             self.ui.variableSelector.clear()
@@ -101,10 +91,10 @@ class DataPlotWidget(QWidget, MessengerListener):
             self.ui.factorSelector.set_data(message.dataset.factors, add_empty_item=False)
             self._refresh_data()
 
-    def _on_binning_applied(self, message: BinningMessage):
+    def _on_binning_applied(self, message: messaging.BinningMessage):
         self._refresh_data()
 
-    def _on_data_changed(self, message: DataChangedMessage):
+    def _on_data_changed(self, message: messaging.DataChangedMessage):
         self._refresh_data()
 
     def _split_mode_toggled(self, toggled: bool):
@@ -232,4 +222,4 @@ class DataPlotWidget(QWidget, MessengerListener):
                 html = self.timelinePlotView.get_report()
             else:
                 html = self.barPlotView.get_report()
-        Manager.messenger.broadcast(AddToReportMessage(self, html))
+        messaging.broadcast(messaging.AddToReportMessage(self, html))

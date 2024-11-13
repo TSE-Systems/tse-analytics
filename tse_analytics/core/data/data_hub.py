@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import BinningMode, BinningSettings, TimeIntervalsBinningSettings
 from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings
 from tse_analytics.core.data.pipeline.animal_filter_pipe_operator import filter_animals
@@ -9,28 +10,24 @@ from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import p
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import process_time_phases_binning
 from tse_analytics.core.data.shared import Aggregation, Animal, SplitMode, Variable
-from tse_analytics.core.messaging.messages import BinningMessage, DataChangedMessage, DatasetChangedMessage
-from tse_analytics.core.messaging.messenger import Messenger
 from tse_analytics.modules.phenomaster.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
 from tse_analytics.modules.phenomaster.calo_details.data.calo_details import CaloDetails
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
 
 class DataHub:
-    def __init__(self, messenger: Messenger):
-        self.messenger = messenger
-
+    def __init__(self):
         self.selected_dataset: Dataset | None = None
 
     def clear(self) -> None:
         self.selected_dataset = None
-        self.messenger.broadcast(DatasetChangedMessage(self, None))
+        messaging.broadcast(messaging.DatasetChangedMessage(self, None))
 
     def apply_binning(self, binning_settings: BinningSettings) -> None:
         if self.selected_dataset is None:
             return
         self.selected_dataset.binning_settings = binning_settings
-        self.messenger.broadcast(BinningMessage(self, self.selected_dataset, binning_settings))
+        messaging.broadcast(messaging.BinningMessage(self, self.selected_dataset, binning_settings))
 
     def apply_outliers(self, settings: OutliersSettings) -> None:
         if self.selected_dataset is None:
@@ -40,11 +37,11 @@ class DataHub:
 
     def set_selected_dataset(self, dataset: Dataset) -> None:
         self.selected_dataset = dataset
-        self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
+        messaging.broadcast(messaging.DatasetChangedMessage(self, self.selected_dataset))
 
     def rename_animal(self, old_id: str, animal: Animal) -> None:
         self.selected_dataset.rename_animal(old_id, animal)
-        self.messenger.broadcast(DatasetChangedMessage(self, self.selected_dataset))
+        messaging.broadcast(messaging.DatasetChangedMessage(self, self.selected_dataset))
 
     def set_selected_animals(self) -> None:
         self._broadcast_data_changed()
@@ -53,7 +50,7 @@ class DataHub:
         self._broadcast_data_changed()
 
     def _broadcast_data_changed(self) -> None:
-        self.messenger.broadcast(DataChangedMessage(self, self.selected_dataset))
+        messaging.broadcast(messaging.DataChangedMessage(self, self.selected_dataset))
 
     def export_to_excel(self, path: str) -> None:
         if self.selected_dataset is not None:

@@ -13,9 +13,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from tse_analytics.core import messaging
 from tse_analytics.core.helper import CSV_IMPORT_ENABLED
 from tse_analytics.core.manager import Manager
-from tse_analytics.core.messaging.messages import SelectedTreeItemChangedMessage
 from tse_analytics.modules.phenomaster.actimot.models.actimot_tree_item import ActimotTreeItem
 from tse_analytics.modules.phenomaster.actimot.views.actimot_dialog import ActimotDialog
 from tse_analytics.modules.phenomaster.calo_details.models.calo_details_tree_item import CaloDetailsTreeItem
@@ -225,7 +225,7 @@ class DatasetsWidget(QWidget):
     def _treeview_current_changed(self, current: QModelIndex, previous: QModelIndex):
         if current.isValid():
             item = current.model().getItem(current)
-            Manager.messenger.broadcast(SelectedTreeItemChangedMessage(self, item))
+            messaging.broadcast(messaging.SelectedTreeItemChangedMessage(self, item))
             if isinstance(item, DatasetTreeItem):
                 Manager.data.set_selected_dataset(item.dataset)
 

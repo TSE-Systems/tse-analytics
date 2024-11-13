@@ -7,22 +7,21 @@ from PySide6.QtWidgets import QAbstractItemView, QWidget
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
+from tse_analytics.core import messaging
 from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.helper import get_html_image, show_help
 from tse_analytics.core.manager import Manager
-from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
-from tse_analytics.core.messaging.messenger import Messenger
-from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.views.analysis.dimensionality_widget_ui import Ui_DimensionalityWidget
 
 
-class DimensionalityWidget(QWidget, MessengerListener):
+class DimensionalityWidget(QWidget, messaging.MessengerListener):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
-        self.register_to_messenger(Manager.messenger)
+
+        messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
 
         self.ui = Ui_DimensionalityWidget()
         self.ui.setupUi(self)
@@ -54,10 +53,7 @@ class DimensionalityWidget(QWidget, MessengerListener):
 
         self.toast = None
 
-    def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
-
-    def _on_dataset_changed(self, message: DatasetChangedMessage):
+    def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
         self.ui.pushButtonUpdate.setDisabled(message.dataset is None)
         self.ui.pushButtonAddReport.setDisabled(message.dataset is None)
         self.ui.canvas.clear(True)
@@ -247,4 +243,4 @@ class DimensionalityWidget(QWidget, MessengerListener):
 
     def _add_report(self):
         html = get_html_image(self.ui.canvas.figure)
-        Manager.messenger.broadcast(AddToReportMessage(self, html))
+        messaging.broadcast(messaging.AddToReportMessage(self, html))

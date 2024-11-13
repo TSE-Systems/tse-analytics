@@ -6,20 +6,19 @@ from PySide6.QtWidgets import QWidget
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.seasonal import MSTL, STL, seasonal_decompose
 
+from tse_analytics.core import messaging
 from tse_analytics.core.data.shared import Aggregation
 from tse_analytics.core.helper import get_html_image, show_help
 from tse_analytics.core.manager import Manager
-from tse_analytics.core.messaging.messages import AddToReportMessage, DatasetChangedMessage
-from tse_analytics.core.messaging.messenger import Messenger
-from tse_analytics.core.messaging.messenger_listener import MessengerListener
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.views.analysis.timeseries.timeseries_widget_ui import Ui_TimeseriesWidget
 
 
-class TimeseriesWidget(QWidget, MessengerListener):
+class TimeseriesWidget(QWidget, messaging.MessengerListener):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
-        self.register_to_messenger(Manager.messenger)
+
+        messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
 
         self.ui = Ui_TimeseriesWidget()
         self.ui.setupUi(self)
@@ -51,10 +50,7 @@ class TimeseriesWidget(QWidget, MessengerListener):
         plot_toolbar.setIconSize(QSize(16, 16))
         self.ui.widgetSettings.layout().addWidget(plot_toolbar)
 
-    def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, DatasetChangedMessage, self._on_dataset_changed)
-
-    def _on_dataset_changed(self, message: DatasetChangedMessage):
+    def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
         self.ui.pushButtonUpdate.setDisabled(message.dataset is None)
         self.ui.pushButtonAddReport.setDisabled(message.dataset is None)
         self.ui.canvas.clear(True)
@@ -205,4 +201,4 @@ class TimeseriesWidget(QWidget, MessengerListener):
 
     def _add_report(self):
         html = get_html_image(self.ui.canvas.figure)
-        Manager.messenger.broadcast(AddToReportMessage(self, html))
+        messaging.broadcast(messaging.AddToReportMessage(self, html))

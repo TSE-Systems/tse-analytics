@@ -1,20 +1,15 @@
 from PySide6.QtWidgets import QTextEdit, QWidget
 
-from tse_analytics.core.manager import Manager
-from tse_analytics.core.messaging.messages import ShowHelpMessage
-from tse_analytics.core.messaging.messenger import Messenger
-from tse_analytics.core.messaging.messenger_listener import MessengerListener
+from tse_analytics.core import messaging
 
 
-class HelpWidget(QTextEdit, MessengerListener):
+class HelpWidget(QTextEdit, messaging.MessengerListener):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
-        self.register_to_messenger(Manager.messenger)
+
+        messaging.subscribe(self, messaging.ShowHelpMessage, self._on_show_help)
 
         self.setReadOnly(True)
 
-    def register_to_messenger(self, messenger: Messenger):
-        messenger.subscribe(self, ShowHelpMessage, self._on_show_help)
-
-    def _on_show_help(self, message: ShowHelpMessage):
+    def _on_show_help(self, message: messaging.ShowHelpMessage):
         self.setMarkdown(message.content)

@@ -6,8 +6,7 @@ from pathlib import Path
 import pandas as pd
 from matplotlib.figure import Figure
 
-from tse_analytics.core.manager import Manager
-from tse_analytics.core.messaging.messages import ShowHelpMessage
+from tse_analytics.core import messaging
 from tse_analytics.core.pretty_html_table import build_table
 
 IS_RELEASE = Path("_internal").exists()
@@ -27,7 +26,7 @@ def show_help(sender, filename: str) -> None:
                     if IS_RELEASE
                     else content.replace("](", "](../docs/images/")
                 )
-                Manager.messenger.broadcast(ShowHelpMessage(sender, content))
+                messaging.broadcast(messaging.ShowHelpMessage(sender, content))
 
 
 def get_html_image(figure: Figure) -> str:

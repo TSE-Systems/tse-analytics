@@ -18,7 +18,7 @@ class TimePhasesSettingsWidget(QWidget):
         self.ui.toolButtonAddPhase.clicked.connect(self._add_time_phase)
         self.ui.toolButtonDeletePhase.clicked.connect(self._delete_time_phase)
 
-        self.time_phases_model = TimePhasesModel([])
+        self.time_phases_model = TimePhasesModel(Manager.data.selected_dataset)
         self.ui.tableViewTimePhases.setModel(self.time_phases_model)
 
         header = self.ui.tableViewTimePhases.horizontalHeader()
