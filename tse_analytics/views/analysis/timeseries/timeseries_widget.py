@@ -9,19 +9,20 @@ from statsmodels.tsa.seasonal import MSTL, STL, seasonal_decompose
 from tse_analytics.core import messaging
 from tse_analytics.core.data.shared import Aggregation
 from tse_analytics.core.helper import get_html_image, show_help
-from tse_analytics.core.manager import Manager
 from tse_analytics.core.toaster import make_toast
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.views.analysis.timeseries.timeseries_widget_ui import Ui_TimeseriesWidget
 
 
 class TimeseriesWidget(QWidget, messaging.MessengerListener):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
+        self.ui = Ui_TimeseriesWidget()
+        self.ui.setupUi(self)
 
         messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
 
-        self.ui = Ui_TimeseriesWidget()
-        self.ui.setupUi(self)
+        self.dataset: Dataset | None = None
 
         self.help_path = "timeseries.md"
 
@@ -51,10 +52,8 @@ class TimeseriesWidget(QWidget, messaging.MessengerListener):
         self.ui.widgetSettings.layout().addWidget(plot_toolbar)
 
     def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
-        self.ui.pushButtonUpdate.setDisabled(message.dataset is None)
-        self.ui.pushButtonAddReport.setDisabled(message.dataset is None)
-        self.ui.canvas.clear(True)
         if message.dataset is not None:
+            self.dataset = message.dataset
             filtered_variables = {
                 key: value
                 for (key, value) in message.dataset.variables.items()
@@ -63,8 +62,12 @@ class TimeseriesWidget(QWidget, messaging.MessengerListener):
             self.ui.animalSelector.set_data(message.dataset.animals)
             self.ui.variableSelector.set_data(filtered_variables)
         else:
+            self.dataset = None
             self.ui.animalSelector.clear()
             self.ui.variableSelector.clear()
+        self.ui.pushButtonUpdate.setDisabled(self.dataset is None)
+        self.ui.pushButtonAddReport.setDisabled(self.dataset is None)
+        self.ui.canvas.clear(True)
 
     def _set_options(
         self,
@@ -90,7 +93,7 @@ class TimeseriesWidget(QWidget, messaging.MessengerListener):
             self.ui.periodSpinBox.hide()
 
     def _update(self):
-        if Manager.data.selected_dataset.binning_settings.apply:
+        if self.dataset.binning_settings.apply:
             make_toast(
                 self,
                 "Timeseries Analysis",
@@ -113,7 +116,7 @@ class TimeseriesWidget(QWidget, messaging.MessengerListener):
 
         self.ui.canvas.clear(False)
 
-        df = Manager.data.get_timeseries_df(
+        df = self.dataset.get_timeseries_df(
             animal=animal,
             variable=variable,
         )
@@ -177,7 +180,7 @@ class TimeseriesWidget(QWidget, messaging.MessengerListener):
 
         self.ui.canvas.clear(False)
 
-        df = Manager.data.get_timeseries_df(
+        df = self.dataset.get_timeseries_df(
             animal=animal,
             variable=variable,
         )

@@ -8,19 +8,18 @@ from PySide6.QtWidgets import QWidget
 from tse_analytics.core import messaging
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.helper import get_html_image, show_help
-from tse_analytics.core.manager import Manager
 from tse_analytics.core.toaster import make_toast
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.views.analysis.exploration_widget_ui import Ui_ExplorationWidget
 
 
 class ExplorationWidget(QWidget, messaging.MessengerListener):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
-
-        messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
-
         self.ui = Ui_ExplorationWidget()
         self.ui.setupUi(self)
+
+        messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
 
         self.help_path = "Exploration-widget.md"
 
@@ -55,13 +54,16 @@ class ExplorationWidget(QWidget, messaging.MessengerListener):
         plot_toolbar.setIconSize(QSize(16, 16))
         self.ui.widgetSettings.layout().addWidget(plot_toolbar)
 
+        self.dataset: Dataset | None = None
+
     def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
-        self.ui.pushButtonUpdate.setDisabled(message.dataset is None)
-        self.ui.pushButtonAddReport.setDisabled(message.dataset is None)
+        self.dataset = message.dataset
+        self.ui.pushButtonUpdate.setDisabled(self.dataset is None)
+        self.ui.pushButtonAddReport.setDisabled(self.dataset is None)
         self.ui.canvas.clear(True)
-        if message.dataset is not None:
-            self.ui.variableSelector.set_data(message.dataset.variables)
-            self.ui.factorSelector.set_data(message.dataset.factors, add_empty_item=False)
+        if self.dataset is not None:
+            self.ui.variableSelector.set_data(self.dataset.variables)
+            self.ui.factorSelector.set_data(self.dataset.factors, add_empty_item=False)
         else:
             self.ui.variableSelector.clear()
             self.ui.factorSelector.clear()
@@ -102,7 +104,7 @@ class ExplorationWidget(QWidget, messaging.MessengerListener):
             split_mode = SplitMode.TOTAL
             by = None
 
-        df = Manager.data.get_current_df(
+        df = self.dataset.get_current_df(
             variables={variable.name: variable},
             split_mode=split_mode,
             selected_factor_name=selected_factor_name,
@@ -149,7 +151,7 @@ class ExplorationWidget(QWidget, messaging.MessengerListener):
             split_mode = SplitMode.FACTOR
             x = selected_factor_name
 
-        df = Manager.data.get_current_df(
+        df = self.dataset.get_current_df(
             variables={variable.name: variable},
             split_mode=split_mode,
             selected_factor_name=selected_factor_name,
@@ -186,7 +188,7 @@ class ExplorationWidget(QWidget, messaging.MessengerListener):
             split_mode = SplitMode.FACTOR
             by = selected_factor_name
 
-        df = Manager.data.get_current_df(
+        df = self.dataset.get_current_df(
             variables={variable.name: variable},
             split_mode=split_mode,
             selected_factor_name=selected_factor_name,

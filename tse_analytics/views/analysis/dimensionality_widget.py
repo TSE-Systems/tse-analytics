@@ -10,21 +10,20 @@ from sklearn.manifold import TSNE
 from tse_analytics.core import messaging
 from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.helper import get_html_image, show_help
-from tse_analytics.core.manager import Manager
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.views.analysis.dimensionality_widget_ui import Ui_DimensionalityWidget
 
 
 class DimensionalityWidget(QWidget, messaging.MessengerListener):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
-
-        messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
-
         self.ui = Ui_DimensionalityWidget()
         self.ui.setupUi(self)
+
+        messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
 
         self.help_path = "dimensionality.md"
 
@@ -51,15 +50,17 @@ class DimensionalityWidget(QWidget, messaging.MessengerListener):
         plot_toolbar.setIconSize(QSize(16, 16))
         self.ui.widgetSettings.layout().addWidget(plot_toolbar)
 
+        self.dataset: Dataset | None = None
         self.toast = None
 
     def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
-        self.ui.pushButtonUpdate.setDisabled(message.dataset is None)
-        self.ui.pushButtonAddReport.setDisabled(message.dataset is None)
+        self.dataset = message.dataset
+        self.ui.pushButtonUpdate.setDisabled(self.dataset is None)
+        self.ui.pushButtonAddReport.setDisabled(self.dataset is None)
         self.ui.canvas.clear(True)
-        if message.dataset is not None:
-            self.ui.tableWidgetVariables.set_data(message.dataset.variables)
-            self.ui.factorSelector.set_data(message.dataset.factors, add_empty_item=False)
+        if self.dataset is not None:
+            self.ui.tableWidgetVariables.set_data(self.dataset.variables)
+            self.ui.factorSelector.set_data(self.dataset.factors, add_empty_item=False)
         else:
             self.ui.tableWidgetVariables.clear_data()
             self.ui.factorSelector.clear()
@@ -106,7 +107,7 @@ class DimensionalityWidget(QWidget, messaging.MessengerListener):
             ).show()
             return
 
-        df = Manager.data.get_current_df(
+        df = self.dataset.get_current_df(
             variables=selected_variables,
             split_mode=split_mode,
             selected_factor_name=selected_factor_name,
@@ -192,7 +193,7 @@ class DimensionalityWidget(QWidget, messaging.MessengerListener):
         selected_factor_name: str,
         by: str,
     ) -> tuple[pd.DataFrame, str, str]:
-        df = Manager.data.get_current_df(
+        df = self.dataset.get_current_df(
             variables=selected_variables,
             split_mode=split_mode,
             selected_factor_name=selected_factor_name,

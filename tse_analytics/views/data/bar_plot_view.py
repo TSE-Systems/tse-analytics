@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QVBoxLayout, QWidget
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import Factor, SplitMode, Variable
 from tse_analytics.core.helper import get_html_image
-from tse_analytics.core.manager import Manager
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
 
 class BarPlotView(QWidget):
@@ -17,6 +17,7 @@ class BarPlotView(QWidget):
         self.setLayout(QVBoxLayout(self))
         self.layout().setContentsMargins(0, 0, 0, 0)
 
+        self.dataset: Dataset | None = None
         self._df: pd.DataFrame | None = None
         self._variable: Variable | None = None
         self._split_mode = SplitMode.ANIMAL
@@ -28,6 +29,7 @@ class BarPlotView(QWidget):
 
     def refresh_data(
         self,
+        dataset: Dataset,
         df: pd.DataFrame,
         variable: Variable,
         split_mode: SplitMode,
@@ -35,6 +37,7 @@ class BarPlotView(QWidget):
         display_errors: bool,
         error_type: str,
     ) -> None:
+        self.dataset = dataset
         self._df = df
         self._variable = variable
         self._split_mode = split_mode
@@ -59,10 +62,10 @@ class BarPlotView(QWidget):
             self._df is None
             or self._variable is None
             or (self._split_mode == SplitMode.FACTOR and self._selected_factor is None)
-            or not Manager.data.selected_dataset.binning_settings.apply
+            or not self.dataset.binning_settings.apply
             or (
-                Manager.data.selected_dataset.binning_settings.mode == BinningMode.PHASES
-                and len(Manager.data.selected_dataset.binning_settings.time_phases_settings.time_phases) == 0
+                self.dataset.binning_settings.mode == BinningMode.PHASES
+                and len(self.dataset.binning_settings.time_phases_settings.time_phases) == 0
             )
         ):
             return

@@ -9,9 +9,9 @@ from PySide6.QtGui import QAction, QCloseEvent, QIcon
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QMessageBox
 from PySide6QtAds import AllDockAreas, BottomDockWidgetArea, LeftDockWidgetArea, RightDockWidgetArea
 
+from tse_analytics.core import manager
 from tse_analytics.core.helper import CSV_IMPORT_ENABLED, show_help
 from tse_analytics.core.layouts.layout_manager import LayoutManager
-from tse_analytics.core.manager import Manager
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
@@ -180,7 +180,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             pass
 
         try:
-            Manager.load_workspace(filename)
+            manager.load_workspace(filename)
             filenames.insert(0, filename)
             del filenames[MAX_RECENT_FILES:]
         finally:
@@ -216,17 +216,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self, "Save TSE Analytics Workspace", "", "Workspace Files (*.workspace)"
         )
         if filename:
-            Manager.save_workspace(filename)
+            manager.save_workspace(filename)
 
-    def export_excel_dialog(self):
+    def export_excel_dialog(self) -> None:
+        dataset = manager.get_selected_dataset()
+        if dataset is None:
+            return
         filename, _ = QFileDialog.getSaveFileName(self, "Export to Excel", "", "Excel Files (*.xlsx)")
         if filename:
-            Manager.data.export_to_excel(filename)
+            dataset.export_to_excel(filename)
 
-    def export_csv_dialog(self):
+    def export_csv_dialog(self) -> None:
+        dataset = manager.get_selected_dataset()
+        if dataset is None:
+            return
         filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "", "CSV Files (*.csv)")
         if filename:
-            Manager.data.export_to_csv(filename)
+            dataset.export_to_csv(filename)
 
     def update_memory_usage(self):
         # return the memory usage in MB
@@ -260,7 +266,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     # TODO: check other cases!!
                     dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
                     if dialog.exec() == QDialog.DialogCode.Accepted:
-                        Manager.import_csv_dataset(path)
+                        manager.import_csv_dataset(path)
                 elif path.suffix.lower() == ".tse":
                     dialog = ImportTseDialog(path, self)
                     # TODO: check other cases!!
@@ -278,7 +284,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def _import_result(self, dataset: Dataset) -> None:
         if dataset is not None:
-            Manager.workspace_model.add_dataset(dataset)
+            manager.get_workspace_model().add_dataset(dataset)
 
     def _import_finished(self) -> None:
         self.toast.hide()

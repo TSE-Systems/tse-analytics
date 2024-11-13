@@ -2,22 +2,21 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QInputDialog, QListWidgetItem, QWidget
 
 from tse_analytics.core.data.shared import Factor, Group
-from tse_analytics.core.manager import Manager
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.views.factors_dialog_ui import Ui_FactorsDialog
 
 
 class FactorsDialog(QDialog, Ui_FactorsDialog):
-    def __init__(self, parent: QWidget | None = None):
+    def __init__(self, dataset: Dataset, parent: QWidget | None = None):
         super().__init__(parent)
         self.setupUi(self)
 
+        self.dataset = dataset
+
         self.comboBoxFields.addItems(["text1", "text2", "text3"])
 
-        self.factors: list[Factor] = []
-
-        if Manager.data.selected_dataset is not None:
-            self.factors = list(Manager.data.selected_dataset.factors.values()).copy()
-            self.listWidgetFactors.addItems([factor.name for factor in self.factors])
+        self.factors = list(self.dataset.factors.values()).copy()
+        self.listWidgetFactors.addItems([factor.name for factor in self.factors])
 
         self.pushButtonAddFactor.clicked.connect(self.add_factor)
         self.pushButtonDeleteFactor.clicked.connect(self.delete_factor)
@@ -34,12 +33,11 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         self.selected_group: Group | None = None
 
     def add_factor(self):
-        if Manager.data.selected_dataset is not None:
-            text, result = QInputDialog.getText(self, "Add Factor", "Please enter unique factor name:")
-            if result:
-                factor = Factor(name=text)
-                self.factors.append(factor)
-                self.listWidgetFactors.addItem(text)
+        text, result = QInputDialog.getText(self, "Add Factor", "Please enter unique factor name:")
+        if result:
+            factor = Factor(name=text)
+            self.factors.append(factor)
+            self.listWidgetFactors.addItem(text)
 
     def delete_factor(self):
         for item in self.listWidgetFactors.selectedItems():
@@ -66,7 +64,7 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
     def extract_groups(self):
         selected_field = self.comboBoxFields.currentText()
         if selected_field is not None:
-            groups = Manager.data.selected_dataset.extract_groups_from_field(selected_field)
+            groups = self.dataset.extract_groups_from_field(selected_field)
             self.selected_factor.groups = list(groups.values())
             self.listWidgetGroups.clear()
             self.listWidgetGroups.addItems([group.name for group in self.selected_factor.groups])
@@ -87,7 +85,7 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         self.selected_group = next((x for x in self.selected_factor.groups if x.name == text), None)
         self.pushButtonDeleteGroup.setEnabled(self.selected_group is not None)
         if self.selected_group is not None:
-            for animal in Manager.data.selected_dataset.animals.values():
+            for animal in self.dataset.animals.values():
                 item = QListWidgetItem(str(animal.id))
                 item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled)
                 if animal.id in self.selected_group.animal_ids:
@@ -105,7 +103,7 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
 
     def animal_item_changed(self, item: QListWidgetItem):
         animal_id = next(
-            (animal.id for animal in Manager.data.selected_dataset.animals.values() if animal.id == item.text()),
+            (animal.id for animal in self.dataset.animals.values() if animal.id == item.text()),
             None,
         )
         if animal_id is not None:

@@ -8,20 +8,21 @@ from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.helper import get_html_image, show_help
-from tse_analytics.core.manager import Manager
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.css import style_descriptive_table
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.views.analysis.anova_widget_ui import Ui_AnovaWidget
 
 
 class AnovaWidget(QWidget, messaging.MessengerListener):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
+        self.ui = Ui_AnovaWidget()
+        self.ui.setupUi(self)
 
         messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
 
-        self.ui = Ui_AnovaWidget()
-        self.ui.setupUi(self)
+        self.dataset: Dataset | None = None
 
         self.help_path = "anova.md"
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
@@ -105,7 +106,8 @@ class AnovaWidget(QWidget, messaging.MessengerListener):
 
     def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
         self._clear()
-        if message.dataset is None:
+        self.dataset = message.dataset
+        if self.dataset is None:
             self.ui.pushButtonUpdate.setDisabled(True)
             self.ui.pushButtonAddReport.setDisabled(True)
             return
@@ -113,9 +115,9 @@ class AnovaWidget(QWidget, messaging.MessengerListener):
         self.ui.pushButtonUpdate.setEnabled(True)
         self.ui.pushButtonAddReport.setEnabled(True)
 
-        self.ui.tableWidgetFactors.set_data(message.dataset.factors)
-        self.ui.tableWidgetDependentVariable.set_data(message.dataset.variables)
-        self.ui.tableWidgetCovariates.set_data(message.dataset.variables)
+        self.ui.tableWidgetFactors.set_data(self.dataset.factors)
+        self.ui.tableWidgetDependentVariable.set_data(self.dataset.variables)
+        self.ui.tableWidgetCovariates.set_data(self.dataset.variables)
 
     def _clear(self):
         self.ui.pushButtonUpdate.setDisabled(True)
@@ -161,7 +163,7 @@ class AnovaWidget(QWidget, messaging.MessengerListener):
             ).show()
             return
 
-        df = Manager.data.get_anova_df(variables=selected_dependent_variables)
+        df = self.dataset.get_anova_df(variables=selected_dependent_variables)
 
         dependent_variable = next(iter(selected_dependent_variables.values())).name
         factor_name = selected_factor_names[0]
@@ -254,7 +256,7 @@ class AnovaWidget(QWidget, messaging.MessengerListener):
             ).show()
             return
 
-        df = Manager.data.get_anova_df(variables=selected_dependent_variables)
+        df = self.dataset.get_anova_df(variables=selected_dependent_variables)
 
         dependent_variable = next(iter(selected_dependent_variables.values())).name
 
@@ -312,7 +314,7 @@ class AnovaWidget(QWidget, messaging.MessengerListener):
 
     def _analyze_rm_anova(self, selected_dependent_variables: dict[str, Variable]):
         do_pairwise_tests = True
-        if not Manager.data.selected_dataset.binning_settings.apply:
+        if not self.dataset.binning_settings.apply:
             make_toast(
                 self,
                 "Repeated Measures ANOVA",
@@ -322,7 +324,7 @@ class AnovaWidget(QWidget, messaging.MessengerListener):
                 show_duration_bar=True,
             ).show()
             return
-        elif Manager.data.selected_dataset.binning_settings.mode == BinningMode.INTERVALS:
+        elif self.dataset.binning_settings.mode == BinningMode.INTERVALS:
             if (
                 QMessageBox.question(
                     self,
@@ -333,7 +335,7 @@ class AnovaWidget(QWidget, messaging.MessengerListener):
             ):
                 do_pairwise_tests = False
 
-        df = Manager.data.get_current_df(
+        df = self.dataset.get_current_df(
             variables=selected_dependent_variables,
             split_mode=SplitMode.ANIMAL,
             selected_factor_name=None,
@@ -419,7 +421,7 @@ class AnovaWidget(QWidget, messaging.MessengerListener):
             return
 
         do_pairwise_tests = True
-        if not Manager.data.selected_dataset.binning_settings.apply:
+        if not self.dataset.binning_settings.apply:
             make_toast(
                 self,
                 "Mixed ANOVA",
@@ -429,7 +431,7 @@ class AnovaWidget(QWidget, messaging.MessengerListener):
                 show_duration_bar=True,
             ).show()
             return
-        elif Manager.data.selected_dataset.binning_settings.mode == BinningMode.INTERVALS:
+        elif self.dataset.binning_settings.mode == BinningMode.INTERVALS:
             if (
                 QMessageBox.question(
                     self,
@@ -442,7 +444,7 @@ class AnovaWidget(QWidget, messaging.MessengerListener):
 
         factor_name = selected_factor_names[0]
 
-        df = Manager.data.get_current_df(
+        df = self.dataset.get_current_df(
             variables=selected_dependent_variables,
             split_mode=SplitMode.ANIMAL,
             selected_factor_name=None,
@@ -537,7 +539,7 @@ class AnovaWidget(QWidget, messaging.MessengerListener):
 
         variables = selected_dependent_variables | selected_covariate_variables
 
-        df = Manager.data.get_anova_df(variables=variables)
+        df = self.dataset.get_anova_df(variables=variables)
 
         padjust = self.p_adjustment[self.ui.comboBoxPAdjustment.currentText()]
         effsize = self.eff_size[self.ui.comboBoxEffectSizeType.currentText()]

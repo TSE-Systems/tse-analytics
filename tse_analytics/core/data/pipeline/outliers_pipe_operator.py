@@ -25,6 +25,6 @@ def process_outliers(df: pd.DataFrame, settings: OutliersSettings, variables: di
     # Filter our dataframe based on condition
     result = df[condition]
 
-    result.reset_index(inplace=True)
+    result.reset_index(drop=True, inplace=True)
 
     return result

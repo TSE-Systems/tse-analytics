@@ -13,9 +13,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from tse_analytics.core import messaging
+from tse_analytics.core import manager, messaging
 from tse_analytics.core.helper import CSV_IMPORT_ENABLED
-from tse_analytics.core.manager import Manager
 from tse_analytics.modules.phenomaster.actimot.models.actimot_tree_item import ActimotTreeItem
 from tse_analytics.modules.phenomaster.actimot.views.actimot_dialog import ActimotDialog
 from tse_analytics.modules.phenomaster.calo_details.models.calo_details_tree_item import CaloDetailsTreeItem
@@ -95,13 +94,15 @@ class DatasetsWidget(QWidget):
         self.ui.treeView.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.ui.treeView.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.ui.treeView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.ui.treeView.setModel(Manager.workspace_model)
+
+        workspace_model = manager.get_workspace_model()
+        self.ui.treeView.setModel(workspace_model)
 
         # self.ui.treeView.customContextMenuRequested.connect(self._open_menu)
         self.ui.treeView.selectionModel().selectionChanged.connect(self._treeview_selection_changed)
         self.ui.treeView.selectionModel().currentChanged.connect(self._treeview_current_changed)
         self.ui.treeView.doubleClicked.connect(self._treeview_double_clicked)
-        Manager.workspace_model.checkedItemChanged.connect(self._checked_item_changed)
+        workspace_model.checkedItemChanged.connect(self._checked_item_changed)
 
     def _get_selected_dataset(self) -> Dataset | None:
         selected_indexes = self.ui.treeView.selectedIndexes()
@@ -155,7 +156,7 @@ class DatasetsWidget(QWidget):
             if dialog.exec() == QDialog.DialogCode.Accepted:
                 indexes = self.ui.treeView.selectedIndexes()
                 selected_dataset_index = indexes[0]
-                Manager.import_meal_details(selected_dataset_index, path)
+                manager.import_meal_details(selected_dataset_index, path)
 
     def _import_actimot_details(self):
         path, _ = QFileDialog.getOpenFileName(
@@ -171,7 +172,7 @@ class DatasetsWidget(QWidget):
             if dialog.exec() == QDialog.DialogCode.Accepted:
                 indexes = self.ui.treeView.selectedIndexes()
                 selected_dataset_index = indexes[0]
-                Manager.import_actimot_details(selected_dataset_index, path)
+                manager.import_actimot_details(selected_dataset_index, path)
 
     def _import_calo_details(self):
         path, _ = QFileDialog.getOpenFileName(
@@ -187,7 +188,7 @@ class DatasetsWidget(QWidget):
             if dialog.exec() == QDialog.DialogCode.Accepted:
                 indexes = self.ui.treeView.selectedIndexes()
                 selected_dataset_index = indexes[0]
-                Manager.import_calo_details(selected_dataset_index, path)
+                manager.import_calo_details(selected_dataset_index, path)
 
     def _adjust_dataset(self):
         selected_index = self.ui.treeView.selectedIndexes()[0]
@@ -198,7 +199,7 @@ class DatasetsWidget(QWidget):
         dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             item.name = dataset.name
-            Manager.data.set_selected_dataset(dataset)
+            manager.set_selected_dataset(dataset)
 
     def _remove_dataset(self):
         if (
@@ -206,7 +207,7 @@ class DatasetsWidget(QWidget):
             == QMessageBox.StandardButton.Yes
         ):
             selected_indexes = self.ui.treeView.selectedIndexes()
-            Manager.remove_dataset(selected_indexes)
+            manager.remove_dataset(selected_indexes)
             self.import_button.setEnabled(False)
             self.adjust_dataset_action.setEnabled(False)
             self.remove_dataset_action.setEnabled(False)
@@ -220,14 +221,14 @@ class DatasetsWidget(QWidget):
                 self, "Enter new dataset name", "Name", QLineEdit.EchoMode.Normal, f"Clone of {dataset.name}"
             )
             if ok:
-                Manager.clone_dataset(dataset, name)
+                manager.clone_dataset(dataset, name)
 
     def _treeview_current_changed(self, current: QModelIndex, previous: QModelIndex):
         if current.isValid():
             item = current.model().getItem(current)
             messaging.broadcast(messaging.SelectedTreeItemChangedMessage(self, item))
             if isinstance(item, DatasetTreeItem):
-                Manager.data.set_selected_dataset(item.dataset)
+                manager.set_selected_dataset(item.dataset)
 
     def _treeview_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
         level = None
@@ -252,7 +253,8 @@ class DatasetsWidget(QWidget):
                 dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
                 result = dialog.exec()
                 if result == QDialog.DialogCode.Accepted:
-                    Manager.data.append_fitting_results(item.calo_details, dialog.fitting_results)
+                    dataset = item.calo_details.dataset
+                    dataset.append_fitting_results(dialog.fitting_results)
             elif isinstance(item, MealDetailsTreeItem):
                 dialog = MealDetailsDialog(item.meal_details, self)
                 # TODO: check other cases!!

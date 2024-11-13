@@ -3,7 +3,6 @@ from PySide6.QtWidgets import QComboBox, QDoubleSpinBox, QToolBar, QWidget
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.outliers import OutliersMode
-from tse_analytics.core.manager import Manager
 from tse_analytics.core.models.aggregation_combo_box_delegate import AggregationComboBoxDelegate
 from tse_analytics.core.models.variables_model import VariablesModel
 from tse_analytics.core.predefined_variables import assign_predefined_values
@@ -54,7 +53,7 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
             self.outliersModeComboBox.setCurrentText(OutliersMode.OFF)
         else:
             self.dataset = message.dataset
-            model = VariablesModel(list(self.dataset.variables.values()))
+            model = VariablesModel(list(self.dataset.variables.values()), self.dataset)
             self.ui.tableView.model().setSourceModel(model)
             self.ui.tableView.resizeColumnsToContents()
             self.outliersCoefficientSpinBox.setValue(self.dataset.outliers_settings.coefficient)
@@ -64,18 +63,18 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
         if self.dataset is not None:
             outliers_settings = self.dataset.outliers_settings
             outliers_settings.mode = OutliersMode(self.outliersModeComboBox.currentText())
-            Manager.data.apply_outliers(outliers_settings)
+            self.dataset.apply_outliers(outliers_settings)
 
     def _outliers_coefficient_changed(self, value: float):
         if self.dataset is not None:
             outliers_settings = self.dataset.outliers_settings
             outliers_settings.coefficient = self.outliersCoefficientSpinBox.value()
-            Manager.data.apply_outliers(outliers_settings)
+            self.dataset.apply_outliers(outliers_settings)
 
     def _reset_variables(self):
         if self.dataset is not None:
             self.dataset.variables = assign_predefined_values(self.dataset.variables)
-            model = VariablesModel(list(self.dataset.variables.values()))
+            model = VariablesModel(list(self.dataset.variables.values()), self.dataset)
             self.ui.tableView.model().setSourceModel(model)
             self.ui.tableView.resizeColumnsToContents()
 

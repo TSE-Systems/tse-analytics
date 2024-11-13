@@ -2,17 +2,19 @@ from collections.abc import Sequence
 
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
+from tse_analytics.core import messaging
 from tse_analytics.core.data.shared import Variable
-from tse_analytics.core.manager import Manager
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
 
 class VariablesModel(QAbstractTableModel):
     header = ("Name", "Unit", "Aggregation", "Outliers", "Description")
 
-    def __init__(self, items: Sequence[Variable], parent=None):
+    def __init__(self, items: Sequence[Variable], dataset: Dataset | None = None, parent=None):
         super().__init__(parent)
 
         self.items = items
+        self.dataset = dataset
 
     def data(self, index: QModelIndex, role: Qt.ItemDataRole):
         item = self.items[index.row()]
@@ -39,13 +41,13 @@ class VariablesModel(QAbstractTableModel):
                 if role == Qt.ItemDataRole.EditRole:
                     item = self.items[index.row()]
                     item.aggregation = value
-                    Manager.data.set_binning_operation()
+                    messaging.broadcast(messaging.DataChangedMessage(self, self.dataset))
                     return True
             case 3:
                 if role == Qt.ItemDataRole.CheckStateRole:
                     item = self.items[index.row()]
                     item.remove_outliers = value == Qt.CheckState.Checked.value
-                    Manager.data.apply_outliers(Manager.data.selected_dataset.outliers_settings)
+                    self.dataset.apply_outliers(self.dataset.outliers_settings)
                     return True
 
     def flags(self, index: QModelIndex):

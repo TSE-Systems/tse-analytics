@@ -3,7 +3,6 @@ from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import BinningMode
-from tse_analytics.core.manager import Manager
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.views.settings.binning_settings_widget_ui import Ui_BinningSettingsWidget
 
@@ -11,11 +10,10 @@ from tse_analytics.views.settings.binning_settings_widget_ui import Ui_BinningSe
 class BinningSettingsWidget(QWidget, messaging.MessengerListener):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
-
-        messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
-
         self.ui = Ui_BinningSettingsWidget()
         self.ui.setupUi(self)
+
+        messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
 
         self.ui.widgetTimeCyclesSettings.setVisible(False)
         self.ui.widgetTimePhasesSettings.setVisible(False)
@@ -28,16 +26,15 @@ class BinningSettingsWidget(QWidget, messaging.MessengerListener):
         self.dataset: Dataset | None = None
 
     def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
-        if message.dataset is None:
-            self.dataset = None
+        self.dataset = message.dataset
+        if self.dataset is None:
             self.ui.applyBinningCheckBox.setChecked(False)
             self.ui.binningModeComboBox.setCurrentText(BinningMode.INTERVALS)
             self.ui.widgetTimePhasesSettings.clear()
         else:
-            self.dataset = message.dataset
-            self.ui.widgetTimeIntervalSettings.set_data(self.dataset.binning_settings.time_intervals_settings)
-            self.ui.widgetTimeCyclesSettings.set_data(self.dataset.binning_settings.time_cycles_settings)
-            self.ui.widgetTimePhasesSettings.set_data(self.dataset.binning_settings.time_phases_settings)
+            self.ui.widgetTimeIntervalSettings.set_data(self.dataset)
+            self.ui.widgetTimeCyclesSettings.set_data(self.dataset)
+            self.ui.widgetTimePhasesSettings.set_data(self.dataset)
             self.ui.binningModeComboBox.setCurrentText(self.dataset.binning_settings.mode)
             self.ui.applyBinningCheckBox.setChecked(self.dataset.binning_settings.apply)
 
@@ -59,13 +56,13 @@ class BinningSettingsWidget(QWidget, messaging.MessengerListener):
         if self.dataset is not None:
             binning_settings = self.dataset.binning_settings
             binning_settings.mode = BinningMode(self.ui.binningModeComboBox.currentText())
-            Manager.data.apply_binning(binning_settings)
+            self.dataset.apply_binning(binning_settings)
 
     def _apply_binning_changed(self, value: int):
         if self.dataset is not None:
             binning_settings = self.dataset.binning_settings
             binning_settings.apply = self.ui.applyBinningCheckBox.isChecked()
-            Manager.data.apply_binning(binning_settings)
+            self.dataset.apply_binning(binning_settings)
 
     def minimumSizeHint(self):
         return QSize(300, 70)

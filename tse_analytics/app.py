@@ -11,7 +11,6 @@ from PySide6.QtCore import QFile, QTextStream
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
-from tse_analytics.core.manager import Manager
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.views.main_window import MainWindow
 
@@ -60,9 +59,6 @@ class App(QApplication):
 
         # TaskManager singleton initialization
         TaskManager(self)
-
-        # DataManager singleton initialization
-        Manager()
 
 
 def handle_exception(exc_type, exc_value, exc_traceback) -> None:

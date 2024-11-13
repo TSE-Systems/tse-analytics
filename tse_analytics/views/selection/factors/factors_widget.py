@@ -4,8 +4,8 @@ from PySide6.QtWidgets import QDialog, QToolBar, QWidget
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.shared import Factor
-from tse_analytics.core.manager import Manager
 from tse_analytics.core.models.factors_model import FactorsModel
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.views.factors_dialog import FactorsDialog
 from tse_analytics.views.selection.factors.factors_widget_ui import Ui_FactorsWidget
 
@@ -13,11 +13,10 @@ from tse_analytics.views.selection.factors.factors_widget_ui import Ui_FactorsWi
 class FactorsWidget(QWidget, messaging.MessengerListener):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
-
-        messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
-
         self.ui = Ui_FactorsWidget()
         self.ui.setupUi(self)
+
+        messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
 
         toolbar = QToolBar("Factors Toolbar")
         toolbar.setIconSize(QSize(16, 16))
@@ -25,6 +24,7 @@ class FactorsWidget(QWidget, messaging.MessengerListener):
 
         self.edit_factors_action = toolbar.addAction(QIcon(":/icons/icons8-edit-16.png"), "Edit Factors")
         self.edit_factors_action.triggered.connect(self._edit_factors)
+        self.edit_factors_action.setEnabled(False)
 
         self.layout().insertWidget(0, toolbar)
 
@@ -32,20 +32,26 @@ class FactorsWidget(QWidget, messaging.MessengerListener):
         proxy_model.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.ui.tableView.setModel(proxy_model)
 
+        self.dataset: Dataset | None = None
+
     def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
         if message.dataset is None:
+            self.dataset = None
+            self.edit_factors_action.setEnabled(False)
             self.ui.tableView.model().setSourceModel(None)
         else:
-            model = FactorsModel(list(message.dataset.factors.values()))
+            self.dataset = message.dataset
+            model = FactorsModel(list(self.dataset.factors.values()))
             self.ui.tableView.model().setSourceModel(model)
             self.ui.tableView.resizeColumnsToContents()
+            self.edit_factors_action.setEnabled(True)
 
     def _edit_factors(self):
-        dlg = FactorsDialog(self)
+        dlg = FactorsDialog(self.dataset, self)
         result = dlg.exec()
         if result == QDialog.DialogCode.Accepted:
             factors: dict[str, Factor] = {}
             for factor in dlg.factors:
                 factors[factor.name] = factor
-            Manager.data.selected_dataset.set_factors(factors)
-            messaging.broadcast(messaging.DatasetChangedMessage(self, Manager.data.selected_dataset))
+            self.dataset.set_factors(factors)
+            messaging.broadcast(messaging.DatasetChangedMessage(self, self.dataset))

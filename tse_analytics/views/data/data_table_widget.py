@@ -7,12 +7,12 @@ from PySide6.QtWidgets import QAbstractItemView, QWidget
 from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.manager import Manager
 from tse_analytics.core.models.pandas_model import PandasModel
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.css import style_descriptive_table
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.views.data.data_table_widget_ui import Ui_DataTableWidget
 
 
@@ -44,6 +44,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
         self.ui.textEditDescriptiveStats.document().setDefaultStyleSheet(style_descriptive_table)
 
+        self.dataset: Dataset | None = None
         self.df: pd.DataFrame | None = None
 
     def _resize_columns_width(self):
@@ -53,7 +54,8 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         TaskManager.start_task(worker)
 
     def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
-        if message.dataset is None:
+        self.dataset = message.dataset
+        if self.dataset is None:
             self.ui.tableView.setModel(None)
             self.ui.tableWidgetVariables.clear_data()
             self.ui.textEditDescriptiveStats.document().clear()
@@ -95,7 +97,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self._set_data()
 
     def _set_data(self):
-        if Manager.data.selected_dataset is None:
+        if self.dataset is None:
             return
 
         selected_variables = self.ui.tableWidgetVariables.get_selected_variables_dict()
@@ -103,8 +105,8 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         selected_factor_name = self.ui.factorSelector.currentText()
 
         if (
-            Manager.data.selected_dataset.binning_settings.apply
-            and Manager.data.selected_dataset.binning_settings.mode != BinningMode.INTERVALS
+            self.dataset.binning_settings.apply
+            and self.dataset.binning_settings.mode != BinningMode.INTERVALS
             and split_mode != SplitMode.ANIMAL
             and len(selected_variables) == 0
         ):
@@ -129,7 +131,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             ).show()
             return
 
-        self.df = Manager.data.get_data_table_df(
+        self.df = self.dataset.get_data_table_df(
             variables=selected_variables,
             split_mode=split_mode,
             selected_factor_name=selected_factor_name,
@@ -148,7 +150,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             self.ui.textEditDescriptiveStats.document().clear()
             self.ui.pushButtonAddReport.setEnabled(False)
 
-        self.ui.tableView.setModel(PandasModel(self.df, calculate=True))
+        self.ui.tableView.setModel(PandasModel(self.df, self.dataset, calculate=True))
         self.header.setSortIndicatorShown(False)
 
     def _header_clicked(self, logical_index: int):
@@ -157,7 +159,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.header.setSortIndicatorShown(True)
         order = self.header.sortIndicatorOrder() == Qt.SortOrder.AscendingOrder
         df = self.df.sort_values(self.df.columns[logical_index], ascending=order, inplace=False)
-        self.ui.tableView.setModel(PandasModel(df, calculate=True))
+        self.ui.tableView.setModel(PandasModel(df, self.dataset, calculate=True))
 
     def _add_report(self):
         content = self.ui.textEditDescriptiveStats.document().toHtml()

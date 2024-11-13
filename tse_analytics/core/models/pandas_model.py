@@ -4,7 +4,7 @@ from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 from PySide6.QtGui import QColor
 
 from tse_analytics.core.data.outliers import OutliersMode
-from tse_analytics.core.manager import Manager
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
 
 class PandasModel(QAbstractTableModel):
@@ -14,9 +14,10 @@ class PandasModel(QAbstractTableModel):
 
     color = QColor("#f4a582")
 
-    def __init__(self, df: pd.DataFrame, calculate=False, parent=None):
+    def __init__(self, df: pd.DataFrame, dataset: Dataset, calculate=False, parent=None):
         QAbstractTableModel.__init__(self, parent)
 
+        self.dataset = dataset
         self.calulate = calculate
         self._data = np.array(df.values)
         self._cols = df.columns
@@ -36,18 +37,15 @@ class PandasModel(QAbstractTableModel):
         if role == Qt.ItemDataRole.DisplayRole:
             return str(self._data[index.row(), index.column()])
         if self.calulate and role == Qt.ItemDataRole.BackgroundRole:
-            if Manager.data.selected_dataset.outliers_settings.mode == OutliersMode.HIGHLIGHT:
+            if self.dataset.outliers_settings.mode == OutliersMode.HIGHLIGHT:
                 value = self._data[index.row(), index.column()]
                 if isinstance(value, int | float):
                     var_name = str(self._cols[index.column()])
-                    if (
-                        var_name in Manager.data.selected_dataset.variables
-                        and Manager.data.selected_dataset.variables[var_name].remove_outliers
-                    ):
+                    if var_name in self.dataset.variables and self.dataset.variables[var_name].remove_outliers:
                         q1 = self.q1[var_name]
                         q3 = self.q3[var_name]
                         iqr = q3 - q1
-                        coef = Manager.data.selected_dataset.outliers_settings.coefficient
+                        coef = self.dataset.outliers_settings.coefficient
                         if (value < (q1 - coef * iqr)) or (value > (q3 + coef * iqr)):
                             return PandasModel.color
         return None

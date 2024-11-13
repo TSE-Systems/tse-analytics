@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from tse_analytics.core.manager import Manager
+from tse_analytics.core import manager
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.views.datasets.adjust_dataset_dialog import AdjustDatasetDialog
 from tse_analytics.views.datasets.datasets_merge_dialog_ui import Ui_DatasetsMergeDialog
@@ -74,4 +74,4 @@ class DatasetsMergeDialog(QDialog):
         single_run = self.ui.checkBoxSingleRun.isChecked()
         continuous_mode = self.ui.radioButtonContinuousMode.isChecked()
         generate_new_animal_names = self.ui.checkBoxGenerateAnimalNames.isChecked()
-        Manager.merge_datasets(new_dataset_name, self.datasets, single_run, continuous_mode, generate_new_animal_names)
+        manager.merge_datasets(new_dataset_name, self.datasets, single_run, continuous_mode, generate_new_animal_names)

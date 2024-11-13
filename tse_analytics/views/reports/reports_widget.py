@@ -4,8 +4,8 @@ from PySide6.QtPrintSupport import QPrintDialog
 from PySide6.QtWidgets import QComboBox, QFileDialog, QFontComboBox, QToolBar, QWidget
 
 from tse_analytics.core import messaging
-from tse_analytics.core.manager import Manager
 from tse_analytics.css import style_descriptive_table
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.views.reports.reports_widget_ui import Ui_ReportsWidget
 
 FONT_SIZES = [
@@ -32,12 +32,11 @@ FONT_SIZES = [
 class ReportsWidget(QWidget, messaging.MessengerListener):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
+        self.ui = Ui_ReportsWidget()
+        self.ui.setupUi(self)
 
         messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
         messaging.subscribe(self, messaging.AddToReportMessage, self._add_to_report)
-
-        self.ui = Ui_ReportsWidget()
-        self.ui.setupUi(self)
 
         self.ui.editor.textChanged.connect(self._report_changed)
         self.ui.editor.selectionChanged.connect(self._update_format)
@@ -222,9 +221,12 @@ class ReportsWidget(QWidget, messaging.MessengerListener):
         # Initialize.
         self._update_format()
 
+        self.dataset: Dataset | None = None
+
     def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
-        if message.dataset is not None:
-            self.ui.editor.document().setHtml(message.dataset.report)
+        self.dataset = message.dataset
+        if self.dataset is not None:
+            self.ui.editor.document().setHtml(self.dataset.report)
 
     def _add_to_report(self, message: messaging.AddToReportMessage):
         self.ui.editor.append(message.content)
@@ -233,8 +235,8 @@ class ReportsWidget(QWidget, messaging.MessengerListener):
         self.ui.editor.document().clear()
 
     def _report_changed(self):
-        if Manager.data.selected_dataset is not None:
-            Manager.data.selected_dataset.report = self.ui.editor.toHtml()
+        if self.dataset is not None:
+            self.dataset.report = self.ui.editor.toHtml()
 
     def _print(self):
         dlg = QPrintDialog()

@@ -1,18 +1,17 @@
-from collections.abc import Sequence
-
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
-from tse_analytics.core.data.shared import Animal
-from tse_analytics.core.manager import Manager
+from tse_analytics.core import messaging
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
 
 class AnimalsModel(QAbstractTableModel):
     header = ("Animal", "Box", "Weight", "Text1", "Text2", "Text3")
 
-    def __init__(self, items: Sequence[Animal], parent=None):
+    def __init__(self, dataset: Dataset, parent=None):
         super().__init__(parent)
 
-        self.items = items
+        self.dataset = dataset
+        self.items = list(dataset.animals.values())
 
     def data(self, index: QModelIndex, role: Qt.ItemDataRole):
         item = self.items[index.row()]
@@ -44,13 +43,13 @@ class AnimalsModel(QAbstractTableModel):
                 if role == Qt.ItemDataRole.CheckStateRole:
                     item = self.items[index.row()]
                     item.enabled = value == Qt.CheckState.Checked.value
-                    Manager.data.set_selected_animals()
+                    messaging.broadcast(messaging.DataChangedMessage(self, self.dataset))
                     return True
                 elif role == Qt.ItemDataRole.EditRole:
                     item = self.items[index.row()]
                     old_id = item.id
                     item.id = value
-                    Manager.data.rename_animal(old_id, item)
+                    self.dataset.rename_animal(old_id, item)
                     return True
 
     def flags(self, index: QModelIndex):

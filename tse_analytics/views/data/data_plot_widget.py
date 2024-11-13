@@ -6,8 +6,8 @@ from PySide6.QtWidgets import QWidget
 from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.shared import SplitMode, Variable
-from tse_analytics.core.manager import Manager
 from tse_analytics.core.toaster import make_toast
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.views.data.bar_plot_view import BarPlotView
 from tse_analytics.views.data.data_plot_widget_ui import Ui_DataPlotWidget
 from tse_analytics.views.data.timeline_plot_view import TimelinePlotView
@@ -47,6 +47,8 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         self.ui.widgetSettings.layout().addWidget(self.plot_toolbar)
         self.plot_toolbar.hide()
 
+        self.dataset: Dataset | None = None
+
     def _get_split_mode(self) -> SplitMode:
         if self.ui.radioButtonSplitByAnimal.isChecked():
             return SplitMode.ANIMAL
@@ -80,15 +82,16 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         self._refresh_data()
 
     def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
-        self.ui.pushButtonAddReport.setDisabled(message.dataset is None)
-        if message.dataset is None:
+        self.dataset = message.dataset
+        self.ui.pushButtonAddReport.setDisabled(self.dataset is None)
+        if self.dataset is None:
             self.ui.variableSelector.clear()
             self.ui.factorSelector.clear()
             self.timelinePlotView.clear_plot()
             self.barPlotView.clear_plot()
         else:
-            self.ui.variableSelector.set_data(message.dataset.variables)
-            self.ui.factorSelector.set_data(message.dataset.factors, add_empty_item=False)
+            self.ui.variableSelector.set_data(self.dataset.variables)
+            self.ui.factorSelector.set_data(self.dataset.factors, add_empty_item=False)
             self._refresh_data()
 
     def _on_binning_applied(self, message: messaging.BinningMessage):
@@ -104,7 +107,7 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         self._refresh_data()
 
     def _refresh_data(self):
-        if Manager.data.selected_dataset is None:
+        if self.dataset is None:
             return
 
         selected_factor_name = self.ui.factorSelector.currentText()
@@ -124,10 +127,10 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         selected_variable = self.ui.variableSelector.get_selected_variable()
         display_errors = self.ui.groupBoxDisplayErrors.isChecked()
 
-        if not Manager.data.selected_dataset.binning_settings.apply:
+        if not self.dataset.binning_settings.apply:
             self._display_timeline_plot(selected_variable, split_mode, selected_factor_name, display_errors)
         else:
-            if Manager.data.selected_dataset.binning_settings.mode == BinningMode.INTERVALS:
+            if self.dataset.binning_settings.mode == BinningMode.INTERVALS:
                 self._display_timeline_plot(selected_variable, split_mode, selected_factor_name, display_errors)
             else:
                 self._display_bar_plot(selected_variable, split_mode, selected_factor_name, display_errors)
@@ -150,19 +153,18 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         else:
             calculate_errors = None
 
-        df = Manager.data.get_timeline_plot_df(
+        df = self.dataset.get_timeline_plot_df(
             variable=selected_variable,
             split_mode=split_mode,
             selected_factor_name=selected_factor_name,
             calculate_errors=calculate_errors,
         )
 
-        selected_factor = (
-            Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
-        )
+        selected_factor = self.dataset.factors[selected_factor_name] if selected_factor_name != "" else None
 
         if not df.empty:
             self.timelinePlotView.refresh_data(
+                self.dataset,
                 df,
                 selected_variable,
                 split_mode,
@@ -190,15 +192,14 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         else:
             calculate_errors = None
 
-        df = Manager.data.get_bar_plot_df(
+        df = self.dataset.get_bar_plot_df(
             variable=selected_variable,
         )
 
-        selected_factor = (
-            Manager.data.selected_dataset.factors[selected_factor_name] if selected_factor_name != "" else None
-        )
+        selected_factor = self.dataset.factors[selected_factor_name] if selected_factor_name != "" else None
 
         self.barPlotView.refresh_data(
+            self.dataset,
             df,
             selected_variable,
             split_mode,
@@ -215,10 +216,10 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         self.plot_toolbar = new_toolbar
 
     def _add_report(self):
-        if not Manager.data.selected_dataset.binning_settings.apply:
+        if not self.dataset.binning_settings.apply:
             html = self.timelinePlotView.get_report()
         else:
-            if Manager.data.selected_dataset.binning_settings.mode == BinningMode.INTERVALS:
+            if self.dataset.binning_settings.mode == BinningMode.INTERVALS:
                 html = self.timelinePlotView.get_report()
             else:
                 html = self.barPlotView.get_report()
