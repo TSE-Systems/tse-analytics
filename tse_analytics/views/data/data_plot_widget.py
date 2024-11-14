@@ -160,7 +160,11 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
             calculate_errors=calculate_errors,
         )
 
-        selected_factor = self.dataset.factors[selected_factor_name] if selected_factor_name != "" else None
+        selected_factor = (
+            self.dataset.factors[selected_factor_name]
+            if (selected_factor_name != "" and selected_factor_name in self.dataset.factors)
+            else None
+        )
 
         if not df.empty:
             self.timelinePlotView.refresh_data(

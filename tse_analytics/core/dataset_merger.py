@@ -4,7 +4,7 @@ from tse_analytics.core.data.shared import Animal, Variable
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
 
-def merge(
+def merge_datasets(
     new_dataset_name: str,
     datasets: list[Dataset],
     single_run: bool,

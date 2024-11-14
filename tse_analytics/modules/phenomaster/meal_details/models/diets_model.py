@@ -24,8 +24,6 @@ class DietsModel(QAbstractTableModel):
             elif index.column() == 1:
                 try:
                     item.caloric_value = float(value)
-                    # Manager.data.selected_dataset.set_time_phases(self.items)
-                    # Manager.messenger.broadcast(DatasetChangedMessage(self, Manager.data.selected_dataset))
                 except ValueError:
                     return False
             else:

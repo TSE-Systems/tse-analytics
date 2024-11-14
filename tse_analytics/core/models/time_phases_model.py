@@ -29,7 +29,6 @@ class TimePhasesModel(QAbstractTableModel):
             elif index.column() == 1:
                 try:
                     item.start_timestamp = pd.to_timedelta(value)
-                    # Manager.data.selected_dataset.set_time_phases(self.items)
                     messaging.broadcast(messaging.DatasetChangedMessage(self, self.dataset))
                 except ValueError:
                     return False
@@ -54,10 +53,8 @@ class TimePhasesModel(QAbstractTableModel):
         self.items.append(time_phase)
         # Trigger refresh.
         self.layoutChanged.emit()
-        # messaging.broadcast(DatasetChangedMessage(self, Manager.data.selected_dataset))
 
     def delete_time_phase(self, index):
         # Remove the item and refresh.
         del self.items[index.row()]
         self.layoutChanged.emit()
-        # messaging.broadcast(DatasetChangedMessage(self, Manager.data.selected_dataset))
