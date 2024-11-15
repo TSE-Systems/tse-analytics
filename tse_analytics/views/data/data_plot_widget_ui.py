@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'data_plot_widget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.7.3
+## Created by: Qt User Interface Compiler version 6.8.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -117,7 +117,6 @@ class Ui_DataPlotWidget(object):
 
         self.pushButtonAddReport = QPushButton(self.widgetSettings)
         self.pushButtonAddReport.setObjectName(u"pushButtonAddReport")
-        self.pushButtonAddReport.setEnabled(False)
 
         self.verticalLayout.addWidget(self.pushButtonAddReport)
 

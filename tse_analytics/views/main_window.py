@@ -2,12 +2,12 @@ import os
 from functools import partial
 from pathlib import Path
 
+import PySide6QtAds
 import psutil
 from pyqttoast import Toast
 from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QCloseEvent, QIcon
-from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QMessageBox
-from PySide6QtAds import AllDockAreas, BottomDockWidgetArea, LeftDockWidgetArea, RightDockWidgetArea
+from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QMessageBox, QToolButton, QMenu
 
 from tse_analytics.core import manager
 from tse_analytics.core.helper import CSV_IMPORT_ENABLED, show_help
@@ -58,55 +58,71 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.menuOpenRecent.aboutToShow.connect(self.populate_open_recent)
 
+        self.add_widget_button = QToolButton()
+        self.add_widget_button.setText("Add Widget")
+        self.add_widget_button.setIcon(QIcon(":/icons/icons8-database-import-16.png"))
+        self.add_widget_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+        self.add_widget_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.add_widget_button.setEnabled(True)
+
+        menu = QMenu("AddWidgetMenu", self.add_widget_button)
+        data_menu = menu.addMenu("Data")
+        data_menu.addAction(QIcon(":/icons/table.png"), "Table").triggered.connect(self._add_data_table_widget)
+        data_menu.addAction(QIcon(":/icons/plot.png"), "Plot").triggered.connect(self._add_data_plot_widget)
+        self.add_widget_button.setMenu(menu)
+
+        self.toolBar.addSeparator()
+        self.toolBar.addWidget(self.add_widget_button)
+
         # Initialize dock manager. Because the parent parameter is a QMainWindow
         # the dock manager registers itself as the central widget.
         LayoutManager(self, self.menuView)
 
-        self.default_docking_state = None
+        central_dock_area = LayoutManager.set_central_widget()
 
-        data_table_dock_widget = LayoutManager.register_dock_widget(
-            DataTableWidget(), "Table", QIcon(":/icons/table.png")
-        )
-        main_area = LayoutManager.add_dock_widget(AllDockAreas, data_table_dock_widget)
-
-        data_plot_dock_widget = LayoutManager.register_dock_widget(DataPlotWidget(), "Plot", QIcon(":/icons/plot.png"))
-        LayoutManager.add_dock_widget_tab_to_area(data_plot_dock_widget, main_area)
-
-        exploration_widget = LayoutManager.register_dock_widget(
-            ExplorationWidget(), "Exploration", QIcon(":/icons/exploration.png")
-        )
-        LayoutManager.add_dock_widget_tab_to_area(exploration_widget, main_area)
-
-        bivariate_dock_widget = LayoutManager.register_dock_widget(
-            BivariateWidget(), "Bivariate", QIcon(":/icons/bivariate.png")
-        )
-        LayoutManager.add_dock_widget_tab_to_area(bivariate_dock_widget, main_area)
-
-        anova_dock_widget = LayoutManager.register_dock_widget(AnovaWidget(), "AN(C)OVA", QIcon(":/icons/anova.png"))
-        LayoutManager.add_dock_widget_tab_to_area(anova_dock_widget, main_area)
-
-        dimensionality_dock_widget = LayoutManager.register_dock_widget(
-            DimensionalityWidget(), "Dimensionality", QIcon(":/icons/dimensionality.png")
-        )
-        LayoutManager.add_dock_widget_tab_to_area(dimensionality_dock_widget, main_area)
-
-        timeseries_dock_widget = LayoutManager.register_dock_widget(
-            TimeseriesWidget(), "Timeseries", QIcon(":/icons/timeseries.png")
-        )
-        LayoutManager.add_dock_widget_tab_to_area(timeseries_dock_widget, main_area)
-
-        report_dock_widget = LayoutManager.register_dock_widget(ReportsWidget(), "Report", QIcon(":/icons/report.png"))
-        LayoutManager.add_dock_widget_tab_to_area(report_dock_widget, main_area)
-        main_area.setCurrentIndex(0)
+        # data_table_dock_widget = LayoutManager.register_dock_widget(
+        #     DataTableWidget(), "Table", QIcon(":/icons/table.png")
+        # )
+        # LayoutManager.add_dock_widget_tab_to_area(data_table_dock_widget, central_dock_area)
+        #
+        # data_plot_dock_widget = LayoutManager.register_dock_widget(DataPlotWidget(), "Plot", QIcon(":/icons/plot.png"))
+        # LayoutManager.add_dock_widget_tab_to_area(data_plot_dock_widget, central_dock_area)
+        #
+        # exploration_widget = LayoutManager.register_dock_widget(
+        #     ExplorationWidget(), "Exploration", QIcon(":/icons/exploration.png")
+        # )
+        # LayoutManager.add_dock_widget_tab_to_area(exploration_widget, central_dock_area)
+        #
+        # bivariate_dock_widget = LayoutManager.register_dock_widget(
+        #     BivariateWidget(), "Bivariate", QIcon(":/icons/bivariate.png")
+        # )
+        # LayoutManager.add_dock_widget_tab_to_area(bivariate_dock_widget, central_dock_area)
+        #
+        # anova_dock_widget = LayoutManager.register_dock_widget(AnovaWidget(), "AN(C)OVA", QIcon(":/icons/anova.png"))
+        # LayoutManager.add_dock_widget_tab_to_area(anova_dock_widget, central_dock_area)
+        #
+        # dimensionality_dock_widget = LayoutManager.register_dock_widget(
+        #     DimensionalityWidget(), "Dimensionality", QIcon(":/icons/dimensionality.png")
+        # )
+        # LayoutManager.add_dock_widget_tab_to_area(dimensionality_dock_widget, central_dock_area)
+        #
+        # timeseries_dock_widget = LayoutManager.register_dock_widget(
+        #     TimeseriesWidget(), "Timeseries", QIcon(":/icons/timeseries.png")
+        # )
+        # LayoutManager.add_dock_widget_tab_to_area(timeseries_dock_widget, central_dock_area)
+        #
+        # report_dock_widget = LayoutManager.register_dock_widget(ReportsWidget(), "Report", QIcon(":/icons/report.png"))
+        # LayoutManager.add_dock_widget_tab_to_area(report_dock_widget, central_dock_area)
+        # central_dock_area.setCurrentIndex(1)
 
         datasets_dock_widget = LayoutManager.register_dock_widget(
             DatasetsWidget(), "Datasets", QIcon(":/icons/datasets.png")
         )
-        datasets_dock_area = LayoutManager.add_dock_widget(LeftDockWidgetArea, datasets_dock_widget)
+        datasets_dock_area = LayoutManager.add_dock_widget(PySide6QtAds.LeftDockWidgetArea, datasets_dock_widget)
 
         info_dock_widget = LayoutManager.register_dock_widget(InfoWidget(), "Info", QIcon(":/icons/info.png"))
         info_dock_area = LayoutManager.add_dock_widget_to_area(
-            BottomDockWidgetArea, info_dock_widget, datasets_dock_area
+            PySide6QtAds.BottomDockWidgetArea, info_dock_widget, datasets_dock_area
         )
 
         help_dock_widget = LayoutManager.register_dock_widget(HelpWidget(), "Help", QIcon(":/icons/help.png"))
@@ -119,13 +135,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         animals_dock_widget = LayoutManager.register_dock_widget(
             AnimalsWidget(), "Animals", QIcon(":/icons/icons8-rat-silhouette-16.png")
         )
-        animals_dock_area = LayoutManager.add_dock_widget(RightDockWidgetArea, animals_dock_widget)
+        animals_dock_area = LayoutManager.add_dock_widget(PySide6QtAds.RightDockWidgetArea, animals_dock_widget)
 
         factors_dock_widget = LayoutManager.register_dock_widget(
             FactorsWidget(), "Factors", QIcon(":/icons/factors.png")
         )
         selector_dock_area = LayoutManager.add_dock_widget_to_area(
-            BottomDockWidgetArea, factors_dock_widget, animals_dock_area
+            PySide6QtAds.BottomDockWidgetArea, factors_dock_widget, animals_dock_area
         )
 
         variables_dock_widget = LayoutManager.register_dock_widget(
@@ -137,19 +153,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         binning_dock_widget = LayoutManager.register_dock_widget(
             BinningSettingsWidget(), "Binning", QIcon(":/icons/binning.png")
         )
-        LayoutManager.add_dock_widget_to_area(BottomDockWidgetArea, binning_dock_widget, selector_dock_area)
+        LayoutManager.add_dock_widget_to_area(PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area)
 
         self.actionImportDataset.triggered.connect(self.import_dataset_dialog)
         self.actionOpenWorkspace.triggered.connect(self.load_workspace_dialog)
         self.actionSaveWorkspace.triggered.connect(self.save_workspace_dialog)
         self.actionExportCsv.triggered.connect(self.export_csv_dialog)
         self.actionExportExcel.triggered.connect(self.export_excel_dialog)
+        self.actionSaveLayout.triggered.connect(self._save_layout)
+        self.actionRestoreLayout.triggered.connect(self._restore_layout)
         self.actionResetLayout.triggered.connect(self._reset_layout)
         self.actionExit.triggered.connect(lambda: QApplication.exit())
         self.actionHelp.triggered.connect(lambda: show_help(self, "Introduction.md"))
         self.actionAbout.triggered.connect(self._show_about_dialog)
 
-        self.default_docking_state = LayoutManager.save_state()
+        # Store default dock layout
+        LayoutManager.add_perspective("Default")
 
         self.load_settings()
 
@@ -240,7 +259,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.memory_usage_label.setText(f"Memory usage: {mem:.2f} Mb")
 
     def _reset_layout(self):
-        LayoutManager.restore_state(self.default_docking_state)
+        LayoutManager.open_perspective("Default")
 
     def _show_about_dialog(self):
         dlg = AboutDialog(self)
@@ -289,9 +308,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def _import_finished(self) -> None:
         self.toast.hide()
 
+    def _save_layout(self) -> None:
+        LayoutManager.add_perspective("Temporary")
+
+    def _restore_layout(self) -> None:
+        LayoutManager.open_perspective("Temporary")
+
+    def _add_data_table_widget(self):
+        dataset = manager.get_selected_dataset()
+        if dataset is None:
+            return
+        widget = DataTableWidget(dataset)
+        LayoutManager.add_widget_to_central_area(widget, f"Table - {dataset.name}", QIcon(":/icons/table.png"))
+
+    def _add_data_plot_widget(self):
+        dataset = manager.get_selected_dataset()
+        if dataset is None:
+            return
+        widget = DataPlotWidget(dataset)
+        LayoutManager.add_widget_to_central_area(widget, f"Plot - {dataset.name}", QIcon(":/icons/plot.png"))
+
     def closeEvent(self, event: QCloseEvent) -> None:
         if QMessageBox.question(self, "TSE Analytics", "Do you want to quit?") == QMessageBox.StandardButton.Yes:
+            LayoutManager.clear_dock_manager()
             self.save_settings()
+            LayoutManager.delete_dock_manager()
             event.accept()
         else:
             event.ignore()

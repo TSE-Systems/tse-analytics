@@ -14,12 +14,11 @@ from tse_analytics.views.data.timeline_plot_view import TimelinePlotView
 
 
 class DataPlotWidget(QWidget, messaging.MessengerListener):
-    def __init__(self, parent: QWidget | None = None):
+    def __init__(self, dataset: Dataset, parent: QWidget | None = None):
         super().__init__(parent)
         self.ui = Ui_DataPlotWidget()
         self.ui.setupUi(self)
 
-        messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
         messaging.subscribe(self, messaging.BinningMessage, self._on_binning_applied)
         messaging.subscribe(self, messaging.DataChangedMessage, self._on_data_changed)
 
@@ -47,7 +46,10 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         self.ui.widgetSettings.layout().addWidget(self.plot_toolbar)
         self.plot_toolbar.hide()
 
-        self.dataset: Dataset | None = None
+        self.dataset = dataset
+        self.ui.variableSelector.set_data(self.dataset.variables)
+        self.ui.factorSelector.set_data(self.dataset.factors, add_empty_item=False)
+        self._refresh_data()
 
     def _get_split_mode(self) -> SplitMode:
         if self.ui.radioButtonSplitByAnimal.isChecked():
@@ -80,19 +82,6 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
 
     def _set_scatter_plot(self, state: bool):
         self._refresh_data()
-
-    def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
-        self.dataset = message.dataset
-        self.ui.pushButtonAddReport.setDisabled(self.dataset is None)
-        if self.dataset is None:
-            self.ui.variableSelector.clear()
-            self.ui.factorSelector.clear()
-            self.timelinePlotView.clear_plot()
-            self.barPlotView.clear_plot()
-        else:
-            self.ui.variableSelector.set_data(self.dataset.variables)
-            self.ui.factorSelector.set_data(self.dataset.factors, add_empty_item=False)
-            self._refresh_data()
 
     def _on_binning_applied(self, message: messaging.BinningMessage):
         self._refresh_data()
