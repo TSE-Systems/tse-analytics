@@ -1,8 +1,12 @@
+import uuid
 from typing import Any
+from uuid import UUID
 
 from PySide6.QtGui import QIcon, Qt
-from PySide6.QtWidgets import QMenu, QWidget, QLabel
+from PySide6.QtWidgets import QLabel, QMenu, QWidget
 from PySide6QtAds import CDockAreaWidget, CDockContainerWidget, CDockManager, CDockWidget, DockWidgetArea
+
+from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
 LAYOUT_VERSION = 11
 
@@ -36,6 +40,7 @@ class LayoutManager:
     menu: QMenu | None = None
 
     _added_widgets: dict[str, CDockWidget] = {}
+    _dataset_widgets: dict[UUID, list[CDockWidget]] = {}
 
     def __init__(self, parent: QWidget, menu: QMenu):
         LayoutManager.dock_manager = CDockManager(parent)
@@ -48,16 +53,18 @@ class LayoutManager:
         widget: QWidget,
         title: str,
         icon: QIcon,
+        add_to_menu: bool = True,
     ) -> CDockWidget | None:
-        if title in cls._added_widgets:
-            print("Already registered")
-            return None
+        # if title in cls._added_widgets:
+        #     print("Already registered")
+        #     return None
         dock_widget = CDockWidget(title)
         dock_widget.setWidget(widget)
         dock_widget.setIcon(icon)
         dock_widget.setMinimumSizeHintMode(CDockWidget.MinimumSizeHintFromContent)
-        cls.menu.addAction(dock_widget.toggleViewAction())
         cls._added_widgets[title] = dock_widget
+        if add_to_menu:
+            cls.menu.addAction(dock_widget.toggleViewAction())
         return dock_widget
 
     @classmethod
@@ -145,15 +152,27 @@ class LayoutManager:
     @classmethod
     def add_widget_to_central_area(
         cls,
+        dataset: Dataset | None,
         widget: QWidget,
         title: str,
         icon: QIcon,
     ) -> CDockWidget:
-        dock_widget = cls.register_dock_widget(widget, title, icon)
+        dock_widget = cls.register_dock_widget(widget, title, icon, False)
         if dock_widget is None:
             return None
+
+        object_name = f"{title} - {str(uuid.uuid4())}"
+        dock_widget.setObjectName(object_name)
+        dock_widget.setFeature(CDockWidget.DockWidgetDeleteOnClose, True)
+
         central_dock_area = cls.get_central_area_widget()
         cls.add_dock_widget_tab_to_area(dock_widget, central_dock_area)
+
+        if dataset is not None:
+            if dataset.id not in cls._dataset_widgets:
+                cls._dataset_widgets[dataset.id] = []
+            cls._dataset_widgets[dataset.id].append(dock_widget)
+
         return dock_widget
 
     @classmethod
@@ -178,11 +197,17 @@ class LayoutManager:
         return dock_widget.dockAreaWidget()
 
     @classmethod
+    def delete_dataset_widgets(cls, dataset: Dataset) -> None:
+        if dataset.id not in cls._dataset_widgets:
+            return
+        for dock_widget in cls._dataset_widgets[dataset.id]:
+            cls.dock_manager.removeDockWidget(dock_widget)
+
+    @classmethod
     def clear_dock_manager(cls) -> None:
         map = cls.dock_manager.dockWidgetsMap()
         for title, dock_widget in map.items():
             if title not in DEFAULT_WIDGETS:
-                print(title)
                 cls.dock_manager.removeDockWidget(dock_widget)
 
     @classmethod

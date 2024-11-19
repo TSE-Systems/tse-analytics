@@ -4,9 +4,8 @@ from uuid import uuid4
 
 from PySide6.QtCore import QModelIndex, QSettings
 
-from tse_analytics.core import messaging
+from tse_analytics.core import dataset_merger, messaging
 from tse_analytics.core.csv_import_settings import CsvImportSettings
-from tse_analytics.core import dataset_merger
 from tse_analytics.core.models.workspace_model import WorkspaceModel
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.modules.phenomaster.io.csv_dataset_loader import load_csv_dataset

@@ -1,6 +1,5 @@
 from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.models.tree_item import TreeItem
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
 
 class Message:
@@ -40,7 +39,7 @@ class SelectedTreeItemChangedMessage(Message):
 class DataChangedMessage(Message):
     """Indicates that selected data changed"""
 
-    def __init__(self, sender, dataset: Dataset):
+    def __init__(self, sender, dataset: "Dataset"):
         super().__init__(sender)
         self.dataset = dataset
 
@@ -48,7 +47,7 @@ class DataChangedMessage(Message):
 class DatasetChangedMessage(Message):
     """Indicates that selected dataset is changed"""
 
-    def __init__(self, sender, dataset: Dataset | None):
+    def __init__(self, sender, dataset: "Dataset"):
         super().__init__(sender)
         self.dataset = dataset
 
@@ -56,7 +55,7 @@ class DatasetChangedMessage(Message):
 class BinningMessage(Message):
     """Binning signalling"""
 
-    def __init__(self, sender, dataset: Dataset, settings: BinningSettings):
+    def __init__(self, sender, dataset: "Dataset", settings: BinningSettings):
         super().__init__(sender)
         self.dataset = dataset
         self.settings = settings
@@ -71,7 +70,7 @@ class ShowHelpMessage(Message):
 
 
 class AddToReportMessage(Message):
-    def __init__(self, sender, content, dataset: Dataset | None = None):
+    def __init__(self, sender, content, dataset: "Dataset" = None):
         super().__init__(sender)
         self.content = content
         self.dataset = dataset

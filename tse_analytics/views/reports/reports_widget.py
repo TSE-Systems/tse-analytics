@@ -30,12 +30,12 @@ FONT_SIZES = [
 
 
 class ReportsWidget(QWidget, messaging.MessengerListener):
-    def __init__(self, parent: QWidget | None = None):
+    def __init__(self, dataset: Dataset, parent: QWidget | None = None):
         super().__init__(parent)
         self.ui = Ui_ReportsWidget()
         self.ui.setupUi(self)
 
-        messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
+        # messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
         messaging.subscribe(self, messaging.AddToReportMessage, self._add_to_report)
 
         self.ui.editor.textChanged.connect(self._report_changed)
@@ -221,7 +221,8 @@ class ReportsWidget(QWidget, messaging.MessengerListener):
         # Initialize.
         self._update_format()
 
-        self.dataset: Dataset | None = None
+        self.dataset = dataset
+        self.ui.editor.document().setHtml(self.dataset.report)
 
     def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
         self.dataset = message.dataset
@@ -229,7 +230,8 @@ class ReportsWidget(QWidget, messaging.MessengerListener):
             self.ui.editor.document().setHtml(self.dataset.report)
 
     def _add_to_report(self, message: messaging.AddToReportMessage):
-        self.ui.editor.append(message.content)
+        if message.dataset == self.dataset:
+            self.ui.editor.append(message.content)
 
     def _new_report(self):
         self.ui.editor.document().clear()

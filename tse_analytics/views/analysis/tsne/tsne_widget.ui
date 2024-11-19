@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <author>Anton Rau</author>
+ <class>TsneWidget</class>
+ <widget class="QWidget" name="TsneWidget">
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <widget class="MplCanvas" name="canvas" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+     <widget class="QWidget" name="widgetSettings" native="true">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QGroupBox" name="groupBoxVariables">
+         <property name="title">
+          <string>Variables</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="VariablesTableWidget" name="tableWidgetVariables"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBoxSplitMode">
+         <property name="title">
+          <string>Split Mode</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_7">
+          <item>
+           <widget class="QRadioButton" name="radioButtonSplitTotal">
+            <property name="text">
+             <string>Total</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonSplitByAnimal">
+            <property name="text">
+             <string>By Animal</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonSplitByRun">
+            <property name="text">
+             <string>By Run</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButtonSplitByFactor">
+            <property name="text">
+             <string>By Factor</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="FactorSelector" name="factorSelector">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonUpdate">
+         <property name="text">
+          <string>Update</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonAddReport">
+         <property name="text">
+          <string>Add to Report</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonHelp">
+         <property name="text">
+          <string>Help</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../../resources/resources.qrc">
+           <normaloff>:/icons/icons8-help-16.png</normaloff>:/icons/icons8-help-16.png</iconset>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>FactorSelector</class>
+   <extends>QComboBox</extends>
+   <header>tse_analytics.views.misc.factor_selector</header>
+  </customwidget>
+  <customwidget>
+   <class>VariablesTableWidget</class>
+   <extends>QTableWidget</extends>
+   <header>tse_analytics.views.misc.variables_table_widget</header>
+  </customwidget>
+  <customwidget>
+   <class>MplCanvas</class>
+   <extends>QWidget</extends>
+   <header>tse_analytics.views.misc.MplCanvas</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../../../../resources/resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>
