@@ -216,4 +216,4 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
                 html = self.timelinePlotView.get_report()
             else:
                 html = self.barPlotView.get_report()
-        messaging.broadcast(messaging.AddToReportMessage(self, html))
+        messaging.broadcast(messaging.AddToReportMessage(self, html, self.dataset))

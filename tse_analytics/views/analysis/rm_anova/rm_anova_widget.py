@@ -163,4 +163,4 @@ class RMAnovaWidget(QWidget):
         self.ui.textEdit.document().setHtml(html)
 
     def _add_report(self):
-        messaging.broadcast(messaging.AddToReportMessage(self, self.ui.textEdit.toHtml()))
+        messaging.broadcast(messaging.AddToReportMessage(self, self.ui.textEdit.toHtml(), self.dataset))

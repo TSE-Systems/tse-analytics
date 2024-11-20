@@ -152,4 +152,4 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
     def _add_report(self):
         content = self.ui.textEditDescriptiveStats.document().toHtml()
-        messaging.broadcast(messaging.AddToReportMessage(self, content))
+        messaging.broadcast(messaging.AddToReportMessage(self, content, self.dataset))

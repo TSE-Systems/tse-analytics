@@ -158,4 +158,4 @@ class RegressionWidget(QWidget):
     def _add_report(self):
         html = get_html_image(self.plot_toolbar.canvas.figure)
         html += self.ui.textEdit.toHtml()
-        messaging.broadcast(messaging.AddToReportMessage(self, html))
+        messaging.broadcast(messaging.AddToReportMessage(self, html, self.dataset))

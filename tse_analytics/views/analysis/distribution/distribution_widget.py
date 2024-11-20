@@ -99,4 +99,4 @@ class DistributionWidget(QWidget):
 
     def _add_report(self):
         html = get_html_image(self.ui.canvas.figure)
-        messaging.broadcast(messaging.AddToReportMessage(self, html))
+        messaging.broadcast(messaging.AddToReportMessage(self, html, self.dataset))

@@ -224,11 +224,6 @@ class ReportsWidget(QWidget, messaging.MessengerListener):
         self.dataset = dataset
         self.ui.editor.document().setHtml(self.dataset.report)
 
-    def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
-        self.dataset = message.dataset
-        if self.dataset is not None:
-            self.ui.editor.document().setHtml(self.dataset.report)
-
     def _add_to_report(self, message: messaging.AddToReportMessage):
         if message.dataset == self.dataset:
             self.ui.editor.append(message.content)

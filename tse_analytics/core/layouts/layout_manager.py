@@ -8,10 +8,10 @@ from PySide6QtAds import CDockAreaWidget, CDockContainerWidget, CDockManager, CD
 
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
-LAYOUT_VERSION = 11
+LAYOUT_VERSION = 12
 
 CDockManager.setConfigFlags(CDockManager.DefaultOpaqueConfig)
-CDockManager.setConfigFlag(CDockManager.ActiveTabHasCloseButton, False)
+CDockManager.setConfigFlag(CDockManager.ActiveTabHasCloseButton, True)
 CDockManager.setConfigFlag(CDockManager.DockAreaHasCloseButton, False)
 CDockManager.setConfigFlag(CDockManager.DockAreaHasUndockButton, False)
 CDockManager.setConfigFlag(CDockManager.DockAreaDynamicTabsMenuButtonVisibility, True)
@@ -55,10 +55,8 @@ class LayoutManager:
         icon: QIcon,
         add_to_menu: bool = True,
     ) -> CDockWidget | None:
-        # if title in cls._added_widgets:
-        #     print("Already registered")
-        #     return None
         dock_widget = CDockWidget(title)
+        dock_widget.setFeature(CDockWidget.DockWidgetClosable, False)
         dock_widget.setWidget(widget)
         dock_widget.setIcon(icon)
         dock_widget.setMinimumSizeHintMode(CDockWidget.MinimumSizeHintFromContent)
@@ -164,6 +162,7 @@ class LayoutManager:
         object_name = f"{title} - {str(uuid.uuid4())}"
         dock_widget.setObjectName(object_name)
         dock_widget.setFeature(CDockWidget.DockWidgetDeleteOnClose, True)
+        dock_widget.setFeature(CDockWidget.DockWidgetClosable, True)
 
         central_dock_area = cls.get_central_area_widget()
         cls.add_dock_widget_tab_to_area(dock_widget, central_dock_area)
