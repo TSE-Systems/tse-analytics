@@ -17,15 +17,13 @@ from tse_analytics.views.data.data_table_widget_ui import Ui_DataTableWidget
 
 
 class DataTableWidget(QWidget, messaging.MessengerListener):
-    def __init__(self, parent: QWidget | None = None):
+    def __init__(self, dataset: Dataset, parent: QWidget | None = None):
         super().__init__(parent)
-
-        messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
-        messaging.subscribe(self, messaging.BinningMessage, self._on_binning_applied)
-        messaging.subscribe(self, messaging.DataChangedMessage, self._on_data_changed)
-
         self.ui = Ui_DataTableWidget()
         self.ui.setupUi(self)
+
+        messaging.subscribe(self, messaging.BinningMessage, self._on_binning_applied)
+        messaging.subscribe(self, messaging.DataChangedMessage, self._on_data_changed)
 
         self.ui.tableWidgetVariables.set_selection_mode(QAbstractItemView.SelectionMode.MultiSelection)
         self.ui.tableWidgetVariables.itemSelectionChanged.connect(self._variables_selection_changed)
@@ -39,13 +37,15 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.ui.factorSelector.currentTextChanged.connect(self._factor_changed)
         self.ui.pushButtonAddReport.clicked.connect(self._add_report)
 
-        self.header = self.ui.tableView.horizontalHeader()
-        self.header.sectionClicked.connect(self._header_clicked)
+        self.ui.tableView.horizontalHeader().sectionClicked.connect(self._header_clicked)
 
         self.ui.textEditDescriptiveStats.document().setDefaultStyleSheet(style_descriptive_table)
 
-        self.dataset: Dataset | None = None
+        self.dataset = dataset
         self.df: pd.DataFrame | None = None
+        self.ui.tableWidgetVariables.set_data(dataset.variables)
+        self.ui.factorSelector.set_data(dataset.factors, add_empty_item=False)
+        self._set_data()
 
     def _resize_columns_width(self):
         worker = Worker(
@@ -53,24 +53,13 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         )  # Any other args, kwargs are passed to the run function
         TaskManager.start_task(worker)
 
-    def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
-        self.dataset = message.dataset
-        if self.dataset is None:
-            self.ui.tableView.setModel(None)
-            self.ui.tableWidgetVariables.clear_data()
-            self.ui.textEditDescriptiveStats.document().clear()
-            self.ui.factorSelector.clear()
-            self.df = None
-        else:
-            self.ui.tableWidgetVariables.set_data(message.dataset.variables)
-            self.ui.factorSelector.set_data(message.dataset.factors, add_empty_item=False)
+    def _on_binning_applied(self, message: messaging.BinningMessage):
+        if message.dataset == self.dataset:
             self._set_data()
 
-    def _on_binning_applied(self, message: messaging.BinningMessage):
-        self._set_data()
-
     def _on_data_changed(self, message: messaging.DataChangedMessage):
-        self._set_data()
+        if message.dataset == self.dataset:
+            self._set_data()
 
     def _variables_selection_changed(self):
         self._set_data()
@@ -151,16 +140,16 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             self.ui.pushButtonAddReport.setEnabled(False)
 
         self.ui.tableView.setModel(PandasModel(self.df, self.dataset, calculate=True))
-        self.header.setSortIndicatorShown(False)
+        self.ui.tableView.horizontalHeader().setSortIndicatorShown(False)
 
     def _header_clicked(self, logical_index: int):
         if self.df is None:
             return
-        self.header.setSortIndicatorShown(True)
-        order = self.header.sortIndicatorOrder() == Qt.SortOrder.AscendingOrder
+        self.ui.tableView.horizontalHeader().setSortIndicatorShown(True)
+        order = self.ui.tableView.horizontalHeader().sortIndicatorOrder() == Qt.SortOrder.AscendingOrder
         df = self.df.sort_values(self.df.columns[logical_index], ascending=order, inplace=False)
         self.ui.tableView.setModel(PandasModel(df, self.dataset, calculate=True))
 
     def _add_report(self):
         content = self.ui.textEditDescriptiveStats.document().toHtml()
-        messaging.broadcast(messaging.AddToReportMessage(self, content))
+        messaging.broadcast(messaging.AddToReportMessage(self, content, self.dataset))

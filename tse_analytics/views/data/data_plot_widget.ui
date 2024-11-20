@@ -131,9 +131,6 @@
        </item>
        <item>
         <widget class="QPushButton" name="pushButtonAddReport">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
          <property name="text">
           <string>Add to Report</string>
          </property>

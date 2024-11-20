@@ -1,6 +1,14 @@
 TSE Analytics Change Log
 ====================================================================================================
 
+# 0.12.0 (2024-11-20)
+
+- New    -- New dockable UI for central area widgets. Multiple tabs of the same type can be opened for different or same datasets.
+- Change -- Split some widgets into the more specific types.
+
+
+----------------------------------------------------------------------------------------------------
+
 # 0.11.3 (2024-11-14)
 
 - New    -- New manual draft integration.

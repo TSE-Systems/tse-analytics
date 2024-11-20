@@ -34,12 +34,22 @@ tasks:
       - pyside6-uic tse_analytics/views/settings/time_cycles_settings_widget.ui -o tse_analytics/views/settings/time_cycles_settings_widget_ui.py
       - pyside6-uic tse_analytics/views/settings/time_phases_settings_widget.ui -o tse_analytics/views/settings/time_phases_settings_widget_ui.py
       - pyside6-uic tse_analytics/views/settings/binning_settings_widget.ui -o tse_analytics/views/settings/binning_settings_widget_ui.py
-      - pyside6-uic tse_analytics/views/analysis/exploration_widget.ui -o tse_analytics/views/analysis/exploration_widget_ui.py
-      - pyside6-uic tse_analytics/views/analysis/bivariate_widget.ui -o tse_analytics/views/analysis/bivariate_widget_ui.py
-      - pyside6-uic tse_analytics/views/analysis/anova_widget.ui -o tse_analytics/views/analysis/anova_widget_ui.py
-      - pyside6-uic tse_analytics/views/analysis/dimensionality_widget.ui -o tse_analytics/views/analysis/dimensionality_widget_ui.py
+      - pyside6-uic tse_analytics/views/analysis/histogram/histogram_widget.ui -o tse_analytics/views/analysis/histogram/histogram_widget_ui.py
+      - pyside6-uic tse_analytics/views/analysis/distribution/distribution_widget.ui -o tse_analytics/views/analysis/distribution/distribution_widget_ui.py
+      - pyside6-uic tse_analytics/views/analysis/normality/normality_widget.ui -o tse_analytics/views/analysis/normality/normality_widget_ui.py
+      - pyside6-uic tse_analytics/views/analysis/correlation/correlation_widget.ui -o tse_analytics/views/analysis/correlation/correlation_widget_ui.py
+      - pyside6-uic tse_analytics/views/analysis/regression/regression_widget.ui -o tse_analytics/views/analysis/regression/regression_widget_ui.py
+      - pyside6-uic tse_analytics/views/analysis/matrixplot/matrixplot_widget.ui -o tse_analytics/views/analysis/matrixplot/matrixplot_widget_ui.py
+      - pyside6-uic tse_analytics/views/analysis/pca/pca_widget.ui -o tse_analytics/views/analysis/pca/pca_widget_ui.py
+      - pyside6-uic tse_analytics/views/analysis/tsne/tsne_widget.ui -o tse_analytics/views/analysis/tsne/tsne_widget_ui.py
+      - pyside6-uic tse_analytics/views/analysis/one_way_anova/one_way_anova_widget.ui -o tse_analytics/views/analysis/one_way_anova/one_way_anova_widget_ui.py
+      - pyside6-uic tse_analytics/views/analysis/n_way_anova/n_way_anova_widget.ui -o tse_analytics/views/analysis/n_way_anova/n_way_anova_widget_ui.py
+      - pyside6-uic tse_analytics/views/analysis/rm_anova/rm_anova_widget.ui -o tse_analytics/views/analysis/rm_anova/rm_anova_widget_ui.py
+      - pyside6-uic tse_analytics/views/analysis/mixed_anova/mixed_anova_widget.ui -o tse_analytics/views/analysis/mixed_anova/mixed_anova_widget_ui.py
+      - pyside6-uic tse_analytics/views/analysis/ancova/ancova_widget.ui -o tse_analytics/views/analysis/ancova/ancova_widget_ui.py
+      - pyside6-uic tse_analytics/views/analysis/timeseries_decomposition/timeseries_decomposition_widget.ui -o tse_analytics/views/analysis/timeseries_decomposition/timeseries_decomposition_widget_ui.py
+      - pyside6-uic tse_analytics/views/analysis/timeseries_autocorrelation/timeseries_autocorrelation_widget.ui -o tse_analytics/views/analysis/timeseries_autocorrelation/timeseries_autocorrelation_widget_ui.py
       - pyside6-uic tse_analytics/views/about_dialog.ui -o tse_analytics/views/about_dialog_ui.py
-      - pyside6-uic tse_analytics/views/analysis/timeseries/timeseries_widget.ui -o tse_analytics/views/analysis/timeseries/timeseries_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/meal_details/views/meal_details_dialog.ui -o tse_analytics/modules/phenomaster/meal_details/views/meal_details_dialog_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/meal_details/views/meal_details_plot_widget.ui -o tse_analytics/modules/phenomaster/meal_details/views/meal_details_plot_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/meal_details/views/meal_details_settings_widget.ui -o tse_analytics/modules/phenomaster/meal_details/views/meal_details_settings_widget_ui.py

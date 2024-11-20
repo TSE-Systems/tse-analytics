@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
 
 from tse_analytics.core import manager, messaging
 from tse_analytics.core.helper import CSV_IMPORT_ENABLED
+from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.modules.phenomaster.actimot.models.actimot_tree_item import ActimotTreeItem
 from tse_analytics.modules.phenomaster.actimot.views.actimot_dialog import ActimotDialog
 from tse_analytics.modules.phenomaster.calo_details.models.calo_details_tree_item import CaloDetailsTreeItem
@@ -30,11 +31,12 @@ from tse_analytics.views.import_csv_dialog import ImportCsvDialog
 
 
 class DatasetsWidget(QWidget):
-    def __init__(self, parent: QWidget | None = None):
+    def __init__(self, parent: QWidget):
         super().__init__(parent)
-
         self.ui = Ui_DatasetsWidget()
         self.ui.setupUi(self)
+
+        self.main_window = parent
 
         toolbar = QToolBar("Datasets Toolbar")
         toolbar.setIconSize(QSize(16, 16))
@@ -206,8 +208,11 @@ class DatasetsWidget(QWidget):
             QMessageBox.question(self, "Remove Dataset", "Do you really want to remove dataset?")
             == QMessageBox.StandardButton.Yes
         ):
+            dataset = self._get_selected_dataset()
+            LayoutManager.delete_dataset_widgets(dataset)
             selected_indexes = self.ui.treeView.selectedIndexes()
             manager.remove_dataset(selected_indexes)
+            self.main_window.set_enabled_add_widget_button(False)
             self.import_button.setEnabled(False)
             self.adjust_dataset_action.setEnabled(False)
             self.remove_dataset_action.setEnabled(False)
@@ -238,6 +243,7 @@ class DatasetsWidget(QWidget):
             while index.parent().isValid():
                 index = index.parent()
                 level += 1
+        self.main_window.set_enabled_add_widget_button(level == 1)
         self.adjust_dataset_action.setEnabled(level == 1)
         self.remove_dataset_action.setEnabled(level == 1)
         self.clone_dataset_action.setEnabled(level == 1)
