@@ -27,8 +27,6 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         self.ui.radioButtonSplitByFactor.toggled.connect(self._split_mode_toggled)
         self.ui.radioButtonSplitByRun.toggled.connect(self._split_mode_toggled)
 
-        self.ui.variableSelector.currentTextChanged.connect(self._variable_changed)
-        self.ui.factorSelector.currentTextChanged.connect(self._factor_changed)
         self.ui.checkBoxScatterPlot.stateChanged.connect(self._set_scatter_plot)
         self.ui.groupBoxDisplayErrors.toggled.connect(self._display_errors_toggled)
         self.ui.radioButtonStandardDeviation.toggled.connect(self._error_type_std_toggled)
@@ -47,8 +45,13 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         self.plot_toolbar.hide()
 
         self.dataset = dataset
+
         self.ui.variableSelector.set_data(self.dataset.variables)
+        self.ui.variableSelector.currentTextChanged.connect(self._variable_changed)
+
         self.ui.factorSelector.set_data(self.dataset.factors, add_empty_item=False)
+        self.ui.factorSelector.currentTextChanged.connect(self._factor_changed)
+
         self._refresh_data()
 
     def _get_split_mode(self) -> SplitMode:
@@ -96,9 +99,6 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         self._refresh_data()
 
     def _refresh_data(self):
-        if self.dataset is None:
-            return
-
         selected_factor_name = self.ui.factorSelector.currentText()
         split_mode = self._get_split_mode()
 
@@ -155,18 +155,15 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
             else None
         )
 
-        if not df.empty:
-            self.timelinePlotView.refresh_data(
-                self.dataset,
-                df,
-                selected_variable,
-                split_mode,
-                display_errors,
-                selected_factor,
-                self.ui.checkBoxScatterPlot.isChecked(),
-            )
-        else:
-            self.timelinePlotView.clear_plot()
+        self.timelinePlotView.refresh_data(
+            self.dataset,
+            df,
+            selected_variable,
+            split_mode,
+            display_errors,
+            selected_factor,
+            self.ui.checkBoxScatterPlot.isChecked(),
+        )
 
     def _display_bar_plot(
         self,

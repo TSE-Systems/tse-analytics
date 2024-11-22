@@ -1,6 +1,13 @@
 TSE Analytics Change Log
 ====================================================================================================
 
+# 0.12.1 (2024-11-22)
+
+- Fix    -- Data plot region bounds properly set after binning.
+
+
+----------------------------------------------------------------------------------------------------
+
 # 0.12.0 (2024-11-20)
 
 - New    -- New dockable UI for central area widgets. Multiple tabs of the same type can be opened for different or same datasets.

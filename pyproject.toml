@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tse-analytics"
-version = "0.12.0"
+version = "0.12.1"
 description = "TSE Analytics data analysys"
 license = "MIT"
 authors = ["Anton Rau <anton.rau@gmail.com>"]

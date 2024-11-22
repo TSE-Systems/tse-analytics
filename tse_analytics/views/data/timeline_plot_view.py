@@ -19,29 +19,32 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         super().__init__(parent, show=False, size=None, title=None)
 
         # Set layout proportions
-        self.ci.layout.setRowStretchFactor(0, 2)
+        self.ci.layout.setRowStretchFactor(0, 3)
 
-        self.p1 = self.ci.addPlot(row=0, col=0)
-        # self.p1.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
-        self.p1.setAxisItems({"bottom": TimedeltaAxisItem()})
-        self.p1.showGrid(x=True, y=True)
+        self.plot_item1 = self.ci.addPlot(row=0, col=0)
+        # self.plot_item1.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
+        self.plot_item1.setAxisItems({"bottom": TimedeltaAxisItem()})
+        self.plot_item1.showGrid(x=True, y=True)
+        self.plot_item1.setMouseEnabled(y=False)
 
-        self.legend = self.p1.addLegend((10, 10))
+        self.legend = self.plot_item1.addLegend((10, 10))
 
-        self.p2 = self.ci.addPlot(row=1, col=0)
-        # self.p2.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
-        self.p2.setAxisItems({"bottom": TimedeltaAxisItem()})
-        self.p2.showGrid(x=True, y=True)
+        self.plot_item2 = self.ci.addPlot(row=1, col=0)
+        # self.plot_item2.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
+        self.plot_item2.setAxisItems({"bottom": TimedeltaAxisItem()})
+        self.plot_item2.showGrid(x=False, y=False)
+        self.plot_item2.setMouseEnabled(x=False, y=False)
 
         self.region = pg.LinearRegionItem()
         # Add the LinearRegionItem to the ViewBox, but tell the ViewBox to exclude this
         # item when doing auto-range calculations.
-        self.p2.addItem(self.region, ignoreBounds=True)
+        self.plot_item2.addItem(self.region, ignoreBounds=True)
 
-        # self.p1.setAutoVisible(y=True)
+        # TODO: check if needed
+        # self.plot_item1.setAutoVisible(y=True)
 
-        self.region.sigRegionChanged.connect(self.update)
-        self.p1.sigRangeChanged.connect(self.updateRegion)
+        self.region.sigRegionChanged.connect(self._region_changed)
+        self.plot_item1.sigXRangeChanged.connect(self._x_range_changed)
 
         # Local variables
         self.dataset: Dataset | None = None
@@ -53,14 +56,6 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         self._display_errors = False
         self._scatter_plot = False
 
-    def update(self):
-        min_x, max_x = self.region.getRegion()
-        self.p1.setXRange(min_x, max_x, padding=0)
-
-    def updateRegion(self, window, viewRange):
-        rgn = viewRange[0]
-        self.region.setRegion(rgn)
-
     def refresh_data(
         self,
         dataset: Dataset,
@@ -71,6 +66,17 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         selected_factor: Factor,
         scatter_plot: bool,
     ) -> None:
+        self.plot_item1.clear()
+        self.plot_item2.clearPlots()
+        self.legend.clear()
+
+        if df.empty or (split_mode == SplitMode.FACTOR and selected_factor is None):
+            self._df = None
+            self._variable = None
+            self._selected_factor = None
+            self._display_errors = False
+            return
+
         self.dataset = dataset
         self._df = df
         self._variable = variable
@@ -81,20 +87,6 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         unique_deltas = self._df["Timedelta"].unique()
         TimedeltaAxisItem.sampling_interval = unique_deltas[1] - unique_deltas[0]
-
-        self.update_plot()
-
-    def update_plot(self):
-        self.p1.clear()
-        self.p2.clearPlots()
-        self.legend.clear()
-
-        if (
-            self._df is None
-            or self._variable is None
-            or (self._split_mode == SplitMode.FACTOR and self._selected_factor is None)
-        ):
-            return
 
         match self._split_mode:
             case SplitMode.ANIMAL:
@@ -107,40 +99,43 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
                 x_min, x_max = self._plot_total()
 
         # bound the LinearRegionItem to the plotted data
-        self.region.setClipItem(self.p2)
         self.region.setRegion([x_min, x_max])
 
-        self.update()
+    def _region_changed(self):
+        min_x, max_x = self.region.getRegion()
+        self.plot_item1.setXRange(min_x, max_x, padding=0)
+
+    def _x_range_changed(self, view_box, range):
+        self.region.setRegion(range)
 
     def _plot_item(self, data: pd.DataFrame, name: str, pen):
         # x = (data["DateTime"] - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
         x = data["Bin"]
 
         x = x.to_numpy(dtype=np.int64)
-        tmp_min = x.min()
-        tmp_max = x.max()
-
-        # y = data[self._variable].to_numpy()
         y = data[self._variable.name].to_numpy()
 
-        # p1d = self.p1.plot(x, y, symbol='o', symbolSize=2, symbolPen=pen, pen=pen)
-        p1d = self.p1.scatterPlot(x, y, pen=pen, size=2) if self._scatter_plot else self.p1.plot(x, y, pen=pen)
-        self.p1.setTitle(self._variable.name)
+        plot_data_item = (
+            self.plot_item1.scatterPlot(x, y, pen=pen, size=2)
+            if self._scatter_plot
+            else self.plot_item1.plot(x, y, pen=pen)
+        )
+        self.plot_item1.setTitle(self._variable.name)
 
         if self._display_errors and "Error" in data.columns:
             # Error bars
             error_plot = pg.ErrorBarItem(beam=0.2)
             error = data["Error"].to_numpy()
             error_plot.setData(x=x, y=y, top=error, bottom=error, pen=pen)
-            self.p1.addItem(error_plot)
+            self.plot_item1.addItem(error_plot)
 
-            p1d.visibleChanged.connect(lambda: error_plot.setVisible(p1d.isVisible()))
+            plot_data_item.visibleChanged.connect(lambda: error_plot.setVisible(plot_data_item.isVisible()))
 
-        self.legend.addItem(p1d, name)
+        self.legend.addItem(plot_data_item, name)
 
-        self.p2.plot(x, y, pen=pen)
+        self.plot_item2.plot(x, y, pen=pen)
 
-        return tmp_min, tmp_max
+        return x.min(), x.max()
 
     def _plot_animals(self) -> tuple[float, float]:
         x_min = None
@@ -200,30 +195,12 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         return x_min, x_max
 
     def _plot_total(self) -> tuple[float, float]:
-        x_min = None
-        x_max = None
-
         pen = mkPen(color=(1, 1), width=1)
-        tmp_min, tmp_max = self._plot_item(self._df, "Total", pen)
-
-        if x_min is None or tmp_min < x_min:
-            x_min = tmp_min
-        if x_max is None or tmp_max > x_max:
-            x_max = tmp_max
-
+        x_min, x_max = self._plot_item(self._df, "Total", pen)
         return x_min, x_max
 
-    def clear_plot(self):
-        self.p1.clear()
-        self.p2.clearPlots()
-        self.legend.clear()
-
-        self._df = None
-        self._variable = None
-        self._display_errors = False
-
     def get_report(self) -> str:
-        exporter = ImageExporter(self.p1)
+        exporter = ImageExporter(self.plot_item1)
         img = exporter.export(toBytes=True)
 
         ba = QByteArray()
