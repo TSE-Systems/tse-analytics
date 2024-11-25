@@ -123,7 +123,7 @@ class TsneWidget(QWidget):
         data = tsne.fit_transform(df[selected_variable_names])
         title = "tSNE"
 
-        result_df = pd.DataFrame(data=data, columns=["X", "Y"])
+        result_df = pd.DataFrame(data=data, columns=["tSNE1", "tSNE2"])
         if by is not None:
             result_df = pd.concat([result_df, df[[by]]], axis=1)
 

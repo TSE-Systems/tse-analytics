@@ -124,7 +124,7 @@ class PcaWidget(QWidget):
         total_var = pca.explained_variance_ratio_.sum() * 100
         title = f"PCA. Total Explained Variance: {total_var:.2f}%"
 
-        result_df = pd.DataFrame(data=data, columns=["X", "Y"])
+        result_df = pd.DataFrame(data=data, columns=["PC1", "PC2"])
         if by is not None:
             result_df = pd.concat([result_df, df[[by]]], axis=1)
 
