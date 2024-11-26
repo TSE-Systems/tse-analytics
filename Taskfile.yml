@@ -8,10 +8,6 @@ vars:
   SHELL: '{{if eq .OS "Windows_NT"}}powershell{{end}}'
 
 tasks:
-  black:
-    cmds:
-      - black tse_analytics
-
   build-resources:
     cmds:
       - pyside6-rcc resources/resources.qrc -o tse_analytics/resources_rc.py
@@ -89,12 +85,8 @@ tasks:
 
   create-setup:
     cmds:
-      - poetry install
+      - uv sync
       - pyinstaller --clean setup/tse-analytics.spec
-
-  freeze:
-    cmds:
-      - pip freeze > requirements/requirements.frozen.txt
 
   mypy:
     cmds:
