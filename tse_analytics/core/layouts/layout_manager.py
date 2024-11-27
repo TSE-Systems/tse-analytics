@@ -200,7 +200,12 @@ class LayoutManager:
         if dataset.id not in cls._dataset_widgets:
             return
         for dock_widget in cls._dataset_widgets[dataset.id]:
-            cls.dock_manager.removeDockWidget(dock_widget)
+            try:
+                cls.dock_manager.removeDockWidget(dock_widget)
+            except RuntimeError:
+                # Widget is already closed
+                pass
+        cls._dataset_widgets.pop(dataset.id)
 
     @classmethod
     def clear_dock_manager(cls) -> None:
