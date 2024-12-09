@@ -5,6 +5,7 @@ from pyqttoast import ToastPreset
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QAbstractItemView, QWidget
 from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.shared import SplitMode, Variable
@@ -110,6 +111,7 @@ class PcaWidget(QWidget):
         selected_factor_name: str,
         by: str,
     ) -> tuple[pd.DataFrame, str, str]:
+
         df = self.dataset.get_current_df(
             variables=selected_variables,
             split_mode=split_mode,
@@ -119,8 +121,12 @@ class PcaWidget(QWidget):
 
         selected_variable_names = list(selected_variables)
 
+        # Standardize the data
+        scaler = StandardScaler()
+        scaled_data = scaler.fit_transform(df[selected_variable_names])
+
         pca = PCA(n_components=2)
-        data = pca.fit_transform(df[selected_variable_names])
+        data = pca.fit_transform(scaled_data)
         total_var = pca.explained_variance_ratio_.sum() * 100
         title = f"PCA. Total Explained Variance: {total_var:.2f}%"
 

@@ -1,6 +1,14 @@
 TSE Analytics Change Log
 ====================================================================================================
 
+# 0.12.4 (2024-12-02)
+
+- Change -- Data normalization for PCA and tSNE analysis.
+- Change -- Streamlined startup implementation.
+- Change -- Migration to Python 3.13
+
+
+----------------------------------------------------------------------------------------------------
 # 0.12.3 (2024-11-27)
 
 - Fix    -- Proper closing of already closed dataset widgets when dataset is removed.

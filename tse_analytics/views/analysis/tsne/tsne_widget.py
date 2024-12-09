@@ -5,6 +5,7 @@ from pyqttoast import ToastPreset
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QAbstractItemView, QWidget
 from sklearn.manifold import TSNE
+from sklearn.preprocessing import StandardScaler
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.shared import SplitMode, Variable
@@ -119,8 +120,12 @@ class TsneWidget(QWidget):
 
         selected_variable_names = list(selected_variables)
 
+        # Standardize the data
+        scaler = StandardScaler()
+        scaled_data = scaler.fit_transform(df[selected_variable_names])
+
         tsne = TSNE(n_components=2, random_state=0)
-        data = tsne.fit_transform(df[selected_variable_names])
+        data = tsne.fit_transform(scaled_data)
         title = "tSNE"
 
         result_df = pd.DataFrame(data=data, columns=["tSNE1", "tSNE2"])

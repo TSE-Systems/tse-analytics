@@ -22,7 +22,7 @@ class CorrelationWidget(QWidget):
         self.ui.setupUi(self)
 
         self.title = "Correlation"
-        self.help_path = "correlation.md"
+        self.help_path = "Bivariate-widget.md"
 
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self._update)
