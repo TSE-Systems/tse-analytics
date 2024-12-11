@@ -9,6 +9,7 @@ from matplotlib.figure import Figure
 from tse_analytics.core import messaging
 from tse_analytics.core.pretty_html_table import build_table
 
+STYLE_NAME = "main"
 IS_RELEASE = Path("_internal").exists()
 
 CSV_IMPORT_ENABLED = True

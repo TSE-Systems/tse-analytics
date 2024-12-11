@@ -1,0 +1,107 @@
+/*****************************************************************************
+ * CDockContainerWidget
+ *****************************************************************************/
+ads--CDockContainerWidget {
+  background: palette(base); }
+
+/*****************************************************************************
+ * CDockSplitter
+ *****************************************************************************/
+ads--CDockContainerWidget > QSplitter {
+  padding: 1px 0 1px 0; }
+
+/*****************************************************************************
+ * CDockAreaWidget
+ *****************************************************************************/
+ads--CDockAreaWidget {
+  background: palette(base); }
+
+ads--CTitleBarButton {
+  padding: 0px 0px; }
+
+#tabsMenuButton::menu-indicator {
+  image: none; }
+
+#tabsMenuButton {
+  qproperty-icon: url(:/ads/images/tabs-menu-button.svg);
+  qproperty-iconSize: 16px; }
+
+#dockAreaCloseButton {
+  qproperty-icon: url(:/ads/images/close-button.svg), url(:/ads/images/close-button-disabled.svg) disabled;
+  qproperty-iconSize: 16px; }
+
+#detachGroupButton {
+  qproperty-icon: url(:/ads/images/detach-button.svg), url(:/ads/images/detach-button-disabled.svg) disabled;
+  qproperty-iconSize: 16px; }
+
+/*****************************************************************************
+ * CDockWidgetTab and close button styling
+ *****************************************************************************/
+ads--CDockWidgetTab {
+  background: palette(base);
+  border-style: none;
+  padding-top: 2px;
+  padding-bottom: 2px; }
+
+ads--CDockWidgetTab[activeTab="true"] {
+  background: palette(accent); }
+
+ads--CDockWidgetTab QLabel {
+  color: palette(dark); }
+
+ads--CDockWidgetTab[activeTab="true"] QLabel {
+  color: palette(foreground); }
+
+#tabCloseButton {
+  margin-top: 2px;
+  background: none;
+  border: none;
+  padding: 0px -2px;
+  qproperty-icon: url(:/ads/images/close-button.svg), url(:/ads/images/close-button-disabled.svg) disabled;
+  qproperty-iconSize: 16px; }
+
+#tabCloseButton:hover {
+  border: 1px solid rgba(0, 0, 0, 12%);
+  background: rgba(0, 0, 0, 6%); }
+
+#tabCloseButton:pressed {
+  background: rgba(0, 0, 0, 12%); }
+
+/*****************************************************************************
+ * CDockWidget
+ *****************************************************************************/
+ads--CDockWidget {
+  background: palette(light);
+  border-color: palette(light);
+  border-style: none;
+  border-width: 1px 0 0 0; }
+
+QScrollArea#dockWidgetScrollArea {
+  padding: 0;
+  border: none; }
+
+QListView::item:selected {
+  background-color: #5b807c;
+  color: #ffffff; }
+
+QMenu::item:selected {
+  background-color: #c4dfdc;
+  color: #000000; }
+
+QMenuBar::item:selected {
+  background-color: #c4dfdc;
+  color: #000000; }
+
+QTableView::item:selected {
+  background-color: #5b807c;
+  color: #ffffff; }
+
+QToolButton:hover {
+  background-color: #c4dfdc;
+  color: #000000;
+  border: 1px solid #5b807c;
+  border-radius: 2px; }
+
+QTreeView::item:selected {
+  background-color: #5b807c;
+  color: #ffffff; }

@@ -2,8 +2,8 @@ import uuid
 from typing import Any
 from uuid import UUID
 
-from PySide6.QtGui import QIcon, Qt
-from PySide6.QtWidgets import QLabel, QMenu, QWidget
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QMenu, QWidget
 from PySide6QtAds import CDockAreaWidget, CDockContainerWidget, CDockManager, CDockWidget, DockWidgetArea
 
 from tse_analytics.modules.phenomaster.data.dataset import Dataset
@@ -69,11 +69,8 @@ class LayoutManager:
     def set_central_widget(
         cls,
     ) -> DockWidgetArea:
-        label = QLabel()
-        label.setText("")
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         central_dock_widget = CDockWidget("CentralWidget")
-        central_dock_widget.setWidget(label)
+        central_dock_widget.setWidget(QWidget())
         central_dock_widget.setFeature(CDockWidget.NoTab, True)
         return cls.dock_manager.setCentralWidget(
             central_dock_widget,

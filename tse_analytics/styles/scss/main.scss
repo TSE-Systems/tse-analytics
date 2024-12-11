@@ -1,0 +1,33 @@
+// Change default values
+
+$window-text: #000000 !default;
+$button: #89c0ba !default;
+$light: #d7fffb !default;
+$midlight: #b0dfda !default;
+$dark: #45605d !default;
+$mid: #5b807c !default;
+$text: #000000 !default;
+$bright-text: #ffffff !default;
+$button-text: #000000 !default;
+$base: #ffffff !default;
+$window: #dfebea !default;
+$shadow: #000000 !default;
+$highlight:  #5b807c !default;
+$highlighted-text: #ffffff !default;
+$link: #003e92 !default;
+$link-visited: #001a68 !default;
+$alternate-base: #c4dfdc !default;
+$tooltip-base: #ffffdc !default;
+$tooltip-text: #000000 !default;
+$placeholder-text: #00000088 !default;
+$accent: #004248 !default;
+
+
+@import 'defaults';
+@import 'widgets/ads';
+@import 'widgets/qlistview';
+@import 'widgets/qmenu';
+@import 'widgets/qpushbutton';
+@import 'widgets/qtableview';
+@import 'widgets/qtoolbutton';
+@import 'widgets/qtreeview';

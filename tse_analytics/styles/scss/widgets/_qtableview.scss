@@ -1,0 +1,7 @@
+QTableView {
+}
+
+QTableView::item:selected {
+    background-color: $highlight;
+    color: $highlighted-text;
+}

@@ -111,7 +111,6 @@ class PcaWidget(QWidget):
         selected_factor_name: str,
         by: str,
     ) -> tuple[pd.DataFrame, str, str]:
-
         df = self.dataset.get_current_df(
             variables=selected_variables,
             split_mode=split_mode,

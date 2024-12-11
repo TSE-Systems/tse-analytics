@@ -7,10 +7,10 @@ import pandas as pd
 import seaborn as sns
 from loguru import logger
 from pyqtgraph import setConfigOptions
-from PySide6.QtCore import QFile, QTextStream
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
+from tse_analytics.core.helper import IS_RELEASE, STYLE_NAME
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.views.main_window import MainWindow
 
@@ -52,10 +52,10 @@ class App(QApplication):
         self.setApplicationName("TSE Analytics")
         self.setWindowIcon(QIcon(":/icons/app.ico"))
 
-        f = QFile(":/style.qss")
-        f.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text)
-        self.setStyleSheet(QTextStream(f).readAll())
-        f.close()
+        # Set global stylesheet
+        style_file = f"_internal/styles/qss/{STYLE_NAME}.css" if IS_RELEASE else f"styles/qss/{STYLE_NAME}.css"
+        with open(style_file) as file:
+            self.setStyleSheet(file.read())
 
         # TaskManager singleton initialization
         TaskManager(self)
@@ -77,8 +77,6 @@ def main() -> None:
     logger.add(sys.stderr, level="INFO", colorize=True, backtrace=False, enqueue=True)
 
     sys.excepthook = handle_exception
-
-    # sys.argv.append("--disable-web-security")
 
     app = App(sys.argv)
 

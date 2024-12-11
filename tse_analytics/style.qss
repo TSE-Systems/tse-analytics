@@ -1,7 +1,3 @@
-QMainWindow {
-  background-color: palette(base);
-}
-
 /*****************************************************************************
  * CDockContainerWidget
  *****************************************************************************/
@@ -40,17 +36,14 @@ ads--CTitleBarButton {
 }
 
 #dockAreaCloseButton {
-    qproperty-icon: url(:/ads/images/close-button.svg),
-            url(:/ads/images/close-button-disabled.svg) disabled;
+    qproperty-icon: url(:/ads/images/close-button.svg), url(:/ads/images/close-button-disabled.svg) disabled;
     qproperty-iconSize: 16px;
 }
 
 #detachGroupButton {
-    qproperty-icon: url(:/ads/images/detach-button.svg),
-            url(:/ads/images/detach-button-disabled.svg) disabled;
+    qproperty-icon: url(:/ads/images/detach-button.svg), url(:/ads/images/detach-button-disabled.svg) disabled;
     qproperty-iconSize: 16px;
 }
-
 
 
 /*****************************************************************************
@@ -81,8 +74,7 @@ ads--CDockWidgetTab[activeTab="true"] QLabel {
     background: none;
     border: none;
     padding: 0px -2px;
-    qproperty-icon: url(:/ads/images/close-button.svg),
-            url(:/ads/images/close-button-disabled.svg) disabled;
+    qproperty-icon: url(:/ads/images/close-button.svg), url(:/ads/images/close-button-disabled.svg) disabled;
     qproperty-iconSize: 16px;
 }
 

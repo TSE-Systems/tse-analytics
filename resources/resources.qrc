@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>style.qss</file>
         <file>icons/app.ico</file>
         <file>icons/about-16.png</file>
         <file>icons/anova.png</file>
