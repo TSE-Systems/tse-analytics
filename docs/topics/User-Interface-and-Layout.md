@@ -1,3 +1,0 @@
-# User Interface and Layout
-
-Start typing here...

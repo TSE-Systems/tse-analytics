@@ -1,0 +1,19 @@
+QToolButton {
+    //background-color: $alternate-base;
+    //color: $text;
+    //border: 1px solid $accent;
+}
+
+QToolButton:hover {
+    background-color: $alternate-base;
+    color: $text;
+    border: 1px solid $highlight;
+    border-radius: 2px;
+}
+
+QToolButton:focus {
+    //background-color: $button;
+    //color: $text;
+    //border: 1px solid $highlight;
+    //border-radius: 2px;
+}

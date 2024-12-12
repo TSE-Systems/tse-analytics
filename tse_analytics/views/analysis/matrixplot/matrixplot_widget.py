@@ -19,7 +19,7 @@ class MatrixPlotWidget(QWidget):
         self.ui.setupUi(self)
 
         self.title = "Matrix Plot"
-        self.help_path = "matrixplot.md"
+        self.help_path = "Matrix-Plot.md"
 
         self.ui.tableWidgetVariables.set_selection_mode(QAbstractItemView.SelectionMode.MultiSelection)
 

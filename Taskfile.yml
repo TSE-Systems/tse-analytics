@@ -115,3 +115,7 @@ tasks:
   test:
     cmds:
       - pytest
+
+  qss:
+    cmds:
+      - qtsass ./tse_analytics/styles/scss -o ./tse_analytics/styles/qss

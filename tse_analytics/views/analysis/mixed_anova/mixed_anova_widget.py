@@ -20,7 +20,7 @@ class MixedAnovaWidget(QWidget):
         self.ui.setupUi(self)
 
         self.title = "Mixed-design ANOVA"
-        self.help_path = "mixed-anova.md"
+        self.help_path = "Mixed-design-ANOVA.md"
 
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self._update)

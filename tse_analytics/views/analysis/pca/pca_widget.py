@@ -24,7 +24,7 @@ class PcaWidget(QWidget):
         self.ui.setupUi(self)
 
         self.title = "PCA"
-        self.help_path = "pca.md"
+        self.help_path = "PCA.md"
 
         self.ui.tableWidgetVariables.set_selection_mode(QAbstractItemView.SelectionMode.MultiSelection)
 
@@ -111,7 +111,6 @@ class PcaWidget(QWidget):
         selected_factor_name: str,
         by: str,
     ) -> tuple[pd.DataFrame, str, str]:
-
         df = self.dataset.get_current_df(
             variables=selected_variables,
             split_mode=split_mode,

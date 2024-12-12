@@ -29,7 +29,3 @@ up to their liking.  By drag and drop (click and hold), widgets can be rearrange
 The default layout may be restored by clicking **View - Reset Layout**.
 
 The layout is saved when quitting the application by closing the main window or via **File - Exit**.
-
-
-
-

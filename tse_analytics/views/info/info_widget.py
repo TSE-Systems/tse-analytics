@@ -9,6 +9,7 @@ class InfoWidget(QTreeView, messaging.MessengerListener):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
 
+        self.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         self.horizontalScrollBar().setEnabled(True)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)

@@ -19,7 +19,7 @@ class NormalityWidget(QWidget):
         self.ui.setupUi(self)
 
         self.title = "Normality"
-        self.help_path = "normality.md"
+        self.help_path = "Normality.md"
 
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self._update)

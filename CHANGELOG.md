@@ -1,11 +1,14 @@
 TSE Analytics Change Log
 ====================================================================================================
 
-# 0.12.4 (2024-12-02)
+# 0.13.0 (2024-12-12)
 
+- New    -- New QSS stylesheet generation and initialization.
+- New    -- User selectable application UI styles.
 - Change -- Data normalization for PCA and tSNE analysis.
 - Change -- Streamlined startup implementation.
 - Change -- Migration to Python 3.13
+- Change -- Updated documentation draft.
 
 
 ----------------------------------------------------------------------------------------------------

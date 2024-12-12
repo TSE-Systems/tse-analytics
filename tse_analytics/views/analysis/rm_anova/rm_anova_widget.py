@@ -20,7 +20,7 @@ class RMAnovaWidget(QWidget):
         self.ui.setupUi(self)
 
         self.title = "Repeated Measures ANOVA"
-        self.help_path = "rm-anova.md"
+        self.help_path = "Repeated-Measures-ANOVA.md"
 
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self._update)

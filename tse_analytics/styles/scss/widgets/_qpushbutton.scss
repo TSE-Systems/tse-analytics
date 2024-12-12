@@ -1,0 +1,31 @@
+QPushButton {
+    background-color: $alternate-base;
+    color: $text;
+    //border: 1px solid $highlight;
+    //border-radius: 2px;
+}
+
+QPushButton:disabled {
+    background-color: $window;
+    color: $text;
+    //border: 1px solid $highlight;
+    //border-radius: 2px;
+}
+
+QPushButton:hover {
+    background-color: $button;
+    color: $text;
+    //border: 1px solid $highlight;
+    //border-radius: 2px;
+}
+
+QPushButton:focus {
+    //background-color: $alternate-base;
+    //color: $text;
+    //border: 1px solid $accent;
+    //border-radius: 2px;
+}
+
+QPushButton:default {
+    border-color: $light; /* make the default button prominent */
+}
