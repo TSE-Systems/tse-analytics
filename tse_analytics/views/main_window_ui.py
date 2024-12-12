@@ -86,6 +86,8 @@ class Ui_MainWindow(object):
         self.menuHelp.setObjectName(u"menuHelp")
         self.menuView = QMenu(self.menuBar)
         self.menuView.setObjectName(u"menuView")
+        self.menuStyle = QMenu(self.menuView)
+        self.menuStyle.setObjectName(u"menuStyle")
         MainWindow.setMenuBar(self.menuBar)
         self.statusBar = QStatusBar(MainWindow)
         self.statusBar.setObjectName(u"statusBar")
@@ -113,6 +115,8 @@ class Ui_MainWindow(object):
         self.menuView.addAction(self.actionSaveLayout)
         self.menuView.addAction(self.actionRestoreLayout)
         self.menuView.addAction(self.actionResetLayout)
+        self.menuView.addSeparator()
+        self.menuView.addAction(self.menuStyle.menuAction())
         self.menuView.addSeparator()
         self.toolBar.addAction(self.actionOpenWorkspace)
         self.toolBar.addAction(self.actionSaveWorkspace)
@@ -156,6 +160,7 @@ class Ui_MainWindow(object):
         self.menuOpenRecent.setTitle(QCoreApplication.translate("MainWindow", u"Open Recent", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"&Help", None))
         self.menuView.setTitle(QCoreApplication.translate("MainWindow", u"&View", None))
+        self.menuStyle.setTitle(QCoreApplication.translate("MainWindow", u"Style", None))
         self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"ToolBar", None))
     # retranslateUi
 

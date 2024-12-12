@@ -5,12 +5,13 @@ import sys
 import matplotlib
 import pandas as pd
 import seaborn as sns
+from PySide6.QtCore import QSettings
 from loguru import logger
 from pyqtgraph import setConfigOptions
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
-from tse_analytics.core.helper import IS_RELEASE, STYLE_NAME
+from tse_analytics.core.helper import IS_RELEASE
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.views.main_window import MainWindow
 
@@ -52,8 +53,10 @@ class App(QApplication):
         self.setApplicationName("TSE Analytics")
         self.setWindowIcon(QIcon(":/icons/app.ico"))
 
-        # Set global stylesheet
-        style_file = f"_internal/styles/qss/{STYLE_NAME}.css" if IS_RELEASE else f"styles/qss/{STYLE_NAME}.css"
+        # Set selected stylesheet
+        settings = QSettings()
+        appStyle = settings.value("appStyle", "default")
+        style_file = f"_internal/styles/qss/{appStyle}.css" if IS_RELEASE else f"styles/qss/{appStyle}.css"
         with open(style_file) as file:
             self.setStyleSheet(file.read())
 

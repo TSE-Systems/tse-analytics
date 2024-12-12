@@ -24,7 +24,7 @@ class TsneWidget(QWidget):
         self.ui.setupUi(self)
 
         self.title = "tSNE"
-        self.help_path = "tsne.md"
+        self.help_path = "t-SNE.md"
 
         self.ui.tableWidgetVariables.set_selection_mode(QAbstractItemView.SelectionMode.MultiSelection)
 

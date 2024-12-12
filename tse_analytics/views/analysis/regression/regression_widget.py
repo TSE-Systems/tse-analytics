@@ -22,7 +22,7 @@ class RegressionWidget(QWidget):
         self.ui.setupUi(self)
 
         self.title = "Regression"
-        self.help_path = "regression.md"
+        self.help_path = "Regression.md"
 
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self._update)

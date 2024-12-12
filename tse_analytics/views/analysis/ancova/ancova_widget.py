@@ -17,7 +17,7 @@ class AncovaWidget(QWidget):
         self.ui.setupUi(self)
 
         self.title = "ANCOVA"
-        self.help_path = "ancova.md"
+        self.help_path = "ANCOVA.md"
 
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self._update)

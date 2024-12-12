@@ -24,7 +24,7 @@ class PcaWidget(QWidget):
         self.ui.setupUi(self)
 
         self.title = "PCA"
-        self.help_path = "pca.md"
+        self.help_path = "PCA.md"
 
         self.ui.tableWidgetVariables.set_selection_mode(QAbstractItemView.SelectionMode.MultiSelection)
 

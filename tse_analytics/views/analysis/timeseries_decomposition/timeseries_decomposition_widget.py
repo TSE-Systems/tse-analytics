@@ -22,7 +22,7 @@ class TimeseriesDecompositionWidget(QWidget):
         self.ui.setupUi(self)
 
         self.title = "Decomposition"
-        self.help_path = "decomposition.md"
+        self.help_path = "Decomposition.md"
 
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self._update)

@@ -19,7 +19,7 @@ class DistributionWidget(QWidget):
         self.ui.setupUi(self)
 
         self.title = "Distribution"
-        self.help_path = "distribution.md"
+        self.help_path = "Distribution.md"
 
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self._update)

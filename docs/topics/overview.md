@@ -3,7 +3,7 @@
 ## Overview
 
 What does TSE Analytics offer?
-:
+
 1. **Integrated Data Handling**: TSE Analytics is designed to manage large and complex data sets like PhenoMaster data. It seamlessly integrates data processing, visualization, and statistical analysis, making it a powerful tool for researchers.
 2. **Flexible Data Customization**: The software allows users to tailor data structures to their specific needs. You can exclude outliers, define time frames, merge multiple data sets, and create new grouping factors quickly and easily.
 3. **Dynamic Visualization**: With TSE Analytics, you can visualize data in real-time using the plot function. This feature lets you quickly screen and compare data across different groups, individual animals, or specific time periods.
@@ -36,6 +36,4 @@ Almost all widgets work with the preprocessed data that passed through the inter
 3. Last step in the preprocessing data pipeline is *time binning* operation.
 
 >**Note:** If you observe some unexpected results during your analysis, please check animal selection in **Animals** widget and time binning options in **Binning** widget!
->
 {style="warning"}
-

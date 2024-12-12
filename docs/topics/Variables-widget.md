@@ -1,3 +1,0 @@
-# Variables widget
-
-Start typing here...

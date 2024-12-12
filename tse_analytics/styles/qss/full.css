@@ -92,6 +92,22 @@ QMenuBar::item:selected {
   background-color: #c4dfdc;
   color: #000000; }
 
+QPushButton {
+  background-color: #c4dfdc;
+  color: #000000; }
+
+QPushButton:disabled {
+  background-color: #dfebea;
+  color: #000000; }
+
+QPushButton:hover {
+  background-color: #89c0ba;
+  color: #000000; }
+
+QPushButton:default {
+  border-color: #d7fffb;
+  /* make the default button prominent */ }
+
 /* QScrollBar - Vertical */
 QScrollBar:vertical {
   background-color: #dfebea;

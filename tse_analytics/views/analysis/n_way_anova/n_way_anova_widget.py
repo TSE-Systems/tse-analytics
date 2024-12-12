@@ -17,7 +17,7 @@ class NWayAnovaWidget(QWidget):
         self.ui.setupUi(self)
 
         self.title = "N-way ANOVA"
-        self.help_path = "n-way-anova.md"
+        self.help_path = "N-way-ANOVA.md"
 
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self._update)

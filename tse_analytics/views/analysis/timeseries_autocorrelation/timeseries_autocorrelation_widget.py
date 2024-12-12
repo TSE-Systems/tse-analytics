@@ -22,7 +22,7 @@ class TimeseriesAutocorrelationWidget(QWidget):
         self.ui.setupUi(self)
 
         self.title = "Autocorrelation"
-        self.help_path = "autocorrelation.md"
+        self.help_path = "Autocorrelation.md"
 
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self._update)

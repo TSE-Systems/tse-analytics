@@ -1,3 +1,0 @@
-# Dataset widget
-
-Start typing here...

@@ -55,9 +55,16 @@
     <property name="title">
      <string>&amp;View</string>
     </property>
+    <widget class="QMenu" name="menuStyle">
+     <property name="title">
+      <string>Style</string>
+     </property>
+    </widget>
     <addaction name="actionSaveLayout"/>
     <addaction name="actionRestoreLayout"/>
     <addaction name="actionResetLayout"/>
+    <addaction name="separator"/>
+    <addaction name="menuStyle"/>
     <addaction name="separator"/>
    </widget>
    <addaction name="menuFile"/>

@@ -10,7 +10,7 @@ from PySide6.QtGui import QAction, QCloseEvent, QIcon
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QMenu, QMessageBox, QToolButton
 
 from tse_analytics.core import manager
-from tse_analytics.core.helper import CSV_IMPORT_ENABLED, show_help
+from tse_analytics.core.helper import CSV_IMPORT_ENABLED, show_help, IS_RELEASE
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
@@ -59,6 +59,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
+
+        self.settings = QSettings()
 
         self.process = psutil.Process(os.getpid())
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
@@ -146,6 +148,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # the dock manager registers itself as the central widget.
         LayoutManager(self, self.menuView)
 
+        self.menuStyle.addAction("Default").triggered.connect(lambda: self.set_style("default"))
+        self.menuStyle.addAction("Main").triggered.connect(lambda: self.set_style("main"))
+        self.menuStyle.addAction("Full").triggered.connect(lambda: self.set_style("full"))
+
         LayoutManager.set_central_widget()
 
         datasets_dock_widget = LayoutManager.register_dock_widget(
@@ -211,13 +217,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Toast.setMovePositionWithWidget(True)
         self.toast = None
 
+    def set_style(self, name: str) -> None:
+        style_file = f"_internal/styles/qss/{name}.css" if IS_RELEASE else f"styles/qss/{name}.css"
+        with open(style_file) as file:
+            # Set global stylesheet
+            QApplication.instance().setStyleSheet(file.read())
+        self.settings.setValue("appStyle", name)
+
     def populate_open_recent(self):
         # Step 1. Remove the old options from the menu
         self.menuOpenRecent.clear()
         # Step 2. Dynamically create the actions
         actions = []
-        settings = QSettings()
-        filenames = list(settings.value("recentFilesList", []))
+        filenames = list(self.settings.value("recentFilesList", []))
         for filename in filenames:
             action = QAction(filename, self)
             action.triggered.connect(partial(self.load_workspace, filename))
@@ -226,8 +238,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.menuOpenRecent.addActions(actions)
 
     def load_workspace(self, filename: str):
-        settings = QSettings()
-        filenames = list(settings.value("recentFilesList", []))
+        filenames = list(self.settings.value("recentFilesList", []))
         try:
             filenames.remove(filename)
         except ValueError:
@@ -239,22 +250,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             filenames.insert(0, filename)
             del filenames[MAX_RECENT_FILES:]
         finally:
-            settings.setValue("recentFilesList", filenames)
+            self.settings.setValue("recentFilesList", filenames)
 
     def load_settings(self):
-        settings = QSettings()
-        self.restoreGeometry(settings.value("MainWindow/Geometry"))
-        self.restoreState(settings.value("MainWindow/State"))
+        self.restoreGeometry(self.settings.value("MainWindow/Geometry"))
+        self.restoreState(self.settings.value("MainWindow/State"))
 
-        state = settings.value("MainWindow/DockingState")
+        state = self.settings.value("MainWindow/DockingState")
         if state is not None:
             LayoutManager.restore_state(state)
 
     def save_settings(self):
-        settings = QSettings()
-        settings.setValue("MainWindow/Geometry", self.saveGeometry())
-        settings.setValue("MainWindow/State", self.saveState())
-        settings.setValue("MainWindow/DockingState", LayoutManager.save_state())
+        self.settings.setValue("MainWindow/Geometry", self.saveGeometry())
+        self.settings.setValue("MainWindow/State", self.saveState())
+        self.settings.setValue("MainWindow/DockingState", LayoutManager.save_state())
 
     def load_workspace_dialog(self):
         file_path, _ = QFileDialog.getOpenFileName(
