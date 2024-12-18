@@ -19,13 +19,6 @@ QPushButton:hover {
     //border-radius: 2px;
 }
 
-QPushButton:focus {
-    //background-color: $alternate-base;
-    //color: $text;
-    //border: 1px solid $accent;
-    //border-radius: 2px;
-}
-
 QPushButton:default {
     border-color: $light; /* make the default button prominent */
 }

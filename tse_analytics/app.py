@@ -5,9 +5,9 @@ import sys
 import matplotlib
 import pandas as pd
 import seaborn as sns
-from PySide6.QtCore import QSettings
 from loguru import logger
 from pyqtgraph import setConfigOptions
+from PySide6.QtCore import QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
@@ -55,7 +55,7 @@ class App(QApplication):
 
         # Set selected stylesheet
         settings = QSettings()
-        appStyle = settings.value("appStyle", "default")
+        appStyle = settings.value("appStyle", "tse-light")
         style_file = f"_internal/styles/qss/{appStyle}.css" if IS_RELEASE else f"styles/qss/{appStyle}.css"
         with open(style_file) as file:
             self.setStyleSheet(file.read())

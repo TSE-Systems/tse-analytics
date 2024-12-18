@@ -1,9 +1,10 @@
 TSE Analytics Change Log
 ====================================================================================================
 
-# 0.13.0 (2024-12-12)
+# 0.13.0 (2024-12-18)
 
 - New    -- New QSS stylesheet generation and initialization.
+- New    -- TSE Light color scheme.
 - New    -- User selectable application UI styles.
 - Change -- Data normalization for PCA and tSNE analysis.
 - Change -- Streamlined startup implementation.

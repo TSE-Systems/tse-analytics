@@ -10,7 +10,7 @@ from PySide6.QtGui import QAction, QCloseEvent, QIcon
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QMenu, QMessageBox, QToolButton
 
 from tse_analytics.core import manager
-from tse_analytics.core.helper import CSV_IMPORT_ENABLED, show_help, IS_RELEASE
+from tse_analytics.core.helper import CSV_IMPORT_ENABLED, IS_RELEASE, show_help
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
@@ -149,8 +149,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         LayoutManager(self, self.menuView)
 
         self.menuStyle.addAction("Default").triggered.connect(lambda: self.set_style("default"))
-        self.menuStyle.addAction("Main").triggered.connect(lambda: self.set_style("main"))
-        self.menuStyle.addAction("Full").triggered.connect(lambda: self.set_style("full"))
+        self.menuStyle.addAction("TSE Light").triggered.connect(lambda: self.set_style("tse-light"))
+        # self.menuStyle.addAction("TSE Dark").triggered.connect(lambda: self.set_style("tse-dark"))
 
         LayoutManager.set_central_widget()
 

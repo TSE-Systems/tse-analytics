@@ -6,7 +6,7 @@ style_descriptive_table = """
         }
         th {
             padding: 5px;
-            background: #E0E0E0;
+            background: #dfebea;
         }
         td {
             padding: 5px;

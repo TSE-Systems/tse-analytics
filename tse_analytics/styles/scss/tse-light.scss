@@ -23,8 +23,8 @@ $placeholder-text: #00000088 !default;
 $accent: #73F2EB !default;
 
 
-@import 'defaults';
 @import 'widgets/ads';
+@import 'widgets/qcombobox';
 @import 'widgets/qlistview';
 @import 'widgets/qmenu';
 @import 'widgets/qpushbutton';

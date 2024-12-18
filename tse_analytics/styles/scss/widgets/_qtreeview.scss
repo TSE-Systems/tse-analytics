@@ -1,7 +1,7 @@
 QTreeView {
+    selection-background-color: $accent;
 }
 
 QTreeView::item:selected {
     background-color: $highlight;
-    color: $highlighted-text;
 }
