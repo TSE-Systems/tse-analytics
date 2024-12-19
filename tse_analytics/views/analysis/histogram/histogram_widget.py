@@ -118,5 +118,5 @@ class HistogramWidget(QWidget):
             return round(number_of_elements / 3) + 1, 3
 
     def _add_report(self):
-        html = get_html_image(self.ui.canvas.figure)
-        messaging.broadcast(messaging.AddToReportMessage(self, html, self.dataset))
+        self.dataset.report += get_html_image(self.ui.canvas.figure)
+        messaging.broadcast(messaging.AddToReportMessage(self, self.dataset))

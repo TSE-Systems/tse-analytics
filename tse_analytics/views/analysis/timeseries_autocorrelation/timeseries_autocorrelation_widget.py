@@ -80,5 +80,5 @@ class TimeseriesAutocorrelationWidget(QWidget):
         self.ui.canvas.draw()
 
     def _add_report(self):
-        html = get_html_image(self.ui.canvas.figure)
-        messaging.broadcast(messaging.AddToReportMessage(self, html, self.dataset))
+        self.dataset.report += get_html_image(self.ui.canvas.figure)
+        messaging.broadcast(messaging.AddToReportMessage(self, self.dataset))

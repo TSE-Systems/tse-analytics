@@ -179,4 +179,5 @@ class MixedAnovaWidget(QWidget):
         self.ui.textEdit.document().setHtml(html)
 
     def _add_report(self):
-        messaging.broadcast(messaging.AddToReportMessage(self, self.ui.textEdit.toHtml(), self.dataset))
+        self.dataset.report += self.ui.textEdit.toHtml()
+        messaging.broadcast(messaging.AddToReportMessage(self, self.dataset))

@@ -11,7 +11,7 @@ from tse_analytics.core.pretty_html_table import build_table
 
 IS_RELEASE = Path("_internal").exists()
 
-CSV_IMPORT_ENABLED = True
+CSV_IMPORT_ENABLED = False
 
 
 def show_help(sender, filename: str) -> None:

@@ -70,7 +70,6 @@ class ShowHelpMessage(Message):
 
 
 class AddToReportMessage(Message):
-    def __init__(self, sender, content, dataset: "Dataset" = None):
+    def __init__(self, sender, dataset: "Dataset"):
         super().__init__(sender)
-        self.content = content
         self.dataset = dataset

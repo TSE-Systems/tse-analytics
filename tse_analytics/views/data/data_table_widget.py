@@ -151,5 +151,5 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.ui.tableView.setModel(PandasModel(df, self.dataset, calculate=True))
 
     def _add_report(self):
-        content = self.ui.textEditDescriptiveStats.document().toHtml()
-        messaging.broadcast(messaging.AddToReportMessage(self, content, self.dataset))
+        self.dataset.report += self.ui.textEditDescriptiveStats.document().toHtml()
+        messaging.broadcast(messaging.AddToReportMessage(self, self.dataset))

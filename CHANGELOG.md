@@ -1,6 +1,13 @@
 TSE Analytics Change Log
 ====================================================================================================
 
+# 1.0.0 (2024-12-19)
+
+- First public release.
+- Change -- Reports can be modified without adding Report widget.
+
+
+----------------------------------------------------------------------------------------------------
 # 0.13.0 (2024-12-18)
 
 - New    -- New QSS stylesheet generation and initialization.
