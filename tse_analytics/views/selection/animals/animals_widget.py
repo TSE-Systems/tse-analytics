@@ -4,8 +4,8 @@ from PySide6.QtCore import QSize, QSortFilterProxyModel, Qt
 from PySide6.QtWidgets import QToolBar, QWidget
 
 from tse_analytics.core import messaging
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.models.animals_model import AnimalsModel
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.views.selection.animals.animals_widget_ui import Ui_AnimalsWidget
 
 

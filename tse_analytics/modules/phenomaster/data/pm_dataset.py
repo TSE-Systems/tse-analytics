@@ -21,7 +21,7 @@ from tse_analytics.modules.phenomaster.calo_details.data.calo_details import Cal
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
 
 
-class Dataset:
+class PMDataset:
     def __init__(
         self,
         name: str,
@@ -233,7 +233,7 @@ class Dataset:
         df = self._reassign_df_timedelta_and_bin(df, self.sampling_interval)
         return df
 
-    def set_factors(self, factors: dict[str, Factor]):
+    def set_factors(self, factors: dict[str, Factor]) -> None:
         self.factors = factors
 
         # TODO: should be copy?
@@ -581,11 +581,6 @@ class Dataset:
     def export_to_csv(self, path: str) -> None:
         self.get_current_df().to_csv(path, sep=";", index=False)
 
-    def __getstate__(self):
-        state = self.__dict__.copy()
-        del state["active_df"]
-        return state
-
     def apply_binning(self, binning_settings: BinningSettings) -> None:
         self.binning_settings = binning_settings
         messaging.broadcast(messaging.BinningMessage(self, self, binning_settings))
@@ -594,9 +589,14 @@ class Dataset:
         self.outliers_settings = settings
         messaging.broadcast(messaging.DataChangedMessage(self, self))
 
+    def clone(self):
+        return deepcopy(self)
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state["active_df"]
+        return state
+
     def __setstate__(self, state):
         self.__dict__.update(state)
         self.refresh_active_df()
-
-    def clone(self):
-        return deepcopy(self)

@@ -5,9 +5,9 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtWidgets import QVBoxLayout, QWidget
 
 from tse_analytics.core.data.binning import BinningMode
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Factor, SplitMode, Variable
 from tse_analytics.core.helper import get_html_image
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
 
 class BarPlotView(QWidget):

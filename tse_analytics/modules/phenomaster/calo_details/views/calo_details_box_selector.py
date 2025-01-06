@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QAbstractItemView, QTableView, QWidget
 
 from tse_analytics.modules.phenomaster.calo_details.data.calo_details_box import CaloDetailsBox, get_ref_box_number
 from tse_analytics.modules.phenomaster.calo_details.models.calo_details_boxes_model import CaloDetailsBoxesModel
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.data.pm_dataset import PMDataset
 
 
 class CaloDetailsBoxSelector(QTableView):
@@ -36,7 +36,7 @@ class CaloDetailsBoxSelector(QTableView):
         self.sortByColumn(0, Qt.SortOrder.AscendingOrder)
         self.selectionModel().selectionChanged.connect(self._on_selection_changed)
 
-    def set_data(self, dataset: Dataset):
+    def set_data(self, dataset: PMDataset):
         all_box_numbers = list(dataset.calo_details.raw_df["Box"].unique())
         boxes: list[CaloDetailsBox] = []
 

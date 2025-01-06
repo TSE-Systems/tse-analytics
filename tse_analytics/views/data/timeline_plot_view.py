@@ -9,8 +9,8 @@ from pyqtgraph.exporters import ImageExporter
 from PySide6.QtCore import QBuffer, QByteArray, QIODevice
 from PySide6.QtWidgets import QWidget
 
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Factor, SplitMode, Variable
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.views.misc.TimedeltaAxisItem import TimedeltaAxisItem
 
 

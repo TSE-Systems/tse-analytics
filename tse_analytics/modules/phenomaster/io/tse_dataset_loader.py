@@ -13,7 +13,7 @@ from tse_analytics.core.predefined_variables import assign_predefined_values
 from tse_analytics.core.tse_import_settings import TseImportSettings
 from tse_analytics.modules.phenomaster.actimot.data.actimot_details import ActimotDetails
 from tse_analytics.modules.phenomaster.calo_details.data.calo_details import CaloDetails
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.data.pm_dataset import PMDataset
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
 
 CHUNK_SIZE = 1000000
@@ -23,7 +23,7 @@ DRINKFEED_BIN_TABLE = "drinkfeed_bin"
 CALO_BIN_TABLE = "calo_bin"
 
 
-def load_tse_dataset(path: Path, import_settings: TseImportSettings) -> Dataset | None:
+def load_tse_dataset(path: Path, import_settings: TseImportSettings) -> PMDataset | None:
     tic = timeit.default_timer()
 
     metadata = _read_metadata(path)
@@ -35,7 +35,7 @@ def load_tse_dataset(path: Path, import_settings: TseImportSettings) -> Dataset 
     # Assign predefined variables properties
     main_table_vars = assign_predefined_values(main_table_vars)
 
-    dataset = Dataset(
+    dataset = PMDataset(
         name=metadata["experiment"]["experiment_no"],
         path=str(path),
         meta=metadata,
@@ -215,7 +215,7 @@ def _read_main_table(
     return df, variables, sample_interval
 
 
-def _read_actimot_raw(path: Path, metadata: dict, dataset: Dataset) -> ActimotDetails:
+def _read_actimot_raw(path: Path, metadata: dict, dataset: PMDataset) -> ActimotDetails:
     metadata = metadata[ACTIMOT_RAW_TABLE]
 
     sample_interval = pd.Timedelta(metadata["sample_interval"])
@@ -270,7 +270,7 @@ def _read_actimot_raw(path: Path, metadata: dict, dataset: Dataset) -> ActimotDe
     return actimot_details
 
 
-def _read_drinkfeed_bin(path: Path, metadata: dict, dataset: Dataset) -> MealDetails:
+def _read_drinkfeed_bin(path: Path, metadata: dict, dataset: PMDataset) -> MealDetails:
     metadata = metadata[DRINKFEED_BIN_TABLE]
 
     sample_interval = pd.Timedelta(metadata["sample_interval"])
@@ -329,7 +329,7 @@ def _read_drinkfeed_bin(path: Path, metadata: dict, dataset: Dataset) -> MealDet
     return meal_details
 
 
-def _read_calo_bin(path: Path, metadata: dict, dataset: Dataset) -> CaloDetails:
+def _read_calo_bin(path: Path, metadata: dict, dataset: PMDataset) -> CaloDetails:
     metadata = metadata[CALO_BIN_TABLE]
 
     sample_interval = pd.Timedelta(metadata["sample_interval"])

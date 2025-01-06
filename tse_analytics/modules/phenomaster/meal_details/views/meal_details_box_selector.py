@@ -5,7 +5,7 @@ from PySide6.QtCore import QItemSelection, QSortFilterProxyModel, Qt, QTimer
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QAbstractItemView, QMenu, QTableView, QWidget
 
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.data.pm_dataset import PMDataset
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details_animal_item import MealDetailsAnimalItem
 from tse_analytics.modules.phenomaster.meal_details.models.meal_details_boxes_model import MealDetailsBoxesModel
 
@@ -43,7 +43,7 @@ class MealDetailsBoxSelector(QTableView):
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self._open_context_menu)
 
-    def set_data(self, dataset: Dataset):
+    def set_data(self, dataset: PMDataset):
         items: dict[str, MealDetailsAnimalItem] = {}
         for animal in dataset.animals.values():
             items[animal.id] = MealDetailsAnimalItem(animal.box, animal.id, pd.NA, {})

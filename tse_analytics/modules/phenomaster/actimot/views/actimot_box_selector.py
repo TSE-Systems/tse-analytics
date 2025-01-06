@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QAbstractItemView, QTableView, QWidget
 
 from tse_analytics.modules.phenomaster.actimot.data.actimot_animal_item import ActimotAnimalItem
 from tse_analytics.modules.phenomaster.actimot.models.actimot_boxes_model import ActimotBoxesModel
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.data.pm_dataset import PMDataset
 
 
 class ActimotBoxSelector(QTableView):
@@ -38,7 +38,7 @@ class ActimotBoxSelector(QTableView):
         self.sortByColumn(0, Qt.SortOrder.AscendingOrder)
         self.selectionModel().selectionChanged.connect(self._on_selection_changed)
 
-    def set_data(self, dataset: Dataset):
+    def set_data(self, dataset: PMDataset):
         items: dict[str, ActimotAnimalItem] = {}
         for animal in dataset.animals.values():
             items[animal.id] = ActimotAnimalItem(animal.box, animal.id, {})

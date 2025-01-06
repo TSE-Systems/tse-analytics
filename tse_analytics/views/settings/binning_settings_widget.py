@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import BinningMode
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.views.settings.binning_settings_widget_ui import Ui_BinningSettingsWidget
 
 

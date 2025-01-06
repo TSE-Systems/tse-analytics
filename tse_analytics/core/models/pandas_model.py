@@ -3,8 +3,8 @@ import pandas as pd
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 from PySide6.QtGui import QColor
 
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.outliers import OutliersMode
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
 
 class PandasModel(QAbstractTableModel):

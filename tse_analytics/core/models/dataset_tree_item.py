@@ -1,8 +1,8 @@
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QIcon
 
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.models.tree_item import TreeItem
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
 
 class DatasetTreeItem(TreeItem):

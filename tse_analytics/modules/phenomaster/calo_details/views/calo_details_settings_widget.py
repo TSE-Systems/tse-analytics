@@ -4,7 +4,7 @@ from tse_analytics.modules.phenomaster.calo_details.calo_details_settings import
 from tse_analytics.modules.phenomaster.calo_details.views.calo_details_settings_widget_ui import (
     Ui_CaloDetailsSettingsWidget,
 )
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.data.pm_dataset import PMDataset
 
 
 class CaloDetailsSettingsWidget(QWidget):
@@ -14,7 +14,7 @@ class CaloDetailsSettingsWidget(QWidget):
         self.ui = Ui_CaloDetailsSettingsWidget()
         self.ui.setupUi(self)
 
-        self.dataset: Dataset | None = None
+        self.dataset: PMDataset | None = None
 
     def set_settings(self, calo_details_settings: CaloDetailsSettings):
         self.ui.iterationsSpinBox.setValue(calo_details_settings.iterations)
@@ -28,7 +28,7 @@ class CaloDetailsSettingsWidget(QWidget):
             calo_details_settings.co2_settings,
         )
 
-    def set_data(self, dataset: Dataset):
+    def set_data(self, dataset: PMDataset):
         self.dataset = dataset
         flow_value = 0.5
         if "Flow" in dataset.original_df.columns:

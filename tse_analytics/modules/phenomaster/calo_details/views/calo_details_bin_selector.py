@@ -3,7 +3,7 @@ from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QAbstractItemView, QTableView, QWidget
 
 from tse_analytics.core.models.bins_model import BinsModel
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.data.pm_dataset import PMDataset
 
 
 class CaloDetailsBinSelector(QTableView):
@@ -36,7 +36,7 @@ class CaloDetailsBinSelector(QTableView):
         self.sortByColumn(0, Qt.SortOrder.AscendingOrder)
         self.selectionModel().selectionChanged.connect(self._on_selection_changed)
 
-    def set_data(self, dataset: Dataset):
+    def set_data(self, dataset: PMDataset):
         bins = list(dataset.calo_details.raw_df["Bin"].unique())
         model = BinsModel(bins)
         self.model().setSourceModel(model)

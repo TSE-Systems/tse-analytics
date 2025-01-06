@@ -10,12 +10,12 @@ from PySide6.QtGui import QAction, QCloseEvent, QIcon
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QMenu, QMessageBox, QToolButton
 
 from tse_analytics.core import manager
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.helper import CSV_IMPORT_ENABLED, IS_RELEASE, show_help
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.modules.phenomaster.io.tse_dataset_loader import load_tse_dataset
 from tse_analytics.views.about_dialog import AboutDialog
 from tse_analytics.views.analysis.ancova.ancova_widget import AncovaWidget

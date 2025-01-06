@@ -4,10 +4,11 @@ from uuid import uuid4
 
 from PySide6.QtCore import QModelIndex, QSettings
 
-from tse_analytics.core import dataset_merger, messaging
+from tse_analytics.core import messaging
 from tse_analytics.core.csv_import_settings import CsvImportSettings
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.models.workspace_model import WorkspaceModel
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.data import pm_dataset_merger
 from tse_analytics.modules.phenomaster.io.csv_dataset_loader import load_csv_dataset
 
 
@@ -61,7 +62,7 @@ class Manager:
         continuous_mode: bool,
         generate_new_animal_names: bool,
     ) -> None:
-        merged_dataset = dataset_merger.merge_datasets(
+        merged_dataset = pm_dataset_merger.merge_datasets(
             new_dataset_name, datasets, single_run, continuous_mode, generate_new_animal_names
         )
         if merged_dataset is not None:

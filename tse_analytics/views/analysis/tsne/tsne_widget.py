@@ -8,12 +8,12 @@ from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler
 
 from tse_analytics.core import messaging
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.helper import get_html_image, show_help
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.views.analysis.tsne.tsne_widget_ui import Ui_TsneWidget
 
 

@@ -6,19 +6,19 @@ import pandas as pd
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.modules.phenomaster.calo_details.data.calo_details import CaloDetails
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.data.pm_dataset import PMDataset
 
 
 class CaloDetailsLoader:
     @staticmethod
-    def load(filename: str, dataset: Dataset, csv_import_settings: CsvImportSettings) -> CaloDetails | None:
+    def load(filename: str, dataset: PMDataset, csv_import_settings: CsvImportSettings) -> CaloDetails | None:
         path = Path(filename)
         if path.is_file() and path.suffix.lower() == ".csv":
             return CaloDetailsLoader._load_from_csv(path, dataset, csv_import_settings)
         return None
 
     @staticmethod
-    def _load_from_csv(path: Path, dataset: Dataset, csv_import_settings: CsvImportSettings):
+    def _load_from_csv(path: Path, dataset: PMDataset, csv_import_settings: CsvImportSettings):
         columns_line = None
         with open(path) as f:
             lines = f.readlines()

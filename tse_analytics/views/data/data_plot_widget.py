@@ -5,9 +5,9 @@ from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import BinningMode
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.views.data.bar_plot_view import BarPlotView
 from tse_analytics.views.data.data_plot_widget_ui import Ui_DataPlotWidget
 from tse_analytics.views.data.timeline_plot_view import TimelinePlotView

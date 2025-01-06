@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
 )
 
 from tse_analytics.core import manager
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.views.datasets.adjust_dataset_dialog import AdjustDatasetDialog
 from tse_analytics.views.datasets.datasets_merge_dialog_ui import Ui_DatasetsMergeDialog
 

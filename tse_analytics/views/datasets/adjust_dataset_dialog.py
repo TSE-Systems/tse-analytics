@@ -2,7 +2,7 @@ import pandas as pd
 from PySide6.QtCore import QTime
 from PySide6.QtWidgets import QDialog, QTableWidgetItem, QWidget
 
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.views.datasets.adjust_dataset_dialog_ui import Ui_AdjustDatasetDialog
 
 

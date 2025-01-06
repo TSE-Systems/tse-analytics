@@ -6,12 +6,12 @@ import pandas as pd
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.modules.phenomaster.actimot.data.actimot_details import ActimotDetails
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.data.pm_dataset import PMDataset
 
 
 class ActimotLoader:
     @staticmethod
-    def load(filename: str, dataset: Dataset, csv_import_settings: CsvImportSettings) -> ActimotDetails | None:
+    def load(filename: str, dataset: PMDataset, csv_import_settings: CsvImportSettings) -> ActimotDetails | None:
         path = Path(filename)
         if path.is_file() and path.suffix.lower() == ".csv":
             return ActimotLoader._load_from_csv(path, dataset, csv_import_settings)
@@ -38,7 +38,7 @@ class ActimotLoader:
             variables[var.name] = var
 
     @staticmethod
-    def _load_from_csv(path: Path, dataset: Dataset, csv_import_settings: CsvImportSettings):
+    def _load_from_csv(path: Path, dataset: PMDataset, csv_import_settings: CsvImportSettings):
         with open(path) as f:
             lines = f.readlines()
 

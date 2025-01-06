@@ -1,7 +1,7 @@
 from PySide6.QtCore import QTime
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.views.settings.time_cycles_settings_widget_ui import Ui_TimeCyclesSettingsWidget
 
 

@@ -5,10 +5,10 @@ from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core import messaging
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.helper import get_html_image, show_help
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.views.analysis.distribution.distribution_widget_ui import Ui_DistributionWidget
 
 

@@ -4,8 +4,8 @@ from PySide6.QtPrintSupport import QPrintDialog
 from PySide6.QtWidgets import QComboBox, QFileDialog, QFontComboBox, QToolBar, QWidget
 
 from tse_analytics.core import messaging
-from tse_analytics.css import style_descriptive_table
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
+from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.views.reports.reports_widget_ui import Ui_ReportsWidget
 
 FONT_SIZES = [

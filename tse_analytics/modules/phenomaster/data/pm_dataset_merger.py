@@ -1,7 +1,8 @@
 import pandas as pd
 
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Animal, Variable
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
+from tse_analytics.modules.phenomaster.data.pm_dataset import PMDataset
 
 
 def merge_datasets(
@@ -50,7 +51,7 @@ def _merge_continuous(new_dataset_name: str, datasets: list[Dataset], single_run
     new_variables = _merge_variables(datasets)
     new_meta = _merge_metadata(new_dataset_name, timedelta, new_animals, new_variables, datasets)
 
-    result = Dataset(
+    result = PMDataset(
         name=new_dataset_name,
         path="",
         meta=new_meta,
@@ -116,7 +117,7 @@ def _merge_overlap(
     new_variables = _merge_variables(datasets)
     new_meta = _merge_metadata(new_dataset_name, timedelta, new_animals, new_variables, datasets)
 
-    result = Dataset(
+    result = PMDataset(
         name=new_dataset_name,
         path="",
         meta=new_meta,

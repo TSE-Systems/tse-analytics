@@ -6,13 +6,13 @@ from PySide6.QtWidgets import QAbstractItemView, QWidget
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import BinningMode
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.models.pandas_model import PandasModel
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
-from tse_analytics.css import style_descriptive_table
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
+from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.views.data.data_table_widget_ui import Ui_DataTableWidget
 
 

@@ -6,7 +6,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QMenu, QWidget
 from PySide6QtAds import CDockAreaWidget, CDockContainerWidget, CDockManager, CDockWidget, DockWidgetArea
 
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
+from tse_analytics.core.data.dataset import Dataset
 
 LAYOUT_VERSION = 12
 

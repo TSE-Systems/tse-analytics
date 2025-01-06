@@ -1,8 +1,8 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QInputDialog, QListWidgetItem, QWidget
 
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Factor, Group
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.views.factors_dialog_ui import Ui_FactorsDialog
 
 

@@ -1,7 +1,7 @@
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
 from tse_analytics.core import messaging
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
+from tse_analytics.core.data.dataset import Dataset
 
 
 class AnimalsModel(QAbstractTableModel):

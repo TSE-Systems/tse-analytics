@@ -2,11 +2,11 @@ from PySide6.QtCore import QSize, QSortFilterProxyModel, Qt
 from PySide6.QtWidgets import QComboBox, QDoubleSpinBox, QToolBar, QWidget
 
 from tse_analytics.core import messaging
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.outliers import OutliersMode
 from tse_analytics.core.models.aggregation_combo_box_delegate import AggregationComboBoxDelegate
 from tse_analytics.core.models.variables_model import VariablesModel
 from tse_analytics.core.predefined_variables import assign_predefined_values
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
 from tse_analytics.views.selection.variables.variables_widget_ui import Ui_VariablesWidget
 
 
