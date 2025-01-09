@@ -112,25 +112,7 @@ class MealDetailsDialog(QDialog):
 
     def _filter_boxes(self, selected_boxes: list[MealDetailsAnimalItem]):
         self.selected_boxes = selected_boxes
-        self._filter()
 
-    def _get_variables_subset(self) -> dict[str, Variable]:
-        variables_subset: dict[str, Variable] = {}
-        if "Drink1" in self.meal_details.variables:
-            variables_subset["Drink1"] = self.meal_details.variables["Drink1"]
-        if "Feed1" in self.meal_details.variables:
-            variables_subset["Feed1"] = self.meal_details.variables["Feed1"]
-        if "Drink2" in self.meal_details.variables:
-            variables_subset["Drink2"] = self.meal_details.variables["Drink2"]
-        if "Feed2" in self.meal_details.variables:
-            variables_subset["Feed2"] = self.meal_details.variables["Feed2"]
-        if "Drink" in self.meal_details.variables:
-            variables_subset["Drink"] = self.meal_details.variables["Drink"]
-        if "Feed" in self.meal_details.variables:
-            variables_subset["Feed"] = self.meal_details.variables["Feed"]
-        return variables_subset
-
-    def _filter(self):
         events_df = self.meal_events_df
         episodes_df = self.meal_episodes_df
         intervals_df = self.meal_intervals_df
@@ -154,6 +136,22 @@ class MealDetailsDialog(QDialog):
         if intervals_df is not None:
             self.intervals_table_view.set_data(intervals_df)
             self.intervals_plot_widget.set_data(intervals_df, self._get_variables_subset())
+
+    def _get_variables_subset(self) -> dict[str, Variable]:
+        variables_subset: dict[str, Variable] = {}
+        if "Drink1" in self.meal_details.variables:
+            variables_subset["Drink1"] = self.meal_details.variables["Drink1"]
+        if "Feed1" in self.meal_details.variables:
+            variables_subset["Feed1"] = self.meal_details.variables["Feed1"]
+        if "Drink2" in self.meal_details.variables:
+            variables_subset["Drink2"] = self.meal_details.variables["Drink2"]
+        if "Feed2" in self.meal_details.variables:
+            variables_subset["Feed2"] = self.meal_details.variables["Feed2"]
+        if "Drink" in self.meal_details.variables:
+            variables_subset["Drink"] = self.meal_details.variables["Drink"]
+        if "Feed" in self.meal_details.variables:
+            variables_subset["Feed"] = self.meal_details.variables["Feed"]
+        return variables_subset
 
     def _calculate(self):
         self.ui.toolButtonCalculate.setEnabled(False)

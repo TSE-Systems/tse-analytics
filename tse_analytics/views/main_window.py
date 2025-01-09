@@ -16,6 +16,7 @@ from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
+from tse_analytics.modules.intellimaze.io.dataset_loader import import_im_dataset
 from tse_analytics.modules.phenomaster.io.tse_dataset_loader import load_tse_dataset
 from tse_analytics.views.about_dialog import AboutDialog
 from tse_analytics.views.analysis.ancova.ancova_widget import AncovaWidget
@@ -312,9 +313,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def import_dataset_dialog(self):
         filter = (
-            "Data Files (*.tse *.csv);;TSE Dataset Files (*.tse);;CSV Files (*.csv)"
+            "Data Files (*.tse *.csv *.zip);;TSE Dataset Files (*.tse);;CSV Files (*.csv);;IntelliMaze Dataset Files (*.zip)"
             if CSV_IMPORT_ENABLED
-            else "TSE Dataset Files (*.tse)"
+            else "Data Files (*.tse *.zip);;TSE Dataset Files (*.tse);;IntelliMaze Dataset Files (*.zip)"
         )
         filename, _ = QFileDialog.getOpenFileName(
             self,
@@ -325,26 +326,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if filename:
             path = Path(filename)
             if path.is_file():
-                if path.suffix.lower() == ".csv":
-                    dialog = ImportCsvDialog(str(path), self)
-                    # TODO: check other cases!!
-                    dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-                    if dialog.exec() == QDialog.DialogCode.Accepted:
-                        manager.import_csv_dataset(path)
-                elif path.suffix.lower() == ".tse":
-                    dialog = ImportTseDialog(path, self)
-                    # TODO: check other cases!!
-                    if dialog.exec() == QDialog.DialogCode.Accepted:
-                        import_settings = dialog.get_import_settings()
+                match path.suffix.lower():
+                    case ".csv":
+                        dialog = ImportCsvDialog(str(path), self)
+                        # TODO: check other cases!!
+                        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+                        if dialog.exec() == QDialog.DialogCode.Accepted:
+                            manager.import_csv_dataset(path)
+                    case ".tse":
+                        dialog = ImportTseDialog(path, self)
+                        # TODO: check other cases!!
+                        if dialog.exec() == QDialog.DialogCode.Accepted:
+                            import_settings = dialog.get_import_settings()
 
-                        self.toast = make_toast(self, "Importing Dataset", "Please wait...")
+                            self.toast = make_toast(self, "Importing Dataset", "Please wait...")
+                            self.toast.show()
+
+                            worker = Worker(load_tse_dataset, path, import_settings)
+                            worker.signals.result.connect(self._import_result)
+                            worker.signals.finished.connect(self._import_finished)
+                            TaskManager.start_task(worker)
+                        dialog.deleteLater()
+                    case ".zip":
+                        self.toast = make_toast(self, "Importing IntelliMaze Dataset", "Please wait...")
                         self.toast.show()
 
-                        worker = Worker(load_tse_dataset, path, import_settings)
+                        worker = Worker(import_im_dataset, path)
                         worker.signals.result.connect(self._import_result)
                         worker.signals.finished.connect(self._import_finished)
                         TaskManager.start_task(worker)
-                    dialog.deleteLater()
 
     def _import_result(self, dataset: Dataset) -> None:
         if dataset is not None:

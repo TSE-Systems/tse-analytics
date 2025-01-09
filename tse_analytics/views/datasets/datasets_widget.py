@@ -17,6 +17,8 @@ from tse_analytics.core import manager, messaging
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.helper import CSV_IMPORT_ENABLED
 from tse_analytics.core.layouts.layout_manager import LayoutManager
+from tse_analytics.modules.intellimaze.animalgate.models.animalgate_tree_item import AnimalGateTreeItem
+from tse_analytics.modules.intellimaze.animalgate.views.animalgate_dialog import AnimalGateDialog
 from tse_analytics.modules.phenomaster.actimot.models.actimot_tree_item import ActimotTreeItem
 from tse_analytics.modules.phenomaster.actimot.views.actimot_dialog import ActimotDialog
 from tse_analytics.modules.phenomaster.calo_details.models.calo_details_tree_item import CaloDetailsTreeItem
@@ -270,6 +272,14 @@ class DatasetsWidget(QWidget):
                     pass
             elif isinstance(item, ActimotTreeItem):
                 dialog = ActimotDialog(item.actimot_details, self)
+                # TODO: check other cases!!
+                dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+                result = dialog.exec()
+                del dialog
+                if result == QDialog.DialogCode.Accepted:
+                    pass
+            elif isinstance(item, AnimalGateTreeItem):
+                dialog = AnimalGateDialog(item.animalgate_data, self)
                 # TODO: check other cases!!
                 dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
                 result = dialog.exec()

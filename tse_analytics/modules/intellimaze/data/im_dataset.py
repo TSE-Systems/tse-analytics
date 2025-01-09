@@ -16,16 +16,12 @@ from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator impor
 from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import process_time_phases_binning
 from tse_analytics.core.data.shared import Aggregation, Animal, Factor, Group, SplitMode, Variable
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
-from tse_analytics.modules.phenomaster.actimot.data.actimot_details import ActimotDetails
-from tse_analytics.modules.phenomaster.actimot.models.actimot_tree_item import ActimotTreeItem
+from tse_analytics.modules.intellimaze.animalgate.data.animalgate_data import AnimalGateData
+from tse_analytics.modules.intellimaze.animalgate.models.animalgate_tree_item import AnimalGateTreeItem
 from tse_analytics.modules.phenomaster.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
-from tse_analytics.modules.phenomaster.calo_details.data.calo_details import CaloDetails
-from tse_analytics.modules.phenomaster.calo_details.models.calo_details_tree_item import CaloDetailsTreeItem
-from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
-from tse_analytics.modules.phenomaster.meal_details.models.meal_details_tree_item import MealDetailsTreeItem
 
 
-class PMDataset:
+class IMDataset:
     def __init__(
         self,
         name: str,
@@ -53,9 +49,7 @@ class PMDataset:
         self.outliers_settings = OutliersSettings(OutliersMode.OFF, 1.5)
         self.binning_settings = BinningSettings()
 
-        self.calo_details: CaloDetails | None = None
-        self.meal_details: MealDetails | None = None
-        self.actimot_details: ActimotDetails | None = None
+        self.animalgate_data: AnimalGateData | None = None
 
         self.report = ""
 
@@ -597,17 +591,9 @@ class PMDataset:
         return deepcopy(self)
 
     def add_children_tree_items(self, dataset_tree_item: DatasetTreeItem) -> None:
-        if self.meal_details is not None:
-            meal_details_tree_item = MealDetailsTreeItem(self.meal_details)
-            dataset_tree_item.add_child(meal_details_tree_item)
-
-        if self.actimot_details is not None:
-            actimot_tree_item = ActimotTreeItem(self.actimot_details)
-            dataset_tree_item.add_child(actimot_tree_item)
-
-        if self.calo_details is not None:
-            calo_details_tree_item = CaloDetailsTreeItem(self.calo_details)
-            dataset_tree_item.add_child(calo_details_tree_item)
+        if self.animalgate_data is not None:
+            animalgate_tree_item = AnimalGateTreeItem(self.animalgate_data)
+            dataset_tree_item.add_child(animalgate_tree_item)
 
     def __getstate__(self):
         state = self.__dict__.copy()

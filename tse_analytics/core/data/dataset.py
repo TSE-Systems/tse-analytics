@@ -7,6 +7,7 @@ import pandas as pd
 from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.outliers import OutliersSettings
 from tse_analytics.core.data.shared import Animal, Factor, SplitMode, Variable
+from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 
 
 class Dataset(Protocol):
@@ -123,4 +124,7 @@ class Dataset(Protocol):
         ...
 
     def clone(self):
+        ...
+
+    def add_children_tree_items(self, dataset_tree_item: DatasetTreeItem) -> None:
         ...

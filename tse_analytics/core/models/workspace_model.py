@@ -5,15 +5,12 @@ from PySide6.QtCore import QAbstractItemModel, QModelIndex, QSettings, Qt, Signa
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.workspace import Workspace
+from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
 from tse_analytics.core.models.workspace_tree_item import WorkspaceTreeItem
 from tse_analytics.modules.phenomaster.actimot.io.actimot_loader import ActimotLoader
-from tse_analytics.modules.phenomaster.actimot.models.actimot_tree_item import ActimotTreeItem
 from tse_analytics.modules.phenomaster.calo_details.io.calo_details_loader import CaloDetailsLoader
-from tse_analytics.modules.phenomaster.calo_details.models.calo_details_tree_item import CaloDetailsTreeItem
 from tse_analytics.modules.phenomaster.meal_details.io.meal_details_loader import MealDetailsLoader
-from tse_analytics.modules.phenomaster.meal_details.models.meal_details_tree_item import MealDetailsTreeItem
-from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 
 
 class WorkspaceModel(QAbstractItemModel):
@@ -128,7 +125,7 @@ class WorkspaceModel(QAbstractItemModel):
             self.workspace_tree_item = WorkspaceTreeItem(self.workspace)
             for dataset in self.workspace.datasets.values():
                 dataset_tree_item = DatasetTreeItem(dataset)
-                self._add_children_items(dataset, dataset_tree_item)
+                dataset.add_children_tree_items(dataset_tree_item)
                 self.workspace_tree_item.add_child(dataset_tree_item)
         self.endResetModel()
 
@@ -139,7 +136,7 @@ class WorkspaceModel(QAbstractItemModel):
     def add_dataset(self, dataset: Dataset):
         self.workspace.datasets[dataset.id] = dataset
         dataset_tree_item = DatasetTreeItem(dataset)
-        self._add_children_items(dataset, dataset_tree_item)
+        dataset_tree_item.dataset.add_children_tree_items(dataset_tree_item)
         self.beginResetModel()
         self.workspace_tree_item.add_child(dataset_tree_item)
         self.endResetModel()
@@ -156,7 +153,7 @@ class WorkspaceModel(QAbstractItemModel):
                 dataset_tree_item.dataset.meal_details = meal_details
                 self.beginResetModel()
                 dataset_tree_item.clear()
-                self._add_children_items(dataset_tree_item.dataset, dataset_tree_item)
+                dataset_tree_item.dataset.add_children_tree_items(dataset_tree_item)
                 self.endResetModel()
 
     def add_actimot_details(self, dataset_index: QModelIndex, path: str):
@@ -171,7 +168,7 @@ class WorkspaceModel(QAbstractItemModel):
                 dataset_tree_item.dataset.actimot_details = actimot_details
                 self.beginResetModel()
                 dataset_tree_item.clear()
-                self._add_children_items(dataset_tree_item.dataset, dataset_tree_item)
+                dataset_tree_item.dataset.add_children_tree_items(dataset_tree_item)
                 self.endResetModel()
 
     def add_calo_details(self, dataset_index: QModelIndex, path: str):
@@ -186,7 +183,7 @@ class WorkspaceModel(QAbstractItemModel):
                 dataset_tree_item.dataset.calo_details = calo_details
                 self.beginResetModel()
                 dataset_tree_item.clear()
-                self._add_children_items(dataset_tree_item.dataset, dataset_tree_item)
+                dataset_tree_item.dataset.add_children_tree_items(dataset_tree_item)
                 self.endResetModel()
 
     def remove_dataset(self, indexes: list[QModelIndex]):
@@ -197,16 +194,3 @@ class WorkspaceModel(QAbstractItemModel):
             self.removeRow(row, parent=index.parent())
             self.workspace.datasets.pop(dataset_tree_item.dataset.id)
         self.endResetModel()
-
-    def _add_children_items(self, dataset: Dataset, dataset_tree_item: DatasetTreeItem):
-        if dataset.meal_details is not None:
-            meal_details_tree_item = MealDetailsTreeItem(dataset.meal_details)
-            dataset_tree_item.add_child(meal_details_tree_item)
-
-        if dataset.actimot_details is not None:
-            actimot_tree_item = ActimotTreeItem(dataset.actimot_details)
-            dataset_tree_item.add_child(actimot_tree_item)
-
-        if dataset.calo_details is not None:
-            calo_details_tree_item = CaloDetailsTreeItem(dataset.calo_details)
-            dataset_tree_item.add_child(calo_details_tree_item)
