@@ -14,8 +14,6 @@
         <file>icons/graph.png</file>
         <file>icons/help.png</file>
         <file>icons/icons8-add-16.png</file>
-        <file>icons/icons8-add-file-16.png</file>
-        <file>icons/icons8-add-new-16.png</file>
         <file>icons/icons8-adjust-16.png</file>
         <file>icons/icons8-align-center-16.png</file>
         <file>icons/icons8-align-justify-16.png</file>
@@ -24,7 +22,6 @@
         <file>icons/icons8-approval-16.png</file>
         <file>icons/icons8-bar-chart-16.png</file>
         <file>icons/icons8-bold-16.png</file>
-        <file>icons/icons8-cancel.svg</file>
         <file>icons/icons8-clock-16.png</file>
         <file>icons/icons8-compact-camera-16.png</file>
         <file>icons/icons8-copy-16.png</file>
@@ -38,8 +35,8 @@
         <file>icons/icons8-eukaryotic-cells-16.png</file>
         <file>icons/icons8-eukaryotic-cells-96.png</file>
         <file>icons/icons8-export-16.png</file>
+        <file>icons/icons8-extension-16.png</file>
         <file>icons/icons8-file-16.png</file>
-        <file>icons/icons8-film-roll-16.png</file>
         <file>icons/icons8-group-objects-16.png</file>
         <file>icons/icons8-heat-map-16.png</file>
         <file>icons/icons8-help-16.png</file>

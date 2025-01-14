@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import Any, Literal
 from uuid import uuid4
 
-import numpy as np
 import pandas as pd
 
 from tse_analytics.core import messaging
@@ -14,11 +13,12 @@ from tse_analytics.core.data.pipeline.outliers_pipe_operator import process_outl
 from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import process_time_cycles_binning
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import process_time_phases_binning
-from tse_analytics.core.data.shared import Aggregation, Animal, Factor, Group, SplitMode, Variable
+from tse_analytics.core.data.shared import Animal, Factor, Group, SplitMode, Variable
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
-from tse_analytics.modules.intellimaze.animalgate.data.animalgate_data import AnimalGateData
-from tse_analytics.modules.intellimaze.animalgate.models.animalgate_tree_item import AnimalGateTreeItem
-from tse_analytics.modules.phenomaster.calo_details.calo_details_fitting_result import CaloDetailsFittingResult
+from tse_analytics.modules.intellimaze.animal_gate.data.animal_gate_data import AnimalGateData
+from tse_analytics.modules.intellimaze.consumption_scale.data.consumption_scale_data import ConsumptionScaleData
+from tse_analytics.modules.intellimaze.models.extension_tree_item import ExtensionTreeItem
+from tse_analytics.modules.intellimaze.running_wheel.data.running_wheel_data import RunningWheelData
 
 
 class IMDataset:
@@ -27,10 +27,8 @@ class IMDataset:
         name: str,
         path: str,
         meta: dict | list[dict],
+        devices: dict[str, list[str]],
         animals: dict[str, Animal],
-        variables: dict[str, Variable],
-        df: pd.DataFrame,
-        sampling_interval: pd.Timedelta,
     ):
         self.id = uuid4()
         self.name = name
@@ -38,18 +36,22 @@ class IMDataset:
         self.meta = meta
 
         self.animals = animals
-        self.variables = variables
+        self.variables: dict[str, Variable]
 
-        self.original_df = df
-        self.active_df = self.original_df.copy()
-        self.sampling_interval = sampling_interval
+        self.original_df: pd.DataFrame
+        self.active_df: pd.DataFrame
+        self.sampling_interval: pd.Timedelta
 
         self.factors: dict[str, Factor] = {}
 
         self.outliers_settings = OutliersSettings(OutliersMode.OFF, 1.5)
         self.binning_settings = BinningSettings()
 
-        self.animalgate_data: AnimalGateData | None = None
+        self.devices = devices
+
+        self.animal_gate_data: AnimalGateData | None = None
+        self.running_wheel_data: RunningWheelData | None = None
+        self.consumption_scale_data: ConsumptionScaleData | None = None
 
         self.report = ""
 
@@ -66,6 +68,14 @@ class IMDataset:
     @property
     def duration(self) -> pd.Timedelta:
         return self.end_timestamp - self.start_timestamp
+
+    @property
+    def experiment_started(self) -> pd.Timestamp:
+        return pd.to_datetime(self.meta["experiment"]["ExperimentStarted"], format="%m/%d/%Y %H:%M:%S")
+
+    @property
+    def experiment_stopped(self) -> pd.Timestamp:
+        return pd.to_datetime(self.meta["experiment"]["ExperimentStopped"], format="%m/%d/%Y %H:%M:%S")
 
     def extract_groups_from_field(self, field: Literal["text1", "text2", "text3"] = "text1") -> dict[str, Group]:
         """Extract groups assignment from Text1, Text2 or Text3 field"""
@@ -95,13 +105,6 @@ class IMDataset:
     def rename_animal(self, old_id: str, animal: Animal) -> None:
         self.original_df = self._rename_animal_df(self.original_df, old_id, animal)
         self.active_df = self._rename_animal_df(self.active_df, old_id, animal)
-
-        if self.meal_details is not None:
-            self.meal_details.raw_df = self._rename_animal_df(self.meal_details.raw_df, old_id, animal)
-        if self.calo_details is not None:
-            self.calo_details.raw_df = self._rename_animal_df(self.calo_details.raw_df, old_id, animal)
-        if self.actimot_details is not None:
-            self.actimot_details.raw_df = self._rename_animal_df(self.actimot_details.raw_df, old_id, animal)
 
         # Rename animal in factor's groups definitions
         for factor in self.factors.values():
@@ -147,15 +150,6 @@ class IMDataset:
         self.original_df.reset_index(inplace=True, drop=True)
 
         self.refresh_active_df()
-
-        if self.calo_details is not None:
-            self.calo_details.raw_df = self.calo_details.raw_df[~self.calo_details.raw_df["Animal"].isin(animal_ids)]
-        if self.meal_details is not None:
-            self.meal_details.raw_df = self.meal_details.raw_df[~self.meal_details.raw_df["Animal"].isin(animal_ids)]
-        if self.actimot_details is not None:
-            self.actimot_details.raw_df = self.actimot_details.raw_df[
-                ~self.actimot_details.raw_df["Animal"].isin(animal_ids)
-            ]
 
     def exclude_time(self, range_start: datetime, range_end: datetime) -> None:
         self.original_df = self._exclude_df_time(self.original_df, range_start, range_end)
@@ -379,6 +373,7 @@ class IMDataset:
         selected_factor_name: str,
     ) -> pd.DataFrame:
         default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
+        # default_columns = ["DateTime", "Animal", "Box", "Run"]
         factor_columns = list(self.factors)
         variable_columns = list(variables)
         result = self.active_df[default_columns + factor_columns + variable_columns].copy()
@@ -529,49 +524,6 @@ class IMDataset:
 
         return result
 
-    def append_fitting_results(
-        self,
-        fitting_results: dict[int, CaloDetailsFittingResult],
-    ) -> None:
-        if len(fitting_results) > 0:
-            active_df = self.original_df
-            active_df["O2-p"] = np.nan
-            active_df["CO2-p"] = np.nan
-            active_df["VO2(3)-p"] = np.nan
-            active_df["VCO2(3)-p"] = np.nan
-            active_df["RER-p"] = np.nan
-            active_df["H(3)-p"] = np.nan
-            for result in fitting_results.values():
-                for _index, row in result.df.iterrows():
-                    bin_number = row["Bin"]
-
-                    # TODO: TODO: check int -> str conversion for general table!
-                    active_df.loc[
-                        active_df[(active_df["Box"] == result.box_number) & (active_df["Bin"] == bin_number)].index[0],
-                        ["O2-p", "CO2-p", "VO2(3)-p", "VCO2(3)-p", "RER-p", "H(3)-p"],
-                    ] = [row["O2-p"], row["CO2-p"], row["VO2(3)-p"], row["VCO2(3)-p"], row["RER-p"], row["H(3)-p"]]
-
-            if "O2-p" not in self.variables:
-                self.variables["O2-p"] = Variable("O2-p", "[%]", "Predicted O2", "float64", Aggregation.MEAN, False)
-            if "CO2-p" not in self.variables:
-                self.variables["CO2-p"] = Variable("CO2-p", "[%]", "Predicted CO2", "float64", Aggregation.MEAN, False)
-            if "VO2(3)-p" not in self.variables:
-                self.variables["VO2(3)-p"] = Variable(
-                    "VO2(3)-p", "[ml/h]", "Predicted VO2(3)", "float64", Aggregation.MEAN, False
-                )
-            if "VCO2(3)-p" not in self.variables:
-                self.variables["VCO2(3)-p"] = Variable(
-                    "VCO2(3)-p", "[ml/h]", "Predicted VCO2(3)", "float64", Aggregation.MEAN, False
-                )
-            if "RER-p" not in self.variables:
-                self.variables["RER-p"] = Variable("RER-p", "", "Predicted RER", "float64", Aggregation.MEAN, False)
-            if "H(3)-p" not in self.variables:
-                self.variables["H(3)-p"] = Variable(
-                    "H(3)-p", "[kcal/h]", "Predicted H(3)", "float64", Aggregation.MEAN, False
-                )
-            self.refresh_active_df()
-            messaging.broadcast(messaging.DatasetChangedMessage(self, self))
-
     def export_to_excel(self, path: str) -> None:
         with pd.ExcelWriter(path) as writer:
             self.get_current_df().to_excel(writer, sheet_name="Data")
@@ -591,9 +543,14 @@ class IMDataset:
         return deepcopy(self)
 
     def add_children_tree_items(self, dataset_tree_item: DatasetTreeItem) -> None:
-        if self.animalgate_data is not None:
-            animalgate_tree_item = AnimalGateTreeItem(self.animalgate_data)
-            dataset_tree_item.add_child(animalgate_tree_item)
+        if self.animal_gate_data is not None:
+            dataset_tree_item.add_child(ExtensionTreeItem(self.animal_gate_data))
+
+        if self.running_wheel_data is not None:
+            dataset_tree_item.add_child(ExtensionTreeItem(self.running_wheel_data))
+
+        if self.consumption_scale_data is not None:
+            dataset_tree_item.add_child(ExtensionTreeItem(self.consumption_scale_data))
 
     def __getstate__(self):
         state = self.__dict__.copy()

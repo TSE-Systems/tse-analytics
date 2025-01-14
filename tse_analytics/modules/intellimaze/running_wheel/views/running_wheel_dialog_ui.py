@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'animalgate_dialog.ui'
+## Form generated from reading UI file 'running_wheel_dialog.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.8.1
 ##
@@ -21,16 +21,16 @@ from PySide6.QtWidgets import (QAbstractButton, QApplication, QDialog, QDialogBu
     QWidget)
 import resources_rc
 
-class Ui_AnimalGateDialog(object):
-    def setupUi(self, AnimalGateDialog):
-        if not AnimalGateDialog.objectName():
-            AnimalGateDialog.setObjectName(u"AnimalGateDialog")
-        AnimalGateDialog.resize(1020, 785)
-        self.verticalLayout = QVBoxLayout(AnimalGateDialog)
+class Ui_RunningWheelDialog(object):
+    def setupUi(self, RunningWheelDialog):
+        if not RunningWheelDialog.objectName():
+            RunningWheelDialog.setObjectName(u"RunningWheelDialog")
+        RunningWheelDialog.resize(1262, 763)
+        self.verticalLayout = QVBoxLayout(RunningWheelDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.toolbarLayout = QHBoxLayout()
         self.toolbarLayout.setObjectName(u"toolbarLayout")
-        self.toolButtonPreprocess = QToolButton(AnimalGateDialog)
+        self.toolButtonPreprocess = QToolButton(RunningWheelDialog)
         self.toolButtonPreprocess.setObjectName(u"toolButtonPreprocess")
         icon = QIcon()
         icon.addFile(u":/icons/preprocess.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
@@ -39,7 +39,7 @@ class Ui_AnimalGateDialog(object):
 
         self.toolbarLayout.addWidget(self.toolButtonPreprocess)
 
-        self.toolButtonExport = QToolButton(AnimalGateDialog)
+        self.toolButtonExport = QToolButton(RunningWheelDialog)
         self.toolButtonExport.setObjectName(u"toolButtonExport")
         self.toolButtonExport.setEnabled(False)
         icon1 = QIcon()
@@ -53,7 +53,7 @@ class Ui_AnimalGateDialog(object):
 
         self.toolbarLayout.addItem(self.horizontalSpacer)
 
-        self.toolButtonHelp = QToolButton(AnimalGateDialog)
+        self.toolButtonHelp = QToolButton(RunningWheelDialog)
         self.toolButtonHelp.setObjectName(u"toolButtonHelp")
         icon2 = QIcon()
         icon2.addFile(u":/icons/icons8-help-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
@@ -64,7 +64,7 @@ class Ui_AnimalGateDialog(object):
 
         self.verticalLayout.addLayout(self.toolbarLayout)
 
-        self.splitter = QSplitter(AnimalGateDialog)
+        self.splitter = QSplitter(RunningWheelDialog)
         self.splitter.setObjectName(u"splitter")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -80,13 +80,13 @@ class Ui_AnimalGateDialog(object):
         self.toolBox.setMaximumSize(QSize(300, 16777215))
         self.page = QWidget()
         self.page.setObjectName(u"page")
-        self.page.setGeometry(QRect(0, 0, 300, 676))
+        self.page.setGeometry(QRect(0, 0, 300, 654))
         self.toolBox.addItem(self.page, u"Page 1")
         self.splitter.addWidget(self.toolBox)
 
         self.verticalLayout.addWidget(self.splitter)
 
-        self.buttonBox = QDialogButtonBox(AnimalGateDialog)
+        self.buttonBox = QDialogButtonBox(RunningWheelDialog)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setOrientation(Qt.Orientation.Horizontal)
         self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Close)
@@ -94,20 +94,20 @@ class Ui_AnimalGateDialog(object):
         self.verticalLayout.addWidget(self.buttonBox)
 
 
-        self.retranslateUi(AnimalGateDialog)
-        self.buttonBox.accepted.connect(AnimalGateDialog.accept)
-        self.buttonBox.rejected.connect(AnimalGateDialog.reject)
+        self.retranslateUi(RunningWheelDialog)
+        self.buttonBox.accepted.connect(RunningWheelDialog.accept)
+        self.buttonBox.rejected.connect(RunningWheelDialog.reject)
 
         self.tabWidget.setCurrentIndex(-1)
 
 
-        QMetaObject.connectSlotsByName(AnimalGateDialog)
+        QMetaObject.connectSlotsByName(RunningWheelDialog)
     # setupUi
 
-    def retranslateUi(self, AnimalGateDialog):
-        AnimalGateDialog.setWindowTitle(QCoreApplication.translate("AnimalGateDialog", u"AnimalGate", None))
-        self.toolButtonPreprocess.setText(QCoreApplication.translate("AnimalGateDialog", u"Preprocess Data", None))
-        self.toolButtonExport.setText(QCoreApplication.translate("AnimalGateDialog", u"Export data...", None))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("AnimalGateDialog", u"Page 1", None))
+    def retranslateUi(self, RunningWheelDialog):
+        RunningWheelDialog.setWindowTitle(QCoreApplication.translate("RunningWheelDialog", u"RunningWheel", None))
+        self.toolButtonPreprocess.setText(QCoreApplication.translate("RunningWheelDialog", u"Preprocess Data", None))
+        self.toolButtonExport.setText(QCoreApplication.translate("RunningWheelDialog", u"Export data...", None))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("RunningWheelDialog", u"Page 1", None))
     # retranslateUi
 

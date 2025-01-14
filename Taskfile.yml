@@ -64,7 +64,9 @@ tasks:
       - pyside6-uic tse_analytics/modules/phenomaster/actimot/views/actimot_heatmap_plot_widget.ui -o tse_analytics/modules/phenomaster/actimot/views/actimot_heatmap_plot_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/actimot/views/actimot_trajectory_plot_widget.ui -o tse_analytics/modules/phenomaster/actimot/views/actimot_trajectory_plot_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/actimot/views/actimot_frames_widget.ui -o tse_analytics/modules/phenomaster/actimot/views/actimot_frames_widget_ui.py
-      - pyside6-uic tse_analytics/modules/intellimaze/animalgate/views/animalgate_dialog.ui -o tse_analytics/modules/intellimaze/animalgate/views/animalgate_dialog_ui.py
+      - pyside6-uic tse_analytics/modules/intellimaze/animal_gate/views/animal_gate_dialog.ui -o tse_analytics/modules/intellimaze/animal_gate/views/animal_gate_dialog_ui.py
+      - pyside6-uic tse_analytics/modules/intellimaze/running_wheel/views/running_wheel_dialog.ui -o tse_analytics/modules/intellimaze/running_wheel/views/running_wheel_dialog_ui.py
+      - pyside6-uic tse_analytics/modules/intellimaze/consumption_scale/views/consumption_scale_dialog.ui -o tse_analytics/modules/intellimaze/consumption_scale/views/consumption_scale_dialog_ui.py
 
   clean:
     desc: remove all build, test, coverage and Python artifacts

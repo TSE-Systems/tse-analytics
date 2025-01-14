@@ -17,8 +17,10 @@ from tse_analytics.core import manager, messaging
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.helper import CSV_IMPORT_ENABLED
 from tse_analytics.core.layouts.layout_manager import LayoutManager
-from tse_analytics.modules.intellimaze.animalgate.models.animalgate_tree_item import AnimalGateTreeItem
-from tse_analytics.modules.intellimaze.animalgate.views.animalgate_dialog import AnimalGateDialog
+from tse_analytics.modules.intellimaze.consumption_scale.views.consumption_scale_dialog import ConsumptionScaleDialog
+from tse_analytics.modules.intellimaze.models.extension_tree_item import ExtensionTreeItem
+from tse_analytics.modules.intellimaze.animal_gate.views.animal_gate_dialog import AnimalGateDialog
+from tse_analytics.modules.intellimaze.running_wheel.views.running_wheel_dialog import RunningWheelDialog
 from tse_analytics.modules.phenomaster.actimot.models.actimot_tree_item import ActimotTreeItem
 from tse_analytics.modules.phenomaster.actimot.views.actimot_dialog import ActimotDialog
 from tse_analytics.modules.phenomaster.calo_details.models.calo_details_tree_item import CaloDetailsTreeItem
@@ -252,7 +254,7 @@ class DatasetsWidget(QWidget):
         if CSV_IMPORT_ENABLED:
             self.import_button.setEnabled(level == 1)
 
-    def _treeview_double_clicked(self, index: QModelIndex):
+    def _treeview_double_clicked(self, index: QModelIndex) -> None:
         if index.isValid():
             item = index.model().getItem(index)
             if isinstance(item, CaloDetailsTreeItem):
@@ -278,8 +280,16 @@ class DatasetsWidget(QWidget):
                 del dialog
                 if result == QDialog.DialogCode.Accepted:
                     pass
-            elif isinstance(item, AnimalGateTreeItem):
-                dialog = AnimalGateDialog(item.animalgate_data, self)
+            elif isinstance(item, ExtensionTreeItem):
+                match item.name:
+                    case "AnimalGate":
+                        dialog = AnimalGateDialog(item.extension_data, self)
+                    case "RunningWheel":
+                        dialog = RunningWheelDialog(item.extension_data, self)
+                    case "ConsumptionScale":
+                        dialog = ConsumptionScaleDialog(item.extension_data, self)
+                    case _:
+                        return
                 # TODO: check other cases!!
                 dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
                 result = dialog.exec()

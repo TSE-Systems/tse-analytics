@@ -3,24 +3,24 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from tse_analytics.modules.intellimaze.animalgate.data.animalgate_data import AnimalGateData
+from tse_analytics.modules.intellimaze.animal_gate.data.animal_gate_data import AnimalGateData
 from tse_analytics.modules.intellimaze.data.im_dataset import IMDataset
 
 
-def load_animalgate_data(
+def import_animalgate_data(
     folder_path: Path,
     im_dataset: IMDataset,
 ) -> AnimalGateData | None:
     if not folder_path.exists() or not folder_path.is_dir():
         return None
 
-    sessions_df = _load_sessions_df(folder_path)
-    antenna_df = _load_antenna_df(folder_path)
-    log_df = _load_log_df(folder_path)
-    input_df = _load_input_df(folder_path)
-    output_df = _load_output_df(folder_path)
+    sessions_df = _import_sessions_df(folder_path)
+    antenna_df = _import_antenna_df(folder_path)
+    log_df = _import_log_df(folder_path)
+    input_df = _import_input_df(folder_path)
+    output_df = _import_output_df(folder_path)
 
-    animalgate_data = AnimalGateData(
+    data = AnimalGateData(
         im_dataset,
         "AnimalGate",
         sessions_df,
@@ -29,10 +29,10 @@ def load_animalgate_data(
         input_df,
         output_df,
     )
-    return animalgate_data
+    return data
 
 
-def _load_sessions_df(folder_path: Path) -> pd.DataFrame | None:
+def _import_sessions_df(folder_path: Path) -> pd.DataFrame | None:
     file_path = folder_path / "Sessions.txt"
     if not file_path.is_file():
         return None
@@ -54,6 +54,9 @@ def _load_sessions_df(folder_path: Path) -> pd.DataFrame | None:
         decimal=".",
         dtype=dtype,
     )
+
+    # TODO: does -1 means no weight measurement?
+    df["Weight"] = df["Weight"].replace(-1, np.nan)
 
     # Convert DateTime columns
     df["Start"] = pd.to_datetime(
@@ -81,7 +84,7 @@ def _load_sessions_df(folder_path: Path) -> pd.DataFrame | None:
     return df
 
 
-def _load_antenna_df(folder_path: Path) -> pd.DataFrame | None:
+def _import_antenna_df(folder_path: Path) -> pd.DataFrame | None:
     file_path = folder_path / "Antenna.txt"
     if not file_path.is_file():
         return None
@@ -119,7 +122,7 @@ def _load_antenna_df(folder_path: Path) -> pd.DataFrame | None:
     return df
 
 
-def _load_log_df(folder_path: Path) -> pd.DataFrame | None:
+def _import_log_df(folder_path: Path) -> pd.DataFrame | None:
     file_path = folder_path / "Log.txt"
     if not file_path.is_file():
         return None
@@ -161,7 +164,7 @@ def _load_log_df(folder_path: Path) -> pd.DataFrame | None:
     return df
 
 
-def _load_input_df(folder_path: Path) -> pd.DataFrame | None:
+def _import_input_df(folder_path: Path) -> pd.DataFrame | None:
     file_path = folder_path / "Input.txt"
     if not file_path.is_file():
         return None
@@ -174,7 +177,7 @@ def _load_input_df(folder_path: Path) -> pd.DataFrame | None:
     return df
 
 
-def _load_output_df(folder_path: Path) -> pd.DataFrame | None:
+def _import_output_df(folder_path: Path) -> pd.DataFrame | None:
     file_path = folder_path / "Output.txt"
     if not file_path.is_file():
         return None

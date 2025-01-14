@@ -9,8 +9,11 @@ import xmltodict
 from loguru import logger
 
 from tse_analytics.core.data.shared import Animal
-from tse_analytics.modules.intellimaze.animalgate.io.animalgate_loader import load_animalgate_data
+from tse_analytics.modules.intellimaze.animal_gate.io.importer import import_animalgate_data
+from tse_analytics.modules.intellimaze.consumption_scale.io.importer import import_consumptionscale_data
 from tse_analytics.modules.intellimaze.data.im_dataset import IMDataset
+from tse_analytics.modules.intellimaze.data.main_table_helper import preprocess_main_table
+from tse_analytics.modules.intellimaze.running_wheel.io.importer import import_runningwheel_data
 
 
 def import_im_dataset(path: Path) -> IMDataset | None:
@@ -33,28 +36,48 @@ def import_im_dataset(path: Path) -> IMDataset | None:
                 return None
 
             metadata = _import_metadata(tmp_path / "Info.xml")
+            devices = _get_devices(metadata)
             animals = _import_animals(tmp_path / "Animals" / "Animals.animals")
 
-            experiment_filename = metadata["ExperimentFilename"]
             dataset = IMDataset(
-                name=Path(experiment_filename).stem,
+                name=path.stem,
                 path=str(path),
                 meta={
                     "experiment": metadata,
                     "animals": {k: v.get_dict() for (k, v) in animals.items()},
                 },
+                devices=devices,
                 animals=animals,
-                variables={},
-                df=pd.DataFrame(),
-                sampling_interval=pd.to_timedelta(1, unit="s"),
             )
 
-            if (tmp_path / "AnimalGate").is_dir():
-                dataset.animalgate_data = load_animalgate_data(tmp_path / "AnimalGate", dataset)
+            if "AnimalGate" in devices and (tmp_path / "AnimalGate").is_dir():
+                dataset.animal_gate_data = import_animalgate_data(tmp_path / "AnimalGate", dataset)
+
+            if "RunningWheel" in devices and (tmp_path / "RunningWheel").is_dir():
+                dataset.running_wheel_data = import_runningwheel_data(tmp_path / "RunningWheel", dataset)
+
+            if "ConsumptionScale" in devices and (tmp_path / "ConsumptionScale").is_dir():
+                dataset.consumption_scale_data = import_consumptionscale_data(tmp_path / "ConsumptionScale", dataset)
+
+    dataset = preprocess_main_table(dataset, pd.to_timedelta(1, unit="minute"))
 
     logger.info(f"Import complete in {(timeit.default_timer() - tic):.3f} sec: {path}")
 
     return dataset
+
+
+def _get_devices(metadata: dict) -> dict[str, list[str]]:
+    devices = {}
+    for item in metadata["Components"]["ComponentInfo"]:
+        extension_name = item["Extension"]
+        if not extension_name in devices:
+            devices[extension_name] = []
+        devices[extension_name].append(item["DeviceID"])
+
+    # Sort by DeviceID
+    for extension in devices.values():
+        extension.sort()
+    return devices
 
 
 def _import_metadata(path: Path) -> dict | None:
@@ -89,8 +112,8 @@ def _import_animals(path: Path) -> dict | None:
             id=str(item["Name"]),
             box=int(item["PMBoxNr"]),
             weight=float(item["Weight"]),
-            text1=item["Sex"],
-            text2=item["Strain"],
+            text1=item["Tag"],
+            text2=item["Sex"],
             text3=item["Group"],
         )
         animals[animal.id] = animal
