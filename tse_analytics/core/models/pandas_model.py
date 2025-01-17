@@ -33,7 +33,7 @@ class PandasModel(QAbstractTableModel):
     def columnCount(self, parent=None):
         return self.column_count
 
-    def data(self, index: QModelIndex, role: Qt.ItemDataRole):
+    def data(self, index: QModelIndex, role: Qt.ItemDataRole = ...):
         if role == Qt.ItemDataRole.DisplayRole:
             return str(self._data[index.row(), index.column()])
         if self.calulate and role == Qt.ItemDataRole.BackgroundRole:
@@ -50,7 +50,7 @@ class PandasModel(QAbstractTableModel):
                             return PandasModel.color
         return None
 
-    def headerData(self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
+    def headerData(self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = ...):
         if role == Qt.ItemDataRole.DisplayRole:
             if orientation == Qt.Orientation.Horizontal:
                 return self._cols[section]

@@ -11,19 +11,19 @@ class CaloDetailsBoxesModel(QAbstractTableModel):
 
         self.items = items
 
-    def data(self, index: QModelIndex, role: Qt.ItemDataRole):
+    def data(self, index: QModelIndex, role: Qt.ItemDataRole = ...):
         if role == Qt.ItemDataRole.DisplayRole:
             item = self.items[index.row()]
             values = (item.box, item.ref_box)
             value = values[index.column()]
             return int(value) if value is not None else None
 
-    def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
+    def headerData(self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = ...):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
-            return self.header[col]
+            return self.header[section]
 
-    def rowCount(self, parent):
+    def rowCount(self, parent: QModelIndex = ...):
         return len(self.items)
 
-    def columnCount(self, parent):
+    def columnCount(self, parent: QModelIndex = ...):
         return len(self.header)

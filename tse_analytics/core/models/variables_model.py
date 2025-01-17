@@ -16,7 +16,7 @@ class VariablesModel(QAbstractTableModel):
         self.items = items
         self.dataset = dataset
 
-    def data(self, index: QModelIndex, role: Qt.ItemDataRole):
+    def data(self, index: QModelIndex, role: Qt.ItemDataRole = ...):
         item = self.items[index.row()]
         match index.column():
             case 0:
@@ -35,7 +35,7 @@ class VariablesModel(QAbstractTableModel):
                 if role == Qt.ItemDataRole.DisplayRole:
                     return item.description
 
-    def setData(self, index: QModelIndex, value, role: Qt.ItemDataRole):
+    def setData(self, index: QModelIndex, value, role: Qt.ItemDataRole = ...):
         match index.column():
             case 2:
                 if role == Qt.ItemDataRole.EditRole:
@@ -59,13 +59,13 @@ class VariablesModel(QAbstractTableModel):
             case _:
                 return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
 
-    def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
+    def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = ...):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             return self.header[col]
         return None
 
-    def rowCount(self, parent) -> int:
+    def rowCount(self, parent: QModelIndex = ...):
         return len(self.items)
 
-    def columnCount(self, parent) -> int:
+    def columnCount(self, parent: QModelIndex = ...):
         return len(self.header)

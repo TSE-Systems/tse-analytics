@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import time
 from enum import StrEnum, unique
 
 from tse_analytics.core.data.shared import TimePhase
@@ -27,7 +27,7 @@ class TimeIntervalsBinningSettings:
 
 
 class TimeCyclesBinningSettings:
-    def __init__(self, light_cycle_start: datetime.time, dark_cycle_start: datetime.time):
+    def __init__(self, light_cycle_start: time, dark_cycle_start: time):
         self.light_cycle_start = light_cycle_start
         self.dark_cycle_start = dark_cycle_start
 

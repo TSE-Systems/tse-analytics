@@ -73,11 +73,27 @@ class RunningWheelData:
             ),
         }
 
+        # df.sort_values(["DateTime"], inplace=True)
+        #
+        # df['DateTime'] = df['DateTime'].dt.tz_localize(None)
+        # df['DateTime'] = df['DateTime'].dt.floor('Min')
+        #
+        # original_result = df.groupby("Animal", dropna=False, observed=False)
+        # original_result = original_result.resample("1min", on="DateTime", origin="start").mean()
+        # original_result.reset_index(inplace=True, drop=False)
+        # original_result.sort_values(by=["Animal", "DateTime"], inplace=True)
+        #
+        # date_range = pd.date_range(self.im_dataset.experiment_started.round("T"), self.im_dataset.experiment_stopped.round("T"), freq="T")
+        #
+        # original_result.set_index("DateTime", inplace=True, drop=False)
+        #
+        # tmp = original_result[original_result["Animal"] == "Animal 1"]
+        #
+        # df_regular = tmp.reindex(date_range)
+        #
+        # df.reset_index(drop=True, inplace=True)
+
         df.sort_values(["DateTime"], inplace=True)
-
-        # df.set_index("DateTime", inplace=True, drop=False)
-        # df = df.resample("1min").fillna(method='ffill')
-
         df.reset_index(drop=True, inplace=True)
 
         return df, variables

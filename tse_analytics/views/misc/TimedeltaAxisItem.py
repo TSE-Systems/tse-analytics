@@ -14,5 +14,5 @@ class TimedeltaAxisItem(AxisItem):
         if self.sampling_interval is not None:
             for value in values:
                 dt = self.sampling_interval * value
-                formatStrings.append(str(dt))
+                formatStrings.append(str(dt.round("s")))
         return formatStrings

@@ -1,5 +1,5 @@
 import pandas as pd
-from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
+from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt, QPersistentModelIndex
 
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details_animal_item import MealDetailsAnimalItem
 
@@ -11,7 +11,7 @@ class MealDetailsBoxesModel(QAbstractTableModel):
         self.items = items
         self.header = header
 
-    def data(self, index: QModelIndex, role: Qt.ItemDataRole):
+    def data(self, index: QModelIndex | QPersistentModelIndex, role: Qt.ItemDataRole = ...):
         if role == Qt.ItemDataRole.DisplayRole:
             item = self.items[index.row()]
             column = index.column()
@@ -25,14 +25,14 @@ class MealDetailsBoxesModel(QAbstractTableModel):
                 case _:
                     return item.factors[self.header[column]]
 
-    def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
+    def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = ...):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             return self.header[col]
 
-    def rowCount(self, parent):
+    def rowCount(self, parent: QModelIndex | QPersistentModelIndex = ...):
         return len(self.items)
 
-    def columnCount(self, parent):
+    def columnCount(self, parent: QModelIndex | QPersistentModelIndex = ...):
         return len(self.header)
 
     def clear_diets(self, indexes: list[QModelIndex]):

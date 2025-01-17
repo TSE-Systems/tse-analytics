@@ -509,7 +509,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             dataset, widget, f"{widget.title} - {dataset.name}", QIcon(":/icons/timeseries.png")
         )
 
-    def _add_timeseries_autocorrelation_widget(self):
+    def _add_timeseries_autocorrelation_widget(self) -> None:
         dataset = manager.get_selected_dataset()
         if dataset is None:
             return
@@ -518,7 +518,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             dataset, widget, f"{widget.title} - {dataset.name}", QIcon(":/icons/timeseries.png")
         )
 
-    def _add_report_widget(self):
+    def _add_report_widget(self) -> None:
         dataset = manager.get_selected_dataset()
         if dataset is None:
             return
@@ -527,11 +527,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             dataset, widget, f"Report - {dataset.name}", QIcon(":/icons/report.png")
         )
 
-    def set_enabled_add_widget_button(self, enabled: bool):
+    def set_enabled_add_widget_button(self, enabled: bool) -> None:
         self.add_widget_button.setEnabled(enabled)
 
     def closeEvent(self, event: QCloseEvent) -> None:
-        if QMessageBox.question(self, "TSE Analytics", "Do you want to quit?") == QMessageBox.StandardButton.Yes:
+        if (
+            QMessageBox.question(
+                self,
+                "TSE Analytics",
+                "Do you want to quit?",
+                QMessageBox.StandardButton.Yes,
+                QMessageBox.StandardButton.No,
+            )
+            == QMessageBox.StandardButton.Yes
+        ):
             LayoutManager.clear_dock_manager()
             self.save_settings()
             LayoutManager.delete_dock_manager()

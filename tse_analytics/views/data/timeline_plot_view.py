@@ -63,7 +63,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         variable: Variable,
         split_mode: SplitMode,
         display_errors: bool,
-        selected_factor: Factor,
+        selected_factor: Factor | None,
         scatter_plot: bool,
     ) -> None:
         self.plot_item1.clear()
@@ -147,7 +147,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
             filtered_data = self._df[self._df["Animal"] == animal.id]
 
             pen = mkPen(color=(i, len(animals)), width=1)
-            tmp_min, tmp_max = self._plot_item(filtered_data, f"Animal {animal.id}", pen)
+            tmp_min, tmp_max = self._plot_item(filtered_data, animal.id, pen)
 
             if x_min is None or tmp_min < x_min:
                 x_min = tmp_min

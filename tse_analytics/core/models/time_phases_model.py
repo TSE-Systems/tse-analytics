@@ -15,13 +15,13 @@ class TimePhasesModel(QAbstractTableModel):
         self.dataset = dataset
         self.items = []
 
-    def data(self, index: QModelIndex, role: Qt.ItemDataRole):
+    def data(self, index: QModelIndex, role: Qt.ItemDataRole = ...):
         if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
             item = self.items[index.row()]
             values = (item.name, str(item.start_timestamp))
             return values[index.column()]
 
-    def setData(self, index: QModelIndex, value, role: Qt.ItemDataRole):
+    def setData(self, index: QModelIndex, value, role: Qt.ItemDataRole = ...):
         if role == Qt.ItemDataRole.EditRole:
             item = self.items[index.row()]
             if index.column() == 0:
@@ -36,7 +36,7 @@ class TimePhasesModel(QAbstractTableModel):
                 return False
             return True
 
-    def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
+    def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = ...):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             return self.header[col]
 

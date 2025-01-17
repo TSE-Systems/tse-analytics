@@ -48,7 +48,7 @@ class DataChangedMessage(Message):
 class DatasetChangedMessage(Message):
     """Indicates that selected dataset is changed"""
 
-    def __init__(self, sender, dataset: Dataset):
+    def __init__(self, sender, dataset: Dataset | None):
         super().__init__(sender)
         self.dataset = dataset
 

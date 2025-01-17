@@ -1,35 +1,38 @@
+from __future__ import annotations
+
+
 class TreeItem:
     """A Json item corresponding to a line in QTreeView"""
 
-    def __init__(self, parent: "TreeItem" = None):
+    def __init__(self, parent: TreeItem | None = None):
         self._parent = parent
         self._key = ""
         self._value = ""
         self._value_type = None
-        self._children = []
+        self._children: list[TreeItem] = []
 
-    def appendChild(self, item: "TreeItem"):
+    def appendChild(self, item: TreeItem):
         """Add item as a child"""
         self._children.append(item)
 
-    def child(self, row: int) -> "TreeItem":
+    def child(self, row: int) -> TreeItem:
         """Return the child of the current item from the given row"""
         return self._children[row]
 
-    def parent(self) -> "TreeItem":
+    def parent(self) -> TreeItem | None:
         """Return the parent of the current item"""
         return self._parent
 
-    def childCount(self) -> int:
+    def childCount(self):
         """Return the number of children of the current item"""
         return len(self._children)
 
-    def row(self) -> int:
+    def row(self):
         """Return the row where the current item occupies in the parent"""
         return self._parent._children.index(self) if self._parent else 0
 
     @property
-    def key(self) -> str:
+    def key(self):
         """Return the key name"""
         return self._key
 
@@ -39,7 +42,7 @@ class TreeItem:
         self._key = key
 
     @property
-    def value(self) -> str:
+    def value(self):
         """Return the value name of the current item"""
         return self._value
 
@@ -59,7 +62,7 @@ class TreeItem:
         self._value_type = value
 
     @classmethod
-    def load(cls, value: list | dict, parent: "TreeItem" = None, sort=True) -> "TreeItem":
+    def load(cls, value: list | dict, parent: TreeItem | None = None, sort=True) -> TreeItem:
         """Create a 'root' TreeItem from a nested list or a nested dictonary
 
         Examples:

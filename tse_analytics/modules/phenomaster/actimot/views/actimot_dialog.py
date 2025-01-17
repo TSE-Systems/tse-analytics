@@ -121,7 +121,7 @@ class ActimotDialog(QDialog):
         toast = make_toast(self, "ActiMot Preprocessing", "Please wait...")
         toast.show()
 
-        def _work_result(result: [pd.DataFrame, traja.TrajaDataFrame]) -> None:
+        def _work_result(result: tuple[pd.DataFrame, traja.TrajaDataFrame]) -> None:
             toast.hide()
 
             df, trj_df = result

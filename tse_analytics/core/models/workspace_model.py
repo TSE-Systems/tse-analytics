@@ -22,11 +22,6 @@ class WorkspaceModel(QAbstractItemModel):
         self.workspace = Workspace("Workspace")
         self.workspace_tree_item = WorkspaceTreeItem(self.workspace)
 
-    def rowCount(self, index: QModelIndex):
-        if index.isValid():
-            return index.internalPointer().child_count()
-        return self.workspace_tree_item.child_count()
-
     def addChild(self, node, parent: QModelIndex | None = None):
         if not parent or not parent.isValid():
             parent = self.workspace_tree_item
@@ -62,16 +57,21 @@ class WorkspaceModel(QAbstractItemModel):
         else:
             return QModelIndex()
 
-    def parent(self, index: QModelIndex):
-        if index.isValid():
-            p = index.internalPointer().parent()
+    def parent(self, child: QModelIndex) -> QModelIndex:
+        if child.isValid():
+            p = child.internalPointer().parent()
             if p:
                 return self.createIndex(p.row(), 0, p)
         return QModelIndex()
 
-    def columnCount(self, index: QModelIndex):
-        if index.isValid():
-            return index.internalPointer().column_count()
+    def rowCount(self, parent: QModelIndex = ...):
+        if parent.isValid():
+            return parent.internalPointer().child_count()
+        return self.workspace_tree_item.child_count()
+
+    def columnCount(self, parent: QModelIndex = ...):
+        if parent.isValid():
+            return parent.internalPointer().column_count()
         return self.workspace_tree_item.column_count()
 
     def data(self, index: QModelIndex, role: Qt.ItemDataRole = None):

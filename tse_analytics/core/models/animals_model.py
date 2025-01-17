@@ -13,7 +13,7 @@ class AnimalsModel(QAbstractTableModel):
         self.dataset = dataset
         self.items = list(dataset.animals.values())
 
-    def data(self, index: QModelIndex, role: Qt.ItemDataRole):
+    def data(self, index: QModelIndex, role: Qt.ItemDataRole = ...):
         item = self.items[index.row()]
         match index.column():
             case 0:
@@ -37,7 +37,7 @@ class AnimalsModel(QAbstractTableModel):
                 if role == Qt.ItemDataRole.DisplayRole:
                     return item.text3
 
-    def setData(self, index: QModelIndex, value, role: Qt.ItemDataRole):
+    def setData(self, index: QModelIndex, value, role: Qt.ItemDataRole = ...):
         match index.column():
             case 0:
                 if role == Qt.ItemDataRole.CheckStateRole:
@@ -64,13 +64,13 @@ class AnimalsModel(QAbstractTableModel):
             case _:
                 return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
 
-    def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
+    def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = ...):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             return self.header[col]
         return None
 
-    def rowCount(self, parent):
+    def rowCount(self, parent: QModelIndex = ...):
         return len(self.items)
 
-    def columnCount(self, parent):
+    def columnCount(self, parent: QModelIndex = ...):
         return len(self.header)

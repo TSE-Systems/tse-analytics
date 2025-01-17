@@ -1,5 +1,5 @@
 import pandas as pd
-from PySide6.QtCore import QModelIndex, Qt, QAbstractListModel
+from PySide6.QtCore import QModelIndex, Qt, QAbstractListModel, QPersistentModelIndex
 
 
 class PandasListModel(QAbstractListModel):
@@ -8,10 +8,10 @@ class PandasListModel(QAbstractListModel):
 
         self._data = df
 
-    def data(self, index: QModelIndex, role: Qt.ItemDataRole):
+    def data(self, index: QModelIndex | QPersistentModelIndex, role: Qt.ItemDataRole = ...):
         if role == Qt.ItemDataRole.DisplayRole:
             item = self._data.iloc[index.row()]
             return item[0]
 
-    def rowCount(self, parent=None):
+    def rowCount(self, parent: QModelIndex | QPersistentModelIndex = ...):
         return self._data.shape[0]

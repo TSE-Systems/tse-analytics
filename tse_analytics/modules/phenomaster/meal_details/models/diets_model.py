@@ -1,4 +1,4 @@
-from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
+from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt, QPersistentModelIndex
 
 from tse_analytics.core.data.shared import AnimalDiet
 
@@ -10,13 +10,13 @@ class DietsModel(QAbstractTableModel):
         super().__init__(parent)
         self.items = items
 
-    def data(self, index: QModelIndex, role: Qt.ItemDataRole):
+    def data(self, index: QModelIndex | QPersistentModelIndex, role: Qt.ItemDataRole = ...):
         if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
             item = self.items[index.row()]
             values = (item.name, item.caloric_value)
             return values[index.column()]
 
-    def setData(self, index: QModelIndex, value, role: Qt.ItemDataRole):
+    def setData(self, index: QModelIndex | QPersistentModelIndex, value, role: Qt.ItemDataRole = ...):
         if role == Qt.ItemDataRole.EditRole:
             item = self.items[index.row()]
             if index.column() == 0:
@@ -30,17 +30,17 @@ class DietsModel(QAbstractTableModel):
                 return False
             return True
 
-    def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
+    def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = ...):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             return self.header[col]
 
-    def rowCount(self, parent):
+    def rowCount(self, parent: QModelIndex | QPersistentModelIndex = ...):
         return len(self.items)
 
-    def columnCount(self, parent):
+    def columnCount(self, parent: QModelIndex | QPersistentModelIndex = ...):
         return len(self.header)
 
-    def flags(self, index: QModelIndex):
+    def flags(self, index: QModelIndex | QPersistentModelIndex):
         return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsEditable
 
     def add_diet(self, diet: AnimalDiet):
@@ -48,7 +48,7 @@ class DietsModel(QAbstractTableModel):
         # Trigger refresh.
         self.layoutChanged.emit()
 
-    def delete_diet(self, index):
+    def delete_diet(self, index: QModelIndex | QPersistentModelIndex):
         # Remove the item and refresh.
         del self.items[index.row()]
         self.layoutChanged.emit()

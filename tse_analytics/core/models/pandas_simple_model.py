@@ -8,7 +8,7 @@ class PandasSimpleModel(QAbstractTableModel):
 
         self._data = df
 
-    def data(self, index: QModelIndex, role: Qt.ItemDataRole):
+    def data(self, index: QModelIndex, role: Qt.ItemDataRole = ...):
         if role == Qt.ItemDataRole.DisplayRole:
             value = self._data.iloc[index.row(), index.column()]
             return str(value)
@@ -19,7 +19,7 @@ class PandasSimpleModel(QAbstractTableModel):
     def columnCount(self, parent=None):
         return self._data.shape[1]
 
-    def headerData(self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
+    def headerData(self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = ...):
         # section is the index of the column/row.
         if role == Qt.ItemDataRole.DisplayRole:
             if orientation == Qt.Orientation.Horizontal:

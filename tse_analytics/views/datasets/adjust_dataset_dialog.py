@@ -44,7 +44,7 @@ class AdjustDatasetDialog(QDialog):
         for i, animal in enumerate(self.dataset.animals.values()):
             self.ui.tableWidgetAnimals.setItem(i, 0, QTableWidgetItem(animal.id))
             self.ui.tableWidgetAnimals.setItem(i, 1, QTableWidgetItem(animal.box))
-            self.ui.tableWidgetAnimals.setItem(i, 2, QTableWidgetItem(animal.weight))
+            self.ui.tableWidgetAnimals.setItem(i, 2, QTableWidgetItem(str(animal.weight)))
             self.ui.tableWidgetAnimals.setItem(i, 3, QTableWidgetItem(animal.text1))
             self.ui.tableWidgetAnimals.setItem(i, 4, QTableWidgetItem(animal.text2))
             self.ui.tableWidgetAnimals.setItem(i, 5, QTableWidgetItem(animal.text3))
