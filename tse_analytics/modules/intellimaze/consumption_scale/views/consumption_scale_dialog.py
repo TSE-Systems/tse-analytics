@@ -1,13 +1,13 @@
 from PySide6.QtCore import QSettings, Qt
-from PySide6.QtGui import QCloseEvent, QKeyEvent, QIcon
+from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
 from PySide6.QtWidgets import QDialog, QWidget
 
 from tse_analytics.modules.intellimaze.consumption_scale.data.consumption_scale_data import ConsumptionScaleData
 from tse_analytics.modules.intellimaze.consumption_scale.views.consumption_scale_dialog_ui import (
     Ui_ConsumptionScaleDialog,
 )
-from tse_analytics.modules.intellimaze.views.im_device_selector import IMDeviceSelector
-from tse_analytics.modules.intellimaze.views.im_table_view import IMTableView
+from tse_analytics.views.misc.device_selector import DeviceSelector
+from tse_analytics.views.misc.pandas_table_view import PandasTableView
 
 
 class ConsumptionScaleDialog(QDialog):
@@ -22,11 +22,11 @@ class ConsumptionScaleDialog(QDialog):
 
         self.data = data
 
-        self.consumption_table_view = IMTableView(self)
+        self.consumption_table_view = PandasTableView(self)
         self.consumption_table_view.set_data(self.data.consumption_df)
         self.ui.tabWidget.addTab(self.consumption_table_view, "Consumption")
 
-        self.model_table_view = IMTableView(self)
+        self.model_table_view = PandasTableView(self)
         self.model_table_view.set_data(self.data.model_df)
         self.ui.tabWidget.addTab(self.model_table_view, "Model")
 
@@ -35,7 +35,7 @@ class ConsumptionScaleDialog(QDialog):
         self.ui.toolButtonPreprocess.clicked.connect(self._preprocess)
         self.ui.toolButtonExport.clicked.connect(self._export_data)
 
-        self.device_selector = IMDeviceSelector(self.data.device_ids, self._filter_devices, self.ui.toolBox)
+        self.device_selector = DeviceSelector(self.data.device_ids, self._filter_devices, self.ui.toolBox)
         self.ui.toolBox.removeItem(0)
         self.ui.toolBox.addItem(self.device_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Devices")
 
@@ -55,7 +55,7 @@ class ConsumptionScaleDialog(QDialog):
 
     def _preprocess(self) -> None:
         if self.preprocessed_view is None:
-            self.preprocessed_view = IMTableView(self)
+            self.preprocessed_view = PandasTableView(self)
             self.ui.tabWidget.addTab(self.preprocessed_view, "Preprocessed")
         df, variables = self.data.get_preprocessed_data()
         self.preprocessed_view.set_data(df)

@@ -1,15 +1,17 @@
 import pandas as pd
-from PySide6.QtWidgets import QAbstractItemView, QWidget, QListView
+from PySide6.QtWidgets import QAbstractItemView, QTableView, QWidget
 
-from tse_analytics.core.models.pandas_list_model import PandasListModel
+from tse_analytics.core.models.pandas_simple_model import PandasSimpleModel
 
 
-class IMListView(QListView):
+class PandasTableView(QTableView):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
+        self.verticalHeader().setDefaultSectionSize(20)
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
 
     def set_data(self, df: pd.DataFrame):
-        model = PandasListModel(df)
+        model = PandasSimpleModel(df)
         self.setModel(model)
+        self.resizeColumnsToContents()

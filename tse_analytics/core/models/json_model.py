@@ -1,6 +1,6 @@
 from typing import Any
 
-from PySide6.QtCore import QAbstractItemModel, QModelIndex, QObject, Qt, QPersistentModelIndex
+from PySide6.QtCore import QAbstractItemModel, QModelIndex, QObject, QPersistentModelIndex, Qt
 
 from tse_analytics.core.models.json_tree_item import TreeItem
 

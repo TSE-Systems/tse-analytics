@@ -19,9 +19,6 @@ from tse_analytics.modules.intellimaze.running_wheel.io.importer import import_r
 def import_im_dataset(path: Path) -> IMDataset | None:
     tic = timeit.default_timer()
 
-    if not zipfile.is_zipfile(path):
-        return None
-
     with zipfile.ZipFile(path, mode="r") as zip:
         with tempfile.TemporaryDirectory(prefix="tse-analytics-") as tempdir:
             tmp_path = Path(tempdir)
@@ -70,7 +67,7 @@ def _get_devices(metadata: dict) -> dict[str, list[str]]:
     devices = {}
     for item in metadata["Components"]["ComponentInfo"]:
         extension_name = item["Extension"]
-        if not extension_name in devices:
+        if extension_name not in devices:
             devices[extension_name] = []
         devices[extension_name].append(item["DeviceID"])
 

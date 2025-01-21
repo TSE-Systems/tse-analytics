@@ -1,5 +1,5 @@
 import pandas as pd
-from PySide6.QtCore import QModelIndex, Qt, QAbstractListModel, QPersistentModelIndex
+from PySide6.QtCore import QAbstractListModel, QModelIndex, QPersistentModelIndex, Qt
 
 
 class PandasListModel(QAbstractListModel):

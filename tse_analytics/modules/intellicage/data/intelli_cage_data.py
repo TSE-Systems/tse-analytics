@@ -2,37 +2,38 @@ import pandas as pd
 
 from tse_analytics.core.data.shared import Aggregation, Variable
 
-DATA_SUFFIX = "-AG"
+DATA_SUFFIX = "-IC"
 
 
-class AnimalGateData:
+class IntelliCageData:
     def __init__(
         self,
-        im_dataset,
+        ic_dataset,
         name: str,
-        sessions_df: pd.DataFrame,
-        antenna_df: pd.DataFrame,
+        visits_df: pd.DataFrame,
+        nosepokes_df: pd.DataFrame,
+        environment_df: pd.DataFrame,
+        hardware_events_df: pd.DataFrame,
         log_df: pd.DataFrame,
-        input_df: pd.DataFrame,
-        output_df: pd.DataFrame,
     ):
-        self.im_dataset = im_dataset
+        self.ic_dataset = ic_dataset
         self.name = name
-        self.device_ids: list[str] = im_dataset.devices["AnimalGate"]
+        self.device_ids: list[int] = environment_df["Cage"].unique().tolist()
+        self.device_ids.sort()
 
-        self.sessions_df = sessions_df
-        self.antenna_df = antenna_df
+        self.visits_df = visits_df
+        self.nosepokes_df = nosepokes_df
+        self.environment_df = environment_df
+        self.hardware_events_df = hardware_events_df
         self.log_df = log_df
-        self.input_df = input_df
-        self.output_df = output_df
 
     def get_preprocessed_data(self) -> tuple[pd.DataFrame, dict[str, Variable]]:
-        df = self.sessions_df.copy()
+        df = self.visits_df.copy()
 
         df[f"Duration{DATA_SUFFIX}"] = (df["End"] - df["Start"]).dt.total_seconds()
 
         tag_to_animal_map = {}
-        for animal in self.im_dataset.animals.values():
+        for animal in self.ic_dataset.animals.values():
             tag_to_animal_map[animal.text1] = animal.id
 
         # Replace animal tags with animal IDs

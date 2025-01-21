@@ -1,5 +1,5 @@
 import pandas as pd
-from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt, QPersistentModelIndex
+from PySide6.QtCore import QAbstractTableModel, QModelIndex, QPersistentModelIndex, Qt
 
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details_animal_item import MealDetailsAnimalItem
 

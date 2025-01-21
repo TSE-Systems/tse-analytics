@@ -1,12 +1,12 @@
-from PySide6.QtWidgets import QAbstractItemView, QWidget, QListWidget
+from PySide6.QtWidgets import QAbstractItemView, QListWidget, QWidget
 
 
-class IMDeviceSelector(QListWidget):
-    def __init__(self, device_ids: list[str], callback, parent: QWidget | None = None):
+class DeviceSelector(QListWidget):
+    def __init__(self, device_ids: list[str | int], callback, parent: QWidget | None = None):
         super().__init__(parent)
         self.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
 
-        self.addItems(device_ids)
+        self.addItems(list(map(str, device_ids)))
         self.callback = callback
         self.itemSelectionChanged.connect(self._on_selection_changed)
 

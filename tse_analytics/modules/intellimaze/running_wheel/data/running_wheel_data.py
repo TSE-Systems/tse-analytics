@@ -1,6 +1,6 @@
 import pandas as pd
 
-from tse_analytics.core.data.shared import Variable, Aggregation
+from tse_analytics.core.data.shared import Aggregation, Variable
 
 DATA_SUFFIX = "-RW"
 
@@ -22,6 +22,16 @@ class RunningWheelData:
 
     def get_preprocessed_data(self) -> tuple[pd.DataFrame, dict[str, Variable]]:
         df = self.registration_df.copy()
+
+        # Convert cumulative values to differential ones
+        preprocessed_device_df = []
+        device_ids = df["DeviceId"].unique().tolist()
+        for i, device_id in enumerate(device_ids):
+            device_data = df[df["DeviceId"] == device_id]
+            device_data["Left"] = device_data["Left"].diff().fillna(df["Left"])
+            device_data["Right"] = device_data["Right"].diff().fillna(df["Right"])
+            preprocessed_device_df.append(device_data)
+        df = pd.concat(preprocessed_device_df, ignore_index=True, sort=False)
 
         tag_to_animal_map = {}
         for animal in self.im_dataset.animals.values():
@@ -72,26 +82,6 @@ class RunningWheelData:
                 False,
             ),
         }
-
-        # df.sort_values(["DateTime"], inplace=True)
-        #
-        # df['DateTime'] = df['DateTime'].dt.tz_localize(None)
-        # df['DateTime'] = df['DateTime'].dt.floor('Min')
-        #
-        # original_result = df.groupby("Animal", dropna=False, observed=False)
-        # original_result = original_result.resample("1min", on="DateTime", origin="start").mean()
-        # original_result.reset_index(inplace=True, drop=False)
-        # original_result.sort_values(by=["Animal", "DateTime"], inplace=True)
-        #
-        # date_range = pd.date_range(self.im_dataset.experiment_started.round("T"), self.im_dataset.experiment_stopped.round("T"), freq="T")
-        #
-        # original_result.set_index("DateTime", inplace=True, drop=False)
-        #
-        # tmp = original_result[original_result["Animal"] == "Animal 1"]
-        #
-        # df_regular = tmp.reindex(date_range)
-        #
-        # df.reset_index(drop=True, inplace=True)
 
         df.sort_values(["DateTime"], inplace=True)
         df.reset_index(drop=True, inplace=True)

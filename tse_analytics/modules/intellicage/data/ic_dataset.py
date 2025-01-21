@@ -16,18 +16,15 @@ from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import p
 from tse_analytics.core.data.shared import Animal, Factor, Group, SplitMode, Variable
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.extension_tree_item import ExtensionTreeItem
-from tse_analytics.modules.intellimaze.animal_gate.data.animal_gate_data import AnimalGateData
-from tse_analytics.modules.intellimaze.consumption_scale.data.consumption_scale_data import ConsumptionScaleData
-from tse_analytics.modules.intellimaze.running_wheel.data.running_wheel_data import RunningWheelData
+from tse_analytics.modules.intellicage.data.intelli_cage_data import IntelliCageData
 
 
-class IMDataset:
+class ICDataset:
     def __init__(
         self,
         name: str,
         path: str,
         meta: dict | list[dict],
-        devices: dict[str, list[str]],
         animals: dict[str, Animal],
     ):
         self.id = uuid4()
@@ -47,11 +44,7 @@ class IMDataset:
         self.outliers_settings = OutliersSettings(OutliersMode.OFF, 1.5)
         self.binning_settings = BinningSettings()
 
-        self.devices = devices
-
-        self.animal_gate_data: AnimalGateData | None = None
-        self.running_wheel_data: RunningWheelData | None = None
-        self.consumption_scale_data: ConsumptionScaleData | None = None
+        self.intelli_cage_data: IntelliCageData | None = None
 
         self.report = ""
 
@@ -543,14 +536,8 @@ class IMDataset:
         return deepcopy(self)
 
     def add_children_tree_items(self, dataset_tree_item: DatasetTreeItem) -> None:
-        if self.animal_gate_data is not None:
-            dataset_tree_item.add_child(ExtensionTreeItem(self.animal_gate_data))
-
-        if self.running_wheel_data is not None:
-            dataset_tree_item.add_child(ExtensionTreeItem(self.running_wheel_data))
-
-        if self.consumption_scale_data is not None:
-            dataset_tree_item.add_child(ExtensionTreeItem(self.consumption_scale_data))
+        if self.intelli_cage_data is not None:
+            dataset_tree_item.add_child(ExtensionTreeItem(self.intelli_cage_data))
 
     def __getstate__(self):
         state = self.__dict__.copy()

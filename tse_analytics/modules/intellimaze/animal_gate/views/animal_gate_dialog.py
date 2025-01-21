@@ -1,12 +1,12 @@
 from PySide6.QtCore import QSettings, Qt
-from PySide6.QtGui import QCloseEvent, QKeyEvent, QIcon
+from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
 from PySide6.QtWidgets import QDialog, QWidget
 
 from tse_analytics.modules.intellimaze.animal_gate.data.animal_gate_data import AnimalGateData
 from tse_analytics.modules.intellimaze.animal_gate.views.animal_gate_dialog_ui import Ui_AnimalGateDialog
-from tse_analytics.modules.intellimaze.views.im_list_view import IMListView
-from tse_analytics.modules.intellimaze.views.im_table_view import IMTableView
-from tse_analytics.modules.intellimaze.views.im_device_selector import IMDeviceSelector
+from tse_analytics.views.misc.device_selector import DeviceSelector
+from tse_analytics.views.misc.pandas_list_view import PandasListView
+from tse_analytics.views.misc.pandas_table_view import PandasTableView
 
 
 class AnimalGateDialog(QDialog):
@@ -21,23 +21,23 @@ class AnimalGateDialog(QDialog):
 
         self.data = data
 
-        self.sessions_table_view = IMTableView(self)
+        self.sessions_table_view = PandasTableView(self)
         self.sessions_table_view.set_data(self.data.sessions_df)
         self.ui.tabWidget.addTab(self.sessions_table_view, "Sessions")
 
-        self.antenna_table_view = IMTableView(self)
+        self.antenna_table_view = PandasTableView(self)
         self.antenna_table_view.set_data(self.data.antenna_df)
         self.ui.tabWidget.addTab(self.antenna_table_view, "Antenna")
 
-        self.log_table_view = IMTableView(self)
+        self.log_table_view = PandasTableView(self)
         self.log_table_view.set_data(self.data.log_df)
         self.ui.tabWidget.addTab(self.log_table_view, "Log")
 
-        self.input_list_view = IMListView(self)
+        self.input_list_view = PandasListView(self)
         self.input_list_view.set_data(self.data.input_df)
         self.ui.tabWidget.addTab(self.input_list_view, "Input")
 
-        self.output_list_view = IMListView(self)
+        self.output_list_view = PandasListView(self)
         self.output_list_view.set_data(self.data.output_df)
         self.ui.tabWidget.addTab(self.output_list_view, "Output")
 
@@ -46,7 +46,7 @@ class AnimalGateDialog(QDialog):
         self.ui.toolButtonPreprocess.clicked.connect(self._preprocess)
         self.ui.toolButtonExport.clicked.connect(self._export_data)
 
-        self.device_selector = IMDeviceSelector(self.data.device_ids, self._filter_devices, self.ui.toolBox)
+        self.device_selector = DeviceSelector(self.data.device_ids, self._filter_devices, self.ui.toolBox)
         self.ui.toolBox.removeItem(0)
         self.ui.toolBox.addItem(self.device_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Devices")
 
@@ -69,7 +69,7 @@ class AnimalGateDialog(QDialog):
 
     def _preprocess(self) -> None:
         if self.preprocessed_view is None:
-            self.preprocessed_view = IMTableView(self)
+            self.preprocessed_view = PandasTableView(self)
             self.ui.tabWidget.addTab(self.preprocessed_view, "Preprocessed")
         df, variables = self.data.get_preprocessed_data()
         self.preprocessed_view.set_data(df)

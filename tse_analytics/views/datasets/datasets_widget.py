@@ -17,9 +17,11 @@ from tse_analytics.core import manager, messaging
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.helper import CSV_IMPORT_ENABLED
 from tse_analytics.core.layouts.layout_manager import LayoutManager
-from tse_analytics.modules.intellimaze.consumption_scale.views.consumption_scale_dialog import ConsumptionScaleDialog
-from tse_analytics.modules.intellimaze.models.extension_tree_item import ExtensionTreeItem
+from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
+from tse_analytics.core.models.extension_tree_item import ExtensionTreeItem
+from tse_analytics.modules.intellicage.views.intelli_cage_dialog import IntelliCageDialog
 from tse_analytics.modules.intellimaze.animal_gate.views.animal_gate_dialog import AnimalGateDialog
+from tse_analytics.modules.intellimaze.consumption_scale.views.consumption_scale_dialog import ConsumptionScaleDialog
 from tse_analytics.modules.intellimaze.running_wheel.views.running_wheel_dialog import RunningWheelDialog
 from tse_analytics.modules.phenomaster.actimot.models.actimot_tree_item import ActimotTreeItem
 from tse_analytics.modules.phenomaster.actimot.views.actimot_dialog import ActimotDialog
@@ -27,7 +29,6 @@ from tse_analytics.modules.phenomaster.calo_details.models.calo_details_tree_ite
 from tse_analytics.modules.phenomaster.calo_details.views.calo_details_dialog import CaloDetailsDialog
 from tse_analytics.modules.phenomaster.meal_details.models.meal_details_tree_item import MealDetailsTreeItem
 from tse_analytics.modules.phenomaster.meal_details.views.meal_details_dialog import MealDetailsDialog
-from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.views.datasets.adjust_dataset_dialog import AdjustDatasetDialog
 from tse_analytics.views.datasets.datasets_merge_dialog import DatasetsMergeDialog
 from tse_analytics.views.datasets.datasets_widget_ui import Ui_DatasetsWidget
@@ -288,6 +289,8 @@ class DatasetsWidget(QWidget):
                         dialog = RunningWheelDialog(item.extension_data, self)
                     case "ConsumptionScale":
                         dialog = ConsumptionScaleDialog(item.extension_data, self)
+                    case "IntelliCage":
+                        dialog = IntelliCageDialog(item.extension_data, self)
                     case _:
                         return
                 # TODO: check other cases!!

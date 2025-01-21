@@ -1,10 +1,11 @@
 import os
+import zipfile
 from functools import partial
 from pathlib import Path
 
 import psutil
 import PySide6QtAds
-from pyqttoast import Toast
+from pyqttoast import Toast, ToastPreset
 from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QCloseEvent, QIcon
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QMenu, QMessageBox, QToolButton
@@ -16,6 +17,7 @@ from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
+from tse_analytics.modules.intellicage.io.dataset_loader import import_ic_dataset
 from tse_analytics.modules.intellimaze.io.dataset_loader import import_im_dataset
 from tse_analytics.modules.phenomaster.io.tse_dataset_loader import load_tse_dataset
 from tse_analytics.views.about_dialog import AboutDialog
@@ -348,13 +350,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                             TaskManager.start_task(worker)
                         dialog.deleteLater()
                     case ".zip":
-                        self.toast = make_toast(self, "Importing IntelliMaze Dataset", "Please wait...")
-                        self.toast.show()
+                        if not zipfile.is_zipfile(path):
+                            make_toast(
+                                self,
+                                "TSE Analytics",
+                                "Wrong ZIP file format.",
+                                duration=3,
+                                preset=ToastPreset.WARNING,
+                            ).show()
+                            return None
 
-                        worker = Worker(import_im_dataset, path)
-                        worker.signals.result.connect(self._import_result)
-                        worker.signals.finished.connect(self._import_finished)
-                        TaskManager.start_task(worker)
+                        with zipfile.ZipFile(path, mode="r") as zip:
+                            archived_files = zip.namelist()
+
+                        if any(".IntelliMaze" in sub for sub in archived_files):
+                            self.toast = make_toast(self, "Importing IntelliMaze Dataset", "Please wait...")
+                            self.toast.show()
+
+                            worker = Worker(import_im_dataset, path)
+                            worker.signals.result.connect(self._import_result)
+                            worker.signals.finished.connect(self._import_finished)
+                            TaskManager.start_task(worker)
+                        elif any(".experiment" in sub for sub in archived_files):
+                            self.toast = make_toast(self, "Importing IntelliCage Dataset", "Please wait...")
+                            self.toast.show()
+
+                            worker = Worker(import_ic_dataset, path)
+                            worker.signals.result.connect(self._import_result)
+                            worker.signals.finished.connect(self._import_finished)
+                            TaskManager.start_task(worker)
 
     def _import_result(self, dataset: Dataset) -> None:
         if dataset is not None:

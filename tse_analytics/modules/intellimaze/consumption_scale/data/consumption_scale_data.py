@@ -1,6 +1,6 @@
 import pandas as pd
 
-from tse_analytics.core.data.shared import Variable, Aggregation
+from tse_analytics.core.data.shared import Aggregation, Variable
 
 DATA_SUFFIX = "-CS"
 
@@ -22,6 +22,15 @@ class ConsumptionScaleData:
 
     def get_preprocessed_data(self) -> tuple[pd.DataFrame, dict[str, Variable]]:
         df = self.consumption_df.copy()
+
+        # Convert cumulative values to differential ones
+        preprocessed_device_df = []
+        device_ids = df["DeviceId"].unique().tolist()
+        for i, device_id in enumerate(device_ids):
+            device_data = df[df["DeviceId"] == device_id]
+            device_data["Consumption"] = device_data["Consumption"].diff().fillna(df["Consumption"]).round(5)
+            preprocessed_device_df.append(device_data)
+        df = pd.concat(preprocessed_device_df, ignore_index=True, sort=False)
 
         tag_to_animal_map = {}
         for animal in self.im_dataset.animals.values():

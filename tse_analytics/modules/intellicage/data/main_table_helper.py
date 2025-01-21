@@ -1,25 +1,15 @@
 import pandas as pd
 
-from tse_analytics.modules.intellimaze.data.im_dataset import IMDataset
+from tse_analytics.modules.intellicage.data.ic_dataset import ICDataset
 
 
-def preprocess_main_table(dataset: IMDataset, sampling_interval: pd.Timedelta) -> IMDataset:
+def preprocess_main_table(dataset: ICDataset, sampling_interval: pd.Timedelta) -> ICDataset:
     dataframes = []
     variables = {}
-    if dataset.animal_gate_data is not None:
-        df_ag, variables_ag = dataset.animal_gate_data.get_preprocessed_data()
+    if dataset.intelli_cage_data is not None:
+        df_ag, variables_ag = dataset.intelli_cage_data.get_preprocessed_data()
         dataframes.append(df_ag)
         variables = variables | variables_ag
-
-    if dataset.running_wheel_data is not None:
-        df_rw, variables_rw = dataset.running_wheel_data.get_preprocessed_data()
-        dataframes.append(df_rw)
-        variables = variables | variables_rw
-
-    if dataset.consumption_scale_data is not None:
-        df_cs, variables_cs = dataset.consumption_scale_data.get_preprocessed_data()
-        dataframes.append(df_cs)
-        variables = variables | variables_cs
 
     # Sort variables by name
     variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))
