@@ -64,11 +64,11 @@ class ICDataset:
 
     @property
     def experiment_started(self) -> pd.Timestamp:
-        return pd.to_datetime(self.meta["experiment"]["ExperimentStarted"], format="%m/%d/%Y %H:%M:%S")
+        return pd.to_datetime(self.meta["experiment"]["StartLocalTimeString"])
 
     @property
     def experiment_stopped(self) -> pd.Timestamp:
-        return pd.to_datetime(self.meta["experiment"]["ExperimentStopped"], format="%m/%d/%Y %H:%M:%S")
+        return pd.to_datetime(self.meta["experiment"]["EndLocalTimeString"])
 
     def extract_groups_from_field(self, field: Literal["text1", "text2", "text3"] = "text1") -> dict[str, Group]:
         """Extract groups assignment from Text1, Text2 or Text3 field"""

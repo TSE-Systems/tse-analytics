@@ -28,39 +28,55 @@ class IntelliCageData:
         self.log_df = log_df
 
     def get_preprocessed_data(self) -> tuple[pd.DataFrame, dict[str, Variable]]:
-        df = self.visits_df.copy()
+        df = pd.merge(
+            self.nosepokes_df.copy(),
+            self.visits_df.copy(),
+            on="VisitID",
+            suffixes=("Nosepoke", "Visit"),
+        )
 
-        df[f"Duration{DATA_SUFFIX}"] = (df["End"] - df["Start"]).dt.total_seconds()
+        df[f"VisitDuration"] = (df["VisitEnd"] - df["VisitStart"]).dt.total_seconds()
+        df[f"NosepokeDuration"] = (df["NosepokeEnd"] - df["NosepokeStart"]).dt.total_seconds()
 
         tag_to_animal_map = {}
         for animal in self.ic_dataset.animals.values():
             tag_to_animal_map[animal.text1] = animal.id
 
         # Replace animal tags with animal IDs
-        df["Tag"] = df["Tag"].replace(tag_to_animal_map)
+        df["AnimalTag"] = df["AnimalTag"].replace(tag_to_animal_map)
 
         df.rename(
             columns={
-                "Start": "DateTime",
-                "Tag": "Animal",
-                "Weight": f"Weight{DATA_SUFFIX}",
+                "NosepokeStart": "DateTime",
+                "AnimalTag": "Animal",
             },
             inplace=True,
         )
 
         df.drop(
             columns=[
-                "DeviceId",
-                "Direction",
-                "End",
-                "IdSectionVisited",
-                "StandbySectionVisited",
+                "NosepokeEnd",
             ],
             inplace=True,
         )
 
         # Set columns order
-        df = df[["DateTime", "Animal", f"Duration{DATA_SUFFIX}", f"Weight{DATA_SUFFIX}"]]
+        # df = df[[
+        #     "DateTime",
+        #     f"Duration{DATA_SUFFIX}",
+        #     "Animal",
+        #     # "VisitID",
+        #     # "Cage",
+        #     # "Corner",
+        #     # "CornerCondition",
+        #     # "PlaceError",
+        #     # "LickNumber",
+        #     # "LickDuration",
+        #     # "ModuleName",
+        # ]]
+        # default_columns = ["DateTime", "Animal"]
+        # other_columns = [col for col in df.columns if col not in default_columns]
+        # df = df[default_columns + other_columns]
 
         variables = {
             f"Duration{DATA_SUFFIX}": Variable(
@@ -71,17 +87,12 @@ class IntelliCageData:
                 Aggregation.MEAN,
                 False,
             ),
-            f"Weight{DATA_SUFFIX}": Variable(
-                f"Weight{DATA_SUFFIX}",
-                "g",
-                "AnimalGate weight",
-                "float64",
-                Aggregation.MEAN,
-                False,
-            ),
         }
 
         df.sort_values(["DateTime"], inplace=True)
         df.reset_index(drop=True, inplace=True)
+
+        # phases_old = df["ModuleName"][df["ModuleName"] != df["ModuleName"].shift()].values
+        # shiftIDs = df[df["ModuleName"] != df["ModuleName"].shift()]["VisitID"].values
 
         return df, variables

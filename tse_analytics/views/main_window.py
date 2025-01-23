@@ -313,7 +313,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         dlg = AboutDialog(self)
         dlg.show()
 
-    def import_dataset_dialog(self):
+    def import_dataset_dialog(self) -> None:
         filter = (
             "Data Files (*.tse *.csv *.zip);;TSE Dataset Files (*.tse);;CSV Files (*.csv);;IntelliMaze Dataset Files (*.zip)"
             if CSV_IMPORT_ENABLED
@@ -355,10 +355,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 self,
                                 "TSE Analytics",
                                 "Wrong ZIP file format.",
-                                duration=3,
+                                duration=3000,
                                 preset=ToastPreset.WARNING,
                             ).show()
-                            return None
+                            return
 
                         with zipfile.ZipFile(path, mode="r") as zip:
                             archived_files = zip.namelist()
@@ -379,6 +379,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                             worker.signals.result.connect(self._import_result)
                             worker.signals.finished.connect(self._import_finished)
                             TaskManager.start_task(worker)
+                        else:
+                            make_toast(
+                                self,
+                                "TSE Analytics",
+                                "Zip archive is not an IntelliMaze/IntelliCage dataset.",
+                                duration=3000,
+                                preset=ToastPreset.WARNING,
+                            ).show()
 
     def _import_result(self, dataset: Dataset) -> None:
         if dataset is not None:

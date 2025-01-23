@@ -101,6 +101,19 @@ def _import_visits_df(folder_path: Path) -> pd.DataFrame | None:
     df.sort_values(["Start"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
+    # Set visit number column
+    df["VisitNumber"] = df.groupby("AnimalTag").cumcount().astype(np.int64)
+    # df["VisitNumber"] = df.groupby("AnimalTag")["VisitID"].rank(method="first").astype(np.int64)
+
+    # Rename columns
+    df.rename(
+        columns={
+            "Start": "VisitStart",
+            "End": "VisitEnd",
+        },
+        inplace=True,
+    )
+
     return df
 
 
@@ -108,6 +121,10 @@ def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame | None:
     file_path = folder_path / "Nosepokes.txt"
     if not file_path.is_file():
         return None
+
+    with open(file_path) as file:
+        first_line = file.readline()
+        lick_start_time_column = "LickStartTime" in first_line
 
     dtype = {
         "VisitID": np.int64,
@@ -126,8 +143,10 @@ def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame | None:
         "LED1State": np.int8,
         "LED2State": np.int8,
         "LED3State": np.int8,
-        "LickStartTime": str,
     }
+
+    if lick_start_time_column:
+        dtype["LickStartTime"] = str
 
     df = pd.read_csv(
         file_path,
@@ -149,11 +168,12 @@ def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame | None:
         utc=False,
     )
 
-    df["LickStartTime"] = pd.to_datetime(
-        df["LickStartTime"],
-        format="ISO8601",
-        utc=False,
-    )
+    if lick_start_time_column:
+        df["LickStartTime"] = pd.to_datetime(
+            df["LickStartTime"],
+            format="ISO8601",
+            utc=False,
+        )
 
     # Convert numeric Enum values to categories
     df = df.astype({
@@ -168,6 +188,15 @@ def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame | None:
 
     df.sort_values(["Start"], inplace=True)
     df.reset_index(drop=True, inplace=True)
+
+    # Rename columns
+    df.rename(
+        columns={
+            "Start": "NosepokeStart",
+            "End": "NosepokeEnd",
+        },
+        inplace=True,
+    )
 
     return df
 

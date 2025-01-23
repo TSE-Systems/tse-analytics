@@ -9,6 +9,7 @@ from loguru import logger
 
 from tse_analytics.core.data.shared import Animal
 from tse_analytics.modules.intellicage.data.ic_dataset import ICDataset
+from tse_analytics.modules.intellicage.data.main_table_helper import preprocess_main_table
 from tse_analytics.modules.intellicage.io.importer import import_intellicage_data
 
 

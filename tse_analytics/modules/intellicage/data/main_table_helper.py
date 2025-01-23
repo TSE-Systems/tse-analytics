@@ -38,7 +38,18 @@ def preprocess_main_table(dataset: ICDataset, sampling_interval: pd.Timedelta) -
         experiment_started.round("Min"), experiment_stopped.round("Min"), freq=sampling_interval
     )
 
-    default_columns = ["DateTime", "Animal"]
+    default_columns = [
+        "DateTime",
+        "Animal",
+        "VisitID",
+        "Cage",
+        "Corner",
+        "CornerCondition",
+        "PlaceError",
+        "LickNumber",
+        "LickDuration",
+        "ModuleName",
+    ]
     agg = {}
     for column in df.columns:
         if column not in default_columns:
