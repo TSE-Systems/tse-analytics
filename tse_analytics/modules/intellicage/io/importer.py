@@ -3,13 +3,13 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from tse_analytics.modules.intellicage.data.ic_dataset import ICDataset
-from tse_analytics.modules.intellicage.data.intelli_cage_data import IntelliCageData
+from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
+from tse_analytics.modules.intellicage.data.intellicage_data import IntelliCageData
 
 
 def import_intellicage_data(
     folder_path: Path,
-    ic_dataset: ICDataset,
+    intellicage_dataset: IntelliCageDataset,
 ) -> IntelliCageData | None:
     if not folder_path.exists() or not folder_path.is_dir():
         return None
@@ -21,7 +21,7 @@ def import_intellicage_data(
     log_df = _import_log_df(folder_path)
 
     data = IntelliCageData(
-        ic_dataset,
+        intellicage_dataset,
         "IntelliCage",
         visits_df,
         nosepokes_df,
@@ -105,15 +105,6 @@ def _import_visits_df(folder_path: Path) -> pd.DataFrame | None:
     df["VisitNumber"] = df.groupby("AnimalTag").cumcount().astype(np.int64)
     # df["VisitNumber"] = df.groupby("AnimalTag")["VisitID"].rank(method="first").astype(np.int64)
 
-    # Rename columns
-    df.rename(
-        columns={
-            "Start": "VisitStart",
-            "End": "VisitEnd",
-        },
-        inplace=True,
-    )
-
     return df
 
 
@@ -188,15 +179,6 @@ def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame | None:
 
     df.sort_values(["Start"], inplace=True)
     df.reset_index(drop=True, inplace=True)
-
-    # Rename columns
-    df.rename(
-        columns={
-            "Start": "NosepokeStart",
-            "End": "NosepokeEnd",
-        },
-        inplace=True,
-    )
 
     return df
 

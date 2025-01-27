@@ -17,7 +17,7 @@ from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
-from tse_analytics.modules.intellicage.io.dataset_loader import import_ic_dataset
+from tse_analytics.modules.intellicage.io.dataset_loader import import_intellicage_dataset
 from tse_analytics.modules.intellimaze.io.dataset_loader import import_im_dataset
 from tse_analytics.modules.phenomaster.io.tse_dataset_loader import load_tse_dataset
 from tse_analytics.views.about_dialog import AboutDialog
@@ -375,7 +375,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                             self.toast = make_toast(self, "Importing IntelliCage Dataset", "Please wait...")
                             self.toast.show()
 
-                            worker = Worker(import_ic_dataset, path)
+                            worker = Worker(import_intellicage_dataset, path)
                             worker.signals.result.connect(self._import_result)
                             worker.signals.finished.connect(self._import_finished)
                             TaskManager.start_task(worker)

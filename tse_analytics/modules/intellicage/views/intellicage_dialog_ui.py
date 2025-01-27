@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'intelli_cage_dialog.ui'
+## Form generated from reading UI file 'intellicage_dialog.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.8.1
 ##
@@ -16,16 +16,14 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QDialog, QDialogButtonBox,
-    QHBoxLayout, QSizePolicy, QSpacerItem, QSplitter,
-    QTabWidget, QToolBox, QToolButton, QVBoxLayout,
-    QWidget)
+    QHBoxLayout, QSizePolicy, QSpacerItem, QTabWidget,
+    QToolButton, QVBoxLayout, QWidget)
 import resources_rc
 
 class Ui_IntelliCageDialog(object):
     def setupUi(self, IntelliCageDialog):
         if not IntelliCageDialog.objectName():
             IntelliCageDialog.setObjectName(u"IntelliCageDialog")
-        IntelliCageDialog.resize(1262, 763)
         self.verticalLayout = QVBoxLayout(IntelliCageDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.toolbarLayout = QHBoxLayout()
@@ -64,27 +62,10 @@ class Ui_IntelliCageDialog(object):
 
         self.verticalLayout.addLayout(self.toolbarLayout)
 
-        self.splitter = QSplitter(IntelliCageDialog)
-        self.splitter.setObjectName(u"splitter")
-        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.splitter.sizePolicy().hasHeightForWidth())
-        self.splitter.setSizePolicy(sizePolicy)
-        self.splitter.setOrientation(Qt.Orientation.Horizontal)
-        self.tabWidget = QTabWidget(self.splitter)
+        self.tabWidget = QTabWidget(IntelliCageDialog)
         self.tabWidget.setObjectName(u"tabWidget")
-        self.splitter.addWidget(self.tabWidget)
-        self.toolBox = QToolBox(self.splitter)
-        self.toolBox.setObjectName(u"toolBox")
-        self.toolBox.setMaximumSize(QSize(300, 16777215))
-        self.page = QWidget()
-        self.page.setObjectName(u"page")
-        self.page.setGeometry(QRect(0, 0, 300, 654))
-        self.toolBox.addItem(self.page, u"Page 1")
-        self.splitter.addWidget(self.toolBox)
 
-        self.verticalLayout.addWidget(self.splitter)
+        self.verticalLayout.addWidget(self.tabWidget)
 
         self.buttonBox = QDialogButtonBox(IntelliCageDialog)
         self.buttonBox.setObjectName(u"buttonBox")
@@ -108,6 +89,5 @@ class Ui_IntelliCageDialog(object):
         IntelliCageDialog.setWindowTitle(QCoreApplication.translate("IntelliCageDialog", u"IntelliCage", None))
         self.toolButtonPreprocess.setText(QCoreApplication.translate("IntelliCageDialog", u"Preprocess Data", None))
         self.toolButtonExport.setText(QCoreApplication.translate("IntelliCageDialog", u"Export data...", None))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("IntelliCageDialog", u"Page 1", None))
     # retranslateUi
 

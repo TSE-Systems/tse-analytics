@@ -1,20 +1,15 @@
 import pandas as pd
 
-from tse_analytics.modules.intellicage.data.ic_dataset import ICDataset
+from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
 
 
-def preprocess_main_table(dataset: ICDataset, sampling_interval: pd.Timedelta) -> ICDataset:
-    dataframes = []
-    variables = {}
-    if dataset.intelli_cage_data is not None:
-        df_ag, variables_ag = dataset.intelli_cage_data.get_preprocessed_data()
-        dataframes.append(df_ag)
-        variables = variables | variables_ag
+def preprocess_main_table(dataset: IntelliCageDataset, sampling_interval: pd.Timedelta) -> IntelliCageDataset:
+    variables = dataset.intellicage_data.preprocess_data()
 
     # Sort variables by name
     variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))
 
-    df = pd.concat(dataframes, ignore_index=True, sort=False)
+    df = dataset.intellicage_data.visits_preprocessed_df
 
     animal_to_box_map = {}
     for animal in dataset.animals.values():
@@ -25,14 +20,8 @@ def preprocess_main_table(dataset: ICDataset, sampling_interval: pd.Timedelta) -
         "Animal": "category",
     })
 
-    df.sort_values(["DateTime"], inplace=True)
-    df.reset_index(drop=True, inplace=True)
-
     experiment_started = dataset.experiment_started
     experiment_stopped = dataset.experiment_stopped
-
-    # Remove the time zone information and preserve local time
-    df["DateTime"] = df["DateTime"].dt.tz_localize(None)
 
     datetime_range = pd.date_range(
         experiment_started.round("Min"), experiment_stopped.round("Min"), freq=sampling_interval
@@ -40,12 +29,14 @@ def preprocess_main_table(dataset: ICDataset, sampling_interval: pd.Timedelta) -
 
     default_columns = [
         "DateTime",
+        "Timedelta",
         "Animal",
         "VisitID",
         "Cage",
         "Corner",
+        "Side",
         "CornerCondition",
-        "PlaceError",
+        "SideError",
         "LickNumber",
         "LickDuration",
         "ModuleName",
@@ -54,7 +45,8 @@ def preprocess_main_table(dataset: ICDataset, sampling_interval: pd.Timedelta) -
     for column in df.columns:
         if column not in default_columns:
             if df.dtypes[column].name != "category":
-                agg[column] = variables[column].aggregation
+                if column in variables:
+                    agg[column] = variables[column].aggregation
             else:
                 agg[column] = "first"
 
@@ -63,7 +55,13 @@ def preprocess_main_table(dataset: ICDataset, sampling_interval: pd.Timedelta) -
     for i, animal_id in enumerate(animal_ids):
         animal_data = df[df["Animal"] == animal_id]
         preprocessed_df = _preprocess_animal(
-            animal_id, animal_to_box_map[animal_id], animal_data, datetime_range, sampling_interval, agg
+            animal_id,
+            animal_to_box_map[animal_id],
+            animal_data,
+            datetime_range,
+            experiment_started,
+            sampling_interval,
+            agg,
         )
         preprocessed_animal_df.append(preprocessed_df)
 
@@ -101,6 +99,7 @@ def _preprocess_animal(
     box: int,
     df: pd.DataFrame,
     datetime_range: pd.DatetimeIndex,
+    experiment_started: pd.Timestamp,
     sampling_interval: pd.Timedelta,
     agg: dict[str, str],
 ) -> pd.DataFrame:
@@ -114,14 +113,14 @@ def _preprocess_animal(
 
     result = result.reindex(datetime_range)
     # Fill missing data
-    result.fillna(0, inplace=True)
+    # result.fillna(0, inplace=True)
 
     result.reset_index(drop=False, inplace=True, names=["DateTime"])
 
-    # Add Timedelta and Bin columns
+    # Add Timedelta anf Bin columns
     start_date_time = result.iloc[0]["DateTime"]
-    result.insert(loc=1, column="Timedelta", value=result["DateTime"] - start_date_time)
-    result.insert(loc=2, column="Bin", value=(result["Timedelta"] / sampling_interval).round().astype(int))
+    result.insert(loc=2, column="Timedelta", value=result["DateTime"] - start_date_time)
+    result.insert(loc=3, column="Bin", value=(result["Timedelta"] / sampling_interval).round().astype(int))
 
     # Put back animal into dataframe
     result.insert(loc=3, column="Animal", value=animal_id)

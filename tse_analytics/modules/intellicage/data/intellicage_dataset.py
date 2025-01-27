@@ -16,10 +16,10 @@ from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import p
 from tse_analytics.core.data.shared import Animal, Factor, Group, SplitMode, Variable
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.extension_tree_item import ExtensionTreeItem
-from tse_analytics.modules.intellicage.data.intelli_cage_data import IntelliCageData
+from tse_analytics.modules.intellicage.data.intellicage_data import IntelliCageData
 
 
-class ICDataset:
+class IntelliCageDataset:
     def __init__(
         self,
         name: str,
@@ -44,7 +44,7 @@ class ICDataset:
         self.outliers_settings = OutliersSettings(OutliersMode.OFF, 1.5)
         self.binning_settings = BinningSettings()
 
-        self.intelli_cage_data: IntelliCageData | None = None
+        self.intellicage_data: IntelliCageData | None = None
 
         self.report = ""
 
@@ -536,8 +536,8 @@ class ICDataset:
         return deepcopy(self)
 
     def add_children_tree_items(self, dataset_tree_item: DatasetTreeItem) -> None:
-        if self.intelli_cage_data is not None:
-            dataset_tree_item.add_child(ExtensionTreeItem(self.intelli_cage_data))
+        if self.intellicage_data is not None:
+            dataset_tree_item.add_child(ExtensionTreeItem(self.intellicage_data))
 
     def __getstate__(self):
         state = self.__dict__.copy()

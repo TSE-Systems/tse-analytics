@@ -19,7 +19,7 @@ from tse_analytics.core.helper import CSV_IMPORT_ENABLED
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.extension_tree_item import ExtensionTreeItem
-from tse_analytics.modules.intellicage.views.intelli_cage_dialog import IntelliCageDialog
+from tse_analytics.modules.intellicage.views.intellicage_dialog import IntelliCageDialog
 from tse_analytics.modules.intellimaze.animal_gate.views.animal_gate_dialog import AnimalGateDialog
 from tse_analytics.modules.intellimaze.consumption_scale.views.consumption_scale_dialog import ConsumptionScaleDialog
 from tse_analytics.modules.intellimaze.running_wheel.views.running_wheel_dialog import RunningWheelDialog

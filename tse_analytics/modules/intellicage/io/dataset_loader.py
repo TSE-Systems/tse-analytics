@@ -8,12 +8,12 @@ import xmltodict
 from loguru import logger
 
 from tse_analytics.core.data.shared import Animal
-from tse_analytics.modules.intellicage.data.ic_dataset import ICDataset
+from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
 from tse_analytics.modules.intellicage.data.main_table_helper import preprocess_main_table
 from tse_analytics.modules.intellicage.io.importer import import_intellicage_data
 
 
-def import_ic_dataset(path: Path) -> ICDataset | None:
+def import_intellicage_dataset(path: Path) -> IntelliCageDataset | None:
     tic = timeit.default_timer()
 
     with zipfile.ZipFile(path, mode="r") as zip:
@@ -25,7 +25,7 @@ def import_ic_dataset(path: Path) -> ICDataset | None:
             metadata = _import_metadata(tmp_path / "Sessions.xml")
             animals = _import_animals(tmp_path / "Animals.txt")
 
-            dataset = ICDataset(
+            dataset = IntelliCageDataset(
                 name=path.stem,
                 path=str(path),
                 meta={
@@ -36,9 +36,9 @@ def import_ic_dataset(path: Path) -> ICDataset | None:
                 animals=animals,
             )
 
-            dataset.intelli_cage_data = import_intellicage_data(tmp_path / "IntelliCage", dataset)
+            dataset.intellicage_data = import_intellicage_data(tmp_path / "IntelliCage", dataset)
 
-    # dataset = preprocess_main_table(dataset, pd.to_timedelta(1, unit="minute"))
+    dataset = preprocess_main_table(dataset, pd.to_timedelta(1, unit="minute"))
 
     logger.info(f"Import complete in {(timeit.default_timer() - tic):.3f} sec: {path}")
 
@@ -92,6 +92,9 @@ def _import_animals(path: Path) -> dict | None:
         dtype=dtype,
     )
 
+    # Replace np.nan with empty strings
+    df.fillna({"AnimalNotes": ""}, inplace=True)
+
     animals = {}
     for index, row in df.iterrows():
         animal = Animal(
@@ -99,9 +102,10 @@ def _import_animals(path: Path) -> dict | None:
             id=str(row["AnimalName"]),
             box=None,
             weight=None,
-            text1=row["AnimalTag"],
-            text2=row["GroupName"],
-            text3=row["AnimalNotes"],
+            tag=row["AnimalTag"],
+            sex=row["Sex"],
+            group=row["GroupName"],
+            text1=row["AnimalNotes"],
         )
         animals[animal.id] = animal
 

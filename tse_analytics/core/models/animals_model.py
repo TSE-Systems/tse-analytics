@@ -5,7 +5,7 @@ from tse_analytics.core.data.dataset import Dataset
 
 
 class AnimalsModel(QAbstractTableModel):
-    header = ("Animal", "Box", "Weight", "Text1", "Text2", "Text3")
+    header = ("Animal", "Box", "Group", "Sex", "Weight", "Tag", "Text1", "Text2", "Text3")
 
     def __init__(self, dataset: Dataset, parent=None):
         super().__init__(parent)
@@ -26,14 +26,23 @@ class AnimalsModel(QAbstractTableModel):
                     return item.box
             case 2:
                 if role == Qt.ItemDataRole.DisplayRole:
-                    return item.weight
+                    return item.group
             case 3:
                 if role == Qt.ItemDataRole.DisplayRole:
-                    return item.text1
+                    return item.sex
             case 4:
                 if role == Qt.ItemDataRole.DisplayRole:
-                    return item.text2
+                    return item.weight
             case 5:
+                if role == Qt.ItemDataRole.DisplayRole:
+                    return item.tag
+            case 6:
+                if role == Qt.ItemDataRole.DisplayRole:
+                    return item.text1
+            case 7:
+                if role == Qt.ItemDataRole.DisplayRole:
+                    return item.text2
+            case 8:
                 if role == Qt.ItemDataRole.DisplayRole:
                     return item.text3
 

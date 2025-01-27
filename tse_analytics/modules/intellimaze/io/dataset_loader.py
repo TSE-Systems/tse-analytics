@@ -109,9 +109,12 @@ def _import_animals(path: Path) -> dict | None:
             id=str(item["Name"]),
             box=int(item["PMBoxNr"]),
             weight=float(item["Weight"]),
-            text1=item["Tag"],
-            text2=item["Sex"],
-            text3=item["Group"],
+            tag=item["Tag"],
+            sex=item["Sex"],
+            group=item["Group"],
+            text1=item["Treatment"],
+            text2=item["Strain"],
+            text3=item["Notes"] if "Notes" in item else "",
         )
         animals[animal.id] = animal
     return animals
