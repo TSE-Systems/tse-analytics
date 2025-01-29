@@ -4,12 +4,11 @@ from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCa
 
 
 def preprocess_main_table(dataset: IntelliCageDataset, sampling_interval: pd.Timedelta) -> IntelliCageDataset:
-    variables = dataset.intellicage_data.preprocess_data()
+    df = dataset.intellicage_data.visits_df
+    variables = dataset.intellicage_data.visits_variables
 
     # Sort variables by name
     variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))
-
-    df = dataset.intellicage_data.visits_preprocessed_df
 
     animal_to_box_map = {}
     for animal in dataset.animals.values():

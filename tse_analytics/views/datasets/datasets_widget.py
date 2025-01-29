@@ -1,4 +1,4 @@
-from PySide6.QtCore import QItemSelection, QModelIndex, QSize, Qt
+from PySide6.QtCore import QModelIndex, QSize, Qt
 from PySide6.QtGui import QIcon, QPalette
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -33,15 +33,16 @@ from tse_analytics.views.datasets.adjust_dataset_dialog import AdjustDatasetDial
 from tse_analytics.views.datasets.datasets_merge_dialog import DatasetsMergeDialog
 from tse_analytics.views.datasets.datasets_widget_ui import Ui_DatasetsWidget
 from tse_analytics.views.import_csv_dialog import ImportCsvDialog
+from tse_analytics.views.misc.add_widget_button import AddWidgetButton
 
 
 class DatasetsWidget(QWidget):
-    def __init__(self, parent: QWidget):
+    def __init__(self, parent, add_widget_button: AddWidgetButton):
         super().__init__(parent)
         self.ui = Ui_DatasetsWidget()
         self.ui.setupUi(self)
 
-        self.main_window = parent
+        self.add_widget_button = add_widget_button
 
         toolbar = QToolBar("Datasets Toolbar")
         toolbar.setIconSize(QSize(16, 16))
@@ -106,7 +107,6 @@ class DatasetsWidget(QWidget):
         self.ui.treeView.setModel(workspace_model)
 
         # self.ui.treeView.customContextMenuRequested.connect(self._open_menu)
-        self.ui.treeView.selectionModel().selectionChanged.connect(self._treeview_selection_changed)
         self.ui.treeView.selectionModel().currentChanged.connect(self._treeview_current_changed)
         self.ui.treeView.doubleClicked.connect(self._treeview_double_clicked)
         workspace_model.checkedItemChanged.connect(self._checked_item_changed)
@@ -135,8 +135,8 @@ class DatasetsWidget(QWidget):
                     self,
                     "Cannot merge datasets!",
                     "List of variables should be the same.",
-                    buttons=QMessageBox.StandardButton.Abort,
-                    defaultButton=QMessageBox.StandardButton.Abort,
+                    QMessageBox.StandardButton.Abort,
+                    QMessageBox.StandardButton.Abort,
                 )
                 return
 
@@ -217,8 +217,9 @@ class DatasetsWidget(QWidget):
             LayoutManager.delete_dataset_widgets(dataset)
             selected_indexes = self.ui.treeView.selectedIndexes()
             manager.remove_dataset(selected_indexes)
-            self.main_window.set_enabled_add_widget_button(False)
-            self.import_button.setEnabled(False)
+            self.add_widget_button.set_state(False)
+            if CSV_IMPORT_ENABLED:
+                self.import_button.setEnabled(False)
             self.adjust_dataset_action.setEnabled(False)
             self.remove_dataset_action.setEnabled(False)
             self.clone_dataset_action.setEnabled(False)
@@ -228,7 +229,11 @@ class DatasetsWidget(QWidget):
         dataset = self._get_selected_dataset()
         if dataset is not None:
             name, ok = QInputDialog.getText(
-                self, "Enter new dataset name", "Name", QLineEdit.EchoMode.Normal, f"Clone of {dataset.name}"
+                self,
+                "Enter new dataset name",
+                "Name",
+                QLineEdit.EchoMode.Normal,
+                f"Clone of {dataset.name}",
             )
             if ok:
                 manager.clone_dataset(dataset, name)
@@ -237,23 +242,24 @@ class DatasetsWidget(QWidget):
         if current.isValid():
             item = current.model().getItem(current)
             messaging.broadcast(messaging.SelectedTreeItemChangedMessage(self, item))
+
             if isinstance(item, DatasetTreeItem):
                 manager.set_selected_dataset(item.dataset)
+                self.add_widget_button.set_dataset_menu(item.dataset)
 
-    def _treeview_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
-        level = None
-        if len(selected) > 0:
             level = 0
-            index = selected.indexes()[0]
-            while index.parent().isValid():
-                index = index.parent()
+            while current.parent().isValid():
+                current = current.parent()
                 level += 1
-        self.main_window.set_enabled_add_widget_button(level == 1)
-        self.adjust_dataset_action.setEnabled(level == 1)
-        self.remove_dataset_action.setEnabled(level == 1)
-        self.clone_dataset_action.setEnabled(level == 1)
-        if CSV_IMPORT_ENABLED:
-            self.import_button.setEnabled(level == 1)
+
+            is_root_item = level == 1
+
+            self.add_widget_button.set_state(is_root_item)
+            self.adjust_dataset_action.setEnabled(is_root_item)
+            self.remove_dataset_action.setEnabled(is_root_item)
+            self.clone_dataset_action.setEnabled(is_root_item)
+            if CSV_IMPORT_ENABLED:
+                self.import_button.setEnabled(is_root_item)
 
     def _treeview_double_clicked(self, index: QModelIndex) -> None:
         if index.isValid():
@@ -290,7 +296,7 @@ class DatasetsWidget(QWidget):
                     case "ConsumptionScale":
                         dialog = ConsumptionScaleDialog(item.extension_data, self)
                     case "IntelliCage":
-                        dialog = IntelliCageDialog(item.extension_data, self)
+                        dialog = IntelliCageDialog(item.extension_data.dataset, self)
                     case _:
                         return
                 # TODO: check other cases!!

@@ -6,7 +6,7 @@ import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
-from tse_analytics.core.predefined_variables import assign_predefined_values
+from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
 from tse_analytics.modules.phenomaster.data.pm_dataset import PMDataset
 
 Section = namedtuple("Section", ["lines", "section_start_index", "section_end_index"])

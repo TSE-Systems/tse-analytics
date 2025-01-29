@@ -1,7 +1,7 @@
-import numpy as np
 import pandas as pd
 
 from tse_analytics.core.data.shared import Aggregation, Variable
+from tse_analytics.modules.intellicage.data.intellicage_raw_data import IntelliCageRawData
 
 DATA_SUFFIX = "-IC"
 
@@ -9,39 +9,23 @@ DATA_SUFFIX = "-IC"
 class IntelliCageData:
     def __init__(
         self,
-        ic_dataset,
+        dataset,
         name: str,
-        visits_df: pd.DataFrame,
-        nosepokes_df: pd.DataFrame,
-        environment_df: pd.DataFrame,
-        hardware_events_df: pd.DataFrame,
-        log_df: pd.DataFrame,
+        raw_data: IntelliCageRawData,
     ):
-        self.ic_dataset = ic_dataset
+        self.dataset = dataset
         self.name = name
-        self.device_ids: list[int] = environment_df["Cage"].unique().tolist()
-        self.device_ids.sort()
+        self.raw_data = raw_data
 
-        self.visits_df = visits_df
-        self.nosepokes_df = nosepokes_df
-        self.environment_df = environment_df
-        self.hardware_events_df = hardware_events_df
-        self.log_df = log_df
-
-        self.visits_preprocessed_df: pd.DataFrame | None = None
-        self.nosepokes_preprocessed_df: pd.DataFrame | None = None
-
-    def preprocess_data(self) -> dict[str, Variable]:
-        self.visits_preprocessed_df, visits_variables = self._preprocess_visits_df()
-        self.nosepokes_preprocessed_df, nosepokes_variables = self._preprocess_nosepokes_df()
-        return visits_variables
+        self.visits_df, self.visits_variables = self._preprocess_visits_df()
+        self.nosepokes_df, self.nosepokes_variables = self._preprocess_nosepokes_df()
 
     def _preprocess_visits_df(self) -> tuple[pd.DataFrame, dict[str, Variable]]:
-        df = self.visits_df.copy()
+        df = self.raw_data.visits_df.copy()
 
         # Replace animal tags with animal IDs
         tag_to_animal_map = {}
-        for animal in self.ic_dataset.animals.values():
+        for animal in self.dataset.animals.values():
             tag_to_animal_map[animal.tag] = animal.id
         df["AnimalTag"] = df["AnimalTag"].replace(tag_to_animal_map)
         df.rename(
@@ -73,7 +57,7 @@ class IntelliCageData:
         # Add temperature and illumination
         df = pd.merge_asof(
             df,
-            self.environment_df.copy(),
+            self.raw_data.environment_df,
             on="DateTime",
             by="Cage",
         )
@@ -117,14 +101,14 @@ class IntelliCageData:
         df.reset_index(drop=True, inplace=True)
 
         # Add Timedelta column
-        experiment_started = self.ic_dataset.experiment_started
+        experiment_started = self.dataset.experiment_started
         df.insert(loc=3, column="Timedelta", value=df["DateTime"] - experiment_started)
 
         return df, variables
 
     def _preprocess_nosepokes_df(self) -> tuple[pd.DataFrame, dict[str, Variable]]:
-        df = self.nosepokes_df.copy()
-        visits_preprocessed_df = self.visits_preprocessed_df.copy()
+        df = self.raw_data.nosepokes_df.copy()
+        visits_preprocessed_df = self.visits_df.copy()
 
         # Sanitize visits table before merging
         visits_preprocessed_df.drop(
@@ -171,7 +155,7 @@ class IntelliCageData:
         # Add temperature and illumination
         df = pd.merge_asof(
             df,
-            self.environment_df.copy(),
+            self.raw_data.environment_df,
             on="DateTime",
             by="Cage",
         )
@@ -191,9 +175,10 @@ class IntelliCageData:
         df.reset_index(drop=True, inplace=True)
 
         # Add Timedelta column
-        experiment_started = self.ic_dataset.experiment_started
+        experiment_started = self.dataset.experiment_started
         df.insert(loc=2, column="Timedelta", value=df["DateTime"] - experiment_started)
 
+        # Add nosepoke-related columns to visits dataframe
         grouped_by_visit = df.groupby("VisitID").aggregate(
             Nosepokes=("VisitID", "size"),
             NosepokesDuration=("NosepokeDuration", "sum"),
@@ -204,7 +189,6 @@ class IntelliCageData:
             LicksContactTime=("LickContactTime", "sum"),
             LicksDuration=("LickDuration", "sum"),
         )
-
-        self.visits_preprocessed_df = self.visits_preprocessed_df.join(grouped_by_visit, on="VisitID")
+        self.visits_df = self.visits_df.join(grouped_by_visit, on="VisitID")
 
         return df, variables

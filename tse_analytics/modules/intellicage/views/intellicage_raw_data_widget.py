@@ -2,12 +2,12 @@ import pandas as pd
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.models.pandas_simple_model import PandasSimpleModel
-from tse_analytics.modules.intellicage.data.intellicage_data import IntelliCageData
+from tse_analytics.modules.intellicage.data.intellicage_raw_data import IntelliCageRawData
 from tse_analytics.modules.intellicage.views.intellicage_raw_data_widget_ui import Ui_IntelliCageRawDataWidget
 
 
 class IntelliCageRawDataWidget(QWidget):
-    def __init__(self, data: IntelliCageData, parent: QWidget | None = None):
+    def __init__(self, data: IntelliCageRawData, parent: QWidget | None = None):
         super().__init__(parent)
         self.ui = Ui_IntelliCageRawDataWidget()
         self.ui.setupUi(self)

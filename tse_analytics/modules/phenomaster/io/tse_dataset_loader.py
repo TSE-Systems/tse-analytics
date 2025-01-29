@@ -9,8 +9,8 @@ import pandas as pd
 from loguru import logger
 
 from tse_analytics.core.data.shared import Aggregation, Animal, Factor, Variable
-from tse_analytics.core.predefined_variables import assign_predefined_values
-from tse_analytics.core.tse_import_settings import TseImportSettings
+from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
+from tse_analytics.modules.phenomaster.io.tse_import_settings import TseImportSettings
 from tse_analytics.modules.phenomaster.actimot.data.actimot_details import ActimotDetails
 from tse_analytics.modules.phenomaster.calo_details.data.calo_details import CaloDetails
 from tse_analytics.modules.phenomaster.data.pm_dataset import PMDataset

@@ -28,8 +28,8 @@ class InfoWidget(QTreeView, messaging.MessengerListener):
     def _on_selected_tree_node_changed(self, message: messaging.SelectedTreeItemChangedMessage):
         if message.tree_item.meta is not None:
             self.set_data(message.tree_item.meta)
-        else:
-            self._model.clear()
+        # else:
+        #     self._model.clear()
 
     def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
         if message.dataset is None:

@@ -34,9 +34,9 @@ class IntelliCagePreprocessedDataWidget(QWidget):
         selected_table = self.ui.listWidgetTables.selectedItems()[0].text()
         match selected_table:
             case "Visits":
-                self.df = self.dataset.intellicage_data.visits_preprocessed_df
+                self.df = self.dataset.intellicage_data.visits_df
             case _:
-                self.df = self.dataset.intellicage_data.nosepokes_preprocessed_df
+                self.df = self.dataset.intellicage_data.nosepokes_df
         self._set_data()
         self.ui.tableView.resizeColumnsToContents()
 

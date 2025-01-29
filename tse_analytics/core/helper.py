@@ -3,11 +3,9 @@ from base64 import b64encode
 from io import BytesIO
 from pathlib import Path
 
-import pandas as pd
 from matplotlib.figure import Figure
 
 from tse_analytics.core import messaging
-from tse_analytics.core.pretty_html_table import build_table
 
 IS_RELEASE = Path("_internal").exists()
 
@@ -43,13 +41,3 @@ def get_available_sqlite_tables(path: Path) -> list[str]:
         tables = cursor.fetchall()
         cursor.close()
     return [item[0] for item in tables]
-
-
-def build_df_table(df: pd.DataFrame, color="grey_light", font_size="11pt", padding="5px", font_family="Arial") -> str:
-    return build_table(
-        df=df,
-        color=color,
-        font_size=font_size,
-        padding=padding,
-        font_family=font_family,
-    )
