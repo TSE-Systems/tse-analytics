@@ -62,7 +62,13 @@ def preprocess_main_table(dataset: IMDataset, sampling_interval: pd.Timedelta) -
     for i, animal_id in enumerate(animal_ids):
         animal_data = df[df["Animal"] == animal_id]
         preprocessed_df = _preprocess_animal(
-            animal_id, animal_to_box_map[animal_id], animal_data, datetime_range, sampling_interval, agg
+            animal_id,
+            animal_to_box_map[animal_id],
+            animal_data,
+            datetime_range,
+            experiment_started,
+            sampling_interval,
+            agg,
         )
         preprocessed_animal_df.append(preprocessed_df)
 
@@ -76,7 +82,7 @@ def preprocess_main_table(dataset: IMDataset, sampling_interval: pd.Timedelta) -
         "Animal": "category",
     })
 
-    df.sort_values(by=["Animal", "DateTime"], inplace=True)
+    df.sort_values(by=["DateTime", "Animal"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
     dataset.original_df = df
@@ -100,6 +106,7 @@ def _preprocess_animal(
     box: int,
     df: pd.DataFrame,
     datetime_range: pd.DatetimeIndex,
+    experiment_started: pd.Timestamp,
     sampling_interval: pd.Timedelta,
     agg: dict[str, str],
 ) -> pd.DataFrame:
@@ -118,8 +125,7 @@ def _preprocess_animal(
     result.reset_index(drop=False, inplace=True, names=["DateTime"])
 
     # Add Timedelta and Bin columns
-    start_date_time = result.iloc[0]["DateTime"]
-    result.insert(loc=1, column="Timedelta", value=result["DateTime"] - start_date_time)
+    result.insert(loc=1, column="Timedelta", value=result["DateTime"] - experiment_started)
     result.insert(loc=2, column="Bin", value=(result["Timedelta"] / sampling_interval).round().astype(int))
 
     # Put back animal into dataframe

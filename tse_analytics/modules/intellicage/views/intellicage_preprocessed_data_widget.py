@@ -22,7 +22,9 @@ class IntelliCagePreprocessedDataWidget(QWidget):
         ])
         self.ui.listWidgetTables.itemSelectionChanged.connect(self._table_selection_changed)
 
-        self.ui.listWidgetAnimals.addItems(self.dataset.animals.keys())
+        animal_ids = list(self.dataset.animals.keys())
+        animal_ids.sort()
+        self.ui.listWidgetAnimals.addItems(animal_ids)
         self.ui.listWidgetAnimals.itemSelectionChanged.connect(self._animals_selection_changed)
 
         self.df: pd.DataFrame | None = None

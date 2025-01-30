@@ -4,7 +4,7 @@ from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCa
 
 
 def preprocess_main_table(dataset: IntelliCageDataset, sampling_interval: pd.Timedelta) -> IntelliCageDataset:
-    df = dataset.intellicage_data.visits_df
+    df = dataset.intellicage_data.visits_df.copy()
     variables = dataset.intellicage_data.visits_variables
 
     # Sort variables by name
@@ -74,7 +74,7 @@ def preprocess_main_table(dataset: IntelliCageDataset, sampling_interval: pd.Tim
         "Animal": "category",
     })
 
-    df.sort_values(by=["Animal", "DateTime"], inplace=True)
+    df.sort_values(by=["DateTime", "Animal"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
     dataset.original_df = df
@@ -105,20 +105,19 @@ def _preprocess_animal(
     result = df.copy()
 
     # Decrease time resolution up to a minute
-    result["DateTime"] = result["DateTime"].dt.round("Min")
+    # result["DateTime"] = result["DateTime"].dt.round("Min")
 
     # Resample data with one minute interval
-    result = result.resample(sampling_interval, on="DateTime", origin="start_day").aggregate(agg)
+    result = result.resample(sampling_interval, on="DateTime").aggregate(agg)
 
-    result = result.reindex(datetime_range)
+    # result = result.reindex(datetime_range)
     # Fill missing data
     # result.fillna(0, inplace=True)
 
-    result.reset_index(drop=False, inplace=True, names=["DateTime"])
+    result.reset_index(drop=False, inplace=True)
 
     # Add Timedelta anf Bin columns
-    start_date_time = result.iloc[0]["DateTime"]
-    result.insert(loc=2, column="Timedelta", value=result["DateTime"] - start_date_time)
+    result.insert(loc=2, column="Timedelta", value=result["DateTime"] - experiment_started)
     result.insert(loc=3, column="Bin", value=(result["Timedelta"] / sampling_interval).round().astype(int))
 
     # Put back animal into dataframe

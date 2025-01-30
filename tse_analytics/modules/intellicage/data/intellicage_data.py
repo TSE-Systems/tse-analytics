@@ -180,15 +180,82 @@ class IntelliCageData:
 
         # Add nosepoke-related columns to visits dataframe
         grouped_by_visit = df.groupby("VisitID").aggregate(
-            Nosepokes=("VisitID", "size"),
+            NosepokesNumber=("VisitID", "size"),
             NosepokesDuration=("NosepokeDuration", "sum"),
-            SideErrors=("SideError", "sum"),
-            TimeErrors=("TimeError", "sum"),
-            ConditionErrors=("ConditionError", "sum"),
             LicksNumber=("LickNumber", "sum"),
             LicksContactTime=("LickContactTime", "sum"),
             LicksDuration=("LickDuration", "sum"),
+            SideErrors=("SideError", "sum"),
+            TimeErrors=("TimeError", "sum"),
+            ConditionErrors=("ConditionError", "sum"),
         )
         self.visits_df = self.visits_df.join(grouped_by_visit, on="VisitID")
+
+        self.visits_variables = self.visits_variables | {
+            "NosepokesNumber": Variable(
+                "NosepokesNumber",
+                "count",
+                "Number of nosepokes",
+                "int64",
+                Aggregation.SUM,
+                False,
+            ),
+            "NosepokesDuration": Variable(
+                "NosepokesDuration",
+                "sec",
+                "Duration of nosepokes",
+                "float64",
+                Aggregation.SUM,
+                False,
+            ),
+            "SideErrors": Variable(
+                "SideErrors",
+                "count",
+                "Number of side errors",
+                "int64",
+                Aggregation.SUM,
+                False,
+            ),
+            "TimeErrors": Variable(
+                "TimeErrors",
+                "count",
+                "Number of time errors",
+                "int64",
+                Aggregation.SUM,
+                False,
+            ),
+            "ConditionErrors": Variable(
+                "ConditionErrors",
+                "count",
+                "Number of condition errors",
+                "int64",
+                Aggregation.SUM,
+                False,
+            ),
+            "LicksNumber": Variable(
+                "LicksNumber",
+                "count",
+                "Number of licks",
+                "int64",
+                Aggregation.SUM,
+                False,
+            ),
+            "LicksContactTime": Variable(
+                "LicksContactTime",
+                "sec",
+                "Licks contact time",
+                "float64",
+                Aggregation.SUM,
+                False,
+            ),
+            "LicksDuration": Variable(
+                "LicksDuration",
+                "sec",
+                "Licks duration",
+                "float64",
+                Aggregation.SUM,
+                False,
+            ),
+        }
 
         return df, variables
