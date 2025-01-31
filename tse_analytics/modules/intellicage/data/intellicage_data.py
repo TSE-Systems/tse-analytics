@@ -60,6 +60,7 @@ class IntelliCageData:
             self.raw_data.environment_df,
             on="DateTime",
             by="Cage",
+            direction="nearest",
         )
 
         variables = {
@@ -158,6 +159,7 @@ class IntelliCageData:
             self.raw_data.environment_df,
             on="DateTime",
             by="Cage",
+            direction="nearest",
         )
 
         variables = {

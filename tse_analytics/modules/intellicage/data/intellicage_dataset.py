@@ -365,8 +365,7 @@ class IntelliCageDataset:
         split_mode: SplitMode,
         selected_factor_name: str,
     ) -> pd.DataFrame:
-        default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
-        # default_columns = ["DateTime", "Animal", "Box", "Run"]
+        default_columns = ["DateTime", "Timedelta", "Run", "Animal", "Box"]
         factor_columns = list(self.factors)
         variable_columns = list(variables)
         result = self.active_df[default_columns + factor_columns + variable_columns].copy()
@@ -412,7 +411,7 @@ class IntelliCageDataset:
         selected_factor_name: str,
         calculate_errors: str | None,
     ) -> pd.DataFrame:
-        default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
+        default_columns = ["DateTime", "Timedelta", "Run", "Animal", "Box"]
         factor_columns = list(self.factors)
         result = self.active_df[default_columns + factor_columns + [variable.name]].copy()
 

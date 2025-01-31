@@ -36,6 +36,9 @@ def process_time_interval_binning(
 
     result = df.groupby("Animal", dropna=False, observed=False)
     result = result.resample(timedelta, on="Timedelta", origin="start").aggregate(agg)
+
+    result = result[result["Run"].notna()]
+
     result.sort_values(by="DateTime", inplace=True)
     result.reset_index(inplace=True, drop=False)
 
