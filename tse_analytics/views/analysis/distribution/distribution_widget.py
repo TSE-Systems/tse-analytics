@@ -88,6 +88,7 @@ class DistributionWidget(QWidget):
 
         self.ui.canvas.clear(False)
         ax = self.ui.canvas.figure.add_subplot(111)
+        ax.tick_params(axis="x", rotation=90)
 
         if self.ui.radioButtonViolin.isChecked():
             sns.violinplot(data=df, x=x, y=variable.name, ax=ax)

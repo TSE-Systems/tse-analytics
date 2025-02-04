@@ -8,9 +8,10 @@ from tse_analytics.core.data.workspace import Workspace
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
 from tse_analytics.core.models.workspace_tree_item import WorkspaceTreeItem
-from tse_analytics.modules.phenomaster.actimot.io.actimot_loader import ActimotLoader
-from tse_analytics.modules.phenomaster.calo_details.io.calo_details_loader import CaloDetailsLoader
-from tse_analytics.modules.phenomaster.meal_details.io.meal_details_loader import MealDetailsLoader
+from tse_analytics.modules.phenomaster.actimot.io.data_loader import import_actimot_data
+from tse_analytics.modules.phenomaster.calo_details.io.data_loader import import_calo_data
+from tse_analytics.modules.phenomaster.meal_details.io.data_loader import import_drinkfeed_data
+from tse_analytics.modules.phenomaster.trafficage.io.data_loader import import_trafficage_data
 
 
 class WorkspaceModel(QAbstractItemModel):
@@ -148,7 +149,7 @@ class WorkspaceModel(QAbstractItemModel):
             csv_import_settings: CsvImportSettings = settings.value(
                 "CsvImportSettings", CsvImportSettings.get_default()
             )
-            meal_details = MealDetailsLoader.load(path, dataset_tree_item.dataset, csv_import_settings)
+            meal_details = import_drinkfeed_data(path, dataset_tree_item.dataset, csv_import_settings)
             if meal_details is not None:
                 dataset_tree_item.dataset.meal_details = meal_details
                 self.beginResetModel()
@@ -163,7 +164,7 @@ class WorkspaceModel(QAbstractItemModel):
             csv_import_settings: CsvImportSettings = settings.value(
                 "CsvImportSettings", CsvImportSettings.get_default()
             )
-            actimot_details = ActimotLoader.load(path, dataset_tree_item.dataset, csv_import_settings)
+            actimot_details = import_actimot_data(path, dataset_tree_item.dataset, csv_import_settings)
             if actimot_details is not None:
                 dataset_tree_item.dataset.actimot_details = actimot_details
                 self.beginResetModel()
@@ -178,9 +179,24 @@ class WorkspaceModel(QAbstractItemModel):
             csv_import_settings: CsvImportSettings = settings.value(
                 "CsvImportSettings", CsvImportSettings.get_default()
             )
-            calo_details = CaloDetailsLoader.load(path, dataset_tree_item.dataset, csv_import_settings)
+            calo_details = import_calo_data(path, dataset_tree_item.dataset, csv_import_settings)
             if calo_details is not None:
                 dataset_tree_item.dataset.calo_details = calo_details
+                self.beginResetModel()
+                dataset_tree_item.clear()
+                dataset_tree_item.dataset.add_children_tree_items(dataset_tree_item)
+                self.endResetModel()
+
+    def add_trafficage_data(self, dataset_index: QModelIndex, path: str):
+        dataset_tree_item: DatasetTreeItem = self.getItem(dataset_index)
+        if dataset_tree_item is not None and dataset_tree_item.dataset is not None:
+            settings = QSettings()
+            csv_import_settings: CsvImportSettings = settings.value(
+                "CsvImportSettings", CsvImportSettings.get_default()
+            )
+            trafficage_data = import_trafficage_data(path, dataset_tree_item.dataset, csv_import_settings)
+            if trafficage_data is not None:
+                dataset_tree_item.dataset.trafficage_data = trafficage_data
                 self.beginResetModel()
                 dataset_tree_item.clear()
                 dataset_tree_item.dataset.add_children_tree_items(dataset_tree_item)

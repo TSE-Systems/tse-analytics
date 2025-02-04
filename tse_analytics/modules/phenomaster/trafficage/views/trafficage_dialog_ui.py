@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'intellicage_dialog.ui'
+## Form generated from reading UI file 'trafficage_dialog.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.8.1
 ##
@@ -20,16 +20,16 @@ from PySide6.QtWidgets import (QAbstractButton, QApplication, QDialog, QDialogBu
     QToolButton, QVBoxLayout, QWidget)
 import resources_rc
 
-class Ui_IntelliCageDialog(object):
-    def setupUi(self, IntelliCageDialog):
-        if not IntelliCageDialog.objectName():
-            IntelliCageDialog.setObjectName(u"IntelliCageDialog")
-        IntelliCageDialog.resize(891, 568)
-        self.verticalLayout = QVBoxLayout(IntelliCageDialog)
+class Ui_TraffiCageDialog(object):
+    def setupUi(self, TraffiCageDialog):
+        if not TraffiCageDialog.objectName():
+            TraffiCageDialog.setObjectName(u"TraffiCageDialog")
+        TraffiCageDialog.resize(922, 603)
+        self.verticalLayout = QVBoxLayout(TraffiCageDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.toolbarLayout = QHBoxLayout()
         self.toolbarLayout.setObjectName(u"toolbarLayout")
-        self.toolButtonPreprocess = QToolButton(IntelliCageDialog)
+        self.toolButtonPreprocess = QToolButton(TraffiCageDialog)
         self.toolButtonPreprocess.setObjectName(u"toolButtonPreprocess")
         icon = QIcon()
         icon.addFile(u":/icons/preprocess.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
@@ -38,7 +38,7 @@ class Ui_IntelliCageDialog(object):
 
         self.toolbarLayout.addWidget(self.toolButtonPreprocess)
 
-        self.toolButtonExport = QToolButton(IntelliCageDialog)
+        self.toolButtonExport = QToolButton(TraffiCageDialog)
         self.toolButtonExport.setObjectName(u"toolButtonExport")
         self.toolButtonExport.setEnabled(False)
         icon1 = QIcon()
@@ -52,7 +52,7 @@ class Ui_IntelliCageDialog(object):
 
         self.toolbarLayout.addItem(self.horizontalSpacer)
 
-        self.toolButtonHelp = QToolButton(IntelliCageDialog)
+        self.toolButtonHelp = QToolButton(TraffiCageDialog)
         self.toolButtonHelp.setObjectName(u"toolButtonHelp")
         icon2 = QIcon()
         icon2.addFile(u":/icons/icons8-help-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
@@ -63,12 +63,12 @@ class Ui_IntelliCageDialog(object):
 
         self.verticalLayout.addLayout(self.toolbarLayout)
 
-        self.tabWidget = QTabWidget(IntelliCageDialog)
+        self.tabWidget = QTabWidget(TraffiCageDialog)
         self.tabWidget.setObjectName(u"tabWidget")
 
         self.verticalLayout.addWidget(self.tabWidget)
 
-        self.buttonBox = QDialogButtonBox(IntelliCageDialog)
+        self.buttonBox = QDialogButtonBox(TraffiCageDialog)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setOrientation(Qt.Orientation.Horizontal)
         self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Close)
@@ -76,19 +76,19 @@ class Ui_IntelliCageDialog(object):
         self.verticalLayout.addWidget(self.buttonBox)
 
 
-        self.retranslateUi(IntelliCageDialog)
-        self.buttonBox.accepted.connect(IntelliCageDialog.accept)
-        self.buttonBox.rejected.connect(IntelliCageDialog.reject)
+        self.retranslateUi(TraffiCageDialog)
+        self.buttonBox.accepted.connect(TraffiCageDialog.accept)
+        self.buttonBox.rejected.connect(TraffiCageDialog.reject)
 
         self.tabWidget.setCurrentIndex(-1)
 
 
-        QMetaObject.connectSlotsByName(IntelliCageDialog)
+        QMetaObject.connectSlotsByName(TraffiCageDialog)
     # setupUi
 
-    def retranslateUi(self, IntelliCageDialog):
-        IntelliCageDialog.setWindowTitle(QCoreApplication.translate("IntelliCageDialog", u"IntelliCage", None))
-        self.toolButtonPreprocess.setText(QCoreApplication.translate("IntelliCageDialog", u"Preprocess Data", None))
-        self.toolButtonExport.setText(QCoreApplication.translate("IntelliCageDialog", u"Export data...", None))
+    def retranslateUi(self, TraffiCageDialog):
+        TraffiCageDialog.setWindowTitle(QCoreApplication.translate("TraffiCageDialog", u"TraffiCage", None))
+        self.toolButtonPreprocess.setText(QCoreApplication.translate("TraffiCageDialog", u"Preprocess Data", None))
+        self.toolButtonExport.setText(QCoreApplication.translate("TraffiCageDialog", u"Export data...", None))
     # retranslateUi
 

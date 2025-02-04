@@ -70,6 +70,9 @@ tasks:
       - pyside6-uic tse_analytics/modules/intellicage/views/intellicage_dialog.ui -o tse_analytics/modules/intellicage/views/intellicage_dialog_ui.py
       - pyside6-uic tse_analytics/modules/intellicage/views/intellicage_raw_data_widget.ui -o tse_analytics/modules/intellicage/views/intellicage_raw_data_widget_ui.py
       - pyside6-uic tse_analytics/modules/intellicage/views/intellicage_preprocessed_data_widget.ui -o tse_analytics/modules/intellicage/views/intellicage_preprocessed_data_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/trafficage/views/trafficage_dialog.ui -o tse_analytics/modules/phenomaster/trafficage/views/trafficage_dialog_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/trafficage/views/trafficage_raw_data_widget.ui -o tse_analytics/modules/phenomaster/trafficage/views/trafficage_raw_data_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/trafficage/views/trafficage_preprocessed_data_widget.ui -o tse_analytics/modules/phenomaster/trafficage/views/trafficage_preprocessed_data_widget_ui.py
 
   clean:
     desc: remove all build, test, coverage and Python artifacts

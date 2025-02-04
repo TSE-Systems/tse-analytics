@@ -313,7 +313,7 @@ class IntelliCageDataset:
         dropna=False,
     ) -> pd.DataFrame:
         if variables is not None:
-            default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
+            default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run"]
             factor_columns = list(self.factors)
             variable_columns = list(variables)
             result = self.active_df[default_columns + factor_columns + variable_columns].copy()

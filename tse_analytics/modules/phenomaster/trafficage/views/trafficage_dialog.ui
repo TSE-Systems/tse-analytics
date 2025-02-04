@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <author>Anton Rau</author>
- <class>IntelliCageDialog</class>
- <widget class="QDialog" name="IntelliCageDialog">
+ <class>TraffiCageDialog</class>
+ <widget class="QDialog" name="TraffiCageDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>891</width>
-    <height>568</height>
+    <width>922</width>
+    <height>603</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>IntelliCage</string>
+   <string>TraffiCage</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -23,7 +23,7 @@
         <string>Preprocess Data</string>
        </property>
        <property name="icon">
-        <iconset resource="../../../../resources/resources.qrc">
+        <iconset resource="../../../../../resources/resources.qrc">
          <normaloff>:/icons/preprocess.png</normaloff>:/icons/preprocess.png</iconset>
        </property>
        <property name="toolButtonStyle">
@@ -40,7 +40,7 @@
         <string>Export data...</string>
        </property>
        <property name="icon">
-        <iconset resource="../../../../resources/resources.qrc">
+        <iconset resource="../../../../../resources/resources.qrc">
          <normaloff>:/icons/icons8-export-16.png</normaloff>:/icons/icons8-export-16.png</iconset>
        </property>
        <property name="toolButtonStyle">
@@ -64,7 +64,7 @@
      <item>
       <widget class="QToolButton" name="toolButtonHelp">
        <property name="icon">
-        <iconset resource="../../../../resources/resources.qrc">
+        <iconset resource="../../../../../resources/resources.qrc">
          <normaloff>:/icons/icons8-help-16.png</normaloff>:/icons/icons8-help-16.png</iconset>
        </property>
       </widget>
@@ -91,13 +91,13 @@
   </layout>
  </widget>
  <resources>
-  <include location="../../../../resources/resources.qrc"/>
+  <include location="../../../../../resources/resources.qrc"/>
  </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>IntelliCageDialog</receiver>
+   <receiver>TraffiCageDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -113,7 +113,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>IntelliCageDialog</receiver>
+   <receiver>TraffiCageDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

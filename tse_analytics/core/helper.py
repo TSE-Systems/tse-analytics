@@ -9,7 +9,7 @@ from tse_analytics.core import messaging
 
 IS_RELEASE = Path("_internal").exists()
 
-CSV_IMPORT_ENABLED = False
+CSV_IMPORT_ENABLED = True
 
 
 def show_help(sender, filename: str) -> None:

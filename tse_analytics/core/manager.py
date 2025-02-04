@@ -50,6 +50,9 @@ class Manager:
     def import_calo_details(self, dataset_index: QModelIndex, path: str) -> None:
         self._workspace_model.add_calo_details(dataset_index, path)
 
+    def import_trafficage_data(self, dataset_index: QModelIndex, path: str) -> None:
+        self._workspace_model.add_trafficage_data(dataset_index, path)
+
     def remove_dataset(self, indexes: list[QModelIndex]) -> None:
         self._workspace_model.remove_dataset(indexes)
         self.set_selected_dataset(None)
@@ -87,6 +90,7 @@ import_csv_dataset = _instance.import_csv_dataset
 import_meal_details = _instance.import_meal_details
 import_actimot_details = _instance.import_actimot_details
 import_calo_details = _instance.import_calo_details
+import_trafficage_data = _instance.import_trafficage_data
 remove_dataset = _instance.remove_dataset
 merge_datasets = _instance.merge_datasets
 clone_dataset = _instance.clone_dataset

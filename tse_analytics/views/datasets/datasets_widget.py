@@ -29,6 +29,8 @@ from tse_analytics.modules.phenomaster.calo_details.models.calo_details_tree_ite
 from tse_analytics.modules.phenomaster.calo_details.views.calo_details_dialog import CaloDetailsDialog
 from tse_analytics.modules.phenomaster.meal_details.models.meal_details_tree_item import MealDetailsTreeItem
 from tse_analytics.modules.phenomaster.meal_details.views.meal_details_dialog import MealDetailsDialog
+from tse_analytics.modules.phenomaster.trafficage.models.trafficage_tree_item import TraffiCageTreeItem
+from tse_analytics.modules.phenomaster.trafficage.views.trafficage_dialog import TraffiCageDialog
 from tse_analytics.views.datasets.adjust_dataset_dialog import AdjustDatasetDialog
 from tse_analytics.views.datasets.datasets_merge_dialog import DatasetsMergeDialog
 from tse_analytics.views.datasets.datasets_widget_ui import Ui_DatasetsWidget
@@ -57,9 +59,10 @@ class DatasetsWidget(QWidget):
             self.import_button.setEnabled(False)
 
             import_menu = QMenu("Import", self.import_button)
-            import_menu.addAction("Import calo details...").triggered.connect(self._import_calo_details)
-            import_menu.addAction("Import meal details...").triggered.connect(self._import_meal_details)
-            import_menu.addAction("Import ActiMot details...").triggered.connect(self._import_actimot_details)
+            import_menu.addAction("Import calo data...").triggered.connect(self._import_calo_details)
+            import_menu.addAction("Import drink/feed data...").triggered.connect(self._import_meal_details)
+            import_menu.addAction("Import ActiMot data...").triggered.connect(self._import_actimot_details)
+            import_menu.addAction("Import TraffiCage data...").triggered.connect(self._import_trafficage_details)
             self.import_button.setMenu(import_menu)
 
             toolbar.addWidget(self.import_button)
@@ -152,9 +155,9 @@ class DatasetsWidget(QWidget):
     def _import_meal_details(self):
         path, _ = QFileDialog.getOpenFileName(
             self,
-            "Import meal details",
+            "Import drink/feed data",
             "",
-            "Meal Details Files (*.csv)",
+            "CSV Files (*.csv)",
         )
         if path:
             dialog = ImportCsvDialog(path, self)
@@ -168,9 +171,9 @@ class DatasetsWidget(QWidget):
     def _import_actimot_details(self):
         path, _ = QFileDialog.getOpenFileName(
             self,
-            "Import ActiMot details",
+            "Import ActiMot data",
             "",
-            "ActiMot Details Files (*.csv)",
+            "CSV Files (*.csv)",
         )
         if path:
             dialog = ImportCsvDialog(path, self)
@@ -184,9 +187,9 @@ class DatasetsWidget(QWidget):
     def _import_calo_details(self):
         path, _ = QFileDialog.getOpenFileName(
             self,
-            "Import calo details",
+            "Import calo data",
             "",
-            "Calo Details Files (*.csv)",
+            "CSV Files (*.csv)",
         )
         if path:
             dialog = ImportCsvDialog(path, self)
@@ -196,6 +199,22 @@ class DatasetsWidget(QWidget):
                 indexes = self.ui.treeView.selectedIndexes()
                 selected_dataset_index = indexes[0]
                 manager.import_calo_details(selected_dataset_index, path)
+
+    def _import_trafficage_details(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Import TraffiCage data",
+            "",
+            "CSV Files (*.csv)",
+        )
+        if path:
+            dialog = ImportCsvDialog(path, self)
+            # TODO: check other cases!!
+            dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+            if dialog.exec() == QDialog.DialogCode.Accepted:
+                indexes = self.ui.treeView.selectedIndexes()
+                selected_dataset_index = indexes[0]
+                manager.import_trafficage_data(selected_dataset_index, path)
 
     def _adjust_dataset(self):
         selected_index = self.ui.treeView.selectedIndexes()[0]
@@ -281,6 +300,14 @@ class DatasetsWidget(QWidget):
                     pass
             elif isinstance(item, ActimotTreeItem):
                 dialog = ActimotDialog(item.actimot_details, self)
+                # TODO: check other cases!!
+                dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+                result = dialog.exec()
+                del dialog
+                if result == QDialog.DialogCode.Accepted:
+                    pass
+            elif isinstance(item, TraffiCageTreeItem):
+                dialog = TraffiCageDialog(item.trafficage_data.dataset, self)
                 # TODO: check other cases!!
                 dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
                 result = dialog.exec()

@@ -23,6 +23,8 @@ from tse_analytics.modules.phenomaster.calo_details.data.calo_details import Cal
 from tse_analytics.modules.phenomaster.calo_details.models.calo_details_tree_item import CaloDetailsTreeItem
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
 from tse_analytics.modules.phenomaster.meal_details.models.meal_details_tree_item import MealDetailsTreeItem
+from tse_analytics.modules.phenomaster.trafficage.data.trafficage_data import TraffiCageData
+from tse_analytics.modules.phenomaster.trafficage.models.trafficage_tree_item import TraffiCageTreeItem
 
 
 class PMDataset:
@@ -56,6 +58,7 @@ class PMDataset:
         self.calo_details: CaloDetails | None = None
         self.meal_details: MealDetails | None = None
         self.actimot_details: ActimotDetails | None = None
+        self.trafficage_data: TraffiCageData | None = None
 
         self.report = ""
 
@@ -608,6 +611,10 @@ class PMDataset:
         if self.calo_details is not None:
             calo_details_tree_item = CaloDetailsTreeItem(self.calo_details)
             dataset_tree_item.add_child(calo_details_tree_item)
+
+        if self.trafficage_data is not None:
+            trafficage_data_tree_item = TraffiCageTreeItem(self.trafficage_data)
+            dataset_tree_item.add_child(trafficage_data_tree_item)
 
     def __getstate__(self):
         state = self.__dict__.copy()
