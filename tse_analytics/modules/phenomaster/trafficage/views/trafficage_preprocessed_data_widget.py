@@ -16,7 +16,7 @@ class TraffiCagePreprocessedDataWidget(QWidget):
         self.dataset = dataset
 
         self.ui.listWidgetTables.addItems([
-            "Records",
+            "RFID",
         ])
         self.ui.listWidgetTables.itemSelectionChanged.connect(self._table_selection_changed)
 
@@ -33,7 +33,7 @@ class TraffiCagePreprocessedDataWidget(QWidget):
     def _table_selection_changed(self):
         selected_table = self.ui.listWidgetTables.selectedItems()[0].text()
         match selected_table:
-            case "Records":
+            case "RFID":
                 self.df = self.dataset.trafficage_data.df
             case _:
                 self.df = self.dataset.trafficage_data.df

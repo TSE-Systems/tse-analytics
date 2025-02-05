@@ -1,10 +1,8 @@
 import base64
 from io import BytesIO
 
-import numpy as np
 import pandas as pd
 import pyqtgraph as pg
-from pyqtgraph import mkPen
 from pyqtgraph.exporters import ImageExporter
 from PySide6.QtCore import QBuffer, QByteArray, QIODevice
 from PySide6.QtWidgets import QWidget
@@ -141,7 +139,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         for i, animal in enumerate(animals):
             filtered_data = self._df[self._df["Animal"] == animal.id]
 
-            pen = mkPen(color=(i, len(animals)), width=1)
+            pen = pg.mkPen(color=(i, len(animals)), width=1)
             tmp_min, tmp_max = self._plot_item(filtered_data, animal.id, pen)
 
             if x_min is None or tmp_min < x_min:
@@ -161,7 +159,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         for i, group in enumerate(groups):
             filtered_data = self._df[self._df[factor_name] == group.name]
 
-            pen = mkPen(color=(i, len(groups)), width=1)
+            pen = pg.mkPen(color=(i, len(groups)), width=1)
             tmp_min, tmp_max = self._plot_item(filtered_data, f"{group.name}", pen)
 
             if x_min is None or tmp_min < x_min:
@@ -179,7 +177,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         for i, run in enumerate(runs):
             filtered_data = self._df[self._df["Run"] == run]
 
-            pen = mkPen(color=(i, len(runs)), width=1)
+            pen = pg.mkPen(color=(i, len(runs)), width=1)
             tmp_min, tmp_max = self._plot_item(filtered_data, f"Run {run}", pen)
 
             if x_min is None or tmp_min < x_min:
@@ -190,7 +188,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         return x_min, x_max
 
     def _plot_total(self) -> tuple[float, float]:
-        pen = mkPen(color=(1, 1), width=1)
+        pen = pg.mkPen(color=(1, 1), width=1)
         x_min, x_max = self._plot_item(self._df, "Total", pen)
         return x_min, x_max
 

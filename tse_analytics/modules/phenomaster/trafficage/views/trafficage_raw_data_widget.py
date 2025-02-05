@@ -15,7 +15,7 @@ class TraffiCageRawDataWidget(QWidget):
         self.data = data
 
         self.ui.listWidgetTables.addItems([
-            "Records",
+            "RFID",
         ])
         self.ui.listWidgetTables.itemSelectionChanged.connect(self._table_selection_changed)
 
@@ -30,7 +30,7 @@ class TraffiCageRawDataWidget(QWidget):
     def _table_selection_changed(self):
         selected_table = self.ui.listWidgetTables.selectedItems()[0].text()
         match selected_table:
-            case "Records":
+            case "RFID":
                 self.df = self.data.raw_df
         self._set_data()
         self.ui.tableView.resizeColumnsToContents()

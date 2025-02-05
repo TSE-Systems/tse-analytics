@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'trafficage_dialog.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.1
+## Created by: Qt User Interface Compiler version 6.8.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -40,7 +40,6 @@ class Ui_TraffiCageDialog(object):
 
         self.toolButtonExport = QToolButton(TraffiCageDialog)
         self.toolButtonExport.setObjectName(u"toolButtonExport")
-        self.toolButtonExport.setEnabled(False)
         icon1 = QIcon()
         icon1.addFile(u":/icons/icons8-export-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.toolButtonExport.setIcon(icon1)

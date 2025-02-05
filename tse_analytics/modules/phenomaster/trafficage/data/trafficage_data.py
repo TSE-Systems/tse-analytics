@@ -55,8 +55,15 @@ class TraffiCageData:
         # Sanitize Tag column
         self.df["Tag"] = self.df["Tag"].str.removeprefix("RFID ")
 
-        self.df.sort_values(["DateTime"], inplace=True)
+        self.df.sort_values(["Animal", "DateTime"], inplace=True)
+
+        # Remove repeating neigbor rows
+        drop = self.df[self.df["Animal"].eq(self.df["Animal"].shift()) & self.df["Channel"].eq(self.df["Channel"].shift())].index
+        self.df.drop(drop, inplace=True)
+
         self.df.reset_index(drop=True, inplace=True)
+
+        self.df["Activity"] = self.df.groupby("Animal").cumcount()
 
         # convert categorical types
         self.df = self.df.astype({

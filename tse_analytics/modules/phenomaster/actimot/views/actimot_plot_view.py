@@ -1,6 +1,5 @@
 import pandas as pd
 import pyqtgraph as pg
-from pyqtgraph import mkPen
 from PySide6.QtWidgets import QWidget
 
 
@@ -64,7 +63,7 @@ class ActimotPlotView(pg.GraphicsLayoutWidget):
         x = x.to_numpy()
         y = self._df[self._variable].to_numpy()
 
-        pen = mkPen(color=(1, 1), width=1)
+        pen = pg.mkPen(color=(1, 1), width=1)
         p1d = self.p1.plot(x, y, pen=pen)
         self.p1.setTitle(self._variable)
 

@@ -33,8 +33,19 @@ def _load_from_csv(path: Path, dataset: PMDataset, csv_import_settings: CsvImpor
         skiprows=1,  # Skip header part
         low_memory=False,
         dtype=dtype,
-        parse_dates={"DateTime": ["Date", "Time"]},
     )
+
+    # Convert DateTime column
+    raw_df.insert(
+        0,
+        "DateTime",
+        pd.to_datetime(
+            raw_df["Date"] + " " + raw_df["Time"],
+            dayfirst=csv_import_settings.day_first,
+            format=csv_import_settings.datetime_format if csv_import_settings.use_datetime_format else None,
+        ),
+    )
+    raw_df.drop(columns=["Date", "Time"], inplace=True)
 
     # Calo Details sampling interval
     sampling_interval = raw_df.iloc[1].at["DateTime"] - raw_df.iloc[0].at["DateTime"]
