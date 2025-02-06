@@ -1,3 +1,4 @@
+import pandas as pd
 from pyqtgraph import AxisItem
 
 
@@ -10,9 +11,4 @@ class TimedeltaAxisItem(AxisItem):
         self.fixedHeight = 18
 
     def tickStrings(self, values, scale, spacing):
-        formatStrings = []
-        if self.sampling_interval is not None:
-            for value in values:
-                dt = self.sampling_interval * value
-                formatStrings.append(str(dt))
-        return formatStrings
+        return [str(pd.to_timedelta(value, unit="s")) for value in values]

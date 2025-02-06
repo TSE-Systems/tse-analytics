@@ -85,9 +85,6 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         self._selected_factor = selected_factor
         self._scatter_plot = scatter_plot
 
-        unique_deltas = self._df["Timedelta"].unique()
-        TimedeltaAxisItem.sampling_interval = unique_deltas[1] - unique_deltas[0]
-
         match self._split_mode:
             case SplitMode.ANIMAL:
                 x_min, x_max = self._plot_animals()
@@ -110,9 +107,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
     def _plot_item(self, data: pd.DataFrame, name: str, pen):
         # x = (data["DateTime"] - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
-        x = data["Bin"]
-
-        x = x.to_numpy(dtype=np.int64)
+        x = data["Timedelta"].dt.total_seconds().to_numpy()
         y = data[self._variable.name].to_numpy()
 
         plot_data_item = (
