@@ -9,11 +9,14 @@ from tse_analytics.modules.phenomaster.actimot.data.actimot_details import Actim
 from tse_analytics.modules.phenomaster.data.pm_dataset import PMDataset
 
 
-def import_actimot_data(filename: str, dataset: PMDataset, csv_import_settings: CsvImportSettings) -> ActimotDetails | None:
+def import_actimot_data(
+    filename: str, dataset: PMDataset, csv_import_settings: CsvImportSettings
+) -> ActimotDetails | None:
     path = Path(filename)
     if path.is_file() and path.suffix.lower() == ".csv":
         return _load_from_csv(path, dataset, csv_import_settings)
     return None
+
 
 def _load_from_csv(path: Path, dataset: PMDataset, csv_import_settings: CsvImportSettings):
     with open(path) as f:

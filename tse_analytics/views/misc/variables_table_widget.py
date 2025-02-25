@@ -47,6 +47,7 @@ class VariablesTableWidget(QTableWidget):
             self.setItem(i, 0, QTableWidgetItem(variable.name))
             self.setItem(i, 1, QTableWidgetItem(variable.unit))
             self.setItem(i, 2, QTableWidgetItem(variable.description))
+        self.resizeColumnsToContents()
 
     def clear_data(self) -> None:
         self.setRowCount(0)

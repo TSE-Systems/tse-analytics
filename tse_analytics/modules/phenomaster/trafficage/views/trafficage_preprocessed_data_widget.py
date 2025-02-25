@@ -3,8 +3,9 @@ from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.models.pandas_simple_model import PandasSimpleModel
 from tse_analytics.modules.phenomaster.data.pm_dataset import PMDataset
-from tse_analytics.modules.phenomaster.trafficage.views.trafficage_preprocessed_data_widget_ui import \
-    Ui_TraffiCagePreprocessedDataWidget
+from tse_analytics.modules.phenomaster.trafficage.views.trafficage_preprocessed_data_widget_ui import (
+    Ui_TraffiCagePreprocessedDataWidget,
+)
 
 
 class TraffiCagePreprocessedDataWidget(QWidget):

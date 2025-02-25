@@ -1,6 +1,6 @@
 style_descriptive_table = """
         table {
-            font-size: 11pt;
+            font-size: 10pt;
             border-collapse: collapse;
             border: 1px solid silver;
         }

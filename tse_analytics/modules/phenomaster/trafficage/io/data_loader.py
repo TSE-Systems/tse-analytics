@@ -9,11 +9,14 @@ from tse_analytics.modules.phenomaster.data.pm_dataset import PMDataset
 from tse_analytics.modules.phenomaster.trafficage.data.trafficage_data import TraffiCageData
 
 
-def import_trafficage_data(filename: str, dataset: PMDataset, csv_import_settings: CsvImportSettings) -> TraffiCageData | None:
+def import_trafficage_data(
+    filename: str, dataset: PMDataset, csv_import_settings: CsvImportSettings
+) -> TraffiCageData | None:
     path = Path(filename)
     if path.is_file() and path.suffix.lower() == ".csv":
         return _load_from_csv(path, dataset, csv_import_settings)
     return None
+
 
 def _load_from_csv(path: Path, dataset: PMDataset, csv_import_settings: CsvImportSettings):
     dtype = {

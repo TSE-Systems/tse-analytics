@@ -32,11 +32,14 @@ class TraffiCageData:
 
     def _preprocess(self):
         # Rename table columns
-        self.df.rename(columns={
-            "BoxNo": "Box",
-            "ChannelNo": "Channel",
-            "Channel type": "ChannelType",
-        }, inplace=True)
+        self.df.rename(
+            columns={
+                "BoxNo": "Box",
+                "ChannelNo": "Channel",
+                "Channel type": "ChannelType",
+            },
+            inplace=True,
+        )
 
         self.device_ids = self.df["Box"].unique().tolist()
         self.device_ids.sort()
@@ -58,7 +61,9 @@ class TraffiCageData:
         self.df.sort_values(["Animal", "DateTime"], inplace=True)
 
         # Remove repeating neigbor rows
-        drop = self.df[self.df["Animal"].eq(self.df["Animal"].shift()) & self.df["Channel"].eq(self.df["Channel"].shift())].index
+        drop = self.df[
+            self.df["Animal"].eq(self.df["Animal"].shift()) & self.df["Channel"].eq(self.df["Channel"].shift())
+        ].index
         self.df.drop(drop, inplace=True)
 
         self.df.reset_index(drop=True, inplace=True)

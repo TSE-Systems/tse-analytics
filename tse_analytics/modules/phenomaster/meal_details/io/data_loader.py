@@ -8,7 +8,9 @@ from tse_analytics.modules.phenomaster.data.pm_dataset import PMDataset
 from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
 
 
-def import_drinkfeed_data(filename: str, dataset: PMDataset, csv_import_settings: CsvImportSettings) -> MealDetails | None:
+def import_drinkfeed_data(
+    filename: str, dataset: PMDataset, csv_import_settings: CsvImportSettings
+) -> MealDetails | None:
     path = Path(filename)
     if path.is_file() and path.suffix.lower() == ".csv":
         return _load_from_csv(path, dataset, csv_import_settings)

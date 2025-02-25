@@ -6,8 +6,9 @@ from tse_analytics.modules.phenomaster.data.pm_dataset import PMDataset
 from tse_analytics.modules.phenomaster.trafficage.views.trafficage_activity_widget import TraffiCageActivityWidget
 from tse_analytics.modules.phenomaster.trafficage.views.trafficage_dialog_ui import Ui_TraffiCageDialog
 from tse_analytics.modules.phenomaster.trafficage.views.trafficage_heatmap_widget import TraffiCageHeatmapWidget
-from tse_analytics.modules.phenomaster.trafficage.views.trafficage_preprocessed_data_widget import \
-    TraffiCagePreprocessedDataWidget
+from tse_analytics.modules.phenomaster.trafficage.views.trafficage_preprocessed_data_widget import (
+    TraffiCagePreprocessedDataWidget,
+)
 from tse_analytics.modules.phenomaster.trafficage.views.trafficage_raw_data_widget import TraffiCageRawDataWidget
 
 
