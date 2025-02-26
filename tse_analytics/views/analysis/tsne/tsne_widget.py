@@ -10,7 +10,7 @@ from sklearn.preprocessing import StandardScaler
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import SplitMode, Variable
-from tse_analytics.core.helper import get_html_image, show_help
+from tse_analytics.core.helper import get_html_image
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
@@ -24,11 +24,9 @@ class TsneWidget(QWidget):
         self.ui.setupUi(self)
 
         self.title = "tSNE"
-        self.help_path = "t-SNE.md"
 
         self.ui.tableWidgetVariables.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
 
-        self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self._update)
         self.ui.pushButtonAddReport.clicked.connect(self._add_report)
 

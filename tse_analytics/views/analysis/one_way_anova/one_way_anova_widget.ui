@@ -3,14 +3,6 @@
  <author>Anton Rau</author>
  <class>OneWayAnovaWidget</class>
  <widget class="QWidget" name="OneWayAnovaWidget">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>572</width>
-    <height>583</height>
-   </rect>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QSplitter" name="splitter">
@@ -105,17 +97,6 @@
         <widget class="QPushButton" name="pushButtonAddReport">
          <property name="text">
           <string>Add to Report</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButtonHelp">
-         <property name="text">
-          <string>Help</string>
-         </property>
-         <property name="icon">
-          <iconset resource="../../../../resources/resources.qrc">
-           <normaloff>:/icons/icons8-help-16.png</normaloff>:/icons/icons8-help-16.png</iconset>
          </property>
         </widget>
        </item>

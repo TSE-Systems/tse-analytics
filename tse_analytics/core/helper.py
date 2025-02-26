@@ -7,26 +7,9 @@ from PySide6.QtGui import QIcon, Qt
 from PySide6.QtWidgets import QToolButton, QWidget, QWidgetAction, QSizePolicy
 from matplotlib.figure import Figure
 
-from tse_analytics.core import messaging
-
 IS_RELEASE = Path("_internal").exists()
 
 CSV_IMPORT_ENABLED = True
-
-
-def show_help(sender, filename: str) -> None:
-    docs_path = Path("_internal/docs/topics") if IS_RELEASE else Path("../docs/topics")
-    path = docs_path / Path(filename)
-    if path.exists():
-        with open(path, encoding="utf-8") as file:
-            content = file.read().rstrip()
-            if content is not None:
-                content = (
-                    content.replace("](", "](_internal/docs/images/")
-                    if IS_RELEASE
-                    else content.replace("](", "](../docs/images/")
-                )
-                messaging.broadcast(messaging.ShowHelpMessage(sender, content))
 
 
 def get_html_image(figure: Figure) -> str:

@@ -6,13 +6,13 @@ from pathlib import Path
 import PySide6QtAds
 import psutil
 from PySide6.QtCore import QSettings, Qt, QTimer
-from PySide6.QtGui import QAction, QCloseEvent, QIcon
+from PySide6.QtGui import QAction, QCloseEvent, QIcon, QDesktopServices
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QMessageBox
 from pyqttoast import Toast, ToastPreset
 
 from tse_analytics.core import manager
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.helper import CSV_IMPORT_ENABLED, IS_RELEASE, show_help
+from tse_analytics.core.helper import CSV_IMPORT_ENABLED, IS_RELEASE
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
@@ -22,7 +22,6 @@ from tse_analytics.modules.intellimaze.io.dataset_loader import import_im_datase
 from tse_analytics.modules.phenomaster.io.tse_dataset_loader import load_tse_dataset
 from tse_analytics.views.about_dialog import AboutDialog
 from tse_analytics.views.datasets.datasets_widget import DatasetsWidget
-from tse_analytics.views.help.help_widget import HelpWidget
 from tse_analytics.views.import_csv_dialog import ImportCsvDialog
 from tse_analytics.views.import_tse_dialog import ImportTseDialog
 from tse_analytics.views.info.info_widget import InfoWidget
@@ -81,9 +80,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             PySide6QtAds.BottomDockWidgetArea, info_dock_widget, datasets_dock_area
         )
 
-        help_dock_widget = LayoutManager.register_dock_widget(HelpWidget(), "Help", QIcon(":/icons/help.png"))
-        LayoutManager.add_dock_widget_tab_to_area(help_dock_widget, info_dock_area)
-
         log_dock_widget = LayoutManager.register_dock_widget(LogWidget(), "Log", QIcon(":/icons/log.png"))
         LayoutManager.add_dock_widget_tab_to_area(log_dock_widget, info_dock_area)
         info_dock_area.setCurrentIndex(0)
@@ -122,7 +118,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionRestoreLayout.triggered.connect(self._restore_layout)
         self.actionResetLayout.triggered.connect(self._reset_layout)
         self.actionExit.triggered.connect(lambda: QApplication.exit())
-        self.actionHelp.triggered.connect(lambda: show_help(self, "Introduction.md"))
+        self.actionHelp.triggered.connect(
+            lambda: QDesktopServices.openUrl("https://tse-systems.github.io/tse-analytics-docs")
+        )
         self.actionAbout.triggered.connect(self._show_about_dialog)
 
         # Store default dock layout

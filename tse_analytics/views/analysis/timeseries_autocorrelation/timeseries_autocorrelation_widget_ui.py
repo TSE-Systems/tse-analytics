@@ -88,14 +88,6 @@ class Ui_TimeseriesAutocorrelationWidget(object):
 
         self.verticalLayout_6.addWidget(self.pushButtonAddReport)
 
-        self.pushButtonHelp = QPushButton(self.widgetSettings)
-        self.pushButtonHelp.setObjectName(u"pushButtonHelp")
-        icon = QIcon()
-        icon.addFile(u":/icons/icons8-help-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.pushButtonHelp.setIcon(icon)
-
-        self.verticalLayout_6.addWidget(self.pushButtonHelp)
-
         self.splitter.addWidget(self.widgetSettings)
 
         self.verticalLayout.addWidget(self.splitter)
@@ -111,7 +103,6 @@ class Ui_TimeseriesAutocorrelationWidget(object):
         self.groupBoxVariable.setTitle(QCoreApplication.translate("TimeseriesAutocorrelationWidget", u"Variable", None))
         self.pushButtonUpdate.setText(QCoreApplication.translate("TimeseriesAutocorrelationWidget", u"Update", None))
         self.pushButtonAddReport.setText(QCoreApplication.translate("TimeseriesAutocorrelationWidget", u"Add to Report", None))
-        self.pushButtonHelp.setText(QCoreApplication.translate("TimeseriesAutocorrelationWidget", u"Help", None))
         pass
     # retranslateUi
 

@@ -4,7 +4,6 @@ from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.helper import show_help
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.views.analysis.ancova.ancova_widget_ui import Ui_AncovaWidget
@@ -17,9 +16,7 @@ class AncovaWidget(QWidget):
         self.ui.setupUi(self)
 
         self.title = "ANCOVA"
-        self.help_path = "ANCOVA.md"
 
-        self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self._update)
         self.ui.pushButtonAddReport.clicked.connect(self._add_report)
 

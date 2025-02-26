@@ -8,7 +8,7 @@ from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Aggregation
-from tse_analytics.core.helper import get_html_image, show_help
+from tse_analytics.core.helper import get_html_image
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.views.analysis.timeseries_autocorrelation.timeseries_autocorrelation_widget_ui import (
     Ui_TimeseriesAutocorrelationWidget,
@@ -22,9 +22,7 @@ class TimeseriesAutocorrelationWidget(QWidget):
         self.ui.setupUi(self)
 
         self.title = "Autocorrelation"
-        self.help_path = "Autocorrelation.md"
 
-        self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self._update)
         self.ui.pushButtonAddReport.clicked.connect(self._add_report)
 

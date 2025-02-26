@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QWidget
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.helper import get_html_image, show_help
+from tse_analytics.core.helper import get_html_image
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.views.analysis.histogram.histogram_widget_ui import Ui_HistogramWidget
 
@@ -18,9 +18,7 @@ class HistogramWidget(QWidget):
         self.ui.setupUi(self)
 
         self.title = "Histogram"
-        self.help_path = "Histogram.md"
 
-        self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self._update)
         self.ui.pushButtonAddReport.clicked.connect(self._add_report)
 

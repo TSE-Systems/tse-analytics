@@ -62,14 +62,6 @@ class BinningMessage(Message):
         self.settings = settings
 
 
-class ShowHelpMessage(Message):
-    """Request to display help content"""
-
-    def __init__(self, sender, content: str):
-        super().__init__(sender)
-        self.content = content
-
-
 class AddToReportMessage(Message):
     def __init__(self, sender, dataset: Dataset):
         super().__init__(sender)

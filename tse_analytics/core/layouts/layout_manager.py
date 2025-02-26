@@ -8,7 +8,7 @@ from PySide6QtAds import CDockAreaWidget, CDockContainerWidget, CDockManager, CD
 
 from tse_analytics.core.data.dataset import Dataset
 
-LAYOUT_VERSION = 12
+LAYOUT_VERSION = 13
 
 CDockManager.setConfigFlags(CDockManager.DefaultOpaqueConfig)
 CDockManager.setConfigFlag(CDockManager.ActiveTabHasCloseButton, True)
@@ -26,7 +26,6 @@ DEFAULT_WIDGETS = {
     "CentralWidget",
     "Datasets",
     "Info",
-    "Help",
     "Log",
     "Animals",
     "Factors",

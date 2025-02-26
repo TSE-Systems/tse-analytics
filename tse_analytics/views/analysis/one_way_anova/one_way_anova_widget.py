@@ -5,7 +5,7 @@ from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.helper import get_html_image, show_help
+from tse_analytics.core.helper import get_html_image
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.views.analysis.one_way_anova.one_way_anova_widget_ui import Ui_OneWayAnovaWidget
@@ -18,9 +18,7 @@ class OneWayAnovaWidget(QWidget):
         self.ui.setupUi(self)
 
         self.title = "One-way ANOVA"
-        self.help_path = "One-way-ANOVA.md"
 
-        self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self._update)
         self.ui.pushButtonAddReport.clicked.connect(self._add_report)
 

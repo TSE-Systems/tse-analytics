@@ -131,14 +131,6 @@ class Ui_RegressionWidget(object):
 
         self.verticalLayout_2.addWidget(self.pushButtonAddReport)
 
-        self.pushButtonHelp = QPushButton(self.widgetSettings)
-        self.pushButtonHelp.setObjectName(u"pushButtonHelp")
-        icon = QIcon()
-        icon.addFile(u":/icons/icons8-help-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.pushButtonHelp.setIcon(icon)
-
-        self.verticalLayout_2.addWidget(self.pushButtonHelp)
-
         self.splitterHorizontal.addWidget(self.widgetSettings)
 
         self.verticalLayout.addWidget(self.splitterHorizontal)
@@ -159,7 +151,6 @@ class Ui_RegressionWidget(object):
         self.radioButtonSplitByFactor.setText(QCoreApplication.translate("RegressionWidget", u"By Factor", None))
         self.pushButtonUpdate.setText(QCoreApplication.translate("RegressionWidget", u"Update", None))
         self.pushButtonAddReport.setText(QCoreApplication.translate("RegressionWidget", u"Add to Report", None))
-        self.pushButtonHelp.setText(QCoreApplication.translate("RegressionWidget", u"Help", None))
         pass
     # retranslateUi
 
