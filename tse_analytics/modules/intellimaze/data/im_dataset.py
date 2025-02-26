@@ -16,9 +16,11 @@ from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import p
 from tse_analytics.core.data.shared import Animal, Factor, Group, SplitMode, Variable
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.extension_tree_item import ExtensionTreeItem
-from tse_analytics.modules.intellimaze.animal_gate.data.animal_gate_data import AnimalGateData
-from tse_analytics.modules.intellimaze.consumption_scale.data.consumption_scale_data import ConsumptionScaleData
-from tse_analytics.modules.intellimaze.running_wheel.data.running_wheel_data import RunningWheelData
+from tse_analytics.modules.intellimaze.submodules.animal_gate.data.animal_gate_data import AnimalGateData
+from tse_analytics.modules.intellimaze.submodules.consumption_scale.data.consumption_scale_data import (
+    ConsumptionScaleData,
+)
+from tse_analytics.modules.intellimaze.submodules.running_wheel.data.running_wheel_data import RunningWheelData
 
 
 class IMDataset:

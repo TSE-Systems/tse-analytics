@@ -2,20 +2,22 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QComboBox, QHeaderView, QTableView
 
 from tse_analytics.core.data.shared import Variable
-from tse_analytics.core.models.variables_model import VariablesModel
+from tse_analytics.core.models.variables_simple_model import VariablesSimpleModel
 
 
 class VariableSelector(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.table_view = QTableView(self)
+        self.table_view = QTableView(
+            self,
+            sortingEnabled=False,
+        )
         self.table_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.table_view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.table_view.setSelectionMode(QTableView.SelectionMode.SingleSelection)
         self.table_view.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
         self.table_view.setAutoScroll(False)
-        self.table_view.setSortingEnabled(False)
         self.table_view.horizontalHeader().ResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.table_view.verticalHeader().hide()
         self.table_view.verticalHeader().setDefaultSectionSize(20)
@@ -26,7 +28,7 @@ class VariableSelector(QComboBox):
 
     def set_data(self, variables: dict[str, Variable]):
         self.variables = variables
-        model = VariablesModel(list(variables.values()))
+        model = VariablesSimpleModel(list(variables.values()))
         self.setModel(model)
         self.table_view.resizeColumnsToContents()
         self.table_view.resizeRowsToContents()

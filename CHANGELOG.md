@@ -161,7 +161,7 @@ TSE Analytics Change Log
 ----------------------------------------------------------------------------------------------------
 # 0.9.1 (2024-09-16)
 
-- New    -- Calculation of T90 in CaloDetails dialog window.
+- New    -- Calculation of T90 in CaloData dialog window.
 - New    -- Introduction of UUID for datasets in order to implement multiple views per dataset.
 - Change -- Migration from Delphi-formatted timestamps (float64) to POSIX (int64).
 - Change -- Got rid of animal selection by clicking (now the only selection is via check-boxes).

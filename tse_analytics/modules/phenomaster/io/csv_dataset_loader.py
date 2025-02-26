@@ -7,12 +7,12 @@ import pandas as pd
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
 from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
-from tse_analytics.modules.phenomaster.data.pm_dataset import PMDataset
+from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 
 Section = namedtuple("Section", ["lines", "section_start_index", "section_end_index"])
 
 
-def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> PMDataset | None:
+def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> PhenoMasterDataset | None:
     with open(path) as f:
         lines = f.readlines()
 
@@ -174,7 +174,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> PMDa
         },
     }
 
-    return PMDataset(
+    return PhenoMasterDataset(
         name=name,
         path=str(path),
         meta=meta,

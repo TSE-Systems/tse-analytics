@@ -26,7 +26,7 @@ class TsneWidget(QWidget):
         self.title = "tSNE"
         self.help_path = "t-SNE.md"
 
-        self.ui.tableWidgetVariables.set_selection_mode(QAbstractItemView.SelectionMode.MultiSelection)
+        self.ui.tableWidgetVariables.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
 
         self.ui.pushButtonHelp.clicked.connect(lambda: show_help(self, self.help_path))
         self.ui.pushButtonUpdate.clicked.connect(self._update)

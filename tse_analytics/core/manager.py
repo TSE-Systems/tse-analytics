@@ -8,7 +8,7 @@ from tse_analytics.core import messaging
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.models.workspace_model import WorkspaceModel
-from tse_analytics.modules.phenomaster.data import pm_dataset_merger
+from tse_analytics.modules.phenomaster.data import phenomaster_dataset_merger
 from tse_analytics.modules.phenomaster.io.csv_dataset_loader import load_csv_dataset
 
 
@@ -41,14 +41,14 @@ class Manager:
         if dataset is not None:
             self._workspace_model.add_dataset(dataset)
 
-    def import_meal_details(self, dataset_index: QModelIndex, path: str) -> None:
-        self._workspace_model.add_meal_details(dataset_index, path)
+    def import_drinkfeed_data(self, dataset_index: QModelIndex, path: str) -> None:
+        self._workspace_model.add_drinkfeed_data(dataset_index, path)
 
-    def import_actimot_details(self, dataset_index: QModelIndex, path: str) -> None:
-        self._workspace_model.add_actimot_details(dataset_index, path)
+    def import_actimot_data(self, dataset_index: QModelIndex, path: str) -> None:
+        self._workspace_model.add_actimot_data(dataset_index, path)
 
-    def import_calo_details(self, dataset_index: QModelIndex, path: str) -> None:
-        self._workspace_model.add_calo_details(dataset_index, path)
+    def import_calo_data(self, dataset_index: QModelIndex, path: str) -> None:
+        self._workspace_model.add_calo_data(dataset_index, path)
 
     def import_trafficage_data(self, dataset_index: QModelIndex, path: str) -> None:
         self._workspace_model.add_trafficage_data(dataset_index, path)
@@ -65,7 +65,7 @@ class Manager:
         continuous_mode: bool,
         generate_new_animal_names: bool,
     ) -> None:
-        merged_dataset = pm_dataset_merger.merge_datasets(
+        merged_dataset = phenomaster_dataset_merger.merge_datasets(
             new_dataset_name, datasets, single_run, continuous_mode, generate_new_animal_names
         )
         if merged_dataset is not None:
@@ -87,9 +87,9 @@ set_selected_dataset = _instance.set_selected_dataset
 load_workspace = _instance.load_workspace
 save_workspace = _instance.save_workspace
 import_csv_dataset = _instance.import_csv_dataset
-import_meal_details = _instance.import_meal_details
-import_actimot_details = _instance.import_actimot_details
-import_calo_details = _instance.import_calo_details
+import_drinkfeed_data = _instance.import_drinkfeed_data
+import_actimot_data = _instance.import_actimot_data
+import_calo_data = _instance.import_calo_data
 import_trafficage_data = _instance.import_trafficage_data
 remove_dataset = _instance.remove_dataset
 merge_datasets = _instance.merge_datasets

@@ -8,10 +8,10 @@ from tse_analytics.core.data.workspace import Workspace
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
 from tse_analytics.core.models.workspace_tree_item import WorkspaceTreeItem
-from tse_analytics.modules.phenomaster.actimot.io.data_loader import import_actimot_data
-from tse_analytics.modules.phenomaster.calo_details.io.data_loader import import_calo_data
-from tse_analytics.modules.phenomaster.meal_details.io.data_loader import import_drinkfeed_data
-from tse_analytics.modules.phenomaster.trafficage.io.data_loader import import_trafficage_data
+from tse_analytics.modules.phenomaster.submodules.actimot.io.data_loader import import_actimot_data
+from tse_analytics.modules.phenomaster.submodules.calo.io.data_loader import import_calo_data
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.io.data_loader import import_drinkfeed_data
+from tse_analytics.modules.phenomaster.submodules.trafficage.io.data_loader import import_trafficage_data
 
 
 class WorkspaceModel(QAbstractItemModel):
@@ -142,46 +142,46 @@ class WorkspaceModel(QAbstractItemModel):
         self.workspace_tree_item.add_child(dataset_tree_item)
         self.endResetModel()
 
-    def add_meal_details(self, dataset_index: QModelIndex, path: str):
+    def add_drinkfeed_data(self, dataset_index: QModelIndex, path: str):
         dataset_tree_item: DatasetTreeItem = self.getItem(dataset_index)
         if dataset_tree_item is not None and dataset_tree_item.dataset is not None:
             settings = QSettings()
             csv_import_settings: CsvImportSettings = settings.value(
                 "CsvImportSettings", CsvImportSettings.get_default()
             )
-            meal_details = import_drinkfeed_data(path, dataset_tree_item.dataset, csv_import_settings)
-            if meal_details is not None:
-                dataset_tree_item.dataset.meal_details = meal_details
+            drinkfeed_data = import_drinkfeed_data(path, dataset_tree_item.dataset, csv_import_settings)
+            if drinkfeed_data is not None:
+                dataset_tree_item.dataset.drinkfeed_data = drinkfeed_data
                 self.beginResetModel()
                 dataset_tree_item.clear()
                 dataset_tree_item.dataset.add_children_tree_items(dataset_tree_item)
                 self.endResetModel()
 
-    def add_actimot_details(self, dataset_index: QModelIndex, path: str):
+    def add_actimot_data(self, dataset_index: QModelIndex, path: str):
         dataset_tree_item: DatasetTreeItem = self.getItem(dataset_index)
         if dataset_tree_item is not None and dataset_tree_item.dataset is not None:
             settings = QSettings()
             csv_import_settings: CsvImportSettings = settings.value(
                 "CsvImportSettings", CsvImportSettings.get_default()
             )
-            actimot_details = import_actimot_data(path, dataset_tree_item.dataset, csv_import_settings)
-            if actimot_details is not None:
-                dataset_tree_item.dataset.actimot_details = actimot_details
+            actimot_data = import_actimot_data(path, dataset_tree_item.dataset, csv_import_settings)
+            if actimot_data is not None:
+                dataset_tree_item.dataset.actimot_data = actimot_data
                 self.beginResetModel()
                 dataset_tree_item.clear()
                 dataset_tree_item.dataset.add_children_tree_items(dataset_tree_item)
                 self.endResetModel()
 
-    def add_calo_details(self, dataset_index: QModelIndex, path: str):
+    def add_calo_data(self, dataset_index: QModelIndex, path: str):
         dataset_tree_item: DatasetTreeItem = self.getItem(dataset_index)
         if dataset_tree_item is not None and dataset_tree_item.dataset is not None:
             settings = QSettings()
             csv_import_settings: CsvImportSettings = settings.value(
                 "CsvImportSettings", CsvImportSettings.get_default()
             )
-            calo_details = import_calo_data(path, dataset_tree_item.dataset, csv_import_settings)
-            if calo_details is not None:
-                dataset_tree_item.dataset.calo_details = calo_details
+            calo_data = import_calo_data(path, dataset_tree_item.dataset, csv_import_settings)
+            if calo_data is not None:
+                dataset_tree_item.dataset.calo_data = calo_data
                 self.beginResetModel()
                 dataset_tree_item.clear()
                 dataset_tree_item.dataset.add_children_tree_items(dataset_tree_item)

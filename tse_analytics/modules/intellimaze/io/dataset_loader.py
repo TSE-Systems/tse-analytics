@@ -9,11 +9,11 @@ import xmltodict
 from loguru import logger
 
 from tse_analytics.core.data.shared import Animal
-from tse_analytics.modules.intellimaze.animal_gate.io.importer import import_animalgate_data
-from tse_analytics.modules.intellimaze.consumption_scale.io.importer import import_consumptionscale_data
+from tse_analytics.modules.intellimaze.submodules.animal_gate.io.importer import import_animalgate_data
+from tse_analytics.modules.intellimaze.submodules.consumption_scale.io.importer import import_consumptionscale_data
 from tse_analytics.modules.intellimaze.data.im_dataset import IMDataset
 from tse_analytics.modules.intellimaze.data.main_table_helper import preprocess_main_table
-from tse_analytics.modules.intellimaze.running_wheel.io.importer import import_runningwheel_data
+from tse_analytics.modules.intellimaze.submodules.running_wheel.io.importer import import_runningwheel_data
 
 
 def import_im_dataset(path: Path) -> IMDataset | None:

@@ -11,10 +11,10 @@ from loguru import logger
 from tse_analytics.core.data.shared import Aggregation, Animal, Factor, Variable
 from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
 from tse_analytics.modules.phenomaster.io.tse_import_settings import TseImportSettings
-from tse_analytics.modules.phenomaster.actimot.data.actimot_details import ActimotDetails
-from tse_analytics.modules.phenomaster.calo_details.data.calo_details import CaloDetails
-from tse_analytics.modules.phenomaster.data.pm_dataset import PMDataset
-from tse_analytics.modules.phenomaster.meal_details.data.meal_details import MealDetails
+from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_data import ActimotData
+from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
+from tse_analytics.modules.phenomaster.submodules.calo.data.calo_data import CaloData
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_data import DrinkFeedData
 
 CHUNK_SIZE = 1000000
 
@@ -23,19 +23,18 @@ DRINKFEED_BIN_TABLE = "drinkfeed_bin"
 CALO_BIN_TABLE = "calo_bin"
 
 
-def load_tse_dataset(path: Path, import_settings: TseImportSettings) -> PMDataset | None:
+def load_tse_dataset(path: Path, import_settings: TseImportSettings) -> PhenoMasterDataset | None:
     tic = timeit.default_timer()
 
     metadata = _read_metadata(path)
     animals = _get_animals(metadata["animals"])
-    # factors = TseDatasetLoader._get_factors(metadata["groups"])
 
     main_table_df, main_table_vars, main_table_sampling_interval = _read_main_table(path, metadata["tables"], animals)
 
     # Assign predefined variables properties
     main_table_vars = assign_predefined_values(main_table_vars)
 
-    dataset = PMDataset(
+    dataset = PhenoMasterDataset(
         name=metadata["experiment"]["experiment_no"],
         path=str(path),
         meta=metadata,
@@ -48,20 +47,20 @@ def load_tse_dataset(path: Path, import_settings: TseImportSettings) -> PMDatase
     # Import ActoMot raw data if present
     if import_settings.import_actimot_raw:
         if ACTIMOT_RAW_TABLE in metadata["tables"]:
-            actimot_details = _read_actimot_raw(path, metadata["tables"], dataset)
-            dataset.actimot_details = actimot_details
+            actimot_data = _read_actimot_raw(path, metadata["tables"], dataset)
+            dataset.actimot_data = actimot_data
 
     # Import drinkfeed bin data if present
     if import_settings.import_drinkfeed_bin:
         if DRINKFEED_BIN_TABLE in metadata["tables"]:
-            meal_details = _read_drinkfeed_bin(path, metadata["tables"], dataset)
-            dataset.meal_details = meal_details
+            drinkfeed_data = _read_drinkfeed_bin(path, metadata["tables"], dataset)
+            dataset.drinkfeed_data = drinkfeed_data
 
     # Import calo bin data if present
     if import_settings.import_calo_bin:
         if CALO_BIN_TABLE in metadata["tables"]:
-            calo_details = _read_calo_bin(path, metadata["tables"], dataset)
-            dataset.calo_details = calo_details
+            calo_data = _read_calo_bin(path, metadata["tables"], dataset)
+            dataset.calo_data = calo_data
 
     logger.info(f"Import complete in {(timeit.default_timer() - tic):.3f} sec: {path}")
 
@@ -215,7 +214,7 @@ def _read_main_table(
     return df, variables, sample_interval
 
 
-def _read_actimot_raw(path: Path, metadata: dict, dataset: PMDataset) -> ActimotDetails:
+def _read_actimot_raw(path: Path, metadata: dict, dataset: PhenoMasterDataset) -> ActimotData:
     metadata = metadata[ACTIMOT_RAW_TABLE]
 
     sample_interval = pd.Timedelta(metadata["sample_interval"])
@@ -258,19 +257,19 @@ def _read_actimot_raw(path: Path, metadata: dict, dataset: PMDataset) -> Actimot
     # Convert DateTime from POSIX format
     df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
 
-    actimot_details = ActimotDetails(
+    actimot_data = ActimotData(
         dataset,
-        f"{ACTIMOT_RAW_TABLE} [sampling: {str(sample_interval)}]",
+        ACTIMOT_RAW_TABLE,
         str(path),
         variables,
         df,
         sample_interval,
     )
 
-    return actimot_details
+    return actimot_data
 
 
-def _read_drinkfeed_bin(path: Path, metadata: dict, dataset: PMDataset) -> MealDetails:
+def _read_drinkfeed_bin(path: Path, metadata: dict, dataset: PhenoMasterDataset) -> DrinkFeedData:
     metadata = metadata[DRINKFEED_BIN_TABLE]
 
     sample_interval = pd.Timedelta(metadata["sample_interval"])
@@ -317,19 +316,19 @@ def _read_drinkfeed_bin(path: Path, metadata: dict, dataset: PMDataset) -> MealD
         "Animal": "category",
     })
 
-    meal_details = MealDetails(
+    drinkfeed_data = DrinkFeedData(
         dataset,
-        f"{DRINKFEED_BIN_TABLE} [sampling: {str(sample_interval)}]",
+        DRINKFEED_BIN_TABLE,
         str(path),
         variables,
         df,
         sample_interval,
     )
 
-    return meal_details
+    return drinkfeed_data
 
 
-def _read_calo_bin(path: Path, metadata: dict, dataset: PMDataset) -> CaloDetails:
+def _read_calo_bin(path: Path, metadata: dict, dataset: PhenoMasterDataset) -> CaloData:
     metadata = metadata[CALO_BIN_TABLE]
 
     sample_interval = pd.Timedelta(metadata["sample_interval"])
@@ -424,13 +423,13 @@ def _read_calo_bin(path: Path, metadata: dict, dataset: PMDataset) -> CaloDetail
     df.insert(2, "Bin", bins)
     df.insert(3, "Offset", offsets)
 
-    calo_details = CaloDetails(
+    calo_data = CaloData(
         dataset,
-        f"{CALO_BIN_TABLE} [sampling: {str(sample_interval)}]",
+        CALO_BIN_TABLE,
         str(path),
         variables,
         df,
         sample_interval,
     )
 
-    return calo_details
+    return calo_data

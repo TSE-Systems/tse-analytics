@@ -20,17 +20,19 @@ from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.extension_tree_item import ExtensionTreeItem
 from tse_analytics.modules.intellicage.views.intellicage_dialog import IntelliCageDialog
-from tse_analytics.modules.intellimaze.animal_gate.views.animal_gate_dialog import AnimalGateDialog
-from tse_analytics.modules.intellimaze.consumption_scale.views.consumption_scale_dialog import ConsumptionScaleDialog
-from tse_analytics.modules.intellimaze.running_wheel.views.running_wheel_dialog import RunningWheelDialog
-from tse_analytics.modules.phenomaster.actimot.models.actimot_tree_item import ActimotTreeItem
-from tse_analytics.modules.phenomaster.actimot.views.actimot_dialog import ActimotDialog
-from tse_analytics.modules.phenomaster.calo_details.models.calo_details_tree_item import CaloDetailsTreeItem
-from tse_analytics.modules.phenomaster.calo_details.views.calo_details_dialog import CaloDetailsDialog
-from tse_analytics.modules.phenomaster.meal_details.models.meal_details_tree_item import MealDetailsTreeItem
-from tse_analytics.modules.phenomaster.meal_details.views.meal_details_dialog import MealDetailsDialog
-from tse_analytics.modules.phenomaster.trafficage.models.trafficage_tree_item import TraffiCageTreeItem
-from tse_analytics.modules.phenomaster.trafficage.views.trafficage_dialog import TraffiCageDialog
+from tse_analytics.modules.intellimaze.submodules.animal_gate.views.animal_gate_dialog import AnimalGateDialog
+from tse_analytics.modules.intellimaze.submodules.consumption_scale.views.consumption_scale_dialog import (
+    ConsumptionScaleDialog,
+)
+from tse_analytics.modules.intellimaze.submodules.running_wheel.views.running_wheel_dialog import RunningWheelDialog
+from tse_analytics.modules.phenomaster.submodules.actimot.models.actimot_tree_item import ActimotTreeItem
+from tse_analytics.modules.phenomaster.submodules.actimot.views.actimot_dialog import ActimotDialog
+from tse_analytics.modules.phenomaster.submodules.calo.models.calo_data_tree_item import CaloDataTreeItem
+from tse_analytics.modules.phenomaster.submodules.calo.views.calo_details_dialog import CaloDetailsDialog
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.models.drinkfeed_data_tree_item import DrinkFeedDataTreeItem
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.meal_details_dialog import MealDetailsDialog
+from tse_analytics.modules.phenomaster.submodules.trafficage.models.trafficage_tree_item import TraffiCageTreeItem
+from tse_analytics.modules.phenomaster.submodules.trafficage.views.trafficage_dialog import TraffiCageDialog
 from tse_analytics.views.datasets.adjust_dataset_dialog import AdjustDatasetDialog
 from tse_analytics.views.datasets.datasets_merge_dialog import DatasetsMergeDialog
 from tse_analytics.views.datasets.datasets_widget_ui import Ui_DatasetsWidget
@@ -59,10 +61,10 @@ class DatasetsWidget(QWidget):
             self.import_button.setEnabled(False)
 
             import_menu = QMenu("Import", self.import_button)
-            import_menu.addAction("Import calo data...").triggered.connect(self._import_calo_details)
-            import_menu.addAction("Import drink/feed data...").triggered.connect(self._import_meal_details)
-            import_menu.addAction("Import ActiMot data...").triggered.connect(self._import_actimot_details)
-            import_menu.addAction("Import TraffiCage data...").triggered.connect(self._import_trafficage_details)
+            import_menu.addAction("Import calo data...").triggered.connect(self._import_calo_data)
+            import_menu.addAction("Import drink/feed data...").triggered.connect(self._import_drinkfeed_data)
+            import_menu.addAction("Import ActiMot data...").triggered.connect(self._import_actimot_data)
+            import_menu.addAction("Import TraffiCage data...").triggered.connect(self._import_trafficage_data)
             self.import_button.setMenu(import_menu)
 
             toolbar.addWidget(self.import_button)
@@ -152,7 +154,7 @@ class DatasetsWidget(QWidget):
             for item in items:
                 item.checked = False
 
-    def _import_meal_details(self):
+    def _import_drinkfeed_data(self):
         path, _ = QFileDialog.getOpenFileName(
             self,
             "Import drink/feed data",
@@ -166,9 +168,9 @@ class DatasetsWidget(QWidget):
             if dialog.exec() == QDialog.DialogCode.Accepted:
                 indexes = self.ui.treeView.selectedIndexes()
                 selected_dataset_index = indexes[0]
-                manager.import_meal_details(selected_dataset_index, path)
+                manager.import_drinkfeed_data(selected_dataset_index, path)
 
-    def _import_actimot_details(self):
+    def _import_actimot_data(self):
         path, _ = QFileDialog.getOpenFileName(
             self,
             "Import ActiMot data",
@@ -182,9 +184,9 @@ class DatasetsWidget(QWidget):
             if dialog.exec() == QDialog.DialogCode.Accepted:
                 indexes = self.ui.treeView.selectedIndexes()
                 selected_dataset_index = indexes[0]
-                manager.import_actimot_details(selected_dataset_index, path)
+                manager.import_actimot_data(selected_dataset_index, path)
 
-    def _import_calo_details(self):
+    def _import_calo_data(self):
         path, _ = QFileDialog.getOpenFileName(
             self,
             "Import calo data",
@@ -198,9 +200,9 @@ class DatasetsWidget(QWidget):
             if dialog.exec() == QDialog.DialogCode.Accepted:
                 indexes = self.ui.treeView.selectedIndexes()
                 selected_dataset_index = indexes[0]
-                manager.import_calo_details(selected_dataset_index, path)
+                manager.import_calo_data(selected_dataset_index, path)
 
-    def _import_trafficage_details(self):
+    def _import_trafficage_data(self):
         path, _ = QFileDialog.getOpenFileName(
             self,
             "Import TraffiCage data",
@@ -283,7 +285,7 @@ class DatasetsWidget(QWidget):
     def _treeview_double_clicked(self, index: QModelIndex) -> None:
         if index.isValid():
             item = index.model().getItem(index)
-            if isinstance(item, CaloDetailsTreeItem):
+            if isinstance(item, CaloDataTreeItem):
                 dialog = CaloDetailsDialog(item.calo_details, self)
                 # TODO: check other cases!!
                 dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
@@ -291,15 +293,15 @@ class DatasetsWidget(QWidget):
                 if result == QDialog.DialogCode.Accepted:
                     dataset = item.calo_details.dataset
                     dataset.append_fitting_results(dialog.fitting_results)
-            elif isinstance(item, MealDetailsTreeItem):
-                dialog = MealDetailsDialog(item.meal_details, self)
+            elif isinstance(item, DrinkFeedDataTreeItem):
+                dialog = MealDetailsDialog(item.drinkfeed_data, self)
                 # TODO: check other cases!!
                 dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
                 result = dialog.exec()
                 if result == QDialog.DialogCode.Accepted:
                     pass
             elif isinstance(item, ActimotTreeItem):
-                dialog = ActimotDialog(item.actimot_details, self)
+                dialog = ActimotDialog(item.actimot_data, self)
                 # TODO: check other cases!!
                 dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
                 result = dialog.exec()

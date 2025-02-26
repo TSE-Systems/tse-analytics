@@ -37,9 +37,6 @@ class VariablesTableWidget(QTableWidget):
 
         self.variables: dict[str, Variable] = {}
 
-    def set_selection_mode(self, mode: QAbstractItemView.SelectionMode) -> None:
-        self.setSelectionMode(mode)
-
     def set_data(self, variables: dict[str, Variable]) -> None:
         self.variables = variables
         self.setRowCount(len(variables))

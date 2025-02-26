@@ -51,7 +51,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         )
 
         self.variables_table_widget = VariablesTableWidget()
-        self.variables_table_widget.set_selection_mode(QAbstractItemView.SelectionMode.MultiSelection)
+        self.variables_table_widget.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
         self.variables_table_widget.itemSelectionChanged.connect(self._variables_selection_changed)
         self.variables_table_widget.set_data(self.dataset.variables)
         self.variables_table_widget.setMaximumHeight(400)
@@ -67,6 +67,14 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
         split_mode_selector = SplitModeSelector(toolbar, self.dataset.factors, self._split_mode_callback)
         toolbar.addWidget(split_mode_selector)
+
+        toolbar.addSeparator()
+        toolbar.addAction(QIcon(":/icons/icons8-resize-horizontal-16.png"), "Resize Columns").triggered.connect(
+            self._resize_columns_width
+        )
+
+        # Horizontal spacer
+        toolbar.addWidget(get_h_spacer_widget(toolbar))
 
         self.descriptive_stats_widget = QTextEdit(toolbar)
         self.descriptive_stats_widget.setUndoRedoEnabled(False)
@@ -84,12 +92,6 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.show_stats_button.setEnabled(False)
         toolbar.addWidget(self.show_stats_button)
 
-        toolbar.addSeparator()
-        toolbar.addAction(QIcon(":/icons/icons8-resize-horizontal-16.png"), "Resize Columns").triggered.connect(
-            self._resize_columns_width
-        )
-
-        toolbar.addWidget(get_h_spacer_widget(toolbar))
         self.add_report_action = toolbar.addAction("Add to Report")
         self.add_report_action.triggered.connect(self._add_report)
         self.add_report_action.setEnabled(False)
@@ -97,18 +99,18 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         # Insert toolbar to the widget
         self.layout.addWidget(toolbar)
 
-        self.tableView = QTableView(
+        self.table_view = QTableView(
             self,
             sortingEnabled=True,
         )
-        self.tableView.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self.tableView.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-        self.tableView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.tableView.verticalHeader().setMinimumSectionSize(20)
-        self.tableView.verticalHeader().setDefaultSectionSize(20)
-        self.tableView.horizontalHeader().sectionClicked.connect(self._header_clicked)
+        self.table_view.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.table_view.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.table_view.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table_view.verticalHeader().setMinimumSectionSize(20)
+        self.table_view.verticalHeader().setDefaultSectionSize(20)
+        self.table_view.horizontalHeader().sectionClicked.connect(self._header_clicked)
 
-        self.layout.addWidget(self.tableView)
+        self.layout.addWidget(self.table_view)
 
         self._set_data()
 
@@ -118,7 +120,9 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self._set_data()
 
     def _resize_columns_width(self):
-        worker = Worker(self.tableView.resizeColumnsToContents)  # Any other args, kwargs are passed to the run function
+        worker = Worker(
+            self.table_view.resizeColumnsToContents
+        )  # Any other args, kwargs are passed to the run function
         TaskManager.start_task(worker)
 
     def _on_binning_applied(self, message: messaging.BinningMessage):
@@ -185,16 +189,16 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             self.add_report_action.setEnabled(False)
             self.show_stats_button.setEnabled(False)
 
-        self.tableView.setModel(PandasModel(self.df, self.dataset, calculate=True))
-        self.tableView.horizontalHeader().setSortIndicatorShown(False)
+        self.table_view.setModel(PandasModel(self.df, self.dataset, calculate=True))
+        self.table_view.horizontalHeader().setSortIndicatorShown(False)
 
     def _header_clicked(self, logical_index: int):
         if self.df is None:
             return
-        self.tableView.horizontalHeader().setSortIndicatorShown(True)
-        order = self.tableView.horizontalHeader().sortIndicatorOrder() == Qt.SortOrder.AscendingOrder
+        self.table_view.horizontalHeader().setSortIndicatorShown(True)
+        order = self.table_view.horizontalHeader().sortIndicatorOrder() == Qt.SortOrder.AscendingOrder
         df = self.df.sort_values(self.df.columns[logical_index], ascending=order, inplace=False)
-        self.tableView.setModel(PandasModel(df, self.dataset, calculate=True))
+        self.table_view.setModel(PandasModel(df, self.dataset, calculate=True))
 
     def _add_report(self):
         self.dataset.report += self.descriptive_stats_widget.document().toHtml()
