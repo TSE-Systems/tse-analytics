@@ -3,7 +3,7 @@ from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QFileDialog, QWidget
 
-from tse_analytics.modules.phenomaster.submodules.calo.calo_data_processor import (
+from tse_analytics.modules.phenomaster.submodules.calo.calo_processor import (
     calculate_fit_v2,
     curve_fitting_func,
 )

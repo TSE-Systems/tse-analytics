@@ -7,13 +7,13 @@ from PySide6.QtWidgets import QAbstractItemView, QMenu, QTableView, QWidget
 
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_animal_item import DrinkFeedAnimalItem
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.models.drinkfeed_data_boxes_model import (
-    DrinkFeedDataBoxesModel,
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.models.drinkfeed_boxes_model import (
+    DrinkFeedBoxesModel,
 )
 
 
-class MealDetailsBoxSelector(QTableView):
-    def __init__(self, callback, meal_details_settings_widget, parent: QWidget | None = None):
+class DrinkFeedBoxSelector(QTableView):
+    def __init__(self, callback, settings_widget, parent: QWidget | None = None):
         super().__init__(parent)
         self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
@@ -21,7 +21,7 @@ class MealDetailsBoxSelector(QTableView):
         self.verticalHeader().setDefaultSectionSize(20)
 
         self.callback = callback
-        self.meal_details_settings_widget = meal_details_settings_widget
+        self.settings_widget = settings_widget
 
         pal = self.palette()
         pal.setColor(
@@ -62,7 +62,7 @@ class MealDetailsBoxSelector(QTableView):
                         x.factors[factor.name] = group.name
                         break
 
-        model = DrinkFeedDataBoxesModel(list(items.values()), header)
+        model = DrinkFeedBoxesModel(list(items.values()), header)
         self.model().setSourceModel(model)
         # See https://forum.pythonguis.com/t/resizecolumnstocontents-not-working-with-qsortfilterproxymodel-and-tableview/1285
         QTimer.singleShot(0, self.resizeColumnsToContents)
@@ -88,7 +88,7 @@ class MealDetailsBoxSelector(QTableView):
         action.triggered.connect(self._clear_diets)
 
         submenu = menu.addMenu("Set diet")
-        settings = self.meal_details_settings_widget.get_meal_details_settings()
+        settings = self.settings_widget.get_meal_details_settings()
         for diet in settings.diets:
             action = submenu.addAction(diet.name)
             action.triggered.connect(partial(self._set_diet, diet.caloric_value))

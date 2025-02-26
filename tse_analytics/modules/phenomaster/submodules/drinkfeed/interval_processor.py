@@ -6,7 +6,7 @@ from tse_analytics.modules.phenomaster.submodules.drinkfeed.drinkfeed_data_setti
 default_columns = ["DateTime", "Animal", "Box"]
 
 
-def process_meal_intervals(
+def process_drinkfeed_intervals(
     drinkfeed_data: DrinkFeedData, drinkfeed_data_settings: DrinkFeedDataSettings, diets_dict: dict[int, float]
 ):
     box_to_animal_map = {}

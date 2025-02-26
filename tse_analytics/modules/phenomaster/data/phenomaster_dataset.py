@@ -18,7 +18,7 @@ from tse_analytics.core.data.shared import Aggregation, Animal, Factor, Group, S
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_data import ActimotData
 from tse_analytics.modules.phenomaster.submodules.actimot.models.actimot_tree_item import ActimotTreeItem
-from tse_analytics.modules.phenomaster.submodules.calo.calo_data_fitting_result import CaloDataFittingResult
+from tse_analytics.modules.phenomaster.submodules.calo.calo_fitting_result import CaloFittingResult
 from tse_analytics.modules.phenomaster.submodules.calo.data.calo_data import CaloData
 from tse_analytics.modules.phenomaster.submodules.calo.models.calo_data_tree_item import CaloDataTreeItem
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_data import DrinkFeedData
@@ -540,7 +540,7 @@ class PhenoMasterDataset:
 
     def append_fitting_results(
         self,
-        fitting_results: dict[int, CaloDataFittingResult],
+        fitting_results: dict[int, CaloFittingResult],
     ) -> None:
         if len(fitting_results) > 0:
             active_df = self.original_df

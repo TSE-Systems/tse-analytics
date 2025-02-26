@@ -9,15 +9,14 @@ from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
 from PySide6.QtWidgets import QDialog, QFileDialog, QWidget
 
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.modules.phenomaster.submodules.calo.calo_data_fitting_result import CaloDataFittingResult
-from tse_analytics.modules.phenomaster.submodules.calo.calo_data_processor import process_box
-from tse_analytics.modules.phenomaster.submodules.calo.calo_data_settings import CaloDataSettings
+from tse_analytics.modules.phenomaster.submodules.calo.calo_fitting_result import CaloFittingResult
+from tse_analytics.modules.phenomaster.submodules.calo.calo_processor import process_box
+from tse_analytics.modules.phenomaster.submodules.calo.calo_settings import CaloSettings
 from tse_analytics.modules.phenomaster.submodules.calo.data.calo_data import CaloData
 from tse_analytics.modules.phenomaster.submodules.calo.data.calo_box import CaloBox
 from tse_analytics.modules.phenomaster.submodules.calo.fitting_params import FittingParams
 from tse_analytics.modules.phenomaster.submodules.calo.views.calo_details_bin_selector import CaloDetailsBinSelector
 from tse_analytics.modules.phenomaster.submodules.calo.views.calo_details_box_selector import CaloDetailsBoxSelector
-from tse_analytics.modules.phenomaster.submodules.calo.views.calo_details_dialog_ui import Ui_CaloDetailsDialog
 from tse_analytics.modules.phenomaster.submodules.calo.views.calo_details_plot_widget import CaloDetailsPlotWidget
 from tse_analytics.modules.phenomaster.submodules.calo.views.calo_details_rer_widget import CaloDetailsRerWidget
 from tse_analytics.modules.phenomaster.submodules.calo.views.calo_details_settings_widget import (
@@ -27,17 +26,18 @@ from tse_analytics.modules.phenomaster.submodules.calo.views.calo_details_table_
 from tse_analytics.modules.phenomaster.submodules.calo.views.calo_details_test_fit_widget import (
     CaloDetailsTestFitWidget,
 )
+from tse_analytics.modules.phenomaster.submodules.calo.views.calo_dialog_ui import Ui_CaloDialog
 
 
-class CaloDetailsDialog(QDialog):
+class CaloDialog(QDialog):
     def __init__(self, calo_details: CaloData, parent: QWidget | None = None):
         super().__init__(parent)
 
-        self.ui = Ui_CaloDetailsDialog()
+        self.ui = Ui_CaloDialog()
         self.ui.setupUi(self)
 
         settings = QSettings()
-        self.restoreGeometry(settings.value("CaloDetailsDialog/Geometry"))
+        self.restoreGeometry(settings.value("CaloDialog/Geometry"))
 
         self.calo_details = calo_details
 
@@ -65,9 +65,9 @@ class CaloDetailsDialog(QDialog):
         self.ui.toolBox.addItem(self.calo_details_bin_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Bins")
 
         try:
-            calo_details_settings = settings.value("CaloDetailsSettings", CaloDataSettings.get_default())
+            calo_details_settings = settings.value("CaloSettings", CaloSettings.get_default())
         except Exception:
-            calo_details_settings = CaloDataSettings.get_default()
+            calo_details_settings = CaloSettings.get_default()
 
         self.calo_details_settings_widget = CaloDetailsSettingsWidget()
         self.calo_details_settings_widget.set_settings(calo_details_settings)
@@ -85,7 +85,7 @@ class CaloDetailsDialog(QDialog):
         self.selected_boxes: list[CaloBox] = []
         self.selected_bins: list[int] = []
 
-        self.fitting_results: dict[int, CaloDataFittingResult] = {}
+        self.fitting_results: dict[int, CaloFittingResult] = {}
 
     def _filter_boxes(self, selected_boxes: list[CaloBox]):
         self.selected_boxes = selected_boxes
@@ -109,7 +109,7 @@ class CaloDetailsDialog(QDialog):
         self.calo_details_test_fit_widget.set_data(df)
 
     def _reset_settings(self):
-        calo_details_settings = CaloDataSettings.get_default()
+        calo_details_settings = CaloSettings.get_default()
         self.calo_details_settings_widget.set_settings(calo_details_settings)
 
     def _export(self):
@@ -179,10 +179,10 @@ class CaloDetailsDialog(QDialog):
 
     def hideEvent(self, event: QCloseEvent) -> None:
         settings = QSettings()
-        settings.setValue("CaloDetailsDialog/Geometry", self.saveGeometry())
+        settings.setValue("CaloDialog/Geometry", self.saveGeometry())
 
         calo_details_settings = self.calo_details_settings_widget.get_calo_details_settings()
-        settings.setValue("CaloDetailsSettings", calo_details_settings)
+        settings.setValue("CaloSettings", calo_details_settings)
 
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Escape:

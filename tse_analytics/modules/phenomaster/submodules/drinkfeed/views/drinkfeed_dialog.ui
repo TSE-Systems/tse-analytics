@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <author>Anton Rau</author>
- <class>CaloDetailsDialog</class>
- <widget class="QDialog" name="CaloDetailsDialog">
+ <class>DrinkFeedDialog</class>
+ <widget class="QDialog" name="DrinkFeedDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -12,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Calo Details</string>
+   <string>DrinkFeed</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -20,21 +19,31 @@
      <item>
       <widget class="QToolButton" name="toolButtonCalculate">
        <property name="text">
-        <string>Calculate prediction for selected boxes</string>
+        <string>Calculate</string>
        </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QToolButton" name="toolButtonResetSettings">
-       <property name="text">
-        <string>Reset default settings</string>
+       <property name="icon">
+        <iconset resource="../../../../../../resources/resources.qrc">
+         <normaloff>:/icons/icons8-scales-16.png</normaloff>:/icons/icons8-scales-16.png</iconset>
+       </property>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QToolButton" name="toolButtonExport">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
-        <string>Export selected data</string>
+        <string>Export meal data...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../../../../../../resources/resources.qrc">
+         <normaloff>:/icons/icons8-export-16.png</normaloff>:/icons/icons8-export-16.png</iconset>
+       </property>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
        </property>
       </widget>
      </item>
@@ -78,15 +87,18 @@
       </property>
      </widget>
      <widget class="QToolBox" name="toolBox">
-      <property name="currentIndex">
-       <number>0</number>
+      <property name="maximumSize">
+       <size>
+        <width>300</width>
+        <height>16777215</height>
+       </size>
       </property>
       <widget class="QWidget" name="page">
        <property name="geometry">
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>873</width>
+         <width>300</width>
          <height>745</height>
         </rect>
        </property>
@@ -103,7 +115,7 @@
       <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
+      <set>QDialogButtonBox::StandardButton::Close</set>
      </property>
     </widget>
    </item>
@@ -116,7 +128,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>CaloDetailsDialog</receiver>
+   <receiver>DrinkFeedDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -132,7 +144,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>CaloDetailsDialog</receiver>
+   <receiver>DrinkFeedDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

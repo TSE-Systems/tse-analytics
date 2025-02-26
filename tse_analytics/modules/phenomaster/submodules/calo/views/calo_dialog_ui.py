@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'meal_details_dialog.ui'
+## Form generated from reading UI file 'calo_dialog.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.8.2
 ##
@@ -21,31 +21,27 @@ from PySide6.QtWidgets import (QAbstractButton, QApplication, QDialog, QDialogBu
     QWidget)
 import resources_rc
 
-class Ui_MealDetailsDialog(object):
-    def setupUi(self, MealDetailsDialog):
-        if not MealDetailsDialog.objectName():
-            MealDetailsDialog.setObjectName(u"MealDetailsDialog")
-        MealDetailsDialog.resize(1020, 854)
-        self.verticalLayout = QVBoxLayout(MealDetailsDialog)
+class Ui_CaloDialog(object):
+    def setupUi(self, CaloDialog):
+        if not CaloDialog.objectName():
+            CaloDialog.setObjectName(u"CaloDialog")
+        CaloDialog.resize(1020, 854)
+        self.verticalLayout = QVBoxLayout(CaloDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.toolbarLayout = QHBoxLayout()
         self.toolbarLayout.setObjectName(u"toolbarLayout")
-        self.toolButtonCalculate = QToolButton(MealDetailsDialog)
+        self.toolButtonCalculate = QToolButton(CaloDialog)
         self.toolButtonCalculate.setObjectName(u"toolButtonCalculate")
-        icon = QIcon()
-        icon.addFile(u":/icons/icons8-scales-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.toolButtonCalculate.setIcon(icon)
-        self.toolButtonCalculate.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
 
         self.toolbarLayout.addWidget(self.toolButtonCalculate)
 
-        self.toolButtonExport = QToolButton(MealDetailsDialog)
+        self.toolButtonResetSettings = QToolButton(CaloDialog)
+        self.toolButtonResetSettings.setObjectName(u"toolButtonResetSettings")
+
+        self.toolbarLayout.addWidget(self.toolButtonResetSettings)
+
+        self.toolButtonExport = QToolButton(CaloDialog)
         self.toolButtonExport.setObjectName(u"toolButtonExport")
-        self.toolButtonExport.setEnabled(False)
-        icon1 = QIcon()
-        icon1.addFile(u":/icons/icons8-export-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.toolButtonExport.setIcon(icon1)
-        self.toolButtonExport.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
 
         self.toolbarLayout.addWidget(self.toolButtonExport)
 
@@ -53,18 +49,18 @@ class Ui_MealDetailsDialog(object):
 
         self.toolbarLayout.addItem(self.horizontalSpacer)
 
-        self.toolButtonHelp = QToolButton(MealDetailsDialog)
+        self.toolButtonHelp = QToolButton(CaloDialog)
         self.toolButtonHelp.setObjectName(u"toolButtonHelp")
-        icon2 = QIcon()
-        icon2.addFile(u":/icons/icons8-help-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.toolButtonHelp.setIcon(icon2)
+        icon = QIcon()
+        icon.addFile(u":/icons/icons8-help-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.toolButtonHelp.setIcon(icon)
 
         self.toolbarLayout.addWidget(self.toolButtonHelp)
 
 
         self.verticalLayout.addLayout(self.toolbarLayout)
 
-        self.splitter = QSplitter(MealDetailsDialog)
+        self.splitter = QSplitter(CaloDialog)
         self.splitter.setObjectName(u"splitter")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -77,37 +73,38 @@ class Ui_MealDetailsDialog(object):
         self.splitter.addWidget(self.tabWidget)
         self.toolBox = QToolBox(self.splitter)
         self.toolBox.setObjectName(u"toolBox")
-        self.toolBox.setMaximumSize(QSize(300, 16777215))
         self.page = QWidget()
         self.page.setObjectName(u"page")
-        self.page.setGeometry(QRect(0, 0, 300, 745))
+        self.page.setGeometry(QRect(0, 0, 873, 745))
         self.toolBox.addItem(self.page, u"Page 1")
         self.splitter.addWidget(self.toolBox)
 
         self.verticalLayout.addWidget(self.splitter)
 
-        self.buttonBox = QDialogButtonBox(MealDetailsDialog)
+        self.buttonBox = QDialogButtonBox(CaloDialog)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setOrientation(Qt.Orientation.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Close)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
 
         self.verticalLayout.addWidget(self.buttonBox)
 
 
-        self.retranslateUi(MealDetailsDialog)
-        self.buttonBox.accepted.connect(MealDetailsDialog.accept)
-        self.buttonBox.rejected.connect(MealDetailsDialog.reject)
+        self.retranslateUi(CaloDialog)
+        self.buttonBox.accepted.connect(CaloDialog.accept)
+        self.buttonBox.rejected.connect(CaloDialog.reject)
 
         self.tabWidget.setCurrentIndex(-1)
+        self.toolBox.setCurrentIndex(0)
 
 
-        QMetaObject.connectSlotsByName(MealDetailsDialog)
+        QMetaObject.connectSlotsByName(CaloDialog)
     # setupUi
 
-    def retranslateUi(self, MealDetailsDialog):
-        MealDetailsDialog.setWindowTitle(QCoreApplication.translate("MealDetailsDialog", u"Meal Analysis", None))
-        self.toolButtonCalculate.setText(QCoreApplication.translate("MealDetailsDialog", u"Calculate", None))
-        self.toolButtonExport.setText(QCoreApplication.translate("MealDetailsDialog", u"Export meal data...", None))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("MealDetailsDialog", u"Page 1", None))
+    def retranslateUi(self, CaloDialog):
+        CaloDialog.setWindowTitle(QCoreApplication.translate("CaloDialog", u"Calo", None))
+        self.toolButtonCalculate.setText(QCoreApplication.translate("CaloDialog", u"Calculate prediction for selected boxes", None))
+        self.toolButtonResetSettings.setText(QCoreApplication.translate("CaloDialog", u"Reset default settings", None))
+        self.toolButtonExport.setText(QCoreApplication.translate("CaloDialog", u"Export selected data", None))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("CaloDialog", u"Page 1", None))
     # retranslateUi
 

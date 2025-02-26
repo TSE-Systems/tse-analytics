@@ -446,27 +446,27 @@ def _process_box(
     return meal_events_df, meal_episodes_df
 
 
-def process_meal_sequences(
-    meal_details: DrinkFeedData, meal_details_settings: DrinkFeedDataSettings, diets_dict: dict[str, float]
+def process_drinkfeed_sequences(
+    drinkfeed_data: DrinkFeedData, meal_details_settings: DrinkFeedDataSettings, diets_dict: dict[str, float]
 ):
     box_to_animal_map = {}
-    for animal in meal_details.dataset.animals.values():
+    for animal in drinkfeed_data.dataset.animals.values():
         box_to_animal_map[animal.box] = animal.id
 
-    all_box_numbers = list(meal_details.raw_df["Box"].unique())
+    all_box_numbers = list(drinkfeed_data.raw_df["Box"].unique())
 
     events_df = None
     episodes_df = None
 
     for box_number in all_box_numbers:
-        df = meal_details.raw_df[meal_details.raw_df["Box"] == box_number]
+        df = drinkfeed_data.raw_df[drinkfeed_data.raw_df["Box"] == box_number]
 
         meal_events_df, meal_episodes_df = _process_box(
             box_number,
             box_to_animal_map[box_number],
             df,
             meal_details_settings,
-            meal_details.raw_df["DateTime"].iloc[0],
+            drinkfeed_data.raw_df["DateTime"].iloc[0],
         )
 
         if events_df is None:

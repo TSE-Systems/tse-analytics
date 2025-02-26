@@ -7,12 +7,12 @@ from lmfit import Parameters, minimize
 # from scipy.optimize import curve_fit
 from loguru import logger
 
-from tse_analytics.modules.phenomaster.submodules.calo.calo_data_fitting_result import CaloDataFittingResult
-from tse_analytics.modules.phenomaster.submodules.calo.calo_data_settings import CaloDataSettings
+from tse_analytics.modules.phenomaster.submodules.calo.calo_fitting_result import CaloFittingResult
+from tse_analytics.modules.phenomaster.submodules.calo.calo_settings import CaloSettings
 from tse_analytics.modules.phenomaster.submodules.calo.fitting_params import FittingParams
 
 
-def process_box(params: FittingParams) -> CaloDataFittingResult:
+def process_box(params: FittingParams) -> CaloFittingResult:
     # Calo Details Sample time [sec]
     sample_time = params.details_df.iloc[1].at["DateTime"] - params.details_df.iloc[0].at["DateTime"]
 
@@ -24,11 +24,11 @@ def process_box(params: FittingParams) -> CaloDataFittingResult:
     #     df_ref_box = df_ref_box.loc[df_ref_box["Bin"] != ref_bin_numbers[-1]]
 
     df_predicted_measurements = calculate_predicted_measurements(
-        params.details_df, sample_time, params.calo_details_settings, False
+        params.details_df, sample_time, params.calo_data_settings, False
     )
 
     df_ref_predicted_measurements = calculate_predicted_measurements(
-        params.ref_details_df, sample_time, params.calo_details_settings, True
+        params.ref_details_df, sample_time, params.calo_data_settings, True
     )
 
     predicted_rer = []
@@ -44,7 +44,7 @@ def process_box(params: FittingParams) -> CaloDataFittingResult:
         o2 = bin_data.iloc[0]["O2"]
         co2 = bin_data.iloc[0]["CO2"]
 
-        rer, vo2, vco2, h = calculate_rer(ref_o2, o2, ref_co2, co2, params.calo_details_settings.flow)
+        rer, vo2, vco2, h = calculate_rer(ref_o2, o2, ref_co2, co2, params.calo_data_settings.flow)
 
         predicted_rer.append(rer)
         predicted_vo2.append(vo2)
@@ -55,16 +55,16 @@ def process_box(params: FittingParams) -> CaloDataFittingResult:
     # if len(predicted_rer) > len(measured_rer):
     #     predicted_rer = predicted_rer[0:-1]
 
-    bins = params.general_df["Bin"].tolist()
+    bins = params.main_df["Bin"].tolist()
 
-    measured_rer = params.general_df["RER"].tolist()
-    measured_o2 = params.general_df["O2"].tolist()
-    measured_ref_o2 = params.general_df["Ref.O2"].tolist() if "Ref.O2" in params.general_df.columns else None
-    measured_co2 = params.general_df["CO2"].tolist()
-    measured_ref_co2 = params.general_df["Ref.CO2"].tolist() if "Ref.CO2" in params.general_df.columns else None
-    measured_vo2 = params.general_df["VO2(3)"].tolist()
-    measured_vco2 = params.general_df["VCO2(3)"].tolist()
-    measured_h = params.general_df["H(3)"].tolist()
+    measured_rer = params.main_df["RER"].tolist()
+    measured_o2 = params.main_df["O2"].tolist()
+    measured_ref_o2 = params.main_df["Ref.O2"].tolist() if "Ref.O2" in params.main_df.columns else None
+    measured_co2 = params.main_df["CO2"].tolist()
+    measured_ref_co2 = params.main_df["Ref.CO2"].tolist() if "Ref.CO2" in params.main_df.columns else None
+    measured_vo2 = params.main_df["VO2(3)"].tolist()
+    measured_vco2 = params.main_df["VCO2(3)"].tolist()
+    measured_h = params.main_df["H(3)"].tolist()
 
     predicted_o2 = df_predicted_measurements["O2"].tolist()
     predicted_ref_o2 = df_ref_predicted_measurements["O2"].tolist()
@@ -95,11 +95,11 @@ def process_box(params: FittingParams) -> CaloDataFittingResult:
     )
 
     logger.info(
-        f"Done! Box: {params.calo_details_box.box}, Ref box: {params.calo_details_box.ref_box}, Sample time: {sample_time}, Number of bins: {len(bin_numbers)}, Number of ref bins: {len(ref_bin_numbers)}"
+        f"Done! Box: {params.calo_box.box}, Ref box: {params.calo_box.ref_box}, Sample time: {sample_time}, Number of bins: {len(bin_numbers)}, Number of ref bins: {len(ref_bin_numbers)}"
     )
 
-    return CaloDataFittingResult(
-        params.calo_details_box.box,
+    return CaloFittingResult(
+        params.calo_box.box,
         params,
         result_df,
     )
@@ -196,7 +196,7 @@ def calculate_fit_v2(
 
 
 def calculate_predicted_measurements(
-    df: pd.DataFrame, sample_time: timedelta, calo_data_settings: CaloDataSettings, is_ref: bool
+    df: pd.DataFrame, sample_time: timedelta, calo_data_settings: CaloSettings, is_ref: bool
 ):
     bins = df["Bin"].unique().tolist()
     offsets = []

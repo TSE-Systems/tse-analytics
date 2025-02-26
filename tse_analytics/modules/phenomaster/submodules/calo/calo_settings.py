@@ -1,4 +1,4 @@
-class CaloDataGasSettings:
+class CaloGasSettings:
     def __init__(
         self,
         gas_name: str,
@@ -14,14 +14,14 @@ class CaloDataGasSettings:
         self.ref_bounds = ref_bounds
 
 
-class CaloDataSettings:
+class CaloSettings:
     def __init__(
         self,
         iterations: int,
         prediction_offset: int,
         flow: float,
-        o2_settings: CaloDataGasSettings,
-        co2_settings: CaloDataGasSettings,
+        o2_settings: CaloGasSettings,
+        co2_settings: CaloGasSettings,
     ):
         self.iterations = iterations
         self.prediction_offset = prediction_offset
@@ -31,18 +31,18 @@ class CaloDataSettings:
 
     @staticmethod
     def get_default():
-        settings = CaloDataSettings(
+        settings = CaloSettings(
             10000,
             50,
             0.5,
-            CaloDataGasSettings(
+            CaloGasSettings(
                 "O2",
                 20,
                 30,
                 ((-3.75e12, -9.0, 0), (2.389e12, 0, 25)),
                 ((-3.75e12, -9.0, 0), (2.389e12, 0, 25)),
             ),
-            CaloDataGasSettings(
+            CaloGasSettings(
                 "CO2", 20, 30, ((-3.75e12, -9.0, 0), (2.389e12, 0, 1)), ((-1.381e12, -8.806, 0), (2.525e12, 0, 0.1))
             ),
         )

@@ -1,7 +1,7 @@
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.modules.phenomaster.submodules.calo.calo_data_fitting_result import CaloDataFittingResult
+from tse_analytics.modules.phenomaster.submodules.calo.calo_fitting_result import CaloFittingResult
 from tse_analytics.modules.phenomaster.submodules.calo.views.calo_details_rer_widget_ui import Ui_CaloDetailsRerWidget
 
 
@@ -19,7 +19,7 @@ class CaloDetailsRerWidget(QWidget):
             self.ui.horizontalLayout.count(), NavigationToolbar2QT(self.ui.canvas, self)
         )
 
-        self.fitting_result: CaloDataFittingResult | None = None
+        self.fitting_result: CaloFittingResult | None = None
 
     def _variable_changed(self, variable: str) -> None:
         self.set_data(self.fitting_result)
@@ -27,7 +27,7 @@ class CaloDetailsRerWidget(QWidget):
     def clear(self) -> None:
         self.ui.canvas.clear(True)
 
-    def set_data(self, fitting_result: CaloDataFittingResult) -> None:
+    def set_data(self, fitting_result: CaloFittingResult) -> None:
         self.fitting_result = fitting_result
 
         if self.fitting_result is None:

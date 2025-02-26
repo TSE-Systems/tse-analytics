@@ -3,7 +3,7 @@ import pandas as pd
 from tse_analytics.modules.phenomaster.submodules.calo.fitting_params import FittingParams
 
 
-class CaloDataFittingResult:
+class CaloFittingResult:
     def __init__(
         self,
         box_number: int,

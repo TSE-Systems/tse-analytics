@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.modules.phenomaster.submodules.calo.calo_data_settings import CaloDataGasSettings
+from tse_analytics.modules.phenomaster.submodules.calo.calo_settings import CaloGasSettings
 from tse_analytics.modules.phenomaster.submodules.calo.views.calo_details_gas_settings_widget_ui import (
     Ui_CaloDetailsGasSettingsWidget,
 )
@@ -33,7 +33,7 @@ class CaloDetailsGasSettingsWidget(QWidget):
 
     def set_data(
         self,
-        calo_details_gas_settings: CaloDataGasSettings,
+        calo_details_gas_settings: CaloGasSettings,
     ):
         self.ui.titleGroupBox.setTitle(calo_details_gas_settings.gas_name)
 
@@ -58,7 +58,7 @@ class CaloDetailsGasSettingsWidget(QWidget):
         self.ui.doubleSpinBoxRefMinC.setValue(calo_details_gas_settings.ref_bounds[0][2])
         self.ui.doubleSpinBoxRefMaxC.setValue(calo_details_gas_settings.ref_bounds[1][2])
 
-    def get_gas_settings(self) -> CaloDataGasSettings:
+    def get_gas_settings(self) -> CaloGasSettings:
         bounds = (
             (self.ui.doubleSpinBoxMinA.value(), self.ui.doubleSpinBoxMinB.value(), self.ui.doubleSpinBoxMinC.value()),
             (self.ui.doubleSpinBoxMaxA.value(), self.ui.doubleSpinBoxMaxB.value(), self.ui.doubleSpinBoxMaxC.value()),
@@ -75,7 +75,7 @@ class CaloDetailsGasSettingsWidget(QWidget):
                 self.ui.doubleSpinBoxRefMaxC.value(),
             ),
         )
-        return CaloDataGasSettings(
+        return CaloGasSettings(
             self.ui.titleGroupBox.title(),
             self.ui.spinBoxStartOffset.value(),
             self.ui.spinBoxEndOffset.value(),

@@ -4,7 +4,7 @@ from PySide6.QtCore import QAbstractTableModel, QModelIndex, QPersistentModelInd
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_animal_item import DrinkFeedAnimalItem
 
 
-class DrinkFeedDataBoxesModel(QAbstractTableModel):
+class DrinkFeedBoxesModel(QAbstractTableModel):
     def __init__(self, items: list[DrinkFeedAnimalItem], header: list[str], parent=None):
         super().__init__(parent)
 

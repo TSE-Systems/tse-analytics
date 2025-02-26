@@ -45,11 +45,11 @@ tasks:
       - pyside6-uic tse_analytics/views/analysis/timeseries_autocorrelation/timeseries_autocorrelation_widget.ui -o tse_analytics/views/analysis/timeseries_autocorrelation/timeseries_autocorrelation_widget_ui.py
       - pyside6-uic tse_analytics/views/about_dialog.ui -o tse_analytics/views/about_dialog_ui.py
       - pyside6-uic tse_analytics/views/reports/reports_widget.ui -o tse_analytics/views/reports/reports_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/submodules/drinkfeed/views/meal_details_dialog.ui -o tse_analytics/modules/phenomaster/submodules/drinkfeed/views/meal_details_dialog_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_dialog.ui -o tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_dialog_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/drinkfeed/views/meal_details_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/drinkfeed/views/meal_details_plot_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/drinkfeed/views/meal_details_settings_widget.ui -o tse_analytics/modules/phenomaster/submodules/drinkfeed/views/meal_details_settings_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/drinkfeed/views/meal_episodes_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/drinkfeed/views/meal_episodes_plot_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/calo_details_dialog.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/calo_details_dialog_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/calo_dialog.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/calo_dialog_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/calo_details_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/calo_details_plot_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/calo_details_settings_widget.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/calo_details_settings_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/calo_details_gas_settings_widget.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/calo_details_gas_settings_widget_ui.py

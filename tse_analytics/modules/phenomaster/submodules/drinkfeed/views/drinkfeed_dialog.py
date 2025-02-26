@@ -12,13 +12,13 @@ from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_data import DrinkFeedData
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_animal_item import DrinkFeedAnimalItem
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.interval_meal_processor import process_meal_intervals
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.interval_processor import process_drinkfeed_intervals
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.drinkfeed_data_settings import DrinkFeedDataSettings
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.sequential_meal_processor import process_meal_sequences
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.meal_details_box_selector import (
-    MealDetailsBoxSelector,
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.sequential_processor import process_drinkfeed_sequences
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_box_selector import (
+    DrinkFeedBoxSelector,
 )
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.meal_details_dialog_ui import Ui_MealDetailsDialog
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_dialog_ui import Ui_DrinkFeedDialog
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.meal_details_plot_widget import MealDetailsPlotWidget
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.meal_details_settings_widget import (
     MealDetailsSettingsWidget,
@@ -38,15 +38,15 @@ from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.meal_intervals
 )
 
 
-class MealDetailsDialog(QDialog):
+class DrinkFeedDialog(QDialog):
     def __init__(self, meal_details: DrinkFeedData, parent: QWidget | None = None):
         super().__init__(parent)
 
-        self.ui = Ui_MealDetailsDialog()
+        self.ui = Ui_DrinkFeedDialog()
         self.ui.setupUi(self)
 
         settings = QSettings()
-        self.restoreGeometry(settings.value("MealDetailsDialog/Geometry"))
+        self.restoreGeometry(settings.value("DrinkFeedDialog/Geometry"))
 
         self.meal_details = meal_details
 
@@ -86,13 +86,13 @@ class MealDetailsDialog(QDialog):
 
         self.meal_details_settings_widget = MealDetailsSettingsWidget()
         try:
-            meal_details_settings = settings.value("MealDetailsSettings", DrinkFeedDataSettings.get_default())
+            meal_details_settings = settings.value("DrinkFeedSettings", DrinkFeedDataSettings.get_default())
             self.meal_details_settings_widget.set_data(self.meal_details.dataset, meal_details_settings)
         except Exception:
             meal_details_settings = DrinkFeedDataSettings.get_default()
             self.meal_details_settings_widget.set_data(self.meal_details.dataset, meal_details_settings)
 
-        self.meal_details_box_selector = MealDetailsBoxSelector(self._filter_boxes, self.meal_details_settings_widget)
+        self.meal_details_box_selector = DrinkFeedBoxSelector(self._filter_boxes, self.meal_details_settings_widget)
         self.meal_details_box_selector.set_data(meal_details.dataset)
 
         self.ui.toolBox.removeItem(0)
@@ -186,7 +186,7 @@ class MealDetailsDialog(QDialog):
     ):
         tic = timeit.default_timer()
 
-        self.meal_events_df, self.meal_episodes_df = process_meal_sequences(
+        self.meal_events_df, self.meal_episodes_df = process_drinkfeed_sequences(
             self.meal_details, meal_details_settings, diets_dict
         )
 
@@ -214,7 +214,7 @@ class MealDetailsDialog(QDialog):
     ):
         tic = timeit.default_timer()
 
-        self.meal_intervals_df = process_meal_intervals(self.meal_details, meal_details_settings, diets_dict)
+        self.meal_intervals_df = process_drinkfeed_intervals(self.meal_details, meal_details_settings, diets_dict)
 
         logger.info(f"Meal analysis complete: {timeit.default_timer() - tic} sec")
 
@@ -242,10 +242,10 @@ class MealDetailsDialog(QDialog):
 
     def hideEvent(self, event: QCloseEvent) -> None:
         settings = QSettings()
-        settings.setValue("MealDetailsDialog/Geometry", self.saveGeometry())
+        settings.setValue("DrinkFeedDialog/Geometry", self.saveGeometry())
 
         meal_details_settings = self.meal_details_settings_widget.get_meal_details_settings()
-        settings.setValue("MealDetailsSettings", meal_details_settings)
+        settings.setValue("DrinkFeedSettings", meal_details_settings)
 
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Escape:
