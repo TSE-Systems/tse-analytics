@@ -9,12 +9,12 @@ class FittingParams:
         self,
         calo_box: CaloBox,
         main_df: pd.DataFrame,
-        details_df: pd.DataFrame,
-        ref_details_df: pd.DataFrame,
-        calo_data_settings: CaloSettings,
+        box_df: pd.DataFrame,
+        ref_box_df: pd.DataFrame,
+        calo_settings: CaloSettings,
     ):
         self.calo_box = calo_box
         self.main_df = main_df
-        self.details_df = details_df
-        self.ref_details_df = ref_details_df
-        self.calo_data_settings = calo_data_settings
+        self.box_df = box_df
+        self.ref_df = ref_box_df
+        self.calo_settings = calo_settings

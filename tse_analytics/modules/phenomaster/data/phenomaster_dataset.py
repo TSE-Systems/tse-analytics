@@ -20,9 +20,9 @@ from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_data impo
 from tse_analytics.modules.phenomaster.submodules.actimot.models.actimot_tree_item import ActimotTreeItem
 from tse_analytics.modules.phenomaster.submodules.calo.calo_fitting_result import CaloFittingResult
 from tse_analytics.modules.phenomaster.submodules.calo.data.calo_data import CaloData
-from tse_analytics.modules.phenomaster.submodules.calo.models.calo_data_tree_item import CaloDataTreeItem
+from tse_analytics.modules.phenomaster.submodules.calo.models.calo_tree_item import CaloDataTreeItem
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_data import DrinkFeedData
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.models.drinkfeed_data_tree_item import DrinkFeedDataTreeItem
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.models.drinkfeed_tree_item import DrinkFeedTreeItem
 from tse_analytics.modules.phenomaster.submodules.trafficage.data.trafficage_data import TraffiCageData
 from tse_analytics.modules.phenomaster.submodules.trafficage.models.trafficage_tree_item import TraffiCageTreeItem
 
@@ -601,7 +601,7 @@ class PhenoMasterDataset:
 
     def add_children_tree_items(self, dataset_tree_item: DatasetTreeItem) -> None:
         if self.drinkfeed_data is not None:
-            dataset_tree_item.add_child(DrinkFeedDataTreeItem(self.drinkfeed_data))
+            dataset_tree_item.add_child(DrinkFeedTreeItem(self.drinkfeed_data))
 
         if self.actimot_data is not None:
             dataset_tree_item.add_child(ActimotTreeItem(self.actimot_data))

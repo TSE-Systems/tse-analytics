@@ -107,7 +107,7 @@ class Ui_DrinkFeedDialog(object):
     def retranslateUi(self, DrinkFeedDialog):
         DrinkFeedDialog.setWindowTitle(QCoreApplication.translate("DrinkFeedDialog", u"DrinkFeed", None))
         self.toolButtonCalculate.setText(QCoreApplication.translate("DrinkFeedDialog", u"Calculate", None))
-        self.toolButtonExport.setText(QCoreApplication.translate("DrinkFeedDialog", u"Export meal data...", None))
+        self.toolButtonExport.setText(QCoreApplication.translate("DrinkFeedDialog", u"Export data...", None))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("DrinkFeedDialog", u"Page 1", None))
     # retranslateUi
 

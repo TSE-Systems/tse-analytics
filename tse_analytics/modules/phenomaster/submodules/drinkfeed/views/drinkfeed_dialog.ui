@@ -36,7 +36,7 @@
         <bool>false</bool>
        </property>
        <property name="text">
-        <string>Export meal data...</string>
+        <string>Export data...</string>
        </property>
        <property name="icon">
         <iconset resource="../../../../../../resources/resources.qrc">

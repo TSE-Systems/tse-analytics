@@ -88,7 +88,7 @@ class DrinkFeedBoxSelector(QTableView):
         action.triggered.connect(self._clear_diets)
 
         submenu = menu.addMenu("Set diet")
-        settings = self.settings_widget.get_meal_details_settings()
+        settings = self.settings_widget.get_drinkfeed_settings()
         for diet in settings.diets:
             action = submenu.addAction(diet.name)
             action.triggered.connect(partial(self._set_diet, diet.caloric_value))

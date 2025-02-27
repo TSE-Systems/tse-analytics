@@ -13,33 +13,33 @@ from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_data import DrinkFeedData
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_animal_item import DrinkFeedAnimalItem
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.interval_processor import process_drinkfeed_intervals
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.drinkfeed_data_settings import DrinkFeedDataSettings
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.drinkfeed_settings import DrinkFeedSettings
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.sequential_processor import process_drinkfeed_sequences
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_box_selector import (
     DrinkFeedBoxSelector,
 )
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_dialog_ui import Ui_DrinkFeedDialog
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.meal_details_plot_widget import MealDetailsPlotWidget
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.meal_details_settings_widget import (
-    MealDetailsSettingsWidget,
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_plot_widget import DrinkFeedPlotWidget
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_settings_widget import (
+    DrinkFeedSettingsWidget,
 )
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.meal_details_table_view import MealDetailsTableView
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.meal_episodes_gap_plot_widget import (
-    MealEpisodesGapPlotWidget,
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_table_view import DrinkFeedTableView
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_episodes_gap_plot_widget import (
+    DrinkFeedEpisodesGapPlotWidget,
 )
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.meal_episodes_intake_plot_widget import (
-    MealEpisodesIntakePlotWidget,
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_episodes_intake_plot_widget import (
+    DrinkFeedEpisodesIntakePlotWidget,
 )
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.meal_episodes_offset_plot_widget import (
-    MealEpisodesOffsetPlotWidget,
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_episodes_offset_plot_widget import (
+    DrinkFeedEpisodesOffsetPlotWidget,
 )
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.meal_intervals_plot_widget import (
-    MealIntervalsPlotWidget,
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_intervals_plot_widget import (
+    DrinkFeedIntervalsPlotWidget,
 )
 
 
 class DrinkFeedDialog(QDialog):
-    def __init__(self, meal_details: DrinkFeedData, parent: QWidget | None = None):
+    def __init__(self, drinkfeed_data: DrinkFeedData, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.ui = Ui_DrinkFeedDialog()
@@ -48,68 +48,64 @@ class DrinkFeedDialog(QDialog):
         settings = QSettings()
         self.restoreGeometry(settings.value("DrinkFeedDialog/Geometry"))
 
-        self.meal_details = meal_details
+        self.drinkfeed_data = drinkfeed_data
 
-        self.meal_events_table_view = MealDetailsTableView()
-        self.meal_events_table_view.set_data(meal_details.raw_df)
-        self.ui.tabWidget.addTab(self.meal_events_table_view, "Events")
+        self.events_table_view = DrinkFeedTableView()
+        self.events_table_view.set_data(drinkfeed_data.raw_df)
+        self.ui.tabWidget.addTab(self.events_table_view, "Events")
 
-        self.meal_details_plot_widget = MealDetailsPlotWidget()
-        self.meal_details_plot_widget.set_variables(meal_details.variables)
-        self.meal_details_plot_widget.set_data(meal_details.raw_df)
-        self.ui.tabWidget.addTab(self.meal_details_plot_widget, "Events Plot")
+        self.drinkfeed_plot_widget = DrinkFeedPlotWidget()
+        self.drinkfeed_plot_widget.set_variables(drinkfeed_data.variables)
+        self.drinkfeed_plot_widget.set_data(drinkfeed_data.raw_df)
+        self.ui.tabWidget.addTab(self.drinkfeed_plot_widget, "Events Plot")
 
-        self.intervals_table_view = MealDetailsTableView()
+        self.intervals_table_view = DrinkFeedTableView()
         self.intervals_table_tab_index = self.ui.tabWidget.addTab(self.intervals_table_view, "Intervals")
 
-        self.intervals_plot_widget = MealIntervalsPlotWidget()
+        self.intervals_plot_widget = DrinkFeedIntervalsPlotWidget()
         self.intervals_plot_tab_index = self.ui.tabWidget.addTab(self.intervals_plot_widget, "Intervals Plots")
 
-        self.meal_episodes_table_view = MealDetailsTableView()
-        self.episodes_table_tab_index = self.ui.tabWidget.addTab(self.meal_episodes_table_view, "Episodes")
+        self.episodes_table_view = DrinkFeedTableView()
+        self.episodes_table_tab_index = self.ui.tabWidget.addTab(self.episodes_table_view, "Episodes")
 
-        self.meal_episodes_offset_plot_widget = MealEpisodesOffsetPlotWidget()
-        self.episodes_offset_tab_index = self.ui.tabWidget.addTab(
-            self.meal_episodes_offset_plot_widget, "Episodes Offset"
-        )
+        self.episodes_offset_plot_widget = DrinkFeedEpisodesOffsetPlotWidget()
+        self.episodes_offset_tab_index = self.ui.tabWidget.addTab(self.episodes_offset_plot_widget, "Episodes Offset")
 
-        self.meal_episodes_gap_plot_widget = MealEpisodesGapPlotWidget()
-        self.episodes_imi_tab_index = self.ui.tabWidget.addTab(self.meal_episodes_gap_plot_widget, "Episodes IMI")
+        self.episodes_gap_plot_widget = DrinkFeedEpisodesGapPlotWidget()
+        self.episodes_imi_tab_index = self.ui.tabWidget.addTab(self.episodes_gap_plot_widget, "Episodes IMI")
 
-        self.meal_episodes_intake_plot_widget = MealEpisodesIntakePlotWidget()
-        self.episodes_intake_tab_index = self.ui.tabWidget.addTab(
-            self.meal_episodes_intake_plot_widget, "Episodes Intake"
-        )
+        self.episodes_intake_plot_widget = DrinkFeedEpisodesIntakePlotWidget()
+        self.episodes_intake_tab_index = self.ui.tabWidget.addTab(self.episodes_intake_plot_widget, "Episodes Intake")
 
         self.ui.toolButtonCalculate.clicked.connect(self._calculate)
-        self.ui.toolButtonExport.clicked.connect(self._export_meal_data)
+        self.ui.toolButtonExport.clicked.connect(self._export_data)
 
-        self.meal_details_settings_widget = MealDetailsSettingsWidget()
+        self.drinkfeed_settings_widget = DrinkFeedSettingsWidget()
         try:
-            meal_details_settings = settings.value("DrinkFeedSettings", DrinkFeedDataSettings.get_default())
-            self.meal_details_settings_widget.set_data(self.meal_details.dataset, meal_details_settings)
+            drinkfeed_settings = settings.value("DrinkFeedSettings", DrinkFeedSettings.get_default())
+            self.drinkfeed_settings_widget.set_data(self.drinkfeed_data.dataset, drinkfeed_settings)
         except Exception:
-            meal_details_settings = DrinkFeedDataSettings.get_default()
-            self.meal_details_settings_widget.set_data(self.meal_details.dataset, meal_details_settings)
+            drinkfeed_settings = DrinkFeedSettings.get_default()
+            self.drinkfeed_settings_widget.set_data(self.drinkfeed_data.dataset, drinkfeed_settings)
 
-        self.meal_details_box_selector = DrinkFeedBoxSelector(self._filter_boxes, self.meal_details_settings_widget)
-        self.meal_details_box_selector.set_data(meal_details.dataset)
+        self.drinkfeed_box_selector = DrinkFeedBoxSelector(self._filter_boxes, self.drinkfeed_settings_widget)
+        self.drinkfeed_box_selector.set_data(drinkfeed_data.dataset)
 
         self.ui.toolBox.removeItem(0)
-        self.ui.toolBox.addItem(self.meal_details_box_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Boxes")
-        self.ui.toolBox.addItem(self.meal_details_settings_widget, QIcon(":/icons/icons8-dog-tag-16.png"), "Settings")
+        self.ui.toolBox.addItem(self.drinkfeed_box_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Boxes")
+        self.ui.toolBox.addItem(self.drinkfeed_settings_widget, QIcon(":/icons/icons8-dog-tag-16.png"), "Settings")
 
         self.selected_boxes: list[DrinkFeedAnimalItem] = []
 
-        self.meal_events_df: pd.DataFrame | None = self.meal_details.raw_df
-        self.meal_episodes_df: pd.DataFrame | None = None
-        self.meal_intervals_df: pd.DataFrame | None = None
+        self.events_df: pd.DataFrame | None = self.drinkfeed_data.raw_df
+        self.episodes_df: pd.DataFrame | None = None
+        self.intervals_df: pd.DataFrame | None = None
 
         self._update_tabs()
         self.toast = None
 
     def _update_tabs(self):
-        settings = self.meal_details_settings_widget.get_meal_details_settings()
+        settings = self.drinkfeed_settings_widget.get_drinkfeed_settings()
         self.ui.tabWidget.setTabVisible(self.episodes_table_tab_index, settings.sequential_analysis_type)
         self.ui.tabWidget.setTabVisible(self.episodes_offset_tab_index, settings.sequential_analysis_type)
         self.ui.tabWidget.setTabVisible(self.episodes_imi_tab_index, settings.sequential_analysis_type)
@@ -121,9 +117,9 @@ class DrinkFeedDialog(QDialog):
     def _filter_boxes(self, selected_boxes: list[DrinkFeedAnimalItem]):
         self.selected_boxes = selected_boxes
 
-        events_df = self.meal_events_df
-        episodes_df = self.meal_episodes_df
-        intervals_df = self.meal_intervals_df
+        events_df = self.events_df
+        episodes_df = self.episodes_df
+        intervals_df = self.intervals_df
 
         if len(self.selected_boxes) > 0:
             box_numbers = [b.box for b in self.selected_boxes]
@@ -135,11 +131,11 @@ class DrinkFeedDialog(QDialog):
             if intervals_df is not None:
                 intervals_df = intervals_df[intervals_df["Box"].isin(box_numbers)]
 
-        self.meal_events_table_view.set_data(events_df)
-        self.meal_details_plot_widget.set_data(events_df)
+        self.events_table_view.set_data(events_df)
+        self.drinkfeed_plot_widget.set_data(events_df)
 
         if episodes_df is not None:
-            self.meal_episodes_table_view.set_data(episodes_df)
+            self.episodes_table_view.set_data(episodes_df)
 
         if intervals_df is not None:
             self.intervals_table_view.set_data(intervals_df)
@@ -147,60 +143,58 @@ class DrinkFeedDialog(QDialog):
 
     def _get_variables_subset(self) -> dict[str, Variable]:
         variables_subset: dict[str, Variable] = {}
-        if "Drink1" in self.meal_details.variables:
-            variables_subset["Drink1"] = self.meal_details.variables["Drink1"]
-        if "Feed1" in self.meal_details.variables:
-            variables_subset["Feed1"] = self.meal_details.variables["Feed1"]
-        if "Drink2" in self.meal_details.variables:
-            variables_subset["Drink2"] = self.meal_details.variables["Drink2"]
-        if "Feed2" in self.meal_details.variables:
-            variables_subset["Feed2"] = self.meal_details.variables["Feed2"]
-        if "Drink" in self.meal_details.variables:
-            variables_subset["Drink"] = self.meal_details.variables["Drink"]
-        if "Feed" in self.meal_details.variables:
-            variables_subset["Feed"] = self.meal_details.variables["Feed"]
+        if "Drink1" in self.drinkfeed_data.variables:
+            variables_subset["Drink1"] = self.drinkfeed_data.variables["Drink1"]
+        if "Feed1" in self.drinkfeed_data.variables:
+            variables_subset["Feed1"] = self.drinkfeed_data.variables["Feed1"]
+        if "Drink2" in self.drinkfeed_data.variables:
+            variables_subset["Drink2"] = self.drinkfeed_data.variables["Drink2"]
+        if "Feed2" in self.drinkfeed_data.variables:
+            variables_subset["Feed2"] = self.drinkfeed_data.variables["Feed2"]
+        if "Drink" in self.drinkfeed_data.variables:
+            variables_subset["Drink"] = self.drinkfeed_data.variables["Drink"]
+        if "Feed" in self.drinkfeed_data.variables:
+            variables_subset["Feed"] = self.drinkfeed_data.variables["Feed"]
         return variables_subset
 
     def _calculate(self):
         self.ui.toolButtonCalculate.setEnabled(False)
         self.ui.toolButtonExport.setEnabled(False)
 
-        self.toast = make_toast(self, "Meal Analysis", "Processing...")
+        self.toast = make_toast(self, "DrinkFeed Analysis", "Processing...")
         self.toast.show()
 
-        meal_details_settings = self.meal_details_settings_widget.get_meal_details_settings()
-        diets_dict = self.meal_details_box_selector.get_diets_dict()
+        drinkfeed_settings = self.drinkfeed_settings_widget.get_drinkfeed_settings()
+        diets_dict = self.drinkfeed_box_selector.get_diets_dict()
 
-        if meal_details_settings.sequential_analysis_type:
-            worker = Worker(self._do_sequential_analysis, meal_details_settings, diets_dict)
+        if drinkfeed_settings.sequential_analysis_type:
+            worker = Worker(self._do_sequential_analysis, drinkfeed_settings, diets_dict)
             worker.signals.finished.connect(self._sequential_analysis_finished)
         else:
-            worker = Worker(self._do_interval_analysis, meal_details_settings, diets_dict)
+            worker = Worker(self._do_interval_analysis, drinkfeed_settings, diets_dict)
             worker.signals.finished.connect(self._interval_analysis_finished)
         TaskManager.start_task(worker)
 
     def _do_sequential_analysis(
         self,
-        meal_details_settings: DrinkFeedDataSettings,
+        settings: DrinkFeedSettings,
         diets_dict: dict[str, float],
     ):
         tic = timeit.default_timer()
 
-        self.meal_events_df, self.meal_episodes_df = process_drinkfeed_sequences(
-            self.meal_details, meal_details_settings, diets_dict
-        )
+        self.events_df, self.episodes_df = process_drinkfeed_sequences(self.drinkfeed_data, settings, diets_dict)
 
-        logger.info(f"Meal analysis complete: {timeit.default_timer() - tic} sec")
+        logger.info(f"DrinkFeed analysis complete: {timeit.default_timer() - tic} sec")
 
     def _sequential_analysis_finished(self):
         variables_subset = self._get_variables_subset()
 
-        self.meal_events_table_view.set_data(self.meal_events_df)
-        self.meal_episodes_table_view.set_data(self.meal_episodes_df)
+        self.events_table_view.set_data(self.events_df)
+        self.episodes_table_view.set_data(self.episodes_df)
 
-        self.meal_episodes_offset_plot_widget.set_data(self.meal_episodes_df, variables_subset)
-        self.meal_episodes_gap_plot_widget.set_data(self.meal_episodes_df, variables_subset)
-        self.meal_episodes_intake_plot_widget.set_data(self.meal_episodes_df, variables_subset)
+        self.episodes_offset_plot_widget.set_data(self.episodes_df, variables_subset)
+        self.episodes_gap_plot_widget.set_data(self.episodes_df, variables_subset)
+        self.episodes_intake_plot_widget.set_data(self.episodes_df, variables_subset)
 
         self._update_tabs()
         self.ui.toolButtonExport.setEnabled(True)
@@ -209,43 +203,43 @@ class DrinkFeedDialog(QDialog):
 
     def _do_interval_analysis(
         self,
-        meal_details_settings: DrinkFeedDataSettings,
+        settings: DrinkFeedSettings,
         diets_dict: dict[int, float],
     ):
         tic = timeit.default_timer()
 
-        self.meal_intervals_df = process_drinkfeed_intervals(self.meal_details, meal_details_settings, diets_dict)
+        self.intervals_df = process_drinkfeed_intervals(self.drinkfeed_data, settings, diets_dict)
 
-        logger.info(f"Meal analysis complete: {timeit.default_timer() - tic} sec")
+        logger.info(f"DrinkFeed analysis complete: {timeit.default_timer() - tic} sec")
 
     def _interval_analysis_finished(self):
         variables_subset = self._get_variables_subset()
 
-        self.intervals_table_view.set_data(self.meal_intervals_df)
-        self.intervals_plot_widget.set_data(self.meal_intervals_df, variables_subset)
+        self.intervals_table_view.set_data(self.intervals_df)
+        self.intervals_plot_widget.set_data(self.intervals_df, variables_subset)
 
         self._update_tabs()
         self.ui.toolButtonExport.setEnabled(True)
         self.ui.toolButtonCalculate.setEnabled(True)
         self.toast.hide()
 
-    def _export_meal_data(self):
-        meal_details_settings = self.meal_details_settings_widget.get_meal_details_settings()
-        if meal_details_settings.sequential_analysis_type and self.meal_episodes_df is not None:
-            filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "MealEpisodes", "CSV Files (*.csv)")
+    def _export_data(self):
+        settings = self.drinkfeed_settings_widget.get_drinkfeed_settings()
+        if settings.sequential_analysis_type and self.episodes_df is not None:
+            filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "DrinkFeedEpisodes", "CSV Files (*.csv)")
             if filename:
-                self.meal_episodes_df.to_csv(filename, sep=";", index=False)
-        elif self.meal_intervals_df is not None:
-            filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "MealIntervals", "CSV Files (*.csv)")
+                self.episodes_df.to_csv(filename, sep=";", index=False)
+        elif self.intervals_df is not None:
+            filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "DrinkFeedIntervals", "CSV Files (*.csv)")
             if filename:
-                self.meal_intervals_df.to_csv(filename, sep=";", index=False)
+                self.intervals_df.to_csv(filename, sep=";", index=False)
 
     def hideEvent(self, event: QCloseEvent) -> None:
         settings = QSettings()
         settings.setValue("DrinkFeedDialog/Geometry", self.saveGeometry())
 
-        meal_details_settings = self.meal_details_settings_widget.get_meal_details_settings()
-        settings.setValue("DrinkFeedSettings", meal_details_settings)
+        drinkfeed_settings = self.drinkfeed_settings_widget.get_drinkfeed_settings()
+        settings.setValue("DrinkFeedSettings", drinkfeed_settings)
 
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Escape:

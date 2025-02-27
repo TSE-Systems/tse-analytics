@@ -1,13 +1,13 @@
 import pandas as pd
 
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_data import DrinkFeedData
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.drinkfeed_data_settings import DrinkFeedDataSettings
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.drinkfeed_settings import DrinkFeedSettings
 
 default_columns = ["DateTime", "Animal", "Box"]
 
 
 def process_drinkfeed_intervals(
-    drinkfeed_data: DrinkFeedData, drinkfeed_data_settings: DrinkFeedDataSettings, diets_dict: dict[int, float]
+    drinkfeed_data: DrinkFeedData, drinkfeed_data_settings: DrinkFeedSettings, diets_dict: dict[int, float]
 ):
     box_to_animal_map = {}
     for animal in drinkfeed_data.dataset.animals.values():

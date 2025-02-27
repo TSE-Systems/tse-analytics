@@ -27,9 +27,9 @@ from tse_analytics.modules.intellimaze.submodules.consumption_scale.views.consum
 from tse_analytics.modules.intellimaze.submodules.running_wheel.views.running_wheel_dialog import RunningWheelDialog
 from tse_analytics.modules.phenomaster.submodules.actimot.models.actimot_tree_item import ActimotTreeItem
 from tse_analytics.modules.phenomaster.submodules.actimot.views.actimot_dialog import ActimotDialog
-from tse_analytics.modules.phenomaster.submodules.calo.models.calo_data_tree_item import CaloDataTreeItem
+from tse_analytics.modules.phenomaster.submodules.calo.models.calo_tree_item import CaloDataTreeItem
 from tse_analytics.modules.phenomaster.submodules.calo.views.calo_dialog import CaloDialog
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.models.drinkfeed_data_tree_item import DrinkFeedDataTreeItem
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.models.drinkfeed_tree_item import DrinkFeedTreeItem
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_dialog import DrinkFeedDialog
 from tse_analytics.modules.phenomaster.submodules.trafficage.models.trafficage_tree_item import TraffiCageTreeItem
 from tse_analytics.modules.phenomaster.submodules.trafficage.views.trafficage_dialog import TraffiCageDialog
@@ -286,14 +286,14 @@ class DatasetsWidget(QWidget):
         if index.isValid():
             item = index.model().getItem(index)
             if isinstance(item, CaloDataTreeItem):
-                dialog = CaloDialog(item.calo_details, self)
+                dialog = CaloDialog(item.calo_data, self)
                 # TODO: check other cases!!
                 dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
                 result = dialog.exec()
                 if result == QDialog.DialogCode.Accepted:
-                    dataset = item.calo_details.dataset
+                    dataset = item.calo_data.dataset
                     dataset.append_fitting_results(dialog.fitting_results)
-            elif isinstance(item, DrinkFeedDataTreeItem):
+            elif isinstance(item, DrinkFeedTreeItem):
                 dialog = DrinkFeedDialog(item.drinkfeed_data, self)
                 # TODO: check other cases!!
                 dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)

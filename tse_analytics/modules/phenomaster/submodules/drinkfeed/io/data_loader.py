@@ -153,7 +153,7 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     if feed_present:
         _add_cumulative_columns(new_df, "Feed", variables)
 
-    # Calo Details sampling interval
+    # Sampling interval
     sampling_interval = new_df.iloc[1].at["DateTime"] - new_df.iloc[0].at["DateTime"]
 
     drinkfeed_data = DrinkFeedData(

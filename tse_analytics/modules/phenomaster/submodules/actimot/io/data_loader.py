@@ -96,7 +96,7 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
         "Animal": "category",
     })
 
-    # Calo Details sampling interval
+    # Sampling interval
     sampling_interval = new_df.iloc[1].at["DateTime"] - new_df.iloc[0].at["DateTime"]
 
     variables: dict[str, Variable] = {}

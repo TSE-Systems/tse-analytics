@@ -33,7 +33,7 @@ from tse_analytics.modules.phenomaster.submodules.actimot.views.actimot_trajecto
 
 
 class ActimotDialog(QDialog):
-    def __init__(self, actimot_details: ActimotData, parent: QWidget | None = None):
+    def __init__(self, actimot_data: ActimotData, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.ui = Ui_ActimotDialog()
@@ -42,7 +42,7 @@ class ActimotDialog(QDialog):
         settings = QSettings()
         self.restoreGeometry(settings.value("ActimotDialog/Geometry"))
 
-        self.actimot_details = actimot_details
+        self.actimot_data = actimot_data
 
         self.actimot_table_view = ActimotTableView(self)
         self.ui.tabWidget.addTab(self.actimot_table_view, "Events")
@@ -68,13 +68,13 @@ class ActimotDialog(QDialog):
         self.actimot_settings_widget = ActimotSettingsWidget(self)
         try:
             actimot_settings = settings.value("ActimotSettings", ActimotSettings.get_default())
-            self.actimot_settings_widget.set_data(self.actimot_details.dataset, actimot_settings)
+            self.actimot_settings_widget.set_data(self.actimot_data.dataset, actimot_settings)
         except Exception:
             actimot_settings = ActimotSettings.get_default()
-            self.actimot_settings_widget.set_data(self.actimot_details.dataset, actimot_settings)
+            self.actimot_settings_widget.set_data(self.actimot_data.dataset, actimot_settings)
 
         self.actimot_box_selector = ActimotBoxSelector(self._select_box, self.actimot_settings_widget, self)
-        self.actimot_box_selector.set_data(actimot_details.dataset)
+        self.actimot_box_selector.set_data(actimot_data.dataset)
 
         self.ui.toolBox.removeItem(0)
         self.ui.toolBox.addItem(self.actimot_box_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Boxes")
@@ -85,7 +85,7 @@ class ActimotDialog(QDialog):
     def _select_box(self, selected_box: ActimotAnimalItem) -> None:
         self.ui.toolButtonExport.setEnabled(False)
 
-        self.df = self.actimot_details.raw_df[self.actimot_details.raw_df["Box"] == selected_box.box]
+        self.df = self.actimot_data.raw_df[self.actimot_data.raw_df["Box"] == selected_box.box]
 
         self.actimot_table_view.set_data(self.df)
         self.actimot_frames_widget.set_data(self.df)
@@ -133,7 +133,7 @@ class ActimotDialog(QDialog):
             df, trj_df = result
 
             # Add custom variables
-            self.actimot_details.variables["x"] = Variable(
+            self.actimot_data.variables["x"] = Variable(
                 "x",
                 "cm",
                 "Centroid X",
@@ -142,7 +142,7 @@ class ActimotDialog(QDialog):
                 False,
             )
 
-            self.actimot_details.variables["y"] = Variable(
+            self.actimot_data.variables["y"] = Variable(
                 "y",
                 "cm",
                 "Centroid Y",
@@ -151,7 +151,7 @@ class ActimotDialog(QDialog):
                 False,
             )
 
-            self.actimot_details.variables["displacement"] = Variable(
+            self.actimot_data.variables["displacement"] = Variable(
                 "displacement",
                 "cm",
                 "Displacement",
@@ -160,7 +160,7 @@ class ActimotDialog(QDialog):
                 False,
             )
 
-            self.actimot_details.variables["speed"] = Variable(
+            self.actimot_data.variables["speed"] = Variable(
                 "speed",
                 "cm/s",
                 "Speed",
@@ -169,7 +169,7 @@ class ActimotDialog(QDialog):
                 False,
             )
 
-            self.actimot_details.variables["acceleration"] = Variable(
+            self.actimot_data.variables["acceleration"] = Variable(
                 "acceleration",
                 "cm/s²",
                 "Acceleration",
@@ -180,7 +180,7 @@ class ActimotDialog(QDialog):
 
             self.actimot_table_view.set_data(df)
 
-            self.actimot_plot_widget.set_variables(self.actimot_details.variables)
+            self.actimot_plot_widget.set_variables(self.actimot_data.variables)
             self.actimot_plot_widget.set_data(df)
 
             self.actimot_trajectory_plot_widget.set_data(trj_df)

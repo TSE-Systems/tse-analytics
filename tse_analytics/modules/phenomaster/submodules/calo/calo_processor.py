@@ -13,22 +13,22 @@ from tse_analytics.modules.phenomaster.submodules.calo.fitting_params import Fit
 
 
 def process_box(params: FittingParams) -> CaloFittingResult:
-    # Calo Details Sample time [sec]
-    sample_time = params.details_df.iloc[1].at["DateTime"] - params.details_df.iloc[0].at["DateTime"]
+    # Calo Sample time [sec]
+    sample_time = params.box_df.iloc[1].at["DateTime"] - params.box_df.iloc[0].at["DateTime"]
 
-    bin_numbers = sorted(params.details_df["Bin"].unique().tolist())
-    ref_bin_numbers = sorted(params.ref_details_df["Bin"].unique().tolist())
+    bin_numbers = sorted(params.box_df["Bin"].unique().tolist())
+    ref_bin_numbers = sorted(params.ref_df["Bin"].unique().tolist())
 
     # if len(ref_bin_numbers) > len(bin_numbers):
     #     print(ref_bin_numbers[-1])
     #     df_ref_box = df_ref_box.loc[df_ref_box["Bin"] != ref_bin_numbers[-1]]
 
     df_predicted_measurements = calculate_predicted_measurements(
-        params.details_df, sample_time, params.calo_data_settings, False
+        params.box_df, sample_time, params.calo_settings, False
     )
 
     df_ref_predicted_measurements = calculate_predicted_measurements(
-        params.ref_details_df, sample_time, params.calo_data_settings, True
+        params.ref_df, sample_time, params.calo_settings, True
     )
 
     predicted_rer = []
@@ -44,7 +44,7 @@ def process_box(params: FittingParams) -> CaloFittingResult:
         o2 = bin_data.iloc[0]["O2"]
         co2 = bin_data.iloc[0]["CO2"]
 
-        rer, vo2, vco2, h = calculate_rer(ref_o2, o2, ref_co2, co2, params.calo_data_settings.flow)
+        rer, vo2, vco2, h = calculate_rer(ref_o2, o2, ref_co2, co2, params.calo_settings.flow)
 
         predicted_rer.append(rer)
         predicted_vo2.append(vo2)

@@ -50,7 +50,7 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     )
     raw_df.drop(columns=["Date", "Time"], inplace=True)
 
-    # Calo Details sampling interval
+    # Calo sampling interval
     sampling_interval = raw_df.iloc[1].at["DateTime"] - raw_df.iloc[0].at["DateTime"]
 
     variables: dict[str, Variable] = {}
