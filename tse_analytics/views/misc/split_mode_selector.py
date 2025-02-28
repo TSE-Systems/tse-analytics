@@ -31,7 +31,7 @@ class SplitModeSelector(QWidget):
         self.setLayout(layout)
 
     def _split_mode_changed(self, mode: str) -> None:
-        self.factorSelector.setVisible(mode == "Split by factor")
+        self.factorSelector.setVisible(mode == "By factor")
         self._call_callback()
 
     def _factor_name_changed(self, factor_name: str) -> None:

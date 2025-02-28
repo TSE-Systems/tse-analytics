@@ -1,51 +1,69 @@
 import pingouin as pg
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtWidgets import QWidget, QToolBar, QVBoxLayout
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
-from PySide6.QtCore import QSize
-from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.helper import get_html_image
+from tse_analytics.core.helper import get_html_image, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.views.analysis.normality.normality_widget_ui import Ui_NormalityWidget
+from tse_analytics.views.misc.MplCanvas import MplCanvas
+from tse_analytics.views.misc.split_mode_selector import SplitModeSelector
+from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
 class NormalityWidget(QWidget):
     def __init__(self, dataset: Dataset, parent: QWidget | None = None):
         super().__init__(parent)
-        self.ui = Ui_NormalityWidget()
-        self.ui.setupUi(self)
+
+        self.layout = QVBoxLayout(self)
+        self.layout.setSpacing(0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
 
         self.title = "Normality"
 
-        self.ui.pushButtonUpdate.clicked.connect(self._update)
-        self.ui.pushButtonAddReport.clicked.connect(self._add_report)
-
-        self.ui.radioButtonSplitTotal.toggled.connect(
-            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
-        )
-        self.ui.radioButtonSplitByAnimal.toggled.connect(
-            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
-        )
-        self.ui.radioButtonSplitByFactor.toggled.connect(
-            lambda toggled: self.ui.factorSelector.setEnabled(True) if toggled else None
-        )
-        self.ui.radioButtonSplitByRun.toggled.connect(
-            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
-        )
-
-        plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
-        plot_toolbar.setIconSize(QSize(16, 16))
-        self.ui.widgetSettings.layout().addWidget(plot_toolbar)
-
         self.dataset = dataset
-        self.ui.variableSelector.set_data(self.dataset.variables)
-        self.ui.factorSelector.set_data(self.dataset.factors, add_empty_item=False)
+        self.split_mode = SplitMode.ANIMAL
+        self.selected_factor_name = ""
+
+        # Setup toolbar
+        toolbar = QToolBar(
+            "Data Plot Toolbar",
+            iconSize=QSize(16, 16),
+            toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
+        )
+
+        toolbar.addAction("Update").triggered.connect(self._update)
+        toolbar.addSeparator()
+
+        self.variableSelector = VariableSelector(toolbar)
+        self.variableSelector.set_data(self.dataset.variables)
+        toolbar.addWidget(self.variableSelector)
+
+        split_mode_selector = SplitModeSelector(toolbar, self.dataset.factors, self._split_mode_callback)
+        toolbar.addWidget(split_mode_selector)
+
+        # Insert toolbar to the widget
+        self.layout.addWidget(toolbar)
+
+        self.canvas = MplCanvas(self)
+        self.layout.addWidget(self.canvas)
+
+        plot_toolbar = NavigationToolbar2QT(self.canvas, self)
+        plot_toolbar.setIconSize(QSize(16, 16))
+        toolbar.addWidget(plot_toolbar)
+
+        toolbar.addWidget(get_h_spacer_widget(toolbar))
+        toolbar.addAction("Add to Report").triggered.connect(self._add_report)
+
+    def _split_mode_callback(self, mode: SplitMode, factor_name: str | None):
+        self.split_mode = mode
+        self.selected_factor_name = factor_name
 
     def _update(self):
-        if self.ui.radioButtonSplitByFactor.isChecked() and self.ui.factorSelector.currentText() == "":
+        if self.split_mode == SplitMode.FACTOR and self.selected_factor_name == "":
             make_toast(
                 self,
                 self.title,
@@ -59,39 +77,36 @@ class NormalityWidget(QWidget):
         self._update_normality_plot()
 
     def _update_normality_plot(self):
-        variable = self.ui.variableSelector.get_selected_variable()
-        selected_factor_name = self.ui.factorSelector.currentText()
+        variable = self.variableSelector.get_selected_variable()
 
-        split_mode = SplitMode.TOTAL
-        by = None
-        if self.ui.radioButtonSplitByAnimal.isChecked():
-            split_mode = SplitMode.ANIMAL
-            by = "Animal"
-        elif self.ui.radioButtonSplitByRun.isChecked():
-            split_mode = SplitMode.RUN
-            by = "Run"
-        elif self.ui.radioButtonSplitByFactor.isChecked():
-            split_mode = SplitMode.FACTOR
-            by = selected_factor_name
+        match self.split_mode:
+            case SplitMode.ANIMAL:
+                by = "Animal"
+            case SplitMode.RUN:
+                by = "Run"
+            case SplitMode.FACTOR:
+                by = self.selected_factor_name
+            case _:
+                by = None
 
         df = self.dataset.get_current_df(
             variables={variable.name: variable},
-            split_mode=split_mode,
-            selected_factor_name=selected_factor_name,
+            split_mode=self.split_mode,
+            selected_factor_name=self.selected_factor_name,
             dropna=True,
         )
 
-        if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:
+        if self.split_mode != SplitMode.TOTAL and self.split_mode != SplitMode.RUN:
             df[by] = df[by].cat.remove_unused_categories()
 
-        self.ui.canvas.clear(False)
+        self.canvas.clear(False)
 
-        match split_mode:
+        match self.split_mode:
             case SplitMode.ANIMAL:
                 animals = df["Animal"].unique()
                 nrows, ncols = self._get_plot_layout(len(animals))
                 for index, animal in enumerate(animals):
-                    ax = self.ui.canvas.figure.add_subplot(nrows, ncols, index + 1)
+                    ax = self.canvas.figure.add_subplot(nrows, ncols, index + 1)
                     pg.qqplot(
                         df[df["Animal"] == animal][variable.name],
                         dist="norm",
@@ -100,15 +115,15 @@ class NormalityWidget(QWidget):
                     )
                     ax.set_title(f"Animal: {animal}")
             case SplitMode.FACTOR:
-                groups = df[selected_factor_name].unique()
+                groups = df[self.selected_factor_name].unique()
                 nrows, ncols = self._get_plot_layout(len(groups))
                 for index, group in enumerate(groups):
                     # TODO: NaN check
                     if group != group:
                         continue
-                    ax = self.ui.canvas.figure.add_subplot(nrows, ncols, index + 1)
+                    ax = self.canvas.figure.add_subplot(nrows, ncols, index + 1)
                     pg.qqplot(
-                        df[df[selected_factor_name] == group][variable.name],
+                        df[df[self.selected_factor_name] == group][variable.name],
                         dist="norm",
                         marker=".",
                         ax=ax,
@@ -118,7 +133,7 @@ class NormalityWidget(QWidget):
                 runs = df["Run"].unique()
                 nrows, ncols = self._get_plot_layout(len(runs))
                 for index, run in enumerate(runs):
-                    ax = self.ui.canvas.figure.add_subplot(nrows, ncols, index + 1)
+                    ax = self.canvas.figure.add_subplot(nrows, ncols, index + 1)
                     pg.qqplot(
                         df[df["Run"] == run][variable.name],
                         dist="norm",
@@ -127,7 +142,7 @@ class NormalityWidget(QWidget):
                     )
                     ax.set_title(f"Run: {run}")
             case SplitMode.TOTAL:
-                ax = self.ui.canvas.figure.add_subplot(1, 1, 1)
+                ax = self.canvas.figure.add_subplot(1, 1, 1)
                 pg.qqplot(
                     df[variable.name],
                     dist="norm",
@@ -136,8 +151,8 @@ class NormalityWidget(QWidget):
                 )
                 ax.set_title("Total")
 
-        self.ui.canvas.figure.tight_layout()
-        self.ui.canvas.draw()
+        self.canvas.figure.tight_layout()
+        self.canvas.draw()
 
     def _get_plot_layout(self, number_of_elements: int):
         if number_of_elements == 1:
@@ -150,5 +165,5 @@ class NormalityWidget(QWidget):
             return round(number_of_elements / 3) + 1, 3
 
     def _add_report(self):
-        self.dataset.report += get_html_image(self.ui.canvas.figure)
+        self.dataset.report += get_html_image(self.canvas.figure)
         messaging.broadcast(messaging.AddToReportMessage(self, self.dataset))

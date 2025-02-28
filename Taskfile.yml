@@ -28,9 +28,6 @@ tasks:
       - pyside6-uic tse_analytics/views/settings/time_cycles_settings_widget.ui -o tse_analytics/views/settings/time_cycles_settings_widget_ui.py
       - pyside6-uic tse_analytics/views/settings/time_phases_settings_widget.ui -o tse_analytics/views/settings/time_phases_settings_widget_ui.py
       - pyside6-uic tse_analytics/views/settings/binning_settings_widget.ui -o tse_analytics/views/settings/binning_settings_widget_ui.py
-      - pyside6-uic tse_analytics/views/analysis/histogram/histogram_widget.ui -o tse_analytics/views/analysis/histogram/histogram_widget_ui.py
-      - pyside6-uic tse_analytics/views/analysis/distribution/distribution_widget.ui -o tse_analytics/views/analysis/distribution/distribution_widget_ui.py
-      - pyside6-uic tse_analytics/views/analysis/normality/normality_widget.ui -o tse_analytics/views/analysis/normality/normality_widget_ui.py
       - pyside6-uic tse_analytics/views/analysis/correlation/correlation_widget.ui -o tse_analytics/views/analysis/correlation/correlation_widget_ui.py
       - pyside6-uic tse_analytics/views/analysis/regression/regression_widget.ui -o tse_analytics/views/analysis/regression/regression_widget_ui.py
       - pyside6-uic tse_analytics/views/analysis/matrixplot/matrixplot_widget.ui -o tse_analytics/views/analysis/matrixplot/matrixplot_widget_ui.py
