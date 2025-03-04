@@ -1,60 +1,87 @@
 import pandas as pd
 import seaborn as sns
+from PySide6.QtGui import QIcon
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
-from PySide6.QtCore import QSize
-from PySide6.QtWidgets import QAbstractItemView, QWidget
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtWidgets import QAbstractItemView, QWidget, QVBoxLayout, QToolBar, QAbstractScrollArea
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import SplitMode, Variable
-from tse_analytics.core.helper import get_html_image
+from tse_analytics.core.helper import get_html_image, get_widget_tool_button, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
-from tse_analytics.views.analysis.pca.pca_widget_ui import Ui_PcaWidget
+from tse_analytics.views.misc.MplCanvas import MplCanvas
+from tse_analytics.views.misc.split_mode_selector import SplitModeSelector
+from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 
 
 class PcaWidget(QWidget):
     def __init__(self, dataset: Dataset, parent: QWidget | None = None):
         super().__init__(parent)
-        self.ui = Ui_PcaWidget()
-        self.ui.setupUi(self)
+
+        self.layout = QVBoxLayout(self)
+        self.layout.setSpacing(0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
 
         self.title = "PCA"
 
-        self.ui.tableWidgetVariables.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
-
-        self.ui.pushButtonUpdate.clicked.connect(self._update)
-        self.ui.pushButtonAddReport.clicked.connect(self._add_report)
-
-        self.ui.radioButtonSplitTotal.toggled.connect(
-            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
-        )
-        self.ui.radioButtonSplitByAnimal.toggled.connect(
-            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
-        )
-        self.ui.radioButtonSplitByFactor.toggled.connect(
-            lambda toggled: self.ui.factorSelector.setEnabled(True) if toggled else None
-        )
-        self.ui.radioButtonSplitByRun.toggled.connect(
-            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
-        )
-
-        plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
-        plot_toolbar.setIconSize(QSize(16, 16))
-        self.ui.widgetSettings.layout().addWidget(plot_toolbar)
-
         self.dataset = dataset
-        self.ui.tableWidgetVariables.set_data(self.dataset.variables)
-        self.ui.factorSelector.set_data(self.dataset.factors, add_empty_item=False)
+        self.split_mode = SplitMode.ANIMAL
+        self.selected_factor_name = ""
+
+        # Setup toolbar
+        toolbar = QToolBar(
+            "Data Plot Toolbar",
+            iconSize=QSize(16, 16),
+            toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
+        )
+
+        toolbar.addAction("Update").triggered.connect(self._update)
+        toolbar.addSeparator()
+
+        self.variables_table_widget = VariablesTableWidget()
+        self.variables_table_widget.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
+        self.variables_table_widget.set_data(self.dataset.variables)
+        self.variables_table_widget.setMaximumHeight(400)
+        self.variables_table_widget.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
+
+        variables_button = get_widget_tool_button(
+            toolbar,
+            self.variables_table_widget,
+            "Variables",
+            QIcon(":/icons/variables.png"),
+        )
+        toolbar.addWidget(variables_button)
+
+        split_mode_selector = SplitModeSelector(toolbar, self.dataset.factors, self._split_mode_callback)
+        toolbar.addWidget(split_mode_selector)
+
+        # Insert toolbar to the widget
+        self.layout.addWidget(toolbar)
+
+        self.canvas = MplCanvas(self)
+        self.layout.addWidget(self.canvas)
+
+        plot_toolbar = NavigationToolbar2QT(self.canvas, self)
+        plot_toolbar.setIconSize(QSize(16, 16))
+        toolbar.addWidget(plot_toolbar)
+
+        toolbar.addWidget(get_h_spacer_widget(toolbar))
+        toolbar.addAction("Add to Report").triggered.connect(self._add_report)
 
         self.toast = None
 
+    def _split_mode_callback(self, mode: SplitMode, factor_name: str | None):
+        self.split_mode = mode
+        self.selected_factor_name = factor_name
+
     def _update(self):
-        selected_variables = self.ui.tableWidgetVariables.get_selected_variables_dict()
+        selected_variables = self.variables_table_widget.get_selected_variables_dict()
         if len(selected_variables) < 3:
             make_toast(
                 self,
@@ -66,21 +93,17 @@ class PcaWidget(QWidget):
             ).show()
             return
 
-        selected_factor_name = self.ui.factorSelector.currentText()
+        match self.split_mode:
+            case SplitMode.ANIMAL:
+                by = "Animal"
+            case SplitMode.RUN:
+                by = "Run"
+            case SplitMode.FACTOR:
+                by = self.selected_factor_name
+            case _:
+                by = None
 
-        split_mode = SplitMode.TOTAL
-        by = None
-        if self.ui.radioButtonSplitByAnimal.isChecked():
-            split_mode = SplitMode.ANIMAL
-            by = "Animal"
-        elif self.ui.radioButtonSplitByRun.isChecked():
-            split_mode = SplitMode.RUN
-            by = "Run"
-        elif self.ui.radioButtonSplitByFactor.isChecked():
-            split_mode = SplitMode.FACTOR
-            by = selected_factor_name
-
-        if split_mode == SplitMode.FACTOR and selected_factor_name == "":
+        if self.split_mode == SplitMode.FACTOR and self.selected_factor_name == "":
             make_toast(
                 self,
                 self.title,
@@ -91,13 +114,13 @@ class PcaWidget(QWidget):
             ).show()
             return
 
-        self.ui.pushButtonUpdate.setEnabled(False)
-        self.ui.pushButtonAddReport.setEnabled(False)
+        # self.ui.pushButtonUpdate.setEnabled(False)
+        # self.ui.pushButtonAddReport.setEnabled(False)
 
         self.toast = make_toast(self, self.title, "Processing...")
         self.toast.show()
 
-        worker = Worker(self._calculate, selected_variables, split_mode, selected_factor_name, by)
+        worker = Worker(self._calculate, selected_variables, self.split_mode, self.selected_factor_name, by)
         worker.signals.result.connect(self._result)
         worker.signals.finished.connect(self._finished)
         TaskManager.start_task(worker)
@@ -134,8 +157,8 @@ class PcaWidget(QWidget):
         return result_df, title, by
 
     def _result(self, result: tuple):
-        self.ui.canvas.clear(False)
-        ax = self.ui.canvas.figure.add_subplot(111)
+        self.canvas.clear(False)
+        ax = self.canvas.figure.add_subplot(111)
 
         df, title, by = result
 
@@ -149,14 +172,14 @@ class PcaWidget(QWidget):
         )
         ax.set_title(title)
 
-        self.ui.canvas.figure.tight_layout()
-        self.ui.canvas.draw()
+        self.canvas.figure.tight_layout()
+        self.canvas.draw()
 
     def _finished(self):
         self.toast.hide()
-        self.ui.pushButtonUpdate.setEnabled(True)
-        self.ui.pushButtonAddReport.setEnabled(True)
+        # self.ui.pushButtonUpdate.setEnabled(True)
+        # self.ui.pushButtonAddReport.setEnabled(True)
 
     def _add_report(self):
-        self.dataset.report += get_html_image(self.ui.canvas.figure)
+        self.dataset.report += get_html_image(self.canvas.figure)
         messaging.broadcast(messaging.AddToReportMessage(self, self.dataset))

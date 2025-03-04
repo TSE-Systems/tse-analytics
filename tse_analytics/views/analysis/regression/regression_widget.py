@@ -1,71 +1,100 @@
 import pingouin as pg
 import seaborn as sns
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtWidgets import QWidget, QToolBar, QVBoxLayout, QSplitter, QTextEdit, QWidgetAction, QLabel
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from pyqttoast import ToastPreset
-from PySide6.QtCore import QSize
-from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.helper import get_html_image
+from tse_analytics.core.helper import get_html_image, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.styles.css import style_descriptive_table
-from tse_analytics.views.analysis.regression.regression_widget_ui import Ui_RegressionWidget
+from tse_analytics.views.misc.MplCanvas import MplCanvas
+from tse_analytics.views.misc.split_mode_selector import SplitModeSelector
+from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
 class RegressionWidget(QWidget):
     def __init__(self, dataset: Dataset, parent: QWidget | None = None):
         super().__init__(parent)
-        self.ui = Ui_RegressionWidget()
-        self.ui.setupUi(self)
+
+        self.layout = QVBoxLayout(self)
+        self.layout.setSpacing(0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
 
         self.title = "Regression"
 
-        self.ui.pushButtonUpdate.clicked.connect(self._update)
-        self.ui.pushButtonAddReport.clicked.connect(self._add_report)
-
-        self.ui.radioButtonSplitTotal.toggled.connect(
-            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
-        )
-        self.ui.radioButtonSplitByAnimal.toggled.connect(
-            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
-        )
-        self.ui.radioButtonSplitByFactor.toggled.connect(
-            lambda toggled: self.ui.factorSelector.setEnabled(True) if toggled else None
-        )
-        self.ui.radioButtonSplitByRun.toggled.connect(
-            lambda toggled: self.ui.factorSelector.setEnabled(False) if toggled else None
-        )
-
-        self.plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
-        self.plot_toolbar.setIconSize(QSize(16, 16))
-        self.ui.widgetSettings.layout().addWidget(self.plot_toolbar)
-
-        self.ui.textEdit.document().setDefaultStyleSheet(style_descriptive_table)
-
         self.dataset = dataset
-        self.ui.variableSelectorCovariate.set_data(self.dataset.variables)
-        self.ui.variableSelectorResponse.set_data(self.dataset.variables)
-        self.ui.factorSelector.set_data(self.dataset.factors, add_empty_item=False)
+        self.split_mode = SplitMode.ANIMAL
+        self.selected_factor_name = ""
+
+        # Setup toolbar
+        self.toolbar = QToolBar(
+            "Data Plot Toolbar",
+            iconSize=QSize(16, 16),
+            toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
+        )
+
+        self.toolbar.addAction("Update").triggered.connect(self._update)
+        self.toolbar.addSeparator()
+
+        self.toolbar.addWidget(QLabel("Covariate:"))
+        self.covariateVariableSelector = VariableSelector(self.toolbar)
+        self.covariateVariableSelector.set_data(self.dataset.variables)
+        self.toolbar.addWidget(self.covariateVariableSelector)
+
+        self.toolbar.addWidget(QLabel("Response:"))
+        self.responseVariableSelector = VariableSelector(self.toolbar)
+        self.responseVariableSelector.set_data(self.dataset.variables)
+        self.toolbar.addWidget(self.responseVariableSelector)
+
+        split_mode_selector = SplitModeSelector(self.toolbar, self.dataset.factors, self._split_mode_callback)
+        self.toolbar.addWidget(split_mode_selector)
+
+        # Insert toolbar to the widget
+        self.layout.addWidget(self.toolbar)
+
+        self.splitter = QSplitter(
+            self,
+            orientation=Qt.Orientation.Vertical,
+        )
+
+        self.layout.addWidget(self.splitter)
+
+        self.canvas = MplCanvas(self.splitter)
+        self.splitter.addWidget(self.canvas)
+
+        self.textEdit = QTextEdit(
+            self.splitter,
+            undoRedoEnabled=False,
+            readOnly=True,
+        )
+        self.textEdit.document().setDefaultStyleSheet(style_descriptive_table)
+        self.splitter.addWidget(self.textEdit)
+
+        self.spacer_action = QWidgetAction(self.toolbar)
+        self.spacer_action.setDefaultWidget(get_h_spacer_widget(self.toolbar))
+        self.toolbar.addAction(self.spacer_action)
+
+        self.toolbar.addAction("Add to Report").triggered.connect(self._add_report)
+        self._add_plot_toolbar()
+
+    def _split_mode_callback(self, mode: SplitMode, factor_name: str | None):
+        self.split_mode = mode
+        self.selected_factor_name = factor_name
+
+    def _add_plot_toolbar(self):
+        self.plot_toolbar_action = QWidgetAction(self.toolbar)
+        plot_toolbar = NavigationToolbar2QT(self.canvas, self)
+        plot_toolbar.setIconSize(QSize(16, 16))
+        self.plot_toolbar_action.setDefaultWidget(plot_toolbar)
+        self.toolbar.insertAction(self.spacer_action, self.plot_toolbar_action)
 
     def _update(self):
-        selected_factor_name = self.ui.factorSelector.currentText()
-
-        split_mode = SplitMode.TOTAL
-        by = None
-        if self.ui.radioButtonSplitByAnimal.isChecked():
-            split_mode = SplitMode.ANIMAL
-            by = "Animal"
-        elif self.ui.radioButtonSplitByRun.isChecked():
-            split_mode = SplitMode.RUN
-            by = "Run"
-        elif self.ui.radioButtonSplitByFactor.isChecked():
-            split_mode = SplitMode.FACTOR
-            by = selected_factor_name
-
-        if split_mode == SplitMode.FACTOR and selected_factor_name == "":
+        if self.split_mode == SplitMode.FACTOR and self.selected_factor_name == "":
             make_toast(
                 self,
                 self.title,
@@ -76,18 +105,29 @@ class RegressionWidget(QWidget):
             ).show()
             return
 
-        covariate = self.ui.variableSelectorCovariate.get_selected_variable()
-        response = self.ui.variableSelectorResponse.get_selected_variable()
+        match self.split_mode:
+            case SplitMode.ANIMAL:
+                by = "Animal"
+            case SplitMode.RUN:
+                by = "Run"
+            case SplitMode.FACTOR:
+                by = self.selected_factor_name
+            case _:
+                by = None
+
+        covariate = self.covariateVariableSelector.get_selected_variable()
+        response = self.responseVariableSelector.get_selected_variable()
 
         variables = (
             {response.name: response}
             if response.name == covariate.name
             else {response.name: response, covariate.name: covariate}
         )
+
         df = self.dataset.get_current_df(
             variables=variables,
-            split_mode=split_mode,
-            selected_factor_name=selected_factor_name,
+            split_mode=self.split_mode,
+            selected_factor_name=self.selected_factor_name,
             dropna=False,
         )
 
@@ -99,20 +139,17 @@ class RegressionWidget(QWidget):
             robust=False,
             markers=".",
         )
-        canvas = FigureCanvasQTAgg(facet_grid.figure)
+        self.canvas = FigureCanvasQTAgg(facet_grid.figure)
 
-        canvas.updateGeometry()
-        canvas.draw()
-        self.ui.splitterVertical.replaceWidget(0, canvas)
+        self.canvas.updateGeometry()
+        self.canvas.draw()
+        self.splitter.replaceWidget(0, self.canvas)
 
         # Assign canvas to PlotToolbar
-        new_toolbar = NavigationToolbar2QT(canvas, self)
-        new_toolbar.setIconSize(QSize(16, 16))
-        self.ui.widgetSettings.layout().replaceWidget(self.plot_toolbar, new_toolbar)
-        self.plot_toolbar.deleteLater()
-        self.plot_toolbar = new_toolbar
+        self.toolbar.removeAction(self.plot_toolbar_action)
+        self._add_plot_toolbar()
 
-        match split_mode:
+        match self.split_mode:
             case SplitMode.ANIMAL:
                 output = ""
                 for animal in df["Animal"].unique().tolist():
@@ -124,8 +161,8 @@ class RegressionWidget(QWidget):
                     )
             case SplitMode.FACTOR:
                 output = ""
-                for group in df[selected_factor_name].unique().tolist():
-                    data = df[df[selected_factor_name] == group]
+                for group in df[self.selected_factor_name].unique().tolist():
+                    data = df[df[self.selected_factor_name] == group]
                     output = (
                         output
                         + f"<h3>Group: {group}</h3>"
@@ -151,10 +188,10 @@ class RegressionWidget(QWidget):
         html = html_template.format(
             output=output,
         )
-        self.ui.textEdit.document().setHtml(html)
+        self.textEdit.document().setHtml(html)
 
     def _add_report(self):
-        html = get_html_image(self.plot_toolbar.canvas.figure)
-        html += self.ui.textEdit.toHtml()
+        html = get_html_image(self.canvas.figure)
+        html += self.textEdit.toHtml()
         self.dataset.report += html
         messaging.broadcast(messaging.AddToReportMessage(self, self.dataset))

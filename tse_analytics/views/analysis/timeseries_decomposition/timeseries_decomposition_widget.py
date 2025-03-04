@@ -1,54 +1,92 @@
 import pandas as pd
+from PySide6.QtGui import QIcon
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
-from PySide6.QtCore import QSize
-from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar
 from statsmodels.tsa.seasonal import MSTL, STL, seasonal_decompose
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Aggregation
-from tse_analytics.core.helper import get_html_image
+from tse_analytics.core.helper import get_html_image, get_h_spacer_widget, get_widget_tool_button
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.views.analysis.timeseries_decomposition.timeseries_decomposition_widget_ui import (
-    Ui_TimeseriesDecompositionWidget,
-)
+from tse_analytics.views.analysis.timeseries_decomposition.timeseries_decomposition_settings_widget_ui import \
+    Ui_TimeseriesDecompositionSettingsWidget
+from tse_analytics.views.misc.MplCanvas import MplCanvas
+from tse_analytics.views.misc.animal_selector import AnimalSelector
+from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
 class TimeseriesDecompositionWidget(QWidget):
     def __init__(self, dataset: Dataset, parent: QWidget | None = None):
         super().__init__(parent)
-        self.ui = Ui_TimeseriesDecompositionWidget()
-        self.ui.setupUi(self)
+
+        self.layout = QVBoxLayout(self)
+        self.layout.setSpacing(0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
 
         self.title = "Decomposition"
 
-        self.ui.pushButtonUpdate.clicked.connect(self._update)
-        self.ui.pushButtonAddReport.clicked.connect(self._add_report)
-
-        self.ui.radioButtonMethodNaive.toggled.connect(lambda toggled: self._set_options(True) if toggled else None)
-        self.ui.radioButtonMethodSTL.toggled.connect(lambda toggled: self._set_options(False) if toggled else None)
-        self.ui.radioButtonMethodMSTL.toggled.connect(lambda toggled: self._set_options(False) if toggled else None)
-
-        plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
-        plot_toolbar.setIconSize(QSize(16, 16))
-        self.ui.widgetSettings.layout().addWidget(plot_toolbar)
-
         self.dataset = dataset
+
+        # Setup toolbar
+        toolbar = QToolBar(
+            "Data Plot Toolbar",
+            iconSize=QSize(16, 16),
+            toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
+        )
+
+        toolbar.addAction("Update").triggered.connect(self._update)
+        toolbar.addSeparator()
+
+        self.variableSelector = VariableSelector(toolbar)
         filtered_variables = {
             key: value for (key, value) in dataset.variables.items() if value.aggregation == Aggregation.MEAN
         }
-        self.ui.animalSelector.set_data(dataset.animals)
-        self.ui.variableSelector.set_data(filtered_variables)
+        self.variableSelector.set_data(filtered_variables)
+        toolbar.addWidget(self.variableSelector)
+
+        self.animalSelector = AnimalSelector(toolbar)
+        self.animalSelector.set_data(self.dataset.animals)
+        toolbar.addWidget(self.animalSelector)
+
+        self.settings_widget = QWidget()
+        self.settings_widget_ui = Ui_TimeseriesDecompositionSettingsWidget()
+        self.settings_widget_ui.setupUi(self.settings_widget)
+        settings_button = get_widget_tool_button(
+            toolbar,
+            self.settings_widget,
+            "Settings",
+            QIcon(":/icons/icons8-settings-16.png"),
+        )
+        toolbar.addWidget(settings_button)
+
+        # Insert toolbar to the widget
+        self.layout.addWidget(toolbar)
+
+        self.canvas = MplCanvas(self)
+        self.layout.addWidget(self.canvas)
+
+        plot_toolbar = NavigationToolbar2QT(self.canvas, self)
+        plot_toolbar.setIconSize(QSize(16, 16))
+        toolbar.addWidget(plot_toolbar)
+
+        toolbar.addWidget(get_h_spacer_widget(toolbar))
+        toolbar.addAction("Add to Report").triggered.connect(self._add_report)
+
+        self.settings_widget_ui.radioButtonMethodNaive.toggled.connect(lambda toggled: self._set_options(True) if toggled else None)
+        self.settings_widget_ui.radioButtonMethodSTL.toggled.connect(lambda toggled: self._set_options(False) if toggled else None)
+        self.settings_widget_ui.radioButtonMethodMSTL.toggled.connect(lambda toggled: self._set_options(False) if toggled else None)
 
     def _set_options(
         self,
         show_model: bool,
     ):
-        if show_model and self.ui.radioButtonMethodNaive.isChecked():
-            self.ui.groupBoxModel.show()
+        if show_model and self.settings_widget_ui.radioButtonMethodNaive.isChecked():
+            self.settings_widget_ui.groupBoxModel.show()
         else:
-            self.ui.groupBoxModel.hide()
+            self.settings_widget_ui.groupBoxModel.hide()
 
     def _update(self):
         if self.dataset.binning_settings.apply:
@@ -62,11 +100,10 @@ class TimeseriesDecompositionWidget(QWidget):
             ).show()
             return
 
-        variable = self.ui.variableSelector.get_selected_variable()
+        variable = self.variableSelector.get_selected_variable()
+        animal = self.animalSelector.get_selected_animal()
 
-        animal = self.ui.animalSelector.get_selected_animal()
-
-        self.ui.canvas.clear(False)
+        self.canvas.clear(False)
 
         df = self.dataset.get_timeseries_df(
             animal=animal,
@@ -79,29 +116,29 @@ class TimeseriesDecompositionWidget(QWidget):
         var_name = variable.name
         df[var_name] = df[var_name].interpolate(limit_direction="both")
 
-        period = self.ui.periodSpinBox.value()
+        period = self.settings_widget_ui.periodSpinBox.value()
 
-        if self.ui.radioButtonMethodNaive.isChecked():
-            model = "additive" if self.ui.radioButtonModelAdditive.isChecked() else "multiplicative"
+        if self.settings_widget_ui.radioButtonMethodNaive.isChecked():
+            model = "additive" if self.settings_widget_ui.radioButtonModelAdditive.isChecked() else "multiplicative"
             result = seasonal_decompose(
                 df[var_name],
                 period=period,
                 model=model,
                 extrapolate_trend="freq",
             )
-        elif self.ui.radioButtonMethodSTL.isChecked():
+        elif self.settings_widget_ui.radioButtonMethodSTL.isChecked():
             result = STL(
                 endog=df[var_name],
                 period=period,
             ).fit()
-        elif self.ui.radioButtonMethodMSTL.isChecked():
+        elif self.settings_widget_ui.radioButtonMethodMSTL.isChecked():
             result = MSTL(
                 endog=df[var_name],
                 periods=period,
             ).fit()
 
-        axs = self.ui.canvas.figure.subplots(4, 1, sharex=True)
-        self.ui.canvas.figure.suptitle(f"Timeseries decomposition of {var_name} for animal {animal.id}")
+        axs = self.canvas.figure.subplots(4, 1, sharex=True)
+        self.canvas.figure.suptitle(f"Timeseries decomposition of {var_name} for animal {animal.id}")
 
         axs[0].plot(result.observed, label="Observed", lw=1)
         axs[0].set_ylabel(var_name)
@@ -122,9 +159,9 @@ class TimeseriesDecompositionWidget(QWidget):
         axs[3].plot(xlim, (0, 0), color="#000000", zorder=-3)
         axs[3].legend(loc="upper right")
 
-        self.ui.canvas.figure.tight_layout()
-        self.ui.canvas.draw()
+        self.canvas.figure.tight_layout()
+        self.canvas.draw()
 
     def _add_report(self):
-        self.dataset.report += get_html_image(self.ui.canvas.figure)
+        self.dataset.report += get_html_image(self.canvas.figure)
         messaging.broadcast(messaging.AddToReportMessage(self, self.dataset))
