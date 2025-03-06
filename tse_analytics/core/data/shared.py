@@ -39,7 +39,7 @@ class Animal:
 
 
 @dataclass
-class Group:
+class FactorLevel:
     name: str
     animal_ids: list[str] = field(default_factory=list)
 
@@ -47,7 +47,7 @@ class Group:
 @dataclass
 class Factor:
     name: str
-    groups: list[Group] = field(default_factory=list)
+    levels: list[FactorLevel] = field(default_factory=list)
 
 
 @dataclass

@@ -162,11 +162,11 @@ class RegressionWidget(QWidget):
                     )
             case SplitMode.FACTOR:
                 output = ""
-                for group in df[self.selected_factor_name].unique().tolist():
-                    data = df[df[self.selected_factor_name] == group]
+                for level in df[self.selected_factor_name].unique().tolist():
+                    data = df[df[self.selected_factor_name] == level]
                     output = (
                         output
-                        + f"<h3>Group: {group}</h3>"
+                        + f"<h3>Level: {level}</h3>"
                         + pg.linear_regression(data[covariate.name], data[response.name], remove_na=True).to_html()
                     )
             case SplitMode.RUN:

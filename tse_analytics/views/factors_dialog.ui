@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
+ <author>Anton Rau</author>
  <class>FactorsDialog</class>
  <widget class="QDialog" name="FactorsDialog">
   <property name="geometry">
@@ -46,36 +47,36 @@
       </widget>
      </item>
      <item>
-      <widget class="QGroupBox" name="groupBoxGroups">
+      <widget class="QGroupBox" name="groupBoxLevels">
        <property name="title">
-        <string>Groups</string>
+        <string>Levels</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QListWidget" name="listWidgetGroups"/>
+         <widget class="QListWidget" name="listWidgetLevels"/>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButtonAddGroup">
+         <widget class="QPushButton" name="pushButtonAddLevel">
           <property name="enabled">
            <bool>false</bool>
           </property>
           <property name="text">
-           <string>Add Group</string>
+           <string>Add Level</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButtonDeleteGroup">
+         <widget class="QPushButton" name="pushButtonDeleteLevel">
           <property name="enabled">
            <bool>false</bool>
           </property>
           <property name="text">
-           <string>Delete Group</string>
+           <string>Delete Level</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButtonExtractGroups">
+         <widget class="QPushButton" name="pushButtonExtractLevels">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -111,10 +112,10 @@
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
      </property>
     </widget>
    </item>

@@ -155,12 +155,12 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         factor_name = self._selected_factor.name
 
-        groups = self._selected_factor.groups
-        for i, group in enumerate(groups):
-            filtered_data = self._df[self._df[factor_name] == group.name]
+        levels = self._selected_factor.levels
+        for i, level in enumerate(levels):
+            filtered_data = self._df[self._df[factor_name] == level.name]
 
-            pen = pg.mkPen(color=(i, len(groups)), width=1)
-            tmp_min, tmp_max = self._plot_item(filtered_data, f"{group.name}", pen)
+            pen = pg.mkPen(color=(i, len(levels)), width=1)
+            tmp_min, tmp_max = self._plot_item(filtered_data, f"{level.name}", pen)
 
             if x_min is None or tmp_min < x_min:
                 x_min = tmp_min

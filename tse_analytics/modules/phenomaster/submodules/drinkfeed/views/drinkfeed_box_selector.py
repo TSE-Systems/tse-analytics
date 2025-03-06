@@ -57,9 +57,9 @@ class DrinkFeedBoxSelector(QTableView):
             for animal_id in animal_ids:
                 x = items[animal_id]
                 x.factors[factor.name] = None
-                for group in factor.groups:
-                    if animal_id in group.animal_ids:
-                        x.factors[factor.name] = group.name
+                for level in factor.levels:
+                    if animal_id in level.animal_ids:
+                        x.factors[factor.name] = level.name
                         break
 
         model = DrinkFeedBoxesModel(list(items.values()), header)

@@ -52,41 +52,41 @@ class Ui_FactorsDialog(object):
 
         self.horizontalLayout.addWidget(self.groupBoxFactors)
 
-        self.groupBoxGroups = QGroupBox(FactorsDialog)
-        self.groupBoxGroups.setObjectName(u"groupBoxGroups")
-        self.verticalLayout_3 = QVBoxLayout(self.groupBoxGroups)
+        self.groupBoxLevels = QGroupBox(FactorsDialog)
+        self.groupBoxLevels.setObjectName(u"groupBoxLevels")
+        self.verticalLayout_3 = QVBoxLayout(self.groupBoxLevels)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.listWidgetGroups = QListWidget(self.groupBoxGroups)
-        self.listWidgetGroups.setObjectName(u"listWidgetGroups")
+        self.listWidgetLevels = QListWidget(self.groupBoxLevels)
+        self.listWidgetLevels.setObjectName(u"listWidgetLevels")
 
-        self.verticalLayout_3.addWidget(self.listWidgetGroups)
+        self.verticalLayout_3.addWidget(self.listWidgetLevels)
 
-        self.pushButtonAddGroup = QPushButton(self.groupBoxGroups)
-        self.pushButtonAddGroup.setObjectName(u"pushButtonAddGroup")
-        self.pushButtonAddGroup.setEnabled(False)
+        self.pushButtonAddLevel = QPushButton(self.groupBoxLevels)
+        self.pushButtonAddLevel.setObjectName(u"pushButtonAddLevel")
+        self.pushButtonAddLevel.setEnabled(False)
 
-        self.verticalLayout_3.addWidget(self.pushButtonAddGroup)
+        self.verticalLayout_3.addWidget(self.pushButtonAddLevel)
 
-        self.pushButtonDeleteGroup = QPushButton(self.groupBoxGroups)
-        self.pushButtonDeleteGroup.setObjectName(u"pushButtonDeleteGroup")
-        self.pushButtonDeleteGroup.setEnabled(False)
+        self.pushButtonDeleteLevel = QPushButton(self.groupBoxLevels)
+        self.pushButtonDeleteLevel.setObjectName(u"pushButtonDeleteLevel")
+        self.pushButtonDeleteLevel.setEnabled(False)
 
-        self.verticalLayout_3.addWidget(self.pushButtonDeleteGroup)
+        self.verticalLayout_3.addWidget(self.pushButtonDeleteLevel)
 
-        self.pushButtonExtractGroups = QPushButton(self.groupBoxGroups)
-        self.pushButtonExtractGroups.setObjectName(u"pushButtonExtractGroups")
-        self.pushButtonExtractGroups.setEnabled(False)
+        self.pushButtonExtractLevels = QPushButton(self.groupBoxLevels)
+        self.pushButtonExtractLevels.setObjectName(u"pushButtonExtractLevels")
+        self.pushButtonExtractLevels.setEnabled(False)
 
-        self.verticalLayout_3.addWidget(self.pushButtonExtractGroups)
+        self.verticalLayout_3.addWidget(self.pushButtonExtractLevels)
 
-        self.comboBoxFields = QComboBox(self.groupBoxGroups)
+        self.comboBoxFields = QComboBox(self.groupBoxLevels)
         self.comboBoxFields.setObjectName(u"comboBoxFields")
         self.comboBoxFields.setEnabled(False)
 
         self.verticalLayout_3.addWidget(self.comboBoxFields)
 
 
-        self.horizontalLayout.addWidget(self.groupBoxGroups)
+        self.horizontalLayout.addWidget(self.groupBoxLevels)
 
         self.groupBoxAnimals = QGroupBox(FactorsDialog)
         self.groupBoxAnimals.setObjectName(u"groupBoxAnimals")
@@ -105,8 +105,8 @@ class Ui_FactorsDialog(object):
 
         self.buttonBox = QDialogButtonBox(FactorsDialog)
         self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+        self.buttonBox.setOrientation(Qt.Orientation.Horizontal)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
 
         self.verticalLayout_8.addWidget(self.buttonBox)
 
@@ -123,10 +123,10 @@ class Ui_FactorsDialog(object):
         self.groupBoxFactors.setTitle(QCoreApplication.translate("FactorsDialog", u"Factors", None))
         self.pushButtonAddFactor.setText(QCoreApplication.translate("FactorsDialog", u"Add Factor", None))
         self.pushButtonDeleteFactor.setText(QCoreApplication.translate("FactorsDialog", u"Delete Factor", None))
-        self.groupBoxGroups.setTitle(QCoreApplication.translate("FactorsDialog", u"Groups", None))
-        self.pushButtonAddGroup.setText(QCoreApplication.translate("FactorsDialog", u"Add Group", None))
-        self.pushButtonDeleteGroup.setText(QCoreApplication.translate("FactorsDialog", u"Delete Group", None))
-        self.pushButtonExtractGroups.setText(QCoreApplication.translate("FactorsDialog", u"Extract from...", None))
+        self.groupBoxLevels.setTitle(QCoreApplication.translate("FactorsDialog", u"Levels", None))
+        self.pushButtonAddLevel.setText(QCoreApplication.translate("FactorsDialog", u"Add Level", None))
+        self.pushButtonDeleteLevel.setText(QCoreApplication.translate("FactorsDialog", u"Delete Level", None))
+        self.pushButtonExtractLevels.setText(QCoreApplication.translate("FactorsDialog", u"Extract from...", None))
         self.groupBoxAnimals.setTitle(QCoreApplication.translate("FactorsDialog", u"Animals", None))
     # retranslateUi
 

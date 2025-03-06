@@ -144,7 +144,7 @@ class OneWayAnovaWidget(QWidget):
             post_hoc_test_header = "Pairwise Games-Howell post-hoc test"
 
         pairwise_tukeyhsd_res = pairwise_tukeyhsd(df[dependent_variable_name], df[factor_name])
-        fig = pairwise_tukeyhsd_res.plot_simultaneous(ylabel="Group", xlabel=dependent_variable_name)
+        fig = pairwise_tukeyhsd_res.plot_simultaneous(ylabel="Level", xlabel=dependent_variable_name)
         img_html = get_html_image(fig)
         fig.clear()
 

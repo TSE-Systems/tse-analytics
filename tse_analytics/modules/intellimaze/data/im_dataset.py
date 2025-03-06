@@ -13,7 +13,7 @@ from tse_analytics.core.data.pipeline.outliers_pipe_operator import process_outl
 from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import process_time_cycles_binning
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import process_time_phases_binning
-from tse_analytics.core.data.shared import Animal, Factor, Group, SplitMode, Variable
+from tse_analytics.core.data.shared import Animal, Factor, FactorLevel, SplitMode, Variable
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.extension_tree_item import ExtensionTreeItem
 from tse_analytics.modules.intellimaze.submodules.animal_gate.data.animal_gate_data import AnimalGateData
@@ -79,20 +79,20 @@ class IMDataset:
     def experiment_stopped(self) -> pd.Timestamp:
         return pd.to_datetime(self.meta["experiment"]["ExperimentStopped"], format="%m/%d/%Y %H:%M:%S")
 
-    def extract_groups_from_field(self, field: Literal["text1", "text2", "text3"] = "text1") -> dict[str, Group]:
-        """Extract groups assignment from Text1, Text2 or Text3 field"""
-        groups_dict: dict[str, list[str]] = {}
+    def extract_levels_from_field(self, field: Literal["text1", "text2", "text3"] = "text1") -> dict[str, FactorLevel]:
+        """Extract levels assignment from Text1, Text2 or Text3 field"""
+        levels_dict: dict[str, list[str]] = {}
         for animal in self.animals.values():
-            group_name = getattr(animal, field)
-            if group_name not in groups_dict:
-                groups_dict[group_name] = []
-            groups_dict[group_name].append(animal.id)
+            level_name = getattr(animal, field)
+            if level_name not in levels_dict:
+                levels_dict[level_name] = []
+            levels_dict[level_name].append(animal.id)
 
-        groups: dict[str, Group] = {}
-        for key, value in groups_dict.items():
-            group = Group(key, value)
-            groups[group.name] = group
-        return groups
+        levels: dict[str, FactorLevel] = {}
+        for key, value in levels_dict.items():
+            level = FactorLevel(key, value)
+            levels[level.name] = level
+        return levels
 
     def _rename_animal_df(self, df: pd.DataFrame, old_id: str, animal: Animal) -> pd.DataFrame:
         df = df.astype({
@@ -108,12 +108,12 @@ class IMDataset:
         self.original_df = self._rename_animal_df(self.original_df, old_id, animal)
         self.active_df = self._rename_animal_df(self.active_df, old_id, animal)
 
-        # Rename animal in factor's groups definitions
+        # Rename animal in factor's levels definitions
         for factor in self.factors.values():
-            for group in factor.groups:
-                for i, animal_id in enumerate(group.animal_ids):
+            for level in factor.levels:
+                for i, animal_id in enumerate(level.animal_ids):
                     if animal_id == old_id:
-                        group.animal_ids[i] = animal.id
+                        level.animal_ids[i] = animal.id
 
         # Rename animal in metadata
         new_dict = {}
@@ -130,12 +130,12 @@ class IMDataset:
         messaging.broadcast(messaging.DatasetChangedMessage(self, self))
 
     def exclude_animals(self, animal_ids: set[str]) -> None:
-        # Remove animals from factor's groups definitions
+        # Remove animals from factor's levels definitions
         for factor in self.factors.values():
-            for group in factor.groups:
-                group_set = set(group.animal_ids)
-                filtered_set = group_set.difference(animal_ids)
-                group.animal_ids = list(filtered_set)
+            for level in factor.levels:
+                level_set = set(level.animal_ids)
+                filtered_set = level_set.difference(animal_ids)
+                level.animal_ids = list(filtered_set)
 
         for animal_id in animal_ids:
             self.animals.pop(animal_id)
@@ -240,9 +240,9 @@ class IMDataset:
             for animal_id in animal_ids:
                 animal_factor_map[animal_id] = pd.NA
 
-            for group in factor.groups:
-                for animal_id in group.animal_ids:
-                    animal_factor_map[animal_id] = group.name
+            for level in factor.levels:
+                for animal_id in level.animal_ids:
+                    animal_factor_map[animal_id] = level.name
 
             df[factor.name] = df["Animal"].astype(str)
             # df[factor.name].replace(animal_factor_map, inplace=True)

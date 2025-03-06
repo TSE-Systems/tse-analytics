@@ -17,7 +17,7 @@ class FactorsTableWidget(QTableWidget):
         self.setHorizontalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
         self.setSortingEnabled(True)
         self.setColumnCount(self._COLUMN_NUMBER)
-        self.setHorizontalHeaderLabels(["Name", "Groups"])
+        self.setHorizontalHeaderLabels(["Name", "Levels"])
         self.verticalHeader().setVisible(False)
         self.verticalHeader().setMinimumSectionSize(20)
         self.verticalHeader().setDefaultSectionSize(20)
@@ -42,8 +42,8 @@ class FactorsTableWidget(QTableWidget):
         self.setRowCount(len(factors))
         for i, factor in enumerate(factors.values()):
             self.setItem(i, 0, QTableWidgetItem(factor.name))
-            group_names = [group.name for group in factor.groups]
-            self.setItem(i, 1, QTableWidgetItem(f"{', '.join(group_names)}"))
+            level_names = [level.name for level in factor.levels]
+            self.setItem(i, 1, QTableWidgetItem(f"{', '.join(level_names)}"))
 
     def clear_data(self) -> None:
         self.setRowCount(0)

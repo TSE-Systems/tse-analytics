@@ -116,20 +116,20 @@ class NormalityWidget(QWidget):
                     )
                     ax.set_title(f"Animal: {animal}")
             case SplitMode.FACTOR:
-                groups = df[self.selected_factor_name].unique()
-                nrows, ncols = self._get_plot_layout(len(groups))
-                for index, group in enumerate(groups):
+                levels = df[self.selected_factor_name].unique()
+                nrows, ncols = self._get_plot_layout(len(levels))
+                for index, level in enumerate(levels):
                     # TODO: NaN check
-                    if group != group:
+                    if level != level:
                         continue
                     ax = self.canvas.figure.add_subplot(nrows, ncols, index + 1)
                     pg.qqplot(
-                        df[df[self.selected_factor_name] == group][variable.name],
+                        df[df[self.selected_factor_name] == level][variable.name],
                         dist="norm",
                         marker=".",
                         ax=ax,
                     )
-                    ax.set_title(group)
+                    ax.set_title(level)
             case SplitMode.RUN:
                 runs = df["Run"].unique()
                 nrows, ncols = self._get_plot_layout(len(runs))

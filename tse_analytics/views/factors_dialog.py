@@ -2,7 +2,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QInputDialog, QListWidgetItem, QWidget
 
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.shared import Factor, Group
+from tse_analytics.core.data.shared import Factor, FactorLevel
 from tse_analytics.views.factors_dialog_ui import Ui_FactorsDialog
 
 
@@ -21,16 +21,16 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         self.pushButtonAddFactor.clicked.connect(self.add_factor)
         self.pushButtonDeleteFactor.clicked.connect(self.delete_factor)
 
-        self.pushButtonAddGroup.clicked.connect(self.add_group)
-        self.pushButtonDeleteGroup.clicked.connect(self.delete_group)
-        self.pushButtonExtractGroups.clicked.connect(self.extract_groups)
+        self.pushButtonAddLevel.clicked.connect(self.add_level)
+        self.pushButtonDeleteLevel.clicked.connect(self.delete_level)
+        self.pushButtonExtractLevels.clicked.connect(self.extract_levels)
 
         self.listWidgetFactors.currentTextChanged.connect(self.current_factor_text_changed)
-        self.listWidgetGroups.currentTextChanged.connect(self.current_group_text_changed)
+        self.listWidgetLevels.currentTextChanged.connect(self.current_group_text_changed)
         self.listWidgetAnimals.itemChanged.connect(self.animal_item_changed)
 
         self.selected_factor: Factor | None = None
-        self.selected_group: Group | None = None
+        self.selected_level: FactorLevel | None = None
 
     def add_factor(self):
         text, result = QInputDialog.getText(self, "Add Factor", "Please enter unique factor name:")
@@ -46,56 +46,56 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
                 self.factors.remove(factor)
             self.listWidgetFactors.takeItem(self.listWidgetFactors.row(item))
 
-    def add_group(self):
+    def add_level(self):
         if self.selected_factor is not None:
-            text, result = QInputDialog.getText(self, "Add Group", "Please enter unique group name:")
+            text, result = QInputDialog.getText(self, "Add Level", "Please enter unique level name:")
             if result:
-                group = Group(name=text)
-                self.selected_factor.groups.append(group)
-                self.listWidgetGroups.addItem(text)
+                level = FactorLevel(name=text)
+                self.selected_factor.levels.append(level)
+                self.listWidgetLevels.addItem(text)
 
-    def delete_group(self):
-        for item in self.listWidgetGroups.selectedItems():
-            group = next((x for x in self.selected_factor.groups if x.name == item.text()), None)
-            if group is not None:
-                self.selected_factor.groups.remove(group)
-            self.listWidgetGroups.takeItem(self.listWidgetGroups.row(item))
+    def delete_level(self):
+        for item in self.listWidgetLevels.selectedItems():
+            level = next((x for x in self.selected_factor.levels if x.name == item.text()), None)
+            if level is not None:
+                self.selected_factor.levels.remove(level)
+            self.listWidgetLevels.takeItem(self.listWidgetLevels.row(item))
 
-    def extract_groups(self):
+    def extract_levels(self):
         selected_field = self.comboBoxFields.currentText()
         if selected_field is not None:
-            groups = self.dataset.extract_groups_from_field(selected_field)
-            self.selected_factor.groups = list(groups.values())
-            self.listWidgetGroups.clear()
-            self.listWidgetGroups.addItems([group.name for group in self.selected_factor.groups])
+            levels = self.dataset.extract_levels_from_field(selected_field)
+            self.selected_factor.levels = list(levels.values())
+            self.listWidgetLevels.clear()
+            self.listWidgetLevels.addItems([level.name for level in self.selected_factor.levels])
 
     def current_factor_text_changed(self, text: str):
-        self.listWidgetGroups.clear()
+        self.listWidgetLevels.clear()
         self.listWidgetAnimals.clear()
         self.selected_factor = next((x for x in self.factors if x.name == text), None)
         self.pushButtonDeleteFactor.setEnabled(self.selected_factor is not None)
-        self.pushButtonAddGroup.setEnabled(self.selected_factor is not None)
-        self.pushButtonExtractGroups.setEnabled(self.selected_factor is not None)
+        self.pushButtonAddLevel.setEnabled(self.selected_factor is not None)
+        self.pushButtonExtractLevels.setEnabled(self.selected_factor is not None)
         self.comboBoxFields.setEnabled(self.selected_factor is not None)
         if self.selected_factor is not None:
-            self.listWidgetGroups.addItems([group.name for group in self.selected_factor.groups])
+            self.listWidgetLevels.addItems([level.name for level in self.selected_factor.levels])
 
     def current_group_text_changed(self, text: str):
         self.listWidgetAnimals.clear()
-        self.selected_group = next((x for x in self.selected_factor.groups if x.name == text), None)
-        self.pushButtonDeleteGroup.setEnabled(self.selected_group is not None)
-        if self.selected_group is not None:
+        self.selected_level = next((x for x in self.selected_factor.levels if x.name == text), None)
+        self.pushButtonDeleteLevel.setEnabled(self.selected_level is not None)
+        if self.selected_level is not None:
             for animal in self.dataset.animals.values():
                 item = QListWidgetItem(str(animal.id))
                 item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled)
-                if animal.id in self.selected_group.animal_ids:
+                if animal.id in self.selected_level.animal_ids:
                     item.setCheckState(Qt.CheckState.Checked)
                 else:
                     item.setCheckState(Qt.CheckState.Unchecked)
 
-                for group in self.selected_factor.groups:
-                    if group != self.selected_group:
-                        if animal.id in group.animal_ids:
+                for level in self.selected_factor.levels:
+                    if level != self.selected_level:
+                        if animal.id in level.animal_ids:
                             item.setFlags(~Qt.ItemFlag.ItemIsEnabled)
                             break
 
@@ -108,6 +108,6 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         )
         if animal_id is not None:
             if item.checkState() == Qt.CheckState.Checked:
-                self.selected_group.animal_ids.append(animal_id)
+                self.selected_level.animal_ids.append(animal_id)
             else:
-                self.selected_group.animal_ids.remove(animal_id)
+                self.selected_level.animal_ids.remove(animal_id)
