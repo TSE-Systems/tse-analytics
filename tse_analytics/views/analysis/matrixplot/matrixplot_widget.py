@@ -36,7 +36,7 @@ class MatrixPlotWidget(QWidget):
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
 
-        toolbar.addAction("Update").triggered.connect(self._update)
+        toolbar.addAction(QIcon(":/icons/icons8-refresh-16.png"), "Update").triggered.connect(self._update)
         toolbar.addSeparator()
 
         self.variables_table_widget = VariablesTableWidget()

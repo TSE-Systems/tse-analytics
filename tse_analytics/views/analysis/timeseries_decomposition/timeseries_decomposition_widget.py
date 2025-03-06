@@ -11,8 +11,9 @@ from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Aggregation
 from tse_analytics.core.helper import get_html_image, get_h_spacer_widget, get_widget_tool_button
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.views.analysis.timeseries_decomposition.timeseries_decomposition_settings_widget_ui import \
-    Ui_TimeseriesDecompositionSettingsWidget
+from tse_analytics.views.analysis.timeseries_decomposition.timeseries_decomposition_settings_widget_ui import (
+    Ui_TimeseriesDecompositionSettingsWidget,
+)
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.animal_selector import AnimalSelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
@@ -37,7 +38,7 @@ class TimeseriesDecompositionWidget(QWidget):
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
 
-        toolbar.addAction("Update").triggered.connect(self._update)
+        toolbar.addAction(QIcon(":/icons/icons8-refresh-16.png"), "Update").triggered.connect(self._update)
         toolbar.addSeparator()
 
         self.variableSelector = VariableSelector(toolbar)
@@ -75,9 +76,15 @@ class TimeseriesDecompositionWidget(QWidget):
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add to Report").triggered.connect(self._add_report)
 
-        self.settings_widget_ui.radioButtonMethodNaive.toggled.connect(lambda toggled: self._set_options(True) if toggled else None)
-        self.settings_widget_ui.radioButtonMethodSTL.toggled.connect(lambda toggled: self._set_options(False) if toggled else None)
-        self.settings_widget_ui.radioButtonMethodMSTL.toggled.connect(lambda toggled: self._set_options(False) if toggled else None)
+        self.settings_widget_ui.radioButtonMethodNaive.toggled.connect(
+            lambda toggled: self._set_options(True) if toggled else None
+        )
+        self.settings_widget_ui.radioButtonMethodSTL.toggled.connect(
+            lambda toggled: self._set_options(False) if toggled else None
+        )
+        self.settings_widget_ui.radioButtonMethodMSTL.toggled.connect(
+            lambda toggled: self._set_options(False) if toggled else None
+        )
 
     def _set_options(
         self,

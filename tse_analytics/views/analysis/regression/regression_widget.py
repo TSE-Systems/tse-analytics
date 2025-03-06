@@ -1,6 +1,7 @@
 import pingouin as pg
 import seaborn as sns
 from PySide6.QtCore import QSize, Qt
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QToolBar, QVBoxLayout, QSplitter, QTextEdit, QWidgetAction, QLabel
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
@@ -38,7 +39,7 @@ class RegressionWidget(QWidget):
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
 
-        self.toolbar.addAction("Update").triggered.connect(self._update)
+        self.toolbar.addAction(QIcon(":/icons/icons8-refresh-16.png"), "Update").triggered.connect(self._update)
         self.toolbar.addSeparator()
 
         self.toolbar.addWidget(QLabel("Covariate:"))

@@ -1,5 +1,6 @@
 import pingouin as pg
 from PySide6.QtCore import QSize, Qt
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QToolBar, QVBoxLayout
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
@@ -35,7 +36,7 @@ class NormalityWidget(QWidget):
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
 
-        toolbar.addAction("Update").triggered.connect(self._update)
+        toolbar.addAction(QIcon(":/icons/icons8-refresh-16.png"), "Update").triggered.connect(self._update)
         toolbar.addSeparator()
 
         self.variableSelector = VariableSelector(toolbar)

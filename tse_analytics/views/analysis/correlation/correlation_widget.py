@@ -1,5 +1,6 @@
 import pingouin as pg
 import seaborn as sns
+from PySide6.QtGui import QIcon
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from pyqttoast import ToastPreset
@@ -38,7 +39,7 @@ class CorrelationWidget(QWidget):
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
 
-        self.toolbar.addAction("Update").triggered.connect(self._update)
+        self.toolbar.addAction(QIcon(":/icons/icons8-refresh-16.png"), "Update").triggered.connect(self._update)
         self.toolbar.addSeparator()
 
         self.toolbar.addWidget(QLabel("X:"))

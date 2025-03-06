@@ -1,27 +1,64 @@
 import pandas as pd
 import pingouin as pg
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtGui import QIcon
 from pyqttoast import ToastPreset
-from PySide6.QtWidgets import QMessageBox, QWidget
+from PySide6.QtWidgets import QMessageBox, QWidget, QVBoxLayout, QToolBar, QLabel, QTextEdit
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import SplitMode
+from tse_analytics.core.helper import get_widget_tool_button, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.styles.css import style_descriptive_table
-from tse_analytics.views.analysis.mixed_anova.mixed_anova_widget_ui import Ui_MixedAnovaWidget
+from tse_analytics.views.analysis.mixed_anova.mixed_anova_settings_widget_ui import Ui_MixedAnovaSettingsWidget
+from tse_analytics.views.misc.factor_selector import FactorSelector
+from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
 class MixedAnovaWidget(QWidget):
     def __init__(self, dataset: Dataset, parent: QWidget | None = None):
         super().__init__(parent)
-        self.ui = Ui_MixedAnovaWidget()
-        self.ui.setupUi(self)
+
+        self.layout = QVBoxLayout(self)
+        self.layout.setSpacing(0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
 
         self.title = "Mixed-design ANOVA"
 
-        self.ui.pushButtonUpdate.clicked.connect(self._update)
-        self.ui.pushButtonAddReport.clicked.connect(self._add_report)
+        self.dataset = dataset
+
+        # Setup toolbar
+        toolbar = QToolBar(
+            "Data Plot Toolbar",
+            iconSize=QSize(16, 16),
+            toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
+        )
+
+        toolbar.addAction(QIcon(":/icons/icons8-refresh-16.png"), "Update").triggered.connect(self._update)
+        toolbar.addSeparator()
+
+        toolbar.addWidget(QLabel("Dependent variable:"))
+        self.variable_selector = VariableSelector(toolbar)
+        self.variable_selector.set_data(self.dataset.variables)
+        toolbar.addWidget(self.variable_selector)
+
+        toolbar.addWidget(QLabel("Factor:"))
+        self.factor_selector = FactorSelector(toolbar)
+        self.factor_selector.set_data(self.dataset.factors, add_empty_item=False)
+        toolbar.addWidget(self.factor_selector)
+
+        self.settings_widget = QWidget()
+        self.settings_widget_ui = Ui_MixedAnovaSettingsWidget()
+        self.settings_widget_ui.setupUi(self.settings_widget)
+        settings_button = get_widget_tool_button(
+            toolbar,
+            self.settings_widget,
+            "Settings",
+            QIcon(":/icons/icons8-settings-16.png"),
+        )
+        toolbar.addWidget(settings_button)
 
         self.p_adjustment = {
             "No correction": "none",
@@ -31,8 +68,8 @@ class MixedAnovaWidget(QWidget):
             "Benjamini/Hochberg FDR": "fdr_bh",
             "Benjamini/Yekutieli FDR": "fdr_by",
         }
-        self.ui.comboBoxPAdjustment.addItems(self.p_adjustment.keys())
-        self.ui.comboBoxPAdjustment.setCurrentText("No correction")
+        self.settings_widget_ui.comboBoxPAdjustment.addItems(self.p_adjustment.keys())
+        self.settings_widget_ui.comboBoxPAdjustment.setCurrentText("No correction")
 
         self.eff_size = {
             "No effect size": "none",
@@ -44,18 +81,27 @@ class MixedAnovaWidget(QWidget):
             "Area Under the Curve": "AUC",
             "Common Language Effect Size": "CLES",
         }
-        self.ui.comboBoxEffectSizeType.addItems(self.eff_size.keys())
-        self.ui.comboBoxEffectSizeType.setCurrentText("Hedges g")
+        self.settings_widget_ui.comboBoxEffectSizeType.addItems(self.eff_size.keys())
+        self.settings_widget_ui.comboBoxEffectSizeType.setCurrentText("Hedges g")
 
-        self.ui.textEdit.document().setDefaultStyleSheet(style_descriptive_table)
+        # Insert toolbar to the widget
+        self.layout.addWidget(toolbar)
 
-        self.dataset = dataset
-        self.ui.tableWidgetFactors.set_data(self.dataset.factors)
-        self.ui.tableWidgetDependentVariable.set_data(self.dataset.variables)
+        self.textEdit = QTextEdit(
+            toolbar,
+            undoRedoEnabled=False,
+            readOnly=True,
+            lineWrapMode=QTextEdit.LineWrapMode.NoWrap,
+        )
+        self.textEdit.document().setDefaultStyleSheet(style_descriptive_table)
+        self.layout.addWidget(self.textEdit)
+
+        toolbar.addWidget(get_h_spacer_widget(toolbar))
+        toolbar.addAction("Add to Report").triggered.connect(self._add_report)
 
     def _update(self):
-        selected_dependent_variables = self.ui.tableWidgetDependentVariable.get_selected_variables_dict()
-        if len(selected_dependent_variables) == 0:
+        dependent_variable = self.variable_selector.get_selected_variable()
+        if dependent_variable is None:
             make_toast(
                 self,
                 self.title,
@@ -66,8 +112,10 @@ class MixedAnovaWidget(QWidget):
             ).show()
             return
 
-        selected_factor_names = self.ui.tableWidgetFactors.get_selected_factor_names()
-        if len(selected_factor_names) != 1:
+        dependent_variable_name = dependent_variable.name
+
+        factor_name = self.factor_selector.currentText()
+        if factor_name == "":
             make_toast(
                 self,
                 self.title,
@@ -100,20 +148,16 @@ class MixedAnovaWidget(QWidget):
             ):
                 do_pairwise_tests = False
 
-        factor_name = selected_factor_names[0]
-
         df = self.dataset.get_current_df(
-            variables=selected_dependent_variables,
+            variables={dependent_variable_name: dependent_variable},
             split_mode=SplitMode.ANIMAL,
             selected_factor_name=None,
             dropna=True,
         )
 
-        dependent_variable = next(iter(selected_dependent_variables.values())).name
-
         anova = pg.mixed_anova(
             data=df,
-            dv=dependent_variable,
+            dv=dependent_variable_name,
             between=factor_name,
             within="Bin",
             subject="Animal",
@@ -121,7 +165,7 @@ class MixedAnovaWidget(QWidget):
 
         spher, W, chisq, dof, pval = pg.sphericity(
             data=df,
-            dv=dependent_variable,
+            dv=dependent_variable_name,
             within="Bin",
             subject="Animal",
             method="mauchly",
@@ -132,12 +176,12 @@ class MixedAnovaWidget(QWidget):
         ).round(5)
 
         if do_pairwise_tests:
-            effsize = self.eff_size[self.ui.comboBoxEffectSizeType.currentText()]
-            padjust = self.p_adjustment[self.ui.comboBoxPAdjustment.currentText()]
+            effsize = self.eff_size[self.settings_widget_ui.comboBoxEffectSizeType.currentText()]
+            padjust = self.p_adjustment[self.settings_widget_ui.comboBoxPAdjustment.currentText()]
 
             pairwise_tests = pg.pairwise_tests(
                 data=df,
-                dv=dependent_variable,
+                dv=dependent_variable_name,
                 within="Bin",
                 between=factor_name,
                 subject="Animal",
@@ -173,8 +217,8 @@ class MixedAnovaWidget(QWidget):
                 anova=anova.to_html(),
             )
 
-        self.ui.textEdit.document().setHtml(html)
+        self.textEdit.document().setHtml(html)
 
     def _add_report(self):
-        self.dataset.report += self.ui.textEdit.toHtml()
+        self.dataset.report += self.textEdit.toHtml()
         messaging.broadcast(messaging.AddToReportMessage(self, self.dataset))

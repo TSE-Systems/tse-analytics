@@ -1,4 +1,5 @@
 import pandas as pd
+from PySide6.QtGui import QIcon
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSize, Qt
@@ -34,7 +35,7 @@ class TimeseriesAutocorrelationWidget(QWidget):
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
 
-        toolbar.addAction("Update").triggered.connect(self._update)
+        toolbar.addAction(QIcon(":/icons/icons8-refresh-16.png"), "Update").triggered.connect(self._update)
         toolbar.addSeparator()
 
         self.variableSelector = VariableSelector(toolbar)

@@ -1,26 +1,50 @@
 import pingouin as pg
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtGui import QIcon
 from pyqttoast import ToastPreset
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QTextEdit, QComboBox
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.helper import get_html_image
+from tse_analytics.core.helper import get_html_image, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.styles.css import style_descriptive_table
-from tse_analytics.views.analysis.one_way_anova.one_way_anova_widget_ui import Ui_OneWayAnovaWidget
+from tse_analytics.views.misc.factor_selector import FactorSelector
+from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
 class OneWayAnovaWidget(QWidget):
     def __init__(self, dataset: Dataset, parent: QWidget | None = None):
         super().__init__(parent)
-        self.ui = Ui_OneWayAnovaWidget()
-        self.ui.setupUi(self)
+
+        self.layout = QVBoxLayout(self)
+        self.layout.setSpacing(0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
 
         self.title = "One-way ANOVA"
 
-        self.ui.pushButtonUpdate.clicked.connect(self._update)
-        self.ui.pushButtonAddReport.clicked.connect(self._add_report)
+        self.dataset = dataset
+
+        # Setup toolbar
+        toolbar = QToolBar(
+            "Data Plot Toolbar",
+            iconSize=QSize(16, 16),
+            toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
+        )
+
+        toolbar.addAction(QIcon(":/icons/icons8-refresh-16.png"), "Update").triggered.connect(self._update)
+        toolbar.addSeparator()
+
+        toolbar.addWidget(QLabel("Dependent variable:"))
+        self.variable_selector = VariableSelector(toolbar)
+        self.variable_selector.set_data(self.dataset.variables)
+        toolbar.addWidget(self.variable_selector)
+
+        toolbar.addWidget(QLabel("Factor:"))
+        self.factor_selector = FactorSelector(toolbar)
+        self.factor_selector.set_data(self.dataset.factors, add_empty_item=False)
+        toolbar.addWidget(self.factor_selector)
 
         self.eff_size = {
             "No effect size": "none",
@@ -32,18 +56,30 @@ class OneWayAnovaWidget(QWidget):
             "Area Under the Curve": "AUC",
             "Common Language Effect Size": "CLES",
         }
-        self.ui.comboBoxEffectSizeType.addItems(self.eff_size.keys())
-        self.ui.comboBoxEffectSizeType.setCurrentText("Hedges g")
+        toolbar.addWidget(QLabel("Effect size type:"))
+        self.comboBoxEffectSizeType = QComboBox(toolbar)
+        self.comboBoxEffectSizeType.addItems(self.eff_size.keys())
+        self.comboBoxEffectSizeType.setCurrentText("Hedges g")
+        toolbar.addWidget(self.comboBoxEffectSizeType)
 
-        self.ui.textEdit.document().setDefaultStyleSheet(style_descriptive_table)
+        # Insert toolbar to the widget
+        self.layout.addWidget(toolbar)
 
-        self.dataset = dataset
-        self.ui.tableWidgetFactors.set_data(self.dataset.factors)
-        self.ui.tableWidgetDependentVariable.set_data(self.dataset.variables)
+        self.textEdit = QTextEdit(
+            toolbar,
+            undoRedoEnabled=False,
+            readOnly=True,
+            lineWrapMode=QTextEdit.LineWrapMode.NoWrap,
+        )
+        self.textEdit.document().setDefaultStyleSheet(style_descriptive_table)
+        self.layout.addWidget(self.textEdit)
+
+        toolbar.addWidget(get_h_spacer_widget(toolbar))
+        toolbar.addAction("Add to Report").triggered.connect(self._add_report)
 
     def _update(self):
-        selected_dependent_variables = self.ui.tableWidgetDependentVariable.get_selected_variables_dict()
-        if len(selected_dependent_variables) == 0:
+        dependent_variable = self.variable_selector.get_selected_variable()
+        if dependent_variable is None:
             make_toast(
                 self,
                 self.title,
@@ -54,8 +90,10 @@ class OneWayAnovaWidget(QWidget):
             ).show()
             return
 
-        selected_factor_names = self.ui.tableWidgetFactors.get_selected_factor_names()
-        if len(selected_factor_names) != 1:
+        dependent_variable_name = dependent_variable.name
+
+        factor_name = self.factor_selector.currentText()
+        if factor_name == "":
             make_toast(
                 self,
                 self.title,
@@ -66,19 +104,17 @@ class OneWayAnovaWidget(QWidget):
             ).show()
             return
 
-        df = self.dataset.get_anova_df(variables=selected_dependent_variables)
+        df = self.dataset.get_anova_df(variables={dependent_variable_name: dependent_variable})
 
-        dependent_variable = next(iter(selected_dependent_variables.values())).name
-        factor_name = selected_factor_names[0]
-        effsize = self.eff_size[self.ui.comboBoxEffectSizeType.currentText()]
+        effsize = self.eff_size[self.comboBoxEffectSizeType.currentText()]
 
-        normality = pg.normality(df, group=factor_name, dv=dependent_variable).round(5)
-        homoscedasticity = pg.homoscedasticity(df, group=factor_name, dv=dependent_variable).round(5)
+        normality = pg.normality(df, group=factor_name, dv=dependent_variable_name).round(5)
+        homoscedasticity = pg.homoscedasticity(df, group=factor_name, dv=dependent_variable_name).round(5)
 
         if homoscedasticity.loc["levene"]["equal_var"]:
             anova = pg.anova(
                 data=df,
-                dv=dependent_variable,
+                dv=dependent_variable_name,
                 between=factor_name,
                 detailed=True,
             ).round(5)
@@ -86,7 +122,7 @@ class OneWayAnovaWidget(QWidget):
 
             post_hoc_test = pg.pairwise_tukey(
                 data=df,
-                dv=dependent_variable,
+                dv=dependent_variable_name,
                 between=factor_name,
                 effsize=effsize,
             ).round(5)
@@ -94,21 +130,21 @@ class OneWayAnovaWidget(QWidget):
         else:
             anova = pg.welch_anova(
                 data=df,
-                dv=dependent_variable,
+                dv=dependent_variable_name,
                 between=factor_name,
             ).round(5)
             anova_header = "One-way Welch ANOVA"
 
             post_hoc_test = pg.pairwise_gameshowell(
                 data=df,
-                dv=dependent_variable,
+                dv=dependent_variable_name,
                 between=factor_name,
                 effsize=effsize,
             ).round(5)
             post_hoc_test_header = "Pairwise Games-Howell post-hoc test"
 
-        pairwise_tukeyhsd_res = pairwise_tukeyhsd(df[dependent_variable], df[factor_name])
-        fig = pairwise_tukeyhsd_res.plot_simultaneous(ylabel="Group", xlabel=dependent_variable)
+        pairwise_tukeyhsd_res = pairwise_tukeyhsd(df[dependent_variable_name], df[factor_name])
+        fig = pairwise_tukeyhsd_res.plot_simultaneous(ylabel="Group", xlabel=dependent_variable_name)
         img_html = get_html_image(fig)
         fig.clear()
 
@@ -135,8 +171,8 @@ class OneWayAnovaWidget(QWidget):
             post_hoc_test_header=post_hoc_test_header,
             img_html=img_html,
         )
-        self.ui.textEdit.document().setHtml(html)
+        self.textEdit.document().setHtml(html)
 
     def _add_report(self):
-        self.dataset.report += self.ui.textEdit.toHtml()
+        self.dataset.report += self.textEdit.toHtml()
         messaging.broadcast(messaging.AddToReportMessage(self, self.dataset))
