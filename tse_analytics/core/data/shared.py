@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from enum import StrEnum, unique
+from typing import Any
 
 import pandas as pd
 
@@ -25,14 +26,7 @@ class SplitMode(StrEnum):
 class Animal:
     enabled: bool
     id: str
-    box: int | None
-    weight: float | None
-    tag: str = ""
-    sex: str = ""
-    group: str = ""
-    text1: str = ""
-    text2: str = ""
-    text3: str = ""
+    properties: dict[str, Any]
 
     def get_dict(self):
         return self.__dict__

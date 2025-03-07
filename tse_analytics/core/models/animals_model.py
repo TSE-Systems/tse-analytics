@@ -5,13 +5,16 @@ from tse_analytics.core.data.dataset import Dataset
 
 
 class AnimalsModel(QAbstractTableModel):
-    header = ("Animal", "Box", "Group", "Sex", "Weight", "Tag", "Text1", "Text2", "Text3")
-
     def __init__(self, dataset: Dataset, parent=None):
         super().__init__(parent)
 
         self.dataset = dataset
         self.items = list(dataset.animals.values())
+
+        self.header = ["Animal"]
+        if len(self.items) > 0:
+            properties_header = list(self.items[0].properties.keys())
+            self.header = self.header + properties_header
 
     def data(self, index: QModelIndex, role: Qt.ItemDataRole = ...):
         item = self.items[index.row()]
@@ -21,30 +24,9 @@ class AnimalsModel(QAbstractTableModel):
                     return item.id
                 elif role == Qt.ItemDataRole.CheckStateRole:
                     return Qt.CheckState.Checked if item.enabled else Qt.CheckState.Unchecked
-            case 1:
+            case _:
                 if role == Qt.ItemDataRole.DisplayRole:
-                    return item.box
-            case 2:
-                if role == Qt.ItemDataRole.DisplayRole:
-                    return item.group
-            case 3:
-                if role == Qt.ItemDataRole.DisplayRole:
-                    return item.sex
-            case 4:
-                if role == Qt.ItemDataRole.DisplayRole:
-                    return item.weight
-            case 5:
-                if role == Qt.ItemDataRole.DisplayRole:
-                    return item.tag
-            case 6:
-                if role == Qt.ItemDataRole.DisplayRole:
-                    return item.text1
-            case 7:
-                if role == Qt.ItemDataRole.DisplayRole:
-                    return item.text2
-            case 8:
-                if role == Qt.ItemDataRole.DisplayRole:
-                    return item.text3
+                    return item.properties[self.header[index.column()]]
 
     def setData(self, index: QModelIndex, value, role: Qt.ItemDataRole = ...):
         match index.column():

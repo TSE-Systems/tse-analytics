@@ -37,14 +37,17 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
 
     for line in animal_section.lines[1:]:
         elements = line.split(csv_import_settings.delimiter)
+        properties = {
+            "Box": int(elements[0]),
+            "Weight": float(elements[2].replace(",", ".")),
+            "Text1": elements[3],
+            "Text2": elements[4],
+            "Text3": elements[5] if len(elements) == 6 else "",
+        }
         animal = Animal(
             enabled=True,
             id=elements[1],
-            box=int(elements[0]),
-            weight=float(elements[2].replace(",", ".")),
-            text1=elements[3],
-            text2=elements[4],
-            text3=elements[5] if len(elements) == 6 else "",
+            properties=properties,
         )
         animals[animal.id] = animal
 
@@ -129,12 +132,14 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
     df.insert(loc=5, column="Run", value=1)
 
     # Add Weight column
-    if "Weight" not in df.columns:
-        df.insert(loc=6, column="Weight", value=df["Animal"])
-        weights = {}
-        for animal in animals.values():
-            weights[animal.id] = animal.weight
-        df = df.replace({"Weight": weights})
+    if len(animals) > 0:
+        animal_properties = next(iter(animals.values())).properties
+        if "Weight" not in df.columns and "Weight" in animal_properties:
+            df.insert(loc=6, column="Weight", value=df["Animal"])
+            weights = {}
+            for animal in animals.values():
+                weights[animal.id] = animal.properties["Weight"]
+            df = df.replace({"Weight": weights})
 
     # convert categorical types
     df = df.astype({

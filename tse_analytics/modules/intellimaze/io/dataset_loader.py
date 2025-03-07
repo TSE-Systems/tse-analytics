@@ -104,17 +104,25 @@ def _import_animals(path: Path) -> dict | None:
 
     animals = {}
     for item in json["ArrayOfAnimal"]["Animal"]:
+        properties = {
+            "Tag": item["Tag"],
+            "PMBoxNr": int(item["PMBoxNr"]),
+            "Sex": item["Sex"],
+            "Strain": item["Strain"],
+            "Group": item["Group"],
+            "Weight": float(item["weight"]),
+            "Treatment": item["Treatment"],
+            "Dosage": item["Dosage"],
+            "Age": item["Age"],
+        }
+
+        if "Notes" in item:
+            properties["Notes"] = item["Notes"]
+
         animal = Animal(
             enabled=True,
             id=str(item["Name"]),
-            box=int(item["PMBoxNr"]),
-            weight=float(item["Weight"]),
-            tag=item["Tag"],
-            sex=item["Sex"],
-            group=item["Group"],
-            text1=item["Treatment"],
-            text2=item["Strain"],
-            text3=item["Notes"] if "Notes" in item else "",
+            properties=properties,
         )
         animals[animal.id] = animal
     return animals

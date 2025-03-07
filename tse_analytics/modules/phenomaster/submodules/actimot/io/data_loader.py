@@ -75,7 +75,7 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
 
     box_to_animal_map = {}
     for animal in dataset.animals.values():
-        box_to_animal_map[animal.box] = animal.id
+        box_to_animal_map[animal.properties["Box"]] = animal.id
 
     new_df = raw_df.copy()
 

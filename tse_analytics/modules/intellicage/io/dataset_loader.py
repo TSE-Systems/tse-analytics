@@ -118,15 +118,16 @@ def _import_animals(path: Path) -> dict | None:
 
     animals = {}
     for index, row in df.iterrows():
+        properties = {
+            "Tag": row["AnimalTag"],
+            "Sex": row["Sex"],
+            "Group": row["GroupName"],
+            "Notes": row["AnimalNotes"],
+        }
         animal = Animal(
             enabled=True,
             id=str(row["AnimalName"]),
-            box=None,
-            weight=None,
-            tag=row["AnimalTag"],
-            sex=row["Sex"],
-            group=row["GroupName"],
-            text1=row["AnimalNotes"],
+            properties=properties,
         )
         animals[animal.id] = animal
 

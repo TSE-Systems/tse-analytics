@@ -48,7 +48,7 @@ class DrinkFeedBoxSelector(QTableView):
     def set_data(self, dataset: PhenoMasterDataset):
         items: dict[str, DrinkFeedAnimalItem] = {}
         for animal in dataset.animals.values():
-            items[animal.id] = DrinkFeedAnimalItem(animal.box, animal.id, pd.NA, {})
+            items[animal.id] = DrinkFeedAnimalItem(animal.properties["Box"], animal.id, pd.NA, {})
         animal_ids = list(items.keys())
 
         header = ["Animal", "Box", "Diet"]

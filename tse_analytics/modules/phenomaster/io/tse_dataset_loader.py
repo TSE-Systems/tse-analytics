@@ -100,14 +100,17 @@ def _read_metadata(path: Path) -> dict:
 def _get_animals(data: dict) -> dict[str, Animal]:
     animals: dict[str, Animal] = {}
     for item in data.values():
+        properties = {
+            "Box": int(item["box"]),
+            "Weight": float(item["weight"]),
+            "Text1": item["text1"],
+            "Text2": item["text2"],
+            "Text3": item["text3"],
+        }
         animal = Animal(
             enabled=bool(item["enabled"]),
             id=str(item["id"]),
-            box=int(item["box"]),
-            weight=float(item["weight"]),
-            text1=item["text1"],
-            text2=item["text2"],
-            text3=item["text3"],
+            properties=properties,
         )
         animals[animal.id] = animal
     return animals
@@ -196,12 +199,14 @@ def _read_main_table(
     variables["Weight"] = Variable("Weight", "g", "Animal weight", "float64", Aggregation.MEAN, False)
 
     # Add Weight column
-    if "Weight" not in df.columns:
-        df.insert(loc=6, column="Weight", value=df["Animal"])
-        weights = {}
-        for animal in animals.values():
-            weights[animal.id] = animal.weight
-        df = df.replace({"Weight": weights})
+    if len(animals) > 0:
+        animal_properties = next(iter(animals.values())).properties
+        if "Weight" not in df.columns and "Weight" in animal_properties:
+            df.insert(loc=6, column="Weight", value=df["Animal"])
+            weights = {}
+            for animal in animals.values():
+                weights[animal.id] = animal.properties["Weight"]
+            df = df.replace({"Weight": weights})
 
     # convert categorical types
     df = df.astype({
@@ -310,7 +315,7 @@ def _read_drinkfeed_bin(path: Path, metadata: dict, dataset: PhenoMasterDataset)
     # Add Animal column
     box_to_animal_map = {}
     for animal in dataset.animals.values():
-        box_to_animal_map[animal.box] = animal.id
+        box_to_animal_map[animal.properties["Box"]] = animal.id
     df["Animal"] = df["Box"].replace(box_to_animal_map)
     df = df.astype({
         "Animal": "category",

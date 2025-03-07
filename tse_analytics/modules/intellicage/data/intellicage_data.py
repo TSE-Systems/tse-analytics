@@ -26,7 +26,7 @@ class IntelliCageData:
         # Replace animal tags with animal IDs
         tag_to_animal_map = {}
         for animal in self.dataset.animals.values():
-            tag_to_animal_map[animal.tag] = animal.id
+            tag_to_animal_map[animal.properties["Tag"]] = animal.id
         df["AnimalTag"] = df["AnimalTag"].replace(tag_to_animal_map)
         df.rename(
             columns={

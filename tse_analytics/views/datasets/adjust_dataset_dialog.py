@@ -39,15 +39,10 @@ class AdjustDatasetDialog(QDialog):
         self.ui.dateTimeEditExcludeEnd.setMaximumDateTime(dataset.end_timestamp)
         self.ui.dateTimeEditExcludeEnd.setDateTime(dataset.end_timestamp)
 
-        self.ui.tableWidgetAnimals.setHorizontalHeaderLabels(["Animal", "Box", "Weight", "Text1", "Text2", "Text3"])
+        self.ui.tableWidgetAnimals.setHorizontalHeaderLabels(["Animal"])
         self.ui.tableWidgetAnimals.setRowCount(len(self.dataset.animals))
         for i, animal in enumerate(self.dataset.animals.values()):
             self.ui.tableWidgetAnimals.setItem(i, 0, QTableWidgetItem(animal.id))
-            self.ui.tableWidgetAnimals.setItem(i, 1, QTableWidgetItem(animal.box))
-            self.ui.tableWidgetAnimals.setItem(i, 2, QTableWidgetItem(str(animal.weight)))
-            self.ui.tableWidgetAnimals.setItem(i, 3, QTableWidgetItem(animal.text1))
-            self.ui.tableWidgetAnimals.setItem(i, 4, QTableWidgetItem(animal.text2))
-            self.ui.tableWidgetAnimals.setItem(i, 5, QTableWidgetItem(animal.text3))
 
     def _rename(self) -> None:
         name = self.ui.lineEditName.text()

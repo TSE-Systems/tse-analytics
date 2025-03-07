@@ -28,7 +28,7 @@ def preprocess_main_table(dataset: IntelliMazeDataset, sampling_interval: pd.Tim
 
     animal_to_box_map = {}
     for animal in dataset.animals.values():
-        animal_to_box_map[animal.id] = animal.box
+        animal_to_box_map[animal.id] = animal.properties["Box"]
 
     # Convert to categorical types
     df = df.astype({

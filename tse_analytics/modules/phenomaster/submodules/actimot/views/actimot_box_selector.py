@@ -41,7 +41,7 @@ class ActimotBoxSelector(QTableView):
     def set_data(self, dataset: PhenoMasterDataset):
         items: dict[str, ActimotAnimalItem] = {}
         for animal in dataset.animals.values():
-            items[animal.id] = ActimotAnimalItem(animal.box, animal.id, {})
+            items[animal.id] = ActimotAnimalItem(animal.properties["Box"], animal.id, {})
         animal_ids = list(items.keys())
 
         header = ["Animal", "Box"]

@@ -11,7 +11,7 @@ def process_drinkfeed_intervals(
 ):
     box_to_animal_map = {}
     for animal in drinkfeed_data.dataset.animals.values():
-        box_to_animal_map[animal.box] = animal.id
+        box_to_animal_map[animal.properties["Box"]] = animal.id
 
     df = drinkfeed_data.raw_df.copy()
 
