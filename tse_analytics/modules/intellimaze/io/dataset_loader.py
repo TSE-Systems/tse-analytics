@@ -11,12 +11,12 @@ from loguru import logger
 from tse_analytics.core.data.shared import Animal
 from tse_analytics.modules.intellimaze.submodules.animal_gate.io.importer import import_animalgate_data
 from tse_analytics.modules.intellimaze.submodules.consumption_scale.io.importer import import_consumptionscale_data
-from tse_analytics.modules.intellimaze.data.im_dataset import IMDataset
+from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 from tse_analytics.modules.intellimaze.data.main_table_helper import preprocess_main_table
 from tse_analytics.modules.intellimaze.submodules.running_wheel.io.importer import import_runningwheel_data
 
 
-def import_im_dataset(path: Path) -> IMDataset | None:
+def import_im_dataset(path: Path) -> IntelliMazeDataset | None:
     tic = timeit.default_timer()
 
     with zipfile.ZipFile(path, mode="r") as zip:
@@ -36,7 +36,7 @@ def import_im_dataset(path: Path) -> IMDataset | None:
             devices = _get_devices(metadata)
             animals = _import_animals(tmp_path / "Animals" / "Animals.animals")
 
-            dataset = IMDataset(
+            dataset = IntelliMazeDataset(
                 name=path.stem,
                 path=str(path),
                 meta={

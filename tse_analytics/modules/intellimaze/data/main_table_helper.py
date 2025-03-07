@@ -1,9 +1,9 @@
 import pandas as pd
 
-from tse_analytics.modules.intellimaze.data.im_dataset import IMDataset
+from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 
 
-def preprocess_main_table(dataset: IMDataset, sampling_interval: pd.Timedelta) -> IMDataset:
+def preprocess_main_table(dataset: IntelliMazeDataset, sampling_interval: pd.Timedelta) -> IntelliMazeDataset:
     dataframes = []
     variables = {}
     if dataset.animal_gate_data is not None:

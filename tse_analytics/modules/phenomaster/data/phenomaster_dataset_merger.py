@@ -1,24 +1,25 @@
 import pandas as pd
 
-from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Animal, Variable
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 
 
 def merge_datasets(
     new_dataset_name: str,
-    datasets: list[Dataset],
+    datasets: list[PhenoMasterDataset],
     single_run: bool,
     continuous_mode: bool,
     generate_new_animal_names: bool,
-) -> Dataset | None:
+) -> PhenoMasterDataset | None:
     if continuous_mode:
         return _merge_continuous(new_dataset_name, datasets, single_run)
     else:
         return _merge_overlap(new_dataset_name, datasets, single_run, generate_new_animal_names)
 
 
-def _merge_continuous(new_dataset_name: str, datasets: list[Dataset], single_run: bool) -> Dataset | None:
+def _merge_continuous(
+    new_dataset_name: str, datasets: list[PhenoMasterDataset], single_run: bool
+) -> PhenoMasterDataset | None:
     dfs = [x.original_df for x in datasets]
 
     # reassign run number
@@ -65,10 +66,10 @@ def _merge_continuous(new_dataset_name: str, datasets: list[Dataset], single_run
 
 def _merge_overlap(
     new_dataset_name: str,
-    datasets: list[Dataset],
+    datasets: list[PhenoMasterDataset],
     single_run: bool,
     generate_new_animal_names: bool,
-) -> Dataset | None:
+) -> PhenoMasterDataset | None:
     if generate_new_animal_names:
         for index, dataset in enumerate(datasets):
             run_number = index + 1
@@ -134,7 +135,7 @@ def _merge_metadata(
     sampling_interval: pd.Timedelta,
     animals: dict[str, Animal],
     variables: dict[str, Variable],
-    datasets: list[Dataset],
+    datasets: list[PhenoMasterDataset],
 ) -> dict:
     result = {
         "experiment": {
@@ -153,13 +154,13 @@ def _merge_metadata(
     return result
 
 
-def _merge_animals(datasets: list[Dataset]) -> dict[str, Animal]:
+def _merge_animals(datasets: list[PhenoMasterDataset]) -> dict[str, Animal]:
     result: dict[str, Animal] = {}
     for animals in [dataset.animals for dataset in datasets]:
         result.update(animals)
     return result
 
 
-def _merge_variables(datasets: list[Dataset]) -> dict[str, Variable]:
+def _merge_variables(datasets: list[PhenoMasterDataset]) -> dict[str, Variable]:
     result = datasets[0].variables
     return result

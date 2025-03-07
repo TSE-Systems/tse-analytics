@@ -11,6 +11,8 @@ from PySide6.QtWidgets import (
     QToolBar,
     QToolButton,
     QWidget,
+    QVBoxLayout,
+    QTreeView,
 )
 
 from tse_analytics.core import manager, messaging
@@ -35,7 +37,6 @@ from tse_analytics.modules.phenomaster.submodules.trafficage.models.trafficage_t
 from tse_analytics.modules.phenomaster.submodules.trafficage.views.trafficage_dialog import TraffiCageDialog
 from tse_analytics.views.datasets.adjust_dataset_dialog import AdjustDatasetDialog
 from tse_analytics.views.datasets.datasets_merge_dialog import DatasetsMergeDialog
-from tse_analytics.views.datasets.datasets_widget_ui import Ui_DatasetsWidget
 from tse_analytics.views.import_csv_dialog import ImportCsvDialog
 from tse_analytics.views.misc.add_widget_button import AddWidgetButton
 
@@ -43,14 +44,18 @@ from tse_analytics.views.misc.add_widget_button import AddWidgetButton
 class DatasetsWidget(QWidget):
     def __init__(self, parent, add_widget_button: AddWidgetButton):
         super().__init__(parent)
-        self.ui = Ui_DatasetsWidget()
-        self.ui.setupUi(self)
+
+        self.layout = QVBoxLayout(self)
+        self.layout.setSpacing(0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
 
         self.add_widget_button = add_widget_button
 
-        toolbar = QToolBar("Datasets Toolbar")
-        toolbar.setIconSize(QSize(16, 16))
-        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        toolbar = QToolBar(
+            "Datasets Toolbar",
+            iconSize=QSize(16, 16),
+            toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
+        )
 
         if CSV_IMPORT_ENABLED:
             self.import_button = QToolButton()
@@ -89,9 +94,14 @@ class DatasetsWidget(QWidget):
         self.merge_dataset_action.setEnabled(False)
         self.merge_dataset_action.triggered.connect(self._merge_datasets)
 
-        self.layout().insertWidget(0, toolbar)
+        self.layout.addWidget(toolbar)
 
-        pal = self.ui.treeView.palette()
+        self.treeView = QTreeView(
+            self,
+            headerHidden=True,
+        )
+
+        pal = self.treeView.palette()
         pal.setColor(
             QPalette.ColorGroup.Inactive,
             QPalette.ColorRole.Highlight,
@@ -102,22 +112,25 @@ class DatasetsWidget(QWidget):
             QPalette.ColorRole.HighlightedText,
             pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.HighlightedText),
         )
-        self.ui.treeView.setPalette(pal)
+        self.treeView.setPalette(pal)
 
-        self.ui.treeView.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        self.ui.treeView.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-        self.ui.treeView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.treeView.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.treeView.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.treeView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
 
         workspace_model = manager.get_workspace_model()
-        self.ui.treeView.setModel(workspace_model)
+        self.treeView.setModel(workspace_model)
 
         # self.ui.treeView.customContextMenuRequested.connect(self._open_menu)
-        self.ui.treeView.selectionModel().currentChanged.connect(self._treeview_current_changed)
-        self.ui.treeView.doubleClicked.connect(self._treeview_double_clicked)
+        self.treeView.selectionModel().currentChanged.connect(self._treeview_current_changed)
+        self.treeView.doubleClicked.connect(self._treeview_double_clicked)
+
+        self.layout.addWidget(self.treeView)
+
         workspace_model.checkedItemChanged.connect(self._checked_item_changed)
 
     def _get_selected_dataset(self) -> Dataset | None:
-        selected_indexes = self.ui.treeView.selectedIndexes()
+        selected_indexes = self.treeView.selectedIndexes()
         if len(selected_indexes) > 0:
             selected_index = selected_indexes[0]
             if selected_index.isValid():
@@ -127,7 +140,7 @@ class DatasetsWidget(QWidget):
 
     def _merge_datasets(self):
         checked_datasets: list[Dataset] = []
-        items = self.ui.treeView.model().workspace_tree_item.child_items
+        items = self.treeView.model().workspace_tree_item.child_items
         for item in items:
             if item.checked:
                 checked_datasets.append(item.dataset)
@@ -150,7 +163,7 @@ class DatasetsWidget(QWidget):
         dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             # uncheck all datasets
-            items = self.ui.treeView.model().workspace_tree_item.child_items
+            items = self.treeView.model().workspace_tree_item.child_items
             for item in items:
                 item.checked = False
 
@@ -166,7 +179,7 @@ class DatasetsWidget(QWidget):
             # TODO: check other cases!!
             dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
             if dialog.exec() == QDialog.DialogCode.Accepted:
-                indexes = self.ui.treeView.selectedIndexes()
+                indexes = self.treeView.selectedIndexes()
                 selected_dataset_index = indexes[0]
                 manager.import_drinkfeed_data(selected_dataset_index, path)
 
@@ -182,7 +195,7 @@ class DatasetsWidget(QWidget):
             # TODO: check other cases!!
             dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
             if dialog.exec() == QDialog.DialogCode.Accepted:
-                indexes = self.ui.treeView.selectedIndexes()
+                indexes = self.treeView.selectedIndexes()
                 selected_dataset_index = indexes[0]
                 manager.import_actimot_data(selected_dataset_index, path)
 
@@ -198,7 +211,7 @@ class DatasetsWidget(QWidget):
             # TODO: check other cases!!
             dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
             if dialog.exec() == QDialog.DialogCode.Accepted:
-                indexes = self.ui.treeView.selectedIndexes()
+                indexes = self.treeView.selectedIndexes()
                 selected_dataset_index = indexes[0]
                 manager.import_calo_data(selected_dataset_index, path)
 
@@ -214,12 +227,12 @@ class DatasetsWidget(QWidget):
             # TODO: check other cases!!
             dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
             if dialog.exec() == QDialog.DialogCode.Accepted:
-                indexes = self.ui.treeView.selectedIndexes()
+                indexes = self.treeView.selectedIndexes()
                 selected_dataset_index = indexes[0]
                 manager.import_trafficage_data(selected_dataset_index, path)
 
     def _adjust_dataset(self):
-        selected_index = self.ui.treeView.selectedIndexes()[0]
+        selected_index = self.treeView.selectedIndexes()[0]
         item = selected_index.model().getItem(selected_index)
         dataset = item.dataset
         dialog = AdjustDatasetDialog(dataset, dataset.sampling_interval, self)
@@ -236,7 +249,7 @@ class DatasetsWidget(QWidget):
         ):
             dataset = self._get_selected_dataset()
             LayoutManager.delete_dataset_widgets(dataset)
-            selected_indexes = self.ui.treeView.selectedIndexes()
+            selected_indexes = self.treeView.selectedIndexes()
             manager.remove_dataset(selected_indexes)
             self.add_widget_button.set_state(False)
             if CSV_IMPORT_ENABLED:
@@ -337,7 +350,7 @@ class DatasetsWidget(QWidget):
 
     def _checked_item_changed(self, item, state: bool):
         if isinstance(item, DatasetTreeItem):
-            items = self.ui.treeView.model().workspace_tree_item.child_items
+            items = self.treeView.model().workspace_tree_item.child_items
             checked_datasets_number = 0
             for item in items:
                 if item.checked:

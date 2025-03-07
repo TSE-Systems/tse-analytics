@@ -2,8 +2,8 @@ import pandas as pd
 import pingouin as pg
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
-from pyqttoast import ToastPreset
 from PySide6.QtWidgets import QMessageBox, QWidget, QToolBar, QLabel, QTextEdit, QVBoxLayout
+from pyqttoast import ToastPreset
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import BinningMode

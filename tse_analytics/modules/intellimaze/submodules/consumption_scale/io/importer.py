@@ -6,12 +6,12 @@ import pandas as pd
 from tse_analytics.modules.intellimaze.submodules.consumption_scale.data.consumption_scale_data import (
     ConsumptionScaleData,
 )
-from tse_analytics.modules.intellimaze.data.im_dataset import IMDataset
+from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 
 
 def import_consumptionscale_data(
     folder_path: Path,
-    im_dataset: IMDataset,
+    im_dataset: IntelliMazeDataset,
 ) -> ConsumptionScaleData | None:
     if not folder_path.exists() or not folder_path.is_dir():
         return None

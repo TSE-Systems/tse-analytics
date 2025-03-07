@@ -4,12 +4,12 @@ import numpy as np
 import pandas as pd
 
 from tse_analytics.modules.intellimaze.submodules.animal_gate.data.animal_gate_data import AnimalGateData
-from tse_analytics.modules.intellimaze.data.im_dataset import IMDataset
+from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 
 
 def import_animalgate_data(
     folder_path: Path,
-    im_dataset: IMDataset,
+    im_dataset: IntelliMazeDataset,
 ) -> AnimalGateData | None:
     if not folder_path.exists() or not folder_path.is_dir():
         return None

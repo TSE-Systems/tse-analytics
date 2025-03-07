@@ -1,10 +1,10 @@
 import pandas as pd
 import seaborn as sns
+from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QAbstractItemView, QWidget, QVBoxLayout, QToolBar, QAbstractScrollArea
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
-from PySide6.QtCore import QSize, Qt
-from PySide6.QtWidgets import QAbstractItemView, QWidget, QVBoxLayout, QToolBar, QAbstractScrollArea
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 

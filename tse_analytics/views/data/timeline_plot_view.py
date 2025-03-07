@@ -3,9 +3,9 @@ from io import BytesIO
 
 import pandas as pd
 import pyqtgraph as pg
-from pyqtgraph.exporters import ImageExporter
 from PySide6.QtCore import QBuffer, QByteArray, QIODevice
 from PySide6.QtWidgets import QWidget
+from pyqtgraph.exporters import ImageExporter
 
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Factor, SplitMode, Variable

@@ -1,11 +1,11 @@
 import pingouin as pg
 import seaborn as sns
+from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QSplitter, QTextEdit, QWidgetAction
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from pyqttoast import ToastPreset
-from PySide6.QtCore import QSize, Qt
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QSplitter, QTextEdit, QWidgetAction
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset

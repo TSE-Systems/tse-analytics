@@ -3,13 +3,13 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from tse_analytics.modules.intellimaze.data.im_dataset import IMDataset
+from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 from tse_analytics.modules.intellimaze.submodules.running_wheel.data.running_wheel_data import RunningWheelData
 
 
 def import_runningwheel_data(
     folder_path: Path,
-    im_dataset: IMDataset,
+    im_dataset: IntelliMazeDataset,
 ) -> RunningWheelData | None:
     if not folder_path.exists() or not folder_path.is_dir():
         return None

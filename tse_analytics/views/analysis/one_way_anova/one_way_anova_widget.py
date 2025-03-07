@@ -1,8 +1,8 @@
 import pingouin as pg
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
-from pyqttoast import ToastPreset
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QTextEdit, QComboBox
+from pyqttoast import ToastPreset
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 from tse_analytics.core import messaging
