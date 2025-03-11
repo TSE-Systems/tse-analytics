@@ -25,22 +25,26 @@ class AnimalsModel(QAbstractTableModel):
                 elif role == Qt.ItemDataRole.CheckStateRole:
                     return Qt.CheckState.Checked if item.enabled else Qt.CheckState.Unchecked
             case _:
-                if role == Qt.ItemDataRole.DisplayRole:
+                if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
                     return item.properties[self.header[index.column()]]
 
     def setData(self, index: QModelIndex, value, role: Qt.ItemDataRole = ...):
-        match index.column():
+        item = self.items[index.row()]
+        col = index.column()
+        match col:
             case 0:
                 if role == Qt.ItemDataRole.CheckStateRole:
-                    item = self.items[index.row()]
                     item.enabled = value == Qt.CheckState.Checked.value
                     messaging.broadcast(messaging.DataChangedMessage(self, self.dataset))
                     return True
                 elif role == Qt.ItemDataRole.EditRole:
-                    item = self.items[index.row()]
                     old_id = item.id
                     item.id = value
                     self.dataset.rename_animal(old_id, item)
+                    return True
+            case _:
+                if role == Qt.ItemDataRole.EditRole:
+                    item.properties[self.header[col]] = value
                     return True
 
     def flags(self, index: QModelIndex):
@@ -53,7 +57,7 @@ class AnimalsModel(QAbstractTableModel):
                     | Qt.ItemFlag.ItemIsEditable
                 )
             case _:
-                return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
+                return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsEditable
 
     def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = ...):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:

@@ -68,11 +68,10 @@ class Dataset:
         self.original_df.drop(columns=variable_names, inplace=True)
         self.active_df.drop(columns=variable_names, inplace=True)
 
-    def extract_levels_from_field(self, field: Literal["text1", "text2", "text3"] = "text1") -> dict[str, FactorLevel]:
-        """Extract levels assignment from Text1, Text2 or Text3 field"""
+    def extract_levels_from_property(self, property_name: str) -> dict[str, FactorLevel]:
         levels_dict: dict[str, list[str]] = {}
         for animal in self.animals.values():
-            level_name = getattr(animal, field)
+            level_name = animal.properties[property_name]
             if level_name not in levels_dict:
                 levels_dict[level_name] = []
             levels_dict[level_name].append(animal.id)

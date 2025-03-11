@@ -1,7 +1,9 @@
 from functools import partial
 
 from PySide6.QtCore import QSize, QSortFilterProxyModel, Qt
-from PySide6.QtWidgets import QToolBar, QWidget, QVBoxLayout, QTableView, QAbstractItemView
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QToolBar, QWidget, QVBoxLayout, QTableView, QAbstractItemView, QInputDialog, QLineEdit, \
+    QMessageBox
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
@@ -32,6 +34,9 @@ class AnimalsWidget(QWidget, messaging.MessengerListener):
         self.uncheck_all_action = toolbar.addAction("Uncheck All")
         self.uncheck_all_action.triggered.connect(partial(self._set_animals_state, False))
 
+        toolbar.addSeparator()
+        toolbar.addAction(QIcon(":/icons/icons8-add-16.png"), "Add property").triggered.connect(self._add_property)
+
         self.layout.addWidget(toolbar)
 
         proxy_model = QSortFilterProxyModel()
@@ -55,9 +60,12 @@ class AnimalsWidget(QWidget, messaging.MessengerListener):
         if self.dataset is None:
             self.tableView.model().setSourceModel(None)
         else:
-            model = AnimalsModel(message.dataset)
-            self.tableView.model().setSourceModel(model)
-            self.tableView.resizeColumnsToContents()
+            self._set_model()
+
+    def _set_model(self):
+        model = AnimalsModel(self.dataset)
+        self.tableView.model().setSourceModel(model)
+        self.tableView.resizeColumnsToContents()
 
     def _set_animals_state(self, state: bool) -> None:
         if self.dataset is None:
@@ -68,6 +76,33 @@ class AnimalsWidget(QWidget, messaging.MessengerListener):
             animal.enabled = state
         self.tableView.model().endResetModel()
         messaging.broadcast(messaging.DataChangedMessage(self, self.dataset))
+
+    def _add_property(self) -> None:
+        if self.dataset is None:
+            return
+
+        name, ok = QInputDialog.getText(
+            self,
+            "Enter property name",
+            "Name",
+            QLineEdit.EchoMode.Normal,
+            "",
+        )
+        if ok:
+            if name == "":
+                QMessageBox.warning(self, "Warning", "Property name cannot be empty.")
+                return
+            if len(self.dataset.animals) > 0:
+                animal_properties = next(iter(self.dataset.animals.values())).properties
+                if name in animal_properties:
+                    QMessageBox.warning(self, "Warning", "Property name already exists.")
+                    return
+            # Add new property to all animals
+            for animal in self.dataset.animals.values():
+                animal.properties[name] = 0.0
+
+            self._set_model()
+
 
     def minimumSizeHint(self):
         return QSize(300, 100)

@@ -6,7 +6,7 @@ from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Factor
 from tse_analytics.core.models.factors_model import FactorsModel
-from tse_analytics.views.factors_dialog import FactorsDialog
+from tse_analytics.views.selection.factors.factors_dialog import FactorsDialog
 
 
 class FactorsWidget(QWidget, messaging.MessengerListener):

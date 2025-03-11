@@ -71,9 +71,6 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
         variable = Variable(item, columns_unit[i], "", "float64", Aggregation.MEAN, False)
         variables[variable.name] = variable
 
-    # Add Weight variable
-    variables["Weight"] = Variable("Weight", "[g]", "Animal weight", "float64", Aggregation.MEAN, False)
-
     data = data_section.lines[2:]
     data = [line.rstrip(csv_import_settings.delimiter) for line in data]
     csv = "\n".join(data)
@@ -120,31 +117,12 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
     df.sort_values(by=["DateTime", "Box"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    # Calculate cumulative values
-    _add_cumulative_columns(df, "Drink", variables)
-    _add_cumulative_columns(df, "Feed", variables)
-
     start_date_time = df["DateTime"][0]
     df.insert(loc=1, column="Timedelta", value=df["DateTime"] - start_date_time)
     df.insert(loc=2, column="Bin", value=(df["Timedelta"] / timedelta).round().astype(int))
 
     # Add Run column
     df.insert(loc=5, column="Run", value=1)
-
-    # Add Weight column
-    if len(animals) > 0:
-        animal_properties = next(iter(animals.values())).properties
-        if "Weight" not in df.columns and "Weight" in animal_properties:
-            df.insert(loc=6, column="Weight", value=df["Animal"])
-            weights = {}
-            for animal in animals.values():
-                weights[animal.id] = animal.properties["Weight"]
-            df = df.replace({"Weight": weights})
-
-    # convert categorical types
-    df = df.astype({
-        "Weight": "float64",
-    })
 
     # Sort variables by name
     variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))
@@ -228,17 +206,6 @@ def _get_group_section(lines: list[str], start_index: int):
 def _get_data_section(lines: list[str], start_index: int):
     section = lines[start_index:]
     return Section(section, start_index, len(lines))
-
-
-def _add_cumulative_columns(df: pd.DataFrame, origin_name: str, variables: dict[str, Variable]):
-    cols = [col for col in df.columns if origin_name in col]
-    for col in cols:
-        cumulative_col_name = col + "C"
-        df[cumulative_col_name] = df.groupby("Box", observed=False)[col].transform(pd.Series.cumsum)
-        var = Variable(
-            cumulative_col_name, variables[col].unit, f"{col} (cumulative)", "float64", Aggregation.MAX, False
-        )
-        variables[var.name] = var
 
 
 def _most_frequent(lst: list):

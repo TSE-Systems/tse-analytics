@@ -81,7 +81,7 @@
            <bool>false</bool>
           </property>
           <property name="text">
-           <string>Extract from...</string>
+           <string>Extract levels from...</string>
           </property>
          </widget>
         </item>

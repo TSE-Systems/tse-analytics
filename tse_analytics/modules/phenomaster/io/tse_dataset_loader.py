@@ -124,17 +124,6 @@ def _get_factors(data: dict) -> dict[str, Factor]:
     return factors
 
 
-def _add_cumulative_columns(df: pd.DataFrame, origin_name: str, variables: dict[str, Variable]):
-    cols = [col for col in df.columns if origin_name in col]
-    for col in cols:
-        cumulative_col_name = col + "C"
-        df[cumulative_col_name] = df.groupby("Box", observed=False)[col].transform(pd.Series.cumsum)
-        var = Variable(
-            cumulative_col_name, variables[col].unit, f"{col} (cumulative)", "float64", Aggregation.MEAN, False
-        )
-        variables[var.name] = var
-
-
 def _read_main_table(
     path: Path, metadata: dict, animals: dict[str, Animal]
 ) -> tuple[pd.DataFrame, dict[str, Variable], pd.Timedelta]:
@@ -183,10 +172,6 @@ def _read_main_table(
     df.sort_values(by=["DateTime", "Box"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    # Calculate cumulative values
-    _add_cumulative_columns(df, "Drink", variables)
-    _add_cumulative_columns(df, "Feed", variables)
-
     # Add Timedelta and Bin columns
     start_date_time = df.iloc[0]["DateTime"]
     df.insert(loc=1, column="Timedelta", value=df["DateTime"] - start_date_time)
@@ -194,24 +179,6 @@ def _read_main_table(
 
     # Add Run column
     df.insert(loc=5, column="Run", value=1)
-
-    # Add Weight variable
-    variables["Weight"] = Variable("Weight", "g", "Animal weight", "float64", Aggregation.MEAN, False)
-
-    # Add Weight column
-    if len(animals) > 0:
-        animal_properties = next(iter(animals.values())).properties
-        if "Weight" not in df.columns and "Weight" in animal_properties:
-            df.insert(loc=6, column="Weight", value=df["Animal"])
-            weights = {}
-            for animal in animals.values():
-                weights[animal.id] = animal.properties["Weight"]
-            df = df.replace({"Weight": weights})
-
-    # convert categorical types
-    df = df.astype({
-        "Weight": "float64",
-    })
 
     # Sort variables by name
     variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))

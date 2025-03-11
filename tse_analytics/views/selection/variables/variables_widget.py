@@ -1,7 +1,16 @@
 from PySide6.QtCore import QSize, QSortFilterProxyModel, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QComboBox, QDoubleSpinBox, QToolBar, QWidget, QVBoxLayout, QTableView, QAbstractItemView, \
-    QMessageBox
+from PySide6.QtWidgets import (
+    QComboBox,
+    QDoubleSpinBox,
+    QToolBar,
+    QWidget,
+    QVBoxLayout,
+    QTableView,
+    QAbstractItemView,
+    QMessageBox,
+    QDialog,
+)
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
@@ -9,6 +18,7 @@ from tse_analytics.core.data.outliers import OutliersMode
 from tse_analytics.core.models.aggregation_combo_box_delegate import AggregationComboBoxDelegate
 from tse_analytics.core.models.variables_model import VariablesModel
 from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
+from tse_analytics.views.selection.variables.add_variable_dialog import AddVariableDialog
 
 
 class VariablesWidget(QWidget, messaging.MessengerListener):
@@ -39,6 +49,9 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
         toolbar.addWidget(self.outliersCoefficientSpinBox)
 
         toolbar.addAction("Reset").triggered.connect(self._reset_variables)
+
+        toolbar.addSeparator()
+        toolbar.addAction(QIcon(":/icons/icons8-add-16.png"), "Add").triggered.connect(self._add_variable)
         toolbar.addAction(QIcon(":/icons/icons8-remove-16.png"), "Delete").triggered.connect(self._delete_variable)
 
         self.layout.addWidget(toolbar)
@@ -94,6 +107,16 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
             model = VariablesModel(list(self.dataset.variables.values()), self.dataset)
             self.tableView.model().setSourceModel(model)
             self.tableView.resizeColumnsToContents()
+
+    def _add_variable(self) -> None:
+        if self.dataset is None:
+            return
+        dialog = AddVariableDialog(self.dataset, self)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            model = VariablesModel(list(self.dataset.variables.values()), self.dataset)
+            self.tableView.model().setSourceModel(model)
+            self.tableView.resizeColumnsToContents()
+        dialog.deleteLater()
 
     def _delete_variable(self) -> None:
         if self.dataset is None:

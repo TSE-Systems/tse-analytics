@@ -110,14 +110,12 @@ def _import_animals(path: Path) -> dict | None:
             "Sex": item["Sex"],
             "Strain": item["Strain"],
             "Group": item["Group"],
-            "Weight": float(item["weight"]),
+            "Weight": float(item["Weight"]),
             "Treatment": item["Treatment"],
             "Dosage": item["Dosage"],
             "Age": item["Age"],
+            "Notes": item["Notes"] if "Notes" in item else "",
         }
-
-        if "Notes" in item:
-            properties["Notes"] = item["Notes"]
 
         animal = Animal(
             enabled=True,

@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QDialog, QInputDialog, QListWidgetItem, QWidget
 
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Factor, FactorLevel
-from tse_analytics.views.factors_dialog_ui import Ui_FactorsDialog
+from tse_analytics.views.selection.factors.factors_dialog_ui import Ui_FactorsDialog
 
 
 class FactorsDialog(QDialog, Ui_FactorsDialog):
@@ -13,7 +13,9 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
 
         self.dataset = dataset
 
-        self.comboBoxFields.addItems(["text1", "text2", "text3"])
+        if len(self.dataset.animals) > 0:
+            animal_properties = next(iter(self.dataset.animals.values())).properties
+            self.comboBoxFields.addItems(list(animal_properties.keys()))
 
         self.factors = list(self.dataset.factors.values()).copy()
         self.listWidgetFactors.addItems([factor.name for factor in self.factors])
@@ -64,7 +66,7 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
     def extract_levels(self):
         selected_field = self.comboBoxFields.currentText()
         if selected_field is not None:
-            levels = self.dataset.extract_levels_from_field(selected_field)
+            levels = self.dataset.extract_levels_from_property(selected_field)
             self.selected_factor.levels = list(levels.values())
             self.listWidgetLevels.clear()
             self.listWidgetLevels.addItems([level.name for level in self.selected_factor.levels])
@@ -85,17 +87,19 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         self.selected_level = next((x for x in self.selected_factor.levels if x.name == text), None)
         self.pushButtonDeleteLevel.setEnabled(self.selected_level is not None)
         if self.selected_level is not None:
-            for animal in self.dataset.animals.values():
-                item = QListWidgetItem(str(animal.id))
+            animals_ids = list(self.dataset.animals.keys())
+            animals_ids.sort()
+            for animal_id in animals_ids:
+                item = QListWidgetItem(str(animal_id))
                 item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled)
-                if animal.id in self.selected_level.animal_ids:
+                if animal_id in self.selected_level.animal_ids:
                     item.setCheckState(Qt.CheckState.Checked)
                 else:
                     item.setCheckState(Qt.CheckState.Unchecked)
 
                 for level in self.selected_factor.levels:
                     if level != self.selected_level:
-                        if animal.id in level.animal_ids:
+                        if animal_id in level.animal_ids:
                             item.setFlags(~Qt.ItemFlag.ItemIsEnabled)
                             break
 
