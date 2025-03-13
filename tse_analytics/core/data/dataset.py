@@ -134,3 +134,8 @@ class Dataset:
     def add_children_tree_items(self, dataset_tree_item: DatasetTreeItem) -> None:
         for datatable in self.datatables.values():
             dataset_tree_item.add_child(DatatableTreeItem(datatable))
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        for datatable in self.datatables.values():
+            datatable.refresh_active_df()
