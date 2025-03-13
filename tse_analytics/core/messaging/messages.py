@@ -1,5 +1,6 @@
 from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.models.tree_item import TreeItem
 
 
@@ -51,6 +52,14 @@ class DatasetChangedMessage(Message):
     def __init__(self, sender, dataset: Dataset | None):
         super().__init__(sender)
         self.dataset = dataset
+
+
+class DatatableChangedMessage(Message):
+    """Indicates that selected datatable is changed"""
+
+    def __init__(self, sender, datatable: Datatable | None):
+        super().__init__(sender)
+        self.datatable = datatable
 
 
 class BinningMessage(Message):

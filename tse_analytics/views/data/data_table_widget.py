@@ -10,14 +10,17 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QTextEdit,
     QAbstractScrollArea,
+    QToolButton,
+    QMenu,
+    QFileDialog,
 )
 from pyqttoast import ToastPreset
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import BinningMode
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.helper import get_widget_tool_button, get_h_spacer_widget
+from tse_analytics.core.utils import get_widget_tool_button, get_h_spacer_widget
 from tse_analytics.core.models.pandas_model import PandasModel
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
@@ -28,7 +31,7 @@ from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 
 
 class DataTableWidget(QWidget, messaging.MessengerListener):
-    def __init__(self, dataset: Dataset, parent: QWidget | None = None):
+    def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
         messaging.subscribe(self, messaging.BinningMessage, self._on_binning_applied)
@@ -38,7 +41,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.layout.setSpacing(0)
         self.layout.setContentsMargins(0, 0, 0, 0)
 
-        self.dataset = dataset
+        self.datatable = datatable
         self.df: pd.DataFrame | None = None
         self.split_mode = SplitMode.ANIMAL
         self.selected_factor_name = ""
@@ -53,7 +56,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.variables_table_widget = VariablesTableWidget()
         self.variables_table_widget.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
         self.variables_table_widget.itemSelectionChanged.connect(self._variables_selection_changed)
-        self.variables_table_widget.set_data(self.dataset.variables)
+        self.variables_table_widget.set_data(self.datatable.variables)
         self.variables_table_widget.setMaximumHeight(400)
         self.variables_table_widget.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
 
@@ -65,13 +68,27 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         )
         toolbar.addWidget(variables_button)
 
-        split_mode_selector = SplitModeSelector(toolbar, self.dataset.factors, self._split_mode_callback)
+        split_mode_selector = SplitModeSelector(toolbar, self.datatable.dataset.factors, self._split_mode_callback)
         toolbar.addWidget(split_mode_selector)
 
         toolbar.addSeparator()
         toolbar.addAction(QIcon(":/icons/icons8-resize-horizontal-16.png"), "Resize Columns").triggered.connect(
             self._resize_columns_width
         )
+
+        self.export_button = QToolButton(
+            popupMode=QToolButton.ToolButtonPopupMode.InstantPopup,
+            toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
+        )
+        self.export_button.setText("Export")
+        self.export_button.setIcon(QIcon(":/icons/icons8-export-16.png"))
+
+        export_menu = QMenu("Export", self.export_button)
+        export_menu.addAction("Export to CVS...").triggered.connect(self._export_csv)
+        export_menu.addAction("Export to Excel...").triggered.connect(self._export_excel)
+        self.export_button.setMenu(export_menu)
+
+        toolbar.addWidget(self.export_button)
 
         # Horizontal spacer
         toolbar.addWidget(get_h_spacer_widget(toolbar))
@@ -125,25 +142,39 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         )  # Any other args, kwargs are passed to the run function
         TaskManager.start_task(worker)
 
+    def _export_csv(self):
+        if self.datatable is None:
+            return
+        filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "", "CSV Files (*.csv)")
+        if filename:
+            self.datatable.export_to_csv(filename)
+
+    def _export_excel(self):
+        if self.datatable is None:
+            return
+        filename, _ = QFileDialog.getSaveFileName(self, "Export to Excel", "", "Excel Files (*.xlsx)")
+        if filename:
+            self.datatable.export_to_excel(filename)
+
     def _on_binning_applied(self, message: messaging.BinningMessage):
-        if message.dataset == self.dataset:
+        if message.dataset == self.datatable.dataset:
             self._set_data()
 
     def _on_data_changed(self, message: messaging.DataChangedMessage):
-        if message.dataset == self.dataset:
+        if message.dataset == self.datatable.dataset:
             self._set_data()
 
     def _variables_selection_changed(self):
         self._set_data()
 
     def _set_data(self):
-        if self.dataset is None:
+        if self.datatable is None:
             return
 
         selected_variables = self.variables_table_widget.get_selected_variables_dict()
         if (
-            self.dataset.binning_settings.apply
-            and self.dataset.binning_settings.mode != BinningMode.INTERVALS
+            self.datatable.dataset.binning_settings.apply
+            and self.datatable.dataset.binning_settings.mode != BinningMode.INTERVALS
             and self.split_mode != SplitMode.ANIMAL
             and len(selected_variables) == 0
         ):
@@ -168,7 +199,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             ).show()
             return
 
-        self.df = self.dataset.get_data_table_df(
+        self.df = self.datatable.get_data_table_df(
             variables=selected_variables,
             split_mode=self.split_mode,
             selected_factor_name=self.selected_factor_name,
@@ -189,7 +220,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             self.add_report_action.setEnabled(False)
             self.show_stats_button.setEnabled(False)
 
-        self.table_view.setModel(PandasModel(self.df, self.dataset, calculate=True))
+        self.table_view.setModel(PandasModel(self.df, self.datatable, calculate=True))
         self.table_view.horizontalHeader().setSortIndicatorShown(False)
 
     def _header_clicked(self, logical_index: int):
@@ -198,8 +229,8 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.table_view.horizontalHeader().setSortIndicatorShown(True)
         order = self.table_view.horizontalHeader().sortIndicatorOrder() == Qt.SortOrder.AscendingOrder
         df = self.df.sort_values(self.df.columns[logical_index], ascending=order, inplace=False)
-        self.table_view.setModel(PandasModel(df, self.dataset, calculate=True))
+        self.table_view.setModel(PandasModel(df, self.datatable, calculate=True))
 
     def _add_report(self):
-        self.dataset.report += self.descriptive_stats_widget.document().toHtml()
-        messaging.broadcast(messaging.AddToReportMessage(self, self.dataset))
+        self.datatable.dataset.report += self.descriptive_stats_widget.document().toHtml()
+        messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))

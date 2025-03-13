@@ -7,7 +7,7 @@ from PySide6.QtCore import QBuffer, QByteArray, QIODevice
 from PySide6.QtWidgets import QWidget
 from pyqtgraph.exporters import ImageExporter
 
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Factor, SplitMode, Variable
 from tse_analytics.views.misc.TimedeltaAxisItem import TimedeltaAxisItem
 
@@ -45,7 +45,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         self.plot_item1.sigXRangeChanged.connect(self._x_range_changed)
 
         # Local variables
-        self.dataset: Dataset | None = None
+        self.datatable: Datatable | None = None
         self._df: pd.DataFrame | None = None
         self._variable: Variable | None = None
         self._split_mode = SplitMode.ANIMAL
@@ -56,7 +56,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
     def refresh_data(
         self,
-        dataset: Dataset,
+        datatable: Datatable,
         df: pd.DataFrame,
         variable: Variable,
         split_mode: SplitMode,
@@ -75,7 +75,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
             self._display_errors = False
             return
 
-        self.dataset = dataset
+        self.datatable = datatable
         self._df = df
         self._variable = variable
         self._split_mode = split_mode
@@ -134,7 +134,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         x_min = None
         x_max = None
 
-        animals = [animal for animal in self.dataset.animals.values() if animal.enabled]
+        animals = [animal for animal in self.datatable.dataset.animals.values() if animal.enabled]
 
         for i, animal in enumerate(animals):
             filtered_data = self._df[self._df["Animal"] == animal.id]

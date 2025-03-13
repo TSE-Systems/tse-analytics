@@ -1,20 +1,17 @@
-from collections.abc import Sequence
-
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
 from tse_analytics.core import messaging
-from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.shared import Variable
+from tse_analytics.core.data.datatable import Datatable
 
 
 class VariablesModel(QAbstractTableModel):
     header = ("Name", "Unit", "Aggregation", "Outliers", "Description")
 
-    def __init__(self, items: Sequence[Variable], dataset: Dataset | None = None, parent=None):
+    def __init__(self, datatable: Datatable, parent=None):
         super().__init__(parent)
 
-        self.items = items
-        self.dataset = dataset
+        self.datatable = datatable
+        self.items = list(self.datatable.variables.values())
 
     def data(self, index: QModelIndex, role: Qt.ItemDataRole = ...):
         item = self.items[index.row()]
@@ -41,13 +38,13 @@ class VariablesModel(QAbstractTableModel):
                 if role == Qt.ItemDataRole.EditRole:
                     item = self.items[index.row()]
                     item.aggregation = value
-                    messaging.broadcast(messaging.DataChangedMessage(self, self.dataset))
+                    messaging.broadcast(messaging.DataChangedMessage(self, self.datatable.dataset))
                     return True
             case 3:
                 if role == Qt.ItemDataRole.CheckStateRole:
                     item = self.items[index.row()]
                     item.remove_outliers = value == Qt.CheckState.Checked.value
-                    self.dataset.apply_outliers(self.dataset.outliers_settings)
+                    self.datatable.dataset.apply_outliers(self.datatable.dataset.outliers_settings)
                     return True
 
     def flags(self, index: QModelIndex):

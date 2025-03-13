@@ -11,7 +11,7 @@ from PySide6.QtCore import QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
-from tse_analytics.core.helper import IS_RELEASE
+from tse_analytics.core.utils import IS_RELEASE
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.views.main_window import MainWindow
 

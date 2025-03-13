@@ -7,9 +7,9 @@ from pyqttoast import ToastPreset
 from statsmodels.tsa.seasonal import MSTL, STL, seasonal_decompose
 
 from tse_analytics.core import messaging
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation
-from tse_analytics.core.helper import get_html_image, get_h_spacer_widget, get_widget_tool_button
+from tse_analytics.core.utils import get_html_image, get_h_spacer_widget, get_widget_tool_button
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.views.analysis.timeseries_decomposition.timeseries_decomposition_settings_widget_ui import (
     Ui_TimeseriesDecompositionSettingsWidget,
@@ -20,7 +20,7 @@ from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
 class TimeseriesDecompositionWidget(QWidget):
-    def __init__(self, dataset: Dataset, parent: QWidget | None = None):
+    def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.layout = QVBoxLayout(self)
@@ -29,7 +29,7 @@ class TimeseriesDecompositionWidget(QWidget):
 
         self.title = "Decomposition"
 
-        self.dataset = dataset
+        self.datatable = datatable
 
         # Setup toolbar
         toolbar = QToolBar(
@@ -43,13 +43,13 @@ class TimeseriesDecompositionWidget(QWidget):
 
         self.variableSelector = VariableSelector(toolbar)
         filtered_variables = {
-            key: value for (key, value) in dataset.variables.items() if value.aggregation == Aggregation.MEAN
+            key: value for (key, value) in datatable.variables.items() if value.aggregation == Aggregation.MEAN
         }
         self.variableSelector.set_data(filtered_variables)
         toolbar.addWidget(self.variableSelector)
 
         self.animalSelector = AnimalSelector(toolbar)
-        self.animalSelector.set_data(self.dataset.animals)
+        self.animalSelector.set_data(self.datatable.dataset.animals)
         toolbar.addWidget(self.animalSelector)
 
         self.settings_widget = QWidget()
@@ -96,7 +96,7 @@ class TimeseriesDecompositionWidget(QWidget):
             self.settings_widget_ui.groupBoxModel.hide()
 
     def _update(self):
-        if self.dataset.binning_settings.apply:
+        if self.datatable.dataset.binning_settings.apply:
             make_toast(
                 self,
                 self.title,
@@ -112,7 +112,7 @@ class TimeseriesDecompositionWidget(QWidget):
 
         self.canvas.clear(False)
 
-        df = self.dataset.get_timeseries_df(
+        df = self.datatable.get_timeseries_df(
             animal=animal,
             variable=variable,
         )
@@ -170,5 +170,5 @@ class TimeseriesDecompositionWidget(QWidget):
         self.canvas.draw()
 
     def _add_report(self):
-        self.dataset.report += get_html_image(self.canvas.figure)
-        messaging.broadcast(messaging.AddToReportMessage(self, self.dataset))
+        self.datatable.dataset.report += get_html_image(self.canvas.figure)
+        messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))

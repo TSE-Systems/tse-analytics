@@ -1,8 +1,8 @@
 import numpy as np
-import pandas as pd
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.helper import rename_animal_df
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_data import ActimotData
@@ -23,18 +23,12 @@ class PhenoMasterDataset(Dataset):
         path: str,
         meta: dict | list[dict],
         animals: dict[str, Animal],
-        variables: dict[str, Variable],
-        df: pd.DataFrame,
-        sampling_interval: pd.Timedelta,
     ):
         super().__init__(
             name,
             path,
             meta,
             animals,
-            variables,
-            df,
-            sampling_interval,
         )
 
         self.calo_data: CaloData | None = None
@@ -46,11 +40,11 @@ class PhenoMasterDataset(Dataset):
         super().rename_animal(old_id, animal)
 
         if self.drinkfeed_data is not None:
-            self.drinkfeed_data.raw_df = self._rename_animal_df(self.drinkfeed_data.raw_df, old_id, animal)
+            self.drinkfeed_data.raw_df = rename_animal_df(self.drinkfeed_data.raw_df, old_id, animal)
         if self.calo_data is not None:
-            self.calo_data.raw_df = self._rename_animal_df(self.calo_data.raw_df, old_id, animal)
-        if self.actimot_data is not None:
-            self.actimot_data.raw_df = self._rename_animal_df(self.actimot_data.raw_df, old_id, animal)
+            self.calo_data.raw_df = rename_animal_df(self.calo_data.raw_df, old_id, animal)
+        # if self.actimot_data is not None:
+        #     self.actimot_data.raw_df = self._rename_animal_df(self.actimot_data.raw_df, old_id, animal)
 
         messaging.broadcast(messaging.DatasetChangedMessage(self, self))
 
@@ -110,6 +104,8 @@ class PhenoMasterDataset(Dataset):
             messaging.broadcast(messaging.DatasetChangedMessage(self, self))
 
     def add_children_tree_items(self, dataset_tree_item: DatasetTreeItem) -> None:
+        super().add_children_tree_items(dataset_tree_item)
+
         if self.drinkfeed_data is not None:
             dataset_tree_item.add_child(DrinkFeedTreeItem(self.drinkfeed_data))
 

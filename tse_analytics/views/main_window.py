@@ -12,7 +12,7 @@ from pyqttoast import Toast, ToastPreset
 
 from tse_analytics.core import manager
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.helper import CSV_IMPORT_ENABLED, IS_RELEASE
+from tse_analytics.core.utils import CSV_IMPORT_ENABLED, IS_RELEASE
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
@@ -112,8 +112,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionImportDataset.triggered.connect(self.import_dataset_dialog)
         self.actionOpenWorkspace.triggered.connect(self.load_workspace_dialog)
         self.actionSaveWorkspace.triggered.connect(self.save_workspace_dialog)
-        self.actionExportCsv.triggered.connect(self.export_csv_dialog)
-        self.actionExportExcel.triggered.connect(self.export_excel_dialog)
         self.actionSaveLayout.triggered.connect(self._save_layout)
         self.actionRestoreLayout.triggered.connect(self._restore_layout)
         self.actionResetLayout.triggered.connect(self._reset_layout)
@@ -196,22 +194,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         if filename:
             manager.save_workspace(filename)
-
-    def export_excel_dialog(self) -> None:
-        dataset = manager.get_selected_dataset()
-        if dataset is None:
-            return
-        filename, _ = QFileDialog.getSaveFileName(self, "Export to Excel", "", "Excel Files (*.xlsx)")
-        if filename:
-            dataset.export_to_excel(filename)
-
-    def export_csv_dialog(self) -> None:
-        dataset = manager.get_selected_dataset()
-        if dataset is None:
-            return
-        filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "", "CSV Files (*.csv)")
-        if filename:
-            dataset.export_to_csv(filename)
 
     def update_memory_usage(self):
         # return the memory usage in MB

@@ -7,9 +7,9 @@ from pyqttoast import ToastPreset
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import BinningMode
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.helper import get_widget_tool_button, get_h_spacer_widget
+from tse_analytics.core.utils import get_widget_tool_button, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.views.analysis.mixed_anova.mixed_anova_settings_widget_ui import Ui_MixedAnovaSettingsWidget
@@ -18,7 +18,7 @@ from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
 class MixedAnovaWidget(QWidget):
-    def __init__(self, dataset: Dataset, parent: QWidget | None = None):
+    def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.layout = QVBoxLayout(self)
@@ -27,7 +27,7 @@ class MixedAnovaWidget(QWidget):
 
         self.title = "Mixed-design ANOVA"
 
-        self.dataset = dataset
+        self.datatable = datatable
 
         # Setup toolbar
         toolbar = QToolBar(
@@ -41,12 +41,12 @@ class MixedAnovaWidget(QWidget):
 
         toolbar.addWidget(QLabel("Dependent variable:"))
         self.variable_selector = VariableSelector(toolbar)
-        self.variable_selector.set_data(self.dataset.variables)
+        self.variable_selector.set_data(self.datatable.variables)
         toolbar.addWidget(self.variable_selector)
 
         toolbar.addWidget(QLabel("Factor:"))
         self.factor_selector = FactorSelector(toolbar)
-        self.factor_selector.set_data(self.dataset.factors, add_empty_item=False)
+        self.factor_selector.set_data(self.datatable.dataset.factors, add_empty_item=False)
         toolbar.addWidget(self.factor_selector)
 
         self.settings_widget = QWidget()
@@ -127,7 +127,7 @@ class MixedAnovaWidget(QWidget):
             return
 
         do_pairwise_tests = True
-        if not self.dataset.binning_settings.apply:
+        if not self.datatable.dataset.binning_settings.apply:
             make_toast(
                 self,
                 self.title,
@@ -137,7 +137,7 @@ class MixedAnovaWidget(QWidget):
                 show_duration_bar=True,
             ).show()
             return
-        elif self.dataset.binning_settings.mode == BinningMode.INTERVALS:
+        elif self.datatable.dataset.binning_settings.mode == BinningMode.INTERVALS:
             if (
                 QMessageBox.question(
                     self,
@@ -148,7 +148,7 @@ class MixedAnovaWidget(QWidget):
             ):
                 do_pairwise_tests = False
 
-        df = self.dataset.get_current_df(
+        df = self.datatable.get_current_df(
             variables={dependent_variable_name: dependent_variable},
             split_mode=SplitMode.ANIMAL,
             selected_factor_name=None,
@@ -220,5 +220,5 @@ class MixedAnovaWidget(QWidget):
         self.textEdit.document().setHtml(html)
 
     def _add_report(self):
-        self.dataset.report += self.textEdit.toHtml()
-        messaging.broadcast(messaging.AddToReportMessage(self, self.dataset))
+        self.datatable.dataset.report += self.textEdit.toHtml()
+        messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))
