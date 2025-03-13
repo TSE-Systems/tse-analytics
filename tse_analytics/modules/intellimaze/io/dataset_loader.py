@@ -38,6 +38,7 @@ def import_im_dataset(path: Path) -> IntelliMazeDataset | None:
 
             dataset = IntelliMazeDataset(
                 name=path.stem,
+                description="IntelliMaze dataset",
                 path=str(path),
                 meta={
                     "experiment": metadata,

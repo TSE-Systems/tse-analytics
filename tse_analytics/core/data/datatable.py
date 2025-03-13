@@ -18,7 +18,7 @@ from tse_analytics.core.data.shared import Animal, Factor, SplitMode, Variable
 class Datatable:
     def __init__(
         self,
-        dataset: 'Dataset',
+        dataset: "Dataset",
         name: str,
         description: str,
         variables: dict[str, Variable],
@@ -49,6 +49,13 @@ class Datatable:
     @property
     def duration(self) -> pd.Timedelta:
         return self.end_timestamp - self.start_timestamp
+
+    def get_default_columns(self) -> list[str]:
+        return (
+            ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
+            if "Box" in self.original_df.columns
+            else ["DateTime", "Timedelta", "Animal", "Run"]
+        )
 
     def delete_variables(self, variable_names: list[str]) -> None:
         for var_name in variable_names:
@@ -86,15 +93,13 @@ class Datatable:
         return df
 
     def resample(self, resampling_interval: pd.Timedelta) -> None:
-        default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
-
         agg = {
             "DateTime": "first",
             "Box": "first",
             "Run": "first",
         }
         for column in self.original_df.columns:
-            if column not in default_columns:
+            if column not in self.get_default_columns():
                 if self.original_df.dtypes[column].name != "category":
                     if column in self.variables:
                         agg[column] = self.variables[column].aggregation
@@ -215,10 +220,9 @@ class Datatable:
         dropna=False,
     ) -> pd.DataFrame:
         if variables is not None:
-            default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
             factor_columns = list(self.dataset.factors)
             variable_columns = list(variables)
-            result = self.active_df[default_columns + factor_columns + variable_columns].copy()
+            result = self.active_df[self.get_default_columns() + factor_columns + variable_columns].copy()
         else:
             variables = self.variables
             result = self.active_df.copy()
@@ -268,10 +272,9 @@ class Datatable:
         split_mode: SplitMode,
         selected_factor_name: str,
     ) -> pd.DataFrame:
-        default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
         factor_columns = list(self.dataset.factors)
         variable_columns = list(variables)
-        result = self.active_df[default_columns + factor_columns + variable_columns].copy()
+        result = self.active_df[self.get_default_columns() + factor_columns + variable_columns].copy()
 
         result = self._preprocess_df(result, variables)
 
@@ -315,9 +318,8 @@ class Datatable:
         selected_factor_name: str,
         calculate_errors: str | None,
     ) -> pd.DataFrame:
-        default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
         factor_columns = list(self.dataset.factors)
-        result = self.active_df[default_columns + factor_columns + [variable.name]].copy()
+        result = self.active_df[self.get_default_columns() + factor_columns + [variable.name]].copy()
 
         variables = {variable.name: variable}
 
@@ -379,10 +381,9 @@ class Datatable:
         self,
         variables: dict[str, Variable],
     ) -> pd.DataFrame:
-        default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
         factor_columns = list(self.dataset.factors)
         variable_columns = list(variables)
-        result = self.active_df[default_columns + factor_columns + variable_columns].copy()
+        result = self.active_df[self.get_default_columns() + factor_columns + variable_columns].copy()
 
         result = self._preprocess_df(result, variables)
 

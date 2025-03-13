@@ -7,7 +7,7 @@ from tse_analytics.views.datasets.adjust_dataset_dialog_ui import Ui_AdjustDatas
 
 
 class AdjustDatasetDialog(QDialog):
-    def __init__(self, dataset: Dataset, resampling_interval: pd.Timedelta, parent: QWidget | None = None):
+    def __init__(self, dataset: Dataset, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.ui = Ui_AdjustDatasetDialog()
@@ -19,6 +19,7 @@ class AdjustDatasetDialog(QDialog):
 
         self.ui.lineEditName.setText(dataset.name)
 
+        resampling_interval = dataset.datatables["Main"].sampling_interval
         resampling_qtime = QTime.fromMSecsSinceStartOfDay(int(resampling_interval.total_seconds() * 1000))
         self.ui.timeEditResamplingInterval.setTime(resampling_qtime)
         self.ui.timeEditResamplingInterval.setMinimumTime(resampling_qtime)

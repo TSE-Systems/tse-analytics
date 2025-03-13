@@ -2,14 +2,14 @@ import pandas as pd
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.models.pandas_simple_model import PandasSimpleModel
-from tse_analytics.modules.intellicage.data.intellicage_raw_data import IntelliCageRawData
-from tse_analytics.modules.intellicage.views.intellicage_raw_data_widget_ui import Ui_IntelliCageRawDataWidget
+from tse_analytics.modules.intellicage.data.intellicage_data import IntelliCageData
+from tse_analytics.modules.intellicage.views.intellicage_data_widget_ui import Ui_IntelliCageDataWidget
 
 
-class IntelliCageRawDataWidget(QWidget):
-    def __init__(self, data: IntelliCageRawData, parent: QWidget | None = None):
+class IntelliCageDataWidget(QWidget):
+    def __init__(self, data: IntelliCageData, parent: QWidget | None = None):
         super().__init__(parent)
-        self.ui = Ui_IntelliCageRawDataWidget()
+        self.ui = Ui_IntelliCageDataWidget()
         self.ui.setupUi(self)
 
         self.data = data
@@ -31,6 +31,9 @@ class IntelliCageRawDataWidget(QWidget):
 
         self.ui.listWidgetTables.setCurrentRow(0)
 
+    def resize_columns(self):
+        self.ui.tableView.resizeColumnsToContents()
+
     def _table_selection_changed(self):
         selected_table = self.ui.listWidgetTables.selectedItems()[0].text()
         match selected_table:
@@ -45,7 +48,6 @@ class IntelliCageRawDataWidget(QWidget):
             case _:
                 self.df = self.data.log_df
         self._set_data()
-        self.ui.tableView.resizeColumnsToContents()
 
     def _cages_selection_changed(self):
         self.selected_cages = [int(item.text()) for item in self.ui.listWidgetCages.selectedItems()]

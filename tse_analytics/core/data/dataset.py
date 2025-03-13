@@ -17,12 +17,14 @@ class Dataset:
     def __init__(
         self,
         name: str,
+        description: str,
         path: str,
         meta: dict | list[dict],
         animals: dict[str, Animal],
     ):
         self.id = uuid4()
         self.name = name
+        self.description = description
         self.path = path
         self.meta = meta
 
@@ -138,4 +140,5 @@ class Dataset:
     def __setstate__(self, state):
         self.__dict__.update(state)
         for datatable in self.datatables.values():
+            # Recalculate active_df dataframes
             datatable.refresh_active_df()

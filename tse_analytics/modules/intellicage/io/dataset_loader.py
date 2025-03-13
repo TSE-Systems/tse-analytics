@@ -11,8 +11,6 @@ from loguru import logger
 from tse_analytics.core.data.shared import Animal
 from tse_analytics.modules.intellicage.data.intellicage_data import IntelliCageData
 from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
-from tse_analytics.modules.intellicage.data.intellicage_raw_data import IntelliCageRawData
-from tse_analytics.modules.intellicage.data.main_table_helper import preprocess_main_table
 
 
 def import_intellicage_dataset(path: Path) -> IntelliCageDataset | None:
@@ -29,6 +27,7 @@ def import_intellicage_dataset(path: Path) -> IntelliCageDataset | None:
 
             dataset = IntelliCageDataset(
                 name=path.stem,
+                description="IntelliCage dataset",
                 path=str(path),
                 meta={
                     "data_descriptor": data_descriptor,
@@ -45,7 +44,9 @@ def import_intellicage_dataset(path: Path) -> IntelliCageDataset | None:
             hardware_events_df = _import_hardware_events_df(folder_path)
             log_df = _import_log_df(folder_path)
 
-            raw_data = IntelliCageRawData(
+            dataset.intellicage_data = IntelliCageData(
+                dataset,
+                "IntelliCage raw data",
                 visits_df,
                 nosepokes_df,
                 environment_df,
@@ -53,13 +54,11 @@ def import_intellicage_dataset(path: Path) -> IntelliCageDataset | None:
                 log_df,
             )
 
-            dataset.intellicage_data = IntelliCageData(
-                dataset,
-                "IntelliCage",
-                raw_data,
-            )
+    visits_datatable = dataset.intellicage_data.get_visits_datatable()
+    dataset.add_datatable(visits_datatable)
 
-    dataset = preprocess_main_table(dataset, pd.to_timedelta(1, unit="minute"))
+    nosepokes_datatable = dataset.intellicage_data.get_nosepokes_datatable(visits_datatable)
+    dataset.add_datatable(nosepokes_datatable)
 
     logger.info(f"Import complete in {(timeit.default_timer() - tic):.3f} sec: {path}")
 

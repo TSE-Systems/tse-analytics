@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'intellicage_preprocessed_data_widget.ui'
+## Form generated from reading UI file 'intellicage_data_widget.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.8.2
 ##
@@ -20,13 +20,14 @@ from PySide6.QtWidgets import (QAbstractItemView, QAbstractScrollArea, QApplicat
     QSizePolicy, QTableView, QVBoxLayout, QWidget)
 import resources_rc
 
-class Ui_IntelliCagePreprocessedDataWidget(object):
-    def setupUi(self, IntelliCagePreprocessedDataWidget):
-        if not IntelliCagePreprocessedDataWidget.objectName():
-            IntelliCagePreprocessedDataWidget.setObjectName(u"IntelliCagePreprocessedDataWidget")
-        self.horizontalLayout = QHBoxLayout(IntelliCagePreprocessedDataWidget)
+class Ui_IntelliCageDataWidget(object):
+    def setupUi(self, IntelliCageDataWidget):
+        if not IntelliCageDataWidget.objectName():
+            IntelliCageDataWidget.setObjectName(u"IntelliCageDataWidget")
+        IntelliCageDataWidget.resize(530, 210)
+        self.horizontalLayout = QHBoxLayout(IntelliCageDataWidget)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.groupBoxTables = QGroupBox(IntelliCagePreprocessedDataWidget)
+        self.groupBoxTables = QGroupBox(IntelliCageDataWidget)
         self.groupBoxTables.setObjectName(u"groupBoxTables")
         self.verticalLayout = QVBoxLayout(self.groupBoxTables)
         self.verticalLayout.setObjectName(u"verticalLayout")
@@ -39,7 +40,7 @@ class Ui_IntelliCagePreprocessedDataWidget(object):
 
         self.horizontalLayout.addWidget(self.groupBoxTables)
 
-        self.tableView = QTableView(IntelliCagePreprocessedDataWidget)
+        self.tableView = QTableView(IntelliCageDataWidget)
         self.tableView.setObjectName(u"tableView")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(1)
@@ -53,29 +54,29 @@ class Ui_IntelliCagePreprocessedDataWidget(object):
 
         self.horizontalLayout.addWidget(self.tableView)
 
-        self.groupBoxAnimals = QGroupBox(IntelliCagePreprocessedDataWidget)
-        self.groupBoxAnimals.setObjectName(u"groupBoxAnimals")
-        self.verticalLayout_2 = QVBoxLayout(self.groupBoxAnimals)
+        self.groupBoxCages = QGroupBox(IntelliCageDataWidget)
+        self.groupBoxCages.setObjectName(u"groupBoxCages")
+        self.verticalLayout_2 = QVBoxLayout(self.groupBoxCages)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.listWidgetAnimals = QListWidget(self.groupBoxAnimals)
-        self.listWidgetAnimals.setObjectName(u"listWidgetAnimals")
-        self.listWidgetAnimals.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
-        self.listWidgetAnimals.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
+        self.listWidgetCages = QListWidget(self.groupBoxCages)
+        self.listWidgetCages.setObjectName(u"listWidgetCages")
+        self.listWidgetCages.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
+        self.listWidgetCages.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
 
-        self.verticalLayout_2.addWidget(self.listWidgetAnimals)
-
-
-        self.horizontalLayout.addWidget(self.groupBoxAnimals)
+        self.verticalLayout_2.addWidget(self.listWidgetCages)
 
 
-        self.retranslateUi(IntelliCagePreprocessedDataWidget)
+        self.horizontalLayout.addWidget(self.groupBoxCages)
 
-        QMetaObject.connectSlotsByName(IntelliCagePreprocessedDataWidget)
+
+        self.retranslateUi(IntelliCageDataWidget)
+
+        QMetaObject.connectSlotsByName(IntelliCageDataWidget)
     # setupUi
 
-    def retranslateUi(self, IntelliCagePreprocessedDataWidget):
-        self.groupBoxTables.setTitle(QCoreApplication.translate("IntelliCagePreprocessedDataWidget", u"Data Tables", None))
-        self.groupBoxAnimals.setTitle(QCoreApplication.translate("IntelliCagePreprocessedDataWidget", u"Animals", None))
+    def retranslateUi(self, IntelliCageDataWidget):
+        self.groupBoxTables.setTitle(QCoreApplication.translate("IntelliCageDataWidget", u"Data Tables", None))
+        self.groupBoxCages.setTitle(QCoreApplication.translate("IntelliCageDataWidget", u"Cages", None))
         pass
     # retranslateUi
 

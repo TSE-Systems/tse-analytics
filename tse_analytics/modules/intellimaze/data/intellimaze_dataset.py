@@ -1,6 +1,8 @@
 import pandas as pd
 
+from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.helper import rename_animal_df
 from tse_analytics.core.data.shared import Animal
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.extension_tree_item import ExtensionTreeItem
@@ -15,6 +17,7 @@ class IntelliMazeDataset(Dataset):
     def __init__(
         self,
         name: str,
+        description: str,
         path: str,
         meta: dict | list[dict],
         devices: dict[str, list[str]],
@@ -22,12 +25,10 @@ class IntelliMazeDataset(Dataset):
     ):
         super().__init__(
             name,
+            description,
             path,
             meta,
             animals,
-            {},
-            pd.DataFrame(),
-            None,
         )
 
         self.devices = devices
@@ -43,6 +44,38 @@ class IntelliMazeDataset(Dataset):
     @property
     def experiment_stopped(self) -> pd.Timestamp:
         return pd.to_datetime(self.meta["experiment"]["ExperimentStopped"], format="%m/%d/%Y %H:%M:%S")
+
+    def rename_animal(self, old_id: str, animal: Animal) -> None:
+        super().rename_animal(old_id, animal)
+
+        if self.animal_gate_data is not None:
+            self.animal_gate_data.raw_df = rename_animal_df(self.animal_gate_data.raw_df, old_id, animal)
+
+        if self.running_wheel_data is not None:
+            self.running_wheel_data.raw_df = rename_animal_df(self.running_wheel_data.raw_df, old_id, animal)
+
+        if self.consumption_scale_data is not None:
+            self.consumption_scale_data.raw_df = rename_animal_df(self.consumption_scale_data.raw_df, old_id, animal)
+
+        messaging.broadcast(messaging.DatasetChangedMessage(self, self))
+
+    def exclude_animals(self, animal_ids: set[str]) -> None:
+        super().exclude_animals(animal_ids)
+
+        if self.animal_gate_data is not None:
+            self.animal_gate_data.raw_df = self.animal_gate_data.raw_df[
+                ~self.animal_gate_data.raw_df["Animal"].isin(animal_ids)
+            ]
+
+        if self.running_wheel_data is not None:
+            self.running_wheel_data.raw_df = self.running_wheel_data.raw_df[
+                ~self.running_wheel_data.raw_df["Animal"].isin(animal_ids)
+            ]
+
+        if self.consumption_scale_data is not None:
+            self.consumption_scale_data.raw_df = self.consumption_scale_data.raw_df[
+                ~self.consumption_scale_data.raw_df["Animal"].isin(animal_ids)
+            ]
 
     def add_children_tree_items(self, dataset_tree_item: DatasetTreeItem) -> None:
         if self.animal_gate_data is not None:

@@ -241,7 +241,7 @@ class DatasetsWidget(QWidget):
         selected_index = self.treeView.selectedIndexes()[0]
         item = selected_index.model().getItem(selected_index)
         dataset = item.dataset
-        dialog = AdjustDatasetDialog(dataset, dataset.sampling_interval, self)
+        dialog = AdjustDatasetDialog(dataset, self)
         # TODO: check other cases!!
         dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         if dialog.exec() == QDialog.DialogCode.Accepted:
@@ -345,7 +345,7 @@ class DatasetsWidget(QWidget):
                         dialog = RunningWheelDialog(item.extension_data, self)
                     case "ConsumptionScale":
                         dialog = ConsumptionScaleDialog(item.extension_data, self)
-                    case "IntelliCage":
+                    case "IntelliCage raw data":
                         dialog = IntelliCageDialog(item.extension_data.dataset, self)
                     case _:
                         return

@@ -1,7 +1,7 @@
 import pandas as pd
 
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
-from tse_analytics.modules.intellicage.data.intellicage_raw_data import IntelliCageRawData
 
 DATA_SUFFIX = "-IC"
 
@@ -9,19 +9,28 @@ DATA_SUFFIX = "-IC"
 class IntelliCageData:
     def __init__(
         self,
-        dataset,
+        dataset: "IntelliCageDataset",
         name: str,
-        raw_data: IntelliCageRawData,
+        visits_df: pd.DataFrame,
+        nosepokes_df: pd.DataFrame,
+        environment_df: pd.DataFrame,
+        hardware_events_df: pd.DataFrame,
+        log_df: pd.DataFrame,
     ):
         self.dataset = dataset
         self.name = name
-        self.raw_data = raw_data
 
-        self.visits_df, self.visits_variables = self._preprocess_visits_df()
-        self.nosepokes_df, self.nosepokes_variables = self._preprocess_nosepokes_df()
+        self.visits_df = visits_df
+        self.nosepokes_df = nosepokes_df
+        self.environment_df = environment_df
+        self.hardware_events_df = hardware_events_df
+        self.log_df = log_df
 
-    def _preprocess_visits_df(self) -> tuple[pd.DataFrame, dict[str, Variable]]:
-        df = self.raw_data.visits_df.copy()
+        self.device_ids: list[int] = environment_df["Cage"].unique().tolist()
+        self.device_ids.sort()
+
+    def get_visits_datatable(self) -> Datatable:
+        df = self.visits_df.copy()
 
         # Replace animal tags with animal IDs
         tag_to_animal_map = {}
@@ -57,7 +66,7 @@ class IntelliCageData:
         # Add temperature and illumination
         df = pd.merge_asof(
             df,
-            self.raw_data.environment_df,
+            self.environment_df,
             on="DateTime",
             by="Cage",
             direction="nearest",
@@ -97,6 +106,8 @@ class IntelliCageData:
                 False,
             ),
         }
+        # Sort variables by name
+        variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))
 
         df.sort_values(["DateTime"], inplace=True)
         df.reset_index(drop=True, inplace=True)
@@ -105,11 +116,29 @@ class IntelliCageData:
         experiment_started = self.dataset.experiment_started
         df.insert(loc=3, column="Timedelta", value=df["DateTime"] - experiment_started)
 
-        return df, variables
+        # Add Run column
+        df.insert(loc=4, column="Run", value=1)
 
-    def _preprocess_nosepokes_df(self) -> tuple[pd.DataFrame, dict[str, Variable]]:
-        df = self.raw_data.nosepokes_df.copy()
-        visits_preprocessed_df = self.visits_df.copy()
+        # Convert types
+        df = df.astype({
+            "Animal": "category",
+            "PlaceError": "int",
+        })
+
+        datatable = Datatable(
+            self.dataset,
+            "Visits",
+            "IntelliCage visits data",
+            variables,
+            df,
+            None,
+        )
+
+        return datatable
+
+    def get_nosepokes_datatable(self, visits_datatable: Datatable) -> Datatable:
+        df = self.nosepokes_df.copy()
+        visits_preprocessed_df = visits_datatable.original_df.copy()
 
         # Sanitize visits table before merging
         visits_preprocessed_df.drop(
@@ -156,7 +185,7 @@ class IntelliCageData:
         # Add temperature and illumination
         df = pd.merge_asof(
             df,
-            self.raw_data.environment_df,
+            self.environment_df,
             on="DateTime",
             by="Cage",
             direction="nearest",
@@ -172,6 +201,8 @@ class IntelliCageData:
                 False,
             ),
         }
+        # Sort variables by name
+        variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))
 
         df.sort_values(["DateTime"], inplace=True)
         df.reset_index(drop=True, inplace=True)
@@ -191,9 +222,10 @@ class IntelliCageData:
             TimeErrors=("TimeError", "sum"),
             ConditionErrors=("ConditionError", "sum"),
         )
-        self.visits_df = self.visits_df.join(grouped_by_visit, on="VisitID")
+        visits_datatable.original_df = visits_datatable.original_df.join(grouped_by_visit, on="VisitID")
+        visits_datatable.refresh_active_df()
 
-        self.visits_variables = self.visits_variables | {
+        visits_datatable.variables = visits_datatable.variables | {
             "NosepokesNumber": Variable(
                 "NosepokesNumber",
                 "count",
@@ -260,4 +292,13 @@ class IntelliCageData:
             ),
         }
 
-        return df, variables
+        datatable = Datatable(
+            self.dataset,
+            "Nosepokes",
+            "IntelliCage nosepokes data",
+            variables,
+            df,
+            None,
+        )
+
+        return datatable

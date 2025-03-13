@@ -32,6 +32,7 @@ def load_tse_dataset(path: Path, import_settings: TseImportSettings) -> PhenoMas
 
     dataset = PhenoMasterDataset(
         name=metadata["experiment"]["experiment_no"],
+        description="PhenoMaster dataset",
         path=str(path),
         meta=metadata,
         animals=animals,

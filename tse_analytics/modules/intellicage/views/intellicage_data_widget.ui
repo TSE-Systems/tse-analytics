@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <author>Anton Rau</author>
- <class>IntelliCageRawDataWidget</class>
- <widget class="QWidget" name="IntelliCageRawDataWidget">
+ <class>IntelliCageDataWidget</class>
+ <widget class="QWidget" name="IntelliCageDataWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>530</width>
+    <height>210</height>
+   </rect>
+  </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
     <widget class="QGroupBox" name="groupBoxTables">

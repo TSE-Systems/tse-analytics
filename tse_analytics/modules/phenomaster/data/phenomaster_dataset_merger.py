@@ -54,6 +54,7 @@ def _merge_continuous(
 
     result = PhenoMasterDataset(
         name=new_dataset_name,
+        description="PhenoMaster dataset merged in continuous mode.",
         path="",
         meta=new_meta,
         animals=new_animals,

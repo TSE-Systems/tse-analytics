@@ -3,7 +3,7 @@ import pandas as pd
 from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.shared import Variable
 
-default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
+default_columns = ["DateTime", "Timedelta", "Animal", "Run"]
 
 
 def process_time_interval_binning(
@@ -19,7 +19,6 @@ def process_time_interval_binning(
 
     agg = {
         "DateTime": "first",
-        "Box": "first",
         "Run": "first",
     }
     for column in df.columns:

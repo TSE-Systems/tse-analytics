@@ -5,6 +5,7 @@ from pathlib import Path
 import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
 from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
@@ -157,15 +158,25 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
         },
     }
 
-    return PhenoMasterDataset(
+    dataset = PhenoMasterDataset(
         name=name,
+        description="PhenoMaster dataset",
         path=str(path),
         meta=meta,
         animals=animals,
-        variables=variables,
-        df=df,
-        sampling_interval=timedelta,
     )
+
+    datatable = Datatable(
+        dataset,
+        "Main",
+        "Main table output from PhenoMaster experiment.",
+        variables,
+        df,
+        timedelta,
+    )
+    dataset.add_datatable(datatable)
+
+    return dataset
 
 
 def _get_header_section(lines: list[str]):

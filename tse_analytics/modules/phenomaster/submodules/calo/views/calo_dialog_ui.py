@@ -26,6 +26,7 @@ class Ui_CaloDialog(object):
         if not CaloDialog.objectName():
             CaloDialog.setObjectName(u"CaloDialog")
         CaloDialog.resize(1020, 854)
+        CaloDialog.setSizeGripEnabled(True)
         self.verticalLayout = QVBoxLayout(CaloDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.toolbarLayout = QHBoxLayout()

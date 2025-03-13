@@ -13,7 +13,7 @@ class DrinkFeedTreeItem(TreeItem):
 
     @property
     def icon(self):
-        return QIcon(":/icons/icons8-details-16.png")
+        return QIcon(":/icons/icons8-extension-16.png")
 
     @property
     def foreground(self):

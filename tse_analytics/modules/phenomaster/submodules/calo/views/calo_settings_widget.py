@@ -29,8 +29,9 @@ class CaloSettingsWidget(QWidget):
     def set_data(self, dataset: PhenoMasterDataset):
         self.dataset = dataset
         flow_value = 0.5
-        if "Flow" in dataset.original_df.columns:
-            flow_value = dataset.original_df.iloc[1].at["Flow"]
+        main_datatable = dataset.datatables["Main"]
+        if "Flow" in main_datatable.original_df.columns:
+            flow_value = main_datatable.original_df.iloc[1].at["Flow"]
         self.ui.flowDoubleSpinBox.setValue(flow_value)
 
     def get_calo_settings(self) -> CaloSettings:

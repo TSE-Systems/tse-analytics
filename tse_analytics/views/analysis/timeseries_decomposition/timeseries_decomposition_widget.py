@@ -1,7 +1,7 @@
 import pandas as pd
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
 from statsmodels.tsa.seasonal import MSTL, STL, seasonal_decompose
@@ -48,6 +48,7 @@ class TimeseriesDecompositionWidget(QWidget):
         self.variableSelector.set_data(filtered_variables)
         toolbar.addWidget(self.variableSelector)
 
+        toolbar.addWidget(QLabel("Animal:"))
         self.animalSelector = AnimalSelector(toolbar)
         self.animalSelector.set_data(self.datatable.dataset.animals)
         toolbar.addWidget(self.animalSelector)

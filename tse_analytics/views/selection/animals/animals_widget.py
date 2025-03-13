@@ -2,8 +2,16 @@ from functools import partial
 
 from PySide6.QtCore import QSize, QSortFilterProxyModel, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QToolBar, QWidget, QVBoxLayout, QTableView, QAbstractItemView, QInputDialog, QLineEdit, \
-    QMessageBox
+from PySide6.QtWidgets import (
+    QToolBar,
+    QWidget,
+    QVBoxLayout,
+    QTableView,
+    QAbstractItemView,
+    QInputDialog,
+    QLineEdit,
+    QMessageBox,
+)
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
@@ -102,7 +110,6 @@ class AnimalsWidget(QWidget, messaging.MessengerListener):
                 animal.properties[name] = 0.0
 
             self._set_model()
-
 
     def minimumSizeHint(self):
         return QSize(300, 100)

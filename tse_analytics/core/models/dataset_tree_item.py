@@ -21,4 +21,4 @@ class DatasetTreeItem(TreeItem):
 
     @property
     def tooltip(self):
-        return self.dataset.name
+        return self.dataset.description

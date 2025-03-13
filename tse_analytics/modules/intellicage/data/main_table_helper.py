@@ -1,5 +1,6 @@
 import pandas as pd
 
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
 
 
@@ -30,12 +31,6 @@ def preprocess_main_table(dataset: IntelliCageDataset, sampling_interval: pd.Tim
     df.sort_values(by=["DateTime", "Animal"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    dataset.original_df = df
-    dataset.active_df = dataset.original_df.copy()
-    dataset.sampling_interval = sampling_interval
-
-    dataset.variables = variables
-
     # Remove absent animals
     animal_ids = df["Animal"].unique().tolist()
     animals = {}
@@ -43,5 +38,15 @@ def preprocess_main_table(dataset: IntelliCageDataset, sampling_interval: pd.Tim
         if animal.id in animal_ids:
             animals[animal.id] = animal
     dataset.animals = animals
+
+    datatable = Datatable(
+        dataset,
+        "Main",
+        "Main table output from IntelliMaze experiment.",
+        variables,
+        df,
+        sampling_interval,
+    )
+    dataset.add_datatable(datatable)
 
     return dataset
