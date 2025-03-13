@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Animal, Factor, Variable
 from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
 from tse_analytics.modules.phenomaster.io.tse_import_settings import TseImportSettings
@@ -29,20 +30,26 @@ def load_tse_dataset(path: Path, import_settings: TseImportSettings) -> PhenoMas
     metadata = _read_metadata(path)
     animals = _get_animals(metadata["animals"])
 
-    main_table_df, main_table_vars, main_table_sampling_interval = _read_main_table(path, metadata["tables"], animals)
-
-    # Assign predefined variables properties
-    main_table_vars = assign_predefined_values(main_table_vars)
-
     dataset = PhenoMasterDataset(
         name=metadata["experiment"]["experiment_no"],
         path=str(path),
         meta=metadata,
         animals=animals,
-        variables=main_table_vars,
-        df=main_table_df,
-        sampling_interval=main_table_sampling_interval,
     )
+
+    main_table_df, main_table_vars, main_table_sampling_interval = _read_main_table(path, metadata["tables"], animals)
+    # Assign predefined variables properties
+    main_table_vars = assign_predefined_values(main_table_vars)
+
+    datatable = Datatable(
+        dataset,
+        "Main",
+        "Main table output from PhenoMaster experiment.",
+        main_table_vars,
+        main_table_df,
+        main_table_sampling_interval,
+    )
+    dataset.add_datatable(datatable)
 
     # Import ActoMot raw data if present
     if import_settings.import_actimot_raw:

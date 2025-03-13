@@ -9,9 +9,9 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
 from tse_analytics.core import messaging
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode, Variable
-from tse_analytics.core.helper import get_html_image, get_widget_tool_button, get_h_spacer_widget
+from tse_analytics.core.utils import get_html_image, get_widget_tool_button, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
@@ -21,7 +21,7 @@ from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 
 
 class PcaWidget(QWidget):
-    def __init__(self, dataset: Dataset, parent: QWidget | None = None):
+    def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.layout = QVBoxLayout(self)
@@ -30,7 +30,7 @@ class PcaWidget(QWidget):
 
         self.title = "PCA"
 
-        self.dataset = dataset
+        self.datatable = datatable
         self.split_mode = SplitMode.ANIMAL
         self.selected_factor_name = ""
 
@@ -46,7 +46,7 @@ class PcaWidget(QWidget):
 
         self.variables_table_widget = VariablesTableWidget()
         self.variables_table_widget.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
-        self.variables_table_widget.set_data(self.dataset.variables)
+        self.variables_table_widget.set_data(self.datatable.variables)
         self.variables_table_widget.setMaximumHeight(400)
         self.variables_table_widget.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
 
@@ -58,7 +58,7 @@ class PcaWidget(QWidget):
         )
         toolbar.addWidget(variables_button)
 
-        split_mode_selector = SplitModeSelector(toolbar, self.dataset.factors, self._split_mode_callback)
+        split_mode_selector = SplitModeSelector(toolbar, self.datatable.dataset.factors, self._split_mode_callback)
         toolbar.addWidget(split_mode_selector)
 
         # Insert toolbar to the widget
@@ -132,7 +132,7 @@ class PcaWidget(QWidget):
         selected_factor_name: str,
         by: str,
     ) -> tuple[pd.DataFrame, str, str]:
-        df = self.dataset.get_current_df(
+        df = self.datatable.get_current_df(
             variables=selected_variables,
             split_mode=split_mode,
             selected_factor_name=selected_factor_name,
@@ -181,5 +181,5 @@ class PcaWidget(QWidget):
         # self.ui.pushButtonAddReport.setEnabled(True)
 
     def _add_report(self):
-        self.dataset.report += get_html_image(self.canvas.figure)
-        messaging.broadcast(messaging.AddToReportMessage(self, self.dataset))
+        self.datatable.dataset.report += get_html_image(self.canvas.figure)
+        messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))

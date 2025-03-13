@@ -6,8 +6,8 @@ from pyqttoast import ToastPreset
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 from tse_analytics.core import messaging
-from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.helper import get_html_image, get_h_spacer_widget
+from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.views.misc.factor_selector import FactorSelector
@@ -15,7 +15,7 @@ from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
 class OneWayAnovaWidget(QWidget):
-    def __init__(self, dataset: Dataset, parent: QWidget | None = None):
+    def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.layout = QVBoxLayout(self)
@@ -24,7 +24,7 @@ class OneWayAnovaWidget(QWidget):
 
         self.title = "One-way ANOVA"
 
-        self.dataset = dataset
+        self.datatable = datatable
 
         # Setup toolbar
         toolbar = QToolBar(
@@ -38,12 +38,12 @@ class OneWayAnovaWidget(QWidget):
 
         toolbar.addWidget(QLabel("Dependent variable:"))
         self.variable_selector = VariableSelector(toolbar)
-        self.variable_selector.set_data(self.dataset.variables)
+        self.variable_selector.set_data(self.datatable.variables)
         toolbar.addWidget(self.variable_selector)
 
         toolbar.addWidget(QLabel("Factor:"))
         self.factor_selector = FactorSelector(toolbar)
-        self.factor_selector.set_data(self.dataset.factors, add_empty_item=False)
+        self.factor_selector.set_data(self.datatable.dataset.factors, add_empty_item=False)
         toolbar.addWidget(self.factor_selector)
 
         self.eff_size = {
@@ -104,7 +104,7 @@ class OneWayAnovaWidget(QWidget):
             ).show()
             return
 
-        df = self.dataset.get_anova_df(variables={dependent_variable_name: dependent_variable})
+        df = self.datatable.get_anova_df(variables={dependent_variable_name: dependent_variable})
 
         effsize = self.eff_size[self.comboBoxEffectSizeType.currentText()]
 
@@ -174,5 +174,5 @@ class OneWayAnovaWidget(QWidget):
         self.textEdit.document().setHtml(html)
 
     def _add_report(self):
-        self.dataset.report += self.textEdit.toHtml()
-        messaging.broadcast(messaging.AddToReportMessage(self, self.dataset))
+        self.datatable.dataset.report += self.textEdit.toHtml()
+        messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))

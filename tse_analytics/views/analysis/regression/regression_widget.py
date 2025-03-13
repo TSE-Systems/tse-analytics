@@ -8,9 +8,9 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from pyqttoast import ToastPreset
 
 from tse_analytics.core import messaging
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.helper import get_html_image, get_h_spacer_widget
+from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.views.misc.MplCanvas import MplCanvas
@@ -19,7 +19,7 @@ from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
 class RegressionWidget(QWidget):
-    def __init__(self, dataset: Dataset, parent: QWidget | None = None):
+    def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.layout = QVBoxLayout(self)
@@ -28,7 +28,7 @@ class RegressionWidget(QWidget):
 
         self.title = "Regression"
 
-        self.dataset = dataset
+        self.datatable = datatable
         self.split_mode = SplitMode.ANIMAL
         self.selected_factor_name = ""
 
@@ -44,15 +44,15 @@ class RegressionWidget(QWidget):
 
         self.toolbar.addWidget(QLabel("Covariate:"))
         self.covariateVariableSelector = VariableSelector(self.toolbar)
-        self.covariateVariableSelector.set_data(self.dataset.variables)
+        self.covariateVariableSelector.set_data(self.datatable.variables)
         self.toolbar.addWidget(self.covariateVariableSelector)
 
         self.toolbar.addWidget(QLabel("Response:"))
         self.responseVariableSelector = VariableSelector(self.toolbar)
-        self.responseVariableSelector.set_data(self.dataset.variables)
+        self.responseVariableSelector.set_data(self.datatable.variables)
         self.toolbar.addWidget(self.responseVariableSelector)
 
-        split_mode_selector = SplitModeSelector(self.toolbar, self.dataset.factors, self._split_mode_callback)
+        split_mode_selector = SplitModeSelector(self.toolbar, self.datatable.dataset.factors, self._split_mode_callback)
         self.toolbar.addWidget(split_mode_selector)
 
         # Insert toolbar to the widget
@@ -125,7 +125,7 @@ class RegressionWidget(QWidget):
             else {response.name: response, covariate.name: covariate}
         )
 
-        df = self.dataset.get_current_df(
+        df = self.datatable.get_current_df(
             variables=variables,
             split_mode=self.split_mode,
             selected_factor_name=self.selected_factor_name,
@@ -194,5 +194,5 @@ class RegressionWidget(QWidget):
     def _add_report(self):
         html = get_html_image(self.canvas.figure)
         html += self.textEdit.toHtml()
-        self.dataset.report += html
-        messaging.broadcast(messaging.AddToReportMessage(self, self.dataset))
+        self.datatable.dataset.report += html
+        messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))

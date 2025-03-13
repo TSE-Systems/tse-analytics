@@ -5,8 +5,8 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QTextEdit,
 from pyqttoast import ToastPreset
 
 from tse_analytics.core import messaging
-from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.helper import get_widget_tool_button, get_h_spacer_widget
+from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.utils import get_widget_tool_button, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.views.analysis.ancova.ancova_settings_widget_ui import Ui_AncovaSettingsWidget
@@ -16,7 +16,7 @@ from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 
 
 class AncovaWidget(QWidget):
-    def __init__(self, dataset: Dataset, parent: QWidget | None = None):
+    def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.layout = QVBoxLayout(self)
@@ -25,7 +25,7 @@ class AncovaWidget(QWidget):
 
         self.title = "ANCOVA"
 
-        self.dataset = dataset
+        self.datatable = datatable
 
         # Setup toolbar
         toolbar = QToolBar(
@@ -39,12 +39,12 @@ class AncovaWidget(QWidget):
 
         toolbar.addWidget(QLabel("Dependent variable:"))
         self.variable_selector = VariableSelector(toolbar)
-        self.variable_selector.set_data(self.dataset.variables)
+        self.variable_selector.set_data(self.datatable.variables)
         toolbar.addWidget(self.variable_selector)
 
         self.covariates_table_widget = VariablesTableWidget()
         self.covariates_table_widget.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
-        self.covariates_table_widget.set_data(self.dataset.variables)
+        self.covariates_table_widget.set_data(self.datatable.variables)
         self.covariates_table_widget.setMaximumHeight(400)
         self.covariates_table_widget.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
 
@@ -58,7 +58,7 @@ class AncovaWidget(QWidget):
 
         toolbar.addWidget(QLabel("Factor:"))
         self.factor_selector = FactorSelector(toolbar)
-        self.factor_selector.set_data(self.dataset.factors, add_empty_item=False)
+        self.factor_selector.set_data(self.datatable.dataset.factors, add_empty_item=False)
         toolbar.addWidget(self.factor_selector)
 
         self.settings_widget = QWidget()
@@ -143,7 +143,7 @@ class AncovaWidget(QWidget):
 
         variables = {dependent_variable_name: dependent_variable} | selected_covariate_variables
 
-        df = self.dataset.get_anova_df(variables=variables)
+        df = self.datatable.get_anova_df(variables=variables)
 
         padjust = self.p_adjustment[self.settings_widget_ui.comboBoxPAdjustment.currentText()]
         effsize = self.eff_size[self.settings_widget_ui.comboBoxEffectSizeType.currentText()]
@@ -180,5 +180,5 @@ class AncovaWidget(QWidget):
         self.textEdit.document().setHtml(html)
 
     def _add_report(self):
-        self.dataset.report += self.textEdit.toHtml()
-        messaging.broadcast(messaging.AddToReportMessage(self, self.dataset))
+        self.datatable.dataset.report += self.textEdit.toHtml()
+        messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))

@@ -3,22 +3,18 @@ import pandas as pd
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 from PySide6.QtGui import QColor
 
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.outliers import OutliersMode
 
 
 class PandasModel(QAbstractTableModel):
-    """
-    Class to populate a table view with a pandas dataframe
-    """
-
     color = QColor("#f4a582")
 
-    def __init__(self, df: pd.DataFrame, dataset: Dataset, calculate=False, parent=None):
+    def __init__(self, df: pd.DataFrame, datatable: Datatable, calculate=False, parent=None):
         QAbstractTableModel.__init__(self, parent)
 
-        self.dataset = dataset
-        self.calulate = calculate
+        self.datatable = datatable
+        self.calculate = calculate
         self._data = np.array(df.values)
         self._cols = df.columns
         self.row_count, self.column_count = np.shape(self._data)
@@ -36,16 +32,16 @@ class PandasModel(QAbstractTableModel):
     def data(self, index: QModelIndex, role: Qt.ItemDataRole = ...):
         if role == Qt.ItemDataRole.DisplayRole:
             return str(self._data[index.row(), index.column()])
-        if self.calulate and role == Qt.ItemDataRole.BackgroundRole:
-            if self.dataset.outliers_settings.mode == OutliersMode.HIGHLIGHT:
+        if self.calculate and role == Qt.ItemDataRole.BackgroundRole:
+            if self.datatable.dataset.outliers_settings.mode == OutliersMode.HIGHLIGHT:
                 value = self._data[index.row(), index.column()]
                 if isinstance(value, int | float):
                     var_name = str(self._cols[index.column()])
-                    if var_name in self.dataset.variables and self.dataset.variables[var_name].remove_outliers:
+                    if var_name in self.datatable.variables and self.datatable.variables[var_name].remove_outliers:
                         q1 = self.q1[var_name]
                         q3 = self.q3[var_name]
                         iqr = q3 - q1
-                        coef = self.dataset.outliers_settings.coefficient
+                        coef = self.datatable.dataset.outliers_settings.coefficient
                         if (value < (q1 - coef * iqr)) or (value > (q3 + coef * iqr)):
                             return PandasModel.color
         return None

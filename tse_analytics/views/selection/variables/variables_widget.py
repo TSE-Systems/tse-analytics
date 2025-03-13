@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
 )
 
 from tse_analytics.core import messaging
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.outliers import OutliersMode
 from tse_analytics.core.models.aggregation_combo_box_delegate import AggregationComboBoxDelegate
 from tse_analytics.core.models.variables_model import VariablesModel
@@ -25,9 +25,9 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
 
-        self.dataset: Dataset | None = None
+        self.datatable: Datatable | None = None
 
-        messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
+        messaging.subscribe(self, messaging.DatatableChangedMessage, self._on_datatable_changed)
 
         self.layout = QVBoxLayout(self)
         self.layout.setSpacing(0)
@@ -75,51 +75,51 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
 
         self.layout.addWidget(self.tableView)
 
-    def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
-        if message.dataset is None:
-            self.dataset = None
+    def _on_datatable_changed(self, message: messaging.DatatableChangedMessage):
+        if message.datatable is None:
+            self.datatable = None
             self.tableView.model().setSourceModel(None)
             self.outliersCoefficientSpinBox.setValue(1.5)
             self.outliersModeComboBox.setCurrentText(OutliersMode.OFF)
         else:
-            self.dataset = message.dataset
-            model = VariablesModel(list(self.dataset.variables.values()), self.dataset)
+            self.datatable = message.datatable
+            model = VariablesModel(self.datatable)
             self.tableView.model().setSourceModel(model)
             self.tableView.resizeColumnsToContents()
-            self.outliersCoefficientSpinBox.setValue(self.dataset.outliers_settings.coefficient)
-            self.outliersModeComboBox.setCurrentText(self.dataset.outliers_settings.mode)
+            self.outliersCoefficientSpinBox.setValue(self.datatable.dataset.outliers_settings.coefficient)
+            self.outliersModeComboBox.setCurrentText(self.datatable.dataset.outliers_settings.mode)
 
     def _outliers_mode_changed(self, value: str):
-        if self.dataset is not None:
-            outliers_settings = self.dataset.outliers_settings
+        if self.datatable is not None:
+            outliers_settings = self.datatable.dataset.outliers_settings
             outliers_settings.mode = OutliersMode(self.outliersModeComboBox.currentText())
-            self.dataset.apply_outliers(outliers_settings)
+            self.datatable.dataset.apply_outliers(outliers_settings)
 
     def _outliers_coefficient_changed(self, value: float):
-        if self.dataset is not None:
-            outliers_settings = self.dataset.outliers_settings
+        if self.datatable is not None:
+            outliers_settings = self.datatable.dataset.outliers_settings
             outliers_settings.coefficient = self.outliersCoefficientSpinBox.value()
-            self.dataset.apply_outliers(outliers_settings)
+            self.datatable.dataset.apply_outliers(outliers_settings)
 
     def _reset_variables(self):
-        if self.dataset is not None:
-            self.dataset.variables = assign_predefined_values(self.dataset.variables)
-            model = VariablesModel(list(self.dataset.variables.values()), self.dataset)
+        if self.datatable is not None:
+            self.datatable.variables = assign_predefined_values(self.datatable.variables)
+            model = VariablesModel(self.datatable)
             self.tableView.model().setSourceModel(model)
             self.tableView.resizeColumnsToContents()
 
     def _add_variable(self) -> None:
-        if self.dataset is None:
+        if self.datatable is None:
             return
-        dialog = AddVariableDialog(self.dataset, self)
+        dialog = AddVariableDialog(self.datatable, self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
-            model = VariablesModel(list(self.dataset.variables.values()), self.dataset)
+            model = VariablesModel(self.datatable)
             self.tableView.model().setSourceModel(model)
             self.tableView.resizeColumnsToContents()
         dialog.deleteLater()
 
     def _delete_variable(self) -> None:
-        if self.dataset is None:
+        if self.datatable is None:
             return
         selected_rows = self.tableView.selectionModel().selectedRows()
         if len(selected_rows) > 0:
@@ -132,9 +132,9 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
                     var_name = index.model().data(index.model().index(index.row(), 0))
                     variable_names.append(var_name)
 
-                self.dataset.delete_variables(variable_names)
+                self.datatable.delete_variables(variable_names)
 
-                model = VariablesModel(list(self.dataset.variables.values()), self.dataset)
+                model = VariablesModel(self.datatable)
                 self.tableView.model().setSourceModel(model)
                 self.tableView.resizeColumnsToContents()
 

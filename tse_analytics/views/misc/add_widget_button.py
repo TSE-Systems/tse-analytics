@@ -33,13 +33,13 @@ class AddWidgetButton(QToolButton):
     def __init__(self, parent: QWidget):
         super().__init__(parent)
 
-        self.setText("Add Widget")
-        self.setIcon(QIcon(":/icons/icons8-database-import-16.png"))
+        self.setText("Toolbox")
+        self.setIcon(QIcon(":/icons/icons8-toolbox-16.png"))
         self.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
         self.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         self.setEnabled(False)
 
-        self.menu = QMenu("AddWidgetMenu", self)
+        self.menu = QMenu("ToolboxMenu", self)
         data_menu = self.menu.addMenu("Data")
         data_menu.addAction(QIcon(":/icons/table.png"), "Table").triggered.connect(self._add_data_table_widget)
         data_menu.addAction(QIcon(":/icons/plot.png"), "Plot").triggered.connect(self._add_data_plot_widget)
@@ -110,159 +110,163 @@ class AddWidgetButton(QToolButton):
         self.intellicage_menu.setEnabled(isinstance(dataset, IntelliCageDataset))
 
     def _add_data_table_widget(self):
-        dataset = manager.get_selected_dataset()
-        if dataset is None:
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
             return
-        widget = DataTableWidget(dataset)
-        LayoutManager.add_widget_to_central_area(dataset, widget, f"Table - {dataset.name}", QIcon(":/icons/table.png"))
+        widget = DataTableWidget(datatable)
+        LayoutManager.add_widget_to_central_area(
+            datatable.dataset, widget, f"Table - {datatable.dataset.name}", QIcon(":/icons/table.png")
+        )
 
     def _add_data_plot_widget(self):
-        dataset = manager.get_selected_dataset()
-        if dataset is None:
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
             return
-        widget = DataPlotWidget(dataset)
-        LayoutManager.add_widget_to_central_area(dataset, widget, f"Plot - {dataset.name}", QIcon(":/icons/plot.png"))
+        widget = DataPlotWidget(datatable)
+        LayoutManager.add_widget_to_central_area(
+            datatable.dataset, widget, f"Plot - {datatable.dataset.name}", QIcon(":/icons/plot.png")
+        )
 
     def _add_histogram_widget(self):
-        dataset = manager.get_selected_dataset()
-        if dataset is None:
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
             return
-        widget = HistogramWidget(dataset)
+        widget = HistogramWidget(datatable)
         LayoutManager.add_widget_to_central_area(
-            dataset, widget, f"{widget.title} - {dataset.name}", QIcon(":/icons/exploration.png")
+            datatable.dataset, widget, f"{widget.title} - {datatable.dataset.name}", QIcon(":/icons/exploration.png")
         )
 
     def _add_distribution_widget(self):
-        dataset = manager.get_selected_dataset()
-        if dataset is None:
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
             return
-        widget = DistributionWidget(dataset)
+        widget = DistributionWidget(datatable)
         LayoutManager.add_widget_to_central_area(
-            dataset, widget, f"{widget.title} - {dataset.name}", QIcon(":/icons/exploration.png")
+            datatable.dataset, widget, f"{widget.title} - {datatable.dataset.name}", QIcon(":/icons/exploration.png")
         )
 
     def _add_normality_widget(self):
-        dataset = manager.get_selected_dataset()
-        if dataset is None:
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
             return
-        widget = NormalityWidget(dataset)
+        widget = NormalityWidget(datatable)
         LayoutManager.add_widget_to_central_area(
-            dataset, widget, f"{widget.title} - {dataset.name}", QIcon(":/icons/exploration.png")
+            datatable.dataset, widget, f"{widget.title} - {datatable.dataset.name}", QIcon(":/icons/exploration.png")
         )
 
     def _add_correlation_widget(self):
-        dataset = manager.get_selected_dataset()
-        if dataset is None:
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
             return
-        widget = CorrelationWidget(dataset)
+        widget = CorrelationWidget(datatable)
         LayoutManager.add_widget_to_central_area(
-            dataset, widget, f"{widget.title} - {dataset.name}", QIcon(":/icons/bivariate.png")
+            datatable.dataset, widget, f"{widget.title} - {datatable.dataset.name}", QIcon(":/icons/bivariate.png")
         )
 
     def _add_regression_widget(self):
-        dataset = manager.get_selected_dataset()
-        if dataset is None:
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
             return
-        widget = RegressionWidget(dataset)
+        widget = RegressionWidget(datatable)
         LayoutManager.add_widget_to_central_area(
-            dataset, widget, f"{widget.title} - {dataset.name}", QIcon(":/icons/bivariate.png")
+            datatable.dataset, widget, f"{widget.title} - {datatable.dataset.name}", QIcon(":/icons/bivariate.png")
         )
 
     def _add_one_way_anova_widget(self):
-        dataset = manager.get_selected_dataset()
-        if dataset is None:
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
             return
-        widget = OneWayAnovaWidget(dataset)
+        widget = OneWayAnovaWidget(datatable)
         LayoutManager.add_widget_to_central_area(
-            dataset, widget, f"{widget.title} - {dataset.name}", QIcon(":/icons/anova.png")
+            datatable.dataset, widget, f"{widget.title} - {datatable.dataset.name}", QIcon(":/icons/anova.png")
         )
 
     def _add_n_way_anova_widget(self):
-        dataset = manager.get_selected_dataset()
-        if dataset is None:
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
             return
-        widget = NWayAnovaWidget(dataset)
+        widget = NWayAnovaWidget(datatable)
         LayoutManager.add_widget_to_central_area(
-            dataset, widget, f"{widget.title} - {dataset.name}", QIcon(":/icons/anova.png")
+            datatable.dataset, widget, f"{widget.title} - {datatable.dataset.name}", QIcon(":/icons/anova.png")
         )
 
     def _add_rm_anova_widget(self):
-        dataset = manager.get_selected_dataset()
-        if dataset is None:
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
             return
-        widget = RMAnovaWidget(dataset)
+        widget = RMAnovaWidget(datatable)
         LayoutManager.add_widget_to_central_area(
-            dataset, widget, f"{widget.title} - {dataset.name}", QIcon(":/icons/anova.png")
+            datatable.dataset, widget, f"{widget.title} - {datatable.dataset.name}", QIcon(":/icons/anova.png")
         )
 
     def _add_mixed_anova_widget(self):
-        dataset = manager.get_selected_dataset()
-        if dataset is None:
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
             return
-        widget = MixedAnovaWidget(dataset)
+        widget = MixedAnovaWidget(datatable)
         LayoutManager.add_widget_to_central_area(
-            dataset, widget, f"{widget.title} - {dataset.name}", QIcon(":/icons/anova.png")
+            datatable.dataset, widget, f"{widget.title} - {datatable.dataset.name}", QIcon(":/icons/anova.png")
         )
 
     def _add_ancova_widget(self):
-        dataset = manager.get_selected_dataset()
-        if dataset is None:
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
             return
-        widget = AncovaWidget(dataset)
+        widget = AncovaWidget(datatable)
         LayoutManager.add_widget_to_central_area(
-            dataset, widget, f"{widget.title} - {dataset.name}", QIcon(":/icons/anova.png")
+            datatable.dataset, widget, f"{widget.title} - {datatable.dataset.name}", QIcon(":/icons/anova.png")
         )
 
     def _add_matrixplot_widget(self):
-        dataset = manager.get_selected_dataset()
-        if dataset is None:
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
             return
-        widget = MatrixPlotWidget(dataset)
+        widget = MatrixPlotWidget(datatable)
         LayoutManager.add_widget_to_central_area(
-            dataset, widget, f"{widget.title} - {dataset.name}", QIcon(":/icons/dimensionality.png")
+            datatable.dataset, widget, f"{widget.title} - {datatable.dataset.name}", QIcon(":/icons/dimensionality.png")
         )
 
     def _add_pca_widget(self):
-        dataset = manager.get_selected_dataset()
-        if dataset is None:
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
             return
-        widget = PcaWidget(dataset)
+        widget = PcaWidget(datatable)
         LayoutManager.add_widget_to_central_area(
-            dataset, widget, f"{widget.title} - {dataset.name}", QIcon(":/icons/dimensionality.png")
+            datatable.dataset, widget, f"{widget.title} - {datatable.dataset.name}", QIcon(":/icons/dimensionality.png")
         )
 
     def _add_tsne_widget(self):
-        dataset = manager.get_selected_dataset()
-        if dataset is None:
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
             return
-        widget = TsneWidget(dataset)
+        widget = TsneWidget(datatable)
         LayoutManager.add_widget_to_central_area(
-            dataset, widget, f"{widget.title} - {dataset.name}", QIcon(":/icons/dimensionality.png")
+            datatable.dataset, widget, f"{widget.title} - {datatable.dataset.name}", QIcon(":/icons/dimensionality.png")
         )
 
     def _add_timeseries_decomposition_widget(self):
-        dataset = manager.get_selected_dataset()
-        if dataset is None:
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
             return
-        widget = TimeseriesDecompositionWidget(dataset)
+        widget = TimeseriesDecompositionWidget(datatable)
         LayoutManager.add_widget_to_central_area(
-            dataset, widget, f"{widget.title} - {dataset.name}", QIcon(":/icons/timeseries.png")
+            datatable.dataset, widget, f"{widget.title} - {datatable.dataset.name}", QIcon(":/icons/timeseries.png")
         )
 
     def _add_timeseries_autocorrelation_widget(self) -> None:
-        dataset = manager.get_selected_dataset()
-        if dataset is None:
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
             return
-        widget = TimeseriesAutocorrelationWidget(dataset)
+        widget = TimeseriesAutocorrelationWidget(datatable)
         LayoutManager.add_widget_to_central_area(
-            dataset, widget, f"{widget.title} - {dataset.name}", QIcon(":/icons/timeseries.png")
+            datatable.dataset, widget, f"{widget.title} - {datatable.dataset.name}", QIcon(":/icons/timeseries.png")
         )
 
     def _add_report_widget(self) -> None:
-        dataset = manager.get_selected_dataset()
-        if dataset is None:
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
             return
-        widget = ReportsWidget(dataset)
+        widget = ReportsWidget(datatable)
         LayoutManager.add_widget_to_central_area(
-            dataset, widget, f"Report - {dataset.name}", QIcon(":/icons/report.png")
+            datatable.dataset, widget, f"Report - {datatable.dataset.name}", QIcon(":/icons/report.png")
         )

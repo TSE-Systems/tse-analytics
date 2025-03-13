@@ -7,6 +7,7 @@ from PySide6.QtCore import QModelIndex, QSettings
 from tse_analytics.core import messaging
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.models.workspace_model import WorkspaceModel
 from tse_analytics.modules.phenomaster.data import phenomaster_dataset_merger
 from tse_analytics.modules.phenomaster.io.csv_dataset_loader import load_csv_dataset
@@ -16,6 +17,7 @@ class Manager:
     def __init__(self):
         self._workspace_model = WorkspaceModel()
         self._selected_dataset: Dataset | None = None
+        self._selected_datatable: Datatable | None = None
 
     def get_workspace_model(self):
         return self._workspace_model
@@ -26,6 +28,13 @@ class Manager:
     def set_selected_dataset(self, dataset: Dataset | None):
         self._selected_dataset = dataset
         messaging.broadcast(messaging.DatasetChangedMessage(self, dataset))
+
+    def get_selected_datatable(self):
+        return self._selected_datatable
+
+    def set_selected_datatable(self, datatable: Datatable | None):
+        self._selected_datatable = datatable
+        messaging.broadcast(messaging.DatatableChangedMessage(self, datatable))
 
     def load_workspace(self, path: str) -> None:
         self.set_selected_dataset(None)
@@ -84,6 +93,8 @@ _instance = Manager()
 get_workspace_model = _instance.get_workspace_model
 get_selected_dataset = _instance.get_selected_dataset
 set_selected_dataset = _instance.set_selected_dataset
+get_selected_datatable = _instance.get_selected_datatable
+set_selected_datatable = _instance.set_selected_datatable
 load_workspace = _instance.load_workspace
 save_workspace = _instance.save_workspace
 import_csv_dataset = _instance.import_csv_dataset

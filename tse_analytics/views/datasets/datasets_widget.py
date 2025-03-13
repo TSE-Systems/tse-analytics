@@ -17,7 +17,8 @@ from PySide6.QtWidgets import (
 
 from tse_analytics.core import manager, messaging
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.helper import CSV_IMPORT_ENABLED
+from tse_analytics.core.models.datatable_tree_item import DatatableTreeItem
+from tse_analytics.core.utils import CSV_IMPORT_ENABLED
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.extension_tree_item import ExtensionTreeItem
@@ -58,11 +59,12 @@ class DatasetsWidget(QWidget):
         )
 
         if CSV_IMPORT_ENABLED:
-            self.import_button = QToolButton()
+            self.import_button = QToolButton(
+                popupMode=QToolButton.ToolButtonPopupMode.InstantPopup,
+                toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
+            )
             self.import_button.setText("Import")
             self.import_button.setIcon(QIcon(":/icons/icons8-database-import-16.png"))
-            self.import_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
-            self.import_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
             self.import_button.setEnabled(False)
 
             import_menu = QMenu("Import", self.import_button)
@@ -128,6 +130,10 @@ class DatasetsWidget(QWidget):
         self.layout.addWidget(self.treeView)
 
         workspace_model.checkedItemChanged.connect(self._checked_item_changed)
+        workspace_model.modelReset.connect(self._expand_all)
+
+    def _expand_all(self):
+        self.treeView.expandAll()
 
     def _get_selected_dataset(self) -> Dataset | None:
         selected_indexes = self.treeView.selectedIndexes()
@@ -277,23 +283,25 @@ class DatasetsWidget(QWidget):
             item = current.model().getItem(current)
             messaging.broadcast(messaging.SelectedTreeItemChangedMessage(self, item))
 
-            if isinstance(item, DatasetTreeItem):
+            is_dataset_item = isinstance(item, DatasetTreeItem)
+            is_datatable_item = isinstance(item, DatatableTreeItem)
+
+            if is_dataset_item:
                 manager.set_selected_dataset(item.dataset)
+                manager.set_selected_datatable(None)
                 self.add_widget_button.set_dataset_menu(item.dataset)
+            elif is_datatable_item:
+                manager.set_selected_dataset(item.datatable.dataset)
+                manager.set_selected_datatable(item.datatable)
+                self.add_widget_button.set_dataset_menu(item.datatable.dataset)
 
-            level = 0
-            while current.parent().isValid():
-                current = current.parent()
-                level += 1
-
-            is_root_item = level == 1
-
-            self.add_widget_button.set_state(is_root_item)
-            self.adjust_dataset_action.setEnabled(is_root_item)
-            self.remove_dataset_action.setEnabled(is_root_item)
-            self.clone_dataset_action.setEnabled(is_root_item)
             if CSV_IMPORT_ENABLED:
-                self.import_button.setEnabled(is_root_item)
+                self.import_button.setEnabled(is_dataset_item)
+            self.adjust_dataset_action.setEnabled(is_dataset_item)
+            self.remove_dataset_action.setEnabled(is_dataset_item)
+            self.clone_dataset_action.setEnabled(is_dataset_item)
+
+            self.add_widget_button.set_state(is_datatable_item)
 
     def _treeview_double_clicked(self, index: QModelIndex) -> None:
         if index.isValid():

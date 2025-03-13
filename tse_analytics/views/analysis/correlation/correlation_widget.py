@@ -8,9 +8,9 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from pyqttoast import ToastPreset
 
 from tse_analytics.core import messaging
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.helper import get_html_image, get_h_spacer_widget
+from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.views.misc.MplCanvas import MplCanvas
@@ -19,7 +19,7 @@ from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
 class CorrelationWidget(QWidget):
-    def __init__(self, dataset: Dataset, parent: QWidget | None = None):
+    def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.layout = QVBoxLayout(self)
@@ -28,7 +28,7 @@ class CorrelationWidget(QWidget):
 
         self.title = "Correlation"
 
-        self.dataset = dataset
+        self.datatable = datatable
         self.split_mode = SplitMode.ANIMAL
         self.selected_factor_name = ""
 
@@ -44,15 +44,15 @@ class CorrelationWidget(QWidget):
 
         self.toolbar.addWidget(QLabel("X:"))
         self.xVariableSelector = VariableSelector(self.toolbar)
-        self.xVariableSelector.set_data(self.dataset.variables)
+        self.xVariableSelector.set_data(self.datatable.variables)
         self.toolbar.addWidget(self.xVariableSelector)
 
         self.toolbar.addWidget(QLabel("Y:"))
         self.yVariableSelector = VariableSelector(self.toolbar)
-        self.yVariableSelector.set_data(self.dataset.variables)
+        self.yVariableSelector.set_data(self.datatable.variables)
         self.toolbar.addWidget(self.yVariableSelector)
 
-        split_mode_selector = SplitModeSelector(self.toolbar, self.dataset.factors, self._split_mode_callback)
+        split_mode_selector = SplitModeSelector(self.toolbar, self.datatable.dataset.factors, self._split_mode_callback)
         self.toolbar.addWidget(split_mode_selector)
 
         # Insert toolbar to the widget
@@ -120,7 +120,7 @@ class CorrelationWidget(QWidget):
                 by = None
 
         variables = {x_var.name: x_var} if x_var.name == y_var.name else {x_var.name: x_var, y_var.name: y_var}
-        df = self.dataset.get_current_df(
+        df = self.datatable.get_current_df(
             variables=variables,
             split_mode=self.split_mode,
             selected_factor_name=self.selected_factor_name,
@@ -166,5 +166,5 @@ class CorrelationWidget(QWidget):
     def _add_report(self):
         html = get_html_image(self.canvas.figure)
         html += self.textEdit.toHtml()
-        self.dataset.report += html
-        messaging.broadcast(messaging.AddToReportMessage(self, self.dataset))
+        self.datatable.dataset.report += html
+        messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))

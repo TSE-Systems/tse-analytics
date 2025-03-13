@@ -1,27 +1,27 @@
 import pandas as pd
 from PySide6.QtWidgets import QDialog, QWidget, QMessageBox
 
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Variable, Aggregation
 from tse_analytics.views.selection.variables.add_variable_dialog_ui import Ui_AddVariableDialog
 
 
 class AddVariableDialog(QDialog):
-    def __init__(self, dataset: Dataset, parent: QWidget | None = None):
+    def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.ui = Ui_AddVariableDialog()
         self.ui.setupUi(self)
 
-        self.dataset = dataset
+        self.datatable = datatable
 
         self.ui.aggregationComboBox.addItems(list(Aggregation))
 
-        if len(self.dataset.animals) > 0:
-            animal_properties = next(iter(self.dataset.animals.values())).properties
+        if len(self.datatable.dataset.animals) > 0:
+            animal_properties = next(iter(self.datatable.dataset.animals.values())).properties
             self.ui.comboBoxAnimalProperty.addItems(list(animal_properties.keys()))
 
-        self.ui.variableSelector.set_data(self.dataset.variables)
+        self.ui.variableSelector.set_data(self.datatable.variables)
 
         self.ui.buttonBox.accepted.connect(self._accepted)
 
@@ -45,11 +45,11 @@ class AddVariableDialog(QDialog):
             QMessageBox.warning(self, "Warning", "Variable name cannot be empty.")
             return
 
-        if variable_name in self.dataset.variables:
+        if variable_name in self.datatable.variables:
             QMessageBox.warning(self, "Warning", "Variable name already exists.")
             return
 
-        df = self.dataset.original_df.copy()
+        df = self.datatable.original_df.copy()
 
         if self.ui.radioButtonOriginAnimalProperty.isChecked():
             animal_property = self.ui.comboBoxAnimalProperty.currentText()
@@ -57,7 +57,7 @@ class AddVariableDialog(QDialog):
             # Add new variable column
             df[variable_name] = df["Animal"]
             values_map = {}
-            for animal in self.dataset.animals.values():
+            for animal in self.datatable.dataset.animals.values():
                 values_map[animal.id] = animal.properties[animal_property]
             df = df.replace({variable_name: values_map})
 
@@ -91,10 +91,10 @@ class AddVariableDialog(QDialog):
             aggregation=aggregation,
             remove_outliers=False,
         )
-        self.dataset.variables[variable_name] = variable
+        self.datatable.variables[variable_name] = variable
         # Sort variables by name
-        self.dataset.variables = dict(sorted(self.dataset.variables.items(), key=lambda x: x[0].lower()))
+        self.datatable.variables = dict(sorted(self.datatable.variables.items(), key=lambda x: x[0].lower()))
 
         # Update dataframes
-        self.dataset.original_df = df
-        self.dataset.refresh_active_df()
+        self.datatable.original_df = df
+        self.datatable.refresh_active_df()

@@ -5,8 +5,8 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QAbstractI
 from pyqttoast import ToastPreset
 
 from tse_analytics.core import messaging
-from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.helper import get_widget_tool_button, get_h_spacer_widget
+from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.utils import get_widget_tool_button, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.views.analysis.n_way_anova.n_way_anova_settings_widget_ui import Ui_NWayAnovaSettingsWidget
@@ -15,7 +15,7 @@ from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
 class NWayAnovaWidget(QWidget):
-    def __init__(self, dataset: Dataset, parent: QWidget | None = None):
+    def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.layout = QVBoxLayout(self)
@@ -24,7 +24,7 @@ class NWayAnovaWidget(QWidget):
 
         self.title = "N-way ANOVA"
 
-        self.dataset = dataset
+        self.datatable = datatable
 
         # Setup toolbar
         toolbar = QToolBar(
@@ -38,12 +38,12 @@ class NWayAnovaWidget(QWidget):
 
         toolbar.addWidget(QLabel("Dependent variable:"))
         self.variable_selector = VariableSelector(toolbar)
-        self.variable_selector.set_data(self.dataset.variables)
+        self.variable_selector.set_data(self.datatable.variables)
         toolbar.addWidget(self.variable_selector)
 
         self.factors_table_widget = FactorsTableWidget()
         self.factors_table_widget.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
-        self.factors_table_widget.set_data(self.dataset.factors)
+        self.factors_table_widget.set_data(self.datatable.dataset.factors)
         self.factors_table_widget.setMaximumHeight(400)
         self.factors_table_widget.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
 
@@ -140,7 +140,7 @@ class NWayAnovaWidget(QWidget):
             ).show()
             return
 
-        df = self.dataset.get_anova_df(variables={dependent_variable: selected_dependent_variable})
+        df = self.datatable.get_anova_df(variables={dependent_variable: selected_dependent_variable})
 
         # Sanitize variable name: comma, bracket, and colon are not allowed in column names
         sanitized_dependent_variable = dependent_variable.replace("(", "_").replace(")", "").replace(",", "_")
@@ -195,5 +195,5 @@ class NWayAnovaWidget(QWidget):
         self.textEdit.document().setHtml(html)
 
     def _add_report(self):
-        self.dataset.report += self.textEdit.toHtml()
-        messaging.broadcast(messaging.AddToReportMessage(self, self.dataset))
+        self.datatable.dataset.report += self.textEdit.toHtml()
+        messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))

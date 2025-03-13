@@ -6,9 +6,9 @@ from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
 
 from tse_analytics.core import messaging
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.helper import get_html_image, get_h_spacer_widget, get_widget_tool_button
+from tse_analytics.core.utils import get_html_image, get_h_spacer_widget, get_widget_tool_button
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.split_mode_selector import SplitModeSelector
@@ -16,7 +16,7 @@ from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 
 
 class MatrixPlotWidget(QWidget):
-    def __init__(self, dataset: Dataset, parent: QWidget | None = None):
+    def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.layout = QVBoxLayout(self)
@@ -25,7 +25,7 @@ class MatrixPlotWidget(QWidget):
 
         self.title = "Matrix Plot"
 
-        self.dataset = dataset
+        self.datatable = datatable
         self.split_mode = SplitMode.ANIMAL
         self.selected_factor_name = ""
 
@@ -41,7 +41,7 @@ class MatrixPlotWidget(QWidget):
 
         self.variables_table_widget = VariablesTableWidget()
         self.variables_table_widget.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
-        self.variables_table_widget.set_data(self.dataset.variables)
+        self.variables_table_widget.set_data(self.datatable.variables)
         self.variables_table_widget.setMaximumHeight(400)
         self.variables_table_widget.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
 
@@ -53,7 +53,7 @@ class MatrixPlotWidget(QWidget):
         )
         toolbar.addWidget(variables_button)
 
-        split_mode_selector = SplitModeSelector(toolbar, self.dataset.factors, self._split_mode_callback)
+        split_mode_selector = SplitModeSelector(toolbar, self.datatable.dataset.factors, self._split_mode_callback)
         toolbar.addWidget(split_mode_selector)
 
         # Insert toolbar to the widget
@@ -99,7 +99,7 @@ class MatrixPlotWidget(QWidget):
             ).show()
             return
 
-        df = self.dataset.get_current_df(
+        df = self.datatable.get_current_df(
             variables=selected_variables,
             split_mode=self.split_mode,
             selected_factor_name=self.selected_factor_name,
@@ -130,5 +130,5 @@ class MatrixPlotWidget(QWidget):
         self.canvas.draw()
 
     def _add_report(self):
-        self.dataset.report += get_html_image(self.canvas.figure)
-        messaging.broadcast(messaging.AddToReportMessage(self, self.dataset))
+        self.datatable.dataset.report += get_html_image(self.canvas.figure)
+        messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))
