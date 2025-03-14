@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
@@ -37,6 +38,14 @@ class PhenoMasterDataset(Dataset):
         self.drinkfeed_data: DrinkFeedData | None = None
         self.actimot_data: ActimotData | None = None
         self.trafficage_data: TraffiCageData | None = None
+
+    @property
+    def experiment_started(self) -> pd.Timestamp:
+        return pd.to_datetime(self.metadata["experiment"]["start_datetime"])
+
+    @property
+    def experiment_stopped(self) -> pd.Timestamp:
+        return pd.to_datetime(self.metadata["experiment"]["end_datetime"])
 
     def rename_animal(self, old_id: str, animal: Animal) -> None:
         super().rename_animal(old_id, animal)

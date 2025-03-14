@@ -9,7 +9,7 @@ class DatasetTreeItem(TreeItem):
         super().__init__(dataset.name)
 
         self.dataset = dataset
-        self.meta = dataset.meta
+        self.meta = dataset.metadata
 
     @property
     def icon(self):

@@ -19,9 +19,12 @@ from tse_analytics.views.datasets.datasets_merge_dialog_ui import Ui_DatasetsMer
 class DatasetsMergeDialog(QDialog):
     def __init__(self, datasets: list[Dataset], parent: QWidget | None = None):
         super().__init__(parent)
-
         self.ui = Ui_DatasetsMergeDialog()
         self.ui.setupUi(self)
+
+        self.datasets = deepcopy(datasets)
+        # sort datasets by start time
+        self.datasets.sort(key=lambda dataset: dataset.experiment_started)
 
         self.ui.buttonBox.accepted.connect(self._accepted)
 
@@ -33,12 +36,7 @@ class DatasetsMergeDialog(QDialog):
             lambda toggled: self.ui.checkBoxGenerateAnimalNames.setEnabled(False) if toggled else None
         )
 
-        self.datasets = deepcopy(datasets)
-
-        # sort datasets by start time
-        self.datasets.sort(key=lambda x: x.start_timestamp)
-
-        header_labels = ["Name", "Start", "End", "Duration", "Sampling Interval", ""]
+        header_labels = ["Name", "Start", "End", "Duration", ""]
         self.ui.tableWidget.setColumnCount(len(header_labels))
         self.ui.tableWidget.setHorizontalHeaderLabels(header_labels)
         self.ui.tableWidget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
@@ -52,18 +50,16 @@ class DatasetsMergeDialog(QDialog):
     def _update_table(self):
         for i, dataset in enumerate(self.datasets):
             self.ui.tableWidget.setItem(i, 0, QTableWidgetItem(dataset.name))
-            self.ui.tableWidget.setItem(i, 1, QTableWidgetItem(str(dataset.start_timestamp)))
-            self.ui.tableWidget.setItem(i, 2, QTableWidgetItem(str(dataset.end_timestamp)))
-            self.ui.tableWidget.setItem(i, 3, QTableWidgetItem(str(dataset.duration)))
-            self.ui.tableWidget.setItem(i, 4, QTableWidgetItem(str(dataset.sampling_interval)))
+            self.ui.tableWidget.setItem(i, 1, QTableWidgetItem(str(dataset.experiment_started)))
+            self.ui.tableWidget.setItem(i, 2, QTableWidgetItem(str(dataset.experiment_stopped)))
+            self.ui.tableWidget.setItem(i, 3, QTableWidgetItem(str(dataset.experiment_duration)))
 
             adjust_button = QPushButton("Adjust...")
             adjust_button.clicked.connect(partial(self._adjust_dataset, dataset))
-            self.ui.tableWidget.setCellWidget(i, 5, adjust_button)
+            self.ui.tableWidget.setCellWidget(i, 4, adjust_button)
 
     def _adjust_dataset(self, dataset: Dataset):
-        max_sampling_interval = max(dataset.sampling_interval for dataset in self.datasets)
-        dialog = AdjustDatasetDialog(dataset, max_sampling_interval, self)
+        dialog = AdjustDatasetDialog(dataset, self)
         # TODO: check other cases!!
         dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         if dialog.exec() == QDialog.DialogCode.Accepted:

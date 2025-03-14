@@ -3,7 +3,7 @@ import pandas as pd
 from tse_analytics.core.data.binning import TimeCyclesBinningSettings
 from tse_analytics.core.data.shared import Variable
 
-default_columns = ["Timedelta", "Animal", "Box", "Run", "Bin"]
+default_columns = ["Timedelta", "Animal", "Run", "Bin"]
 
 
 def process_time_cycles_binning(

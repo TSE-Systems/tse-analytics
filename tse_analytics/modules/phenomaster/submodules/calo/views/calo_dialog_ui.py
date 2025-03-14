@@ -50,14 +50,6 @@ class Ui_CaloDialog(object):
 
         self.toolbarLayout.addItem(self.horizontalSpacer)
 
-        self.toolButtonHelp = QToolButton(CaloDialog)
-        self.toolButtonHelp.setObjectName(u"toolButtonHelp")
-        icon = QIcon()
-        icon.addFile(u":/icons/icons8-help-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.toolButtonHelp.setIcon(icon)
-
-        self.toolbarLayout.addWidget(self.toolButtonHelp)
-
 
         self.verticalLayout.addLayout(self.toolbarLayout)
 

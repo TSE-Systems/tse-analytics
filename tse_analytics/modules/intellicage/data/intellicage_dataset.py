@@ -30,11 +30,11 @@ class IntelliCageDataset(Dataset):
 
     @property
     def experiment_started(self) -> pd.Timestamp:
-        return pd.to_datetime(self.meta["experiment"]["StartLocalTimeString"])
+        return pd.to_datetime(self.metadata["experiment"]["StartLocalTimeString"])
 
     @property
     def experiment_stopped(self) -> pd.Timestamp:
-        return pd.to_datetime(self.meta["experiment"]["EndLocalTimeString"])
+        return pd.to_datetime(self.metadata["experiment"]["EndLocalTimeString"])
 
     def rename_animal(self, old_id: str, animal: Animal) -> None:
         super().rename_animal(old_id, animal)

@@ -32,7 +32,6 @@ from tse_analytics.modules.phenomaster.submodules.calo.views.calo_dialog_ui impo
 class CaloDialog(QDialog):
     def __init__(self, calo_data: CaloData, parent: QWidget | None = None):
         super().__init__(parent)
-
         self.ui = Ui_CaloDialog()
         self.ui.setupUi(self)
 
@@ -136,7 +135,7 @@ class CaloDialog(QDialog):
         # remove last bin
         bin_numbers = sorted(self.calo_data.raw_df["Bin"].unique().tolist())
         raw_df = self.calo_data.raw_df.loc[self.calo_data.raw_df["Bin"] != bin_numbers[-1]]
-        active_df = self.calo_data.dataset.active_df.loc[self.calo_data.dataset.active_df["Bin"] != bin_numbers[-1]]
+        active_df = self.calo_data.dataset.datatables["Main"].active_df.loc[self.calo_data.dataset.datatables["Main"].active_df["Bin"] != bin_numbers[-1]]
 
         fitting_params_list: list[FittingParams] = []
 

@@ -152,17 +152,18 @@ class DatasetsWidget(QWidget):
                 checked_datasets.append(item.dataset)
 
         # check variables compatibility
-        first_variables_set = checked_datasets[0].variables
+        first_dataset = checked_datasets[0]
         for dataset in checked_datasets:
-            if dataset.variables != first_variables_set:
-                QMessageBox.critical(
-                    self,
-                    "Cannot merge datasets!",
-                    "List of variables should be the same.",
-                    QMessageBox.StandardButton.Abort,
-                    QMessageBox.StandardButton.Abort,
-                )
-                return
+            for datatable in dataset.datatables.values():
+                if datatable.variables != first_dataset.datatables[datatable.name].variables:
+                    QMessageBox.critical(
+                        self,
+                        "Cannot merge datasets!",
+                        "List of variables should be the same.",
+                        QMessageBox.StandardButton.Abort,
+                        QMessageBox.StandardButton.Abort,
+                    )
+                    return
 
         dialog = DatasetsMergeDialog(checked_datasets, self)
         # TODO: check other cases!!

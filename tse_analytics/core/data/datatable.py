@@ -95,7 +95,6 @@ class Datatable:
     def resample(self, resampling_interval: pd.Timedelta) -> None:
         agg = {
             "DateTime": "first",
-            "Box": "first",
             "Run": "first",
         }
         for column in self.original_df.columns:
@@ -107,7 +106,7 @@ class Datatable:
                         agg[column] = "mean"
 
         group_by = ["Animal"]
-        sort_by = ["Timedelta", "Box"]
+        sort_by = ["Timedelta", "Animal"]
 
         original_result = self.original_df.groupby(group_by, dropna=False, observed=False)
         original_result = original_result.resample(resampling_interval, on="Timedelta", origin="start").agg(agg)

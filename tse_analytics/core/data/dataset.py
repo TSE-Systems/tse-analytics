@@ -19,14 +19,14 @@ class Dataset:
         name: str,
         description: str,
         path: str,
-        meta: dict | list[dict],
+        metadata: dict | list[dict],
         animals: dict[str, Animal],
     ):
         self.id = uuid4()
         self.name = name
         self.description = description
         self.path = path
-        self.meta = meta
+        self.metadata = metadata
 
         self.animals = animals
         self.factors: dict[str, Factor] = {}
@@ -36,6 +36,18 @@ class Dataset:
         self.binning_settings = BinningSettings()
 
         self.report = ""
+
+    @property
+    def experiment_started(self) -> pd.Timestamp:
+        raise NotImplementedError("Subclasses should implement this!")
+
+    @property
+    def experiment_stopped(self) -> pd.Timestamp:
+        raise NotImplementedError("Subclasses should implement this!")
+
+    @property
+    def experiment_duration(self) -> pd.Timedelta:
+        return self.experiment_stopped - self.experiment_started
 
     def add_datatable(self, datatable: Datatable) -> None:
         self.datatables[datatable.name] = datatable
@@ -67,11 +79,11 @@ class Dataset:
 
         # Rename animal in metadata
         new_dict = {}
-        for item in self.meta["animals"].values():
+        for item in self.metadata["animals"].values():
             if item["id"] == old_id:
                 item["id"] = animal.id
             new_dict[item["id"]] = item
-        self.meta["animals"] = new_dict
+        self.metadata["animals"] = new_dict
 
         # Rename animal in dictionary
         self.animals.pop(old_id)
@@ -90,12 +102,12 @@ class Dataset:
         for animal_id in animal_ids:
             self.animals.pop(animal_id)
 
-        if "animals" in self.meta:
+        if "animals" in self.metadata:
             new_meta_animals = {}
-            for item in self.meta["animals"].values():
+            for item in self.metadata["animals"].values():
                 if item["id"] not in animal_ids:
                     new_meta_animals[item["id"]] = item
-            self.meta["animals"] = new_meta_animals
+            self.metadata["animals"] = new_meta_animals
 
         for datatable in self.datatables.values():
             datatable.exclude_animals(animal_ids)

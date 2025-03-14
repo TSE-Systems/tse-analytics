@@ -75,7 +75,11 @@ class Manager:
         generate_new_animal_names: bool,
     ) -> None:
         merged_dataset = phenomaster_dataset_merger.merge_datasets(
-            new_dataset_name, datasets, single_run, continuous_mode, generate_new_animal_names
+            new_dataset_name,
+            datasets,
+            single_run,
+            continuous_mode,
+            generate_new_animal_names,
         )
         if merged_dataset is not None:
             self._workspace_model.add_dataset(merged_dataset)

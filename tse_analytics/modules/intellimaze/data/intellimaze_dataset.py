@@ -39,11 +39,11 @@ class IntelliMazeDataset(Dataset):
 
     @property
     def experiment_started(self) -> pd.Timestamp:
-        return pd.to_datetime(self.meta["experiment"]["ExperimentStarted"], format="%m/%d/%Y %H:%M:%S")
+        return pd.to_datetime(self.metadata["experiment"]["ExperimentStarted"], format="%m/%d/%Y %H:%M:%S")
 
     @property
     def experiment_stopped(self) -> pd.Timestamp:
-        return pd.to_datetime(self.meta["experiment"]["ExperimentStopped"], format="%m/%d/%Y %H:%M:%S")
+        return pd.to_datetime(self.metadata["experiment"]["ExperimentStopped"], format="%m/%d/%Y %H:%M:%S")
 
     def rename_animal(self, old_id: str, animal: Animal) -> None:
         super().rename_animal(old_id, animal)

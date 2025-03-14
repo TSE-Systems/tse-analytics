@@ -54,14 +54,6 @@
        </property>
       </spacer>
      </item>
-     <item>
-      <widget class="QToolButton" name="toolButtonHelp">
-       <property name="icon">
-        <iconset resource="../../../../../../resources/resources.qrc">
-         <normaloff>:/icons/icons8-help-16.png</normaloff>:/icons/icons8-help-16.png</iconset>
-       </property>
-      </widget>
-     </item>
     </layout>
    </item>
    <item>
