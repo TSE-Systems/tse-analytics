@@ -6,7 +6,9 @@ from pyqttoast import ToastPreset
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 from tse_analytics.core import messaging
+from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.styles.css import style_descriptive_table
@@ -104,7 +106,25 @@ class OneWayAnovaWidget(QWidget):
             ).show()
             return
 
-        df = self.datatable.get_anova_df(variables={dependent_variable_name: dependent_variable})
+        variables = {
+            dependent_variable_name: dependent_variable,
+        }
+
+        factor_columns = list(self.datatable.dataset.factors)
+        variable_columns = list(variables)
+        df = self.datatable.active_df[self.datatable.get_default_columns() + factor_columns + variable_columns].copy()
+
+        df = self.datatable.preprocess_df(df, variables)
+
+        # Binning
+        df = process_time_interval_binning(
+            df,
+            TimeIntervalsBinningSettings("day", 365),
+            variables,
+        )
+
+        # TODO: should or should not?
+        df.dropna(inplace=True)
 
         effsize = self.eff_size[self.comboBoxEffectSizeType.currentText()]
 

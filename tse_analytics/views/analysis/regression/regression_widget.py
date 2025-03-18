@@ -125,7 +125,7 @@ class RegressionWidget(QWidget):
             else {response.name: response, covariate.name: covariate}
         )
 
-        df = self.datatable.get_current_df(
+        df = self.datatable.get_preprocessed_df(
             variables=variables,
             split_mode=self.split_mode,
             selected_factor_name=self.selected_factor_name,

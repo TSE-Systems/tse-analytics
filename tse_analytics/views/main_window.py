@@ -6,11 +6,11 @@ from pathlib import Path
 import PySide6QtAds
 import psutil
 from PySide6.QtCore import QSettings, Qt, QTimer
-from PySide6.QtGui import QAction, QCloseEvent, QIcon, QDesktopServices
+from PySide6.QtGui import QAction, QCloseEvent, QIcon
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QMessageBox
 from pyqttoast import Toast, ToastPreset
 
-from tse_analytics.core import manager
+from tse_analytics.core import manager, help_manager
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.utils import CSV_IMPORT_ENABLED, IS_RELEASE
 from tse_analytics.core.layouts.layout_manager import LayoutManager
@@ -20,18 +20,19 @@ from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.intellicage.io.dataset_loader import import_intellicage_dataset
 from tse_analytics.modules.intellimaze.io.dataset_loader import import_im_dataset
 from tse_analytics.modules.phenomaster.io.tse_dataset_loader import load_tse_dataset
-from tse_analytics.views.about_dialog import AboutDialog
+from tse_analytics.views.about.about_dialog import AboutDialog
 from tse_analytics.views.datasets.datasets_widget import DatasetsWidget
-from tse_analytics.views.import_csv_dialog import ImportCsvDialog
-from tse_analytics.views.import_tse_dialog import ImportTseDialog
+from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvDialog
+from tse_analytics.modules.phenomaster.views.import_tse_dialog import ImportTseDialog
 from tse_analytics.views.info.info_widget import InfoWidget
-from tse_analytics.views.log_widget import LogWidget
+from tse_analytics.views.logs.log_widget import LogWidget
 from tse_analytics.views.main_window_ui import Ui_MainWindow
-from tse_analytics.views.misc.add_widget_button import AddWidgetButton
+from tse_analytics.views.misc.toolbox_button import ToolboxButton
 from tse_analytics.views.selection.animals.animals_widget import AnimalsWidget
 from tse_analytics.views.selection.factors.factors_widget import FactorsWidget
 from tse_analytics.views.selection.variables.variables_widget import VariablesWidget
 from tse_analytics.views.settings.binning_settings_widget import BinningSettingsWidget
+from tse_analytics.views.settings.settings_dialog import SettingsDialog
 
 MAX_RECENT_FILES = 10
 
@@ -55,10 +56,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.menuOpenRecent.aboutToShow.connect(self.populate_open_recent)
 
-        self.add_widget_button = AddWidgetButton(self)
+        self.toolbox_button = ToolboxButton(self)
 
         self.toolBar.addSeparator()
-        self.toolBar.addWidget(self.add_widget_button)
+        self.toolBar.addWidget(self.toolbox_button)
 
         # Initialize dock manager. Because the parent parameter is a QMainWindow
         # the dock manager registers itself as the central widget.
@@ -71,7 +72,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         LayoutManager.set_central_widget()
 
         datasets_dock_widget = LayoutManager.register_dock_widget(
-            DatasetsWidget(self, self.add_widget_button), "Datasets", QIcon(":/icons/datasets.png")
+            DatasetsWidget(self, self.toolbox_button), "Datasets", QIcon(":/icons/datasets.png")
         )
         datasets_dock_area = LayoutManager.add_dock_widget(PySide6QtAds.LeftDockWidgetArea, datasets_dock_widget)
 
@@ -116,10 +117,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionRestoreLayout.triggered.connect(self._restore_layout)
         self.actionResetLayout.triggered.connect(self._reset_layout)
         self.actionExit.triggered.connect(lambda: QApplication.exit())
-        self.actionHelp.triggered.connect(
-            lambda: QDesktopServices.openUrl("https://tse-systems.github.io/tse-analytics-docs")
-        )
+        self.actionHelp.triggered.connect(self._show_help)
         self.actionAbout.triggered.connect(self._show_about_dialog)
+        self.actionSettings.triggered.connect(self._show_settings_dialog)
 
         # Store default dock layout
         LayoutManager.add_perspective("Default")
@@ -206,6 +206,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def _show_about_dialog(self):
         dlg = AboutDialog(self)
         dlg.show()
+
+    def _show_settings_dialog(self):
+        dlg = SettingsDialog(self)
+        dlg.show()
+
+    def _show_help(self):
+        help_mode = self.settings.value("HelpMode", "online")
+        if help_mode == "online":
+            help_manager.show_online_help()
+        else:
+            help_manager.show_offline_help()
 
     def import_dataset_dialog(self) -> None:
         filter = (

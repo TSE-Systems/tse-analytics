@@ -120,7 +120,7 @@ class CorrelationWidget(QWidget):
                 by = None
 
         variables = {x_var.name: x_var} if x_var.name == y_var.name else {x_var.name: x_var, y_var.name: y_var}
-        df = self.datatable.get_current_df(
+        df = self.datatable.get_preprocessed_df(
             variables=variables,
             split_mode=self.split_mode,
             selected_factor_name=self.selected_factor_name,

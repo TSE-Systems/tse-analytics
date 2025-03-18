@@ -89,7 +89,7 @@ class HistogramWidget(QWidget):
             case _:
                 by = None
 
-        df = self.datatable.get_current_df(
+        df = self.datatable.get_preprocessed_df(
             variables={variable.name: variable},
             split_mode=self.split_mode,
             selected_factor_name=self.selected_factor_name,

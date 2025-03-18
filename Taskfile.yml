@@ -15,8 +15,8 @@ tasks:
   build-ui:
     cmds:
       - pyside6-uic tse_analytics/views/main_window.ui -o tse_analytics/views/main_window_ui.py
-      - pyside6-uic tse_analytics/views/import_csv_dialog.ui -o tse_analytics/views/import_csv_dialog_ui.py
-      - pyside6-uic tse_analytics/views/import_tse_dialog.ui -o tse_analytics/views/import_tse_dialog_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/views/import_csv_dialog.ui -o tse_analytics/modules/phenomaster/views/import_csv_dialog_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/views/import_tse_dialog.ui -o tse_analytics/modules/phenomaster/views/import_tse_dialog_ui.py
       - pyside6-uic tse_analytics/views/selection/factors/factors_dialog.ui -o tse_analytics/views/selection/factors/factors_dialog_ui.py
       - pyside6-uic tse_analytics/views/selection/variables/add_variable_dialog.ui -o tse_analytics/views/selection/variables/add_variable_dialog_ui.py
       - pyside6-uic tse_analytics/views/datasets/datasets_merge_dialog.ui -o tse_analytics/views/datasets/datasets_merge_dialog_ui.py
@@ -30,7 +30,8 @@ tasks:
       - pyside6-uic tse_analytics/views/analysis/mixed_anova/mixed_anova_settings_widget.ui -o tse_analytics/views/analysis/mixed_anova/mixed_anova_settings_widget_ui.py
       - pyside6-uic tse_analytics/views/analysis/ancova/ancova_settings_widget.ui -o tse_analytics/views/analysis/ancova/ancova_settings_widget_ui.py
       - pyside6-uic tse_analytics/views/analysis/timeseries_decomposition/timeseries_decomposition_settings_widget.ui -o tse_analytics/views/analysis/timeseries_decomposition/timeseries_decomposition_settings_widget_ui.py
-      - pyside6-uic tse_analytics/views/about_dialog.ui -o tse_analytics/views/about_dialog_ui.py
+      - pyside6-uic tse_analytics/views/about/about_dialog.ui -o tse_analytics/views/about/about_dialog_ui.py
+      - pyside6-uic tse_analytics/views/settings/settings_dialog.ui -o tse_analytics/views/settings/settings_dialog_ui.py
       - pyside6-uic tse_analytics/views/reports/reports_widget.ui -o tse_analytics/views/reports/reports_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_dialog.ui -o tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_dialog_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_plot_widget_ui.py

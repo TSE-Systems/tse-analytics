@@ -135,7 +135,9 @@ class CaloDialog(QDialog):
         # remove last bin
         bin_numbers = sorted(self.calo_data.raw_df["Bin"].unique().tolist())
         raw_df = self.calo_data.raw_df.loc[self.calo_data.raw_df["Bin"] != bin_numbers[-1]]
-        active_df = self.calo_data.dataset.datatables["Main"].active_df.loc[self.calo_data.dataset.datatables["Main"].active_df["Bin"] != bin_numbers[-1]]
+        active_df = self.calo_data.dataset.datatables["Main"].active_df.loc[
+            self.calo_data.dataset.datatables["Main"].active_df["Bin"] != bin_numbers[-1]
+        ]
 
         fitting_params_list: list[FittingParams] = []
 

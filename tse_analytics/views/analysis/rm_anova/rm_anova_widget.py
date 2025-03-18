@@ -130,7 +130,7 @@ class RMAnovaWidget(QWidget):
             ):
                 do_pairwise_tests = False
 
-        df = self.datatable.get_current_df(
+        df = self.datatable.get_preprocessed_df(
             variables={dependent_variable: selected_dependent_variable},
             split_mode=SplitMode.ANIMAL,
             selected_factor_name=None,

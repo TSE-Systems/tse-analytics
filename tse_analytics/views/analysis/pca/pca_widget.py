@@ -132,7 +132,7 @@ class PcaWidget(QWidget):
         selected_factor_name: str,
         by: str,
     ) -> tuple[pd.DataFrame, str, str]:
-        df = self.datatable.get_current_df(
+        df = self.datatable.get_preprocessed_df(
             variables=selected_variables,
             split_mode=split_mode,
             selected_factor_name=selected_factor_name,

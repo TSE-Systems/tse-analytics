@@ -1,3 +1,4 @@
+import pandas as pd
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QCheckBox, QComboBox
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
@@ -6,6 +7,9 @@ from pyqttoast import ToastPreset
 from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import process_time_cycles_binning
+from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
+from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import process_time_phases_binning
 from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.utils import get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
@@ -129,6 +133,45 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
             else:
                 self._display_bar_plot(selected_variable, self.split_mode, self.selected_factor_name, display_errors)
 
+    def _get_timeline_plot_df(
+        self,
+        variable: Variable,
+        split_mode: SplitMode,
+        selected_factor_name: str,
+        calculate_errors: str | None,
+    ) -> pd.DataFrame:
+        factor_columns = list(self.datatable.dataset.factors)
+        result = self.datatable.active_df[
+            self.datatable.get_default_columns() + factor_columns + [variable.name]
+        ].copy()
+
+        variables = {variable.name: variable}
+
+        result = self.datatable.preprocess_df(result, variables)
+
+        # Binning
+        settings = self.datatable.dataset.binning_settings
+        if settings.apply:
+            # if split_mode == SplitMode.ANIMAL:
+            #     calculate_errors = None
+            result = process_time_interval_binning(
+                result,
+                settings.time_intervals_settings,
+                variables,
+                calculate_errors,
+            )
+
+        # Splitting
+        df = self.datatable.process_splitting(
+            result,
+            split_mode,
+            variables,
+            selected_factor_name,
+            calculate_errors,
+        )
+
+        return result
+
     def _display_timeline_plot(
         self,
         selected_variable: Variable,
@@ -146,7 +189,7 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         else:
             calculate_errors = None
 
-        df = self.datatable.get_timeline_plot_df(
+        df = self._get_timeline_plot_df(
             variable=selected_variable,
             split_mode=split_mode,
             selected_factor_name=selected_factor_name,
@@ -169,6 +212,34 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
             self.checkBoxScatterPlot.isChecked(),
         )
 
+    def _get_bar_plot_df(
+        self,
+        variable: Variable,
+    ) -> pd.DataFrame:
+        factor_columns = list(self.datatable.dataset.factors)
+        result = self.datatable.active_df[self.datatable.get_default_columns() + factor_columns].copy()
+
+        variables = {variable.name: variable}
+
+        result = self.datatable.preprocess_df(result, variables)
+
+        settings = self.datatable.dataset.binning_settings
+        match settings.mode:
+            case BinningMode.CYCLES:
+                result = process_time_cycles_binning(
+                    result,
+                    settings.time_cycles_settings,
+                    variables,
+                )
+            case BinningMode.PHASES:
+                result = process_time_phases_binning(
+                    result,
+                    settings.time_phases_settings,
+                    variables,
+                )
+
+        return result
+
     def _display_bar_plot(
         self,
         selected_variable: Variable,
@@ -186,7 +257,7 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         else:
             calculate_errors = None
 
-        df = self.datatable.get_bar_plot_df(
+        df = self._get_bar_plot_df(
             variable=selected_variable,
         )
 

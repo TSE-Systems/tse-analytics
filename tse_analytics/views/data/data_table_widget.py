@@ -19,7 +19,10 @@ from pyqttoast import ToastPreset
 from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import SplitMode
+from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import process_time_cycles_binning
+from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
+from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import process_time_phases_binning
+from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.utils import get_widget_tool_button, get_h_spacer_widget
 from tse_analytics.core.models.pandas_model import PandasModel
 from tse_analytics.core.toaster import make_toast
@@ -147,14 +150,15 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             return
         filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "", "CSV Files (*.csv)")
         if filename:
-            self.datatable.export_to_csv(filename)
+            self.datatable.get_preprocessed_df().to_csv(filename, sep=";", index=False)
 
     def _export_excel(self):
         if self.datatable is None:
             return
         filename, _ = QFileDialog.getSaveFileName(self, "Export to Excel", "", "Excel Files (*.xlsx)")
         if filename:
-            self.datatable.export_to_excel(filename)
+            with pd.ExcelWriter(filename) as writer:
+                self.datatable.get_preprocessed_df().to_excel(writer, sheet_name="Data")
 
     def _on_binning_applied(self, message: messaging.BinningMessage):
         if message.dataset == self.datatable.dataset:
@@ -166,6 +170,51 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
     def _variables_selection_changed(self):
         self._set_data()
+
+    def _get_data_table_df(
+        self,
+        variables: dict[str, Variable],
+    ) -> pd.DataFrame:
+        factor_columns = list(self.datatable.dataset.factors)
+        variable_columns = list(variables)
+        result = self.datatable.active_df[
+            self.datatable.get_default_columns() + factor_columns + variable_columns
+        ].copy()
+
+        result = self.datatable.preprocess_df(result, variables)
+
+        # Binning
+        settings = self.datatable.dataset.binning_settings
+        if settings.apply:
+            match settings.mode:
+                case BinningMode.INTERVALS:
+                    result = process_time_interval_binning(
+                        result,
+                        settings.time_intervals_settings,
+                        variables,
+                    )
+                case BinningMode.CYCLES:
+                    result = process_time_cycles_binning(
+                        result,
+                        settings.time_cycles_settings,
+                        variables,
+                    )
+                case BinningMode.PHASES:
+                    result = process_time_phases_binning(
+                        result,
+                        settings.time_phases_settings,
+                        variables,
+                    )
+
+        # Splitting
+        result = self.datatable.process_splitting(
+            result,
+            self.split_mode,
+            variables,
+            self.selected_factor_name,
+        )
+
+        return result
 
     def _set_data(self):
         if self.datatable is None:
@@ -199,10 +248,8 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             ).show()
             return
 
-        self.df = self.datatable.get_data_table_df(
+        self.df = self._get_data_table_df(
             variables=selected_variables,
-            split_mode=self.split_mode,
-            selected_factor_name=self.selected_factor_name,
         )
 
         if len(selected_variables) > 0:

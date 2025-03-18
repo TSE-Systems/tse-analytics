@@ -99,7 +99,7 @@ class MatrixPlotWidget(QWidget):
             ).show()
             return
 
-        df = self.datatable.get_current_df(
+        df = self.datatable.get_preprocessed_df(
             variables=selected_variables,
             split_mode=self.split_mode,
             selected_factor_name=self.selected_factor_name,

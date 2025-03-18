@@ -5,7 +5,9 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QAbstractI
 from pyqttoast import ToastPreset
 
 from tse_analytics.core import messaging
+from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.utils import get_widget_tool_button, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.styles.css import style_descriptive_table
@@ -140,7 +142,25 @@ class NWayAnovaWidget(QWidget):
             ).show()
             return
 
-        df = self.datatable.get_anova_df(variables={dependent_variable: selected_dependent_variable})
+        variables = {
+            dependent_variable: selected_dependent_variable,
+        }
+
+        factor_columns = list(self.datatable.dataset.factors)
+        variable_columns = list(variables)
+        df = self.datatable.active_df[self.datatable.get_default_columns() + factor_columns + variable_columns].copy()
+
+        df = self.datatable.preprocess_df(df, variables)
+
+        # Binning
+        df = process_time_interval_binning(
+            df,
+            TimeIntervalsBinningSettings("day", 365),
+            variables,
+        )
+
+        # TODO: should or should not?
+        df.dropna(inplace=True)
 
         # Sanitize variable name: comma, bracket, and colon are not allowed in column names
         sanitized_dependent_variable = dependent_variable.replace("(", "_").replace(")", "").replace(",", "_")

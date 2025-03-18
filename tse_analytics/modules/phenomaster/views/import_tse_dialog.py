@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QDialog, QWidget
 
 from tse_analytics.core.utils import get_available_sqlite_tables
 from tse_analytics.modules.phenomaster.io.tse_import_settings import TseImportSettings
-from tse_analytics.views.import_tse_dialog_ui import Ui_ImportTseDialog
+from tse_analytics.modules.phenomaster.views.import_tse_dialog_ui import Ui_ImportTseDialog
 
 
 class ImportTseDialog(QDialog):

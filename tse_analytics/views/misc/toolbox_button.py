@@ -29,7 +29,7 @@ from tse_analytics.views.data.data_table_widget import DataTableWidget
 from tse_analytics.views.reports.reports_widget import ReportsWidget
 
 
-class AddWidgetButton(QToolButton):
+class ToolboxButton(QToolButton):
     def __init__(self, parent: QWidget):
         super().__init__(parent)
 

@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import pandas as pd
 
-from tse_analytics.core.data.binning import BinningMode, TimeIntervalsBinningSettings
+from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.helper import rename_animal_df, reassign_df_timedelta_and_bin
 from tse_analytics.core.data.outliers import OutliersMode
 from tse_analytics.core.data.pipeline.animal_filter_pipe_operator import filter_animals
@@ -152,7 +152,7 @@ class Datatable:
 
         self.active_df = df
 
-    def _preprocess_df(
+    def preprocess_df(
         self,
         df: pd.DataFrame,
         variables: [str, Variable],
@@ -166,7 +166,7 @@ class Datatable:
 
         return df
 
-    def _process_splitting(
+    def process_splitting(
         self,
         df: pd.DataFrame,
         split_mode: SplitMode,
@@ -211,7 +211,7 @@ class Datatable:
         result.reset_index(inplace=True)
         return result
 
-    def get_current_df(
+    def get_preprocessed_df(
         self,
         variables: dict[str, Variable] | None = None,
         split_mode=SplitMode.ANIMAL,
@@ -226,7 +226,7 @@ class Datatable:
             variables = self.variables
             result = self.active_df.copy()
 
-        result = self._preprocess_df(result, variables)
+        result = self.preprocess_df(result, variables)
 
         # Binning
         settings = self.dataset.binning_settings
@@ -252,7 +252,7 @@ class Datatable:
                     )
 
         # Splitting
-        result = self._process_splitting(
+        result = self.process_splitting(
             result,
             split_mode,
             variables,
@@ -264,171 +264,6 @@ class Datatable:
             result.dropna(inplace=True)
 
         return result
-
-    def get_data_table_df(
-        self,
-        variables: dict[str, Variable],
-        split_mode: SplitMode,
-        selected_factor_name: str,
-    ) -> pd.DataFrame:
-        factor_columns = list(self.dataset.factors)
-        variable_columns = list(variables)
-        result = self.active_df[self.get_default_columns() + factor_columns + variable_columns].copy()
-
-        result = self._preprocess_df(result, variables)
-
-        # Binning
-        settings = self.dataset.binning_settings
-        if settings.apply:
-            match settings.mode:
-                case BinningMode.INTERVALS:
-                    result = process_time_interval_binning(
-                        result,
-                        settings.time_intervals_settings,
-                        variables,
-                    )
-                case BinningMode.CYCLES:
-                    result = process_time_cycles_binning(
-                        result,
-                        settings.time_cycles_settings,
-                        variables,
-                    )
-                case BinningMode.PHASES:
-                    result = process_time_phases_binning(
-                        result,
-                        settings.time_phases_settings,
-                        variables,
-                    )
-
-        # Splitting
-        result = self._process_splitting(
-            result,
-            split_mode,
-            variables,
-            selected_factor_name,
-        )
-
-        return result
-
-    def get_timeline_plot_df(
-        self,
-        variable: Variable,
-        split_mode: SplitMode,
-        selected_factor_name: str,
-        calculate_errors: str | None,
-    ) -> pd.DataFrame:
-        factor_columns = list(self.dataset.factors)
-        result = self.active_df[self.get_default_columns() + factor_columns + [variable.name]].copy()
-
-        variables = {variable.name: variable}
-
-        result = self._preprocess_df(result, variables)
-
-        # Binning
-        settings = self.dataset.binning_settings
-        if settings.apply:
-            # if split_mode == SplitMode.ANIMAL:
-            #     calculate_errors = None
-            result = process_time_interval_binning(
-                result,
-                settings.time_intervals_settings,
-                variables,
-                calculate_errors,
-            )
-
-        # Splitting
-        result = self._process_splitting(
-            result,
-            split_mode,
-            variables,
-            selected_factor_name,
-            calculate_errors,
-        )
-
-        return result
-
-    def get_bar_plot_df(
-        self,
-        variable: Variable,
-    ) -> pd.DataFrame:
-        default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin", variable.name]
-        factor_columns = list(self.dataset.factors)
-        result = self.active_df[default_columns + factor_columns].copy()
-
-        variables = {variable.name: variable}
-
-        result = self._preprocess_df(result, variables)
-
-        settings = self.dataset.binning_settings
-        match settings.mode:
-            case BinningMode.CYCLES:
-                result = process_time_cycles_binning(
-                    result,
-                    settings.time_cycles_settings,
-                    variables,
-                )
-            case BinningMode.PHASES:
-                result = process_time_phases_binning(
-                    result,
-                    settings.time_phases_settings,
-                    variables,
-                )
-
-        return result
-
-    def get_anova_df(
-        self,
-        variables: dict[str, Variable],
-    ) -> pd.DataFrame:
-        factor_columns = list(self.dataset.factors)
-        variable_columns = list(variables)
-        result = self.active_df[self.get_default_columns() + factor_columns + variable_columns].copy()
-
-        result = self._preprocess_df(result, variables)
-
-        # Binning
-        result = process_time_interval_binning(
-            result,
-            TimeIntervalsBinningSettings("day", 365),
-            variables,
-        )
-
-        # TODO: should or should not?
-        result.dropna(inplace=True)
-
-        return result
-
-    def get_timeseries_df(
-        self,
-        animal: Animal,
-        variable: Variable,
-    ) -> pd.DataFrame:
-        columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", variable.name]
-        df = self.active_df[columns].copy()
-        df = df[df["Animal"] == animal.id]
-        df.reset_index(drop=True, inplace=True)
-
-        variables = {variable.name: variable}
-
-        result = self._preprocess_df(df, variables)
-
-        # Binning
-        settings = self.dataset.binning_settings
-        if settings.apply:
-            result = process_time_interval_binning(
-                result,
-                settings.time_intervals_settings,
-                variables,
-            )
-
-        return result
-
-    def export_to_excel(self, path: str) -> None:
-        with pd.ExcelWriter(path) as writer:
-            self.get_current_df().to_excel(writer, sheet_name="Data")
-
-    def export_to_csv(self, path: str) -> None:
-        self.get_current_df().to_csv(path, sep=";", index=False)
 
     def refresh_active_df(self) -> None:
         self.set_factors(self.dataset.factors)

@@ -2,7 +2,7 @@ from PySide6.QtCore import QSettings
 from PySide6.QtWidgets import QDialog, QWidget
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
-from tse_analytics.views.import_csv_dialog_ui import Ui_ImportCsvDialog
+from tse_analytics.modules.phenomaster.views.import_csv_dialog_ui import Ui_ImportCsvDialog
 
 
 class ImportCsvDialog(QDialog):

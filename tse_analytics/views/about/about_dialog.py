@@ -2,7 +2,7 @@ import importlib.metadata
 
 from PySide6.QtWidgets import QDialog, QWidget
 
-from tse_analytics.views.about_dialog_ui import Ui_AboutDialog
+from tse_analytics.views.about.about_dialog_ui import Ui_AboutDialog
 
 
 class AboutDialog(QDialog, Ui_AboutDialog):

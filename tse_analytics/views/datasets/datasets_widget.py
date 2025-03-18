@@ -38,12 +38,12 @@ from tse_analytics.modules.phenomaster.submodules.trafficage.models.trafficage_t
 from tse_analytics.modules.phenomaster.submodules.trafficage.views.trafficage_dialog import TraffiCageDialog
 from tse_analytics.views.datasets.adjust_dataset_dialog import AdjustDatasetDialog
 from tse_analytics.views.datasets.datasets_merge_dialog import DatasetsMergeDialog
-from tse_analytics.views.import_csv_dialog import ImportCsvDialog
-from tse_analytics.views.misc.add_widget_button import AddWidgetButton
+from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvDialog
+from tse_analytics.views.misc.toolbox_button import ToolboxButton
 
 
 class DatasetsWidget(QWidget):
-    def __init__(self, parent, add_widget_button: AddWidgetButton):
+    def __init__(self, parent, add_widget_button: ToolboxButton):
         super().__init__(parent)
 
         self.layout = QVBoxLayout(self)

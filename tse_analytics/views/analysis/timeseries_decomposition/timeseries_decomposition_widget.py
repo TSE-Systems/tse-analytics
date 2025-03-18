@@ -8,6 +8,7 @@ from statsmodels.tsa.seasonal import MSTL, STL, seasonal_decompose
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.shared import Aggregation
 from tse_analytics.core.utils import get_html_image, get_h_spacer_widget, get_widget_tool_button
 from tse_analytics.core.toaster import make_toast
@@ -113,10 +114,23 @@ class TimeseriesDecompositionWidget(QWidget):
 
         self.canvas.clear(False)
 
-        df = self.datatable.get_timeseries_df(
-            animal=animal,
-            variable=variable,
-        )
+        columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", variable.name]
+        df = self.datatable.active_df[columns].copy()
+        df = df[df["Animal"] == animal.id]
+        df.reset_index(drop=True, inplace=True)
+
+        variables = {variable.name: variable}
+
+        df = self.datatable.preprocess_df(df, variables)
+
+        # Binning
+        settings = self.datatable.dataset.binning_settings
+        if settings.apply:
+            df = process_time_interval_binning(
+                df,
+                settings.time_intervals_settings,
+                variables,
+            )
 
         index = pd.DatetimeIndex(df["DateTime"])
         df.set_index(index, inplace=True)
@@ -146,7 +160,7 @@ class TimeseriesDecompositionWidget(QWidget):
             ).fit()
 
         axs = self.canvas.figure.subplots(4, 1, sharex=True)
-        self.canvas.figure.suptitle(f"Timeseries decomposition of {var_name} for animal {animal.id}")
+        self.canvas.figure.suptitle(f"Timeseries decomposition of {var_name}. Animal: {animal.id}")
 
         axs[0].plot(result.observed, label="Observed", lw=1)
         axs[0].set_ylabel(var_name)
