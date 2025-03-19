@@ -128,7 +128,10 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         self.plot_item2.plot(x, y, pen=pen)
 
-        return x.min(), x.max()
+        if x.size != 0:
+            return x.min(), x.max()
+        else:
+            return 0, 0
 
     def _plot_animals(self) -> tuple[float, float]:
         x_min = None
