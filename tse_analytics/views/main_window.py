@@ -320,6 +320,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             LayoutManager.clear_dock_manager()
             self.save_settings()
             LayoutManager.delete_dock_manager()
+            help_manager.close_help_server()
             super().closeEvent(event)
         else:
             event.ignore()

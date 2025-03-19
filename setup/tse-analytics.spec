@@ -6,6 +6,7 @@ from PyInstaller.utils.hooks import copy_metadata
 pathex = os.path.abspath(os.path.join(SPECPATH, '..'))
 
 datas = [
+    ('../docs', 'docs'),
     ('../tse_analytics/styles', 'styles'),
     ('../tse_analytics/resources_rc.py', '.'),
 ]
@@ -16,7 +17,7 @@ datas += copy_metadata('numpy')
 a = Analysis(
     ['../tse_analytics/__main__.py'],
     pathex=[pathex],
-    binaries=[],
+    binaries=[('../.venv/Scripts/python.exe', '.'),],
     datas=datas,
     hiddenimports=[],
     hookspath=['setup/hooks'],
