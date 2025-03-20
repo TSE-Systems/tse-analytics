@@ -26,7 +26,7 @@ class Ui_AdjustDatasetDialog(object):
     def setupUi(self, AdjustDatasetDialog):
         if not AdjustDatasetDialog.objectName():
             AdjustDatasetDialog.setObjectName(u"AdjustDatasetDialog")
-        AdjustDatasetDialog.resize(933, 429)
+        AdjustDatasetDialog.resize(924, 429)
         self.verticalLayout = QVBoxLayout(AdjustDatasetDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.widgetMain = QWidget(AdjustDatasetDialog)
@@ -186,16 +186,13 @@ class Ui_AdjustDatasetDialog(object):
         self.verticalLayout_5 = QVBoxLayout(self.groupBoxExcludeAnimals)
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
         self.tableWidgetAnimals = QTableWidget(self.groupBoxExcludeAnimals)
-        if (self.tableWidgetAnimals.columnCount() < 6):
-            self.tableWidgetAnimals.setColumnCount(6)
         self.tableWidgetAnimals.setObjectName(u"tableWidgetAnimals")
-        self.tableWidgetAnimals.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.tableWidgetAnimals.setSelectionMode(QAbstractItemView.MultiSelection)
-        self.tableWidgetAnimals.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.tableWidgetAnimals.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
-        self.tableWidgetAnimals.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.tableWidgetAnimals.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.tableWidgetAnimals.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
+        self.tableWidgetAnimals.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.tableWidgetAnimals.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
+        self.tableWidgetAnimals.setHorizontalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
         self.tableWidgetAnimals.setSortingEnabled(True)
-        self.tableWidgetAnimals.setColumnCount(6)
         self.tableWidgetAnimals.verticalHeader().setVisible(False)
         self.tableWidgetAnimals.verticalHeader().setMinimumSectionSize(20)
         self.tableWidgetAnimals.verticalHeader().setDefaultSectionSize(20)
@@ -210,8 +207,8 @@ class Ui_AdjustDatasetDialog(object):
 
         self.buttonBox = QDialogButtonBox(AdjustDatasetDialog)
         self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+        self.buttonBox.setOrientation(Qt.Orientation.Horizontal)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
 
         self.verticalLayout.addWidget(self.buttonBox)
 

@@ -16,6 +16,8 @@ from tse_analytics.core.data.shared import Animal, Factor, SplitMode, Variable
 
 
 class Datatable:
+    default_columns = ["Animal", "Timedelta", "DateTime"]
+
     def __init__(
         self,
         dataset: "Dataset",
@@ -51,11 +53,12 @@ class Datatable:
         return self.end_timestamp - self.start_timestamp
 
     def get_default_columns(self) -> list[str]:
-        return (
-            ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
-            if "Box" in self.original_df.columns
-            else ["DateTime", "Timedelta", "Animal", "Run"]
-        )
+        columns = Datatable.default_columns
+        if "Bin" in self.original_df.columns:
+            columns = columns + ["Bin"]
+        if "Run" in self.original_df.columns:
+            columns = columns + ["Run"]
+        return columns
 
     def delete_variables(self, variable_names: list[str]) -> None:
         for var_name in variable_names:
@@ -66,7 +69,7 @@ class Datatable:
 
     def rename_animal(self, old_id: str, animal: Animal) -> None:
         self.original_df = rename_animal_df(self.original_df, old_id, animal)
-        self.active_df = rename_animal_df(self.active_df, old_id, animal)
+        self.refresh_active_df()
 
     def exclude_animals(self, animal_ids: set[str]) -> None:
         self.original_df = self.original_df[~self.original_df["Animal"].isin(animal_ids)]
@@ -75,59 +78,75 @@ class Datatable:
         self.refresh_active_df()
 
     def exclude_time(self, range_start: datetime, range_end: datetime) -> None:
-        self.original_df = self._exclude_df_time(self.original_df, range_start, range_end)
-        self.active_df = self._exclude_df_time(self.active_df, range_start, range_end)
-
-    def _exclude_df_time(self, df: pd.DataFrame, range_start: datetime, range_end: datetime) -> pd.DataFrame:
-        df = df[(df["DateTime"] < range_start) | (df["DateTime"] > range_end)]
-        df = reassign_df_timedelta_and_bin(df, self.sampling_interval)
-        return df
+        self.original_df = self.original_df[
+            (self.original_df["DateTime"] < range_start) | (self.original_df["DateTime"] > range_end)
+        ]
+        merging_mode = (
+            self.dataset.metadata["experiment"]["merging_mode"]
+            if "merging_mode" in self.dataset.metadata["experiment"]
+            else None
+        )
+        self.original_df = reassign_df_timedelta_and_bin(self.original_df, self.sampling_interval, merging_mode)
+        self.refresh_active_df()
 
     def trim_time(self, range_start: datetime, range_end: datetime) -> None:
-        self.original_df = self._trim_df_time(self.original_df, range_start, range_end)
-        self.active_df = self._trim_df_time(self.active_df, range_start, range_end)
+        self.original_df = self.original_df[
+            (self.original_df["DateTime"] >= range_start) & (self.original_df["DateTime"] <= range_end)
+        ]
+        merging_mode = (
+            self.dataset.metadata["experiment"]["merging_mode"]
+            if "merging_mode" in self.dataset.metadata["experiment"]
+            else None
+        )
+        self.original_df = reassign_df_timedelta_and_bin(self.original_df, self.sampling_interval, merging_mode)
+        self.refresh_active_df()
 
-    def _trim_df_time(self, df: pd.DataFrame, range_start: datetime, range_end: datetime) -> pd.DataFrame:
-        df = df[(df["DateTime"] >= range_start) & (df["DateTime"] <= range_end)]
-        df = reassign_df_timedelta_and_bin(df, self.sampling_interval)
-        return df
+    def adjust_time(self, delta: pd.Timedelta) -> None:
+        self.original_df["DateTime"] = self.original_df["DateTime"] + delta
+        merging_mode = (
+            self.dataset.metadata["experiment"]["merging_mode"]
+            if "merging_mode" in self.dataset.metadata["experiment"]
+            else None
+        )
+        self.original_df = reassign_df_timedelta_and_bin(self.original_df, self.sampling_interval, merging_mode)
+        self.refresh_active_df()
 
     def resample(self, resampling_interval: pd.Timedelta) -> None:
         agg = {
             "DateTime": "first",
-            "Run": "first",
         }
+
+        if "Run" in self.original_df.columns:
+            agg["Run"] = "first"
+
         for column in self.original_df.columns:
             if column not in self.get_default_columns():
                 if self.original_df.dtypes[column].name != "category":
                     if column in self.variables:
                         agg[column] = self.variables[column].aggregation
-                    else:
-                        agg[column] = "mean"
 
-        group_by = ["Animal"]
-        sort_by = ["Timedelta", "Animal"]
+        result = self.original_df.groupby(["Animal"], dropna=False, observed=False)
+        result = result.resample(resampling_interval, on="Timedelta", origin="start").agg(agg)
+        result.reset_index(inplace=True, drop=False)
 
-        original_result = self.original_df.groupby(group_by, dropna=False, observed=False)
-        original_result = original_result.resample(resampling_interval, on="Timedelta", origin="start").agg(agg)
-        original_result.reset_index(inplace=True, drop=False)
-        original_result.sort_values(by=sort_by, inplace=True)
+        # Drop empty entries
+        result.dropna(subset=["DateTime"], inplace=True)
 
-        original_result = reassign_df_timedelta_and_bin(original_result, resampling_interval)
+        # Assign new bins numbers
+        result["Bin"] = (result["Timedelta"] / resampling_interval).round().astype(int)
+
+        result.sort_values(by=["Timedelta", "Animal"], inplace=True)
+        result.reset_index(inplace=True, drop=True)
+
+        if "Run" in result.columns:
+            result = result.astype({
+                "Run": int,
+            })
 
         self.sampling_interval = resampling_interval
-        self.original_df = original_result
+        self.original_df = result
 
         self.refresh_active_df()
-
-    def adjust_time(self, delta: pd.Timedelta) -> None:
-        self.original_df = self._adjust_df_time(self.original_df, delta)
-        self.active_df = self._adjust_df_time(self.active_df, delta)
-
-    def _adjust_df_time(self, df: pd.DataFrame, delta: pd.Timedelta) -> pd.DataFrame:
-        df["DateTime"] = df["DateTime"] + delta
-        df = reassign_df_timedelta_and_bin(df, self.sampling_interval)
-        return df
 
     def set_factors(self, factors: dict[str, Factor]) -> None:
         # TODO: should be copy?
@@ -145,8 +164,6 @@ class Datatable:
                     animal_factor_map[animal_id] = level.name
 
             df[factor.name] = df["Animal"].astype(str)
-            # df[factor.name].replace(animal_factor_map, inplace=True)
-            # df[factor.name] = df[factor.name].replace(animal_factor_map)
             df.replace({factor.name: animal_factor_map}, inplace=True)
             df[factor.name] = df[factor.name].astype("category")
 

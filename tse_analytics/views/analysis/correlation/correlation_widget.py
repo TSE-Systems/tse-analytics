@@ -52,7 +52,7 @@ class CorrelationWidget(QWidget):
         self.yVariableSelector.set_data(self.datatable.variables)
         self.toolbar.addWidget(self.yVariableSelector)
 
-        split_mode_selector = SplitModeSelector(self.toolbar, self.datatable.dataset.factors, self._split_mode_callback)
+        split_mode_selector = SplitModeSelector(self.toolbar, self.datatable, self._split_mode_callback)
         self.toolbar.addWidget(split_mode_selector)
 
         # Insert toolbar to the widget

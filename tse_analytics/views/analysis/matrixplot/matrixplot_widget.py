@@ -53,7 +53,7 @@ class MatrixPlotWidget(QWidget):
         )
         toolbar.addWidget(variables_button)
 
-        split_mode_selector = SplitModeSelector(toolbar, self.datatable.dataset.factors, self._split_mode_callback)
+        split_mode_selector = SplitModeSelector(toolbar, self.datatable, self._split_mode_callback)
         toolbar.addWidget(split_mode_selector)
 
         # Insert toolbar to the widget

@@ -54,6 +54,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
 
     data_header = data_section.lines[0].rstrip(csv_import_settings.delimiter)
     columns = data_header.split(csv_import_settings.delimiter)
+
     data_unit_header = data_section.lines[1].rstrip(csv_import_settings.delimiter)
     columns_unit = data_unit_header.split(csv_import_settings.delimiter)
 
@@ -89,6 +90,9 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
         dayfirst=csv_import_settings.day_first,
     )
 
+    # Drop "Box" column
+    df.drop(columns=["Box"], inplace=True)
+
     # Rename table columns
     df.rename(columns={"Date_Time": "DateTime", "Date Time": "DateTime", "Animal No.": "Animal"}, inplace=True)
 
@@ -115,7 +119,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
     timedelta = _most_frequent(timedeltas)
 
     # Sort dataframe
-    df.sort_values(by=["DateTime", "Box"], inplace=True)
+    df.sort_values(by=["DateTime", "Animal"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
     start_date_time = df["DateTime"][0]
@@ -123,7 +127,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
     df.insert(loc=2, column="Bin", value=(df["Timedelta"] / timedelta).round().astype(int))
 
     # Add Run column
-    df.insert(loc=5, column="Run", value=1)
+    # df.insert(loc=5, column="Run", value=1)
 
     # Sort variables by name
     variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))

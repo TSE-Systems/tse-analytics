@@ -71,8 +71,8 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         )
         toolbar.addWidget(variables_button)
 
-        split_mode_selector = SplitModeSelector(toolbar, self.datatable.dataset.factors, self._split_mode_callback)
-        toolbar.addWidget(split_mode_selector)
+        self.split_mode_selector = SplitModeSelector(toolbar, self.datatable, self._split_mode_callback)
+        toolbar.addWidget(self.split_mode_selector)
 
         toolbar.addSeparator()
         toolbar.addAction(QIcon(":/icons/icons8-resize-horizontal-16.png"), "Resize Columns").triggered.connect(
@@ -207,6 +207,17 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
                     )
 
         # Splitting
+        if (self.split_mode == SplitMode.RUN or self.split_mode == SplitMode.TOTAL) and "Bin" not in result.columns:
+            make_toast(
+                self,
+                "Data Table",
+                "Please apply binning first.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=False,
+            ).show()
+            return result
+
         result = self.datatable.process_splitting(
             result,
             self.split_mode,
@@ -231,9 +242,9 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
                 self,
                 "Data Table",
                 "Please select at least one variable.",
-                duration=4000,
+                duration=2000,
                 preset=ToastPreset.WARNING,
-                show_duration_bar=True,
+                show_duration_bar=False,
             ).show()
             return
 
@@ -244,7 +255,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
                 "Please select factor.",
                 duration=2000,
                 preset=ToastPreset.WARNING,
-                show_duration_bar=True,
+                show_duration_bar=False,
             ).show()
             return
 

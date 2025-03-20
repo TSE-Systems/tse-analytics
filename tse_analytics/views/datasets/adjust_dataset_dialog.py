@@ -18,7 +18,7 @@ class AdjustDatasetDialog(QDialog):
 
         self.ui.lineEditName.setText(dataset.name)
 
-        if "Main" in dataset.datatables:
+        if "Main" in dataset.datatables and dataset.datatables["Main"].sampling_interval is not None:
             resampling_interval = dataset.datatables["Main"].sampling_interval
         else:
             resampling_interval = pd.to_timedelta("0 days 01:00:00")
@@ -45,7 +45,12 @@ class AdjustDatasetDialog(QDialog):
         self.ui.tableWidgetAnimals.setHorizontalHeaderLabels(["Animal"])
         self.ui.tableWidgetAnimals.setRowCount(len(self.dataset.animals))
         for i, animal in enumerate(self.dataset.animals.values()):
+            if i == 0:
+                self.ui.tableWidgetAnimals.setColumnCount(len(animal.properties) + 1)
+                self.ui.tableWidgetAnimals.setHorizontalHeaderLabels(["Animal"] + list(animal.properties.keys()))
             self.ui.tableWidgetAnimals.setItem(i, 0, QTableWidgetItem(animal.id))
+            for j, item in enumerate(animal.properties):
+                self.ui.tableWidgetAnimals.setItem(i, j + 1, QTableWidgetItem(str(animal.properties[item])))
 
     def _rename(self) -> None:
         name = self.ui.lineEditName.text()

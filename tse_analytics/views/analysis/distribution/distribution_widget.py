@@ -43,7 +43,7 @@ class DistributionWidget(QWidget):
         self.variableSelector.set_data(self.datatable.variables)
         toolbar.addWidget(self.variableSelector)
 
-        split_mode_selector = SplitModeSelector(toolbar, self.datatable.dataset.factors, self._split_mode_callback)
+        split_mode_selector = SplitModeSelector(toolbar, self.datatable, self._split_mode_callback)
         toolbar.addWidget(split_mode_selector)
 
         self.plot_type_combobox = QComboBox(toolbar)

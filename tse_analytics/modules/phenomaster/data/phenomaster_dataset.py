@@ -41,11 +41,19 @@ class PhenoMasterDataset(Dataset):
 
     @property
     def experiment_started(self) -> pd.Timestamp:
-        return pd.to_datetime(self.metadata["experiment"]["start_datetime"])
+        return self.datatables["Main"].start_timestamp
+        # if "start_datetime" in self.metadata["experiment"]:
+        #     return pd.to_datetime(self.metadata["experiment"]["start_datetime"])
+        # else:
+        #     return self.datatables["Main"].start_timestamp
 
     @property
     def experiment_stopped(self) -> pd.Timestamp:
-        return pd.to_datetime(self.metadata["experiment"]["end_datetime"])
+        return self.datatables["Main"].end_timestamp
+        # if "end_datetime" in self.metadata["experiment"]:
+        #     return pd.to_datetime(self.metadata["experiment"]["end_datetime"])
+        # else:
+        #     return self.datatables["Main"].end_timestamp
 
     def rename_animal(self, old_id: str, animal: Animal) -> None:
         super().rename_animal(old_id, animal)

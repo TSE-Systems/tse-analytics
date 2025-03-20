@@ -1,11 +1,12 @@
 from PySide6.QtWidgets import QWidget, QComboBox, QHBoxLayout
 
-from tse_analytics.core.data.shared import Factor, SplitMode
+from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.views.misc.factor_selector import FactorSelector
 
 
 class SplitModeSelector(QWidget):
-    def __init__(self, parent: QWidget, factors: dict[str, Factor], callback):
+    def __init__(self, parent: QWidget, datatable: Datatable, callback):
         super().__init__(parent)
 
         self.callback = callback
@@ -14,21 +15,46 @@ class SplitModeSelector(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
 
         self.split_mode_combobox = QComboBox(self)
-        split_modes = (
-            ["By animal", "By factor", "By run", "Total"] if len(factors) > 0 else ["By animal", "By run", "Total"]
-        )
+
+        split_modes = ["By animal"]
+        if len(datatable.dataset.factors) > 0:
+            split_modes.append("By factor")
+
+        if "Bin" in datatable.active_df.columns:
+            split_modes.append("Total")
+            if "Run" in datatable.active_df.columns:
+                split_modes.append("By run")
+
         self.split_mode_combobox.addItems(split_modes)
         self.split_mode_combobox.currentTextChanged.connect(self._split_mode_changed)
         layout.addWidget(self.split_mode_combobox)
 
         self.factorSelector = FactorSelector()
-        items = list(factors.keys())
+        items = list(datatable.dataset.factors.keys())
         self.factorSelector.addItems(items)
         self.factorSelector.setVisible(False)
         self.factorSelector.currentTextChanged.connect(self._factor_name_changed)
         layout.addWidget(self.factorSelector)
 
         self.setLayout(layout)
+
+    # def set_available_modes(self, datatable: Datatable) -> None:
+    #     split_modes = ["By animal", "Total"]
+    #     if len(datatable.dataset.factors) > 0:
+    #         split_modes.append("By factor")
+    #
+    #     if "Run" in datatable.active_df.columns:
+    #         split_modes.append("By run")
+    #
+    #     # if "Bin" in datatable.active_df.columns:
+    #     #     split_modes.append("Total")
+    #
+    #     if split_modes != self.existing_items:
+    #         self.split_mode_combobox.blockSignals(True)
+    #         self.split_mode_combobox.clear()
+    #         self.split_mode_combobox.addItems(split_modes)
+    #         self.split_mode_combobox.blockSignals(False)
+    #         self.existing_items = split_modes
 
     def _split_mode_changed(self, mode: str) -> None:
         self.factorSelector.setVisible(mode == "By factor")
@@ -50,5 +76,5 @@ class SplitModeSelector(QWidget):
                 return SplitMode.FACTOR
             case "By run":
                 return SplitMode.RUN
-            case "Total":
+            case _:
                 return SplitMode.TOTAL

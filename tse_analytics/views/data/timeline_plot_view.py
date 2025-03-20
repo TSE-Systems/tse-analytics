@@ -178,10 +178,15 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         runs = self._df["Run"].unique()
         for i, run in enumerate(runs):
-            filtered_data = self._df[self._df["Run"] == run]
+            run_data = self._df[self._df["Run"] == run]
+
+            df = run_data.groupby("Bin", dropna=False, observed=False).aggregate({
+                "Timedelta": "first",
+                self._variable.name: self._variable.aggregation,
+            })
 
             pen = pg.mkPen(color=(i, len(runs)), width=1)
-            tmp_min, tmp_max = self._plot_item(filtered_data, f"Run {run}", pen)
+            tmp_min, tmp_max = self._plot_item(df, f"Run {run}", pen)
 
             if x_min is None or tmp_min < x_min:
                 x_min = tmp_min
@@ -192,7 +197,13 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
     def _plot_total(self) -> tuple[float, float]:
         pen = pg.mkPen(color=(1, 1), width=1)
-        x_min, x_max = self._plot_item(self._df, "Total", pen)
+
+        df = self._df.groupby("Bin", dropna=False, observed=False).aggregate({
+            "Timedelta": "first",
+            self._variable.name: self._variable.aggregation,
+        })
+
+        x_min, x_max = self._plot_item(df, "Total", pen)
         return x_min, x_max
 
     def get_report(self) -> str:

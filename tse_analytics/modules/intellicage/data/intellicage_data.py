@@ -117,7 +117,7 @@ class IntelliCageData:
         df.insert(loc=3, column="Timedelta", value=df["DateTime"] - experiment_started)
 
         # Add Run column
-        df.insert(loc=4, column="Run", value=1)
+        # df.insert(loc=4, column="Run", value=1)
 
         # Convert types
         df = df.astype({

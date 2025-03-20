@@ -12,6 +12,9 @@ def merge_datasets(
     continuous_mode: bool,
     generate_new_animal_names: bool,
 ) -> PhenoMasterDataset | None:
+    # sort datasets by start time
+    datasets.sort(key=lambda dataset: dataset.experiment_started)
+
     if continuous_mode:
         return _merge_continuous(new_dataset_name, datasets, single_run)
     else:
@@ -26,7 +29,7 @@ def _merge_continuous(
     first_dataset = datasets[0]
 
     merged_animals = _merge_animals(datasets)
-    merged_metadata = _merge_metadata(merged_dataset_name, merged_animals, datasets)
+    merged_metadata = _merge_metadata(merged_dataset_name, "continuous", merged_animals, datasets)
 
     result = PhenoMasterDataset(
         name=merged_dataset_name,
@@ -51,11 +54,12 @@ def _merge_continuous(
         if single_run:
             new_df["Run"] = 1
 
+        # Drop "Bin" column
+        new_df.drop(columns=["Bin"], inplace=True)
+
         # reassign bin and timedelta
         start_date_time = new_df["DateTime"][0]
-        timedelta = first_dataset.datatables[datatable_name].sampling_interval
         new_df["Timedelta"] = new_df["DateTime"] - start_date_time
-        new_df["Bin"] = (new_df["Timedelta"] / timedelta).round().astype(int)
 
         # convert categorical types
         new_df = new_df.astype({
@@ -63,7 +67,12 @@ def _merge_continuous(
         })
         new_df = new_df.astype({
             "Animal": "category",
+            "Run": int,
         })
+
+        # Sort dataframe
+        # new_df.sort_values(by=["Timedelta", "Animal"], inplace=True)
+        # new_df.reset_index(drop=True, inplace=True)
 
         new_variables = first_dataset.datatables[datatable_name].variables
         datatable = Datatable(
@@ -72,7 +81,7 @@ def _merge_continuous(
             f"Merged {datatable_name} datatable",
             new_variables,
             new_df,
-            timedelta,
+            None,
         )
         result.add_datatable(datatable)
 
@@ -105,7 +114,7 @@ def _merge_overlap(
                 datatable.original_df["Animal"] = datatable.original_df["Animal"].astype("category")
 
     merged_animals = _merge_animals(datasets)
-    merged_metadata = _merge_metadata(merged_dataset_name, merged_animals, datasets)
+    merged_metadata = _merge_metadata(merged_dataset_name, "overlap", merged_animals, datasets)
 
     result = PhenoMasterDataset(
         name=merged_dataset_name,
@@ -130,12 +139,8 @@ def _merge_overlap(
         if single_run:
             new_df["Run"] = 1
 
-        # Drop DataTime column because of the overlap mode
-        # new_df.drop(columns=["DateTime"], inplace=True)
-
-        timedelta = first_dataset.datatables[datatable_name].sampling_interval
-        # new_df["Timedelta"] = new_df["DateTime"] - start_date_time
-        new_df["Bin"] = (new_df["Timedelta"] / timedelta).round().astype(int)
+        # Drop "Bin" column
+        new_df.drop(columns=["Bin"], inplace=True)
 
         # convert categorical types
         new_df = new_df.astype({
@@ -143,7 +148,12 @@ def _merge_overlap(
         })
         new_df = new_df.astype({
             "Animal": "category",
+            "Run": int,
         })
+
+        # Sort dataframe
+        new_df.sort_values(by=["Timedelta", "Animal"], inplace=True)
+        new_df.reset_index(drop=True, inplace=True)
 
         new_variables = first_dataset.datatables[datatable_name].variables
         datatable = Datatable(
@@ -152,7 +162,7 @@ def _merge_overlap(
             f"Merged {datatable_name} datatable",
             new_variables,
             new_df,
-            timedelta,
+            None,
         )
         result.add_datatable(datatable)
 
@@ -161,21 +171,25 @@ def _merge_overlap(
 
 def _merge_metadata(
     merged_dataset_name: str,
+    merging_mode: str,
     merged_animals: dict[str, Animal],
     datasets: list[PhenoMasterDataset],
 ) -> dict:
     result = {
         "experiment": {
             "experiment_no": merged_dataset_name,
+            "merging_mode": merging_mode,
         },
         "animals": {k: v.get_dict() for (k, v) in merged_animals.items()},
-        "runs": [dataset.metadata for dataset in datasets],
+        "runs": {},
     }
+    for i, dataset in enumerate(datasets):
+        result["runs"][str(i + 1)] = dataset.metadata
     return result
 
 
 def _merge_animals(datasets: list[PhenoMasterDataset]) -> dict[str, Animal]:
     result: dict[str, Animal] = {}
-    for animals in [dataset.animals for dataset in datasets]:
+    for animals in [dataset.animals for dataset in reversed(datasets)]:
         result.update(animals)
     return result

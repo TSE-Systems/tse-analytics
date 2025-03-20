@@ -6,6 +6,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QMenu, QWidget
 from PySide6QtAds import CDockAreaWidget, CDockContainerWidget, CDockManager, CDockWidget, DockWidgetArea
 
+from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
 
 LAYOUT_VERSION = 13
@@ -45,6 +46,26 @@ class LayoutManager:
         LayoutManager.dock_manager = CDockManager(parent)
         LayoutManager.dock_manager.setStyleSheet("")
         LayoutManager.menu = menu
+        LayoutManager.dock_manager.dockWidgetAboutToBeRemoved.connect(LayoutManager._dockWidgetAboutToBeRemoved)
+        LayoutManager.dock_manager.dockWidgetRemoved.connect(LayoutManager._dockWidgetRemoved)
+
+    @classmethod
+    def _dockWidgetAboutToBeRemoved(
+        cls,
+        dock_widget: CDockWidget,
+    ) -> None:
+        # print(f"Removing dock widget: {dock_widget.objectName()}")
+        widget = dock_widget.widget()
+        if isinstance(widget, messaging.MessengerListener):
+            messaging.unsubscribe_all(widget)
+
+    @classmethod
+    def _dockWidgetRemoved(
+        cls,
+        dock_widget: CDockWidget,
+    ) -> None:
+        # print(f"Dock widget removed: {dock_widget.objectName()}")
+        pass
 
     @classmethod
     def register_dock_widget(

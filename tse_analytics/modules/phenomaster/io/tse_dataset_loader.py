@@ -186,7 +186,7 @@ def _read_main_table(
     df.insert(loc=2, column="Bin", value=(df["Timedelta"] / sample_interval).round().astype(int))
 
     # Add Run column
-    df.insert(loc=5, column="Run", value=1)
+    # df.insert(loc=5, column="Run", value=1)
 
     # Sort variables by name
     variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))

@@ -14,27 +14,22 @@ def rename_animal_df(df: pd.DataFrame, old_id: str, animal: Animal) -> pd.DataFr
     return df
 
 
-def reassign_df_timedelta_and_bin(df: pd.DataFrame, sampling_interval: pd.Timedelta) -> pd.DataFrame:
+def reassign_df_timedelta_and_bin(df: pd.DataFrame, sampling_interval: pd.Timedelta, merging_mode: str | None) -> pd.DataFrame:
     df.reset_index(inplace=True, drop=True)
 
-    # Get unique runs numbers
-    runs = df["Run"].unique().tolist()
+    if merging_mode == "overlap":
+        # Get unique runs numbers
+        runs = df["Run"].unique().tolist()
 
-    # Reassign timedeltas
-    for run in runs:
-        # Get start timestamp per run
-        start_date_time = df[df["Run"] == run]["DateTime"].iloc[0]
-        df.loc[df["Run"] == run, "Timedelta"] = df["DateTime"] - start_date_time
+        # Reassign timedeltas
+        for run in runs:
+            # Get start timestamp per run
+            start_date_time = df[df["Run"] == run]["DateTime"].iloc[0]
+            df.loc[df["Run"] == run, "Timedelta"] = df["DateTime"] - start_date_time
+    else:
+        start_date_time = df["DateTime"].iloc[0]
+        df["Timedelta"] = df["DateTime"] - start_date_time
 
     # Reassign bins numbers
     df["Bin"] = (df["Timedelta"] / sampling_interval).round().astype(int)
     return df
-
-
-def export_df_to_excel(df: pd.DataFrame, path: str) -> None:
-    with pd.ExcelWriter(path) as writer:
-        df.to_excel(writer, sheet_name="Data")
-
-
-def export_to_csv(df: pd.DataFrame, path: str) -> None:
-    df.to_csv(path, sep=";", index=False)

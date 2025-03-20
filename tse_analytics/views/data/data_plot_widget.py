@@ -46,7 +46,7 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         self.variableSelector.currentTextChanged.connect(self._variable_changed)
         toolbar.addWidget(self.variableSelector)
 
-        split_mode_selector = SplitModeSelector(toolbar, self.datatable.dataset.factors, self._split_mode_callback)
+        split_mode_selector = SplitModeSelector(toolbar, self.datatable, self._split_mode_callback)
         toolbar.addWidget(split_mode_selector)
 
         self.checkBoxScatterPlot = QCheckBox("Scatter Plot", toolbar)
@@ -217,7 +217,9 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         variable: Variable,
     ) -> pd.DataFrame:
         factor_columns = list(self.datatable.dataset.factors)
-        result = self.datatable.active_df[self.datatable.get_default_columns() + factor_columns].copy()
+        result = self.datatable.active_df[
+            self.datatable.get_default_columns() + factor_columns + [variable.name]
+        ].copy()
 
         variables = {variable.name: variable}
 
