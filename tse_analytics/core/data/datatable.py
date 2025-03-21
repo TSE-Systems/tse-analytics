@@ -52,6 +52,14 @@ class Datatable:
     def duration(self) -> pd.Timedelta:
         return self.end_timestamp - self.start_timestamp
 
+    def get_merging_mode(self) -> str | None:
+        merging_mode = (
+            self.dataset.metadata["experiment"]["merging_mode"]
+            if "merging_mode" in self.dataset.metadata["experiment"]
+            else None
+        )
+        return merging_mode
+
     def get_default_columns(self) -> list[str]:
         columns = Datatable.default_columns
         if "Bin" in self.original_df.columns:
@@ -81,11 +89,7 @@ class Datatable:
         self.original_df = self.original_df[
             (self.original_df["DateTime"] < range_start) | (self.original_df["DateTime"] > range_end)
         ]
-        merging_mode = (
-            self.dataset.metadata["experiment"]["merging_mode"]
-            if "merging_mode" in self.dataset.metadata["experiment"]
-            else None
-        )
+        merging_mode = self.get_merging_mode()
         self.original_df = reassign_df_timedelta_and_bin(self.original_df, self.sampling_interval, merging_mode)
         self.refresh_active_df()
 
@@ -93,21 +97,13 @@ class Datatable:
         self.original_df = self.original_df[
             (self.original_df["DateTime"] >= range_start) & (self.original_df["DateTime"] <= range_end)
         ]
-        merging_mode = (
-            self.dataset.metadata["experiment"]["merging_mode"]
-            if "merging_mode" in self.dataset.metadata["experiment"]
-            else None
-        )
+        merging_mode = self.get_merging_mode()
         self.original_df = reassign_df_timedelta_and_bin(self.original_df, self.sampling_interval, merging_mode)
         self.refresh_active_df()
 
     def adjust_time(self, delta: pd.Timedelta) -> None:
         self.original_df["DateTime"] = self.original_df["DateTime"] + delta
-        merging_mode = (
-            self.dataset.metadata["experiment"]["merging_mode"]
-            if "merging_mode" in self.dataset.metadata["experiment"]
-            else None
-        )
+        merging_mode = self.get_merging_mode()
         self.original_df = reassign_df_timedelta_and_bin(self.original_df, self.sampling_interval, merging_mode)
         self.refresh_active_df()
 
@@ -121,9 +117,8 @@ class Datatable:
 
         for column in self.original_df.columns:
             if column not in self.get_default_columns():
-                if self.original_df.dtypes[column].name != "category":
-                    if column in self.variables:
-                        agg[column] = self.variables[column].aggregation
+                if self.original_df.dtypes[column].name != "category" and column in self.variables:
+                    agg[column] = self.variables[column].aggregation
 
         result = self.original_df.groupby(["Animal"], dropna=False, observed=False)
         result = result.resample(resampling_interval, on="Timedelta", origin="start").agg(agg)

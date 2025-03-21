@@ -162,6 +162,14 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
     def _on_binning_applied(self, message: messaging.BinningMessage):
         if message.dataset == self.datatable.dataset:
+            split_modes = ["By animal"]
+            if message.settings.apply:
+                split_modes.append("Total")
+                if self.datatable.get_merging_mode() is not None:
+                    split_modes.append("By run")
+                if len(self.datatable.dataset.factors) > 0:
+                    split_modes.append("By factor")
+            self.split_mode_selector.update_split_modes(split_modes)
             self._set_data()
 
     def _on_data_changed(self, message: messaging.DataChangedMessage):

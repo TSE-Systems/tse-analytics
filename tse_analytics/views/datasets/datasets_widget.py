@@ -169,6 +169,7 @@ class DatasetsWidget(QWidget):
         # TODO: check other cases!!
         dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         if dialog.exec() == QDialog.DialogCode.Accepted:
+            self.merge_dataset_action.setDisabled(True)
             # uncheck all datasets
             items = self.treeView.model().workspace_tree_item.child_items
             for item in items:

@@ -46,8 +46,8 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         self.variableSelector.currentTextChanged.connect(self._variable_changed)
         toolbar.addWidget(self.variableSelector)
 
-        split_mode_selector = SplitModeSelector(toolbar, self.datatable, self._split_mode_callback)
-        toolbar.addWidget(split_mode_selector)
+        self.split_mode_selector = SplitModeSelector(toolbar, self.datatable, self._split_mode_callback)
+        toolbar.addWidget(self.split_mode_selector)
 
         self.checkBoxScatterPlot = QCheckBox("Scatter Plot", toolbar)
         self.checkBoxScatterPlot.checkStateChanged.connect(self._set_scatter_plot)
@@ -103,10 +103,20 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         self._refresh_data()
 
     def _on_binning_applied(self, message: messaging.BinningMessage):
-        self._refresh_data()
+        if message.dataset == self.datatable.dataset:
+            split_modes = ["By animal"]
+            if message.settings.apply:
+                split_modes.append("Total")
+                if self.datatable.get_merging_mode() is not None:
+                    split_modes.append("By run")
+                if len(self.datatable.dataset.factors) > 0:
+                    split_modes.append("By factor")
+            self.split_mode_selector.update_split_modes(split_modes)
+            self._refresh_data()
 
     def _on_data_changed(self, message: messaging.DataChangedMessage):
-        self._refresh_data()
+        if message.dataset == self.datatable.dataset:
+            self._refresh_data()
 
     def _refresh_data(self):
         if self.split_mode == SplitMode.FACTOR and self.selected_factor_name == "":
@@ -162,7 +172,7 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
             )
 
         # Splitting
-        df = self.datatable.process_splitting(
+        result = self.datatable.process_splitting(
             result,
             split_mode,
             variables,

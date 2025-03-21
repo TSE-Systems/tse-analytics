@@ -14,7 +14,9 @@ def rename_animal_df(df: pd.DataFrame, old_id: str, animal: Animal) -> pd.DataFr
     return df
 
 
-def reassign_df_timedelta_and_bin(df: pd.DataFrame, sampling_interval: pd.Timedelta, merging_mode: str | None) -> pd.DataFrame:
+def reassign_df_timedelta_and_bin(
+    df: pd.DataFrame, sampling_interval: pd.Timedelta, merging_mode: str | None
+) -> pd.DataFrame:
     df.reset_index(inplace=True, drop=True)
 
     if merging_mode == "overlap":

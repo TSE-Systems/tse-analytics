@@ -3,7 +3,7 @@ import pandas as pd
 from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.shared import Variable
 
-default_columns = ["Animal", "Timedelta", "DateTime"]
+default_columns = ["Animal", "Timedelta", "DateTime", "Run"]
 
 
 def process_time_interval_binning(
@@ -20,12 +20,20 @@ def process_time_interval_binning(
     agg = {
         "DateTime": "first",
     }
+
+    include_runs = "Run" in df.columns
+    if include_runs:
+        agg["Run"] = "first"
+
     for column in df.columns:
         if column not in default_columns:
-            if df.dtypes[column].name != "category" and column in variables:
-                agg[column] = variables[column].aggregation
+            if df.dtypes[column].name != "category":
+                if column in variables:
+                    agg[column] = variables[column].aggregation
             else:
+                # Include categorical data fields
                 agg[column] = "first"
+
 
     if calculate_errors is not None:
         var_name = list(variables.values())[0].name
@@ -40,19 +48,15 @@ def process_time_interval_binning(
     # result.sort_values(by="Timedelta", inplace=True)
     result.reset_index(inplace=True, drop=False)
 
-    # Get unique runs numbers
-    # runs = result["Run"].unique().tolist()
-
-    # Reassign timedeltas
-    # for run in runs:
-    #     # Get start timestamp per run
-    #     start_date_time = result[result["Run"] == run]["DateTime"].iloc[0]
-    #     result.loc[result["Run"] == run, "Timedelta"] = result["DateTime"] - start_date_time
-
     # Reassign bins numbers
-    result["Bin"] = (result["Timedelta"] / timedelta).round().astype(int)
+    result.insert(loc=0, column="Bin", value=(result["Timedelta"] / timedelta).round().astype(int))
 
     result.sort_values(by="Bin", inplace=True)
     result.reset_index(inplace=True, drop=True)
+
+    if include_runs:
+        result = result.astype({
+            "Run": int,
+        })
 
     return result
