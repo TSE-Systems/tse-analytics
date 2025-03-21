@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QComboBox
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
 
-from tse_analytics.core import messaging
+from tse_analytics.core import messaging, color_manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
@@ -109,9 +109,24 @@ class DistributionWidget(QWidget):
         ax.tick_params(axis="x", rotation=90)
 
         if self.plot_type_combobox.currentText() == "Violin plot":
-            sns.violinplot(data=df, x=x, y=variable.name, ax=ax)
+            sns.violinplot(
+                data=df,
+                x=x,
+                y=variable.name,
+                hue=x,
+                palette=color_manager.colormap_name,
+                ax=ax,
+            )
         else:
-            sns.boxplot(data=df, x=x, y=variable.name, gap=0.1, ax=ax)
+            sns.boxplot(
+                data=df,
+                x=x,
+                y=variable.name,
+                hue=x,
+                palette=color_manager.colormap_name,
+                gap=0.1,
+                ax=ax,
+            )
 
         self.canvas.figure.tight_layout()
         self.canvas.draw()

@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 
+from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Animal, Factor, Variable
 from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
@@ -107,7 +108,7 @@ def _read_metadata(path: Path) -> dict:
 
 def _get_animals(data: dict) -> dict[str, Animal]:
     animals: dict[str, Animal] = {}
-    for item in data.values():
+    for index, item in enumerate(data.values()):
         properties = {
             "Box": int(item["box"]),
             "Weight": float(item["weight"]),
@@ -118,6 +119,7 @@ def _get_animals(data: dict) -> dict[str, Animal]:
         animal = Animal(
             enabled=bool(item["enabled"]),
             id=str(item["id"]),
+            color=get_color_hex(index),
             properties=properties,
         )
         animals[animal.id] = animal

@@ -34,7 +34,6 @@ def process_time_interval_binning(
                 # Include categorical data fields
                 agg[column] = "first"
 
-
     if calculate_errors is not None:
         var_name = list(variables.values())[0].name
         df["Error"] = df[var_name]

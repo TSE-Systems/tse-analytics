@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
@@ -36,7 +37,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
     animals: dict[str, Animal] = {}
     variables: dict[str, Variable] = {}
 
-    for line in animal_section.lines[1:]:
+    for index, line in enumerate(animal_section.lines[1:]):
         elements = line.split(csv_import_settings.delimiter)
         properties = {
             "Box": int(elements[0]),
@@ -48,6 +49,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
         animal = Animal(
             enabled=True,
             id=elements[1],
+            color=get_color_hex(index),
             properties=properties,
         )
         animals[animal.id] = animal

@@ -1,5 +1,6 @@
 import pandas as pd
 
+from tse_analytics.core import color_manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Animal
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
@@ -16,9 +17,14 @@ def merge_datasets(
     datasets.sort(key=lambda dataset: dataset.experiment_started)
 
     if continuous_mode:
-        return _merge_continuous(new_dataset_name, datasets, single_run)
+        merged_dataset = _merge_continuous(new_dataset_name, datasets, single_run)
     else:
-        return _merge_overlap(new_dataset_name, datasets, single_run, generate_new_animal_names)
+        merged_dataset = _merge_overlap(new_dataset_name, datasets, single_run, generate_new_animal_names)
+
+    for index, animal in enumerate(merged_dataset.animals.values()):
+        animal.color = color_manager.get_color_hex(index)
+
+    return merged_dataset
 
 
 def _merge_continuous(
@@ -192,4 +198,5 @@ def _merge_animals(datasets: list[PhenoMasterDataset]) -> dict[str, Animal]:
     result: dict[str, Animal] = {}
     for animals in [dataset.animals for dataset in reversed(datasets)]:
         result.update(animals)
+    result = dict(sorted(result.items()))
     return result

@@ -8,6 +8,7 @@ import pandas as pd
 import xmltodict
 from loguru import logger
 
+from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.data.shared import Animal
 from tse_analytics.modules.intellicage.data.intellicage_data import IntelliCageData
 from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
@@ -116,7 +117,8 @@ def _import_animals(path: Path) -> dict | None:
     df.fillna({"AnimalNotes": ""}, inplace=True)
 
     animals = {}
-    for index, row in df.iterrows():
+    index = 0
+    for i, row in df.iterrows():
         properties = {
             "Tag": row["AnimalTag"],
             "Sex": row["Sex"],
@@ -126,9 +128,11 @@ def _import_animals(path: Path) -> dict | None:
         animal = Animal(
             enabled=True,
             id=str(row["AnimalName"]),
+            color=get_color_hex(index),
             properties=properties,
         )
         animals[animal.id] = animal
+        index += 1
 
     return animals
 

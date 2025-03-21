@@ -8,7 +8,7 @@ from pyqttoast import ToastPreset
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
-from tse_analytics.core import messaging
+from tse_analytics.core import messaging, color_manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.utils import get_html_image, get_widget_tool_button, get_h_spacer_widget
@@ -168,6 +168,7 @@ class PcaWidget(QWidget):
             y="PC2",
             hue=by,
             marker=".",
+            palette=color_manager.colormap_name,
             ax=ax,
         )
         ax.set_title(title)

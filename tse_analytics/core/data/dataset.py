@@ -5,6 +5,7 @@ from uuid import uuid4
 import pandas as pd
 
 from tse_analytics.core import messaging
+from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings
@@ -61,9 +62,15 @@ class Dataset:
             levels_dict[level_name].append(animal.id)
 
         levels: dict[str, FactorLevel] = {}
+        index = 0
         for key, value in levels_dict.items():
-            level = FactorLevel(key, value)
+            level = FactorLevel(
+                name=key,
+                color=get_color_hex(index),
+                animal_ids=value,
+            )
             levels[level.name] = level
+            index += 1
         return levels
 
     def rename_animal(self, old_id: str, animal: Animal) -> None:

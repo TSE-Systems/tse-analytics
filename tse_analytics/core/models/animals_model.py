@@ -1,4 +1,5 @@
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
+from PySide6.QtGui import QColor
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
@@ -22,6 +23,8 @@ class AnimalsModel(QAbstractTableModel):
             case 0:
                 if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
                     return item.id
+                elif role == Qt.ItemDataRole.DecorationRole:
+                    return QColor(item.color)
                 elif role == Qt.ItemDataRole.CheckStateRole:
                     return Qt.CheckState.Checked if item.enabled else Qt.CheckState.Unchecked
             case _:

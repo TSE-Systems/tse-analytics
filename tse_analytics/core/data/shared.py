@@ -26,6 +26,7 @@ class SplitMode(StrEnum):
 class Animal:
     enabled: bool
     id: str
+    color: str
     properties: dict[str, Any]
 
     def get_dict(self):
@@ -35,6 +36,7 @@ class Animal:
 @dataclass
 class FactorLevel:
     name: str
+    color: str
     animal_ids: list[str] = field(default_factory=list)
 
 

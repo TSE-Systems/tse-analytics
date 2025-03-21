@@ -7,7 +7,7 @@ from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from pyqttoast import ToastPreset
 
-from tse_analytics.core import messaging
+from tse_analytics.core import messaging, color_manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
@@ -137,6 +137,7 @@ class RegressionWidget(QWidget):
             x=covariate.name,
             y=response.name,
             hue=by,
+            palette=color_manager.colormap_name,
             robust=False,
             markers=".",
         )

@@ -7,6 +7,7 @@ from PySide6.QtCore import QBuffer, QByteArray, QIODevice
 from PySide6.QtWidgets import QWidget
 from pyqtgraph.exporters import ImageExporter
 
+from tse_analytics.core import color_manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Factor, SplitMode, Variable
 from tse_analytics.views.misc.TimedeltaAxisItem import TimedeltaAxisItem
@@ -139,10 +140,10 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
 
         animals = [animal for animal in self.datatable.dataset.animals.values() if animal.enabled]
 
-        for i, animal in enumerate(animals):
+        for animal in animals:
             filtered_data = self._df[self._df["Animal"] == animal.id]
 
-            pen = pg.mkPen(color=(i, len(animals)), width=1)
+            pen = pg.mkPen(color=animal.color, width=1)
             tmp_min, tmp_max = self._plot_item(filtered_data, animal.id, pen)
 
             if x_min is None or tmp_min < x_min:
@@ -159,10 +160,10 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         factor_name = self._selected_factor.name
 
         levels = self._selected_factor.levels
-        for i, level in enumerate(levels):
+        for level in levels:
             factor_data = self._df[self._df[factor_name] == level.name]
 
-            pen = pg.mkPen(color=(i, len(levels)), width=1)
+            pen = pg.mkPen(color=level.color, width=1)
             tmp_min, tmp_max = self._plot_item(factor_data, f"{level.name}", pen)
 
             if x_min is None or tmp_min < x_min:
@@ -177,10 +178,10 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         x_max = None
 
         runs = self._df["Run"].unique()
-        for i, run in enumerate(runs):
+        for run in runs:
             run_data = self._df[self._df["Run"] == run]
 
-            pen = pg.mkPen(color=(i, len(runs)), width=1)
+            pen = pg.mkPen(color=color_manager.get_color_hex(int(run)), width=1)
             tmp_min, tmp_max = self._plot_item(run_data, f"Run {run}", pen)
 
             if x_min is None or tmp_min < x_min:
@@ -191,8 +192,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         return x_min, x_max
 
     def _plot_total(self) -> tuple[float, float]:
-        pen = pg.mkPen(color=(1, 1), width=1)
-
+        pen = pg.mkPen(color=color_manager.get_color_hex(0), width=1)
         x_min, x_max = self._plot_item(self._df, "Total", pen)
         return x_min, x_max
 

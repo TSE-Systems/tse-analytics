@@ -1,6 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QInputDialog, QListWidgetItem, QWidget
 
+from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Factor, FactorLevel
 from tse_analytics.views.selection.factors.factors_dialog_ui import Ui_FactorsDialog
@@ -52,7 +53,10 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         if self.selected_factor is not None:
             text, result = QInputDialog.getText(self, "Add Level", "Please enter unique level name:")
             if result:
-                level = FactorLevel(name=text)
+                level = FactorLevel(
+                    name=text,
+                    color=get_color_hex(len(self.selected_factor.levels)),
+                )
                 self.selected_factor.levels.append(level)
                 self.listWidgetLevels.addItem(text)
 

@@ -8,6 +8,7 @@ import pandas as pd
 import xmltodict
 from loguru import logger
 
+from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.data.shared import Animal
 from tse_analytics.modules.intellimaze.submodules.animal_gate.io.importer import import_animalgate_data
 from tse_analytics.modules.intellimaze.submodules.consumption_scale.io.importer import import_consumptionscale_data
@@ -104,7 +105,7 @@ def _import_animals(path: Path) -> dict | None:
         )
 
     animals = {}
-    for item in json["ArrayOfAnimal"]["Animal"]:
+    for index, item in enumerate(json["ArrayOfAnimal"]["Animal"]):
         properties = {
             "Tag": item["Tag"],
             "PMBoxNr": int(item["PMBoxNr"]),
@@ -121,6 +122,7 @@ def _import_animals(path: Path) -> dict | None:
         animal = Animal(
             enabled=True,
             id=str(item["Name"]),
+            color=get_color_hex(index),
             properties=properties,
         )
         animals[animal.id] = animal
