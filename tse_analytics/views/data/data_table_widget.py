@@ -37,9 +37,6 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
-        messaging.subscribe(self, messaging.BinningMessage, self._on_binning_applied)
-        messaging.subscribe(self, messaging.DataChangedMessage, self._on_data_changed)
-
         self.layout = QVBoxLayout(self)
         self.layout.setSpacing(0)
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -134,6 +131,10 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
         self._set_data()
 
+        messaging.subscribe(self, messaging.BinningMessage, self._on_binning_applied)
+        messaging.subscribe(self, messaging.DataChangedMessage, self._on_data_changed)
+        self.destroyed.connect(lambda: messaging.unsubscribe_all(self))
+
     def _split_mode_callback(self, mode: SplitMode, factor_name: str | None):
         self.split_mode = mode
         self.selected_factor_name = factor_name
@@ -162,14 +163,6 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
     def _on_binning_applied(self, message: messaging.BinningMessage):
         if message.dataset == self.datatable.dataset:
-            split_modes = ["By animal"]
-            if message.settings.apply:
-                split_modes.append("Total")
-                if self.datatable.get_merging_mode() is not None:
-                    split_modes.append("By run")
-                if len(self.datatable.dataset.factors) > 0:
-                    split_modes.append("By factor")
-            self.split_mode_selector.update_split_modes(split_modes)
             self._set_data()
 
     def _on_data_changed(self, message: messaging.DataChangedMessage):
