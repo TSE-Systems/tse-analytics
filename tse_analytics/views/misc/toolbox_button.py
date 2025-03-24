@@ -263,10 +263,10 @@ class ToolboxButton(QToolButton):
         )
 
     def _add_report_widget(self) -> None:
-        datatable = manager.get_selected_datatable()
-        if datatable is None:
+        dataset = manager.get_selected_dataset()
+        if dataset is None:
             return
-        widget = ReportsWidget(datatable)
+        widget = ReportsWidget(dataset)
         LayoutManager.add_widget_to_central_area(
-            datatable.dataset, widget, f"Report - {datatable.dataset.name}", QIcon(":/icons/report.png")
+            dataset, widget, f"Report - {dataset.name}", QIcon(":/icons/report.png")
         )

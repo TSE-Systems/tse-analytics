@@ -35,6 +35,8 @@ class ReportsWidget(QWidget, messaging.MessengerListener):
         self.ui = Ui_ReportsWidget()
         self.ui.setupUi(self)
 
+        self.dataset = dataset
+
         messaging.subscribe(self, messaging.AddToReportMessage, self._add_to_report)
 
         self.ui.editor.textChanged.connect(self._report_changed)
@@ -220,7 +222,6 @@ class ReportsWidget(QWidget, messaging.MessengerListener):
         # Initialize.
         self._update_format()
 
-        self.dataset = dataset
         self.ui.editor.document().setHtml(self.dataset.report)
 
     def _add_to_report(self, message: messaging.AddToReportMessage):

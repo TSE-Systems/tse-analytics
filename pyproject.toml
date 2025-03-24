@@ -1,6 +1,6 @@
 [project]
 name = "tse-analytics"
-version = "1.5.1b"
+version = "1.5.2b"
 description = "TSE Analytics data analysys"
 license = "MIT"
 readme = "README.md"
