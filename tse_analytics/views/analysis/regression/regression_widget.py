@@ -109,12 +109,18 @@ class RegressionWidget(QWidget):
         match self.split_mode:
             case SplitMode.ANIMAL:
                 by = "Animal"
+                palette = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
             case SplitMode.RUN:
                 by = "Run"
+                palette = color_manager.colormap_name
             case SplitMode.FACTOR:
                 by = self.selected_factor_name
+                palette = color_manager.get_level_to_color_dict(
+                    self.datatable.dataset.factors[self.selected_factor_name]
+                )
             case _:
                 by = None
+                palette = color_manager.colormap_name
 
         covariate = self.covariateVariableSelector.get_selected_variable()
         response = self.responseVariableSelector.get_selected_variable()
@@ -137,7 +143,7 @@ class RegressionWidget(QWidget):
             x=covariate.name,
             y=response.name,
             hue=by,
-            palette=color_manager.colormap_name,
+            palette=palette,
             robust=False,
             markers=".",
         )

@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QToolButton, QMenu, QWidget
 from tse_analytics.core import manager
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
+from tse_analytics.modules.intellicage.views.actogram.actogram_widget import ActogramWidget
 from tse_analytics.views.analysis.ancova.ancova_widget import AncovaWidget
 from tse_analytics.views.analysis.correlation.correlation_widget import CorrelationWidget
 from tse_analytics.views.analysis.distribution.distribution_widget import DistributionWidget
@@ -99,7 +100,9 @@ class ToolboxButton(QToolButton):
         utils_menu.addAction(QIcon(":/icons/report.png"), "Report").triggered.connect(self._add_report_widget)
 
         self.intellicage_menu = self.menu.addMenu("IntelliCage")
-        self.intellicage_menu.addAction(QIcon(":/icons/report.png"), "TEST").triggered.connect(self._add_report_widget)
+        self.intellicage_menu.addAction(QIcon(":/icons/icons8-barcode-16.png"), "Actogram").triggered.connect(
+            self._add_actogram_widget
+        )
 
         self.setMenu(self.menu)
 
@@ -260,6 +263,18 @@ class ToolboxButton(QToolButton):
         widget = TimeseriesAutocorrelationWidget(datatable)
         LayoutManager.add_widget_to_central_area(
             datatable.dataset, widget, f"{widget.title} - {datatable.dataset.name}", QIcon(":/icons/timeseries.png")
+        )
+
+    def _add_actogram_widget(self) -> None:
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
+            return
+        widget = ActogramWidget(datatable)
+        LayoutManager.add_widget_to_central_area(
+            datatable.dataset,
+            widget,
+            f"{widget.title} - {datatable.dataset.name}",
+            QIcon(":/icons/icons8-barcode-16.png"),
         )
 
     def _add_report_widget(self) -> None:

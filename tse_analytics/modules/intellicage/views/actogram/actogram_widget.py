@@ -1,21 +1,23 @@
-import seaborn as sns
+import numpy as np
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QComboBox
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar
+from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from pyqttoast import ToastPreset
 
-from tse_analytics.core import messaging, color_manager
+from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
+from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.split_mode_selector import SplitModeSelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
-class DistributionWidget(QWidget):
+class ActogramWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
@@ -23,7 +25,7 @@ class DistributionWidget(QWidget):
         self.layout.setSpacing(0)
         self.layout.setContentsMargins(0, 0, 0, 0)
 
-        self.title = "Distribution"
+        self.title = "Actogram"
 
         self.datatable = datatable
         self.split_mode = SplitMode.ANIMAL
@@ -46,14 +48,10 @@ class DistributionWidget(QWidget):
         split_mode_selector = SplitModeSelector(toolbar, self.datatable, self._split_mode_callback)
         toolbar.addWidget(split_mode_selector)
 
-        self.plot_type_combobox = QComboBox(toolbar)
-        self.plot_type_combobox.addItems(["Violin plot", "Box plot"])
-        toolbar.addWidget(self.plot_type_combobox)
-
         # Insert toolbar to the widget
         self.layout.addWidget(toolbar)
 
-        self.canvas = MplCanvas(self)
+        self.canvas = FigureCanvasQTAgg(None)
         self.layout.addWidget(self.canvas)
 
         plot_toolbar = NavigationToolbar2QT(self.canvas, self)
@@ -87,18 +85,12 @@ class DistributionWidget(QWidget):
         match self.split_mode:
             case SplitMode.ANIMAL:
                 x = "Animal"
-                palette = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
             case SplitMode.RUN:
                 x = "Run"
-                palette = color_manager.colormap_name
             case SplitMode.FACTOR:
                 x = self.selected_factor_name
-                palette = color_manager.get_level_to_color_dict(
-                    self.datatable.dataset.factors[self.selected_factor_name]
-                )
             case _:
                 x = None
-                palette = color_manager.colormap_name
 
         df = self.datatable.get_preprocessed_df(
             variables={variable.name: variable},
@@ -110,34 +102,36 @@ class DistributionWidget(QWidget):
         if self.split_mode != SplitMode.TOTAL and self.split_mode != SplitMode.RUN:
             df[x] = df[x].cat.remove_unused_categories()
 
-        self.canvas.clear(False)
-        ax = self.canvas.figure.add_subplot(111)
-        ax.tick_params(axis="x", rotation=90)
+        settings = self.datatable.dataset.binning_settings.time_cycles_settings
 
-        if self.plot_type_combobox.currentText() == "Violin plot":
-            sns.violinplot(
-                data=df,
-                x=x,
-                y=variable.name,
-                hue=x,
-                palette=palette,
-                legend=False,
-                ax=ax,
-            )
-        else:
-            sns.boxplot(
-                data=df,
-                x=x,
-                y=variable.name,
-                hue=x,
-                palette=palette,
-                legend=False,
-                gap=0.1,
-                ax=ax,
-            )
+        def filter_method(x):
+            # return True if Dark cycle
+            return not settings.light_cycle_start <= x.time() < settings.dark_cycle_start
 
-        self.canvas.figure.tight_layout()
-        self.canvas.draw()
+        # is_dark = df["DateTime"].apply(filter_method).to_numpy()
+        # activity = np.ones(len(is_dark), dtype="int")
+        # ca = CycleAnalyzer(df["DateTime"].to_numpy(), activity, is_dark)
+        #
+        # self.layout.removeWidget(self.canvas)
+        # self.canvas.figure.clear()
+        # self.canvas.draw()
+        # plt.close(self.canvas.figure)
+        #
+        # data = generate_data()
+        #
+        # # Prepare input arrays for CycleAnalyzer.
+        # # When working with InfluxDB, same arrays must be selected using a DBQuery instance.
+        # timestamps = data["time"]  # timestamps of measurements
+        # values = data["value"]  # activity values
+        # nights = data['is_night'] # night activity markers
+        # ca = CycleAnalyzer(timestamps, values, nights)
+        #
+        # figure = ca.plot_actogram()
+
+        # self.canvas = FigureCanvasQTAgg(figure)
+        # self.canvas.updateGeometry()
+        # self.canvas.draw()
+        # self.layout.addWidget(self.canvas)
 
     def _add_report(self):
         self.datatable.dataset.report += get_html_image(self.canvas.figure)

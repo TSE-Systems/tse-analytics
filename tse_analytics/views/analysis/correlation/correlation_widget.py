@@ -112,12 +112,18 @@ class CorrelationWidget(QWidget):
         match self.split_mode:
             case SplitMode.ANIMAL:
                 by = "Animal"
+                palette = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
             case SplitMode.RUN:
                 by = "Run"
+                palette = color_manager.colormap_name
             case SplitMode.FACTOR:
                 by = self.selected_factor_name
+                palette = color_manager.get_level_to_color_dict(
+                    self.datatable.dataset.factors[self.selected_factor_name]
+                )
             case _:
                 by = None
+                palette = color_manager.colormap_name
 
         variables = {x_var.name: x_var} if x_var.name == y_var.name else {x_var.name: x_var, y_var.name: y_var}
         df = self.datatable.get_preprocessed_df(
@@ -135,7 +141,7 @@ class CorrelationWidget(QWidget):
             x=x_var.name,
             y=y_var.name,
             hue=by,
-            palette=color_manager.colormap_name,
+            palette=palette,
             marker=".",
         )
         joint_grid.fig.suptitle(f"Correlation between {x_var.name} and {y_var.name}")

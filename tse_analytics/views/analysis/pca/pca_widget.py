@@ -162,13 +162,25 @@ class PcaWidget(QWidget):
 
         df, title, by = result
 
+        match self.split_mode:
+            case SplitMode.ANIMAL:
+                palette = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
+            case SplitMode.RUN:
+                palette = color_manager.colormap_name
+            case SplitMode.FACTOR:
+                palette = color_manager.get_level_to_color_dict(
+                    self.datatable.dataset.factors[self.selected_factor_name]
+                )
+            case _:
+                palette = color_manager.colormap_name
+
         sns.scatterplot(
             data=df,
             x="PC1",
             y="PC2",
             hue=by,
             marker=".",
-            palette=color_manager.colormap_name,
+            palette=palette,
             ax=ax,
         )
         ax.set_title(title)

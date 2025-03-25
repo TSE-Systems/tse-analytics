@@ -9,10 +9,6 @@ default_columns = ["DateTime", "Animal", "Box"]
 def process_drinkfeed_intervals(
     drinkfeed_data: DrinkFeedData, drinkfeed_data_settings: DrinkFeedSettings, diets_dict: dict[int, float]
 ):
-    box_to_animal_map = {}
-    for animal in drinkfeed_data.dataset.animals.values():
-        box_to_animal_map[animal.properties["Box"]] = animal.id
-
     df = drinkfeed_data.raw_df.copy()
 
     dropped_columns = []

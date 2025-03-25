@@ -47,11 +47,6 @@ class BarPlotView(QWidget):
 
         self._update_plot()
 
-    def clear_plot(self):
-        self._df = None
-        self._variable = None
-        self._display_errors = False
-
     def _update_plot(self):
         self.layout().removeWidget(self.canvas)
         self.canvas.figure.clear()
