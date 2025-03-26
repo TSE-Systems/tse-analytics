@@ -8,10 +8,9 @@ from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.shared import Aggregation
-from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
+from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.animal_selector import AnimalSelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
@@ -81,7 +80,7 @@ class TimeseriesAutocorrelationWidget(QWidget):
 
         self.canvas.clear(False)
 
-        columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", variable.name]
+        columns = ["DateTime", "Timedelta", "Animal", variable.name]
         df = self.datatable.active_df[columns].copy()
         df = df[df["Animal"] == animal.id]
         df.reset_index(drop=True, inplace=True)
@@ -89,15 +88,6 @@ class TimeseriesAutocorrelationWidget(QWidget):
         variables = {variable.name: variable}
 
         df = self.datatable.preprocess_df(df, variables)
-
-        # Binning
-        settings = self.datatable.dataset.binning_settings
-        if settings.apply:
-            df = process_time_interval_binning(
-                df,
-                settings.time_intervals_settings,
-                variables,
-            )
 
         index = pd.DatetimeIndex(df["DateTime"])
         df.set_index(index, inplace=True)

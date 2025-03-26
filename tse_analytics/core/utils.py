@@ -1,5 +1,6 @@
 import sqlite3
 from base64 import b64encode
+from datetime import time
 from io import BytesIO
 from pathlib import Path
 
@@ -47,3 +48,7 @@ def get_h_spacer_widget(parent: QWidget) -> QWidget:
     widget = QWidget(parent)
     widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
     return widget
+
+
+def time_to_float(value: time) -> float:
+    return value.hour + value.minute / 60.0

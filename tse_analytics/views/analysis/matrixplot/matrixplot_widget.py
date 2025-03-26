@@ -30,6 +30,8 @@ class MatrixPlotWidget(QWidget):
         self.split_mode = SplitMode.ANIMAL
         self.selected_factor_name = ""
 
+        self.toast = None
+
         # Setup toolbar
         self.toolbar = QToolBar(
             "Data Plot Toolbar",
@@ -69,8 +71,6 @@ class MatrixPlotWidget(QWidget):
 
         self.toolbar.addAction("Add to Report").triggered.connect(self._add_report)
         self._add_plot_toolbar()
-
-        self.toast = None
 
     def _split_mode_callback(self, mode: SplitMode, factor_name: str | None):
         self.split_mode = mode
