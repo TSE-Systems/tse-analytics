@@ -1,21 +1,16 @@
 import pandas as pd
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QSpinBox, QComboBox
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
-from pyqttoast import ToastPreset
-from statsmodels.tsa.seasonal import MSTL, STL, seasonal_decompose
+from statsmodels.tsa.seasonal import STL, seasonal_decompose
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import Aggregation
-from tse_analytics.core.toaster import make_toast
-from tse_analytics.core.utils import get_html_image, get_h_spacer_widget, get_widget_tool_button
-from tse_analytics.views.analysis.timeseries_decomposition.timeseries_decomposition_settings_widget_ui import (
-    Ui_TimeseriesDecompositionSettingsWidget,
-)
+from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.animal_selector import AnimalSelector
+from tse_analytics.views.misc.tooltip_widget import TooltipWidget
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
@@ -42,29 +37,40 @@ class TimeseriesDecompositionWidget(QWidget):
         toolbar.addSeparator()
 
         self.variableSelector = VariableSelector(toolbar)
-        filtered_variables = {
-            key: value for (key, value) in datatable.variables.items() if value.aggregation == Aggregation.MEAN
-        }
-        self.variableSelector.set_data(filtered_variables)
+        # variables = {
+        #     key: value for (key, value) in datatable.variables.items() if value.aggregation == Aggregation.MEAN
+        # }
+        self.variableSelector.set_data(datatable.variables)
         toolbar.addWidget(self.variableSelector)
 
         toolbar.addWidget(QLabel("Animal:"))
         self.animalSelector = AnimalSelector(toolbar)
-        self.animalSelector.set_data(self.datatable.dataset.animals)
+        self.animalSelector.set_data(self.datatable.dataset)
         toolbar.addWidget(self.animalSelector)
 
-        self.settings_widget = QWidget()
-        self.settings_widget_ui = Ui_TimeseriesDecompositionSettingsWidget()
-        self.settings_widget_ui.setupUi(self.settings_widget)
-        settings_button = get_widget_tool_button(
+        toolbar.addWidget(QLabel("Period:"))
+        self.period_spin_box = QSpinBox(
             toolbar,
-            self.settings_widget,
-            "Settings",
-            QIcon(":/icons/icons8-settings-16.png"),
+            minimum=1,
+            maximum=10000,
+            singleStep=1,
+            value=int(pd.Timedelta("24:00:00") / self.datatable.sampling_interval)
+            if self.datatable.sampling_interval is not None
+            else 1440,
         )
-        toolbar.addWidget(settings_button)
+        toolbar.addWidget(self.period_spin_box)
 
-        # Insert toolbar to the widget
+        toolbar.addWidget(QLabel("Method:"))
+        self.method_combo_box = QComboBox(toolbar)
+        self.method_combo_box.addItems(["Naive", "STL (smoothing)"])
+        self.method_combo_box.currentTextChanged.connect(lambda text: self.model_combo_box.setEnabled(text == "Naive"))
+        toolbar.addWidget(self.method_combo_box)
+
+        toolbar.addWidget(QLabel("Model:"))
+        self.model_combo_box = QComboBox(toolbar)
+        self.model_combo_box.addItems(["additive", "multiplicative"])
+        toolbar.addWidget(self.model_combo_box)
+
         self.layout.addWidget(toolbar)
 
         self.canvas = MplCanvas(self)
@@ -77,43 +83,24 @@ class TimeseriesDecompositionWidget(QWidget):
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add to Report").triggered.connect(self._add_report)
 
-        self.settings_widget_ui.radioButtonMethodNaive.toggled.connect(
-            lambda toggled: self._set_options(True) if toggled else None
-        )
-        self.settings_widget_ui.radioButtonMethodSTL.toggled.connect(
-            lambda toggled: self._set_options(False) if toggled else None
-        )
-        self.settings_widget_ui.radioButtonMethodMSTL.toggled.connect(
-            lambda toggled: self._set_options(False) if toggled else None
-        )
-
-    def _set_options(
-        self,
-        show_model: bool,
-    ):
-        if show_model and self.settings_widget_ui.radioButtonMethodNaive.isChecked():
-            self.settings_widget_ui.groupBoxModel.show()
-        else:
-            self.settings_widget_ui.groupBoxModel.hide()
+        toolbar.addWidget(TooltipWidget("<b>Period:</b> number of observations per cycle"))
 
     def _update(self):
-        if self.datatable.dataset.binning_settings.apply:
-            make_toast(
-                self,
-                self.title,
-                "Timeseries analysis cannot be done when binning is active.",
-                duration=2000,
-                preset=ToastPreset.WARNING,
-                show_duration_bar=True,
-            ).show()
-            return
+        # if self.datatable.dataset.binning_settings.apply and self.datatable.dataset.binning_settings.mode != BinningMode.INTERVALS:
+        #     make_toast(
+        #         self,
+        #         self.title,
+        #         "Timeseries analysis cannot be done when binning is active.",
+        #         duration=2000,
+        #         preset=ToastPreset.WARNING,
+        #         show_duration_bar=True,
+        #     ).show()
+        #     return
 
         variable = self.variableSelector.get_selected_variable()
         animal = self.animalSelector.get_selected_animal()
 
-        self.canvas.clear(False)
-
-        columns = ["DateTime", "Timedelta", "Animal", variable.name]
+        columns = ["Timedelta", "Animal", variable.name]
         df = self.datatable.active_df[columns].copy()
         df = df[df["Animal"] == animal.id]
         df.reset_index(drop=True, inplace=True)
@@ -122,54 +109,38 @@ class TimeseriesDecompositionWidget(QWidget):
 
         df = self.datatable.preprocess_df(df, variables)
 
-        index = pd.DatetimeIndex(df["DateTime"])
+        index = pd.TimedeltaIndex(df["Timedelta"])
         df.set_index(index, inplace=True)
 
         var_name = variable.name
+        # TODO: not sure interpolation should be used...
         df[var_name] = df[var_name].interpolate(limit_direction="both")
+        period = self.period_spin_box.value()
 
-        period = self.settings_widget_ui.periodSpinBox.value()
+        match self.method_combo_box.currentText():
+            case "STL (smoothing)":
+                result = STL(
+                    endog=df[var_name],
+                    period=period,
+                ).fit()
+            case _:
+                model = self.model_combo_box.currentText()
+                result = seasonal_decompose(
+                    df[var_name],
+                    period=period,
+                    model=model,
+                    extrapolate_trend="freq",
+                )
 
-        if self.settings_widget_ui.radioButtonMethodNaive.isChecked():
-            model = "additive" if self.settings_widget_ui.radioButtonModelAdditive.isChecked() else "multiplicative"
-            result = seasonal_decompose(
-                df[var_name],
-                period=period,
-                model=model,
-                extrapolate_trend="freq",
-            )
-        elif self.settings_widget_ui.radioButtonMethodSTL.isChecked():
-            result = STL(
-                endog=df[var_name],
-                period=period,
-            ).fit()
-        elif self.settings_widget_ui.radioButtonMethodMSTL.isChecked():
-            result = MSTL(
-                endog=df[var_name],
-                periods=period,
-            ).fit()
+        self.canvas.clear(False)
 
         axs = self.canvas.figure.subplots(4, 1, sharex=True)
-        self.canvas.figure.suptitle(f"Timeseries decomposition of {var_name}. Animal: {animal.id}")
+        self.canvas.figure.suptitle(f"Variable: {var_name}. Animal: {animal.id}. Period: {period}")
 
-        axs[0].plot(result.observed, label="Observed", lw=1)
-        axs[0].set_ylabel(var_name)
-        axs[0].legend(loc="upper right")
-
-        axs[1].plot(result.trend, label="Trend Component", lw=1)
-        axs[1].set_ylabel(var_name)
-        axs[1].legend(loc="upper right")
-
-        axs[2].plot(result.seasonal, label="Seasonal Component", lw=1)
-        axs[2].set_ylabel(var_name)
-        axs[2].legend(loc="upper right")
-
-        axs[3].plot(result.resid, label="Residual Component", marker=".", markersize=2, linestyle="none")
-        axs[3].set_ylabel(var_name)
-        nobs = result.observed.shape[0]
-        xlim = result.observed.index[0], result.observed.index[nobs - 1]
-        axs[3].plot(xlim, (0, 0), color="#000000", zorder=-3)
-        axs[3].legend(loc="upper right")
+        result.observed.plot(ax=axs[0], ylabel="Observed", lw=1)
+        result.trend.plot(ax=axs[1], ylabel="Trend", lw=1)
+        result.seasonal.plot(ax=axs[2], ylabel="Seasonal", lw=1)
+        result.resid.plot(ax=axs[3], ylabel="Residual", lw=1, marker=".", markersize=2, linestyle="none")
 
         self.canvas.figure.tight_layout()
         self.canvas.draw()

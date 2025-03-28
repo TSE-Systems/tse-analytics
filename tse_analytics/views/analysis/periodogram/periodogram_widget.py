@@ -1,8 +1,10 @@
+import numpy as np
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
+from scipy.signal import lombscargle
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable
@@ -14,7 +16,7 @@ from tse_analytics.views.misc.split_mode_selector import SplitModeSelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
-class HistogramWidget(QWidget):
+class PeriodogramWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
@@ -22,7 +24,7 @@ class HistogramWidget(QWidget):
         self.layout.setSpacing(0)
         self.layout.setContentsMargins(0, 0, 0, 0)
 
-        self.title = "Histogram"
+        self.title = "Periodogram"
 
         self.datatable = datatable
         self.split_mode = SplitMode.ANIMAL
@@ -101,31 +103,45 @@ class HistogramWidget(QWidget):
             number_of_elements = df[by].nunique()
 
         self.canvas.clear(False)
-        ax = self.canvas.figure.add_subplot(111)
+        axes = self.canvas.figure.subplots(4, 1)
 
-        df.hist(
-            column=[variable.name],
-            by=by,
-            bins=10,
-            log=False,
-            sharex=False,
-            sharey=False,
-            layout=self._get_plot_layout(number_of_elements),
-            ax=ax,
-        )
+        x = df["DateTime"]
+        y = df[variable.name]
+
+        nout = 1002
+        w = np.linspace(0.25, 10, nout)
+
+        pgram_power = lombscargle(x, y, w, normalize=False)
+        pgram_norm = lombscargle(x, y, w, normalize=True)
+        pgram_amp = lombscargle(x, y, w, normalize="amplitude")
+        pgram_power_f = lombscargle(x, y, w, normalize=False, floating_mean=True)
+        pgram_norm_f = lombscargle(x, y, w, normalize=True, floating_mean=True)
+        pgram_amp_f = lombscargle(x, y, w, normalize="amplitude", floating_mean=True)
+
+        axes[0].plot(x, y)
+        axes[0].set_xlabel("Time [s]")
+        axes[0].set_ylabel("Amplitude")
+
+        axes[1].plot(w, pgram_power, label="default")
+        axes[1].plot(w, pgram_power_f, label="floating_mean=True")
+        axes[1].set_xlabel("Angular frequency [rad/s]")
+        axes[1].set_ylabel("Power")
+        axes[1].legend(prop={"size": 7})
+
+        axes[2].plot(w, pgram_norm, label="default")
+        axes[2].plot(w, pgram_norm_f, label="floating_mean=True")
+        axes[2].set_xlabel("Angular frequency [rad/s]")
+        axes[2].set_ylabel("Normalized")
+        axes[2].legend(prop={"size": 7})
+
+        axes[3].plot(w, np.abs(pgram_amp), label="default")
+        axes[3].plot(w, np.abs(pgram_amp_f), label="floating_mean=True")
+        axes[3].set_xlabel("Angular frequency [rad/s]")
+        axes[3].set_ylabel("Amplitude")
+        axes[3].legend(prop={"size": 7})
 
         self.canvas.figure.tight_layout()
         self.canvas.draw()
-
-    def _get_plot_layout(self, number_of_elements: int):
-        if number_of_elements == 1:
-            return 1, 1
-        elif number_of_elements == 2:
-            return 1, 2
-        elif number_of_elements <= 4:
-            return 2, 2
-        else:
-            return round(number_of_elements / 3) + 1, 3
 
     def _add_report(self) -> None:
         self.datatable.dataset.report += get_html_image(self.canvas.figure)

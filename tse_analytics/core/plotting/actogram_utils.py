@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from xarray.core import variable
 
 from tse_analytics.core.data.shared import Variable
 
@@ -134,6 +133,7 @@ def plot_enhanced_actogram(
                 alpha=1,
                 zorder=3,
                 edgecolor="none",
+                # rasterized=True,
             )
 
         # Second day's data (offset to continue after first day)
@@ -147,6 +147,7 @@ def plot_enhanced_actogram(
             alpha=1,
             zorder=3,
             edgecolor="none",
+            # rasterized=True,
         )
 
     # Set ticks and labels

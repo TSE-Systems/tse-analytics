@@ -58,10 +58,10 @@ class PhenoMasterDataset(Dataset):
     def rename_animal(self, old_id: str, animal: Animal) -> None:
         super().rename_animal(old_id, animal)
 
-        if self.drinkfeed_data is not None:
-            self.drinkfeed_data.raw_df = rename_animal_df(self.drinkfeed_data.raw_df, old_id, animal)
-        if self.calo_data is not None:
-            self.calo_data.raw_df = rename_animal_df(self.calo_data.raw_df, old_id, animal)
+        # if self.drinkfeed_data is not None:
+        #     self.drinkfeed_data.raw_df = rename_animal_df(self.drinkfeed_data.raw_df, old_id, animal)
+        # if self.calo_data is not None:
+        #     self.calo_data.raw_df = rename_animal_df(self.calo_data.raw_df, old_id, animal)
         # if self.actimot_data is not None:
         #     self.actimot_data.raw_df = self._rename_animal_df(self.actimot_data.raw_df, old_id, animal)
 

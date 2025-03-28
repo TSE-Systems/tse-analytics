@@ -1,7 +1,9 @@
 import logging
 
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtGui import QIcon
 from loguru import logger
-from PySide6.QtWidgets import QTextEdit, QWidget
+from PySide6.QtWidgets import QTextEdit, QWidget, QVBoxLayout, QToolBar
 
 
 class TextEditLogger(logging.Handler):
@@ -27,11 +29,38 @@ class TextEditLogger(logging.Handler):
         self.text_edit.append(self.format(record))
 
 
-class LogWidget(QTextEdit):
+class LogWidget(QWidget):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
-        self.setReadOnly(True)
-        self.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
-        logger.add(
-            TextEditLogger(self), level="INFO", colorize=False, backtrace=False, enqueue=True, format="{message}"
+
+        self.layout = QVBoxLayout(self)
+        self.layout.setSpacing(0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+
+        self.toolbar = QToolBar(
+            "Log Toolbar",
+            iconSize=QSize(16, 16),
+            toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
+
+        self.toolbar.addAction(QIcon(":/icons/icons8-erase-16.png"), "Clear log").triggered.connect(self._clear_log)
+
+        self.layout.addWidget(self.toolbar)
+
+        self.text_edit = QTextEdit(
+            self,
+            readOnly=True,
+            lineWrapMode=QTextEdit.LineWrapMode.NoWrap,
+        )
+        logger.add(
+            TextEditLogger(self.text_edit),
+            level="INFO",
+            colorize=False,
+            backtrace=False,
+            enqueue=True,
+            format="{message}",
+        )
+        self.layout.addWidget(self.text_edit)
+
+    def _clear_log(self):
+        self.text_edit.clear()

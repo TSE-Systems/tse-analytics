@@ -1,4 +1,3 @@
-import numpy as np
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QWidgetAction, QLabel, QSpinBox
@@ -9,6 +8,7 @@ from pyqttoast import ToastPreset
 
 from tse_analytics.core import messaging, color_manager
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.helper import normalize_nd_array
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.plotting.actogram_utils import dataframe_to_actogram, plot_enhanced_actogram
 from tse_analytics.core.toaster import make_toast
@@ -127,7 +127,7 @@ class ActogramWidget(QWidget):
         activity_array, unique_days = dataframe_to_actogram(df, variable, 24 * bins_per_hour)
 
         # Normalize data
-        activity_array = (activity_array - np.min(activity_array)) / (np.max(activity_array) - np.min(activity_array))
+        activity_array = normalize_nd_array(activity_array)
 
         # Create day labels
         day_labels = [d.strftime("%Y-%m-%d") for d in unique_days]

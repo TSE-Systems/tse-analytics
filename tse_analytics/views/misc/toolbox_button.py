@@ -16,6 +16,7 @@ from tse_analytics.views.analysis.n_way_anova.n_way_anova_widget import NWayAnov
 from tse_analytics.views.analysis.normality.normality_widget import NormalityWidget
 from tse_analytics.views.analysis.one_way_anova.one_way_anova_widget import OneWayAnovaWidget
 from tse_analytics.views.analysis.pca.pca_widget import PcaWidget
+from tse_analytics.views.analysis.periodogram.periodogram_widget import PeriodogramWidget
 from tse_analytics.views.analysis.regression.regression_widget import RegressionWidget
 from tse_analytics.views.analysis.rm_anova.rm_anova_widget import RMAnovaWidget
 from tse_analytics.views.analysis.timeseries_autocorrelation.timeseries_autocorrelation_widget import (
@@ -100,6 +101,9 @@ class ToolboxButton(QToolButton):
         circadian_menu.addAction(QIcon(":/icons/icons8-barcode-16.png"), "Actogram").triggered.connect(
             self._add_actogram_widget
         )
+        circadian_menu.addAction(
+            QIcon(":/icons/icons8-normal-distribution-histogram-16.png"), "Periodogram"
+        ).triggered.connect(self._add_periodogram_widget)
 
         utils_menu = self.menu.addMenu("Utils")
         utils_menu.addAction(QIcon(":/icons/report.png"), "Report").triggered.connect(self._add_report_widget)
@@ -280,6 +284,18 @@ class ToolboxButton(QToolButton):
             widget,
             f"{widget.title} - {datatable.dataset.name}",
             QIcon(":/icons/icons8-barcode-16.png"),
+        )
+
+    def _add_periodogram_widget(self) -> None:
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
+            return
+        widget = PeriodogramWidget(datatable)
+        LayoutManager.add_widget_to_central_area(
+            datatable.dataset,
+            widget,
+            f"{widget.title} - {datatable.dataset.name}",
+            QIcon(":/icons/icons8-normal-distribution-histogram-16.png"),
         )
 
     def _add_report_widget(self) -> None:

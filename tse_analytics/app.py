@@ -5,11 +5,11 @@ import sys
 import matplotlib
 import pandas as pd
 import seaborn as sns
-from loguru import logger
-from pyqtgraph import setConfigOptions
 from PySide6.QtCore import QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
+from loguru import logger
+from pyqtgraph import setConfigOptions
 
 from tse_analytics.core.utils import IS_RELEASE
 from tse_analytics.core.workers.task_manager import TaskManager

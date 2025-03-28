@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from tse_analytics.core.data.shared import Animal
@@ -35,3 +36,9 @@ def reassign_df_timedelta_and_bin(
     # Reassign bins numbers
     df["Bin"] = (df["Timedelta"] / sampling_interval).round().astype(int)
     return df
+
+
+def normalize_nd_array(input: np.ndarray):
+    min_value = np.min(input)
+    max_value = np.max(input)
+    return (input - min_value) / (max_value - min_value)

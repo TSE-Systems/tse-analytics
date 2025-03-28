@@ -47,7 +47,7 @@ class TimeseriesAutocorrelationWidget(QWidget):
 
         toolbar.addWidget(QLabel("Animal:"))
         self.animalSelector = AnimalSelector(toolbar)
-        self.animalSelector.set_data(self.datatable.dataset.animals)
+        self.animalSelector.set_data(self.datatable.dataset)
         toolbar.addWidget(self.animalSelector)
 
         # Insert toolbar to the widget
