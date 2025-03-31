@@ -3,10 +3,12 @@ from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QSpinBox, QComboBox
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
+from pyqttoast import ToastPreset
 from statsmodels.tsa.seasonal import STL, seasonal_decompose
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.animal_selector import AnimalSelector
@@ -56,7 +58,7 @@ class TimeseriesDecompositionWidget(QWidget):
             singleStep=1,
             value=int(pd.Timedelta("24:00:00") / self.datatable.sampling_interval)
             if self.datatable.sampling_interval is not None
-            else 1440,
+            else 48,
         )
         toolbar.addWidget(self.period_spin_box)
 
@@ -86,11 +88,11 @@ class TimeseriesDecompositionWidget(QWidget):
         toolbar.addWidget(TooltipWidget("<b>Period:</b> number of observations per cycle"))
 
     def _update(self):
-        # if self.datatable.dataset.binning_settings.apply and self.datatable.dataset.binning_settings.mode != BinningMode.INTERVALS:
+        # if self.datatable.sampling_interval is None:
         #     make_toast(
         #         self,
         #         self.title,
-        #         "Timeseries analysis cannot be done when binning is active.",
+        #         "Irregular timeseries cannot be decomposed.",
         #         duration=2000,
         #         preset=ToastPreset.WARNING,
         #         show_duration_bar=True,

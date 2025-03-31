@@ -1,16 +1,17 @@
 import numpy as np
+import pandas as pd
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar
+from astropy.timeseries import LombScargle
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
-from scipy.signal import lombscargle
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
+from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.split_mode_selector import SplitModeSelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
@@ -95,50 +96,59 @@ class PeriodogramWidget(QWidget):
             dropna=False,
         )
 
-        number_of_elements = 1
-        if self.split_mode != SplitMode.TOTAL and self.split_mode != SplitMode.RUN:
-            df[by] = df[by].cat.remove_unused_categories()
-            number_of_elements = len(df[by].cat.categories)
-        elif self.split_mode == SplitMode.RUN:
-            number_of_elements = df[by].nunique()
-
-        self.canvas.clear(False)
-        axes = self.canvas.figure.subplots(4, 1)
-
-        x = df["DateTime"]
+        t = df["DateTime"]
         y = df[variable.name]
 
-        nout = 1002
-        w = np.linspace(0.25, 10, nout)
+        # Convert timestamps to numeric values (hours since start)
+        reference_time = t.min()
+        times_hours = [(ts - reference_time).total_seconds() / 3600 for ts in t]
 
-        pgram_power = lombscargle(x, y, w, normalize=False)
-        pgram_norm = lombscargle(x, y, w, normalize=True)
-        pgram_amp = lombscargle(x, y, w, normalize="amplitude")
-        pgram_power_f = lombscargle(x, y, w, normalize=False, floating_mean=True)
-        pgram_norm_f = lombscargle(x, y, w, normalize=True, floating_mean=True)
-        pgram_amp_f = lombscargle(x, y, w, normalize="amplitude", floating_mean=True)
+        # Normalize activity for better analysis
+        normalized_activity = (y - y.mean()) / y.std()
 
-        axes[0].plot(x, y)
-        axes[0].set_xlabel("Time [s]")
-        axes[0].set_ylabel("Amplitude")
+        # Define frequency grid (periods in hours)
+        min_period = 1.0  # 1 hour
+        max_period = 48.0  # 48 hours
+        frequency = np.linspace(1 / max_period, 1 / min_period, 1000)
 
-        axes[1].plot(w, pgram_power, label="default")
-        axes[1].plot(w, pgram_power_f, label="floating_mean=True")
-        axes[1].set_xlabel("Angular frequency [rad/s]")
-        axes[1].set_ylabel("Power")
-        axes[1].legend(prop={"size": 7})
+        # Calculate the periodogram
+        power = LombScargle(times_hours, normalized_activity).power(frequency)
 
-        axes[2].plot(w, pgram_norm, label="default")
-        axes[2].plot(w, pgram_norm_f, label="floating_mean=True")
-        axes[2].set_xlabel("Angular frequency [rad/s]")
-        axes[2].set_ylabel("Normalized")
-        axes[2].legend(prop={"size": 7})
+        # Convert frequency back to period in hours
+        period = 1 / frequency
 
-        axes[3].plot(w, np.abs(pgram_amp), label="default")
-        axes[3].plot(w, np.abs(pgram_amp_f), label="floating_mean=True")
-        axes[3].set_xlabel("Angular frequency [rad/s]")
-        axes[3].set_ylabel("Amplitude")
-        axes[3].legend(prop={"size": 7})
+        # Get the most significant period
+        strongest_period = period[np.argmax(power)]
+
+        # Fold the data by the period
+        phase = (np.array(times_hours) % strongest_period) / strongest_period
+        phase_df = pd.DataFrame({"Phase": phase, variable.name: y})
+
+        # Sort by phase for line plotting
+        phase_df.sort_values("Phase", inplace=True)
+
+        self.canvas.clear(False)
+        axs = self.canvas.figure.subplots(2, 1)
+
+        axs[0].plot(period, power)
+        axs[0].set(
+            xlabel="Period (hours)",
+            ylabel="Power",
+            title=f"Lomb-Scargle Periodogram of {variable.name}. Strongest detected period: {strongest_period:.2f} hours",
+        )
+
+        # Add vertical lines at expected periods
+        axs[0].axvline(x=24, color="r", linestyle="--", alpha=0.7, label="24h (Circadian)")
+        axs[0].axvline(x=4, color="g", linestyle="--", alpha=0.7, label="4h (Ultradian)")
+        axs[0].legend()
+
+        axs[1].scatter(phase, y, alpha=0.5, marker=".")
+        axs[1].plot(phase_df["Phase"], phase_df[variable.name], "r-", alpha=0.3)
+        axs[1].set(
+            xlabel=f"Phase (Period = {strongest_period:.2f} hours)",
+            ylabel=variable.name,
+            title="Phase-folded Data",
+        )
 
         self.canvas.figure.tight_layout()
         self.canvas.draw()
