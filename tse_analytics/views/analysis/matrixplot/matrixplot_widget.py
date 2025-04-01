@@ -117,12 +117,18 @@ class MatrixPlotWidget(QWidget):
         match self.split_mode:
             case SplitMode.ANIMAL:
                 hue = "Animal"
+                palette = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
             case SplitMode.RUN:
                 hue = "Run"
+                palette = color_manager.colormap_name
             case SplitMode.FACTOR:
                 hue = self.selected_factor_name
+                palette = color_manager.get_level_to_color_dict(
+                    self.datatable.dataset.factors[self.selected_factor_name]
+                )
             case _:  # Total
                 hue = None
+                palette = color_manager.colormap_name
 
         # pd.plotting.scatter_matrix(
         #     frame=df[list(selected_variables)],
@@ -134,7 +140,7 @@ class MatrixPlotWidget(QWidget):
         pair_grid = sns.pairplot(
             df[[hue] + list(selected_variables)],
             hue=hue,
-            palette=color_manager.colormap_name,
+            palette=palette,
             markers=".",
         )
 
