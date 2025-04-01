@@ -3,16 +3,16 @@ import pandas as pd
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Animal
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
+from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
 
 
 def merge_datasets(
     new_dataset_name: str,
-    datasets: list[PhenoMasterDataset],
+    datasets: list[IntelliCageDataset],
     single_run: bool,
     continuous_mode: bool,
     generate_new_animal_names: bool,
-) -> PhenoMasterDataset | None:
+) -> IntelliCageDataset | None:
     # sort datasets by start time
     datasets.sort(key=lambda dataset: dataset.experiment_started)
 
@@ -29,17 +29,17 @@ def merge_datasets(
 
 def _merge_continuous(
     merged_dataset_name: str,
-    datasets: list[PhenoMasterDataset],
+    datasets: list[IntelliCageDataset],
     single_run: bool,
-) -> PhenoMasterDataset | None:
+) -> IntelliCageDataset | None:
     first_dataset = datasets[0]
 
     merged_animals = _merge_animals(datasets)
     merged_metadata = _merge_metadata(merged_dataset_name, "continuous", merged_animals, datasets)
 
-    result = PhenoMasterDataset(
+    result = IntelliCageDataset(
         name=merged_dataset_name,
-        description="PhenoMaster dataset merged in continuous mode.",
+        description="IntelliCage dataset merged in continuous mode.",
         path="",
         meta=merged_metadata,
         animals=merged_animals,
@@ -59,9 +59,6 @@ def _merge_continuous(
 
         if single_run:
             new_df["Run"] = 1
-
-        # Drop "Bin" column
-        new_df.drop(columns=["Bin"], inplace=True)
 
         # reassign bin and timedelta
         start_date_time = new_df["DateTime"][0]
@@ -96,10 +93,10 @@ def _merge_continuous(
 
 def _merge_overlap(
     merged_dataset_name: str,
-    datasets: list[PhenoMasterDataset],
+    datasets: list[IntelliCageDataset],
     single_run: bool,
     generate_new_animal_names: bool,
-) -> PhenoMasterDataset | None:
+) -> IntelliCageDataset | None:
     first_dataset = datasets[0]
 
     if generate_new_animal_names:
@@ -122,9 +119,9 @@ def _merge_overlap(
     merged_animals = _merge_animals(datasets)
     merged_metadata = _merge_metadata(merged_dataset_name, "overlap", merged_animals, datasets)
 
-    result = PhenoMasterDataset(
+    result = IntelliCageDataset(
         name=merged_dataset_name,
-        description="PhenoMaster dataset merged in overlap mode.",
+        description="IntelliCage dataset merged in overlap mode.",
         path="",
         meta=merged_metadata,
         animals=merged_animals,
@@ -144,9 +141,6 @@ def _merge_overlap(
 
         if single_run:
             new_df["Run"] = 1
-
-        # Drop "Bin" column
-        new_df.drop(columns=["Bin"], inplace=True)
 
         # convert categorical types
         new_df = new_df.astype({
@@ -179,7 +173,7 @@ def _merge_metadata(
     merged_dataset_name: str,
     merging_mode: str,
     merged_animals: dict[str, Animal],
-    datasets: list[PhenoMasterDataset],
+    datasets: list[IntelliCageDataset],
 ) -> dict:
     result = {
         "experiment": {
@@ -194,7 +188,7 @@ def _merge_metadata(
     return result
 
 
-def _merge_animals(datasets: list[PhenoMasterDataset]) -> dict[str, Animal]:
+def _merge_animals(datasets: list[IntelliCageDataset]) -> dict[str, Animal]:
     result: dict[str, Animal] = {}
     for animals in [dataset.animals for dataset in reversed(datasets)]:
         result.update(animals)

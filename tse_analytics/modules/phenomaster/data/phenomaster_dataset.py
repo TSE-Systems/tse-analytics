@@ -3,7 +3,6 @@ import pandas as pd
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.helper import rename_animal_df
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_data import ActimotData

@@ -9,7 +9,10 @@ from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.models.workspace_model import WorkspaceModel
+from tse_analytics.modules.intellicage.data import intellicage_dataset_merger
+from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
 from tse_analytics.modules.phenomaster.data import phenomaster_dataset_merger
+from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.io.csv_dataset_loader import load_csv_dataset
 
 
@@ -74,13 +77,25 @@ class Manager:
         continuous_mode: bool,
         generate_new_animal_names: bool,
     ) -> None:
-        merged_dataset = phenomaster_dataset_merger.merge_datasets(
-            new_dataset_name,
-            datasets,
-            single_run,
-            continuous_mode,
-            generate_new_animal_names,
-        )
+        first_dataset = datasets[0]
+        merged_dataset = None
+        if isinstance(first_dataset, PhenoMasterDataset):
+            merged_dataset = phenomaster_dataset_merger.merge_datasets(
+                new_dataset_name,
+                datasets,
+                single_run,
+                continuous_mode,
+                generate_new_animal_names,
+            )
+        elif isinstance(first_dataset, IntelliCageDataset):
+            merged_dataset = intellicage_dataset_merger.merge_datasets(
+                new_dataset_name,
+                datasets,
+                single_run,
+                continuous_mode,
+                generate_new_animal_names,
+            )
+
         if merged_dataset is not None:
             self._workspace_model.add_dataset(merged_dataset)
 

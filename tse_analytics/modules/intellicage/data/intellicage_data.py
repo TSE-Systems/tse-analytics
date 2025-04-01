@@ -26,7 +26,7 @@ class IntelliCageData:
         self.hardware_events_df = hardware_events_df
         self.log_df = log_df
 
-        self.device_ids: list[int] = environment_df["Cage"].unique().tolist()
+        self.device_ids: list[int] = hardware_events_df["Cage"].unique().tolist()
         self.device_ids.sort()
 
     def get_visits_datatable(self) -> Datatable:
@@ -64,13 +64,21 @@ class IntelliCageData:
         )
 
         # Add temperature and illumination
-        df = pd.merge_asof(
-            df,
-            self.environment_df,
-            on="DateTime",
-            by="Cage",
-            direction="nearest",
-        )
+        if self.dataset.metadata["data_descriptor"]["Version"] == "Version1":
+            df = pd.merge_asof(
+                df,
+                self.environment_df,
+                on="DateTime",
+                direction="nearest",
+            )
+        else:
+            df = pd.merge_asof(
+                df,
+                self.environment_df,
+                on="DateTime",
+                by="Cage",
+                direction="nearest",
+            )
 
         variables = {
             "PlaceError": Variable(
@@ -183,13 +191,21 @@ class IntelliCageData:
         )
 
         # Add temperature and illumination
-        df = pd.merge_asof(
-            df,
-            self.environment_df,
-            on="DateTime",
-            by="Cage",
-            direction="nearest",
-        )
+        if self.dataset.metadata["data_descriptor"]["Version"] == "Version1":
+            df = pd.merge_asof(
+                df,
+                self.environment_df,
+                on="DateTime",
+                direction="nearest",
+            )
+        else:
+            df = pd.merge_asof(
+                df,
+                self.environment_df,
+                on="DateTime",
+                by="Cage",
+                direction="nearest",
+            )
 
         variables = {
             "NosepokeDuration": Variable(
@@ -212,16 +228,27 @@ class IntelliCageData:
         df.insert(loc=2, column="Timedelta", value=df["DateTime"] - experiment_started)
 
         # Add nosepoke-related columns to visits dataframe
-        grouped_by_visit = df.groupby("VisitID").aggregate(
-            NosepokesNumber=("VisitID", "size"),
-            NosepokesDuration=("NosepokeDuration", "sum"),
-            LicksNumber=("LickNumber", "sum"),
-            LicksContactTime=("LickContactTime", "sum"),
-            LicksDuration=("LickDuration", "sum"),
-            SideErrors=("SideError", "sum"),
-            TimeErrors=("TimeError", "sum"),
-            ConditionErrors=("ConditionError", "sum"),
-        )
+        if self.dataset.metadata["data_descriptor"]["Version"] == "Version1":
+            grouped_by_visit = df.groupby("VisitID").aggregate(
+                NosepokesNumber=("VisitID", "size"),
+                NosepokesDuration=("NosepokeDuration", "sum"),
+                LicksNumber=("LickNumber", "sum"),
+                LicksDuration=("LickDuration", "sum"),
+                SideErrors=("SideError", "sum"),
+                TimeErrors=("TimeError", "sum"),
+                ConditionErrors=("ConditionError", "sum"),
+            )
+        else:
+            grouped_by_visit = df.groupby("VisitID").aggregate(
+                NosepokesNumber=("VisitID", "size"),
+                NosepokesDuration=("NosepokeDuration", "sum"),
+                LicksNumber=("LickNumber", "sum"),
+                LicksContactTime=("LickContactTime", "sum"),
+                LicksDuration=("LickDuration", "sum"),
+                SideErrors=("SideError", "sum"),
+                TimeErrors=("TimeError", "sum"),
+                ConditionErrors=("ConditionError", "sum"),
+            )
         visits_datatable.original_df = visits_datatable.original_df.join(grouped_by_visit, on="VisitID")
         visits_datatable.refresh_active_df()
 
@@ -274,14 +301,6 @@ class IntelliCageData:
                 Aggregation.SUM,
                 False,
             ),
-            "LicksContactTime": Variable(
-                "LicksContactTime",
-                "sec",
-                "Licks contact time",
-                "float64",
-                Aggregation.SUM,
-                False,
-            ),
             "LicksDuration": Variable(
                 "LicksDuration",
                 "sec",
@@ -291,6 +310,17 @@ class IntelliCageData:
                 False,
             ),
         }
+
+        if self.dataset.metadata["data_descriptor"]["Version"] != "Version1":
+            visits_datatable.variables["LicksContactTime"] = Variable(
+                "LicksContactTime",
+                "sec",
+                "Licks contact time",
+                "float64",
+                Aggregation.SUM,
+                False,
+            )
+
 
         datatable = Datatable(
             self.dataset,
