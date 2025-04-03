@@ -124,12 +124,9 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
     df.sort_values(by=["DateTime", "Animal"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    start_date_time = df["DateTime"][0]
+    start_date_time = df.at[0, "DateTime"]
     df.insert(loc=1, column="Timedelta", value=df["DateTime"] - start_date_time)
     df.insert(loc=2, column="Bin", value=(df["Timedelta"] / timedelta).round().astype(int))
-
-    # Add Run column
-    # df.insert(loc=5, column="Run", value=1)
 
     # Sort variables by name
     variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))
@@ -168,7 +165,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
         name=name,
         description="PhenoMaster dataset",
         path=str(path),
-        meta=meta,
+        metadata=meta,
         animals=animals,
     )
 
@@ -181,6 +178,9 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
         timedelta,
     )
     dataset.add_datatable(datatable)
+
+    dataset.experiment_started = datatable.start_timestamp
+    dataset.experiment_stopped = datatable.end_timestamp
 
     return dataset
 

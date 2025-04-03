@@ -101,12 +101,6 @@ class Datatable:
         self.original_df = reassign_df_timedelta_and_bin(self.original_df, self.sampling_interval, merging_mode)
         self.refresh_active_df()
 
-    def adjust_time(self, delta: pd.Timedelta) -> None:
-        self.original_df["DateTime"] = self.original_df["DateTime"] + delta
-        merging_mode = self.get_merging_mode()
-        self.original_df = reassign_df_timedelta_and_bin(self.original_df, self.sampling_interval, merging_mode)
-        self.refresh_active_df()
-
     def resample(self, resampling_interval: pd.Timedelta) -> None:
         agg = {
             "DateTime": "first",

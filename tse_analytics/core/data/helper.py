@@ -34,7 +34,8 @@ def reassign_df_timedelta_and_bin(
         df["Timedelta"] = df["DateTime"] - start_date_time
 
     # Reassign bins numbers
-    df["Bin"] = (df["Timedelta"] / sampling_interval).round().astype(int)
+    if sampling_interval is not None:
+        df["Bin"] = (df["Timedelta"] / sampling_interval).round().astype(int)
     return df
 
 

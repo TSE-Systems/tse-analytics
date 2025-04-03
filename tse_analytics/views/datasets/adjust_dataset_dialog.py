@@ -62,14 +62,6 @@ class AdjustDatasetDialog(QDialog):
         )
         self.dataset.resample(resampling_interval)
 
-    def _shift_time(self) -> None:
-        delta = pd.to_timedelta(self.ui.spinBoxTimeShiftDays.value(), unit="d") + pd.to_timedelta(
-            self.ui.timeEditTimeShift.time().msecsSinceStartOfDay(), unit="ms"
-        )
-        if self.ui.radioButtonTimeShiftMinus.isChecked():
-            delta = -delta
-        self.dataset.adjust_time(delta)
-
     def _trim_time(self) -> None:
         start = self.ui.dateTimeEditTrimStart.dateTime().toPython()
         end = self.ui.dateTimeEditTrimEnd.dateTime().toPython()
@@ -93,9 +85,6 @@ class AdjustDatasetDialog(QDialog):
 
         if self.ui.groupBoxResampling.isChecked():
             self._resample()
-
-        if self.ui.groupBoxTimeShift.isChecked():
-            self._shift_time()
 
         if self.ui.groupBoxTrimTime.isChecked():
             self._trim_time()

@@ -19,7 +19,7 @@ class IntelliMazeDataset(Dataset):
         name: str,
         description: str,
         path: str,
-        meta: dict | list[dict],
+        metadata: dict | list[dict],
         devices: dict[str, list[str]],
         animals: dict[str, Animal],
     ):
@@ -27,8 +27,15 @@ class IntelliMazeDataset(Dataset):
             name,
             description,
             path,
-            meta,
+            metadata,
             animals,
+        )
+
+        self.experiment_started = pd.to_datetime(
+            self.metadata["experiment"]["ExperimentStarted"], format="%m/%d/%Y %H:%M:%S"
+        )
+        self.experiment_stopped = pd.to_datetime(
+            self.metadata["experiment"]["ExperimentStopped"], format="%m/%d/%Y %H:%M:%S"
         )
 
         self.devices = devices
@@ -36,14 +43,6 @@ class IntelliMazeDataset(Dataset):
         self.animal_gate_data: AnimalGateData | None = None
         self.running_wheel_data: RunningWheelData | None = None
         self.consumption_scale_data: ConsumptionScaleData | None = None
-
-    @property
-    def experiment_started(self) -> pd.Timestamp:
-        return pd.to_datetime(self.metadata["experiment"]["ExperimentStarted"], format="%m/%d/%Y %H:%M:%S")
-
-    @property
-    def experiment_stopped(self) -> pd.Timestamp:
-        return pd.to_datetime(self.metadata["experiment"]["ExperimentStopped"], format="%m/%d/%Y %H:%M:%S")
 
     def rename_animal(self, old_id: str, animal: Animal) -> None:
         super().rename_animal(old_id, animal)

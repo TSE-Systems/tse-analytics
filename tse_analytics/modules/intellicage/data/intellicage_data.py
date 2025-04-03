@@ -124,9 +124,6 @@ class IntelliCageData:
         experiment_started = self.dataset.experiment_started
         df.insert(loc=3, column="Timedelta", value=df["DateTime"] - experiment_started)
 
-        # Add Run column
-        # df.insert(loc=4, column="Run", value=1)
-
         # Convert types
         df = df.astype({
             "Animal": "category",
@@ -320,7 +317,6 @@ class IntelliCageData:
                 Aggregation.SUM,
                 False,
             )
-
 
         datatable = Datatable(
             self.dataset,

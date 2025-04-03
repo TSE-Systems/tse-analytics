@@ -41,7 +41,7 @@ def _merge_continuous(
         name=merged_dataset_name,
         description="PhenoMaster dataset merged in continuous mode.",
         path="",
-        meta=merged_metadata,
+        metadata=merged_metadata,
         animals=merged_animals,
     )
 
@@ -64,7 +64,7 @@ def _merge_continuous(
         new_df.drop(columns=["Bin"], inplace=True)
 
         # reassign bin and timedelta
-        start_date_time = new_df["DateTime"][0]
+        start_date_time = result.experiment_started
         new_df["Timedelta"] = new_df["DateTime"] - start_date_time
 
         # convert categorical types
@@ -126,7 +126,7 @@ def _merge_overlap(
         name=merged_dataset_name,
         description="PhenoMaster dataset merged in overlap mode.",
         path="",
-        meta=merged_metadata,
+        metadata=merged_metadata,
         animals=merged_animals,
     )
 
@@ -157,6 +157,10 @@ def _merge_overlap(
             "Run": int,
         })
 
+        # TODO: reassign bin and timedelta. HOW?
+        # start_date_time = result.experiment_started
+        # new_df["Timedelta"] = new_df["DateTime"] - start_date_time
+
         # Sort dataframe
         new_df.sort_values(by=["Timedelta", "Animal"], inplace=True)
         new_df.reset_index(drop=True, inplace=True)
@@ -181,10 +185,19 @@ def _merge_metadata(
     merged_animals: dict[str, Animal],
     datasets: list[PhenoMasterDataset],
 ) -> dict:
+    if merging_mode == "continuous":
+        start_datetime = datasets[0].experiment_started
+        end_datetime = datasets[len(datasets) - 1].experiment_stopped
+    else:
+        start_datetime = datasets[0].experiment_started
+        end_datetime = max(dataset.experiment_stopped for dataset in datasets)
+
     result = {
         "experiment": {
             "experiment_no": merged_dataset_name,
             "merging_mode": merging_mode,
+            "start_datetime": str(start_datetime),
+            "end_datetime": str(end_datetime),
         },
         "animals": {k: v.get_dict() for (k, v) in merged_animals.items()},
         "runs": {},

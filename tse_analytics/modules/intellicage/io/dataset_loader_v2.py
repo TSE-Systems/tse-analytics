@@ -21,7 +21,7 @@ def import_intellicage_dataset_v2(path: Path, tmp_path: Path, data_descriptor: d
         name=path.stem,
         description="IntelliCage dataset",
         path=str(path),
-        meta={
+        metadata={
             "data_descriptor": data_descriptor,
             "experiment": metadata,
             "animals": {k: v.get_dict() for (k, v) in animals.items()},

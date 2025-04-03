@@ -29,6 +29,9 @@ class Dataset:
         self.path = path
         self.metadata = metadata
 
+        self.experiment_started: pd.Timestamp | None = None
+        self.experiment_stopped: pd.Timestamp | None = None
+
         self.animals = animals
         self.factors: dict[str, Factor] = {}
         self.datatables: dict[str, Datatable] = {}
@@ -37,14 +40,6 @@ class Dataset:
         self.binning_settings = BinningSettings()
 
         self.report = ""
-
-    @property
-    def experiment_started(self) -> pd.Timestamp:
-        raise NotImplementedError("Subclasses should implement this!")
-
-    @property
-    def experiment_stopped(self) -> pd.Timestamp:
-        raise NotImplementedError("Subclasses should implement this!")
 
     @property
     def experiment_duration(self) -> pd.Timedelta:
@@ -130,10 +125,6 @@ class Dataset:
     def resample(self, resampling_interval: pd.Timedelta) -> None:
         for datatable in self.datatables.values():
             datatable.resample(resampling_interval)
-
-    def adjust_time(self, delta: pd.Timedelta) -> None:
-        for datatable in self.datatables.values():
-            datatable.adjust_time(delta)
 
     def set_factors(self, factors: dict[str, Factor]) -> None:
         self.factors = factors

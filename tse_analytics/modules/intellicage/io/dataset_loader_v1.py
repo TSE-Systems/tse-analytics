@@ -21,7 +21,7 @@ def import_intellicage_dataset_v1(path: Path, tmp_path: Path, data_descriptor: d
         name=path.stem,
         description="IntelliCage dataset",
         path=str(path),
-        meta={
+        metadata={
             "data_descriptor": data_descriptor,
             "experiment": metadata,
             "animals": {k: v.get_dict() for (k, v) in animals.items()},
@@ -140,11 +140,14 @@ def _import_visits_df(folder_path: Path) -> pd.DataFrame | None:
     )
 
     # Standardize column names across different versions
-    df.rename(columns={
-        "ID": "VisitID",
-        "Animal": "AnimalTag",
-        "Module": "ModuleName",
-    }, inplace=True)
+    df.rename(
+        columns={
+            "ID": "VisitID",
+            "Animal": "AnimalTag",
+            "Module": "ModuleName",
+        },
+        inplace=True,
+    )
 
     # Convert DateTime columns
     df["Start"] = pd.to_datetime(
@@ -215,10 +218,13 @@ def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame | None:
     )
 
     # Standardize column names across different versions
-    df.rename(columns={
-        "LicksNumber": "LickNumber",
-        "LicksDuration": "LickDuration",
-    }, inplace=True)
+    df.rename(
+        columns={
+            "LicksNumber": "LickNumber",
+            "LicksDuration": "LickDuration",
+        },
+        inplace=True,
+    )
 
     # Convert DateTime columns
     df["Start"] = pd.to_datetime(
@@ -303,9 +309,12 @@ def _import_hardware_events_df(folder_path: Path) -> pd.DataFrame | None:
     )
 
     # Standardize column names across different versions
-    df.rename(columns={
-        "Type": "HardwareType",
-    }, inplace=True)
+    df.rename(
+        columns={
+            "Type": "HardwareType",
+        },
+        inplace=True,
+    )
 
     # Convert DateTime columns
     df["DateTime"] = pd.to_datetime(
@@ -351,11 +360,14 @@ def _import_log_df(folder_path: Path) -> pd.DataFrame | None:
     )
 
     # Standardize column names across different versions
-    df.rename(columns={
-        "Category": "LogCategory",
-        "Type": "LogType",
-        "Notes": "LogNotes",
-    }, inplace=True)
+    df.rename(
+        columns={
+            "Category": "LogCategory",
+            "Type": "LogType",
+            "Notes": "LogNotes",
+        },
+        inplace=True,
+    )
 
     # Convert DateTime columns
     df["DateTime"] = pd.to_datetime(

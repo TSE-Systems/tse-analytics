@@ -41,7 +41,7 @@ def import_im_dataset(path: Path) -> IntelliMazeDataset | None:
                 name=path.stem,
                 description="IntelliMaze dataset",
                 path=str(path),
-                meta={
+                metadata={
                     "experiment": metadata,
                     "animals": {k: v.get_dict() for (k, v) in animals.items()},
                 },

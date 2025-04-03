@@ -22,37 +22,30 @@ class PhenoMasterDataset(Dataset):
         name: str,
         description: str,
         path: str,
-        meta: dict | list[dict],
+        metadata: dict | list[dict],
         animals: dict[str, Animal],
     ):
         super().__init__(
             name,
             description,
             path,
-            meta,
+            metadata,
             animals,
         )
+
+        if "start_datetime" in self.metadata["experiment"]:
+            self.experiment_started = pd.to_datetime(
+                self.metadata["experiment"]["start_datetime"], utc=False
+            ).tz_localize(None)
+        if "end_datetime" in self.metadata["experiment"]:
+            self.experiment_stopped = pd.to_datetime(
+                self.metadata["experiment"]["end_datetime"], utc=False
+            ).tz_localize(None)
 
         self.calo_data: CaloData | None = None
         self.drinkfeed_data: DrinkFeedData | None = None
         self.actimot_data: ActimotData | None = None
         self.trafficage_data: TraffiCageData | None = None
-
-    @property
-    def experiment_started(self) -> pd.Timestamp:
-        return self.datatables["Main"].start_timestamp
-        # if "start_datetime" in self.metadata["experiment"]:
-        #     return pd.to_datetime(self.metadata["experiment"]["start_datetime"])
-        # else:
-        #     return self.datatables["Main"].start_timestamp
-
-    @property
-    def experiment_stopped(self) -> pd.Timestamp:
-        return self.datatables["Main"].end_timestamp
-        # if "end_datetime" in self.metadata["experiment"]:
-        #     return pd.to_datetime(self.metadata["experiment"]["end_datetime"])
-        # else:
-        #     return self.datatables["Main"].end_timestamp
 
     def rename_animal(self, old_id: str, animal: Animal) -> None:
         super().rename_animal(old_id, animal)

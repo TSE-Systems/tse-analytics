@@ -17,16 +17,16 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QDateTimeEdit,
     QDialog, QDialogButtonBox, QGroupBox, QHBoxLayout,
-    QHeaderView, QLabel, QLineEdit, QRadioButton,
-    QSizePolicy, QSpinBox, QTableWidget, QTableWidgetItem,
-    QTimeEdit, QVBoxLayout, QWidget)
+    QHeaderView, QLabel, QLineEdit, QSizePolicy,
+    QSpacerItem, QTableWidget, QTableWidgetItem, QTimeEdit,
+    QVBoxLayout, QWidget)
 import resources_rc
 
 class Ui_AdjustDatasetDialog(object):
     def setupUi(self, AdjustDatasetDialog):
         if not AdjustDatasetDialog.objectName():
             AdjustDatasetDialog.setObjectName(u"AdjustDatasetDialog")
-        AdjustDatasetDialog.resize(924, 429)
+        AdjustDatasetDialog.resize(924, 520)
         self.verticalLayout = QVBoxLayout(AdjustDatasetDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.widgetMain = QWidget(AdjustDatasetDialog)
@@ -57,6 +57,10 @@ class Ui_AdjustDatasetDialog(object):
 
         self.verticalLayout_4.addWidget(self.groupBoxRename)
 
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout_4.addItem(self.verticalSpacer)
+
         self.groupBoxResampling = QGroupBox(self.widgetLeft)
         self.groupBoxResampling.setObjectName(u"groupBoxResampling")
         self.groupBoxResampling.setCheckable(True)
@@ -70,53 +74,6 @@ class Ui_AdjustDatasetDialog(object):
 
 
         self.verticalLayout_4.addWidget(self.groupBoxResampling)
-
-        self.groupBoxTimeShift = QGroupBox(self.widgetLeft)
-        self.groupBoxTimeShift.setObjectName(u"groupBoxTimeShift")
-        self.groupBoxTimeShift.setCheckable(True)
-        self.groupBoxTimeShift.setChecked(False)
-        self.horizontalLayout = QHBoxLayout(self.groupBoxTimeShift)
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.labelTimeShiftDays = QLabel(self.groupBoxTimeShift)
-        self.labelTimeShiftDays.setObjectName(u"labelTimeShiftDays")
-
-        self.horizontalLayout.addWidget(self.labelTimeShiftDays)
-
-        self.spinBoxTimeShiftDays = QSpinBox(self.groupBoxTimeShift)
-        self.spinBoxTimeShiftDays.setObjectName(u"spinBoxTimeShiftDays")
-        self.spinBoxTimeShiftDays.setMinimumSize(QSize(50, 0))
-
-        self.horizontalLayout.addWidget(self.spinBoxTimeShiftDays)
-
-        self.labelTimeShiftTime = QLabel(self.groupBoxTimeShift)
-        self.labelTimeShiftTime.setObjectName(u"labelTimeShiftTime")
-
-        self.horizontalLayout.addWidget(self.labelTimeShiftTime)
-
-        self.timeEditTimeShift = QTimeEdit(self.groupBoxTimeShift)
-        self.timeEditTimeShift.setObjectName(u"timeEditTimeShift")
-
-        self.horizontalLayout.addWidget(self.timeEditTimeShift)
-
-        self.radioButtonTimeShiftMinus = QRadioButton(self.groupBoxTimeShift)
-        self.radioButtonTimeShiftMinus.setObjectName(u"radioButtonTimeShiftMinus")
-        icon = QIcon()
-        icon.addFile(u":/icons/icons8-minus-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.radioButtonTimeShiftMinus.setIcon(icon)
-        self.radioButtonTimeShiftMinus.setChecked(True)
-
-        self.horizontalLayout.addWidget(self.radioButtonTimeShiftMinus)
-
-        self.radioButtonTimeShiftPlus = QRadioButton(self.groupBoxTimeShift)
-        self.radioButtonTimeShiftPlus.setObjectName(u"radioButtonTimeShiftPlus")
-        icon1 = QIcon()
-        icon1.addFile(u":/icons/icons8-add-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.radioButtonTimeShiftPlus.setIcon(icon1)
-
-        self.horizontalLayout.addWidget(self.radioButtonTimeShiftPlus)
-
-
-        self.verticalLayout_4.addWidget(self.groupBoxTimeShift)
 
         self.groupBoxTrimTime = QGroupBox(self.widgetLeft)
         self.groupBoxTrimTime.setObjectName(u"groupBoxTrimTime")
@@ -225,10 +182,6 @@ class Ui_AdjustDatasetDialog(object):
         self.groupBoxRename.setTitle(QCoreApplication.translate("AdjustDatasetDialog", u"Rename", None))
         self.groupBoxResampling.setTitle(QCoreApplication.translate("AdjustDatasetDialog", u"Apply resampling", None))
         self.timeEditResamplingInterval.setDisplayFormat(QCoreApplication.translate("AdjustDatasetDialog", u"HH:mm:ss", None))
-        self.groupBoxTimeShift.setTitle(QCoreApplication.translate("AdjustDatasetDialog", u"Apply time shift", None))
-        self.labelTimeShiftDays.setText(QCoreApplication.translate("AdjustDatasetDialog", u"Days", None))
-        self.labelTimeShiftTime.setText(QCoreApplication.translate("AdjustDatasetDialog", u"HH:mm:ss", None))
-        self.timeEditTimeShift.setDisplayFormat(QCoreApplication.translate("AdjustDatasetDialog", u"HH:mm:ss", None))
         self.groupBoxTrimTime.setTitle(QCoreApplication.translate("AdjustDatasetDialog", u"Trim time", None))
         self.labelTrimTimeStart.setText(QCoreApplication.translate("AdjustDatasetDialog", u"Start:", None))
         self.dateTimeEditTrimStart.setDisplayFormat(QCoreApplication.translate("AdjustDatasetDialog", u"yyyy-MM-dd HH:mm:ss", None))
