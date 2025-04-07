@@ -54,7 +54,7 @@ class AdjustDatasetDialog(QDialog):
 
     def _rename(self) -> None:
         name = self.ui.lineEditName.text()
-        self.dataset.name = name
+        self.dataset.rename(name)
 
     def _resample(self) -> None:
         resampling_interval = pd.to_timedelta(

@@ -193,6 +193,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
                         result,
                         settings.time_intervals_settings,
                         variables,
+                        origin=self.datatable.dataset.experiment_started,
                     )
                 case BinningMode.CYCLES:
                     result = process_time_cycles_binning(

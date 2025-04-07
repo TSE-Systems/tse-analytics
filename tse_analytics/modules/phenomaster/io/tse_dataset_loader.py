@@ -10,11 +10,11 @@ from loguru import logger
 
 from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import Aggregation, Animal, Factor, Variable
+from tse_analytics.core.data.shared import Aggregation, Animal, Variable
+from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
 from tse_analytics.modules.phenomaster.io.tse_import_settings import TseImportSettings
 from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_data import ActimotData
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.submodules.calo.data.calo_data import CaloData
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_data import DrinkFeedData
 
@@ -32,9 +32,6 @@ def load_tse_dataset(path: Path, import_settings: TseImportSettings) -> PhenoMas
     animals = _get_animals(metadata["animals"])
 
     dataset = PhenoMasterDataset(
-        name=metadata["experiment"]["experiment_no"],
-        description="PhenoMaster dataset",
-        path=str(path),
         metadata=metadata,
         animals=animals,
     )
@@ -89,6 +86,13 @@ def _read_metadata(path: Path) -> dict:
     for item in metadata["animals"].values():
         item["id"] = str(item["id"])
 
+    # Add standard data fields
+    metadata["name"] = metadata["experiment"]["experiment_no"]
+    metadata["description"] = "PhenoMaster dataset"
+    metadata["source_path"] = str(path)
+    metadata["experiment_started"] = metadata["experiment"]["start_datetime"]
+    metadata["experiment_stopped"] = metadata["experiment"]["end_datetime"]
+
     # Convert time intervals from [ms] to Timedeltas
     metadata["experiment"]["runtime"] = str(pd.to_timedelta(metadata["experiment"]["runtime"], unit="ms"))
     metadata["experiment"]["cycle_interval"] = str(pd.to_timedelta(metadata["experiment"]["cycle_interval"], unit="ms"))
@@ -124,14 +128,6 @@ def _get_animals(data: dict) -> dict[str, Animal]:
         )
         animals[animal.id] = animal
     return animals
-
-
-def _get_factors(data: dict) -> dict[str, Factor]:
-    factors: dict[str, Factor] = {}
-    for item in data.values():
-        factor = Factor(name=item["id"])
-        factors[factor.name] = factor
-    return factors
 
 
 def _read_main_table(

@@ -17,20 +17,11 @@ from tse_analytics.core.models.datatable_tree_item import DatatableTreeItem
 class Dataset:
     def __init__(
         self,
-        name: str,
-        description: str,
-        path: str,
         metadata: dict | list[dict],
         animals: dict[str, Animal],
     ):
         self.id = uuid4()
-        self.name = name
-        self.description = description
-        self.path = path
         self.metadata = metadata
-
-        self.experiment_started: pd.Timestamp | None = None
-        self.experiment_stopped: pd.Timestamp | None = None
 
         self.animals = animals
         self.factors: dict[str, Factor] = {}
@@ -42,11 +33,34 @@ class Dataset:
         self.report = ""
 
     @property
+    def name(self) -> str:
+        return self.metadata["name"]
+
+    @property
+    def description(self) -> str:
+        return self.metadata["description"]
+
+    @property
+    def source_path(self) -> str:
+        return self.metadata["source_path"] if "source_path" in self.metadata else ""
+
+    @property
+    def experiment_started(self) -> pd.Timestamp:
+        return pd.to_datetime(self.metadata["experiment_started"], utc=False).tz_localize(None)
+
+    @property
+    def experiment_stopped(self) -> pd.Timestamp:
+        return pd.to_datetime(self.metadata["experiment_stopped"], utc=False).tz_localize(None)
+
+    @property
     def experiment_duration(self) -> pd.Timedelta:
         return self.experiment_stopped - self.experiment_started
 
     def add_datatable(self, datatable: Datatable) -> None:
         self.datatables[datatable.name] = datatable
+
+    def rename(self, name: str) -> None:
+        self.metadata["name"] = name
 
     def extract_levels_from_property(self, property_name: str) -> dict[str, FactorLevel]:
         levels_dict: dict[str, list[str]] = {}
@@ -115,10 +129,16 @@ class Dataset:
             datatable.exclude_animals(animal_ids)
 
     def exclude_time(self, range_start: datetime, range_end: datetime) -> None:
+        if range_start <= self.experiment_started < range_end:
+            self.metadata["experiment_started"] = str(range_end)
+        if range_start < self.experiment_stopped <= range_end:
+            self.metadata["experiment_stopped"] = str(range_start)
         for datatable in self.datatables.values():
             datatable.exclude_time(range_start, range_end)
 
     def trim_time(self, range_start: datetime, range_end: datetime) -> None:
+        self.metadata["experiment_started"] = str(range_start)
+        self.metadata["experiment_stopped"] = str(range_end)
         for datatable in self.datatables.values():
             datatable.trim_time(range_start, range_end)
 

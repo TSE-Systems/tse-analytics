@@ -162,6 +162,7 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
                 settings.time_intervals_settings,
                 variables,
                 calculate_errors,
+                origin=self.datatable.dataset.experiment_started,
             )
 
         # Splitting

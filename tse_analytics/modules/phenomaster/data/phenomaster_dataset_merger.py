@@ -38,9 +38,6 @@ def _merge_continuous(
     merged_metadata = _merge_metadata(merged_dataset_name, "continuous", merged_animals, datasets)
 
     result = PhenoMasterDataset(
-        name=merged_dataset_name,
-        description="PhenoMaster dataset merged in continuous mode.",
-        path="",
         metadata=merged_metadata,
         animals=merged_animals,
     )
@@ -123,9 +120,6 @@ def _merge_overlap(
     merged_metadata = _merge_metadata(merged_dataset_name, "overlap", merged_animals, datasets)
 
     result = PhenoMasterDataset(
-        name=merged_dataset_name,
-        description="PhenoMaster dataset merged in overlap mode.",
-        path="",
         metadata=merged_metadata,
         animals=merged_animals,
     )
@@ -185,20 +179,18 @@ def _merge_metadata(
     merged_animals: dict[str, Animal],
     datasets: list[PhenoMasterDataset],
 ) -> dict:
+    experiment_started = datasets[0].experiment_started
     if merging_mode == "continuous":
-        start_datetime = datasets[0].experiment_started
-        end_datetime = datasets[len(datasets) - 1].experiment_stopped
+        experiment_stopped = datasets[len(datasets) - 1].experiment_stopped
     else:
-        start_datetime = datasets[0].experiment_started
-        end_datetime = max(dataset.experiment_stopped for dataset in datasets)
+        experiment_stopped = max(dataset.experiment_stopped for dataset in datasets)
 
     result = {
-        "experiment": {
-            "experiment_no": merged_dataset_name,
-            "merging_mode": merging_mode,
-            "start_datetime": str(start_datetime),
-            "end_datetime": str(end_datetime),
-        },
+        "name": merged_dataset_name,
+        "description": "PhenoMaster dataset",
+        "merging_mode": merging_mode,
+        "experiment_started": str(experiment_started),
+        "experiment_stopped": str(experiment_stopped),
         "animals": {k: v.get_dict() for (k, v) in merged_animals.items()},
         "runs": {},
     }

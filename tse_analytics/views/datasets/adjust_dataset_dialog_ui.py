@@ -57,10 +57,6 @@ class Ui_AdjustDatasetDialog(object):
 
         self.verticalLayout_4.addWidget(self.groupBoxRename)
 
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.verticalLayout_4.addItem(self.verticalSpacer)
-
         self.groupBoxResampling = QGroupBox(self.widgetLeft)
         self.groupBoxResampling.setObjectName(u"groupBoxResampling")
         self.groupBoxResampling.setCheckable(True)
@@ -132,6 +128,10 @@ class Ui_AdjustDatasetDialog(object):
 
 
         self.verticalLayout_4.addWidget(self.groupBoxExcludeTime)
+
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout_4.addItem(self.verticalSpacer)
 
 
         self.horizontalLayout_4.addWidget(self.widgetLeft)

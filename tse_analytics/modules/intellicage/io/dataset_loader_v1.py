@@ -18,10 +18,12 @@ def import_intellicage_dataset_v1(path: Path, tmp_path: Path, data_descriptor: d
     animals = _import_animals(tmp_path / "Animals.txt")
 
     dataset = IntelliCageDataset(
-        name=path.stem,
-        description="IntelliCage dataset",
-        path=str(path),
         metadata={
+            "name": path.stem,
+            "description": "IntelliCage dataset v1",
+            "source_path": str(path),
+            "experiment_started": metadata["Interval"]["Start"],
+            "experiment_stopped": metadata["Interval"]["End"],
             "data_descriptor": data_descriptor,
             "experiment": metadata,
             "animals": {k: v.get_dict() for (k, v) in animals.items()},

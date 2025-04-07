@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
@@ -19,28 +18,13 @@ from tse_analytics.modules.phenomaster.submodules.trafficage.models.trafficage_t
 class PhenoMasterDataset(Dataset):
     def __init__(
         self,
-        name: str,
-        description: str,
-        path: str,
         metadata: dict | list[dict],
         animals: dict[str, Animal],
     ):
         super().__init__(
-            name,
-            description,
-            path,
             metadata,
             animals,
         )
-
-        if "start_datetime" in self.metadata["experiment"]:
-            self.experiment_started = pd.to_datetime(
-                self.metadata["experiment"]["start_datetime"], utc=False
-            ).tz_localize(None)
-        if "end_datetime" in self.metadata["experiment"]:
-            self.experiment_stopped = pd.to_datetime(
-                self.metadata["experiment"]["end_datetime"], utc=False
-            ).tz_localize(None)
 
         self.calo_data: CaloData | None = None
         self.drinkfeed_data: DrinkFeedData | None = None

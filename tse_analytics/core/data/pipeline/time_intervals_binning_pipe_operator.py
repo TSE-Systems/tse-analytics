@@ -11,6 +11,7 @@ def process_time_interval_binning(
     settings: TimeIntervalsBinningSettings,
     variables: dict[str, Variable],
     calculate_errors: str | None = None,
+    origin: pd.Timestamp | str = "start",
 ) -> pd.DataFrame:
     if df.empty:
         return df
@@ -40,7 +41,7 @@ def process_time_interval_binning(
         agg["Error"] = calculate_errors
 
     result = df.groupby("Animal", dropna=False, observed=False)
-    result = result.resample(timedelta, on="Timedelta", origin="start").aggregate(agg)
+    result = result.resample(timedelta, on="Timedelta", origin=origin).aggregate(agg)
 
     result = result[result["DateTime"].notna()]
 

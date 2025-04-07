@@ -45,7 +45,10 @@ class IntelliCageData:
         )
 
         # Add duration column
-        df[f"VisitDuration"] = (df["End"] - df["Start"]).dt.total_seconds()
+        df["VisitDuration"] = (df["End"] - df["Start"]).dt.total_seconds()
+
+        # Add visit number column for further binning (each visit as 1)
+        df["VisitNumber"] = 1
 
         # Rename columns
         df.rename(
@@ -81,6 +84,14 @@ class IntelliCageData:
             )
 
         variables = {
+            "VisitNumber": Variable(
+                "VisitNumber",
+                "count",
+                "Visit number",
+                "int",
+                Aggregation.SUM,
+                False,
+            ),
             "PlaceError": Variable(
                 "PlaceError",
                 "count",
@@ -163,7 +174,10 @@ class IntelliCageData:
         )
 
         # Add duration column
-        df[f"NosepokeDuration"] = (df["End"] - df["Start"]).dt.total_seconds()
+        df["NosepokeDuration"] = (df["End"] - df["Start"]).dt.total_seconds()
+
+        # Add nosepoke number column for further binning (each nosepoke as 1)
+        df["NosepokeNumber"] = 1
 
         # Drop non-necessary columns
         df.drop(
@@ -205,6 +219,14 @@ class IntelliCageData:
             )
 
         variables = {
+            "NosepokeNumber": Variable(
+                "NosepokeNumber",
+                "count",
+                "Nosepoke number",
+                "int",
+                Aggregation.SUM,
+                False,
+            ),
             "NosepokeDuration": Variable(
                 "NosepokeDuration",
                 "sec",
@@ -213,7 +235,82 @@ class IntelliCageData:
                 Aggregation.MEAN,
                 False,
             ),
+            "PlaceError": Variable(
+                "PlaceError",
+                "count",
+                "Place error",
+                "bool",
+                Aggregation.SUM,
+                False,
+            ),
+            "SideError": Variable(
+                "SideError",
+                "count",
+                "Side error",
+                "bool",
+                Aggregation.SUM,
+                False,
+            ),
+            "TimeError": Variable(
+                "TimeError",
+                "count",
+                "Time error",
+                "bool",
+                Aggregation.SUM,
+                False,
+            ),
+            "ConditionError": Variable(
+                "ConditionError",
+                "count",
+                "Condition error",
+                "bool",
+                Aggregation.SUM,
+                False,
+            ),
+            "Temperature": Variable(
+                "Temperature",
+                "°C",
+                "Cage temperature",
+                "float64",
+                Aggregation.MEAN,
+                False,
+            ),
+            "Illumination": Variable(
+                "Illumination",
+                "",
+                "Cage illumination",
+                "float64",
+                Aggregation.MEAN,
+                False,
+            ),
+            "LickNumber": Variable(
+                "LickNumber",
+                "count",
+                "Number of licks",
+                "int64",
+                Aggregation.SUM,
+                False,
+            ),
+            "LickDuration": Variable(
+                "LickDuration",
+                "sec",
+                "Licks duration",
+                "float64",
+                Aggregation.SUM,
+                False,
+            ),
         }
+
+        if self.dataset.metadata["data_descriptor"]["Version"] != "Version1":
+            visits_datatable.variables["LicksContactTime"] = Variable(
+                "LickContactTime",
+                "sec",
+                "Lick contact time",
+                "float64",
+                Aggregation.SUM,
+                False,
+            )
+
         # Sort variables by name
         variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))
 
@@ -317,6 +414,14 @@ class IntelliCageData:
                 Aggregation.SUM,
                 False,
             )
+
+        # Convert types
+        df = df.astype({
+            # "Animal": "category",
+            "SideError": "int",
+            "TimeError": "int",
+            "ConditionError": "int",
+        })
 
         datatable = Datatable(
             self.dataset,

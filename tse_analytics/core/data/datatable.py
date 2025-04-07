@@ -54,8 +54,8 @@ class Datatable:
 
     def get_merging_mode(self) -> str | None:
         merging_mode = (
-            self.dataset.metadata["experiment"]["merging_mode"]
-            if "merging_mode" in self.dataset.metadata["experiment"]
+            self.dataset.metadata["merging_mode"]
+            if "merging_mode" in self.dataset.metadata
             else None
         )
         return merging_mode
@@ -115,7 +115,7 @@ class Datatable:
                     agg[column] = self.variables[column].aggregation
 
         result = self.original_df.groupby(["Animal"], dropna=False, observed=False)
-        result = result.resample(resampling_interval, on="Timedelta", origin="start").agg(agg)
+        result = result.resample(resampling_interval, on="Timedelta", origin=self.dataset.experiment_started).agg(agg)
         result.reset_index(inplace=True, drop=False)
 
         # Drop empty entries
@@ -243,6 +243,7 @@ class Datatable:
                         result,
                         settings.time_intervals_settings,
                         variables,
+                        origin=self.dataset.experiment_started,
                     )
                 case BinningMode.CYCLES:
                     result = process_time_cycles_binning(

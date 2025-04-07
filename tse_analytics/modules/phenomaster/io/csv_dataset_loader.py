@@ -125,6 +125,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
     df.reset_index(drop=True, inplace=True)
 
     start_date_time = df.at[0, "DateTime"]
+    end_date_time = df["DateTime"].iat[-1]
     df.insert(loc=1, column="Timedelta", value=df["DateTime"] - start_date_time)
     df.insert(loc=2, column="Bin", value=(df["Timedelta"] / timedelta).round().astype(int))
 
@@ -144,11 +145,14 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
 
     buf = StringIO()
     df.info(buf=buf)
-    meta = {
+
+    metadata = {
+        "name": name,
+        "description": description,
+        "source_path": str(path),
+        "experiment_started": str(start_date_time),
+        "experiment_stopped": str(end_date_time),
         "experiment": {
-            "filename": name,
-            "origin_file": str(path),
-            "experiment_no": description,
             "pm_version": version,
         },
         "animals": {k: v.get_dict() for (k, v) in animals.items()},
@@ -162,10 +166,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
     }
 
     dataset = PhenoMasterDataset(
-        name=name,
-        description="PhenoMaster dataset",
-        path=str(path),
-        metadata=meta,
+        metadata=metadata,
         animals=animals,
     )
 
@@ -178,9 +179,6 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
         timedelta,
     )
     dataset.add_datatable(datatable)
-
-    dataset.experiment_started = datatable.start_timestamp
-    dataset.experiment_stopped = datatable.end_timestamp
 
     return dataset
 

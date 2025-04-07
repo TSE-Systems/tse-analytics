@@ -121,6 +121,7 @@ class OneWayAnovaWidget(QWidget):
             df,
             TimeIntervalsBinningSettings("day", 365),
             variables,
+            origin=self.datatable.dataset.experiment_started,
         )
 
         # TODO: should or should not?
