@@ -53,11 +53,7 @@ class Datatable:
         return self.end_timestamp - self.start_timestamp
 
     def get_merging_mode(self) -> str | None:
-        merging_mode = (
-            self.dataset.metadata["merging_mode"]
-            if "merging_mode" in self.dataset.metadata
-            else None
-        )
+        merging_mode = self.dataset.metadata["merging_mode"] if "merging_mode" in self.dataset.metadata else None
         return merging_mode
 
     def get_default_columns(self) -> list[str]:

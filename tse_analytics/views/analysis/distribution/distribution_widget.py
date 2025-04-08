@@ -31,7 +31,7 @@ class DistributionWidget(QWidget):
 
         # Setup toolbar
         toolbar = QToolBar(
-            "Data Plot Toolbar",
+            "Distribution Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
@@ -79,9 +79,6 @@ class DistributionWidget(QWidget):
             ).show()
             return
 
-        self._update_distribution_plot()
-
-    def _update_distribution_plot(self):
         variable = self.variableSelector.get_selected_variable()
 
         match self.split_mode:
