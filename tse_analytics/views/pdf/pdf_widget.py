@@ -15,9 +15,9 @@ class PdfWidget(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.setWindowFlags(
             Qt.WindowType.Window
-            | Qt.WindowType.CustomizeWindowHint
-            | Qt.WindowType.WindowTitleHint
-            | Qt.WindowType.WindowCloseButtonHint
+            # | Qt.WindowType.CustomizeWindowHint
+            # | Qt.WindowType.WindowTitleHint
+            # | Qt.WindowType.WindowCloseButtonHint
         )
 
         self.layout = QVBoxLayout(self)

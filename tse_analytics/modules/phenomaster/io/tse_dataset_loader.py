@@ -176,7 +176,7 @@ def _read_main_table(
     })
 
     # Sort dataframe
-    df.sort_values(by=["DateTime", "Box"], inplace=True)
+    df.sort_values(by=["DateTime", "Animal"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
     # Add Timedelta and Bin columns

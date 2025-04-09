@@ -92,8 +92,8 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
         dayfirst=csv_import_settings.day_first,
     )
 
-    # Drop "Box" column
-    df.drop(columns=["Box"], inplace=True)
+    # TODO: Drop "Box" column?
+    # df.drop(columns=["Box"], inplace=True)
 
     # Rename table columns
     df.rename(columns={"Date_Time": "DateTime", "Date Time": "DateTime", "Animal No.": "Animal"}, inplace=True)
