@@ -1,29 +1,27 @@
 import timeit
+from datetime import datetime
 
 import pandas as pd
-from loguru import logger
-from PySide6.QtCore import QSettings, Qt
+from PySide6.QtCore import QSettings, Qt, QSize
 from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
-from PySide6.QtWidgets import QDialog, QFileDialog, QWidget
+from PySide6.QtWidgets import QDialog, QWidget, QToolBar
+from loguru import logger
 
+from tse_analytics.core import manager
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_data import DrinkFeedData
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_animal_item import DrinkFeedAnimalItem
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.interval_processor import process_drinkfeed_intervals
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_data import DrinkFeedData
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.drinkfeed_settings import DrinkFeedSettings
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.interval_processor import process_drinkfeed_intervals
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.sequential_processor import process_drinkfeed_sequences
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_box_selector import (
     DrinkFeedBoxSelector,
 )
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_dialog_ui import Ui_DrinkFeedDialog
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_plot_widget import DrinkFeedPlotWidget
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_settings_widget import (
-    DrinkFeedSettingsWidget,
-)
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_table_view import DrinkFeedTableView
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_episodes_gap_plot_widget import (
     DrinkFeedEpisodesGapPlotWidget,
 )
@@ -36,6 +34,11 @@ from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_epis
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_intervals_plot_widget import (
     DrinkFeedIntervalsPlotWidget,
 )
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_plot_widget import DrinkFeedPlotWidget
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_settings_widget import (
+    DrinkFeedSettingsWidget,
+)
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_table_view import DrinkFeedTableView
 
 
 class DrinkFeedDialog(QDialog):
@@ -45,10 +48,31 @@ class DrinkFeedDialog(QDialog):
         self.ui = Ui_DrinkFeedDialog()
         self.ui.setupUi(self)
 
+        self.drinkfeed_data = drinkfeed_data
+
+        self.selected_boxes: list[DrinkFeedAnimalItem] = []
+
+        self.events_df: pd.DataFrame | None = self.drinkfeed_data.raw_df
+        self.episodes_df: pd.DataFrame | None = None
+        self.intervals_df: pd.DataFrame | None = None
+
+        self.toast = None
+
+        # Setup toolbar
+        toolbar = QToolBar(
+            "DrinkFeed Toolbar",
+            iconSize=QSize(16, 16),
+            toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
+        )
+        self.calculate_action = toolbar.addAction(QIcon(":/icons/icons8-analyze-16.png"), "Calculate")
+        self.calculate_action.triggered.connect(self._calculate)
+        self.add_datatable_action = toolbar.addAction(QIcon(":/icons/icons8-insert-table-16.png"), "Add Datatable...")
+        self.add_datatable_action.setEnabled(False)
+        self.add_datatable_action.triggered.connect(self._add_datatable)
+        self.ui.verticalLayout.insertWidget(0, toolbar)
+
         settings = QSettings()
         self.restoreGeometry(settings.value("DrinkFeedDialog/Geometry"))
-
-        self.drinkfeed_data = drinkfeed_data
 
         self.events_table_view = DrinkFeedTableView()
         self.events_table_view.set_data(drinkfeed_data.raw_df)
@@ -77,9 +101,6 @@ class DrinkFeedDialog(QDialog):
         self.episodes_intake_plot_widget = DrinkFeedEpisodesIntakePlotWidget()
         self.episodes_intake_tab_index = self.ui.tabWidget.addTab(self.episodes_intake_plot_widget, "Episodes Intake")
 
-        self.ui.toolButtonCalculate.clicked.connect(self._calculate)
-        self.ui.toolButtonExport.clicked.connect(self._export_data)
-
         self.drinkfeed_settings_widget = DrinkFeedSettingsWidget()
         try:
             drinkfeed_settings = settings.value("DrinkFeedSettings", DrinkFeedSettings.get_default())
@@ -95,14 +116,7 @@ class DrinkFeedDialog(QDialog):
         self.ui.toolBox.addItem(self.drinkfeed_box_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Boxes")
         self.ui.toolBox.addItem(self.drinkfeed_settings_widget, QIcon(":/icons/icons8-dog-tag-16.png"), "Settings")
 
-        self.selected_boxes: list[DrinkFeedAnimalItem] = []
-
-        self.events_df: pd.DataFrame | None = self.drinkfeed_data.raw_df
-        self.episodes_df: pd.DataFrame | None = None
-        self.intervals_df: pd.DataFrame | None = None
-
         self._update_tabs()
-        self.toast = None
 
     def _update_tabs(self):
         settings = self.drinkfeed_settings_widget.get_drinkfeed_settings()
@@ -158,8 +172,8 @@ class DrinkFeedDialog(QDialog):
         return variables_subset
 
     def _calculate(self):
-        self.ui.toolButtonCalculate.setEnabled(False)
-        self.ui.toolButtonExport.setEnabled(False)
+        self.calculate_action.setEnabled(False)
+        self.add_datatable_action.setEnabled(False)
 
         self.toast = make_toast(self, "DrinkFeed Analysis", "Processing...")
         self.toast.show()
@@ -197,8 +211,8 @@ class DrinkFeedDialog(QDialog):
         self.episodes_intake_plot_widget.set_data(self.episodes_df, variables_subset)
 
         self._update_tabs()
-        self.ui.toolButtonExport.setEnabled(True)
-        self.ui.toolButtonCalculate.setEnabled(True)
+        self.add_datatable_action.setEnabled(True)
+        self.calculate_action.setEnabled(True)
         self.toast.hide()
 
     def _do_interval_analysis(
@@ -219,20 +233,42 @@ class DrinkFeedDialog(QDialog):
         self.intervals_plot_widget.set_data(self.intervals_df, variables_subset)
 
         self._update_tabs()
-        self.ui.toolButtonExport.setEnabled(True)
-        self.ui.toolButtonCalculate.setEnabled(True)
+        self.add_datatable_action.setEnabled(True)
+        self.calculate_action.setEnabled(True)
         self.toast.hide()
 
-    def _export_data(self):
+    def _add_datatable(self):
         settings = self.drinkfeed_settings_widget.get_drinkfeed_settings()
+        now = datetime.now()
+        now_string = now.strftime("%Y-%m-%d %H:%M:%S")
+
+        variables = self.drinkfeed_data.variables
+
         if settings.sequential_analysis_type and self.episodes_df is not None:
-            filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "DrinkFeedEpisodes", "CSV Files (*.csv)")
-            if filename:
-                self.episodes_df.to_csv(filename, sep=";", index=False)
+            datatable = Datatable(
+                self.drinkfeed_data.dataset,
+                f"DrinkFeedEpisodes [{now_string}]",
+                "Drink/Feed episodes",
+                variables,
+                self.episodes_df,
+                None,
+            )
+            manager.add_datatable(datatable)
         elif self.intervals_df is not None:
-            filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "DrinkFeedIntervals", "CSV Files (*.csv)")
-            if filename:
-                self.intervals_df.to_csv(filename, sep=";", index=False)
+            timedelta = pd.Timedelta(
+                hours=settings.fixed_interval.hour,
+                minutes=settings.fixed_interval.minute,
+                seconds=settings.fixed_interval.second,
+            )
+            datatable = Datatable(
+                self.drinkfeed_data.dataset,
+                f"DrinkFeedIntervals [{now_string}]",
+                "Drink/Feed intervals",
+                variables,
+                self.intervals_df,
+                timedelta,
+            )
+            manager.add_datatable(datatable)
 
     def hideEvent(self, event: QCloseEvent) -> None:
         settings = QSettings()

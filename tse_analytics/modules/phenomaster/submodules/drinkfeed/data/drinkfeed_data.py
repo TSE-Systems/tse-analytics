@@ -11,14 +11,12 @@ class DrinkFeedData:
         path: str,
         variables: dict[str, Variable],
         df: pd.DataFrame,
-        sampling_interval: pd.Timedelta,
     ):
         self.dataset = dataset
         self.name = name
         self.path = path
         self.variables = variables
         self.raw_df = df
-        self.sampling_interval = sampling_interval
 
     @property
     def start_timestamp(self):

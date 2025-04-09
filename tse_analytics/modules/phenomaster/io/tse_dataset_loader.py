@@ -248,8 +248,6 @@ def _read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> ActimotData:
 def _read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedData:
     metadata = dataset.metadata["tables"][DRINKFEED_BIN_TABLE]
 
-    sample_interval = pd.Timedelta(metadata["sample_interval"])
-
     # Read variables list
     skipped_variables = ["DateTime", "Box"]
     variables: dict[str, Variable] = {}
@@ -298,7 +296,6 @@ def _read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedDat
         str(path),
         variables,
         df,
-        sample_interval,
     )
 
     return drinkfeed_data

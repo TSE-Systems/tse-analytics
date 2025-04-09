@@ -65,6 +65,11 @@ class Manager:
     def import_trafficage_data(self, dataset_index: QModelIndex, path: str) -> None:
         self._workspace_model.add_trafficage_data(dataset_index, path)
 
+    def add_datatable(self, datatable: Datatable) -> None:
+        # TODO: careful here!
+        datatable.dataset.add_datatable(datatable)
+        self._workspace_model.add_datatable(datatable)
+
     def remove_dataset(self, indexes: list[QModelIndex]) -> None:
         self._workspace_model.remove_dataset(indexes)
         self.set_selected_dataset(None)
@@ -124,3 +129,4 @@ import_trafficage_data = _instance.import_trafficage_data
 remove_dataset = _instance.remove_dataset
 merge_datasets = _instance.merge_datasets
 clone_dataset = _instance.clone_dataset
+add_datatable = _instance.add_datatable

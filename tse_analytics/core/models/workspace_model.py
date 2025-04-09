@@ -4,8 +4,10 @@ from PySide6.QtCore import QAbstractItemModel, QModelIndex, QSettings, Qt, Signa
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.workspace import Workspace
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
+from tse_analytics.core.models.datatable_tree_item import DatatableTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
 from tse_analytics.core.models.workspace_tree_item import WorkspaceTreeItem
 from tse_analytics.modules.phenomaster.submodules.actimot.io.data_loader import import_actimot_data
@@ -201,6 +203,15 @@ class WorkspaceModel(QAbstractItemModel):
                 dataset_tree_item.clear()
                 dataset_tree_item.dataset.add_children_tree_items(dataset_tree_item)
                 self.endResetModel()
+
+    def add_datatable(self, datatable: Datatable):
+        for child_item in self.workspace_tree_item.child_items:
+            if isinstance(child_item, DatasetTreeItem):
+                if datatable.dataset == child_item.dataset:
+                    self.beginResetModel()
+                    child_item.add_child(DatatableTreeItem(datatable))
+                    self.endResetModel()
+                    return
 
     def remove_dataset(self, indexes: list[QModelIndex]):
         self.beginResetModel()

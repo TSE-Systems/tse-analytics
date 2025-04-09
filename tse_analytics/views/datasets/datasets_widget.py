@@ -330,9 +330,7 @@ class DatasetsWidget(QWidget):
                 dialog = DrinkFeedDialog(item.drinkfeed_data, self)
                 # TODO: check other cases!!
                 dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-                result = dialog.exec()
-                if result == QDialog.DialogCode.Accepted:
-                    pass
+                dialog.show()
             elif isinstance(item, ActimotTreeItem):
                 dialog = ActimotDialog(item.actimot_data, self)
                 # TODO: check other cases!!
