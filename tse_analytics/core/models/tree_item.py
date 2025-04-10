@@ -5,9 +5,8 @@ class TreeItem:
     column_names = ["Name"]
     column_flags = [Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsUserCheckable]
 
-    def __init__(self, name: str, meta: dict | None = None):
+    def __init__(self, name: str):
         self.name = name
-        self.meta: dict | None = meta
         self.parent_item = None
         self.child_items = []
         self._row = 0
@@ -22,7 +21,7 @@ class TreeItem:
         return None
 
     @property
-    def tooltip(self):
+    def tooltip(self) -> str | None:
         return None
 
     @property

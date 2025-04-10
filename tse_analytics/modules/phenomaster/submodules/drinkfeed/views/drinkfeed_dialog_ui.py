@@ -15,8 +15,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QDialog, QSizePolicy, QSplitter,
-    QTabWidget, QToolBox, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QSizePolicy, QSplitter, QTabWidget,
+    QToolBox, QVBoxLayout, QWidget)
 import resources_rc
 
 class Ui_DrinkFeedDialog(object):
@@ -24,7 +24,6 @@ class Ui_DrinkFeedDialog(object):
         if not DrinkFeedDialog.objectName():
             DrinkFeedDialog.setObjectName(u"DrinkFeedDialog")
         DrinkFeedDialog.resize(1020, 854)
-        DrinkFeedDialog.setSizeGripEnabled(True)
         self.verticalLayout = QVBoxLayout(DrinkFeedDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.splitter = QSplitter(DrinkFeedDialog)

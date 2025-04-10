@@ -9,7 +9,7 @@ from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMast
 from tse_analytics.modules.phenomaster.submodules.trafficage.data.trafficage_data import TraffiCageData
 
 
-def import_trafficage_data(
+def import_trafficage_csv_data(
     filename: str, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings
 ) -> TraffiCageData | None:
     path = Path(filename)

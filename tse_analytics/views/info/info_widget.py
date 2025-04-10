@@ -2,6 +2,8 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QAbstractItemView, QTreeView, QWidget
 
 from tse_analytics.core import messaging
+from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
+from tse_analytics.core.models.datatable_tree_item import DatatableTreeItem
 from tse_analytics.core.models.json_model import JsonModel
 
 
@@ -26,10 +28,10 @@ class InfoWidget(QTreeView, messaging.MessengerListener):
         self.resizeColumnToContents(1)
 
     def _on_selected_tree_node_changed(self, message: messaging.SelectedTreeItemChangedMessage):
-        if message.tree_item.meta is not None:
-            self.set_data(message.tree_item.meta)
-        # else:
-        #     self._model.clear()
+        if isinstance(message.tree_item, DatasetTreeItem):
+            self.set_data(message.tree_item.dataset.metadata)
+        elif isinstance(message.tree_item, DatatableTreeItem):
+            self.set_data(message.tree_item.datatable.dataset.metadata)
 
     def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
         if message.dataset is None:

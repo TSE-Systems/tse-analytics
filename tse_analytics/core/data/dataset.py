@@ -59,6 +59,9 @@ class Dataset:
     def add_datatable(self, datatable: Datatable) -> None:
         self.datatables[datatable.name] = datatable
 
+    def remove_datatable(self, datatable: Datatable) -> None:
+        self.datatables.pop(datatable.name)
+
     def rename(self, name: str) -> None:
         self.metadata["name"] = name
 
@@ -164,6 +167,7 @@ class Dataset:
         return deepcopy(self)
 
     def add_children_tree_items(self, dataset_tree_item: DatasetTreeItem) -> None:
+        dataset_tree_item.clear()
         for datatable in self.datatables.values():
             dataset_tree_item.add_child(DatatableTreeItem(datatable))
 

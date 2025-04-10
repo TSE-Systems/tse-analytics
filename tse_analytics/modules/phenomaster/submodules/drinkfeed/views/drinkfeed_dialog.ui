@@ -2,7 +2,7 @@
 <ui version="4.0">
  <author>Anton Rau</author>
  <class>DrinkFeedDialog</class>
- <widget class="QDialog" name="DrinkFeedDialog">
+ <widget class="QWidget" name="DrinkFeedDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -13,9 +13,6 @@
   </property>
   <property name="windowTitle">
    <string>DrinkFeed</string>
-  </property>
-  <property name="sizeGripEnabled">
-   <bool>true</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>

@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
 from tse_analytics.core import manager, messaging
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.models.datatable_tree_item import DatatableTreeItem
+from tse_analytics.core.models.tree_item import TreeItem
 from tse_analytics.core.utils import CSV_IMPORT_ENABLED
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
@@ -43,14 +44,14 @@ from tse_analytics.views.misc.toolbox_button import ToolboxButton
 
 
 class DatasetsWidget(QWidget):
-    def __init__(self, parent, add_widget_button: ToolboxButton):
+    def __init__(self, parent, toolbox_button: ToolboxButton):
         super().__init__(parent)
 
         self.layout = QVBoxLayout(self)
         self.layout.setSpacing(0)
         self.layout.setContentsMargins(0, 0, 0, 0)
 
-        self.add_widget_button = add_widget_button
+        self.toolbox_button = toolbox_button
 
         toolbar = QToolBar(
             "Datasets Toolbar",
@@ -81,10 +82,10 @@ class DatasetsWidget(QWidget):
         self.adjust_dataset_action.setEnabled(False)
         self.adjust_dataset_action.triggered.connect(self._adjust_dataset)
 
-        self.remove_dataset_action = toolbar.addAction(QIcon(":/icons/icons8-remove-16.png"), "Remove")
-        self.remove_dataset_action.setToolTip("Remove selected dataset")
-        self.remove_dataset_action.setEnabled(False)
-        self.remove_dataset_action.triggered.connect(self._remove_dataset)
+        self.remove_action = toolbar.addAction(QIcon(":/icons/icons8-remove-16.png"), "Remove")
+        self.remove_action.setToolTip("Remove selected item")
+        self.remove_action.setEnabled(False)
+        self.remove_action.triggered.connect(self._remove_item)
 
         self.clone_dataset_action = toolbar.addAction(QIcon(":/icons/icons8-copy-16.png"), "Clone")
         self.clone_dataset_action.setToolTip("Clone selected dataset")
@@ -135,13 +136,13 @@ class DatasetsWidget(QWidget):
     def _expand_all(self):
         self.treeView.expandAll()
 
-    def _get_selected_dataset(self) -> Dataset | None:
+    def _get_selected_tree_item(self) -> TreeItem | None:
         selected_indexes = self.treeView.selectedIndexes()
         if len(selected_indexes) > 0:
             selected_index = selected_indexes[0]
             if selected_index.isValid():
                 item = selected_index.model().getItem(selected_index)
-                return item.dataset
+                return item
         return None
 
     def _merge_datasets(self):
@@ -260,35 +261,51 @@ class DatasetsWidget(QWidget):
             item.name = dataset.name
             manager.set_selected_dataset(dataset)
 
-    def _remove_dataset(self):
-        if (
-            QMessageBox.question(self, "Remove Dataset", "Do you really want to remove dataset?")
-            == QMessageBox.StandardButton.Yes
-        ):
-            dataset = self._get_selected_dataset()
-            LayoutManager.delete_dataset_widgets(dataset)
-            selected_indexes = self.treeView.selectedIndexes()
-            manager.remove_dataset(selected_indexes)
-            self.add_widget_button.set_state(False)
-            if CSV_IMPORT_ENABLED:
-                self.import_button.setEnabled(False)
-            self.adjust_dataset_action.setEnabled(False)
-            self.remove_dataset_action.setEnabled(False)
-            self.clone_dataset_action.setEnabled(False)
-            self.merge_dataset_action.setEnabled(False)
+    def _remove_item(self):
+        tree_item = self._get_selected_tree_item()
+        if tree_item is not None:
+            if isinstance(tree_item, DatasetTreeItem):
+                if (
+                    QMessageBox.question(self, "Remove Dataset", "Do you really want to remove dataset?")
+                    == QMessageBox.StandardButton.Yes
+                ):
+                    LayoutManager.delete_dataset_widgets(tree_item.dataset)
+                    selected_indexes = self.treeView.selectedIndexes()
+                    manager.remove_dataset(selected_indexes, tree_item.dataset)
+                    self.toolbox_button.set_state(False)
+                    if CSV_IMPORT_ENABLED:
+                        self.import_button.setEnabled(False)
+                    self.adjust_dataset_action.setEnabled(False)
+                    self.remove_action.setEnabled(False)
+                    self.clone_dataset_action.setEnabled(False)
+                    self.merge_dataset_action.setEnabled(False)
+            elif isinstance(tree_item, DatatableTreeItem):
+                if (
+                    QMessageBox.question(self, "Remove Datatable", "Do you really want to remove datatable?")
+                    == QMessageBox.StandardButton.Yes
+                ):
+                    selected_indexes = self.treeView.selectedIndexes()
+                    manager.remove_datatable(selected_indexes, tree_item.datatable)
+                    self.toolbox_button.set_state(False)
+                    if CSV_IMPORT_ENABLED:
+                        self.import_button.setEnabled(False)
+                    self.adjust_dataset_action.setEnabled(False)
+                    self.remove_action.setEnabled(False)
+                    self.clone_dataset_action.setEnabled(False)
+                    self.merge_dataset_action.setEnabled(False)
 
     def _clone_dataset(self):
-        dataset = self._get_selected_dataset()
-        if dataset is not None:
+        tree_item = self._get_selected_tree_item()
+        if tree_item is not None and isinstance(tree_item, DatasetTreeItem):
             name, ok = QInputDialog.getText(
                 self,
                 "Enter new dataset name",
                 "Name",
                 QLineEdit.EchoMode.Normal,
-                f"Clone of {dataset.name}",
+                f"Clone of {tree_item.dataset.name}",
             )
             if ok:
-                manager.clone_dataset(dataset, name)
+                manager.clone_dataset(tree_item.dataset, name)
 
     def _treeview_current_changed(self, current: QModelIndex, previous: QModelIndex):
         if current.isValid():
@@ -301,19 +318,19 @@ class DatasetsWidget(QWidget):
             if is_dataset_item:
                 manager.set_selected_dataset(item.dataset)
                 manager.set_selected_datatable(None)
-                self.add_widget_button.set_dataset_menu(item.dataset)
+                self.toolbox_button.set_dataset_menu(item.dataset)
             elif is_datatable_item:
                 manager.set_selected_dataset(item.datatable.dataset)
                 manager.set_selected_datatable(item.datatable)
-                self.add_widget_button.set_dataset_menu(item.datatable.dataset)
+                self.toolbox_button.set_dataset_menu(item.datatable.dataset)
 
             if CSV_IMPORT_ENABLED:
                 self.import_button.setEnabled(is_dataset_item)
             self.adjust_dataset_action.setEnabled(is_dataset_item)
-            self.remove_dataset_action.setEnabled(is_dataset_item)
+            self.remove_action.setEnabled(is_dataset_item or is_datatable_item)
             self.clone_dataset_action.setEnabled(is_dataset_item)
 
-            self.add_widget_button.set_state(is_datatable_item)
+            self.toolbox_button.set_state(is_datatable_item)
 
     def _treeview_double_clicked(self, index: QModelIndex) -> None:
         if index.isValid():

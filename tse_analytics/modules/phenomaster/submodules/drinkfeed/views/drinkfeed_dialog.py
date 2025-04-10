@@ -3,8 +3,8 @@ from datetime import datetime
 
 import pandas as pd
 from PySide6.QtCore import QSettings, Qt, QSize
-from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
-from PySide6.QtWidgets import QDialog, QWidget, QToolBar
+from PySide6.QtGui import QCloseEvent, QIcon
+from PySide6.QtWidgets import QWidget, QToolBar
 from loguru import logger
 
 from tse_analytics.core import manager
@@ -41,12 +41,19 @@ from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_sett
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_table_view import DrinkFeedTableView
 
 
-class DrinkFeedDialog(QDialog):
-    def __init__(self, drinkfeed_data: DrinkFeedData, parent: QWidget | None = None):
+class DrinkFeedDialog(QWidget):
+    def __init__(self, drinkfeed_data: DrinkFeedData, parent: QWidget):
         super().__init__(parent)
 
         self.ui = Ui_DrinkFeedDialog()
         self.ui.setupUi(self)
+
+        self.setWindowFlags(
+            Qt.WindowType.Window
+            # | Qt.WindowType.CustomizeWindowHint
+            # | Qt.WindowType.WindowTitleHint
+            # | Qt.WindowType.WindowCloseButtonHint
+        )
 
         self.drinkfeed_data = drinkfeed_data
 
@@ -120,13 +127,14 @@ class DrinkFeedDialog(QDialog):
 
     def _update_tabs(self):
         settings = self.drinkfeed_settings_widget.get_drinkfeed_settings()
-        self.ui.tabWidget.setTabVisible(self.episodes_table_tab_index, settings.sequential_analysis_type)
-        self.ui.tabWidget.setTabVisible(self.episodes_offset_tab_index, settings.sequential_analysis_type)
-        self.ui.tabWidget.setTabVisible(self.episodes_imi_tab_index, settings.sequential_analysis_type)
-        self.ui.tabWidget.setTabVisible(self.episodes_intake_tab_index, settings.sequential_analysis_type)
-
-        self.ui.tabWidget.setTabVisible(self.intervals_table_tab_index, not settings.sequential_analysis_type)
-        self.ui.tabWidget.setTabVisible(self.intervals_plot_tab_index, not settings.sequential_analysis_type)
+        show_episodes = settings.sequential_analysis_type and self.episodes_df is not None
+        self.ui.tabWidget.setTabVisible(self.episodes_table_tab_index, show_episodes)
+        self.ui.tabWidget.setTabVisible(self.episodes_offset_tab_index, show_episodes)
+        self.ui.tabWidget.setTabVisible(self.episodes_imi_tab_index, show_episodes)
+        self.ui.tabWidget.setTabVisible(self.episodes_intake_tab_index, show_episodes)
+        show_intervals = not settings.sequential_analysis_type and self.intervals_df is not None
+        self.ui.tabWidget.setTabVisible(self.intervals_table_tab_index, show_intervals)
+        self.ui.tabWidget.setTabVisible(self.intervals_plot_tab_index, show_intervals)
 
     def _filter_boxes(self, selected_boxes: list[DrinkFeedAnimalItem]):
         self.selected_boxes = selected_boxes
@@ -270,14 +278,9 @@ class DrinkFeedDialog(QDialog):
             )
             manager.add_datatable(datatable)
 
-    def hideEvent(self, event: QCloseEvent) -> None:
+    def closeEvent(self, event: QCloseEvent) -> None:
         settings = QSettings()
         settings.setValue("DrinkFeedDialog/Geometry", self.saveGeometry())
 
         drinkfeed_settings = self.drinkfeed_settings_widget.get_drinkfeed_settings()
         settings.setValue("DrinkFeedSettings", drinkfeed_settings)
-
-    def keyPressEvent(self, event: QKeyEvent):
-        if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Escape:
-            return
-        super().keyPressEvent(event)

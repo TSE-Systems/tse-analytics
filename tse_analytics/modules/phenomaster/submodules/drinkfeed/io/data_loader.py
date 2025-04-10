@@ -8,28 +8,13 @@ from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMast
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_data import DrinkFeedData
 
 
-def import_drinkfeed_data(
+def import_drinkfeed_csv_data(
     filename: str, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings
 ) -> DrinkFeedData | None:
     path = Path(filename)
     if path.is_file() and path.suffix.lower() == ".csv":
         return _load_from_csv(path, dataset, csv_import_settings)
     return None
-
-
-def _add_cumulative_columns(df: pd.DataFrame, origin_name: str, variables: dict[str, Variable]):
-    cols = [col for col in df.columns if origin_name in col]
-    for col in cols:
-        cumulative_col_name = col + "C"
-        df.insert(
-            df.columns.get_loc(col) + 1,
-            cumulative_col_name,
-            df.groupby("Box", observed=False)[col].transform(pd.Series.cumsum),
-        )
-        var = Variable(
-            cumulative_col_name, variables[col].unit, f"{col} (cumulative)", "float64", Aggregation.MEAN, False
-        )
-        variables[var.name] = var
 
 
 def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings):
@@ -138,20 +123,6 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     new_df = new_df.astype({
         "Animal": "category",
     })
-
-    # Calculate cumulative values
-    if drink1_present:
-        _add_cumulative_columns(new_df, "Drink1", variables)
-    if feed1_present:
-        _add_cumulative_columns(new_df, "Feed1", variables)
-    if drink2_present:
-        _add_cumulative_columns(new_df, "Drink2", variables)
-    if feed2_present:
-        _add_cumulative_columns(new_df, "Feed2", variables)
-    if drink_present:
-        _add_cumulative_columns(new_df, "Drink", variables)
-    if feed_present:
-        _add_cumulative_columns(new_df, "Feed", variables)
 
     drinkfeed_data = DrinkFeedData(
         dataset,

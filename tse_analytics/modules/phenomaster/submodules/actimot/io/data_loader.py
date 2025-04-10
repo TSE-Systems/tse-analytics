@@ -9,7 +9,7 @@ from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_data impo
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 
 
-def import_actimot_data(
+def import_actimot_csv_data(
     filename: str, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings
 ) -> ActimotData | None:
     path = Path(filename)

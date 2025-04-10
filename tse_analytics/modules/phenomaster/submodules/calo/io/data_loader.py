@@ -9,7 +9,7 @@ from tse_analytics.modules.phenomaster.submodules.calo.data.calo_data import Cal
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 
 
-def import_calo_data(
+def import_calo_csv_data(
     filename: str, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings
 ) -> CaloData | None:
     path = Path(filename)
@@ -132,7 +132,7 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
 
     calo_data = CaloData(
         dataset,
-        f"Calo [sampling: {str(sampling_interval)}]",
+        f"calo_bin",
         str(path),
         variables,
         df,

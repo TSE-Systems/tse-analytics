@@ -295,7 +295,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def _import_result(self, dataset: Dataset) -> None:
         if dataset is not None:
-            manager.get_workspace_model().add_dataset(dataset)
+            manager.add_dataset(dataset)
 
     def _import_finished(self) -> None:
         self.toast.hide()
