@@ -5,6 +5,9 @@ from PySide6.QtWidgets import QToolButton, QMenu, QWidget
 from tse_analytics.core import manager
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
+from tse_analytics.modules.intellicage.views.analysis.place_preference.place_preference_widget import (
+    PlacePreferenceWidget,
+)
 from tse_analytics.modules.intellicage.views.analysis.transitions.transitions_widget import TransitionsWidget
 from tse_analytics.views.analysis.actogram.actogram_widget import ActogramWidget
 from tse_analytics.views.analysis.ancova.ancova_widget import AncovaWidget
@@ -113,6 +116,9 @@ class ToolboxButton(QToolButton):
         self.intellicage_menu.addAction(
             QIcon(":/icons/icons8-transition-both-directions-16.png"), "Transitions"
         ).triggered.connect(self._add_transitions_widget)
+        self.intellicage_menu.addAction(
+            QIcon(":/icons/icons8-corner-16.png"), "Place Preference"
+        ).triggered.connect(self._add_place_preference_widget)
 
         self.setMenu(self.menu)
 
@@ -309,6 +315,18 @@ class ToolboxButton(QToolButton):
             widget,
             f"{widget.title} - {datatable.dataset.name}",
             QIcon(":/icons/icons8-transition-both-directions-16.png"),
+        )
+
+    def _add_place_preference_widget(self) -> None:
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
+            return
+        widget = PlacePreferenceWidget(datatable)
+        LayoutManager.add_widget_to_central_area(
+            datatable.dataset,
+            widget,
+            f"{widget.title} - {datatable.dataset.name}",
+            QIcon(":/icons/icons8-corner-16.png"),
         )
 
     def _add_report_widget(self) -> None:

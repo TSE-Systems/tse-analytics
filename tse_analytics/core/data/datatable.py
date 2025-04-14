@@ -64,6 +64,17 @@ class Datatable:
             columns = columns + ["Run"]
         return columns
 
+    def get_group_by_columns(self) -> list[str]:
+        modes = ["Animal"]
+        if "Bin" in self.active_df.columns or self.dataset.binning_settings.apply:
+            modes.append("Total")
+            if self.get_merging_mode() is not None:
+                modes.append("Run")
+            if len(self.dataset.factors) > 0:
+                for factor in self.dataset.factors.keys():
+                    modes.append(factor)
+        return modes
+
     def delete_variables(self, variable_names: list[str]) -> None:
         for var_name in variable_names:
             self.variables.pop(var_name)
@@ -154,16 +165,19 @@ class Datatable:
 
         self.active_df = df
 
-    def preprocess_df(
+    def get_filtered_df(
         self,
-        df: pd.DataFrame,
-        variables: [str, Variable],
+        columns: list[str],
     ) -> pd.DataFrame:
+        # TODO: Should use the copy?
+        df = self.active_df[columns].copy()
+
         # Filter animals
         df = filter_animals(df, self.dataset.animals)
 
         # Outliers removal
         if self.dataset.outliers_settings.mode == OutliersMode.REMOVE:
+            variables = {k:v for k,v in self.variables.items() if k in columns}
             df = process_outliers(df, self.dataset.outliers_settings, variables)
 
         return df
@@ -215,20 +229,13 @@ class Datatable:
 
     def get_preprocessed_df(
         self,
-        variables: dict[str, Variable] | None = None,
+        variables: dict[str, Variable],
         split_mode=SplitMode.ANIMAL,
         selected_factor_name: str | None = None,
         dropna=False,
     ) -> pd.DataFrame:
-        if variables is not None:
-            factor_columns = list(self.dataset.factors)
-            variable_columns = list(variables)
-            result = self.active_df[self.get_default_columns() + factor_columns + variable_columns].copy()
-        else:
-            variables = self.variables
-            result = self.active_df.copy()
-
-        result = self.preprocess_df(result, variables)
+        columns = self.get_default_columns() + list(self.dataset.factors) + list(variables)
+        result = self.get_filtered_df(columns)
 
         # Binning
         settings = self.dataset.binning_settings

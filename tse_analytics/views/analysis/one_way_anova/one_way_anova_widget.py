@@ -110,11 +110,8 @@ class OneWayAnovaWidget(QWidget):
             dependent_variable_name: dependent_variable,
         }
 
-        factor_columns = list(self.datatable.dataset.factors)
-        variable_columns = list(variables)
-        df = self.datatable.active_df[self.datatable.get_default_columns() + factor_columns + variable_columns].copy()
-
-        df = self.datatable.preprocess_df(df, variables)
+        columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + list(variables)
+        df = self.datatable.get_filtered_df(columns)
 
         # Binning
         df = process_time_interval_binning(

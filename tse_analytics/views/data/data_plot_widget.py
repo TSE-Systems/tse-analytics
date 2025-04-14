@@ -143,14 +143,10 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         selected_factor_name: str,
         calculate_errors: str | None,
     ) -> pd.DataFrame:
-        factor_columns = list(self.datatable.dataset.factors)
-        result = self.datatable.active_df[
-            self.datatable.get_default_columns() + factor_columns + [variable.name]
-        ].copy()
+        columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + [variable.name]
+        result = self.datatable.get_filtered_df(columns)
 
         variables = {variable.name: variable}
-
-        result = self.datatable.preprocess_df(result, variables)
 
         # Binning
         settings = self.datatable.dataset.binning_settings
@@ -220,14 +216,10 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         self,
         variable: Variable,
     ) -> pd.DataFrame:
-        factor_columns = list(self.datatable.dataset.factors)
-        result = self.datatable.active_df[
-            self.datatable.get_default_columns() + factor_columns + [variable.name]
-        ].copy()
+        columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + [variable.name]
+        result = self.datatable.get_filtered_df(columns)
 
         variables = {variable.name: variable}
-
-        result = self.datatable.preprocess_df(result, variables)
 
         settings = self.datatable.dataset.binning_settings
         match settings.mode:

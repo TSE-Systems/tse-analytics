@@ -57,14 +57,6 @@ class SplitModeSelector(QWidget, messaging.MessengerListener):
             # self.split_mode_combobox.blockSignals(False)
             self.split_modes = split_modes
 
-    def update_split_modes(self, split_modes: list[str]) -> None:
-        if split_modes != self.split_modes:
-            # self.split_mode_combobox.blockSignals(True)
-            self.split_mode_combobox.clear()
-            self.split_mode_combobox.addItems(split_modes)
-            # self.split_mode_combobox.blockSignals(False)
-            self.split_modes = split_modes
-
     def _split_mode_changed(self, mode: str) -> None:
         self.factorSelector.setVisible(mode == "By factor")
         self._call_callback()

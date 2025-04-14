@@ -4,16 +4,12 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QWidgetAction, QLa
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
-from pyqttoast import ToastPreset
 
 from tse_analytics.core import messaging, color_manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.helper import normalize_nd_array
-from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.plotting.actogram_utils import dataframe_to_actogram, plot_enhanced_actogram
-from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_html_image, get_h_spacer_widget, time_to_float
-from tse_analytics.views.misc.split_mode_selector import SplitModeSelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
@@ -28,8 +24,6 @@ class ActogramWidget(QWidget):
         self.title = "Actogram"
 
         self.datatable = datatable
-        self.split_mode = SplitMode.ANIMAL
-        self.selected_factor_name = ""
 
         # Setup toolbar
         self.toolbar = QToolBar(
@@ -44,9 +38,6 @@ class ActogramWidget(QWidget):
         self.variableSelector = VariableSelector(self.toolbar)
         self.variableSelector.set_data(self.datatable.variables)
         self.toolbar.addWidget(self.variableSelector)
-
-        split_mode_selector = SplitModeSelector(self.toolbar, self.datatable, self._split_mode_callback)
-        self.toolbar.addWidget(split_mode_selector)
 
         self.toolbar.addWidget(QLabel("Bins per hour:"))
         self.bins_spin_box = QSpinBox(
@@ -71,10 +62,6 @@ class ActogramWidget(QWidget):
         self.toolbar.addAction("Add to Report").triggered.connect(self._add_report)
         self._add_plot_toolbar()
 
-    def _split_mode_callback(self, mode: SplitMode, factor_name: str | None):
-        self.split_mode = mode
-        self.selected_factor_name = factor_name
-
     def _add_plot_toolbar(self):
         self.plot_toolbar_action = QWidgetAction(self.toolbar)
         plot_toolbar = NavigationToolbar2QT(self.canvas, self)
@@ -83,41 +70,10 @@ class ActogramWidget(QWidget):
         self.toolbar.insertAction(self.spacer_action, self.plot_toolbar_action)
 
     def _update(self):
-        if self.split_mode == SplitMode.FACTOR and self.selected_factor_name == "":
-            make_toast(
-                self,
-                self.title,
-                "Please select a factor.",
-                duration=2000,
-                preset=ToastPreset.WARNING,
-                show_duration_bar=True,
-            ).show()
-            return
-
-        self._update_distribution_plot()
-
-    def _update_distribution_plot(self):
         variable = self.variableSelector.get_selected_variable()
 
-        match self.split_mode:
-            case SplitMode.ANIMAL:
-                x = "Animal"
-            case SplitMode.RUN:
-                x = "Run"
-            case SplitMode.FACTOR:
-                x = self.selected_factor_name
-            case _:
-                x = None
-
-        df = self.datatable.get_preprocessed_df(
-            variables={variable.name: variable},
-            split_mode=self.split_mode,
-            selected_factor_name=self.selected_factor_name,
-            dropna=False,
-        )
-
-        if self.split_mode != SplitMode.TOTAL and self.split_mode != SplitMode.RUN:
-            df[x] = df[x].cat.remove_unused_categories()
+        columns = ["Animal", "DateTime", variable.name]
+        df = self.datatable.get_filtered_df(columns)
 
         settings = self.datatable.dataset.binning_settings.time_cycles_settings
 

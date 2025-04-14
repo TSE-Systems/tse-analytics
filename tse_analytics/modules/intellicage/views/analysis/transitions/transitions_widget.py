@@ -15,7 +15,7 @@ from scipy.stats import chi2
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import SplitMode, Animal
+from tse_analytics.core.data.shared import Animal
 from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.animal_selector import AnimalSelector
@@ -33,8 +33,6 @@ class TransitionsWidget(QWidget):
         self.title = "Transitions"
 
         self.datatable = datatable
-        self.split_mode = SplitMode.ANIMAL
-        self.selected_factor_name = ""
 
         # Setup toolbar
         toolbar = QToolBar(
@@ -67,44 +65,32 @@ class TransitionsWidget(QWidget):
 
         self.pdf_widget: PdfWidget | None = None
 
-    def _split_mode_callback(self, mode: SplitMode, factor_name: str | None):
-        self.split_mode = mode
-        self.selected_factor_name = factor_name
-
     def _update(self):
         animal = self.animalSelector.get_selected_animal()
         columns = ["Timedelta", "Animal", "Corner"]
         df = self.datatable.active_df[columns]
 
-        alpha = 0.05
-
-        observed_matrix, expected_matrix, chi_square, ratio, significant = self._calculate_per_animal(
-            df, animal, alpha=alpha
-        )
-
         self.canvas.clear(False)
         axs = self.canvas.figure.subplots(2, 2)
 
-        self._plot_per_animal(
+        self._process_animal(
+            df,
+            animal,
+            0.05,
             axs,
             self.canvas.figure,
-            animal,
-            observed_matrix,
-            expected_matrix,
-            chi_square,
-            ratio,
-            significant,
-            alpha,
         )
 
         self.canvas.draw()
 
-    def _calculate_per_animal(
+    def _process_animal(
         self,
         df: pd.DataFrame,
         animal: Animal,
         alpha: float,
-    ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+        axs: Axes,
+        fig: Figure,
+    ) -> None:
         df = df[df["Animal"] == animal.id].copy()
         df.reset_index(drop=True, inplace=True)
 
@@ -144,7 +130,6 @@ class TransitionsWidget(QWidget):
 
         # Highlight significant transitions
         # Create a mask for significant transitions (p < alpha)
-        alpha = 0.05
         significant = p_values < alpha
 
         # Create a ratio matrix (observed/expected)
@@ -152,20 +137,6 @@ class TransitionsWidget(QWidget):
         # Replace inf values with NaN
         ratio = ratio.replace([np.inf, -np.inf], np.nan)
 
-        return observed_matrix, expected_matrix, chi_square, ratio, significant
-
-    def _plot_per_animal(
-        self,
-        axs: Axes,
-        fig: Figure,
-        animal: Animal,
-        observed_matrix: pd.DataFrame,
-        expected_matrix: pd.DataFrame,
-        chi_square: pd.DataFrame,
-        ratio: pd.DataFrame,
-        significant: pd.DataFrame,
-        alpha: float,
-    ) -> None:
         sns.heatmap(
             observed_matrix,
             annot=True,
@@ -177,7 +148,7 @@ class TransitionsWidget(QWidget):
         axs[0, 0].set(
             xlabel="To Corner",
             ylabel="From Corner",
-            title=f"Observed transitions",
+            title="Observed transitions",
         )
 
         sns.heatmap(
@@ -191,7 +162,7 @@ class TransitionsWidget(QWidget):
         axs[0, 1].set(
             xlabel="To Corner",
             ylabel="From Corner",
-            title=f"Expected transitions",
+            title="Expected transitions",
         )
 
         sns.heatmap(
@@ -235,29 +206,20 @@ class TransitionsWidget(QWidget):
     def _generate_pdf(self):
         columns = ["Timedelta", "Animal", "Corner"]
         df = self.datatable.active_df[columns]
-        alpha = 0.05
 
         pdf_bytes = BytesIO()
 
         with PdfPages(pdf_bytes) as pdf_pages:
             for animal in self.datatable.dataset.animals.values():
                 if animal.enabled:
-                    observed_matrix, expected_matrix, chi_square, ratio, significant = self._calculate_per_animal(
-                        df, animal, alpha=alpha
-                    )
-
                     fig, axs = plt.subplots(2, 2, figsize=(9, 8))
 
-                    self._plot_per_animal(
+                    self._process_animal(
+                        df,
+                        animal,
+                        0.05,
                         axs,
                         fig,
-                        animal,
-                        observed_matrix,
-                        expected_matrix,
-                        chi_square,
-                        ratio,
-                        significant,
-                        alpha,
                     )
 
                     # Add page to PDF file

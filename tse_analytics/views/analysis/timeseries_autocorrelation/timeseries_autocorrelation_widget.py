@@ -81,13 +81,9 @@ class TimeseriesAutocorrelationWidget(QWidget):
         self.canvas.clear(False)
 
         columns = ["DateTime", "Timedelta", "Animal", variable.name]
-        df = self.datatable.active_df[columns].copy()
+        df = self.datatable.get_filtered_df(columns)
         df = df[df["Animal"] == animal.id]
         df.reset_index(drop=True, inplace=True)
-
-        variables = {variable.name: variable}
-
-        df = self.datatable.preprocess_df(df, variables)
 
         index = pd.DatetimeIndex(df["DateTime"])
         df.set_index(index, inplace=True)

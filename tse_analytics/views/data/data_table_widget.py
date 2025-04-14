@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QToolButton,
     QMenu,
     QFileDialog,
+    QLabel,
 )
 from pyqttoast import ToastPreset
 
@@ -23,13 +24,13 @@ from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import p
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import process_time_phases_binning
 from tse_analytics.core.data.shared import SplitMode, Variable
-from tse_analytics.core.utils import get_widget_tool_button, get_h_spacer_widget
 from tse_analytics.core.models.pandas_model import PandasModel
 from tse_analytics.core.toaster import make_toast
+from tse_analytics.core.utils import get_widget_tool_button, get_h_spacer_widget
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.styles.css import style_descriptive_table
-from tse_analytics.views.misc.split_mode_selector import SplitModeSelector
+from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 
 
@@ -68,8 +69,10 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         )
         toolbar.addWidget(variables_button)
 
-        self.split_mode_selector = SplitModeSelector(toolbar, self.datatable, self._split_mode_callback)
-        toolbar.addWidget(self.split_mode_selector)
+        toolbar.addSeparator()
+        toolbar.addWidget(QLabel("Group by:"))
+        self.group_by_selector = GroupBySelector(toolbar, self.datatable, self._group_by_callback)
+        toolbar.addWidget(self.group_by_selector)
 
         toolbar.addSeparator()
         toolbar.addAction(QIcon(":/icons/icons8-resize-horizontal-16.png"), "Resize Columns").triggered.connect(
@@ -135,7 +138,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         messaging.subscribe(self, messaging.DataChangedMessage, self._on_data_changed)
         self.destroyed.connect(lambda: messaging.unsubscribe_all(self))
 
-    def _split_mode_callback(self, mode: SplitMode, factor_name: str | None):
+    def _group_by_callback(self, mode: SplitMode, factor_name: str | None):
         self.split_mode = mode
         self.selected_factor_name = factor_name
         self._set_data()
@@ -151,7 +154,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             return
         filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "", "CSV Files (*.csv)")
         if filename:
-            self.datatable.get_preprocessed_df().to_csv(filename, sep=";", index=False)
+            self.df.to_csv(filename, sep=";", index=False)
 
     def _export_excel(self):
         if self.datatable is None:
@@ -159,7 +162,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         filename, _ = QFileDialog.getSaveFileName(self, "Export to Excel", "", "Excel Files (*.xlsx)")
         if filename:
             with pd.ExcelWriter(filename) as writer:
-                self.datatable.get_preprocessed_df().to_excel(writer, sheet_name="Data")
+                self.df.to_excel(writer, sheet_name=self.datatable.name)
 
     def _on_binning_applied(self, message: messaging.BinningMessage):
         if message.dataset == self.datatable.dataset:
@@ -176,13 +179,8 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self,
         variables: dict[str, Variable],
     ) -> pd.DataFrame:
-        factor_columns = list(self.datatable.dataset.factors)
-        variable_columns = list(variables)
-        result = self.datatable.active_df[
-            self.datatable.get_default_columns() + factor_columns + variable_columns
-        ].copy()
-
-        result = self.datatable.preprocess_df(result, variables)
+        columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + list(variables)
+        result = self.datatable.get_filtered_df(columns)
 
         # Binning
         settings = self.datatable.dataset.binning_settings
