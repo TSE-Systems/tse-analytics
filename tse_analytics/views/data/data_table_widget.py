@@ -20,10 +20,7 @@ from pyqttoast import ToastPreset
 from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import process_time_cycles_binning
-from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
-from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import process_time_phases_binning
-from tse_analytics.core.data.shared import SplitMode, Variable
+from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.models.pandas_model import PandasModel
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_widget_tool_button, get_h_spacer_widget
@@ -71,8 +68,8 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
         toolbar.addSeparator()
         toolbar.addWidget(QLabel("Group by:"))
-        self.group_by_selector = GroupBySelector(toolbar, self.datatable, self._group_by_callback)
-        toolbar.addWidget(self.group_by_selector)
+        group_by_selector = GroupBySelector(toolbar, self.datatable, self._group_by_callback)
+        toolbar.addWidget(group_by_selector)
 
         toolbar.addSeparator()
         toolbar.addAction(QIcon(":/icons/icons8-resize-horizontal-16.png"), "Resize Columns").triggered.connect(
@@ -175,58 +172,6 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
     def _variables_selection_changed(self):
         self._set_data()
 
-    def _get_data_table_df(
-        self,
-        variables: dict[str, Variable],
-    ) -> pd.DataFrame:
-        columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + list(variables)
-        result = self.datatable.get_filtered_df(columns)
-
-        # Binning
-        settings = self.datatable.dataset.binning_settings
-        if settings.apply:
-            match settings.mode:
-                case BinningMode.INTERVALS:
-                    result = process_time_interval_binning(
-                        result,
-                        settings.time_intervals_settings,
-                        variables,
-                        origin=self.datatable.dataset.experiment_started,
-                    )
-                case BinningMode.CYCLES:
-                    result = process_time_cycles_binning(
-                        result,
-                        settings.time_cycles_settings,
-                        variables,
-                    )
-                case BinningMode.PHASES:
-                    result = process_time_phases_binning(
-                        result,
-                        settings.time_phases_settings,
-                        variables,
-                    )
-
-        # Splitting
-        if (self.split_mode == SplitMode.RUN or self.split_mode == SplitMode.TOTAL) and "Bin" not in result.columns:
-            make_toast(
-                self,
-                "Data Table",
-                "Please apply binning first.",
-                duration=2000,
-                preset=ToastPreset.WARNING,
-                show_duration_bar=False,
-            ).show()
-            return result
-
-        result = self.datatable.process_splitting(
-            result,
-            self.split_mode,
-            variables,
-            self.selected_factor_name,
-        )
-
-        return result
-
     def _set_data(self):
         if self.datatable is None:
             return
@@ -259,9 +204,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             ).show()
             return
 
-        self.df = self._get_data_table_df(
-            variables=selected_variables,
-        )
+        self.df = self.datatable.get_preprocessed_df(selected_variables, self.split_mode, self.selected_factor_name)
 
         if len(selected_variables) > 0:
             selected_variable_names = selected_variables.keys()

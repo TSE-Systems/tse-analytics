@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel
 from astropy.timeseries import LombScargle
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
@@ -13,7 +13,7 @@ from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.views.misc.MplCanvas import MplCanvas
-from tse_analytics.views.misc.split_mode_selector import SplitModeSelector
+from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
@@ -28,8 +28,6 @@ class PeriodogramWidget(QWidget):
         self.title = "Periodogram"
 
         self.datatable = datatable
-        self.split_mode = SplitMode.ANIMAL
-        self.selected_factor_name = ""
 
         # Setup toolbar
         toolbar = QToolBar(
@@ -45,8 +43,10 @@ class PeriodogramWidget(QWidget):
         self.variableSelector.set_data(self.datatable.variables)
         toolbar.addWidget(self.variableSelector)
 
-        split_mode_selector = SplitModeSelector(toolbar, self.datatable, self._split_mode_callback)
-        toolbar.addWidget(split_mode_selector)
+        toolbar.addSeparator()
+        toolbar.addWidget(QLabel("Group by:"))
+        self.group_by_selector = GroupBySelector(toolbar, self.datatable)
+        toolbar.addWidget(self.group_by_selector)
 
         # Insert toolbar to the widget
         self.layout.addWidget(toolbar)
@@ -61,12 +61,10 @@ class PeriodogramWidget(QWidget):
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add to Report").triggered.connect(self._add_report)
 
-    def _split_mode_callback(self, mode: SplitMode, factor_name: str | None):
-        self.split_mode = mode
-        self.selected_factor_name = factor_name
-
     def _update(self):
-        if self.split_mode == SplitMode.FACTOR and self.selected_factor_name == "":
+        split_mode, selected_factor_name = self.group_by_selector.get_group_by()
+
+        if split_mode == SplitMode.FACTOR and selected_factor_name == "":
             make_toast(
                 self,
                 self.title,
@@ -79,20 +77,20 @@ class PeriodogramWidget(QWidget):
 
         variable = self.variableSelector.get_selected_variable()
 
-        match self.split_mode:
+        match split_mode:
             case SplitMode.ANIMAL:
                 by = "Animal"
             case SplitMode.RUN:
                 by = "Run"
             case SplitMode.FACTOR:
-                by = self.selected_factor_name
+                by = selected_factor_name
             case _:
                 by = None
 
         df = self.datatable.get_preprocessed_df(
             variables={variable.name: variable},
-            split_mode=self.split_mode,
-            selected_factor_name=self.selected_factor_name,
+            split_mode=split_mode,
+            selected_factor_name=selected_factor_name,
             dropna=False,
         )
 

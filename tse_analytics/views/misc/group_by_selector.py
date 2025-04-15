@@ -6,7 +6,7 @@ from tse_analytics.core.data.shared import SplitMode
 
 
 class GroupBySelector(QComboBox, messaging.MessengerListener):
-    def __init__(self, parent: QWidget, datatable: Datatable, callback):
+    def __init__(self, parent: QWidget, datatable: Datatable, callback=None):
         super().__init__(parent)
 
         self.setMinimumWidth(80)
@@ -21,6 +21,24 @@ class GroupBySelector(QComboBox, messaging.MessengerListener):
         self._set_available_modes()
 
         self.currentTextChanged.connect(self._mode_changed)
+
+    def get_group_by(self) -> tuple[SplitMode, str]:
+        return self._get_split_mode(), self.currentText()
+
+    def get_group_by_columns(self) -> list[str] | None:
+        mode_text = self.currentText()
+        match mode_text:
+            case "Animal":
+                return None
+            case "Total":
+                return ["Bin"]
+            case "Run":
+                return ["Bin", "Run"]
+            case _:
+                if mode_text in self.datatable.dataset.factors.keys():
+                    return ["Bin", mode_text]
+                else:
+                    return None
 
     def showPopup(self):
         self._set_available_modes()
@@ -40,9 +58,9 @@ class GroupBySelector(QComboBox, messaging.MessengerListener):
             self.modes = modes
 
     def _mode_changed(self, mode: str) -> None:
-        split_mode = self._get_split_mode()
-        factor_name = self.currentText()
-        self.callback(split_mode, factor_name)
+        if self.callback is not None:
+            split_mode, selected_factor_name = self.get_group_by()
+            self.callback(split_mode, selected_factor_name)
 
     def _get_split_mode(self) -> SplitMode:
         mode_text = self.currentText()

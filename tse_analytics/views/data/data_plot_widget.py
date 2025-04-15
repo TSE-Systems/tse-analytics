@@ -1,6 +1,6 @@
 import pandas as pd
 from PySide6.QtCore import QSize, Qt
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QCheckBox, QComboBox
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QCheckBox, QComboBox, QLabel
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
 
@@ -11,11 +11,11 @@ from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import p
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import process_time_phases_binning
 from tse_analytics.core.data.shared import SplitMode, Variable
-from tse_analytics.core.utils import get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
+from tse_analytics.core.utils import get_h_spacer_widget
 from tse_analytics.views.data.bar_plot_view import BarPlotView
 from tse_analytics.views.data.timeline_plot_view import TimelinePlotView
-from tse_analytics.views.misc.split_mode_selector import SplitModeSelector
+from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
@@ -43,8 +43,10 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         self.variableSelector.currentTextChanged.connect(self._variable_changed)
         toolbar.addWidget(self.variableSelector)
 
-        self.split_mode_selector = SplitModeSelector(toolbar, self.datatable, self._split_mode_callback)
-        toolbar.addWidget(self.split_mode_selector)
+        toolbar.addSeparator()
+        toolbar.addWidget(QLabel("Group by:"))
+        self.group_by_selector = GroupBySelector(toolbar, self.datatable, self._group_by_callback)
+        toolbar.addWidget(self.group_by_selector)
 
         self.checkBoxScatterPlot = QCheckBox("Scatter Plot", toolbar)
         self.checkBoxScatterPlot.checkStateChanged.connect(self._set_scatter_plot)
@@ -85,7 +87,7 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         messaging.subscribe(self, messaging.DataChangedMessage, self._on_data_changed)
         self.destroyed.connect(lambda: messaging.unsubscribe_all(self))
 
-    def _split_mode_callback(self, mode: SplitMode, factor_name: str | None):
+    def _group_by_callback(self, mode: SplitMode, factor_name: str | None):
         self.split_mode = mode
         self.selected_factor_name = factor_name
         self._refresh_data()

@@ -2,7 +2,7 @@ import pandas as pd
 import seaborn as sns
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QAbstractItemView, QWidget, QVBoxLayout, QToolBar, QAbstractScrollArea
+from PySide6.QtWidgets import QAbstractItemView, QWidget, QVBoxLayout, QToolBar, QAbstractScrollArea, QLabel
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
 from sklearn.manifold import TSNE
@@ -11,12 +11,12 @@ from sklearn.preprocessing import StandardScaler
 from tse_analytics.core import messaging, color_manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode, Variable
-from tse_analytics.core.utils import get_html_image, get_widget_tool_button, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
+from tse_analytics.core.utils import get_html_image, get_widget_tool_button, get_h_spacer_widget
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.views.misc.MplCanvas import MplCanvas
-from tse_analytics.views.misc.split_mode_selector import SplitModeSelector
+from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 
 
@@ -58,8 +58,10 @@ class TsneWidget(QWidget):
         )
         toolbar.addWidget(variables_button)
 
-        split_mode_selector = SplitModeSelector(toolbar, self.datatable, self._split_mode_callback)
-        toolbar.addWidget(split_mode_selector)
+        toolbar.addSeparator()
+        toolbar.addWidget(QLabel("Group by:"))
+        group_by_selector = GroupBySelector(toolbar, self.datatable, self._group_by_callback)
+        toolbar.addWidget(group_by_selector)
 
         # Insert toolbar to the widget
         self.layout.addWidget(toolbar)
@@ -76,7 +78,7 @@ class TsneWidget(QWidget):
 
         self.toast = None
 
-    def _split_mode_callback(self, mode: SplitMode, factor_name: str | None):
+    def _group_by_callback(self, mode: SplitMode, factor_name: str | None):
         self.split_mode = mode
         self.selected_factor_name = factor_name
 

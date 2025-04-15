@@ -10,11 +10,11 @@ from pyqttoast import ToastPreset
 from tse_analytics.core import messaging, color_manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
+from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.views.misc.MplCanvas import MplCanvas
-from tse_analytics.views.misc.split_mode_selector import SplitModeSelector
+from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
@@ -52,8 +52,10 @@ class RegressionWidget(QWidget):
         self.responseVariableSelector.set_data(self.datatable.variables)
         self.toolbar.addWidget(self.responseVariableSelector)
 
-        split_mode_selector = SplitModeSelector(self.toolbar, self.datatable, self._split_mode_callback)
-        self.toolbar.addWidget(split_mode_selector)
+        self.toolbar.addSeparator()
+        self.toolbar.addWidget(QLabel("Group by:"))
+        group_by_selector = GroupBySelector(self.toolbar, self.datatable, self._group_by_callback)
+        self.toolbar.addWidget(group_by_selector)
 
         # Insert toolbar to the widget
         self.layout.addWidget(self.toolbar)
@@ -83,7 +85,7 @@ class RegressionWidget(QWidget):
         self.toolbar.addAction("Add to Report").triggered.connect(self._add_report)
         self._add_plot_toolbar()
 
-    def _split_mode_callback(self, mode: SplitMode, factor_name: str | None):
+    def _group_by_callback(self, mode: SplitMode, factor_name: str | None):
         self.split_mode = mode
         self.selected_factor_name = factor_name
 
