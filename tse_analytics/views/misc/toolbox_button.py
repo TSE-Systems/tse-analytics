@@ -116,9 +116,9 @@ class ToolboxButton(QToolButton):
         self.intellicage_menu.addAction(
             QIcon(":/icons/icons8-transition-both-directions-16.png"), "Transitions"
         ).triggered.connect(self._add_transitions_widget)
-        self.intellicage_menu.addAction(
-            QIcon(":/icons/icons8-corner-16.png"), "Place Preference"
-        ).triggered.connect(self._add_place_preference_widget)
+        self.intellicage_menu.addAction(QIcon(":/icons/icons8-corner-16.png"), "Place Preference").triggered.connect(
+            self._add_place_preference_widget
+        )
 
         self.setMenu(self.menu)
 

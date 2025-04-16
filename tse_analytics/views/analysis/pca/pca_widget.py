@@ -166,9 +166,7 @@ class PcaWidget(QWidget):
             case SplitMode.RUN:
                 palette = color_manager.colormap_name
             case SplitMode.FACTOR:
-                palette = color_manager.get_level_to_color_dict(
-                    self.datatable.dataset.factors[selected_factor_name]
-                )
+                palette = color_manager.get_level_to_color_dict(self.datatable.dataset.factors[selected_factor_name])
             case _:
                 palette = color_manager.colormap_name
 

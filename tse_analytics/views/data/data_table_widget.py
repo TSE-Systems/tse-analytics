@@ -68,8 +68,8 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
         toolbar.addSeparator()
         toolbar.addWidget(QLabel("Group by:"))
-        group_by_selector = GroupBySelector(toolbar, self.datatable, self._group_by_callback)
-        toolbar.addWidget(group_by_selector)
+        self.group_by_selector = GroupBySelector(toolbar, self.datatable, self._group_by_callback)
+        toolbar.addWidget(self.group_by_selector)
 
         toolbar.addSeparator()
         toolbar.addAction(QIcon(":/icons/icons8-resize-horizontal-16.png"), "Resize Columns").triggered.connect(
@@ -176,12 +176,13 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         if self.datatable is None:
             return
 
-        selected_variables = self.variables_table_widget.get_selected_variables_dict()
+        selected_variables_names = self.variables_table_widget.get_selected_variable_names()
+
         if (
             self.datatable.dataset.binning_settings.apply
             and self.datatable.dataset.binning_settings.mode != BinningMode.INTERVALS
             and self.split_mode != SplitMode.ANIMAL
-            and len(selected_variables) == 0
+            and len(selected_variables_names) == 0
         ):
             make_toast(
                 self,
@@ -193,23 +194,27 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             ).show()
             return
 
-        if self.split_mode == SplitMode.FACTOR and self.selected_factor_name == "":
-            make_toast(
-                self,
-                "Data Table",
-                "Please select factor.",
-                duration=2000,
-                preset=ToastPreset.WARNING,
-                show_duration_bar=False,
-            ).show()
-            return
+        # self.df = self.datatable.get_preprocessed_df(selected_variables, self.split_mode, self.selected_factor_name)
 
-        self.df = self.datatable.get_preprocessed_df(selected_variables, self.split_mode, self.selected_factor_name)
+        group_by = self.group_by_selector.get_group_by_columns()
 
-        if len(selected_variables) > 0:
-            selected_variable_names = selected_variables.keys()
+        if group_by is None:
+            all_columns = self.datatable.active_df.columns.tolist()
+            all_variable_columns = list(self.datatable.variables.keys())
+            columns = [var_column for var_column in all_columns if var_column not in all_variable_columns] + selected_variables_names
+        else:
+            columns = list(
+                dict.fromkeys(
+                    self.datatable.get_default_columns()
+                    + self.datatable.get_categorical_columns()
+                    + selected_variables_names
+                )
+            )
+        self.df = self.datatable.get_preprocessed_df2(columns, group_by)
+
+        if len(selected_variables_names) > 0:
             descriptive = (
-                np.round(self.df[selected_variable_names].describe(), 3)
+                np.round(self.df[selected_variables_names].describe(), 3)
                 .T[["count", "mean", "std", "min", "max"]]
                 .to_html()
             )

@@ -133,10 +133,18 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         else:
             if self.datatable.dataset.binning_settings.mode == BinningMode.INTERVALS:
                 self._display_timeline_plot(
-                    selected_variable, self.split_mode, self.selected_factor_name, display_errors
+                    selected_variable,
+                    self.split_mode,
+                    self.selected_factor_name,
+                    display_errors,
                 )
             else:
-                self._display_bar_plot(selected_variable, self.split_mode, self.selected_factor_name, display_errors)
+                self._display_bar_plot(
+                    selected_variable,
+                    self.split_mode,
+                    self.selected_factor_name,
+                    display_errors,
+                )
 
     def _get_timeline_plot_df(
         self,
@@ -148,29 +156,44 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + [variable.name]
         result = self.datatable.get_filtered_df(columns)
 
-        variables = {variable.name: variable}
-
         # Binning
         settings = self.datatable.dataset.binning_settings
         if settings.apply:
-            # if split_mode == SplitMode.ANIMAL:
-            #     calculate_errors = None
             result = process_time_interval_binning(
                 result,
                 settings.time_intervals_settings,
-                variables,
+                {variable.name: variable},
                 calculate_errors,
                 origin=self.datatable.dataset.experiment_started,
             )
 
         # Splitting
-        result = self.datatable.process_splitting(
-            result,
-            split_mode,
-            variables,
-            selected_factor_name,
-            calculate_errors,
-        )
+
+        # No processing!
+        if split_mode == SplitMode.ANIMAL:
+            return result
+
+        match split_mode:
+            case SplitMode.FACTOR:
+                by = ["Bin", selected_factor_name]
+            case SplitMode.RUN:
+                by = ["Bin", "Run"]
+            case _:  # Total split mode
+                by = ["Bin"]
+
+        # TODO: use means only when aggregating in split modes!
+        aggregation = {
+            "Timedelta": "first",
+            variable.name: "mean",
+        }
+
+        # Calculate error for timeline plot
+        if calculate_errors is not None:
+            result["Error"] = result[variable.name]
+            result["Error"] = calculate_errors
+
+        result = result.groupby(by, dropna=False, observed=False).aggregate(aggregation)
+        result.reset_index(inplace=True)
 
         return result
 
@@ -261,7 +284,11 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
             variable=selected_variable,
         )
 
-        selected_factor = self.datatable.dataset.factors[selected_factor_name] if selected_factor_name != "" else None
+        selected_factor = (
+            self.datatable.dataset.factors[selected_factor_name]
+            if split_mode == SplitMode.FACTOR and selected_factor_name != ""
+            else None
+        )
 
         self.barPlotView.refresh_data(
             self.datatable,

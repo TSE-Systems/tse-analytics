@@ -8,6 +8,7 @@ from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.helper import rename_animal_df, reassign_df_timedelta_and_bin
 from tse_analytics.core.data.outliers import OutliersMode
 from tse_analytics.core.data.pipeline.animal_filter_pipe_operator import filter_animals
+from tse_analytics.core.data.pipeline.group_by_pipe_operator import group_by_columns
 from tse_analytics.core.data.pipeline.outliers_pipe_operator import process_outliers
 from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import process_time_cycles_binning
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
@@ -62,6 +63,10 @@ class Datatable:
             columns = columns + ["Bin"]
         if "Run" in self.original_df.columns:
             columns = columns + ["Run"]
+        return columns
+
+    def get_categorical_columns(self) -> list[str]:
+        columns = self.active_df.select_dtypes(include=["category"]).columns.tolist()
         return columns
 
     def get_group_by_columns(self) -> list[str]:
@@ -170,62 +175,17 @@ class Datatable:
         columns: list[str],
     ) -> pd.DataFrame:
         # TODO: Should use the copy?
-        df = self.active_df[columns].copy()
+        df = self.active_df[columns]
 
         # Filter animals
-        df = filter_animals(df, self.dataset.animals)
+        df = filter_animals(df, self.dataset.animals).copy()
 
         # Outliers removal
         if self.dataset.outliers_settings.mode == OutliersMode.REMOVE:
-            variables = {k:v for k,v in self.variables.items() if k in columns}
+            variables = {k: v for k, v in self.variables.items() if k in columns}
             df = process_outliers(df, self.dataset.outliers_settings, variables)
 
         return df
-
-    def process_splitting(
-        self,
-        df: pd.DataFrame,
-        split_mode: SplitMode,
-        variables: dict[str, Variable],
-        selected_factor_name: str,
-        calculate_errors: str | None = None,
-    ) -> pd.DataFrame:
-        match split_mode:
-            case SplitMode.ANIMAL:
-                # No processing!
-                return df
-            case SplitMode.FACTOR:
-                by = ["Bin", selected_factor_name]
-            case SplitMode.RUN:
-                by = ["Bin", "Run"]
-            case _:  # Total split mode
-                by = ["Bin"]
-
-        agg = {}
-
-        if "DateTime" in df.columns:
-            agg["DateTime"] = "first"
-
-        if "Timedelta" in df.columns:
-            agg["Timedelta"] = "first"
-
-        # TODO: use means only when aggregating in split modes!
-        for variable in variables.values():
-            agg[variable.name] = "mean"
-
-        # Calculate error for timeline plot
-        if calculate_errors is not None:
-            var_name = list(variables.values())[0].name
-            df["Error"] = df[var_name]
-            agg["Error"] = calculate_errors
-
-        if len(agg) == 0:
-            return df
-
-        result = df.groupby(by, dropna=False, observed=False).aggregate(agg)
-        # result.sort_values(by, inplace=True)
-        result.reset_index(inplace=True)
-        return result
 
     def get_preprocessed_df(
         self,
@@ -237,7 +197,7 @@ class Datatable:
         columns = self.get_default_columns() + list(self.dataset.factors) + list(variables)
         result = self.get_filtered_df(columns)
 
-        # Binning
+        # Time binning
         settings = self.dataset.binning_settings
         if settings.apply:
             match settings.mode:
@@ -262,16 +222,67 @@ class Datatable:
                     )
 
         # Splitting
-        result = self.process_splitting(
-            result,
-            split_mode,
-            variables,
-            selected_factor_name,
-        )
+        if split_mode != SplitMode.ANIMAL:
+            match split_mode:
+                case SplitMode.FACTOR:
+                    group_by = ["Bin", selected_factor_name]
+                case SplitMode.RUN:
+                    group_by = ["Bin", "Run"]
+                case _:  # Total split mode
+                    group_by = ["Bin"]
+
+            result = group_by_columns(
+                result,
+                group_by,
+                variables,
+            )
 
         # TODO: should or should not?
         if dropna:
             result.dropna(inplace=True)
+
+        return result
+
+    def get_preprocessed_df2(
+        self,
+        columns: list[str],
+        group_by: list[str] | None,
+    ) -> pd.DataFrame:
+        result = self.get_filtered_df(columns)
+
+        variables = {key: self.variables[key] for key in columns if key in self.variables}
+
+        # Time binning
+        settings = self.dataset.binning_settings
+        if settings.apply:
+            match settings.mode:
+                case BinningMode.INTERVALS:
+                    result = process_time_interval_binning(
+                        result,
+                        settings.time_intervals_settings,
+                        variables,
+                        origin=self.dataset.experiment_started,
+                    )
+                case BinningMode.CYCLES:
+                    result = process_time_cycles_binning(
+                        result,
+                        settings.time_cycles_settings,
+                        variables,
+                    )
+                case BinningMode.PHASES:
+                    result = process_time_phases_binning(
+                        result,
+                        settings.time_phases_settings,
+                        variables,
+                    )
+
+        # Splitting
+        if group_by is not None:
+            result = group_by_columns(
+                result,
+                group_by,
+                variables,
+            )
 
         return result
 

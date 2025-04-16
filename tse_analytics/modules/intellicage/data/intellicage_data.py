@@ -3,8 +3,6 @@ import pandas as pd
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
 
-DATA_SUFFIX = "-IC"
-
 
 class IntelliCageData:
     def __init__(
@@ -92,18 +90,42 @@ class IntelliCageData:
                 Aggregation.SUM,
                 False,
             ),
-            "PlaceError": Variable(
-                "PlaceError",
-                "count",
-                "Place error",
-                "bool",
-                Aggregation.SUM,
-                False,
-            ),
             "VisitDuration": Variable(
                 "VisitDuration",
                 "sec",
                 "Visit duration",
+                "float64",
+                Aggregation.SUM,
+                False,
+            ),
+            "AntennaNumber": Variable(
+                "AntennaNumber",
+                "count",
+                "Antenna number",
+                "int",
+                Aggregation.SUM,
+                False,
+            ),
+            "AntennaDuration": Variable(
+                "AntennaDuration",
+                "sec",
+                "Antenna duration",
+                "float64",
+                Aggregation.SUM,
+                False,
+            ),
+            "PresenceNumber": Variable(
+                "PresenceNumber",
+                "count",
+                "Presence number",
+                "int",
+                Aggregation.SUM,
+                False,
+            ),
+            "PresenceDuration": Variable(
+                "PresenceDuration",
+                "sec",
+                "Presence duration",
                 "float64",
                 Aggregation.SUM,
                 False,
@@ -124,9 +146,15 @@ class IntelliCageData:
                 Aggregation.MEAN,
                 False,
             ),
+            "PlaceError": Variable(
+                "PlaceError",
+                "count",
+                "Place error",
+                "bool",
+                Aggregation.SUM,
+                False,
+            ),
         }
-        # Sort variables by name
-        variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))
 
         df.sort_values(["DateTime"], inplace=True)
         df.reset_index(drop=True, inplace=True)
@@ -176,10 +204,10 @@ class IntelliCageData:
         # Add duration column
         df["NosepokeDuration"] = (df["End"] - df["Start"]).dt.total_seconds()
 
-        # Add nosepoke number column for further binning (each nosepoke as 1)
+        # Add a nosepoke number column for further binning (each nosepoke as 1)
         df["NosepokeNumber"] = 1
 
-        # Drop non-necessary columns
+        # Drop the non-necessary columns
         df.drop(
             columns=[
                 "End",
@@ -414,6 +442,9 @@ class IntelliCageData:
                 Aggregation.SUM,
                 False,
             )
+
+        # Sort visits variables by name
+        visits_datatable.variables = dict(sorted(visits_datatable.variables.items(), key=lambda x: x[0].lower()))
 
         # Convert types
         df = df.astype({

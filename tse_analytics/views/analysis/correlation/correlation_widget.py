@@ -116,19 +116,17 @@ class CorrelationWidget(QWidget):
                 palette = color_manager.colormap_name
             case SplitMode.FACTOR:
                 by = selected_factor_name
-                palette = color_manager.get_level_to_color_dict(
-                    self.datatable.dataset.factors[selected_factor_name]
-                )
+                palette = color_manager.get_level_to_color_dict(self.datatable.dataset.factors[selected_factor_name])
             case _:
                 by = None
                 palette = color_manager.colormap_name
 
         variables = {x_var.name: x_var} if x_var.name == y_var.name else {x_var.name: x_var, y_var.name: y_var}
         df = self.datatable.get_preprocessed_df(
-            variables=variables,
-            split_mode=split_mode,
-            selected_factor_name=selected_factor_name,
-            dropna=False,
+            variables,
+            split_mode,
+            selected_factor_name,
+            False,
         )
 
         if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:

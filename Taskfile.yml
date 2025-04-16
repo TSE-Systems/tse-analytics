@@ -21,9 +21,6 @@ tasks:
       - pyside6-uic tse_analytics/views/selection/variables/add_variable_dialog.ui -o tse_analytics/views/selection/variables/add_variable_dialog_ui.py
       - pyside6-uic tse_analytics/views/datasets/datasets_merge_dialog.ui -o tse_analytics/views/datasets/datasets_merge_dialog_ui.py
       - pyside6-uic tse_analytics/views/datasets/adjust_dataset_dialog.ui -o tse_analytics/views/datasets/adjust_dataset_dialog_ui.py
-      - pyside6-uic tse_analytics/views/settings/time_intervals_settings_widget.ui -o tse_analytics/views/settings/time_intervals_settings_widget_ui.py
-      - pyside6-uic tse_analytics/views/settings/time_cycles_settings_widget.ui -o tse_analytics/views/settings/time_cycles_settings_widget_ui.py
-      - pyside6-uic tse_analytics/views/settings/time_phases_settings_widget.ui -o tse_analytics/views/settings/time_phases_settings_widget_ui.py
       - pyside6-uic tse_analytics/views/settings/binning_settings_widget.ui -o tse_analytics/views/settings/binning_settings_widget_ui.py
       - pyside6-uic tse_analytics/views/analysis/n_way_anova/n_way_anova_settings_widget.ui -o tse_analytics/views/analysis/n_way_anova/n_way_anova_settings_widget_ui.py
       - pyside6-uic tse_analytics/views/analysis/rm_anova/rm_anova_settings_widget.ui -o tse_analytics/views/analysis/rm_anova/rm_anova_settings_widget_ui.py

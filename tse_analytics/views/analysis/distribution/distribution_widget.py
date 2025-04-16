@@ -88,18 +88,16 @@ class DistributionWidget(QWidget):
                 palette = color_manager.colormap_name
             case SplitMode.FACTOR:
                 x = selected_factor_name
-                palette = color_manager.get_level_to_color_dict(
-                    self.datatable.dataset.factors[selected_factor_name]
-                )
+                palette = color_manager.get_level_to_color_dict(self.datatable.dataset.factors[selected_factor_name])
             case _:
                 x = None
                 palette = color_manager.colormap_name
 
         df = self.datatable.get_preprocessed_df(
-            variables={variable.name: variable},
-            split_mode=split_mode,
-            selected_factor_name=selected_factor_name,
-            dropna=False,
+            {variable.name: variable},
+            split_mode,
+            selected_factor_name,
+            False,
         )
 
         if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:

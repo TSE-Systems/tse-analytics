@@ -1,8 +1,15 @@
 import seaborn as sns
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QAbstractItemView, QWidget, QVBoxLayout, QToolBar, QAbstractScrollArea, QWidgetAction, \
-    QLabel
+from PySide6.QtWidgets import (
+    QAbstractItemView,
+    QWidget,
+    QVBoxLayout,
+    QToolBar,
+    QAbstractScrollArea,
+    QWidgetAction,
+    QLabel,
+)
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from pyqttoast import ToastPreset
@@ -122,9 +129,7 @@ class MatrixPlotWidget(QWidget):
                 palette = color_manager.colormap_name
             case SplitMode.FACTOR:
                 hue = selected_factor_name
-                palette = color_manager.get_level_to_color_dict(
-                    self.datatable.dataset.factors[selected_factor_name]
-                )
+                palette = color_manager.get_level_to_color_dict(self.datatable.dataset.factors[selected_factor_name])
             case _:  # Total
                 hue = None
                 palette = color_manager.colormap_name
