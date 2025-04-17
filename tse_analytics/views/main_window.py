@@ -20,19 +20,19 @@ from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.intellicage.io.dataset_loader import import_intellicage_dataset
 from tse_analytics.modules.intellimaze.io.dataset_loader import import_im_dataset
 from tse_analytics.modules.phenomaster.io.tse_dataset_loader import load_tse_dataset
-from tse_analytics.views.about.about_dialog import AboutDialog
-from tse_analytics.views.datasets.datasets_widget import DatasetsWidget
 from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvDialog
 from tse_analytics.modules.phenomaster.views.import_tse_dialog import ImportTseDialog
-from tse_analytics.views.info.info_widget import InfoWidget
-from tse_analytics.views.logs.log_widget import LogWidget
+from tse_analytics.views.general.about.about_dialog import AboutDialog
+from tse_analytics.views.general.animals.animals_widget import AnimalsWidget
+from tse_analytics.views.general.datasets.datasets_widget import DatasetsWidget
+from tse_analytics.views.general.factors.factors_widget import FactorsWidget
+from tse_analytics.views.general.info.info_widget import InfoWidget
+from tse_analytics.views.general.logs.log_widget import LogWidget
+from tse_analytics.views.general.settings.binning_settings_widget import BinningSettingsWidget
+from tse_analytics.views.general.settings.settings_dialog import SettingsDialog
 from tse_analytics.views.main_window_ui import Ui_MainWindow
 from tse_analytics.views.misc.toolbox_button import ToolboxButton
-from tse_analytics.views.selection.animals.animals_widget import AnimalsWidget
-from tse_analytics.views.selection.factors.factors_widget import FactorsWidget
-from tse_analytics.views.selection.variables.variables_widget import VariablesWidget
-from tse_analytics.views.settings.binning_settings_widget import BinningSettingsWidget
-from tse_analytics.views.settings.settings_dialog import SettingsDialog
+from tse_analytics.views.general.variables.variables_widget import VariablesWidget
 
 MAX_RECENT_FILES = 10
 

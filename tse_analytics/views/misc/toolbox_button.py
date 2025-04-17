@@ -9,30 +9,30 @@ from tse_analytics.modules.intellicage.views.analysis.place_preference.place_pre
     PlacePreferenceWidget,
 )
 from tse_analytics.modules.intellicage.views.analysis.transitions.transitions_widget import TransitionsWidget
-from tse_analytics.views.analysis.actogram.actogram_widget import ActogramWidget
-from tse_analytics.views.analysis.ancova.ancova_widget import AncovaWidget
-from tse_analytics.views.analysis.correlation.correlation_widget import CorrelationWidget
-from tse_analytics.views.analysis.distribution.distribution_widget import DistributionWidget
-from tse_analytics.views.analysis.histogram.histogram_widget import HistogramWidget
-from tse_analytics.views.analysis.matrixplot.matrixplot_widget import MatrixPlotWidget
-from tse_analytics.views.analysis.mixed_anova.mixed_anova_widget import MixedAnovaWidget
-from tse_analytics.views.analysis.n_way_anova.n_way_anova_widget import NWayAnovaWidget
-from tse_analytics.views.analysis.normality.normality_widget import NormalityWidget
-from tse_analytics.views.analysis.one_way_anova.one_way_anova_widget import OneWayAnovaWidget
-from tse_analytics.views.analysis.pca.pca_widget import PcaWidget
-from tse_analytics.views.analysis.periodogram.periodogram_widget import PeriodogramWidget
-from tse_analytics.views.analysis.regression.regression_widget import RegressionWidget
-from tse_analytics.views.analysis.rm_anova.rm_anova_widget import RMAnovaWidget
-from tse_analytics.views.analysis.timeseries_autocorrelation.timeseries_autocorrelation_widget import (
+from tse_analytics.views.toolbox.actogram.actogram_widget import ActogramWidget
+from tse_analytics.views.toolbox.ancova.ancova_widget import AncovaWidget
+from tse_analytics.views.toolbox.correlation.correlation_widget import CorrelationWidget
+from tse_analytics.views.toolbox.distribution.distribution_widget import DistributionWidget
+from tse_analytics.views.toolbox.histogram.histogram_widget import HistogramWidget
+from tse_analytics.views.toolbox.matrixplot.matrixplot_widget import MatrixPlotWidget
+from tse_analytics.views.toolbox.mixed_anova.mixed_anova_widget import MixedAnovaWidget
+from tse_analytics.views.toolbox.n_way_anova.n_way_anova_widget import NWayAnovaWidget
+from tse_analytics.views.toolbox.normality.normality_widget import NormalityWidget
+from tse_analytics.views.toolbox.one_way_anova.one_way_anova_widget import OneWayAnovaWidget
+from tse_analytics.views.toolbox.pca.pca_widget import PcaWidget
+from tse_analytics.views.toolbox.periodogram.periodogram_widget import PeriodogramWidget
+from tse_analytics.views.toolbox.regression.regression_widget import RegressionWidget
+from tse_analytics.views.toolbox.reports.reports_widget import ReportsWidget
+from tse_analytics.views.toolbox.rm_anova.rm_anova_widget import RMAnovaWidget
+from tse_analytics.views.toolbox.timeseries_autocorrelation.timeseries_autocorrelation_widget import (
     TimeseriesAutocorrelationWidget,
 )
-from tse_analytics.views.analysis.timeseries_decomposition.timeseries_decomposition_widget import (
+from tse_analytics.views.toolbox.timeseries_decomposition.timeseries_decomposition_widget import (
     TimeseriesDecompositionWidget,
 )
-from tse_analytics.views.analysis.tsne.tsne_widget import TsneWidget
-from tse_analytics.views.data.data_plot_widget import DataPlotWidget
-from tse_analytics.views.data.data_table_widget import DataTableWidget
-from tse_analytics.views.reports.reports_widget import ReportsWidget
+from tse_analytics.views.toolbox.tsne.tsne_widget import TsneWidget
+from tse_analytics.views.toolbox.data_plot.data_plot_widget import DataPlotWidget
+from tse_analytics.views.toolbox.data_table.data_table_widget import DataTableWidget
 
 
 class ToolboxButton(QToolButton):

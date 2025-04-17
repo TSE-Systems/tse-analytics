@@ -9,8 +9,8 @@ from scipy.stats import chisquare, kruskal
 from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
+from tse_analytics.views.general.pdf.pdf_widget import PdfWidget
 from tse_analytics.views.misc.MplCanvas import MplCanvas
-from tse_analytics.views.pdf.pdf_widget import PdfWidget
 
 
 class PlacePreferenceWidget(QWidget):
@@ -44,7 +44,7 @@ class PlacePreferenceWidget(QWidget):
         self.export_excel_action.triggered.connect(self._export_to_excel)
         self.export_excel_action.setEnabled(False)
 
-        # Insert toolbar to the widget
+        # Insert the toolbar to the widget
         self.layout.addWidget(toolbar)
 
         self.canvas = MplCanvas(self)
