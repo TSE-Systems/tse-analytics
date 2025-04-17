@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from tse_analytics.core.data.datatable import Datatable
@@ -45,7 +46,7 @@ class IntelliCageData:
         # Add duration column
         df["VisitDuration"] = (df["End"] - df["Start"]).dt.total_seconds()
 
-        # Add visit number column for further binning (each visit as 1)
+        # Add a visit number column for further binning (each visit as 1)
         df["VisitNumber"] = 1
 
         # Rename columns
@@ -56,7 +57,7 @@ class IntelliCageData:
             inplace=True,
         )
 
-        # Drop non-necessary columns
+        # Drop the non-necessary columns
         df.drop(
             columns=[
                 "End",
@@ -449,9 +450,11 @@ class IntelliCageData:
         # Convert types
         df = df.astype({
             # "Animal": "category",
-            "SideError": "int",
-            "TimeError": "int",
-            "ConditionError": "int",
+            "SideError": np.int64,
+            "TimeError": np.int64,
+            "DoorState": np.int64,
+            "AirState": np.int64,
+            "ConditionError": np.int64,
         })
 
         datatable = Datatable(
