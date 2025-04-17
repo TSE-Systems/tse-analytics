@@ -1,9 +1,23 @@
 import pandas as pd
 
-from tse_analytics.core.data.shared import Variable
+from tse_analytics.core.data.shared import Variable, SplitMode
 
 
-def group_by_columns(df: pd.DataFrame, group_by: list[str], variables: dict[str, Variable]) -> pd.DataFrame:
+def group_by_columns(
+    df: pd.DataFrame, variables: dict[str, Variable], split_mode: SplitMode, selected_factor_name: str
+) -> pd.DataFrame:
+    if split_mode == SplitMode.ANIMAL:
+        # No grouping needed
+        return df
+
+    match split_mode:
+        case SplitMode.FACTOR:
+            group_by = ["Bin", selected_factor_name]
+        case SplitMode.RUN:
+            group_by = ["Bin", "Run"]
+        case _:  # Total split mode
+            group_by = ["Bin"]
+
     aggregation = {}
 
     if "DateTime" in df.columns:

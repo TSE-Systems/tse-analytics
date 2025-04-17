@@ -23,7 +23,8 @@ def process_time_cycles_binning(
     for column in df.columns:
         if column not in default_columns:
             if df.dtypes[column].name != "category":
-                agg[column] = variables[column].aggregation
+                if column in variables:
+                    agg[column] = variables[column].aggregation
             else:
                 agg[column] = "first"
 

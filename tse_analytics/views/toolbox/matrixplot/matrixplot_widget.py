@@ -142,7 +142,7 @@ class MatrixPlotWidget(QWidget):
         # )
 
         pair_grid = sns.pairplot(
-            df[[hue] + list(selected_variables)],
+            df[[hue] + list(selected_variables)] if hue is not None else df[list(selected_variables)],
             hue=hue,
             palette=palette,
             markers=".",

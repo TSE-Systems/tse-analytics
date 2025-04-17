@@ -23,22 +23,11 @@ class GroupBySelector(QComboBox, messaging.MessengerListener):
         self.currentTextChanged.connect(self._mode_changed)
 
     def get_group_by(self) -> tuple[SplitMode, str]:
-        return self._get_split_mode(), self.currentText()
-
-    def get_group_by_columns(self) -> list[str] | None:
-        mode_text = self.currentText()
-        match mode_text:
-            case "Animal":
-                return None
-            case "Total":
-                return ["Bin"]
-            case "Run":
-                return ["Bin", "Run"]
-            case _:
-                if mode_text in self.datatable.dataset.factors.keys():
-                    return ["Bin", mode_text]
-                else:
-                    return None
+        split_mode = self._get_split_mode()
+        if split_mode == SplitMode.FACTOR:
+            return split_mode, self.currentText()
+        else:
+            return split_mode, ""
 
     def showPopup(self):
         self._set_available_modes()

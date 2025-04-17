@@ -40,7 +40,7 @@ from tse_analytics.modules.phenomaster.submodules.trafficage.views.trafficage_di
 from tse_analytics.views.general.datasets.adjust_dataset_dialog import AdjustDatasetDialog
 from tse_analytics.views.general.datasets.datasets_merge_dialog import DatasetsMergeDialog
 from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvDialog
-from tse_analytics.views.misc.toolbox_button import ToolboxButton
+from tse_analytics.views.toolbox.toolbox_button import ToolboxButton
 
 
 class DatasetsWidget(QWidget):

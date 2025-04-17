@@ -5,10 +5,10 @@ from PySide6.QtWidgets import QToolButton, QMenu, QWidget
 from tse_analytics.core import manager
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
-from tse_analytics.modules.intellicage.views.analysis.place_preference.place_preference_widget import (
+from tse_analytics.modules.intellicage.views.toolbox.place_preference.place_preference_widget import (
     PlacePreferenceWidget,
 )
-from tse_analytics.modules.intellicage.views.analysis.transitions.transitions_widget import TransitionsWidget
+from tse_analytics.modules.intellicage.views.toolbox.transitions.transitions_widget import TransitionsWidget
 from tse_analytics.views.toolbox.actogram.actogram_widget import ActogramWidget
 from tse_analytics.views.toolbox.ancova.ancova_widget import AncovaWidget
 from tse_analytics.views.toolbox.correlation.correlation_widget import CorrelationWidget

@@ -31,7 +31,7 @@ from tse_analytics.views.general.logs.log_widget import LogWidget
 from tse_analytics.views.general.settings.binning_settings_widget import BinningSettingsWidget
 from tse_analytics.views.general.settings.settings_dialog import SettingsDialog
 from tse_analytics.views.main_window_ui import Ui_MainWindow
-from tse_analytics.views.misc.toolbox_button import ToolboxButton
+from tse_analytics.views.toolbox.toolbox_button import ToolboxButton
 from tse_analytics.views.general.variables.variables_widget import VariablesWidget
 
 MAX_RECENT_FILES = 10

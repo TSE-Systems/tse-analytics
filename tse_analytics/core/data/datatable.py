@@ -4,15 +4,12 @@ from uuid import uuid4
 
 import pandas as pd
 
-from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.helper import rename_animal_df, reassign_df_timedelta_and_bin
 from tse_analytics.core.data.outliers import OutliersMode
 from tse_analytics.core.data.pipeline.animal_filter_pipe_operator import filter_animals
 from tse_analytics.core.data.pipeline.group_by_pipe_operator import group_by_columns
 from tse_analytics.core.data.pipeline.outliers_pipe_operator import process_outliers
-from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import process_time_cycles_binning
-from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
-from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import process_time_phases_binning
+from tse_analytics.core.data.pipeline.time_binning_pipe_operator import process_time_binning
 from tse_analytics.core.data.shared import Animal, Factor, SplitMode, Variable
 
 
@@ -198,44 +195,20 @@ class Datatable:
         result = self.get_filtered_df(columns)
 
         # Time binning
-        settings = self.dataset.binning_settings
-        if settings.apply:
-            match settings.mode:
-                case BinningMode.INTERVALS:
-                    result = process_time_interval_binning(
-                        result,
-                        settings.time_intervals_settings,
-                        variables,
-                        origin=self.dataset.experiment_started,
-                    )
-                case BinningMode.CYCLES:
-                    result = process_time_cycles_binning(
-                        result,
-                        settings.time_cycles_settings,
-                        variables,
-                    )
-                case BinningMode.PHASES:
-                    result = process_time_phases_binning(
-                        result,
-                        settings.time_phases_settings,
-                        variables,
-                    )
+        result = process_time_binning(
+            result,
+            self.dataset.binning_settings,
+            variables,
+            self.dataset.experiment_started,
+        )
 
-        # Splitting
-        if split_mode != SplitMode.ANIMAL:
-            match split_mode:
-                case SplitMode.FACTOR:
-                    group_by = ["Bin", selected_factor_name]
-                case SplitMode.RUN:
-                    group_by = ["Bin", "Run"]
-                case _:  # Total split mode
-                    group_by = ["Bin"]
-
-            result = group_by_columns(
-                result,
-                group_by,
-                variables,
-            )
+        # Group by columns
+        result = group_by_columns(
+            result,
+            variables,
+            split_mode,
+            selected_factor_name,
+        )
 
         # TODO: should or should not?
         if dropna:
@@ -243,46 +216,36 @@ class Datatable:
 
         return result
 
-    def get_preprocessed_df2(
+    def get_preprocessed_df_columns(
         self,
         columns: list[str],
-        group_by: list[str] | None,
+        split_mode=SplitMode.ANIMAL,
+        selected_factor_name: str | None = None,
+        dropna=False,
     ) -> pd.DataFrame:
         result = self.get_filtered_df(columns)
 
         variables = {key: self.variables[key] for key in columns if key in self.variables}
 
         # Time binning
-        settings = self.dataset.binning_settings
-        if settings.apply:
-            match settings.mode:
-                case BinningMode.INTERVALS:
-                    result = process_time_interval_binning(
-                        result,
-                        settings.time_intervals_settings,
-                        variables,
-                        origin=self.dataset.experiment_started,
-                    )
-                case BinningMode.CYCLES:
-                    result = process_time_cycles_binning(
-                        result,
-                        settings.time_cycles_settings,
-                        variables,
-                    )
-                case BinningMode.PHASES:
-                    result = process_time_phases_binning(
-                        result,
-                        settings.time_phases_settings,
-                        variables,
-                    )
+        result = process_time_binning(
+            result,
+            self.dataset.binning_settings,
+            variables,
+            self.dataset.experiment_started,
+        )
 
-        # Splitting
-        if group_by is not None:
-            result = group_by_columns(
-                result,
-                group_by,
-                variables,
-            )
+        # Group by columns
+        result = group_by_columns(
+            result,
+            variables,
+            split_mode,
+            selected_factor_name,
+        )
+
+        # TODO: should or should not?
+        if dropna:
+            result.dropna(inplace=True)
 
         return result
 

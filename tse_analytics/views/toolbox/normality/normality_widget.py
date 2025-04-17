@@ -3,12 +3,10 @@ from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QToolBar, QVBoxLayout, QLabel
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
-from pyqttoast import ToastPreset
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
@@ -46,7 +44,7 @@ class NormalityWidget(QWidget):
         self.group_by_selector = GroupBySelector(toolbar, self.datatable)
         toolbar.addWidget(self.group_by_selector)
 
-        # Insert toolbar to the widget
+        # Insert the toolbar to the widget
         self.layout.addWidget(toolbar)
 
         self.canvas = MplCanvas(self)
@@ -61,18 +59,6 @@ class NormalityWidget(QWidget):
 
     def _update(self):
         split_mode, selected_factor_name = self.group_by_selector.get_group_by()
-
-        if split_mode == SplitMode.FACTOR and selected_factor_name == "":
-            make_toast(
-                self,
-                self.title,
-                "Please select a factor.",
-                duration=2000,
-                preset=ToastPreset.WARNING,
-                show_duration_bar=True,
-            ).show()
-            return
-
         variable = self.variableSelector.get_selected_variable()
 
         match split_mode:

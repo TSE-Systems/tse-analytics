@@ -41,8 +41,6 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
         self.datatable = datatable
         self.df: pd.DataFrame | None = None
-        self.split_mode = SplitMode.ANIMAL
-        self.selected_factor_name = ""
 
         # Setup toolbar
         toolbar = QToolBar(
@@ -136,8 +134,6 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.destroyed.connect(lambda: messaging.unsubscribe_all(self))
 
     def _group_by_callback(self, mode: SplitMode, factor_name: str | None):
-        self.split_mode = mode
-        self.selected_factor_name = factor_name
         self._set_data()
 
     def _resize_columns_width(self):
@@ -177,11 +173,11 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             return
 
         selected_variables_names = self.variables_table_widget.get_selected_variable_names()
+        split_mode, selected_factor_name = self.group_by_selector.get_group_by()
 
         if (
             self.datatable.dataset.binning_settings.apply
-            and self.datatable.dataset.binning_settings.mode != BinningMode.INTERVALS
-            and self.split_mode != SplitMode.ANIMAL
+            and self.datatable.dataset.binning_settings.mode == BinningMode.PHASES
             and len(selected_variables_names) == 0
         ):
             make_toast(
@@ -196,9 +192,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
         # self.df = self.datatable.get_preprocessed_df(selected_variables, self.split_mode, self.selected_factor_name)
 
-        group_by = self.group_by_selector.get_group_by_columns()
-
-        if group_by is None:
+        if split_mode == SplitMode.ANIMAL:
             all_columns = self.datatable.active_df.columns.tolist()
             all_variable_columns = list(self.datatable.variables.keys())
             columns = [
@@ -212,7 +206,8 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
                     + selected_variables_names
                 )
             )
-        self.df = self.datatable.get_preprocessed_df2(columns, group_by)
+
+        self.df = self.datatable.get_preprocessed_df_columns(columns, split_mode, selected_factor_name)
 
         if len(selected_variables_names) > 0:
             descriptive = (

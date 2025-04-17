@@ -5,12 +5,10 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QSplitter, QTextEdit, QWidgetAction
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
-from pyqttoast import ToastPreset
 
 from tse_analytics.core import messaging, color_manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.views.misc.MplCanvas import MplCanvas
@@ -93,17 +91,6 @@ class CorrelationWidget(QWidget):
     def _update(self):
         split_mode, selected_factor_name = self.group_by_selector.get_group_by()
 
-        if split_mode == SplitMode.FACTOR and selected_factor_name == "":
-            make_toast(
-                self,
-                self.title,
-                "Please select a factor.",
-                duration=2000,
-                preset=ToastPreset.WARNING,
-                show_duration_bar=True,
-            ).show()
-            return
-
         x_var = self.xVariableSelector.get_selected_variable()
         y_var = self.yVariableSelector.get_selected_variable()
 
@@ -140,7 +127,7 @@ class CorrelationWidget(QWidget):
             palette=palette,
             marker=".",
         )
-        joint_grid.fig.suptitle(f"Correlation between {x_var.name} and {y_var.name}")
+        joint_grid.figure.suptitle(f"Correlation between {x_var.name} and {y_var.name}")
         self.canvas = FigureCanvasQTAgg(joint_grid.figure)
         self.canvas.updateGeometry()
         self.canvas.draw()
