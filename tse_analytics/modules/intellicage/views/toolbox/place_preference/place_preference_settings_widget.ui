@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <author>Anton Rau</author>
+ <class>PlacePreferencesSettingsWidget</class>
+ <widget class="QWidget" name="PlacePreferencesSettingsWidget">
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="groupBoxCorrectPlace">
+     <property name="title">
+      <string>Correct Place</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_7">
+      <item>
+       <widget class="QCheckBox" name="checkBoxCorrect">
+        <property name="text">
+         <string>Correct</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="checkBoxNeutral">
+        <property name="text">
+         <string>Neutral</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="checkBoxIncorrect">
+        <property name="text">
+         <string>Incorrect</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="labelCorrectPlace">
+        <property name="text">
+         <string>Assign corner condition(s) that is representing correct responses, if the original assignment does not concur with the intended one. For instance, you might have coded incorrect visits as Neutral instead of Incorrect in the Experimental design.</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxExcludeCondition">
+     <property name="title">
+      <string>Exclude Condition</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_6">
+      <item>
+       <widget class="QRadioButton" name="radioButtonNone">
+        <property name="text">
+         <string>None</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="radioButtonCorrect">
+        <property name="text">
+         <string>Correct</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="radioButtonIncorrect">
+        <property name="text">
+         <string>Incorrect</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="labelExcludeCondition">
+        <property name="text">
+         <string>Exclude a corner condition, in case preference assessment is restricted to only two of the possible three conditions. For instance, there might be a correct and an incorrect choice in some corner(s), but some corner might not have been taken for conditioning and set to Neutral. Hence, you should exclude Neutral condition from learning analysis.</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="checkBoxVisitsWithNosepokes">
+     <property name="text">
+      <string>Include only visits with nosepokes</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="checkBoxVisitsWithLicks">
+     <property name="text">
+      <string>Include only visits with licks</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="../../../../../../resources/resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

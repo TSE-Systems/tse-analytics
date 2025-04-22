@@ -5,12 +5,9 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel
 from astropy.timeseries import LombScargle
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
-from pyqttoast import ToastPreset
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
@@ -64,34 +61,13 @@ class PeriodogramWidget(QWidget):
     def _update(self):
         split_mode, selected_factor_name = self.group_by_selector.get_group_by()
 
-        if split_mode == SplitMode.FACTOR and selected_factor_name == "":
-            make_toast(
-                self,
-                self.title,
-                "Please select a factor.",
-                duration=2000,
-                preset=ToastPreset.WARNING,
-                show_duration_bar=True,
-            ).show()
-            return
-
         variable = self.variableSelector.get_selected_variable()
-
-        match split_mode:
-            case SplitMode.ANIMAL:
-                by = "Animal"
-            case SplitMode.RUN:
-                by = "Run"
-            case SplitMode.FACTOR:
-                by = selected_factor_name
-            case _:
-                by = None
 
         df = self.datatable.get_preprocessed_df(
             variables={variable.name: variable},
             split_mode=split_mode,
             selected_factor_name=selected_factor_name,
-            dropna=False,
+            dropna=True,
         )
 
         t = df["DateTime"]
