@@ -3,12 +3,15 @@ import seaborn as sns
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QFileDialog, QTabWidget
+from pyqttoast import ToastPreset
 from scipy.stats import chisquare, kruskal
 
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_widget_tool_button
-from tse_analytics.modules.intellicage.views.toolbox.place_preference.place_preference_settings_widget_ui import \
-    Ui_PlacePreferencesSettingsWidget
+from tse_analytics.modules.intellicage.views.toolbox.place_preference.place_preference_settings_widget_ui import (
+    Ui_PlacePreferencesSettingsWidget,
+)
 from tse_analytics.views.misc.pandas_widget import PandasWidget
 from tse_analytics.views.misc.plot_widget import PlotWidget
 
@@ -112,12 +115,41 @@ class PlacePreferenceWidget(QWidget):
 
         return pd.DataFrame(results)
 
-    def _update(self):
-        columns = ["Animal", "Corner", "VisitDuration"]
+    def _update(self) -> None:
+        columns = ["Animal", "Corner", "VisitDuration", "CornerCondition", "NosepokesNumber", "LicksNumber"]
+
         df = self.datatable.get_filtered_df(columns)
+
+        if self.settings_widget_ui.checkBoxVisitsWithNosepokes.isChecked():
+            df = df[df["NosepokesNumber"] > 0]
+        if self.settings_widget_ui.checkBoxVisitsWithLicks.isChecked():
+            df = df[df["LicksNumber"] > 0]
+
+        if not self.settings_widget_ui.radioButtonNone.isChecked():
+            if self.settings_widget_ui.checkBoxNeutral.isChecked():
+                df.loc[df["CornerCondition"] == "Neutral", "CornerCondition"] = "Correct"
+            if self.settings_widget_ui.checkBoxIncorrect.isChecked():
+                df.loc[df["CornerCondition"] == "Incorrect", "CornerCondition"] = "Correct"
+
+            if self.settings_widget_ui.radioButtonCorrect.isChecked():
+                # Exclude correct visits
+                df = df[df["CornerCondition"] != "Correct"]
+            if self.settings_widget_ui.radioButtonIncorrect.isChecked():
+                # Exclude incorrect visits
+                df = df[df["CornerCondition"] != "Incorrect"]
 
         self.visit_counts_plot_widget.clear(False)
         self.visit_duration_plot_widget.clear(False)
+
+        if df.empty:
+            make_toast(
+                self,
+                self.title,
+                "No visits to analyze. Please adjust the settings and try again.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+            ).show()
+            return
 
         visit_counts_axes = self.visit_counts_plot_widget.canvas.figure.subplots(1, 2, sharey=False)
 
@@ -169,7 +201,7 @@ class PlacePreferenceWidget(QWidget):
 
         self.export_excel_action.setEnabled(True)
 
-    def _export_to_excel(self):
+    def _export_to_excel(self) -> None:
         if self.datatable is None or self.visit_counts is None:
             return
         filename, _ = QFileDialog.getSaveFileName(self, "Export to Excel", "", "Excel Files (*.xlsx)")

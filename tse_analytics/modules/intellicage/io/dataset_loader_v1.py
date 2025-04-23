@@ -167,9 +167,9 @@ def _import_visits_df(folder_path: Path) -> pd.DataFrame | None:
     # Convert numeric Enum values to categories
     df = df.astype({
         "ModuleName": "category",
-        "CornerCondition": "category",
     })
 
+    df["CornerCondition"] = pd.Categorical(df["CornerCondition"], categories=[-1, 0, 1], ordered=True)
     df["CornerCondition"] = df["CornerCondition"].cat.rename_categories({
         -1: "Incorrect",
         0: "Neutral",
@@ -242,10 +242,7 @@ def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame | None:
     )
 
     # Convert numeric Enum values to categories
-    df = df.astype({
-        "SideCondition": "category",
-    })
-
+    df["SideCondition"] = pd.Categorical(df["SideCondition"], categories=[-1, 0, 1], ordered=True)
     df["SideCondition"] = df["SideCondition"].cat.rename_categories({
         -1: "Incorrect",
         0: "Neutral",
