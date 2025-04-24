@@ -111,6 +111,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
 
         self.actionImportDataset.triggered.connect(self.import_dataset_dialog)
+        self.actionNewWorkspace.triggered.connect(self.new_workspace)
         self.actionOpenWorkspace.triggered.connect(self.load_workspace_dialog)
         self.actionSaveWorkspace.triggered.connect(self.save_workspace_dialog)
         self.actionSaveLayout.triggered.connect(self._save_layout)
@@ -178,7 +179,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.settings.setValue("MainWindow/State", self.saveState())
         self.settings.setValue("MainWindow/DockingState", LayoutManager.save_state())
 
-    def load_workspace_dialog(self):
+    def new_workspace(self) -> None:
+        if (
+            QMessageBox.question(
+                self,
+                "TSE Analytics",
+                "Do you want to clear the current workspace?",
+                QMessageBox.StandardButton.Yes,
+                QMessageBox.StandardButton.No,
+            )
+            == QMessageBox.StandardButton.Yes
+        ):
+            LayoutManager.clear_dock_manager()
+            manager.new_workspace()
+
+    def load_workspace_dialog(self) -> None:
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Load Workspace",
@@ -188,30 +203,30 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if file_path:
             self.load_workspace(file_path)
 
-    def save_workspace_dialog(self):
+    def save_workspace_dialog(self) -> None:
         filename, _ = QFileDialog.getSaveFileName(
             self, "Save TSE Analytics Workspace", "", "Workspace Files (*.workspace)"
         )
         if filename:
             manager.save_workspace(filename)
 
-    def update_memory_usage(self):
+    def update_memory_usage(self) -> None:
         # return the memory usage in MB
         mem = self.process.memory_info()[0] / float(2**20)
         self.memory_usage_label.setText(f"Memory usage: {mem:.2f} Mb")
 
-    def _reset_layout(self):
+    def _reset_layout(self) -> None:
         LayoutManager.open_perspective("Default")
 
-    def _show_about_dialog(self):
+    def _show_about_dialog(self) -> None:
         dlg = AboutDialog(self)
         dlg.show()
 
-    def _show_settings_dialog(self):
+    def _show_settings_dialog(self) -> None:
         dlg = SettingsDialog(self)
         dlg.show()
 
-    def _show_help(self):
+    def _show_help(self) -> None:
         help_mode = self.settings.value("HelpMode", "online")
         if help_mode == "online":
             help_manager.show_online_help()

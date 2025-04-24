@@ -17,12 +17,12 @@ from PySide6.QtWidgets import (
 
 from tse_analytics.core import manager, messaging
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.models.datatable_tree_item import DatatableTreeItem
-from tse_analytics.core.models.tree_item import TreeItem
-from tse_analytics.core.utils import CSV_IMPORT_ENABLED
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
+from tse_analytics.core.models.datatable_tree_item import DatatableTreeItem
 from tse_analytics.core.models.extension_tree_item import ExtensionTreeItem
+from tse_analytics.core.models.tree_item import TreeItem
+from tse_analytics.core.utils import CSV_IMPORT_ENABLED
 from tse_analytics.modules.intellicage.views.intellicage_dialog import IntelliCageDialog
 from tse_analytics.modules.intellimaze.submodules.animal_gate.views.animal_gate_dialog import AnimalGateDialog
 from tse_analytics.modules.intellimaze.submodules.consumption_scale.views.consumption_scale_dialog import (
@@ -37,9 +37,9 @@ from tse_analytics.modules.phenomaster.submodules.drinkfeed.models.drinkfeed_tre
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_dialog import DrinkFeedDialog
 from tse_analytics.modules.phenomaster.submodules.trafficage.models.trafficage_tree_item import TraffiCageTreeItem
 from tse_analytics.modules.phenomaster.submodules.trafficage.views.trafficage_dialog import TraffiCageDialog
+from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvDialog
 from tse_analytics.views.general.datasets.adjust_dataset_dialog import AdjustDatasetDialog
 from tse_analytics.views.general.datasets.datasets_merge_dialog import DatasetsMergeDialog
-from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvDialog
 from tse_analytics.views.toolbox.toolbox_button import ToolboxButton
 
 
@@ -318,11 +318,11 @@ class DatasetsWidget(QWidget):
             if is_dataset_item:
                 manager.set_selected_dataset(item.dataset)
                 manager.set_selected_datatable(None)
-                self.toolbox_button.set_dataset_menu(item.dataset)
+                self.toolbox_button.set_enabled_actions(item.dataset, None)
             elif is_datatable_item:
                 manager.set_selected_dataset(item.datatable.dataset)
                 manager.set_selected_datatable(item.datatable)
-                self.toolbox_button.set_dataset_menu(item.datatable.dataset)
+                self.toolbox_button.set_enabled_actions(item.datatable.dataset, item.datatable)
 
             if CSV_IMPORT_ENABLED:
                 self.import_button.setEnabled(is_dataset_item)

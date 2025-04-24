@@ -33,6 +33,7 @@
       <string>Open Recent</string>
      </property>
     </widget>
+    <addaction name="actionNewWorkspace"/>
     <addaction name="actionOpenWorkspace"/>
     <addaction name="menuOpenRecent"/>
     <addaction name="actionSaveWorkspace"/>
@@ -185,6 +186,18 @@
    </property>
    <property name="toolTip">
     <string>Settings...</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionNewWorkspace">
+   <property name="icon">
+    <iconset resource="../../resources/resources.qrc">
+     <normaloff>:/icons/icons8-file-16.png</normaloff>:/icons/icons8-file-16.png</iconset>
+   </property>
+   <property name="text">
+    <string>New Workspace</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

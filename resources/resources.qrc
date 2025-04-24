@@ -3,7 +3,6 @@
         <file>icons/app.ico</file>
         <file>icons/about-16.png</file>
         <file>icons/anova.png</file>
-        <file>icons/bar-chart.png</file>
         <file>icons/binning.png</file>
         <file>icons/bivariate.png</file>
         <file>icons/datasets.png</file>
@@ -11,7 +10,6 @@
         <file>icons/exit.png</file>
         <file>icons/exploration.png</file>
         <file>icons/factors.png</file>
-        <file>icons/graph.png</file>
         <file>icons/help.png</file>
         <file>icons/icons8-add-16.png</file>
         <file>icons/icons8-adjust-16.png</file>
@@ -20,42 +18,29 @@
         <file>icons/icons8-align-left-16.png</file>
         <file>icons/icons8-align-right-16.png</file>
         <file>icons/icons8-analyze-16.png</file>
-        <file>icons/icons8-approval-16.png</file>
-        <file>icons/icons8-bar-chart-16.png</file>
         <file>icons/icons8-barcode-16.png</file>
         <file>icons/icons8-bold-16.png</file>
-        <file>icons/icons8-clock-16.png</file>
-        <file>icons/icons8-compact-camera-16.png</file>
         <file>icons/icons8-copy-16.png</file>
         <file>icons/icons8-corner-16.png</file>
         <file>icons/icons8-cut-16.png</file>
         <file>icons/icons8-data-sheet-16.png</file>
-        <file>icons/icons8-database-16.png</file>
         <file>icons/icons8-database-import-16.png</file>
-        <file>icons/icons8-details-16.png</file>
         <file>icons/icons8-dog-tag-16.png</file>
         <file>icons/icons8-edit-16.png</file>
         <file>icons/icons8-erase-16.png</file>
-        <file>icons/icons8-eukaryotic-cells-16.png</file>
-        <file>icons/icons8-eukaryotic-cells-96.png</file>
         <file>icons/icons8-export-16.png</file>
         <file>icons/icons8-extension-16.png</file>
         <file>icons/icons8-file-16.png</file>
-        <file>icons/icons8-group-objects-16.png</file>
-        <file>icons/icons8-heat-map-16.png</file>
         <file>icons/icons8-help-16.png</file>
         <file>icons/icons8-histogram-16.png</file>
         <file>icons/icons8-import-16.png</file>
         <file>icons/icons8-info-16.png</file>
         <file>icons/icons8-insert-table-16.png</file>
         <file>icons/icons8-italic-16.png</file>
-        <file>icons/icons8-line-chart-16.png</file>
-        <file>icons/icons8-medium-icons-16.png</file>
         <file>icons/icons8-merge-files-16.png</file>
         <file>icons/icons8-minus-16.png</file>
         <file>icons/icons8-normal-distribution-histogram-16.png</file>
         <file>icons/icons8-opened-folder-16.png</file>
-        <file>icons/icons8-outliers-16.png</file>
         <file>icons/icons8-paste-16.png</file>
         <file>icons/icons8-print-16.png</file>
         <file>icons/icons8-rat-silhouette-16.png</file>
@@ -63,25 +48,17 @@
         <file>icons/icons8-refresh-16.png</file>
         <file>icons/icons8-remove-16.png</file>
         <file>icons/icons8-resize-horizontal-16.png</file>
-        <file>icons/icons8-ruler-16.png</file>
         <file>icons/icons8-save-16.png</file>
         <file>icons/icons8-save-as-16.png</file>
-        <file>icons/icons8-scales-16.png</file>
-        <file>icons/icons8-scatter-plot-16.png</file>
         <file>icons/icons8-settings-16.png</file>
         <file>icons/icons8-sheets-16.png</file>
         <file>icons/icons8-sorting-16.png</file>
         <file>icons/icons8-stats-16.png</file>
-        <file>icons/icons8-switch-16.png</file>
-        <file>icons/icons8-time-span-16.png</file>
         <file>icons/icons8-toolbox-16.png</file>
         <file>icons/icons8-transition-both-directions-16.png</file>
         <file>icons/icons8-underline-16.png</file>
         <file>icons/icons8-undo-16.png</file>
-        <file>icons/icons8-ungroup-objects-16.png</file>
-        <file>icons/icons8-variable-16.png</file>
         <file>icons/info.png</file>
-        <file>icons/log-16.png</file>
         <file>icons/log.png</file>
         <file>icons/plot.png</file>
         <file>icons/preprocess.png</file>

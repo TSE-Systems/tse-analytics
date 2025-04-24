@@ -71,7 +71,7 @@ class LayoutManager:
         title: str,
         icon: QIcon,
         add_to_menu: bool = True,
-    ) -> CDockWidget | None:
+    ) -> CDockWidget:
         dock_widget = CDockWidget(title)
         dock_widget.setFeature(CDockWidget.DockWidgetClosable, False)
         dock_widget.setWidget(widget)

@@ -3,6 +3,8 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QToolButton, QMenu, QWidget
 
 from tse_analytics.core import manager
+from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
 from tse_analytics.modules.intellicage.views.toolbox.place_preference.place_preference_widget import (
@@ -113,20 +115,27 @@ class ToolboxButton(QToolButton):
         utils_menu.addAction(QIcon(":/icons/report.png"), "Report").triggered.connect(self._add_report_widget)
 
         self.intellicage_menu = self.menu.addMenu("IntelliCage")
-        self.intellicage_menu.addAction(
+        self.intellicage_transitions_action = self.intellicage_menu.addAction(
             QIcon(":/icons/icons8-transition-both-directions-16.png"), "Transitions"
-        ).triggered.connect(self._add_transitions_widget)
-        self.intellicage_menu.addAction(QIcon(":/icons/icons8-corner-16.png"), "Place Preference").triggered.connect(
-            self._add_place_preference_widget
         )
+        self.intellicage_transitions_action.triggered.connect(self._add_transitions_widget)
+        self.intellicage_place_preference_action = self.intellicage_menu.addAction(
+            QIcon(":/icons/icons8-corner-16.png"), "Place Preference"
+        )
+        self.intellicage_place_preference_action.triggered.connect(self._add_place_preference_widget)
 
         self.setMenu(self.menu)
 
     def set_state(self, state: bool) -> None:
         self.setEnabled(state)
 
-    def set_dataset_menu(self, dataset) -> None:
-        self.intellicage_menu.setEnabled(isinstance(dataset, IntelliCageDataset))
+    def set_enabled_actions(self, dataset: Dataset, datatable: Datatable | None) -> None:
+        if isinstance(dataset, IntelliCageDataset):
+            self.intellicage_menu.setEnabled(True)
+            self.intellicage_transitions_action.setEnabled(datatable is not None and datatable.name == "Visits")
+            self.intellicage_place_preference_action.setEnabled(datatable is not None and datatable.name == "Visits")
+        else:
+            self.intellicage_menu.setEnabled(False)
 
     def _add_data_table_widget(self):
         datatable = manager.get_selected_datatable()

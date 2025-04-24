@@ -1,4 +1,5 @@
 import copy
+import gc
 import pickle
 from pathlib import Path
 from uuid import uuid4
@@ -8,6 +9,7 @@ from PySide6.QtCore import QModelIndex
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.workspace import Workspace
 from tse_analytics.core.models.workspace_model import WorkspaceModel
 from tse_analytics.core.settings_manager import get_csv_import_settings
 from tse_analytics.modules.intellicage.data import intellicage_dataset_merger
@@ -35,6 +37,7 @@ class Manager:
 
     def set_selected_dataset(self, dataset: Dataset | None):
         self._selected_dataset = dataset
+        # self.set_selected_datatable(None)
         messaging.broadcast(messaging.DatasetChangedMessage(self, dataset))
 
     def get_selected_datatable(self):
@@ -44,11 +47,20 @@ class Manager:
         self._selected_datatable = datatable
         messaging.broadcast(messaging.DatatableChangedMessage(self, datatable))
 
-    def load_workspace(self, path: str) -> None:
+    def new_workspace(self) -> None:
+        workspace = Workspace("Workspace")
+        self._workspace_model.set_workspace(workspace)
+        self.set_selected_datatable(None)
         self.set_selected_dataset(None)
+        gc.collect()
+
+    def load_workspace(self, path: str) -> None:
         with open(path, "rb") as file:
             workspace = pickle.load(file)
             self._workspace_model.set_workspace(workspace)
+        self.set_selected_datatable(None)
+        self.set_selected_dataset(None)
+        gc.collect()
 
     def save_workspace(self, path: str) -> None:
         with open(path, "wb") as file:
@@ -155,6 +167,7 @@ get_selected_dataset = _instance.get_selected_dataset
 set_selected_dataset = _instance.set_selected_dataset
 get_selected_datatable = _instance.get_selected_datatable
 set_selected_datatable = _instance.set_selected_datatable
+new_workspace = _instance.new_workspace
 load_workspace = _instance.load_workspace
 save_workspace = _instance.save_workspace
 import_csv_dataset = _instance.import_csv_dataset

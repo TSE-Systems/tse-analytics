@@ -2,6 +2,7 @@ from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.models.tree_item import TreeItem
+from tse_analytics.core.models.workspace_model import WorkspaceModel
 
 
 class Message:
