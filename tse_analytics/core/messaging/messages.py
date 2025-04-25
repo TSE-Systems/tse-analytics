@@ -1,6 +1,7 @@
 from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.workspace import Workspace
 from tse_analytics.core.models.tree_item import TreeItem
 from tse_analytics.core.models.workspace_model import WorkspaceModel
 
@@ -47,8 +48,16 @@ class DataChangedMessage(Message):
         self.dataset = dataset
 
 
+class WorkspaceChangedMessage(Message):
+    """Indicates that the workspace has changed"""
+
+    def __init__(self, sender, workspace: Workspace):
+        super().__init__(sender)
+        self.workspace = workspace
+
+
 class DatasetChangedMessage(Message):
-    """Indicates that selected dataset is changed"""
+    """Indicates that the selected dataset is changed"""
 
     def __init__(self, sender, dataset: Dataset | None):
         super().__init__(sender)
@@ -56,7 +65,7 @@ class DatasetChangedMessage(Message):
 
 
 class DatatableChangedMessage(Message):
-    """Indicates that selected datatable is changed"""
+    """Indicates that the selected datatable is changed"""
 
     def __init__(self, sender, datatable: Datatable | None):
         super().__init__(sender)

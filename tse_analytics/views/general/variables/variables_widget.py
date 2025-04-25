@@ -56,9 +56,6 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
 
         self.layout.addWidget(toolbar)
 
-        proxy_model = QSortFilterProxyModel()
-        proxy_model.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
-
         self.tableView = QTableView(
             self,
             sortingEnabled=True,
@@ -69,7 +66,11 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
         self.tableView.verticalHeader().setMinimumSectionSize(20)
         self.tableView.verticalHeader().setDefaultSectionSize(20)
         self.tableView.setHorizontalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
+
+        proxy_model = QSortFilterProxyModel()
+        proxy_model.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.tableView.setModel(proxy_model)
+
         self.tableView.sortByColumn(0, Qt.SortOrder.AscendingOrder)
         self.tableView.setItemDelegateForColumn(2, AggregationComboBoxDelegate(self.tableView))
 

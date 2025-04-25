@@ -1,74 +1,60 @@
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt, Signal
 
-from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.workspace import Workspace
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
-from tse_analytics.core.models.datatable_tree_item import DatatableTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
-from tse_analytics.core.models.workspace_tree_item import WorkspaceTreeItem
 
 
 class WorkspaceModel(QAbstractItemModel):
     checkedItemChanged = Signal(TreeItem, bool)
 
-    def __init__(self, parent=None):
+    def __init__(self, workspace: Workspace, parent=None):
         super().__init__(parent)
 
-        self.workspace = Workspace("Workspace")
-        self.workspace_tree_item = WorkspaceTreeItem(self.workspace)
+        self.root_item = TreeItem("Root Item")
+        self.setupModelData(workspace)
 
-    def addChild(self, node, parent: QModelIndex | None = None):
-        if not parent or not parent.isValid():
-            parent = self.workspace_tree_item
-        else:
-            parent = parent.internalPointer()
-        parent.add_child(node)
-
-    def removeRow(self, row: int, parent: QModelIndex | None = None):
-        if not parent or not parent.isValid():
-            # parent is not valid when it is the root node, since the "parent"
-            # method returns an empty QModelIndex
-            parentNode = self.workspace_tree_item
-        else:
-            parentNode = parent.internalPointer()  # the node
-        return parentNode.remove_child(row)
+    def setupModelData(self, workspace: Workspace):
+        self.beginResetModel()
+        self.root_item.clear()
+        for dataset in workspace.datasets.values():
+            dataset_tree_item = DatasetTreeItem(dataset)
+            dataset.add_children_tree_items(dataset_tree_item)
+            self.root_item.add_child(dataset_tree_item)
+        self.endResetModel()
 
     def getItem(self, index: QModelIndex):
+        """Helper method to get the TreeNode from a QModelIndex."""
         if index.isValid():
             item = index.internalPointer()
             if item:
                 return item
-
-        return self.workspace_tree_item
+        return self.root_item  # Return root item for invalid or root index
 
     def index(self, row, column, parent=QModelIndex()):
-        if parent.isValid() and parent.column() != 0:
+        if not self.hasIndex(row, column, parent):
             return QModelIndex()
 
         parentItem = self.getItem(parent)
         childItem = parentItem.child(row)
         if childItem:
+            # Pass the child_item as an internal pointer
             return self.createIndex(row, column, childItem)
-        else:
-            return QModelIndex()
+        return QModelIndex()
 
-    def parent(self, child: QModelIndex) -> QModelIndex:
-        if child.isValid():
-            p = child.internalPointer().parent()
+    def parent(self, index: QModelIndex = ...) -> QModelIndex:
+        if index.isValid():
+            p = index.internalPointer().parent()
             if p:
                 return self.createIndex(p.row(), 0, p)
         return QModelIndex()
 
     def rowCount(self, parent: QModelIndex = ...):
-        if parent.isValid():
-            return parent.internalPointer().child_count()
-        return self.workspace_tree_item.child_count()
+        parent_item = self.getItem(parent)
+        return parent_item.child_count()
 
     def columnCount(self, parent: QModelIndex = ...):
-        if parent.isValid():
-            return parent.internalPointer().column_count()
-        return self.workspace_tree_item.column_count()
+        return 1
 
     def data(self, index: QModelIndex, role: Qt.ItemDataRole = None):
         item = self.getItem(index)
@@ -96,60 +82,22 @@ class WorkspaceModel(QAbstractItemModel):
         return None
 
     def setData(self, index: QModelIndex, value, role=Qt.ItemDataRole.EditRole):
-        item = self.getItem(index)
         if role == Qt.ItemDataRole.CheckStateRole:
+            item = self.getItem(index)
             item.checked = not item.checked
             self.checkedItemChanged.emit(item, item.checked)
             return True
-        else:
-            return False
+
+        return False
 
     def flags(self, index: QModelIndex):
-        item = index.internalPointer()
-        return item.flags(index.column())
+        if not index.isValid():
+            return Qt.ItemFlag.NoItemFlags
+
+        # Make only the first column checkable
+        if index.column() == 0:
+            return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsUserCheckable
+        return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
 
     def headerData(self, section, orientation: Qt.Orientation, role=Qt.ItemDataRole.DisplayRole):
-        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
-            return self.workspace_tree_item.column_names[section]
-
-        return None
-
-    def set_workspace(self, workspace: Workspace):
-        self.beginResetModel()
-        self.workspace = workspace
-        self.workspace_tree_item = WorkspaceTreeItem(self.workspace)
-        for dataset in self.workspace.datasets.values():
-            dataset_tree_item = DatasetTreeItem(dataset)
-            dataset.add_children_tree_items(dataset_tree_item)
-            self.workspace_tree_item.add_child(dataset_tree_item)
-        self.endResetModel()
-
-    def add_dataset(self, dataset: Dataset):
-        self.workspace.datasets[dataset.id] = dataset
-        dataset_tree_item = DatasetTreeItem(dataset)
-        dataset.add_children_tree_items(dataset_tree_item)
-        self.beginResetModel()
-        self.workspace_tree_item.add_child(dataset_tree_item)
-        self.endResetModel()
-
-    def add_dataset_child_items(self, dataset_index: QModelIndex):
-        dataset_tree_item: DatasetTreeItem = self.getItem(dataset_index)
-        self.beginResetModel()
-        dataset_tree_item.dataset.add_children_tree_items(dataset_tree_item)
-        self.endResetModel()
-
-    def add_datatable(self, datatable: Datatable):
-        for child_item in self.workspace_tree_item.child_items:
-            if isinstance(child_item, DatasetTreeItem):
-                if datatable.dataset == child_item.dataset:
-                    self.beginResetModel()
-                    child_item.add_child(DatatableTreeItem(datatable))
-                    self.endResetModel()
-                    return
-
-    def remove_item(self, indexes: list[QModelIndex]):
-        self.beginResetModel()
-        for index in indexes:
-            row = index.row()
-            self.removeRow(row, parent=index.parent())
-        self.endResetModel()
+        return "Name"

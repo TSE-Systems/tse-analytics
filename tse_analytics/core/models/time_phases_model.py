@@ -20,6 +20,7 @@ class TimePhasesModel(QAbstractTableModel):
             item = self.items[index.row()]
             values = (item.name, str(item.start_timestamp))
             return values[index.column()]
+        return None
 
     def setData(self, index: QModelIndex, value, role: Qt.ItemDataRole = ...):
         if role == Qt.ItemDataRole.EditRole:
@@ -35,6 +36,7 @@ class TimePhasesModel(QAbstractTableModel):
             else:
                 return False
             return True
+        return None
 
     def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = ...):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:

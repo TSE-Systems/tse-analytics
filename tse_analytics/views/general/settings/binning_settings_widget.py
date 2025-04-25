@@ -45,6 +45,7 @@ class BinningSettingsWidget(QWidget, messaging.MessengerListener):
 
     def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
         self.dataset = message.dataset
+        self.time_phases_model.dataset = self.dataset
         if self.dataset is None:
             self.ui.applyBinningCheckBox.setChecked(False)
             self.ui.binningModeComboBox.setCurrentText(BinningMode.INTERVALS)
@@ -63,7 +64,6 @@ class BinningSettingsWidget(QWidget, messaging.MessengerListener):
                 QTime(self.dataset.binning_settings.time_cycles_settings.dark_cycle_start)
             )
 
-            self.time_phases_model.dataset = self.dataset
             self.time_phases_model.items = self.dataset.binning_settings.time_phases_settings.time_phases
             # Trigger refresh.
             self.time_phases_model.layoutChanged.emit()

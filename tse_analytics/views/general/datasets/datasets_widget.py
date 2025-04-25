@@ -22,6 +22,7 @@ from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.datatable_tree_item import DatatableTreeItem
 from tse_analytics.core.models.extension_tree_item import ExtensionTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
+from tse_analytics.core.models.workspace_model import WorkspaceModel
 from tse_analytics.core.utils import CSV_IMPORT_ENABLED
 from tse_analytics.modules.intellicage.views.intellicage_dialog import IntelliCageDialog
 from tse_analytics.modules.intellimaze.submodules.animal_gate.views.animal_gate_dialog import AnimalGateDialog
@@ -43,7 +44,7 @@ from tse_analytics.views.general.datasets.datasets_merge_dialog import DatasetsM
 from tse_analytics.views.toolbox.toolbox_button import ToolboxButton
 
 
-class DatasetsWidget(QWidget):
+class DatasetsWidget(QWidget, messaging.MessengerListener):
     def __init__(self, parent, toolbox_button: ToolboxButton):
         super().__init__(parent)
 
@@ -117,23 +118,22 @@ class DatasetsWidget(QWidget):
         )
         self.treeView.setPalette(pal)
 
-        self.treeView.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.treeView.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.treeView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
 
-        workspace_model = manager.get_workspace_model()
-        self.treeView.setModel(workspace_model)
+        self.workspace_model = WorkspaceModel(manager.get_workspace())
+        self.workspace_model.checkedItemChanged.connect(self._checked_item_changed)
+        self.treeView.setModel(self.workspace_model)
 
-        # self.ui.treeView.customContextMenuRequested.connect(self._open_menu)
         self.treeView.selectionModel().currentChanged.connect(self._treeview_current_changed)
         self.treeView.doubleClicked.connect(self._treeview_double_clicked)
 
         self.layout.addWidget(self.treeView)
 
-        workspace_model.checkedItemChanged.connect(self._checked_item_changed)
-        workspace_model.modelReset.connect(self._expand_all)
+        messaging.subscribe(self, messaging.WorkspaceChangedMessage, self._workspace_changed)
 
-    def _expand_all(self):
+    def _workspace_changed(self, message: messaging.WorkspaceChangedMessage) -> None:
+        self.workspace_model.setupModelData(message.workspace)
         self.treeView.expandAll()
 
     def _get_selected_tree_item(self) -> TreeItem | None:
@@ -147,8 +147,7 @@ class DatasetsWidget(QWidget):
 
     def _merge_datasets(self):
         checked_datasets: list[Dataset] = []
-        items = self.treeView.model().workspace_tree_item.child_items
-        for item in items:
+        for item in self.workspace_model.root_item.child_items:
             if item.checked:
                 checked_datasets.append(item.dataset)
 
@@ -182,8 +181,7 @@ class DatasetsWidget(QWidget):
         if dialog.exec() == QDialog.DialogCode.Accepted:
             self.merge_dataset_action.setDisabled(True)
             # uncheck all datasets
-            items = self.treeView.model().workspace_tree_item.child_items
-            for item in items:
+            for item in self.workspace_model.root_item.child_items:
                 item.checked = False
 
     def _import_drinkfeed_data(self):
@@ -198,9 +196,7 @@ class DatasetsWidget(QWidget):
             # TODO: check other cases!!
             dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
             if dialog.exec() == QDialog.DialogCode.Accepted:
-                indexes = self.treeView.selectedIndexes()
-                selected_dataset_index = indexes[0]
-                manager.import_drinkfeed_data(selected_dataset_index, path)
+                manager.import_drinkfeed_data(path)
 
     def _import_actimot_data(self):
         path, _ = QFileDialog.getOpenFileName(
@@ -214,9 +210,7 @@ class DatasetsWidget(QWidget):
             # TODO: check other cases!!
             dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
             if dialog.exec() == QDialog.DialogCode.Accepted:
-                indexes = self.treeView.selectedIndexes()
-                selected_dataset_index = indexes[0]
-                manager.import_actimot_data(selected_dataset_index, path)
+                manager.import_actimot_data(path)
 
     def _import_calo_data(self):
         path, _ = QFileDialog.getOpenFileName(
@@ -230,9 +224,7 @@ class DatasetsWidget(QWidget):
             # TODO: check other cases!!
             dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
             if dialog.exec() == QDialog.DialogCode.Accepted:
-                indexes = self.treeView.selectedIndexes()
-                selected_dataset_index = indexes[0]
-                manager.import_calo_data(selected_dataset_index, path)
+                manager.import_calo_data(path)
 
     def _import_trafficage_data(self):
         path, _ = QFileDialog.getOpenFileName(
@@ -246,19 +238,16 @@ class DatasetsWidget(QWidget):
             # TODO: check other cases!!
             dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
             if dialog.exec() == QDialog.DialogCode.Accepted:
-                indexes = self.treeView.selectedIndexes()
-                selected_dataset_index = indexes[0]
-                manager.import_trafficage_data(selected_dataset_index, path)
+                manager.import_trafficage_data(path)
 
     def _adjust_dataset(self):
-        selected_index = self.treeView.selectedIndexes()[0]
-        item = selected_index.model().getItem(selected_index)
-        dataset = item.dataset
+        tree_item = self._get_selected_tree_item()
+        dataset = tree_item.dataset
         dialog = AdjustDatasetDialog(dataset, self)
         # TODO: check other cases!!
         dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         if dialog.exec() == QDialog.DialogCode.Accepted:
-            item.name = dataset.name
+            tree_item.name = dataset.name
             manager.set_selected_dataset(dataset)
 
     def _remove_item(self):
@@ -270,8 +259,7 @@ class DatasetsWidget(QWidget):
                     == QMessageBox.StandardButton.Yes
                 ):
                     LayoutManager.delete_dataset_widgets(tree_item.dataset)
-                    selected_indexes = self.treeView.selectedIndexes()
-                    manager.remove_dataset(selected_indexes, tree_item.dataset)
+                    manager.remove_dataset(tree_item.dataset)
                     self.toolbox_button.set_state(False)
                     if CSV_IMPORT_ENABLED:
                         self.import_button.setEnabled(False)
@@ -284,8 +272,7 @@ class DatasetsWidget(QWidget):
                     QMessageBox.question(self, "Remove Datatable", "Do you really want to remove datatable?")
                     == QMessageBox.StandardButton.Yes
                 ):
-                    selected_indexes = self.treeView.selectedIndexes()
-                    manager.remove_datatable(selected_indexes, tree_item.datatable)
+                    manager.remove_datatable(tree_item.datatable)
                     self.toolbox_button.set_state(False)
                     if CSV_IMPORT_ENABLED:
                         self.import_button.setEnabled(False)
@@ -385,9 +372,8 @@ class DatasetsWidget(QWidget):
 
     def _checked_item_changed(self, item, state: bool):
         if isinstance(item, DatasetTreeItem):
-            items = self.treeView.model().workspace_tree_item.child_items
             checked_datasets_number = 0
-            for item in items:
+            for item in self.workspace_model.root_item.child_items:
                 if item.checked:
                     checked_datasets_number += 1
             self.merge_dataset_action.setDisabled(checked_datasets_number < 2)
