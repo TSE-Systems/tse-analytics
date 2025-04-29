@@ -1,3 +1,5 @@
+import weakref
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QIcon
 
@@ -9,7 +11,11 @@ class ActimotTreeItem(TreeItem):
     def __init__(self, actimot_data: ActimotData):
         super().__init__(actimot_data.name)
 
-        self.actimot_data = actimot_data
+        self._actimot_data = weakref.ref(actimot_data)
+
+    @property
+    def actimot_data(self):
+        return self._actimot_data()
 
     @property
     def icon(self):

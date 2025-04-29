@@ -4,6 +4,8 @@ import pickle
 from pathlib import Path
 from uuid import uuid4
 
+from PySide6.QtCore import QTimer
+
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
@@ -46,18 +48,12 @@ class Manager:
 
     def new_workspace(self) -> None:
         self._workspace = Workspace("Workspace")
-        self.set_selected_datatable(None)
-        self.set_selected_dataset(None)
-        messaging.broadcast(messaging.WorkspaceChangedMessage(self, self._workspace))
-        gc.collect()
+        self._cleanup_workspace()
 
     def load_workspace(self, path: str) -> None:
         with open(path, "rb") as file:
             self._workspace = pickle.load(file)
-        self.set_selected_datatable(None)
-        self.set_selected_dataset(None)
-        messaging.broadcast(messaging.WorkspaceChangedMessage(self, self._workspace))
-        gc.collect()
+        self._cleanup_workspace()
 
     def save_workspace(self, path: str) -> None:
         with open(path, "wb") as file:
@@ -116,8 +112,13 @@ class Manager:
 
     def remove_dataset(self, dataset: Dataset) -> None:
         self._workspace.datasets.pop(dataset.id)
+        self._cleanup_workspace()
+
+    def _cleanup_workspace(self):
+        self.set_selected_datatable(None)
         self.set_selected_dataset(None)
         messaging.broadcast(messaging.WorkspaceChangedMessage(self, self._workspace))
+        QTimer.singleShot(1000, gc.collect)
 
     def merge_datasets(
         self,

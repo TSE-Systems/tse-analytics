@@ -1,3 +1,5 @@
+import weakref
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QIcon
 
@@ -9,7 +11,11 @@ class DatatableTreeItem(TreeItem):
     def __init__(self, datatable: Datatable):
         super().__init__(datatable.name)
 
-        self.datatable = datatable
+        self._datatable = weakref.ref(datatable)
+
+    @property
+    def datatable(self):
+        return self._datatable()
 
     @property
     def icon(self):

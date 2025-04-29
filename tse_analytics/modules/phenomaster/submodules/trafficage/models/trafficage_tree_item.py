@@ -1,3 +1,5 @@
+import weakref
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QIcon
 
@@ -9,7 +11,11 @@ class TraffiCageTreeItem(TreeItem):
     def __init__(self, trafficage_data: TraffiCageData):
         super().__init__(trafficage_data.name)
 
-        self.trafficage_data = trafficage_data
+        self._trafficage_data = weakref.ref(trafficage_data)
+
+    @property
+    def trafficage_data(self):
+        return self._trafficage_data()
 
     @property
     def icon(self):

@@ -1,3 +1,5 @@
+import weakref
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QIcon
 
@@ -9,7 +11,11 @@ class CaloDataTreeItem(TreeItem):
     def __init__(self, calo_data: CaloData):
         super().__init__(calo_data.name)
 
-        self.calo_data = calo_data
+        self._calo_data = weakref.ref(calo_data)
+
+    @property
+    def calo_data(self):
+        return self._calo_data()
 
     @property
     def icon(self):

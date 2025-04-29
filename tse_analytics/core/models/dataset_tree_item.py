@@ -1,3 +1,5 @@
+import weakref
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QIcon
 
@@ -8,7 +10,11 @@ class DatasetTreeItem(TreeItem):
     def __init__(self, dataset):
         super().__init__(dataset.name)
 
-        self.dataset = dataset
+        self._dataset = weakref.ref(dataset)
+
+    @property
+    def dataset(self):
+        return self._dataset()
 
     @property
     def icon(self):

@@ -1,3 +1,5 @@
+import weakref
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QIcon
 
@@ -8,7 +10,11 @@ class ExtensionTreeItem(TreeItem):
     def __init__(self, extension_data):
         super().__init__(extension_data.name)
 
-        self.extension_data = extension_data
+        self._extension_data = weakref.ref(extension_data)
+
+    @property
+    def extension_data(self):
+        return self._extension_data()
 
     @property
     def icon(self):

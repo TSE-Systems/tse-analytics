@@ -1,3 +1,5 @@
+import weakref
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QIcon
 
@@ -9,7 +11,11 @@ class DrinkFeedTreeItem(TreeItem):
     def __init__(self, drinkfeed_data: DrinkFeedData):
         super().__init__(drinkfeed_data.name)
 
-        self.drinkfeed_data = drinkfeed_data
+        self._drinkfeed_data = weakref.ref(drinkfeed_data)
+
+    @property
+    def drinkfeed_data(self):
+        return self._drinkfeed_data()
 
     @property
     def icon(self):
