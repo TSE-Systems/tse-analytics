@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'calo_settings_widget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.2
+## Created by: Qt User Interface Compiler version 6.9.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -47,35 +47,35 @@ class Ui_CaloSettingsWidget(object):
         self.iterationsLabel = QLabel(self.groupBoxGeneralSettings)
         self.iterationsLabel.setObjectName(u"iterationsLabel")
 
-        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.iterationsLabel)
+        self.formLayout.setWidget(0, QFormLayout.ItemRole.LabelRole, self.iterationsLabel)
 
         self.iterationsSpinBox = QSpinBox(self.groupBoxGeneralSettings)
         self.iterationsSpinBox.setObjectName(u"iterationsSpinBox")
         self.iterationsSpinBox.setMaximum(1000000)
         self.iterationsSpinBox.setValue(10000)
 
-        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.iterationsSpinBox)
+        self.formLayout.setWidget(0, QFormLayout.ItemRole.FieldRole, self.iterationsSpinBox)
 
         self.predictionOffsetLabel = QLabel(self.groupBoxGeneralSettings)
         self.predictionOffsetLabel.setObjectName(u"predictionOffsetLabel")
 
-        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.predictionOffsetLabel)
+        self.formLayout.setWidget(1, QFormLayout.ItemRole.LabelRole, self.predictionOffsetLabel)
 
         self.predictionOffsetSpinBox = QSpinBox(self.groupBoxGeneralSettings)
         self.predictionOffsetSpinBox.setObjectName(u"predictionOffsetSpinBox")
         self.predictionOffsetSpinBox.setValue(90)
 
-        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.predictionOffsetSpinBox)
+        self.formLayout.setWidget(1, QFormLayout.ItemRole.FieldRole, self.predictionOffsetSpinBox)
 
         self.flowLabel = QLabel(self.groupBoxGeneralSettings)
         self.flowLabel.setObjectName(u"flowLabel")
 
-        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.flowLabel)
+        self.formLayout.setWidget(2, QFormLayout.ItemRole.LabelRole, self.flowLabel)
 
         self.flowDoubleSpinBox = QDoubleSpinBox(self.groupBoxGeneralSettings)
         self.flowDoubleSpinBox.setObjectName(u"flowDoubleSpinBox")
 
-        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.flowDoubleSpinBox)
+        self.formLayout.setWidget(2, QFormLayout.ItemRole.FieldRole, self.flowDoubleSpinBox)
 
 
         self.verticalLayout_2.addWidget(self.groupBoxGeneralSettings)

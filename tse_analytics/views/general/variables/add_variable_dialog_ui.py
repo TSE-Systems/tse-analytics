@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'add_variable_dialog.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.2
+## Created by: Qt User Interface Compiler version 6.9.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -41,42 +41,42 @@ class Ui_AddVariableDialog(object):
         self.nameLabel = QLabel(self.groupBoxVariable)
         self.nameLabel.setObjectName(u"nameLabel")
 
-        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.nameLabel)
+        self.formLayout.setWidget(0, QFormLayout.ItemRole.LabelRole, self.nameLabel)
 
         self.nameLineEdit = QLineEdit(self.groupBoxVariable)
         self.nameLineEdit.setObjectName(u"nameLineEdit")
 
-        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.nameLineEdit)
+        self.formLayout.setWidget(0, QFormLayout.ItemRole.FieldRole, self.nameLineEdit)
 
         self.descriptionLabel = QLabel(self.groupBoxVariable)
         self.descriptionLabel.setObjectName(u"descriptionLabel")
 
-        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.descriptionLabel)
+        self.formLayout.setWidget(1, QFormLayout.ItemRole.LabelRole, self.descriptionLabel)
 
         self.descriptionLineEdit = QLineEdit(self.groupBoxVariable)
         self.descriptionLineEdit.setObjectName(u"descriptionLineEdit")
 
-        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.descriptionLineEdit)
+        self.formLayout.setWidget(1, QFormLayout.ItemRole.FieldRole, self.descriptionLineEdit)
 
         self.unitLabel = QLabel(self.groupBoxVariable)
         self.unitLabel.setObjectName(u"unitLabel")
 
-        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.unitLabel)
+        self.formLayout.setWidget(2, QFormLayout.ItemRole.LabelRole, self.unitLabel)
 
         self.unitLineEdit = QLineEdit(self.groupBoxVariable)
         self.unitLineEdit.setObjectName(u"unitLineEdit")
 
-        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.unitLineEdit)
+        self.formLayout.setWidget(2, QFormLayout.ItemRole.FieldRole, self.unitLineEdit)
 
         self.aggregationLabel = QLabel(self.groupBoxVariable)
         self.aggregationLabel.setObjectName(u"aggregationLabel")
 
-        self.formLayout.setWidget(3, QFormLayout.LabelRole, self.aggregationLabel)
+        self.formLayout.setWidget(3, QFormLayout.ItemRole.LabelRole, self.aggregationLabel)
 
         self.aggregationComboBox = QComboBox(self.groupBoxVariable)
         self.aggregationComboBox.setObjectName(u"aggregationComboBox")
 
-        self.formLayout.setWidget(3, QFormLayout.FieldRole, self.aggregationComboBox)
+        self.formLayout.setWidget(3, QFormLayout.ItemRole.FieldRole, self.aggregationComboBox)
 
 
         self.verticalLayout.addWidget(self.groupBoxVariable)

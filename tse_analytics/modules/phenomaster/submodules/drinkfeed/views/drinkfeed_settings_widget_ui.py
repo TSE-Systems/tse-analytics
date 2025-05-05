@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'drinkfeed_settings_widget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.2
+## Created by: Qt User Interface Compiler version 6.9.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -66,36 +66,36 @@ class Ui_DrinkFeedSettingsWidget(object):
         self.intermealIntervalLabel = QLabel(self.groupBoxSequentialSettings)
         self.intermealIntervalLabel.setObjectName(u"intermealIntervalLabel")
 
-        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.intermealIntervalLabel)
+        self.formLayout.setWidget(0, QFormLayout.ItemRole.LabelRole, self.intermealIntervalLabel)
 
         self.intermealIntervalTimeEdit = QTimeEdit(self.groupBoxSequentialSettings)
         self.intermealIntervalTimeEdit.setObjectName(u"intermealIntervalTimeEdit")
 
-        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.intermealIntervalTimeEdit)
+        self.formLayout.setWidget(0, QFormLayout.ItemRole.FieldRole, self.intermealIntervalTimeEdit)
 
         self.drinkingMinimumAmountLabel = QLabel(self.groupBoxSequentialSettings)
         self.drinkingMinimumAmountLabel.setObjectName(u"drinkingMinimumAmountLabel")
 
-        self.formLayout.setWidget(1, QFormLayout.LabelRole, self.drinkingMinimumAmountLabel)
+        self.formLayout.setWidget(1, QFormLayout.ItemRole.LabelRole, self.drinkingMinimumAmountLabel)
 
         self.drinkingMinimumAmountDoubleSpinBox = QDoubleSpinBox(self.groupBoxSequentialSettings)
         self.drinkingMinimumAmountDoubleSpinBox.setObjectName(u"drinkingMinimumAmountDoubleSpinBox")
         self.drinkingMinimumAmountDoubleSpinBox.setDecimals(3)
         self.drinkingMinimumAmountDoubleSpinBox.setSingleStep(0.001000000000000)
 
-        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.drinkingMinimumAmountDoubleSpinBox)
+        self.formLayout.setWidget(1, QFormLayout.ItemRole.FieldRole, self.drinkingMinimumAmountDoubleSpinBox)
 
         self.feedingMinimumAmountLabel = QLabel(self.groupBoxSequentialSettings)
         self.feedingMinimumAmountLabel.setObjectName(u"feedingMinimumAmountLabel")
 
-        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.feedingMinimumAmountLabel)
+        self.formLayout.setWidget(2, QFormLayout.ItemRole.LabelRole, self.feedingMinimumAmountLabel)
 
         self.feedingMinimumAmountDoubleSpinBox = QDoubleSpinBox(self.groupBoxSequentialSettings)
         self.feedingMinimumAmountDoubleSpinBox.setObjectName(u"feedingMinimumAmountDoubleSpinBox")
         self.feedingMinimumAmountDoubleSpinBox.setDecimals(3)
         self.feedingMinimumAmountDoubleSpinBox.setSingleStep(0.001000000000000)
 
-        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.feedingMinimumAmountDoubleSpinBox)
+        self.formLayout.setWidget(2, QFormLayout.ItemRole.FieldRole, self.feedingMinimumAmountDoubleSpinBox)
 
 
         self.verticalLayout_2.addWidget(self.groupBoxSequentialSettings)
@@ -107,12 +107,12 @@ class Ui_DrinkFeedSettingsWidget(object):
         self.fixedIntervalLabel = QLabel(self.groupBoxIntervalSettings)
         self.fixedIntervalLabel.setObjectName(u"fixedIntervalLabel")
 
-        self.formLayout_2.setWidget(0, QFormLayout.LabelRole, self.fixedIntervalLabel)
+        self.formLayout_2.setWidget(0, QFormLayout.ItemRole.LabelRole, self.fixedIntervalLabel)
 
         self.fixedIntervalTimeEdit = QTimeEdit(self.groupBoxIntervalSettings)
         self.fixedIntervalTimeEdit.setObjectName(u"fixedIntervalTimeEdit")
 
-        self.formLayout_2.setWidget(0, QFormLayout.FieldRole, self.fixedIntervalTimeEdit)
+        self.formLayout_2.setWidget(0, QFormLayout.ItemRole.FieldRole, self.fixedIntervalTimeEdit)
 
 
         self.verticalLayout_2.addWidget(self.groupBoxIntervalSettings)
