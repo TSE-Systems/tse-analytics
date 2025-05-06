@@ -10,26 +10,23 @@ class IntelliCageData:
         self,
         dataset: "IntelliCageDataset",
         name: str,
-        visits_df: pd.DataFrame,
-        nosepokes_df: pd.DataFrame,
-        environment_df: pd.DataFrame,
-        hardware_events_df: pd.DataFrame,
-        log_df: pd.DataFrame,
+        raw_data: dict[str, pd.DataFrame],
     ):
         self.dataset = dataset
         self.name = name
+        self.raw_data = raw_data
 
-        self.visits_df = visits_df
-        self.nosepokes_df = nosepokes_df
-        self.environment_df = environment_df
-        self.hardware_events_df = hardware_events_df
-        self.log_df = log_df
-
-        self.device_ids: list[int] = hardware_events_df["Cage"].unique().tolist()
+        self.device_ids = self.raw_data["HardwareEvents"]["Cage"].unique().tolist()
         self.device_ids.sort()
 
+    def get_raw_data(self):
+        return self.raw_data
+
+    def get_device_ids(self):
+        return self.device_ids
+
     def get_visits_datatable(self) -> Datatable:
-        df = self.visits_df.copy()
+        df = self.raw_data["Visits"].copy()
 
         # Replace animal tags with animal IDs
         tag_to_animal_map = {}
@@ -69,14 +66,14 @@ class IntelliCageData:
         if self.dataset.metadata["data_descriptor"]["Version"] == "Version1":
             df = pd.merge_asof(
                 df,
-                self.environment_df,
+                self.raw_data["Environment"],
                 on="DateTime",
                 direction="nearest",
             )
         else:
             df = pd.merge_asof(
                 df,
-                self.environment_df,
+                self.raw_data["Environment"],
                 on="DateTime",
                 by="Cage",
                 direction="nearest",
@@ -182,7 +179,7 @@ class IntelliCageData:
         return datatable
 
     def get_nosepokes_datatable(self, visits_datatable: Datatable) -> Datatable:
-        df = self.nosepokes_df.copy()
+        df = self.raw_data["Nosepokes"].copy()
         visits_preprocessed_df = visits_datatable.original_df.copy()
 
         # Sanitize visits table before merging
@@ -234,14 +231,14 @@ class IntelliCageData:
         if self.dataset.metadata["data_descriptor"]["Version"] == "Version1":
             df = pd.merge_asof(
                 df,
-                self.environment_df,
+                self.raw_data["Environment"],
                 on="DateTime",
                 direction="nearest",
             )
         else:
             df = pd.merge_asof(
                 df,
-                self.environment_df,
+                self.raw_data["Environment"],
                 on="DateTime",
                 by="Cage",
                 direction="nearest",

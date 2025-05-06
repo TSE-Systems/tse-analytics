@@ -24,12 +24,6 @@ from tse_analytics.core.models.extension_tree_item import ExtensionTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
 from tse_analytics.core.models.workspace_model import WorkspaceModel
 from tse_analytics.core.utils import CSV_IMPORT_ENABLED
-from tse_analytics.modules.intellicage.views.intellicage_dialog import IntelliCageDialog
-from tse_analytics.modules.intellimaze.submodules.animal_gate.views.animal_gate_dialog import AnimalGateDialog
-from tse_analytics.modules.intellimaze.submodules.consumption_scale.views.consumption_scale_dialog import (
-    ConsumptionScaleDialog,
-)
-from tse_analytics.modules.intellimaze.submodules.running_wheel.views.running_wheel_dialog import RunningWheelDialog
 from tse_analytics.modules.phenomaster.submodules.actimot.models.actimot_tree_item import ActimotTreeItem
 from tse_analytics.modules.phenomaster.submodules.actimot.views.actimot_dialog import ActimotDialog
 from tse_analytics.modules.phenomaster.submodules.calo.models.calo_tree_item import CaloDataTreeItem
@@ -41,6 +35,7 @@ from tse_analytics.modules.phenomaster.submodules.trafficage.views.trafficage_di
 from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvDialog
 from tse_analytics.views.general.datasets.adjust_dataset_dialog import AdjustDatasetDialog
 from tse_analytics.views.general.datasets.datasets_merge_dialog import DatasetsMergeDialog
+from tse_analytics.views.misc.raw_data_widget.raw_data_widget import RawDataWidget
 from tse_analytics.views.toolbox.toolbox_button import ToolboxButton
 
 
@@ -353,22 +348,27 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                     pass
             elif isinstance(item, ExtensionTreeItem):
                 match item.name:
-                    case "AnimalGate":
-                        dialog = AnimalGateDialog(item.extension_data, self)
-                    case "RunningWheel":
-                        dialog = RunningWheelDialog(item.extension_data, self)
-                    case "ConsumptionScale":
-                        dialog = ConsumptionScaleDialog(item.extension_data, self)
                     case "IntelliCage raw data":
-                        dialog = IntelliCageDialog(item.extension_data.dataset, self)
+                        widget = RawDataWidget(
+                            item.extension_data.name,
+                            item.extension_data.get_raw_data(),
+                            item.extension_data.get_device_ids(),
+                            "Cage",
+                            True,
+                            self,
+                        )
                     case _:
-                        return
+                        widget = RawDataWidget(
+                            item.extension_data.name,
+                            item.extension_data.get_raw_data(),
+                            item.extension_data.get_device_ids(),
+                            "DeviceId",
+                            False,
+                            self,
+                        )
                 # TODO: check other cases!!
-                dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-                result = dialog.exec()
-                del dialog
-                if result == QDialog.DialogCode.Accepted:
-                    pass
+                widget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+                widget.show()
 
     def _checked_item_changed(self, item, state: bool):
         if isinstance(item, DatasetTreeItem):

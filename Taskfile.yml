@@ -15,6 +15,7 @@ tasks:
   build-ui:
     cmds:
       - pyside6-uic tse_analytics/views/main_window.ui -o tse_analytics/views/main_window_ui.py
+      - pyside6-uic tse_analytics/views/misc/raw_data_widget/raw_data_widget.ui -o tse_analytics/views/misc/raw_data_widget/raw_data_widget_ui.py
       - pyside6-uic tse_analytics/views/general/factors/factors_dialog.ui -o tse_analytics/views/general/factors/factors_dialog_ui.py
       - pyside6-uic tse_analytics/views/general/variables/add_variable_dialog.ui -o tse_analytics/views/general/variables/add_variable_dialog_ui.py
       - pyside6-uic tse_analytics/views/general/datasets/datasets_merge_dialog.ui -o tse_analytics/views/general/datasets/datasets_merge_dialog_ui.py
@@ -50,10 +51,6 @@ tasks:
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_raw_data_widget.ui -o tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_raw_data_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_preprocessed_data_widget.ui -o tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_preprocessed_data_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_heatmap_widget.ui -o tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_heatmap_widget_ui.py
-      - pyside6-uic tse_analytics/modules/intellimaze/submodules/animal_gate/views/animal_gate_dialog.ui -o tse_analytics/modules/intellimaze/submodules/animal_gate/views/animal_gate_dialog_ui.py
-      - pyside6-uic tse_analytics/modules/intellimaze/submodules/running_wheel/views/running_wheel_dialog.ui -o tse_analytics/modules/intellimaze/submodules/running_wheel/views/running_wheel_dialog_ui.py
-      - pyside6-uic tse_analytics/modules/intellimaze/submodules/consumption_scale/views/consumption_scale_dialog.ui -o tse_analytics/modules/intellimaze/submodules/consumption_scale/views/consumption_scale_dialog_ui.py
-      - pyside6-uic tse_analytics/modules/intellicage/views/intellicage_data_widget.ui -o tse_analytics/modules/intellicage/views/intellicage_data_widget_ui.py
       - pyside6-uic tse_analytics/modules/intellicage/views/toolbox/place_preference/place_preference_settings_widget.ui -o tse_analytics/modules/intellicage/views/toolbox/place_preference/place_preference_settings_widget_ui.py
 
   clean:

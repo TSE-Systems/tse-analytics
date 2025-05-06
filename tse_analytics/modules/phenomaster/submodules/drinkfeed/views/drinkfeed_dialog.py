@@ -55,6 +55,9 @@ class DrinkFeedDialog(QWidget):
             # | Qt.WindowType.WindowCloseButtonHint
         )
 
+        settings = QSettings()
+        self.restoreGeometry(settings.value("DrinkFeedDialog/Geometry"))
+
         self.drinkfeed_data = drinkfeed_data
 
         self.selected_boxes: list[DrinkFeedAnimalItem] = []
@@ -77,9 +80,6 @@ class DrinkFeedDialog(QWidget):
         self.add_datatable_action.setEnabled(False)
         self.add_datatable_action.triggered.connect(self._add_datatable)
         self.ui.verticalLayout.insertWidget(0, toolbar)
-
-        settings = QSettings()
-        self.restoreGeometry(settings.value("DrinkFeedDialog/Geometry"))
 
         self.events_table_view = DrinkFeedTableView()
         self.events_table_view.set_data(drinkfeed_data.raw_df)

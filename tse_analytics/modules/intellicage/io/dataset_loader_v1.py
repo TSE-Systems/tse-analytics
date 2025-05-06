@@ -31,20 +31,18 @@ def import_intellicage_dataset_v1(path: Path, tmp_path: Path, data_descriptor: d
         animals=animals,
     )
 
-    visits_df = _import_visits_df(tmp_path)
-    nosepokes_df = _import_nosepokes_df(tmp_path)
-    environment_df = _import_environment_df(tmp_path)
-    hardware_events_df = _import_hardware_events_df(tmp_path)
-    log_df = _import_log_df(tmp_path)
+    raw_data = {
+        "Visits": _import_visits_df(tmp_path),
+        "Nosepokes": _import_nosepokes_df(tmp_path),
+        "Environment": _import_environment_df(tmp_path),
+        "HardwareEvents": _import_hardware_events_df(tmp_path),
+        "Log": _import_log_df(tmp_path),
+    }
 
     dataset.intellicage_data = IntelliCageData(
         dataset,
         "IntelliCage raw data",
-        visits_df,
-        nosepokes_df,
-        environment_df,
-        hardware_events_df,
-        log_df,
+        raw_data,
     )
 
     visits_datatable = dataset.intellicage_data.get_visits_datatable()

@@ -4,7 +4,7 @@ import pandas as pd
 import traja
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, Qt
-from PySide6.QtGui import QCloseEvent, QIcon, QKeyEvent
+from PySide6.QtGui import QIcon, QKeyEvent, QHideEvent
 from PySide6.QtWidgets import QDialog, QFileDialog, QWidget
 
 from tse_analytics.core.data.shared import Aggregation, Variable
@@ -214,7 +214,7 @@ class ActimotDialog(QDialog):
         if filename:
             self.df.to_csv(filename, sep=";", index=False)
 
-    def hideEvent(self, event: QCloseEvent) -> None:
+    def hideEvent(self, event: QHideEvent) -> None:
         settings = QSettings()
         settings.setValue("ActimotDialog/Geometry", self.saveGeometry())
 

@@ -9,25 +9,23 @@ from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMa
 
 def import_animalgate_data(
     folder_path: Path,
-    im_dataset: IntelliMazeDataset,
+    dataset: IntelliMazeDataset,
 ) -> AnimalGateData | None:
     if not folder_path.exists() or not folder_path.is_dir():
         return None
 
-    sessions_df = _import_sessions_df(folder_path)
-    antenna_df = _import_antenna_df(folder_path)
-    log_df = _import_log_df(folder_path)
-    input_df = _import_input_df(folder_path)
-    output_df = _import_output_df(folder_path)
+    raw_data = {
+        "Sessions": _import_sessions_df(folder_path),
+        "Antenna": _import_antenna_df(folder_path),
+        "Log": _import_log_df(folder_path),
+        "Input": _import_input_df(folder_path),
+        "Output": _import_output_df(folder_path),
+    }
 
     data = AnimalGateData(
-        im_dataset,
-        "AnimalGate",
-        sessions_df,
-        antenna_df,
-        log_df,
-        input_df,
-        output_df,
+        dataset,
+        "AnimalGate raw data",
+        raw_data,
     )
     return data
 

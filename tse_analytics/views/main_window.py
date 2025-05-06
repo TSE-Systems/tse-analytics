@@ -18,7 +18,7 @@ from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.intellicage.io.dataset_loader import import_intellicage_dataset
-from tse_analytics.modules.intellimaze.io.dataset_loader import import_im_dataset
+from tse_analytics.modules.intellimaze.io.dataset_loader import import_intellimaze_dataset
 from tse_analytics.modules.phenomaster.io.tse_dataset_loader import load_tse_dataset
 from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvDialog
 from tse_analytics.modules.phenomaster.views.import_tse_dialog import ImportTseDialog
@@ -287,7 +287,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                             self.toast = make_toast(self, "Importing IntelliMaze Dataset", "Please wait...")
                             self.toast.show()
 
-                            worker = Worker(import_im_dataset, path)
+                            worker = Worker(import_intellimaze_dataset, path)
                             worker.signals.result.connect(self._import_result)
                             worker.signals.finished.connect(self._import_finished)
                             TaskManager.start_task(worker)

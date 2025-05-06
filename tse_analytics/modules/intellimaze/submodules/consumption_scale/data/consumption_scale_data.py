@@ -8,20 +8,25 @@ DATA_SUFFIX = "-CS"
 class ConsumptionScaleData:
     def __init__(
         self,
-        im_dataset,
+        dataset,
         name: str,
-        consumption_df: pd.DataFrame,
-        model_df: pd.DataFrame,
+        raw_data: dict[str, pd.DataFrame],
     ):
-        self.im_dataset = im_dataset
+        self.dataset = dataset
         self.name = name
-        self.device_ids: list[str] = im_dataset.devices["ConsumptionScale"]
+        self.raw_data = raw_data
 
-        self.consumption_df = consumption_df
-        self.model_df = model_df
+        self.device_ids = dataset.devices["ConsumptionScale"]
+        self.device_ids.sort()
+
+    def get_raw_data(self):
+        return self.raw_data
+
+    def get_device_ids(self):
+        return self.device_ids
 
     def get_preprocessed_data(self) -> tuple[pd.DataFrame, dict[str, Variable]]:
-        df = self.consumption_df.copy()
+        df = self.raw_data["Consumption"].copy()
 
         # Convert cumulative values to differential ones
         preprocessed_device_df = []
@@ -33,7 +38,7 @@ class ConsumptionScaleData:
         df = pd.concat(preprocessed_device_df, ignore_index=True, sort=False)
 
         tag_to_animal_map = {}
-        for animal in self.im_dataset.animals.values():
+        for animal in self.dataset.animals.values():
             tag_to_animal_map[animal.properties["Tag"]] = animal.id
 
         # Replace animal tags with animal IDs

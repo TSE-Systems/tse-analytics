@@ -1,5 +1,3 @@
-import pandas as pd
-
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.helper import rename_animal_df
@@ -16,26 +14,13 @@ from tse_analytics.modules.intellimaze.submodules.running_wheel.data.running_whe
 class IntelliMazeDataset(Dataset):
     def __init__(
         self,
-        name: str,
-        description: str,
-        path: str,
         metadata: dict | list[dict],
-        devices: dict[str, list[str]],
         animals: dict[str, Animal],
+        devices: dict[str, list[str]],
     ):
         super().__init__(
-            name,
-            description,
-            path,
             metadata,
             animals,
-        )
-
-        self.experiment_started = pd.to_datetime(
-            self.metadata["experiment"]["ExperimentStarted"], format="%m/%d/%Y %H:%M:%S"
-        )
-        self.experiment_stopped = pd.to_datetime(
-            self.metadata["experiment"]["ExperimentStopped"], format="%m/%d/%Y %H:%M:%S"
         )
 
         self.devices = devices
@@ -77,6 +62,8 @@ class IntelliMazeDataset(Dataset):
             ]
 
     def add_children_tree_items(self, dataset_tree_item: DatasetTreeItem) -> None:
+        super().add_children_tree_items(dataset_tree_item)
+
         if self.animal_gate_data is not None:
             dataset_tree_item.add_child(ExtensionTreeItem(self.animal_gate_data))
 

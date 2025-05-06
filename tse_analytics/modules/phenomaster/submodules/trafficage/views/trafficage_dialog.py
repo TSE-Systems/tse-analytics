@@ -1,5 +1,5 @@
 from PySide6.QtCore import QSettings, Qt
-from PySide6.QtGui import QCloseEvent, QKeyEvent
+from PySide6.QtGui import QKeyEvent, QHideEvent
 from PySide6.QtWidgets import QDialog, QWidget, QFileDialog
 
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
@@ -53,7 +53,7 @@ class TraffiCageDialog(QDialog):
         if filename:
             self.dataset.trafficage_data.df.to_csv(filename, sep=";", index=False)
 
-    def hideEvent(self, event: QCloseEvent) -> None:
+    def hideEvent(self, event: QHideEvent) -> None:
         settings = QSettings()
         settings.setValue("TraffiCageDialog/Geometry", self.saveGeometry())
 

@@ -10,14 +10,14 @@ from loguru import logger
 
 from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.data.shared import Animal
-from tse_analytics.modules.intellimaze.submodules.animal_gate.io.importer import import_animalgate_data
-from tse_analytics.modules.intellimaze.submodules.consumption_scale.io.importer import import_consumptionscale_data
+from tse_analytics.modules.intellimaze.submodules.animal_gate.io.data_loader import import_animalgate_data
+from tse_analytics.modules.intellimaze.submodules.consumption_scale.io.data_loader import import_consumptionscale_data
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 from tse_analytics.modules.intellimaze.data.main_table_helper import preprocess_main_table
-from tse_analytics.modules.intellimaze.submodules.running_wheel.io.importer import import_runningwheel_data
+from tse_analytics.modules.intellimaze.submodules.running_wheel.io.data_loader import import_runningwheel_data
 
 
-def import_im_dataset(path: Path) -> IntelliMazeDataset | None:
+def import_intellimaze_dataset(path: Path) -> IntelliMazeDataset | None:
     tic = timeit.default_timer()
 
     with zipfile.ZipFile(path, mode="r") as zip:
@@ -35,18 +35,28 @@ def import_im_dataset(path: Path) -> IntelliMazeDataset | None:
 
             metadata = _import_metadata(tmp_path / "Info.xml")
             devices = _get_devices(metadata)
-            animals = _import_animals(tmp_path / "Animals" / "Animals.animals")
+
+            if (tmp_path / "Groups").is_dir():
+                animals = _import_animals_v6(tmp_path / "Animals" / "Animals.animals")
+            else:
+                animals = _import_animals_v5(tmp_path / "Animals" / "Animals.animals")
 
             dataset = IntelliMazeDataset(
-                name=path.stem,
-                description="IntelliMaze dataset",
-                path=str(path),
                 metadata={
+                    "name": path.stem,
+                    "description": "IntelliMaze dataset",
+                    "source_path": str(path),
+                    "experiment_started": str(
+                        pd.to_datetime(metadata["ExperimentStarted"], format="%m/%d/%Y %H:%M:%S")
+                    ),
+                    "experiment_stopped": str(
+                        pd.to_datetime(metadata["ExperimentStopped"], format="%m/%d/%Y %H:%M:%S")
+                    ),
                     "experiment": metadata,
                     "animals": {k: v.get_dict() for (k, v) in animals.items()},
                 },
-                devices=devices,
                 animals=animals,
+                devices=devices,
             )
 
             if "AnimalGate" in devices and (tmp_path / "AnimalGate").is_dir():
@@ -93,7 +103,7 @@ def _import_metadata(path: Path) -> dict | None:
     return result["ExperimentInfo"]
 
 
-def _import_animals(path: Path) -> dict | None:
+def _import_animals_v5(path: Path) -> dict | None:
     if not path.is_file():
         return None
 
@@ -109,12 +119,49 @@ def _import_animals(path: Path) -> dict | None:
         properties = {
             "Tag": item["Tag"],
             "PMBoxNr": int(item["PMBoxNr"]),
-            "Sex": item["Sex"],
-            "Strain": item["Strain"],
-            "Group": item["Group"],
+            "Sex": item["Sex"] if "Sex" in item else "",
+            "Strain": item["Strain"] if "Strain" in item else "",
+            "Group": item["Group"] if "Group" in item else "",
+            "Treatment": item["Treatment"] if "Treatment" in item else "",
+            "Dosage": item["Dosage"] if "Dosage" in item else "",
             "Weight": float(item["Weight"]),
-            "Treatment": item["Treatment"],
-            "Dosage": item["Dosage"],
+            "Age": item["Age"],
+            "Notes": item["Notes"] if "Notes" in item else "",
+        }
+
+        animal = Animal(
+            enabled=True,
+            id=str(item["Name"]),
+            color=get_color_hex(index),
+            properties=properties,
+        )
+        animals[animal.id] = animal
+    return animals
+
+
+def _import_animals_v6(path: Path) -> dict | None:
+    # Data format starting from IntelliMaze 6.x
+    if not path.is_file():
+        return None
+
+    with open(path, encoding="utf-8-sig") as file:
+        json = xmltodict.parse(
+            file.read(),
+            process_namespaces=False,
+            xml_attribs=False,
+        )
+
+    animals = {}
+    for index, item in enumerate(json["ArrayOfAnimal"]["Animal"]):
+        properties = {
+            "Tag": item["Tag"],
+            "PMBoxNr": int(item["PMBoxNr"]),
+            "Sex": item["Sex"] if "Sex" in item else "",
+            "Strain": item["Strain"] if "Strain" in item else "",
+            "Group": item["Group"] if "Group" in item else "",
+            "Treatment": item["Treatment"] if "Treatment" in item else "",
+            "Dosage": item["Dosage"] if "Dosage" in item else "",
+            "Weight": float(item["Weight"]),
             "Age": item["Age"],
             "Notes": item["Notes"] if "Notes" in item else "",
         }

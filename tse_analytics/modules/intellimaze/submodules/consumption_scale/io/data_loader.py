@@ -11,19 +11,20 @@ from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMa
 
 def import_consumptionscale_data(
     folder_path: Path,
-    im_dataset: IntelliMazeDataset,
+    dataset: IntelliMazeDataset,
 ) -> ConsumptionScaleData | None:
     if not folder_path.exists() or not folder_path.is_dir():
         return None
 
-    consumption_df = _import_consumption_df(folder_path)
-    model_df = _import_model_df(folder_path)
+    raw_data = {
+        "Consumption": _import_consumption_df(folder_path),
+        "Model": _import_model_df(folder_path),
+    }
 
     data = ConsumptionScaleData(
-        im_dataset,
-        "ConsumptionScale",
-        consumption_df,
-        model_df,
+        dataset,
+        "ConsumptionScale raw data",
+        raw_data,
     )
     return data
 

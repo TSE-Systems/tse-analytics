@@ -9,19 +9,20 @@ from tse_analytics.modules.intellimaze.submodules.running_wheel.data.running_whe
 
 def import_runningwheel_data(
     folder_path: Path,
-    im_dataset: IntelliMazeDataset,
+    dataset: IntelliMazeDataset,
 ) -> RunningWheelData | None:
     if not folder_path.exists() or not folder_path.is_dir():
         return None
 
-    registration_df = _import_registration_df(folder_path)
-    model_df = _import_model_df(folder_path)
+    raw_data = {
+        "Registration": _import_registration_df(folder_path),
+        "Model": _import_model_df(folder_path),
+    }
 
     data = RunningWheelData(
-        im_dataset,
-        "RunningWheel",
-        registration_df,
-        model_df,
+        dataset,
+        "RunningWheel raw data",
+        raw_data,
     )
     return data
 
