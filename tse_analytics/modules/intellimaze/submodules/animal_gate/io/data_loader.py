@@ -114,7 +114,7 @@ def _import_antenna_df(folder_path: Path) -> pd.DataFrame | None:
         df["Time"],
         format="ISO8601",
         utc=False,
-    )
+    ).dt.tz_localize(None)
 
     # Convert categorical types
     df = df.astype({
@@ -154,7 +154,7 @@ def _import_log_df(folder_path: Path) -> pd.DataFrame | None:
         df["DateTime"],
         format="ISO8601",
         utc=False,
-    )
+    ).dt.tz_localize(None)
 
     # Convert categorical types
     df = df.astype({

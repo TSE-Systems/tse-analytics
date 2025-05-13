@@ -47,7 +47,7 @@ def _import_integer_variables_data(folder_path: Path) -> pd.DataFrame | None:
         df["Time"],
         format="ISO8601",
         utc=False,
-    )
+    ).dt.tz_localize(None)
 
     # Convert categorical types
     df = df.astype({
@@ -87,7 +87,7 @@ def _import_double_variables_data(folder_path: Path) -> pd.DataFrame | None:
         df["Time"],
         format="ISO8601",
         utc=False,
-    )
+    ).dt.tz_localize(None)
 
     # Convert categorical types
     df = df.astype({
@@ -126,7 +126,7 @@ def _import_boolean_variables_data(folder_path: Path) -> pd.DataFrame | None:
         df["Time"],
         format="ISO8601",
         utc=False,
-    )
+    ).dt.tz_localize(None)
 
     # Convert categorical types
     df = df.astype({

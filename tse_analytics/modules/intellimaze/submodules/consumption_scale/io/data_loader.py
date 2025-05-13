@@ -58,7 +58,7 @@ def _import_consumption_df(folder_path: Path) -> pd.DataFrame | None:
         df["Time"],
         format="ISO8601",
         utc=False,
-    )
+    ).dt.tz_localize(None)
 
     # Convert categorical types
     df = df.astype({
@@ -96,7 +96,7 @@ def _import_model_df(folder_path: Path) -> pd.DataFrame | None:
         df["Time"],
         format="ISO8601",
         utc=False,
-    )
+    ).dt.tz_localize(None)
 
     # Convert categorical types
     df = df.astype({
