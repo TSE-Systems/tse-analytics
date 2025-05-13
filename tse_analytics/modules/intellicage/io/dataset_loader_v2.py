@@ -46,11 +46,7 @@ def import_intellicage_dataset_v2(path: Path, tmp_path: Path, data_descriptor: d
         raw_data,
     )
 
-    visits_datatable = dataset.intellicage_data.get_visits_datatable()
-    dataset.add_datatable(visits_datatable)
-
-    nosepokes_datatable = dataset.intellicage_data.get_nosepokes_datatable(visits_datatable)
-    dataset.add_datatable(nosepokes_datatable)
+    dataset.intellicage_data.preprocess_data()
 
     return dataset
 

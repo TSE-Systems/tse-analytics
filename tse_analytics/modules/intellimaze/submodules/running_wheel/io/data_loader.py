@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
+from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
 from tse_analytics.modules.intellimaze.submodules.running_wheel.data.running_wheel_data import RunningWheelData
 
 
@@ -18,6 +19,10 @@ def import_runningwheel_data(
         "Registration": _import_registration_df(folder_path),
         "Model": _import_model_df(folder_path),
     }
+
+    variables_data = import_variable_data(folder_path)
+    if len(variables_data) > 0:
+        raw_data = raw_data | variables_data
 
     data = RunningWheelData(
         dataset,

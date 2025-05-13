@@ -68,7 +68,7 @@ def import_intellimaze_dataset(path: Path) -> IntelliMazeDataset | None:
             if "ConsumptionScale" in devices and (tmp_path / "ConsumptionScale").is_dir():
                 dataset.consumption_scale_data = import_consumptionscale_data(tmp_path / "ConsumptionScale", dataset)
 
-    dataset = preprocess_main_table(dataset, pd.to_timedelta(1, unit="minute"))
+    # dataset = preprocess_main_table(dataset, pd.to_timedelta(1, unit="minute"))
 
     logger.info(f"Import complete in {(timeit.default_timer() - tic):.3f} sec: {path}")
 

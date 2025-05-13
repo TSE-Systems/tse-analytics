@@ -3,6 +3,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
 from tse_analytics.modules.intellimaze.submodules.consumption_scale.data.consumption_scale_data import (
     ConsumptionScaleData,
 )
@@ -20,6 +21,10 @@ def import_consumptionscale_data(
         "Consumption": _import_consumption_df(folder_path),
         "Model": _import_model_df(folder_path),
     }
+
+    variables_data = import_variable_data(folder_path)
+    if len(variables_data) > 0:
+        raw_data = raw_data | variables_data
 
     data = ConsumptionScaleData(
         dataset,

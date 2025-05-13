@@ -3,6 +3,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
 from tse_analytics.modules.intellimaze.submodules.animal_gate.data.animal_gate_data import AnimalGateData
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 
@@ -22,11 +23,18 @@ def import_animalgate_data(
         "Output": _import_output_df(folder_path),
     }
 
+    variables_data = import_variable_data(folder_path)
+    if len(variables_data) > 0:
+        raw_data = raw_data | variables_data
+
     data = AnimalGateData(
         dataset,
         "AnimalGate raw data",
         raw_data,
     )
+
+    data.preprocess_data()
+
     return data
 
 
@@ -37,8 +45,8 @@ def _import_sessions_df(folder_path: Path) -> pd.DataFrame | None:
 
     dtype = {
         "DeviceId": str,
-        "IdSectionVisited": bool,
-        "StandbySectionVisited": bool,
+        "IdSectionVisited": int,
+        "StandbySectionVisited": int,
         "Direction": str,
         "Weight": np.float64,
         "Tag": str,
@@ -61,13 +69,13 @@ def _import_sessions_df(folder_path: Path) -> pd.DataFrame | None:
         df["Start"],
         format="ISO8601",
         utc=False,
-    )
+    ).dt.tz_localize(None)
 
     df["End"] = pd.to_datetime(
         df["End"],
         format="ISO8601",
         utc=False,
-    )
+    ).dt.tz_localize(None)
 
     # Convert categorical types
     df = df.astype({

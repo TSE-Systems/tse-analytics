@@ -25,7 +25,14 @@ class IntelliCageData:
     def get_device_ids(self):
         return self.device_ids
 
-    def get_visits_datatable(self) -> Datatable:
+    def preprocess_data(self) -> None:
+        visits_datatable = self._get_visits_datatable()
+        self.dataset.add_datatable(visits_datatable)
+
+        nosepokes_datatable = self._get_nosepokes_datatable(visits_datatable)
+        self.dataset.add_datatable(nosepokes_datatable)
+
+    def _get_visits_datatable(self) -> Datatable:
         df = self.raw_data["Visits"].copy()
 
         # Replace animal tags with animal IDs
@@ -178,7 +185,7 @@ class IntelliCageData:
 
         return datatable
 
-    def get_nosepokes_datatable(self, visits_datatable: Datatable) -> Datatable:
+    def _get_nosepokes_datatable(self, visits_datatable: Datatable) -> Datatable:
         df = self.raw_data["Nosepokes"].copy()
         visits_preprocessed_df = visits_datatable.original_df.copy()
 
