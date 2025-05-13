@@ -17,7 +17,7 @@ datas += copy_metadata('numpy')
 a = Analysis(
     ['../tse_analytics/__main__.py'],
     pathex=[pathex],
-    binaries=[],
+    binaries=[('../.venv/Scripts/python.exe', '.'),],
     datas=datas,
     hiddenimports=[],
     hookspath=['setup/hooks'],

@@ -1,16 +1,11 @@
-from PySide6.QtCore import Qt
+import weakref
 
 
 class TreeItem:
-    column_names = ["Name"]
-    column_flags = [Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsUserCheckable]
-
-    def __init__(self, name: str, meta: dict | None = None):
+    def __init__(self, name: str, parent=None):
         self.name = name
-        self.meta: dict | None = meta
-        self.parent_item = None
+        self.parent_item = weakref.ref(parent) if parent else None
         self.child_items = []
-        self._row = 0
         self._checked = False
 
     @property
@@ -22,56 +17,34 @@ class TreeItem:
         return None
 
     @property
-    def tooltip(self):
+    def tooltip(self) -> str | None:
         return None
 
-    @property
-    def column_data(self):
-        return [self.name]
-
-    def column_count(self):
-        return len(self.column_names)
-
-    def child_count(self):
+    def child_count(self) -> int:
         return len(self.child_items)
 
     def child(self, row: int):
-        if 0 <= row < self.child_count():
-            return self.child_items[row]
+        return self.child_items[row] if 0 <= row < len(self.child_items) else None
 
     def parent(self):
-        return self.parent_item
+        return self.parent_item() if self.parent_item else None
 
-    def row(self):
-        return self._row
+    def row(self) -> int:
+        if self.parent_item:
+            return self.parent_item().child_items.index(self)
+        return 0
 
     def add_child(self, child):
-        child.parent_item = self
-        child._row = len(self.child_items)
+        child.parent_item = weakref.ref(self)
         self.child_items.append(child)
 
-    def remove_child(self, position: int):
-        if position < 0 or position > self.child_count():
-            return False
-        child = self.child_items.pop(position)
-        child.parent_item = None
-        return True
-
     def clear(self):
+        # for child in self.child_items:
+        #     child.parent_item = None
         self.child_items.clear()
 
     def data(self, column: int):
-        if 0 <= column < self.column_count():
-            return self.column_data[column]
-
-    def set_data(self, column: int, value):
-        if column == 0:
-            self.checked = value
-            return True
-        return False
-
-    def flags(self, column: int):
-        return self.column_flags[column]
+        return self.name
 
     @property
     def checked(self):

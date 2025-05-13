@@ -2,8 +2,8 @@ import pandas as pd
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
 from tse_analytics.core import messaging
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import TimePhase
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
 
 
 class TimePhasesModel(QAbstractTableModel):
@@ -15,13 +15,14 @@ class TimePhasesModel(QAbstractTableModel):
         self.dataset = dataset
         self.items = []
 
-    def data(self, index: QModelIndex, role: Qt.ItemDataRole):
+    def data(self, index: QModelIndex, role: Qt.ItemDataRole = ...):
         if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
             item = self.items[index.row()]
             values = (item.name, str(item.start_timestamp))
             return values[index.column()]
+        return None
 
-    def setData(self, index: QModelIndex, value, role: Qt.ItemDataRole):
+    def setData(self, index: QModelIndex, value, role: Qt.ItemDataRole = ...):
         if role == Qt.ItemDataRole.EditRole:
             item = self.items[index.row()]
             if index.column() == 0:
@@ -35,8 +36,9 @@ class TimePhasesModel(QAbstractTableModel):
             else:
                 return False
             return True
+        return None
 
-    def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
+    def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = ...):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             return self.header[col]
 

@@ -3,7 +3,7 @@ import pandas as pd
 from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.shared import Variable
 
-default_columns = ["DateTime", "Timedelta", "Animal", "Box", "Run", "Bin"]
+default_columns = ["Animal", "Timedelta", "DateTime", "Run"]
 
 
 def process_time_interval_binning(
@@ -11,6 +11,7 @@ def process_time_interval_binning(
     settings: TimeIntervalsBinningSettings,
     variables: dict[str, Variable],
     calculate_errors: str | None = None,
+    origin: pd.Timestamp | str = "start",
 ) -> pd.DataFrame:
     if df.empty:
         return df
@@ -19,14 +20,19 @@ def process_time_interval_binning(
 
     agg = {
         "DateTime": "first",
-        "Box": "first",
-        "Run": "first",
     }
+
+    include_runs = "Run" in df.columns
+    if include_runs:
+        agg["Run"] = "first"
+
     for column in df.columns:
         if column not in default_columns:
             if df.dtypes[column].name != "category":
-                agg[column] = variables[column].aggregation
+                if column in variables:
+                    agg[column] = variables[column].aggregation
             else:
+                # Include categorical data fields
                 agg[column] = "first"
 
     if calculate_errors is not None:
@@ -35,23 +41,22 @@ def process_time_interval_binning(
         agg["Error"] = calculate_errors
 
     result = df.groupby("Animal", dropna=False, observed=False)
-    result = result.resample(timedelta, on="Timedelta", origin="start").aggregate(agg)
-    result.sort_values(by="DateTime", inplace=True)
+    result = result.resample(timedelta, on="Timedelta", origin=origin).aggregate(agg)
+
+    result = result[result["DateTime"].notna()]
+
+    # result.sort_values(by="Timedelta", inplace=True)
     result.reset_index(inplace=True, drop=False)
 
-    # Get unique runs numbers
-    runs = result["Run"].unique().tolist()
-
-    # Reassign timedeltas
-    for run in runs:
-        # Get start timestamp per run
-        start_date_time = result[result["Run"] == run]["DateTime"].iloc[0]
-        result.loc[result["Run"] == run, "Timedelta"] = result["DateTime"] - start_date_time
-
     # Reassign bins numbers
-    result["Bin"] = (result["Timedelta"] / timedelta).round().astype(int)
+    result.insert(loc=0, column="Bin", value=(result["Timedelta"] / timedelta).round().astype(int))
 
     result.sort_values(by="Bin", inplace=True)
     result.reset_index(inplace=True, drop=True)
+
+    if include_runs:
+        result = result.astype({
+            "Run": int,
+        })
 
     return result

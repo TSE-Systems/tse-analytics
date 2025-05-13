@@ -5,13 +5,13 @@ import sys
 import matplotlib
 import pandas as pd
 import seaborn as sns
-from loguru import logger
-from pyqtgraph import setConfigOptions
 from PySide6.QtCore import QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
+from loguru import logger
+from pyqtgraph import setConfigOptions
 
-from tse_analytics.core.helper import IS_RELEASE
+from tse_analytics.core.utils import IS_RELEASE
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.views.main_window import MainWindow
 
@@ -33,6 +33,7 @@ pd.options.mode.copy_on_write = "warn"
 # pd.options.mode.copy_on_write = True
 # pd.options.future.infer_string = True
 pd.set_option("colheader_justify", "center")  # FOR TABLE <th>
+# pd.set_option("display.precision", 3)
 
 sns.set_theme(style="whitegrid")
 sns.set_color_codes("pastel")

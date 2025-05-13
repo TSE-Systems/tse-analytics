@@ -33,14 +33,13 @@
       <string>Open Recent</string>
      </property>
     </widget>
+    <addaction name="actionNewWorkspace"/>
     <addaction name="actionOpenWorkspace"/>
     <addaction name="menuOpenRecent"/>
     <addaction name="actionSaveWorkspace"/>
-    <addaction name="separator"/>
     <addaction name="actionImportDataset"/>
     <addaction name="separator"/>
-    <addaction name="actionExportCsv"/>
-    <addaction name="actionExportExcel"/>
+    <addaction name="actionSettings"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -147,33 +146,9 @@
     <string>Save workspace...</string>
    </property>
   </action>
-  <action name="actionExportExcel">
-   <property name="icon">
-    <iconset resource="../../resources/resources.qrc">
-     <normaloff>:/icons/icons8-export-16.png</normaloff>:/icons/icons8-export-16.png</iconset>
-   </property>
-   <property name="text">
-    <string>Export to Excel</string>
-   </property>
-   <property name="toolTip">
-    <string>Export to Excel...</string>
-   </property>
-  </action>
   <action name="actionResetLayout">
    <property name="text">
     <string>Reset Layout</string>
-   </property>
-  </action>
-  <action name="actionExportCsv">
-   <property name="icon">
-    <iconset resource="../../resources/resources.qrc">
-     <normaloff>:/icons/icons8-export-16.png</normaloff>:/icons/icons8-export-16.png</iconset>
-   </property>
-   <property name="text">
-    <string>Export to CSV</string>
-   </property>
-   <property name="toolTip">
-    <string>Export to CSV...</string>
    </property>
   </action>
   <action name="actionHelp">
@@ -196,6 +171,33 @@
   <action name="actionRestoreLayout">
    <property name="text">
     <string>Restore Layout</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="icon">
+    <iconset resource="../../resources/resources.qrc">
+     <normaloff>:/icons/icons8-settings-16.png</normaloff>:/icons/icons8-settings-16.png</iconset>
+   </property>
+   <property name="text">
+    <string>Settings</string>
+   </property>
+   <property name="toolTip">
+    <string>Settings...</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionNewWorkspace">
+   <property name="icon">
+    <iconset resource="../../resources/resources.qrc">
+     <normaloff>:/icons/icons8-file-16.png</normaloff>:/icons/icons8-file-16.png</iconset>
+   </property>
+   <property name="text">
+    <string>New Workspace</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

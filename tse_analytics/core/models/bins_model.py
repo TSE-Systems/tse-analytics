@@ -9,17 +9,17 @@ class BinsModel(QAbstractTableModel):
 
         self.items = items
 
-    def data(self, index: QModelIndex, role: Qt.ItemDataRole):
+    def data(self, index: QModelIndex, role: Qt.ItemDataRole = ...):
         if role == Qt.ItemDataRole.DisplayRole:
             item = self.items[index.row()]
             return int(item)
 
-    def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
+    def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = ...):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             return self.header[col]
 
-    def rowCount(self, parent):
+    def rowCount(self, parent: QModelIndex = ...):
         return len(self.items)
 
-    def columnCount(self, parent):
+    def columnCount(self, parent: QModelIndex = ...):
         return len(self.header)

@@ -15,55 +15,43 @@ tasks:
   build-ui:
     cmds:
       - pyside6-uic tse_analytics/views/main_window.ui -o tse_analytics/views/main_window_ui.py
-      - pyside6-uic tse_analytics/views/import_csv_dialog.ui -o tse_analytics/views/import_csv_dialog_ui.py
-      - pyside6-uic tse_analytics/views/import_tse_dialog.ui -o tse_analytics/views/import_tse_dialog_ui.py
-      - pyside6-uic tse_analytics/views/factors_dialog.ui -o tse_analytics/views/factors_dialog_ui.py
-      - pyside6-uic tse_analytics/views/datasets/datasets_widget.ui -o tse_analytics/views/datasets/datasets_widget_ui.py
-      - pyside6-uic tse_analytics/views/datasets/datasets_merge_dialog.ui -o tse_analytics/views/datasets/datasets_merge_dialog_ui.py
-      - pyside6-uic tse_analytics/views/datasets/adjust_dataset_dialog.ui -o tse_analytics/views/datasets/adjust_dataset_dialog_ui.py
-      - pyside6-uic tse_analytics/views/selection/factors/factors_widget.ui -o tse_analytics/views/selection/factors/factors_widget_ui.py
-      - pyside6-uic tse_analytics/views/selection/animals/animals_widget.ui -o tse_analytics/views/selection/animals/animals_widget_ui.py
-      - pyside6-uic tse_analytics/views/selection/variables/variables_widget.ui -o tse_analytics/views/selection/variables/variables_widget_ui.py
-      - pyside6-uic tse_analytics/views/data/data_table_widget.ui -o tse_analytics/views/data/data_table_widget_ui.py
-      - pyside6-uic tse_analytics/views/data/data_plot_widget.ui -o tse_analytics/views/data/data_plot_widget_ui.py
-      - pyside6-uic tse_analytics/views/settings/time_intervals_settings_widget.ui -o tse_analytics/views/settings/time_intervals_settings_widget_ui.py
-      - pyside6-uic tse_analytics/views/settings/time_cycles_settings_widget.ui -o tse_analytics/views/settings/time_cycles_settings_widget_ui.py
-      - pyside6-uic tse_analytics/views/settings/time_phases_settings_widget.ui -o tse_analytics/views/settings/time_phases_settings_widget_ui.py
-      - pyside6-uic tse_analytics/views/settings/binning_settings_widget.ui -o tse_analytics/views/settings/binning_settings_widget_ui.py
-      - pyside6-uic tse_analytics/views/analysis/histogram/histogram_widget.ui -o tse_analytics/views/analysis/histogram/histogram_widget_ui.py
-      - pyside6-uic tse_analytics/views/analysis/distribution/distribution_widget.ui -o tse_analytics/views/analysis/distribution/distribution_widget_ui.py
-      - pyside6-uic tse_analytics/views/analysis/normality/normality_widget.ui -o tse_analytics/views/analysis/normality/normality_widget_ui.py
-      - pyside6-uic tse_analytics/views/analysis/correlation/correlation_widget.ui -o tse_analytics/views/analysis/correlation/correlation_widget_ui.py
-      - pyside6-uic tse_analytics/views/analysis/regression/regression_widget.ui -o tse_analytics/views/analysis/regression/regression_widget_ui.py
-      - pyside6-uic tse_analytics/views/analysis/matrixplot/matrixplot_widget.ui -o tse_analytics/views/analysis/matrixplot/matrixplot_widget_ui.py
-      - pyside6-uic tse_analytics/views/analysis/pca/pca_widget.ui -o tse_analytics/views/analysis/pca/pca_widget_ui.py
-      - pyside6-uic tse_analytics/views/analysis/tsne/tsne_widget.ui -o tse_analytics/views/analysis/tsne/tsne_widget_ui.py
-      - pyside6-uic tse_analytics/views/analysis/one_way_anova/one_way_anova_widget.ui -o tse_analytics/views/analysis/one_way_anova/one_way_anova_widget_ui.py
-      - pyside6-uic tse_analytics/views/analysis/n_way_anova/n_way_anova_widget.ui -o tse_analytics/views/analysis/n_way_anova/n_way_anova_widget_ui.py
-      - pyside6-uic tse_analytics/views/analysis/rm_anova/rm_anova_widget.ui -o tse_analytics/views/analysis/rm_anova/rm_anova_widget_ui.py
-      - pyside6-uic tse_analytics/views/analysis/mixed_anova/mixed_anova_widget.ui -o tse_analytics/views/analysis/mixed_anova/mixed_anova_widget_ui.py
-      - pyside6-uic tse_analytics/views/analysis/ancova/ancova_widget.ui -o tse_analytics/views/analysis/ancova/ancova_widget_ui.py
-      - pyside6-uic tse_analytics/views/analysis/timeseries_decomposition/timeseries_decomposition_widget.ui -o tse_analytics/views/analysis/timeseries_decomposition/timeseries_decomposition_widget_ui.py
-      - pyside6-uic tse_analytics/views/analysis/timeseries_autocorrelation/timeseries_autocorrelation_widget.ui -o tse_analytics/views/analysis/timeseries_autocorrelation/timeseries_autocorrelation_widget_ui.py
-      - pyside6-uic tse_analytics/views/about_dialog.ui -o tse_analytics/views/about_dialog_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/meal_details/views/meal_details_dialog.ui -o tse_analytics/modules/phenomaster/meal_details/views/meal_details_dialog_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/meal_details/views/meal_details_plot_widget.ui -o tse_analytics/modules/phenomaster/meal_details/views/meal_details_plot_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/meal_details/views/meal_details_settings_widget.ui -o tse_analytics/modules/phenomaster/meal_details/views/meal_details_settings_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/meal_details/views/meal_episodes_plot_widget.ui -o tse_analytics/modules/phenomaster/meal_details/views/meal_episodes_plot_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/calo_details/views/calo_details_dialog.ui -o tse_analytics/modules/phenomaster/calo_details/views/calo_details_dialog_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/calo_details/views/calo_details_plot_widget.ui -o tse_analytics/modules/phenomaster/calo_details/views/calo_details_plot_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/calo_details/views/calo_details_settings_widget.ui -o tse_analytics/modules/phenomaster/calo_details/views/calo_details_settings_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/calo_details/views/calo_details_gas_settings_widget.ui -o tse_analytics/modules/phenomaster/calo_details/views/calo_details_gas_settings_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/calo_details/views/calo_details_test_fit_widget.ui -o tse_analytics/modules/phenomaster/calo_details/views/calo_details_test_fit_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/calo_details/views/calo_details_rer_widget.ui -o tse_analytics/modules/phenomaster/calo_details/views/calo_details_rer_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/actimot/views/actimot_dialog.ui -o tse_analytics/modules/phenomaster/actimot/views/actimot_dialog_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/actimot/views/actimot_plot_widget.ui -o tse_analytics/modules/phenomaster/actimot/views/actimot_plot_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/actimot/views/actimot_settings_widget.ui -o tse_analytics/modules/phenomaster/actimot/views/actimot_settings_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/actimot/views/actimot_stream_plot_widget.ui -o tse_analytics/modules/phenomaster/actimot/views/actimot_stream_plot_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/actimot/views/actimot_heatmap_plot_widget.ui -o tse_analytics/modules/phenomaster/actimot/views/actimot_heatmap_plot_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/actimot/views/actimot_trajectory_plot_widget.ui -o tse_analytics/modules/phenomaster/actimot/views/actimot_trajectory_plot_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/actimot/views/actimot_frames_widget.ui -o tse_analytics/modules/phenomaster/actimot/views/actimot_frames_widget_ui.py
-      - pyside6-uic tse_analytics/views/reports/reports_widget.ui -o tse_analytics/views/reports/reports_widget_ui.py
+      - pyside6-uic tse_analytics/views/misc/raw_data_widget/raw_data_widget.ui -o tse_analytics/views/misc/raw_data_widget/raw_data_widget_ui.py
+      - pyside6-uic tse_analytics/views/general/factors/factors_dialog.ui -o tse_analytics/views/general/factors/factors_dialog_ui.py
+      - pyside6-uic tse_analytics/views/general/variables/add_variable_dialog.ui -o tse_analytics/views/general/variables/add_variable_dialog_ui.py
+      - pyside6-uic tse_analytics/views/general/datasets/datasets_merge_dialog.ui -o tse_analytics/views/general/datasets/datasets_merge_dialog_ui.py
+      - pyside6-uic tse_analytics/views/general/datasets/adjust_dataset_dialog.ui -o tse_analytics/views/general/datasets/adjust_dataset_dialog_ui.py
+      - pyside6-uic tse_analytics/views/general/settings/binning_settings_widget.ui -o tse_analytics/views/general/settings/binning_settings_widget_ui.py
+      - pyside6-uic tse_analytics/views/general/about/about_dialog.ui -o tse_analytics/views/general/about/about_dialog_ui.py
+      - pyside6-uic tse_analytics/views/general/settings/settings_dialog.ui -o tse_analytics/views/general/settings/settings_dialog_ui.py
+      - pyside6-uic tse_analytics/views/toolbox/n_way_anova/n_way_anova_settings_widget.ui -o tse_analytics/views/toolbox/n_way_anova/n_way_anova_settings_widget_ui.py
+      - pyside6-uic tse_analytics/views/toolbox/rm_anova/rm_anova_settings_widget.ui -o tse_analytics/views/toolbox/rm_anova/rm_anova_settings_widget_ui.py
+      - pyside6-uic tse_analytics/views/toolbox/mixed_anova/mixed_anova_settings_widget.ui -o tse_analytics/views/toolbox/mixed_anova/mixed_anova_settings_widget_ui.py
+      - pyside6-uic tse_analytics/views/toolbox/ancova/ancova_settings_widget.ui -o tse_analytics/views/toolbox/ancova/ancova_settings_widget_ui.py
+      - pyside6-uic tse_analytics/views/toolbox/reports/reports_widget.ui -o tse_analytics/views/toolbox/reports/reports_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/views/import_csv_dialog.ui -o tse_analytics/modules/phenomaster/views/import_csv_dialog_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/views/import_tse_dialog.ui -o tse_analytics/modules/phenomaster/views/import_tse_dialog_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_dialog.ui -o tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_dialog_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_plot_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_settings_widget.ui -o tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_settings_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_episodes_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_episodes_plot_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/calo_dialog.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/calo_dialog_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/calo_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/calo_plot_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/calo_settings_widget.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/calo_settings_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/calo_gas_settings_widget.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/calo_gas_settings_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/calo_test_fit_widget.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/calo_test_fit_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/calo_rer_widget.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/calo_rer_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_dialog.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_dialog_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_plot_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_settings_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_settings_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_stream_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_stream_plot_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_heatmap_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_heatmap_plot_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_trajectory_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_trajectory_plot_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_frames_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_frames_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_dialog.ui -o tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_dialog_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_raw_data_widget.ui -o tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_raw_data_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_preprocessed_data_widget.ui -o tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_preprocessed_data_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_heatmap_widget.ui -o tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_heatmap_widget_ui.py
+      - pyside6-uic tse_analytics/modules/intellicage/views/toolbox/place_preference/place_preference_settings_widget.ui -o tse_analytics/modules/intellicage/views/toolbox/place_preference/place_preference_settings_widget_ui.py
 
   clean:
     desc: remove all build, test, coverage and Python artifacts
@@ -119,3 +107,9 @@ tasks:
   qss:
     cmds:
       - qtsass ./tse_analytics/styles/scss -o ./tse_analytics/styles/qss
+
+  update:
+    cmds:
+      - uv self update
+      - uv lock --upgrade
+      - uv sync

@@ -1,6 +1,6 @@
 from typing import Any
 
-from PySide6.QtCore import QAbstractItemModel, QModelIndex, QObject, Qt
+from PySide6.QtCore import QAbstractItemModel, QModelIndex, QObject, QPersistentModelIndex, Qt
 
 from tse_analytics.core.models.json_tree_item import TreeItem
 
@@ -38,7 +38,7 @@ class JsonModel(QAbstractItemModel):
 
         return True
 
-    def data(self, index: QModelIndex, role: Qt.ItemDataRole) -> Any:
+    def data(self, index: QModelIndex | QPersistentModelIndex, role: Qt.ItemDataRole = ...) -> Any:
         """Override from QAbstractItemModel
 
         Return data from a json item according index and role
@@ -57,7 +57,7 @@ class JsonModel(QAbstractItemModel):
             if index.column() == 1:
                 return item.value
 
-    def setData(self, index: QModelIndex, value: Any, role: Qt.ItemDataRole):
+    def setData(self, index: QModelIndex | QPersistentModelIndex, value: Any, role: Qt.ItemDataRole = ...):
         """Override from QAbstractItemModel
 
         Set json item according index and role
@@ -83,7 +83,7 @@ class JsonModel(QAbstractItemModel):
 
         return False
 
-    def headerData(self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
+    def headerData(self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = ...):
         """Override from QAbstractItemModel
 
         For the JsonModel, it returns only data for columns (orientation = Horizontal)
@@ -115,7 +115,7 @@ class JsonModel(QAbstractItemModel):
         else:
             return QModelIndex()
 
-    def parent(self, index: QModelIndex) -> QModelIndex:
+    def parent(self, index: QModelIndex = ...):
         """Override from QAbstractItemModel
 
         Return parent index of index
@@ -155,7 +155,7 @@ class JsonModel(QAbstractItemModel):
         """
         return 2
 
-    def flags(self, index: QModelIndex) -> Qt.ItemFlags:
+    def flags(self, index: QModelIndex | QPersistentModelIndex):
         """Override from QAbstractItemModel
 
         Return flags of index

@@ -6,9 +6,9 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QMenu, QWidget
 from PySide6QtAds import CDockAreaWidget, CDockContainerWidget, CDockManager, CDockWidget, DockWidgetArea
 
-from tse_analytics.modules.phenomaster.data.dataset import Dataset
+from tse_analytics.core.data.dataset import Dataset
 
-LAYOUT_VERSION = 12
+LAYOUT_VERSION = 13
 
 CDockManager.setConfigFlags(CDockManager.DefaultOpaqueConfig)
 CDockManager.setConfigFlag(CDockManager.ActiveTabHasCloseButton, True)
@@ -26,7 +26,6 @@ DEFAULT_WIDGETS = {
     "CentralWidget",
     "Datasets",
     "Info",
-    "Help",
     "Log",
     "Animals",
     "Factors",
@@ -39,13 +38,30 @@ class LayoutManager:
     dock_manager: CDockManager | None = None
     menu: QMenu | None = None
 
-    _added_widgets: dict[str, CDockWidget] = {}
     _dataset_widgets: dict[UUID, list[CDockWidget]] = {}
 
     def __init__(self, parent: QWidget, menu: QMenu):
         LayoutManager.dock_manager = CDockManager(parent)
         LayoutManager.dock_manager.setStyleSheet("")
         LayoutManager.menu = menu
+        # LayoutManager.dock_manager.dockWidgetAboutToBeRemoved.connect(LayoutManager._dockWidgetAboutToBeRemoved)
+        # LayoutManager.dock_manager.dockWidgetRemoved.connect(LayoutManager._dockWidgetRemoved)
+
+    # @classmethod
+    # def _dockWidgetAboutToBeRemoved(
+    #     cls,
+    #     dock_widget: CDockWidget,
+    # ) -> None:
+    #     widget = dock_widget.widget()
+    #     if isinstance(widget, messaging.MessengerListener):
+    #         messaging.unsubscribe_all(widget)
+
+    # @classmethod
+    # def _dockWidgetRemoved(
+    #     cls,
+    #     dock_widget: CDockWidget,
+    # ) -> None:
+    #     print(f"Dock widget removed: {dock_widget.objectName()}")
 
     @classmethod
     def register_dock_widget(
@@ -54,13 +70,12 @@ class LayoutManager:
         title: str,
         icon: QIcon,
         add_to_menu: bool = True,
-    ) -> CDockWidget | None:
+    ) -> CDockWidget:
         dock_widget = CDockWidget(title)
         dock_widget.setFeature(CDockWidget.DockWidgetClosable, False)
         dock_widget.setWidget(widget)
         dock_widget.setIcon(icon)
         dock_widget.setMinimumSizeHintMode(CDockWidget.MinimumSizeHintFromContent)
-        cls._added_widgets[title] = dock_widget
         if add_to_menu:
             cls.menu.addAction(dock_widget.toggleViewAction())
         return dock_widget
@@ -198,7 +213,8 @@ class LayoutManager:
             return
         for dock_widget in cls._dataset_widgets[dataset.id]:
             try:
-                cls.dock_manager.removeDockWidget(dock_widget)
+                # cls.dock_manager.removeDockWidget(dock_widget)
+                dock_widget.closeDockWidget()
             except RuntimeError:
                 # Widget is already closed
                 pass
@@ -206,10 +222,11 @@ class LayoutManager:
 
     @classmethod
     def clear_dock_manager(cls) -> None:
+        cls._dataset_widgets.clear()
         map = cls.dock_manager.dockWidgetsMap()
         for title, dock_widget in map.items():
             if title not in DEFAULT_WIDGETS:
-                cls.dock_manager.removeDockWidget(dock_widget)
+                dock_widget.closeDockWidget()
 
     @classmethod
     def delete_dock_manager(cls) -> None:

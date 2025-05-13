@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from enum import StrEnum, unique
+from typing import Any
 
 import pandas as pd
 
@@ -25,26 +26,24 @@ class SplitMode(StrEnum):
 class Animal:
     enabled: bool
     id: str
-    box: int
-    weight: float
-    text1: str
-    text2: str
-    text3: str
+    color: str
+    properties: dict[str, Any]
 
     def get_dict(self):
         return self.__dict__
 
 
 @dataclass
-class Group:
+class FactorLevel:
     name: str
+    color: str
     animal_ids: list[str] = field(default_factory=list)
 
 
 @dataclass
 class Factor:
     name: str
-    groups: list[Group] = field(default_factory=list)
+    levels: list[FactorLevel] = field(default_factory=list)
 
 
 @dataclass

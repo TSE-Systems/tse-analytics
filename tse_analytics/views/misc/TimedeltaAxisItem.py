@@ -3,8 +3,6 @@ from pyqtgraph import AxisItem
 
 
 class TimedeltaAxisItem(AxisItem):
-    sampling_interval = None
-
     def __init__(self, *args, **kwargs):
         super().__init__(orientation="bottom", **kwargs)
         self.autoSIPrefix = False
