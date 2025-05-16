@@ -3,20 +3,19 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
-from tse_analytics.modules.intellimaze.submodules.running_wheel.data.running_wheel_data import RunningWheelData
+from tse_analytics.modules.intellimaze.extensions.consumption_scale.data.consumption_scale_data import (
+    ConsumptionScaleData,
+)
+from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 
 
-def import_runningwheel_data(
+def import_data(
     folder_path: Path,
     dataset: IntelliMazeDataset,
-) -> RunningWheelData | None:
-    if not folder_path.exists() or not folder_path.is_dir():
-        return None
-
+) -> ConsumptionScaleData:
     raw_data = {
-        "Registration": _import_registration_df(folder_path),
+        "Consumption": _import_consumption_df(folder_path),
         "Model": _import_model_df(folder_path),
     }
 
@@ -24,25 +23,26 @@ def import_runningwheel_data(
     if len(variables_data) > 0:
         raw_data = raw_data | variables_data
 
-    data = RunningWheelData(
+    data = ConsumptionScaleData(
         dataset,
-        "RunningWheel raw data",
+        "ConsumptionScale raw data",
         raw_data,
     )
+
+    data.preprocess_data()
+
     return data
 
 
-def _import_registration_df(folder_path: Path) -> pd.DataFrame | None:
-    file_path = folder_path / "Registration.txt"
+def _import_consumption_df(folder_path: Path) -> pd.DataFrame | None:
+    file_path = folder_path / "Consumption.txt"
     if not file_path.is_file():
         return None
 
     dtype = {
         "Time": str,
         "DeviceId": str,
-        "Left": np.int64,
-        "Right": np.int64,
-        "Reset": bool,
+        "Consumption": np.float64,
         "Tag": str,
     }
 

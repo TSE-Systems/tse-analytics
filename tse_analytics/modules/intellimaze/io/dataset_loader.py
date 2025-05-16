@@ -10,11 +10,15 @@ from loguru import logger
 
 from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.data.shared import Animal
-from tse_analytics.modules.intellimaze.submodules.animal_gate.io.data_loader import import_animalgate_data
-from tse_analytics.modules.intellimaze.submodules.consumption_scale.io.data_loader import import_consumptionscale_data
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
-from tse_analytics.modules.intellimaze.data.main_table_helper import preprocess_main_table
-from tse_analytics.modules.intellimaze.submodules.running_wheel.io.data_loader import import_runningwheel_data
+from tse_analytics.modules.intellimaze.data.utils import preprocess_main_table
+from tse_analytics.modules.intellimaze.extensions import animal_gate, consumption_scale, running_wheel
+
+extension_data_loaders = {
+    animal_gate.EXTENSION_NAME: animal_gate.io.import_data,
+    consumption_scale.EXTENSION_NAME: consumption_scale.io.import_data,
+    running_wheel.EXTENSION_NAME: running_wheel.io.import_data,
+}
 
 
 def import_intellimaze_dataset(path: Path) -> IntelliMazeDataset | None:
@@ -59,16 +63,11 @@ def import_intellimaze_dataset(path: Path) -> IntelliMazeDataset | None:
                 devices=devices,
             )
 
-            if "AnimalGate" in devices and (tmp_path / "AnimalGate").is_dir():
-                dataset.animal_gate_data = import_animalgate_data(tmp_path / "AnimalGate", dataset)
+            for extension_name, data_loader in extension_data_loaders.items():
+                if extension_name in devices and (tmp_path / extension_name).is_dir():
+                    dataset.extensions_data[extension_name] = data_loader(tmp_path / extension_name, dataset)
 
-            if "RunningWheel" in devices and (tmp_path / "RunningWheel").is_dir():
-                dataset.running_wheel_data = import_runningwheel_data(tmp_path / "RunningWheel", dataset)
-
-            if "ConsumptionScale" in devices and (tmp_path / "ConsumptionScale").is_dir():
-                dataset.consumption_scale_data = import_consumptionscale_data(tmp_path / "ConsumptionScale", dataset)
-
-    # dataset = preprocess_main_table(dataset, pd.to_timedelta(1, unit="minute"))
+    preprocess_main_table(dataset)
 
     logger.info(f"Import complete in {(timeit.default_timer() - tic):.3f} sec: {path}")
 

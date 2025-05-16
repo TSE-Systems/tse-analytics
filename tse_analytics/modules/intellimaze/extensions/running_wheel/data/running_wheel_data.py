@@ -1,32 +1,35 @@
 import pandas as pd
 
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
+from tse_analytics.modules.intellimaze.data.extension_data import ExtensionData
 
-DATA_SUFFIX = "-RW"
+
+EXTENSION_NAME = "RunningWheel"
 
 
-class RunningWheelData:
+class RunningWheelData(ExtensionData):
     def __init__(
         self,
         dataset,
         name: str,
         raw_data: dict[str, pd.DataFrame],
     ):
-        self.dataset = dataset
-        self.name = name
-        self.raw_data = raw_data
+        super().__init__(
+            dataset,
+            name,
+            raw_data,
+            dataset.devices[EXTENSION_NAME],
+        )
 
-        self.device_ids = dataset.devices["RunningWheel"]
-        self.device_ids.sort()
-
-    def get_raw_data(self):
-        return self.raw_data
-
-    def get_device_ids(self):
-        return self.device_ids
-
-    def get_preprocessed_data(self) -> tuple[pd.DataFrame, dict[str, Variable]]:
+    def get_combined_datatable(self) -> Datatable:
         df = self.raw_data["Registration"].copy()
+
+        # Replace animal tags with animal IDs
+        tag_to_animal_map = {}
+        for animal in self.dataset.animals.values():
+            tag_to_animal_map[animal.properties["Tag"]] = animal.id
+        df["Animal"] = df["Tag"].replace(tag_to_animal_map)
 
         # Convert cumulative values to differential ones
         preprocessed_device_df = []
@@ -38,26 +41,19 @@ class RunningWheelData:
             preprocessed_device_df.append(device_data)
         df = pd.concat(preprocessed_device_df, ignore_index=True, sort=False)
 
-        tag_to_animal_map = {}
-        for animal in self.dataset.animals.values():
-            tag_to_animal_map[animal.properties["Tag"]] = animal.id
-
-        # Replace animal tags with animal IDs
-        df["Tag"] = df["Tag"].replace(tag_to_animal_map)
-
+        # Rename columns
         df.rename(
             columns={
                 "Time": "DateTime",
-                "Tag": "Animal",
-                "Left": f"Left{DATA_SUFFIX}",
-                "Right": f"Right{DATA_SUFFIX}",
             },
             inplace=True,
         )
 
+        # Drop the non-necessary columns
         df.drop(
             columns=[
                 "DeviceId",
+                "Tag",
                 "Reset",
             ],
             inplace=True,
@@ -66,20 +62,17 @@ class RunningWheelData:
         # Remove records without animal assignment
         df.dropna(subset=["Animal"], inplace=True)
 
-        # Set columns order
-        df = df[["DateTime", "Animal", f"Left{DATA_SUFFIX}", f"Right{DATA_SUFFIX}"]]
-
         variables = {
-            f"Left{DATA_SUFFIX}": Variable(
-                f"Left{DATA_SUFFIX}",
+            "Left": Variable(
+                "Left",
                 "count",
                 "RunningWheel left rotations counter",
                 "int64",
                 Aggregation.SUM,
                 False,
             ),
-            f"Right{DATA_SUFFIX}": Variable(
-                f"Right{DATA_SUFFIX}",
+            "Right": Variable(
+                "Right",
                 "count",
                 "RunningWheel right rotations counter",
                 "int64",
@@ -91,4 +84,22 @@ class RunningWheelData:
         df.sort_values(["DateTime"], inplace=True)
         df.reset_index(drop=True, inplace=True)
 
-        return df, variables
+        # Add Timedelta column
+        experiment_started = self.dataset.experiment_started
+        df.insert(loc=3, column="Timedelta", value=df["DateTime"] - experiment_started)
+
+        # Convert types
+        df = df.astype({
+            "Animal": "category",
+        })
+
+        datatable = Datatable(
+            self.dataset,
+            "RunningWheel",
+            "RunningWheel main table",
+            variables,
+            df,
+            None,
+        )
+
+        return datatable

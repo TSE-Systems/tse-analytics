@@ -2,33 +2,27 @@ import pandas as pd
 
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
+from tse_analytics.modules.intellimaze.data.extension_data import ExtensionData
 
 
-class AnimalGateData:
+EXTENSION_NAME = "AnimalGate"
+
+
+class AnimalGateData(ExtensionData):
     def __init__(
         self,
         dataset: "IntelliMazeDataset",
         name: str,
         raw_data: dict[str, pd.DataFrame],
     ):
-        self.dataset = dataset
-        self.name = name
-        self.raw_data = raw_data
+        super().__init__(
+            dataset,
+            name,
+            raw_data,
+            dataset.devices[EXTENSION_NAME],
+        )
 
-        self.device_ids = dataset.devices["AnimalGate"]
-        self.device_ids.sort()
-
-    def get_raw_data(self):
-        return self.raw_data
-
-    def get_device_ids(self):
-        return self.device_ids
-
-    def preprocess_data(self) -> None:
-        main_datatable = self._get_main_datatable()
-        self.dataset.add_datatable(main_datatable)
-
-    def _get_main_datatable(self) -> Datatable:
+    def get_combined_datatable(self) -> Datatable:
         df = self.raw_data["Sessions"].copy()
 
         # Replace animal tags with animal IDs
@@ -52,21 +46,23 @@ class AnimalGateData:
         df.drop(
             columns=[
                 "End",
+                "DeviceId",
+                "Tag",
             ],
             inplace=True,
         )
 
         variables = {
-            f"Duration": Variable(
-                f"Duration",
+            "Duration": Variable(
+                "Duration",
                 "sec",
                 "AnimalGate session duration",
                 "float64",
                 Aggregation.SUM,
                 False,
             ),
-            f"Weight": Variable(
-                f"Weight",
+            "Weight": Variable(
+                "Weight",
                 "g",
                 "AnimalGate weight",
                 "float64",
