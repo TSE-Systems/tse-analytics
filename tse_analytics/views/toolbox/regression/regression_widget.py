@@ -29,8 +29,6 @@ class RegressionWidget(QWidget):
         self.title = "Regression"
 
         self.datatable = datatable
-        self.split_mode = SplitMode.ANIMAL
-        self.selected_factor_name = ""
 
         # Setup toolbar
         self.toolbar = QToolBar(
@@ -54,8 +52,8 @@ class RegressionWidget(QWidget):
 
         self.toolbar.addSeparator()
         self.toolbar.addWidget(QLabel("Group by:"))
-        group_by_selector = GroupBySelector(self.toolbar, self.datatable, self._group_by_callback)
-        self.toolbar.addWidget(group_by_selector)
+        self.group_by_selector = GroupBySelector(self.toolbar, self.datatable, check_binning=False)
+        self.toolbar.addWidget(self.group_by_selector)
 
         # Insert toolbar to the widget
         self.layout.addWidget(self.toolbar)
@@ -85,10 +83,6 @@ class RegressionWidget(QWidget):
         self.toolbar.addAction("Add to Report").triggered.connect(self._add_report)
         self._add_plot_toolbar()
 
-    def _group_by_callback(self, mode: SplitMode, factor_name: str | None):
-        self.split_mode = mode
-        self.selected_factor_name = factor_name
-
     def _add_plot_toolbar(self):
         self.plot_toolbar_action = QWidgetAction(self.toolbar)
         plot_toolbar = NavigationToolbar2QT(self.canvas, self)
@@ -97,18 +91,9 @@ class RegressionWidget(QWidget):
         self.toolbar.insertAction(self.spacer_action, self.plot_toolbar_action)
 
     def _update(self):
-        if self.split_mode == SplitMode.FACTOR and self.selected_factor_name == "":
-            make_toast(
-                self,
-                self.title,
-                "Please select a factor.",
-                duration=2000,
-                preset=ToastPreset.WARNING,
-                show_duration_bar=True,
-            ).show()
-            return
+        split_mode, selected_factor_name = self.group_by_selector.get_group_by()
 
-        match self.split_mode:
+        match split_mode:
             case SplitMode.ANIMAL:
                 by = "Animal"
                 palette = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
@@ -116,10 +101,8 @@ class RegressionWidget(QWidget):
                 by = "Run"
                 palette = color_manager.colormap_name
             case SplitMode.FACTOR:
-                by = self.selected_factor_name
-                palette = color_manager.get_level_to_color_dict(
-                    self.datatable.dataset.factors[self.selected_factor_name]
-                )
+                by = selected_factor_name
+                palette = color_manager.get_level_to_color_dict(self.datatable.dataset.factors[selected_factor_name])
             case _:
                 by = None
                 palette = color_manager.colormap_name
@@ -133,12 +116,19 @@ class RegressionWidget(QWidget):
             else {response.name: response, covariate.name: covariate}
         )
 
-        df = self.datatable.get_preprocessed_df(
-            variables=variables,
-            split_mode=self.split_mode,
-            selected_factor_name=self.selected_factor_name,
-            dropna=False,
-        )
+        if self.datatable.dataset.binning_settings.apply:
+            # Binning is applied
+            df = self.datatable.get_preprocessed_df(
+                variables,
+                split_mode,
+                selected_factor_name,
+                False,
+            )
+        else:
+            columns = list(variables.keys())
+            if by is not None:
+                columns.append(by)
+            df = self.datatable.get_filtered_df(columns)
 
         facet_grid = sns.lmplot(
             data=df,
@@ -159,7 +149,7 @@ class RegressionWidget(QWidget):
         self.toolbar.removeAction(self.plot_toolbar_action)
         self._add_plot_toolbar()
 
-        match self.split_mode:
+        match split_mode:
             case SplitMode.ANIMAL:
                 output = ""
                 for animal in df["Animal"].unique().tolist():
@@ -171,8 +161,8 @@ class RegressionWidget(QWidget):
                     )
             case SplitMode.FACTOR:
                 output = ""
-                for level in df[self.selected_factor_name].unique().tolist():
-                    data = df[df[self.selected_factor_name] == level]
+                for level in df[selected_factor_name].unique().tolist():
+                    data = df[df[selected_factor_name] == level]
                     output = (
                         output
                         + f"<h3>Level: {level}</h3>"

@@ -21,6 +21,7 @@ def get_combined_variables_table(extension_data: ExtensionData) -> pd.DataFrame:
 
     return result
 
+
 def _preprocess_variable_table(table_name: str, extension_data: ExtensionData) -> pd.DataFrame | None:
     if table_name not in extension_data.raw_data:
         return None
@@ -72,9 +73,10 @@ def _preprocess_variable_table(table_name: str, extension_data: ExtensionData) -
     # result.drop(columns=result.columns[0], axis=1, inplace=True)
 
     # Rename MultiIndex columns
-    result.columns = result.columns.map(lambda x: ''.join(x) if x[1] == "" else '_'.join(x))
+    result.columns = result.columns.map(lambda x: "".join(x) if x[1] == "" else "_".join(x))
 
     return result
+
 
 def preprocess_main_table(dataset: IntelliMazeDataset) -> None:
     datatables = []

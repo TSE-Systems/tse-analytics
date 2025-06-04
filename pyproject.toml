@@ -30,10 +30,10 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "mypy==1.15.0",
-    "pyinstaller==6.13.0",
+    "mypy==1.16.0",
+    "pyinstaller==6.14.0",
     "qtsass==0.4.0",
-    "ruff==0.11.9",
+    "ruff==0.11.12",
 ]
 
 [project.scripts]

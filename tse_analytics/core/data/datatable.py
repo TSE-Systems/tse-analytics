@@ -66,15 +66,17 @@ class Datatable:
         columns = self.active_df.select_dtypes(include=["category"]).columns.tolist()
         return columns
 
-    def get_group_by_columns(self) -> list[str]:
+    def get_group_by_columns(self, check_binning=True) -> list[str]:
         modes = ["Animal"]
-        if "Bin" in self.active_df.columns or self.dataset.binning_settings.apply:
-            modes.append("Total")
-            if self.get_merging_mode() is not None:
-                modes.append("Run")
-            if len(self.dataset.factors) > 0:
-                for factor in self.dataset.factors.keys():
-                    modes.append(factor)
+        if check_binning:
+            if not ("Bin" in self.active_df.columns or self.dataset.binning_settings.apply):
+                return modes
+        modes.append("Total")
+        if self.get_merging_mode() is not None:
+            modes.append("Run")
+        if len(self.dataset.factors) > 0:
+            for factor in self.dataset.factors.keys():
+                modes.append(factor)
         return modes
 
     def delete_variables(self, variable_names: list[str]) -> None:
