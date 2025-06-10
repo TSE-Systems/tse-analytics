@@ -108,21 +108,12 @@ class CorrelationWidget(QWidget):
                 by = None
                 palette = color_manager.colormap_name
 
-        variables = {x_var.name: x_var} if x_var.name == y_var.name else {x_var.name: x_var, y_var.name: y_var}
-
-        if self.datatable.dataset.binning_settings.apply:
-            # Binning is applied
-            df = self.datatable.get_preprocessed_df(
-                variables,
-                split_mode,
-                selected_factor_name,
-                False,
-            )
-        else:
-            columns = list(variables.keys())
-            if by is not None:
-                columns.append(by)
-            df = self.datatable.get_filtered_df(columns)
+        variable_columns = [x_var.name] if x_var.name == y_var.name else [x_var.name, y_var.name]
+        df = self.datatable.get_df(
+            variable_columns,
+            split_mode,
+            selected_factor_name,
+        )
 
         if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:
             df[by] = df[by].cat.remove_unused_categories()

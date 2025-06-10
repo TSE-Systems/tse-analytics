@@ -71,19 +71,12 @@ class NormalityWidget(QWidget):
             case _:
                 by = None
 
-        if self.datatable.dataset.binning_settings.apply:
-            # Binning is applied
-            df = self.datatable.get_preprocessed_df(
-                {variable.name: variable},
-                split_mode,
-                selected_factor_name,
-                True,
-            )
-        else:
-            columns = [variable.name]
-            if by is not None:
-                columns.append(by)
-            df = self.datatable.get_filtered_df(columns)
+        df = self.datatable.get_df(
+            [variable.name],
+            split_mode,
+            selected_factor_name,
+        )
+        # df.dropna(inplace=True)
 
         if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:
             df[by] = df[by].cat.remove_unused_categories()

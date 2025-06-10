@@ -169,6 +169,35 @@ class Datatable:
 
         self.active_df = df
 
+    def get_df(
+        self,
+        variable_columns: list[str],
+        split_mode: SplitMode,
+        factor_name: str,
+    ) -> pd.DataFrame:
+        if self.dataset.binning_settings.apply:
+            # Binning is applied
+            variables = {col: self.variables[col] for col in variable_columns}
+            df = self.get_preprocessed_df(
+                variables,
+                split_mode,
+                factor_name,
+                False,
+            )
+        else:
+            match split_mode:
+                case SplitMode.ANIMAL:
+                    columns = variable_columns + ["Animal"]
+                case SplitMode.RUN:
+                    columns = variable_columns + ["Run"]
+                case SplitMode.FACTOR:
+                    columns = variable_columns + [factor_name]
+                case _:
+                    # Split by total
+                    columns = variable_columns
+            df = self.get_filtered_df(columns)
+        return df
+
     def get_filtered_df(
         self,
         columns: list[str],
@@ -223,7 +252,6 @@ class Datatable:
         columns: list[str],
         split_mode=SplitMode.ANIMAL,
         selected_factor_name: str | None = None,
-        dropna=False,
     ) -> pd.DataFrame:
         result = self.get_filtered_df(columns)
 
@@ -244,10 +272,6 @@ class Datatable:
             split_mode,
             selected_factor_name,
         )
-
-        # TODO: should or should not?
-        if dropna:
-            result.dropna(inplace=True)
 
         return result
 

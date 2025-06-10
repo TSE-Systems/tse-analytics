@@ -127,19 +127,11 @@ class MatrixPlotWidget(QWidget):
                 hue = None
                 palette = color_manager.colormap_name
 
-        if self.datatable.dataset.binning_settings.apply:
-            # Binning is applied
-            df = self.datatable.get_preprocessed_df(
-                variables=selected_variables,
-                split_mode=split_mode,
-                selected_factor_name=selected_factor_name,
-                dropna=True,
-            )
-        else:
-            columns = list(selected_variables.keys())
-            if hue is not None:
-                columns.append(hue)
-            df = self.datatable.get_filtered_df(columns)
+        df = self.datatable.get_df(
+            list(selected_variables),
+            split_mode,
+            selected_factor_name,
+        )
 
         # pd.plotting.scatter_matrix(
         #     frame=df[list(selected_variables)],

@@ -18,7 +18,9 @@ from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.intellicage.io.dataset_loader import import_intellicage_dataset
+from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 from tse_analytics.modules.intellimaze.io.dataset_loader import import_intellimaze_dataset
+from tse_analytics.modules.intellimaze.views.export_merged_csv.export_merged_csv_dialog import ExportMergedCsvDialog
 from tse_analytics.modules.phenomaster.io.tse_dataset_loader import load_tse_dataset
 from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvDialog
 from tse_analytics.modules.phenomaster.views.import_tse_dialog import ImportTseDialog
@@ -48,13 +50,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
         self.ui_timer = QTimer(self)
-        self.ui_timer.timeout.connect(self.update_memory_usage)
+        self.ui_timer.timeout.connect(self._update_memory_usage)
         self.ui_timer.start(1000)
 
         self.memory_usage_label = QLabel()
         self.statusBar.addPermanentWidget(self.memory_usage_label)
 
-        self.menuOpenRecent.aboutToShow.connect(self.populate_open_recent)
+        self.menuOpenRecent.aboutToShow.connect(self._populate_open_recent)
 
         self.toolbox_button = ToolboxButton(self)
 
@@ -65,8 +67,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # the dock manager registers itself as the central widget.
         LayoutManager(self, self.menuView)
 
-        self.menuStyle.addAction("Default").triggered.connect(lambda: self.set_style("default"))
-        self.menuStyle.addAction("TSE Light").triggered.connect(lambda: self.set_style("tse-light"))
+        self.menuStyle.addAction("Default").triggered.connect(lambda: self._set_style("default"))
+        self.menuStyle.addAction("TSE Light").triggered.connect(lambda: self._set_style("tse-light"))
         # self.menuStyle.addAction("TSE Dark").triggered.connect(lambda: self.set_style("tse-dark"))
 
         LayoutManager.set_central_widget()
@@ -110,10 +112,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area
         )
 
-        self.actionImportDataset.triggered.connect(self.import_dataset_dialog)
-        self.actionNewWorkspace.triggered.connect(self.new_workspace)
-        self.actionOpenWorkspace.triggered.connect(self.load_workspace_dialog)
-        self.actionSaveWorkspace.triggered.connect(self.save_workspace_dialog)
+        self.actionImportDataset.triggered.connect(self._import_dataset_dialog)
+        self.actionNewWorkspace.triggered.connect(self._new_workspace)
+        self.actionOpenWorkspace.triggered.connect(self._load_workspace_dialog)
+        self.actionSaveWorkspace.triggered.connect(self._save_workspace_dialog)
         self.actionSaveLayout.triggered.connect(self._save_layout)
         self.actionRestoreLayout.triggered.connect(self._restore_layout)
         self.actionResetLayout.triggered.connect(self._reset_layout)
@@ -121,24 +123,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionHelp.triggered.connect(self._show_help)
         self.actionAbout.triggered.connect(self._show_about_dialog)
         self.actionSettings.triggered.connect(self._show_settings_dialog)
+        self.actionExportMergedCsv.triggered.connect(self._show_export_merged_csv_dialog)
+
+        self.menuFile.aboutToShow.connect(self._menu_file_about_to_show)
 
         # Store default dock layout
         LayoutManager.add_perspective("Default")
 
-        self.load_settings()
+        self._load_settings()
 
         Toast.setPositionRelativeToWidget(self)
         Toast.setMovePositionWithWidget(True)
         self.toast = None
 
-    def set_style(self, name: str) -> None:
+    def _set_style(self, name: str) -> None:
         style_file = f"_internal/styles/qss/{name}.css" if IS_RELEASE else f"styles/qss/{name}.css"
         with open(style_file) as file:
             # Set global stylesheet
             QApplication.instance().setStyleSheet(file.read())
         self.settings.setValue("appStyle", name)
 
-    def populate_open_recent(self):
+    def _menu_file_about_to_show(self):
+        dataset = manager.get_selected_dataset()
+        self.actionExportMergedCsv.setVisible(dataset is not None and isinstance(dataset, IntelliMazeDataset))
+
+    def _populate_open_recent(self):
         # Step 1. Remove the old options from the menu
         self.menuOpenRecent.clear()
         # Step 2. Dynamically create the actions
@@ -146,12 +155,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         filenames = list(self.settings.value("recentFilesList", []))
         for filename in filenames:
             action = QAction(filename, self)
-            action.triggered.connect(partial(self.load_workspace, filename))
+            action.triggered.connect(partial(self._load_workspace, filename))
             actions.append(action)
         # Step 3. Add the actions to the menu
         self.menuOpenRecent.addActions(actions)
 
-    def load_workspace(self, filename: str):
+    def _load_workspace(self, filename: str):
         filenames = list(self.settings.value("recentFilesList", []))
         try:
             filenames.remove(filename)
@@ -166,7 +175,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         finally:
             self.settings.setValue("recentFilesList", filenames)
 
-    def load_settings(self):
+    def _load_settings(self):
         self.restoreGeometry(self.settings.value("MainWindow/Geometry"))
         self.restoreState(self.settings.value("MainWindow/State"))
 
@@ -174,12 +183,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if state is not None:
             LayoutManager.restore_state(state)
 
-    def save_settings(self):
+    def _save_settings(self):
         self.settings.setValue("MainWindow/Geometry", self.saveGeometry())
         self.settings.setValue("MainWindow/State", self.saveState())
         self.settings.setValue("MainWindow/DockingState", LayoutManager.save_state())
 
-    def new_workspace(self) -> None:
+    def _new_workspace(self) -> None:
         if (
             QMessageBox.question(
                 self,
@@ -193,7 +202,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             LayoutManager.clear_dock_manager()
             manager.new_workspace()
 
-    def load_workspace_dialog(self) -> None:
+    def _load_workspace_dialog(self) -> None:
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Load Workspace",
@@ -201,16 +210,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             "Workspace Files (*.workspace)",
         )
         if file_path:
-            self.load_workspace(file_path)
+            self._load_workspace(file_path)
 
-    def save_workspace_dialog(self) -> None:
+    def _save_workspace_dialog(self) -> None:
         filename, _ = QFileDialog.getSaveFileName(
             self, "Save TSE Analytics Workspace", "", "Workspace Files (*.workspace)"
         )
         if filename:
             manager.save_workspace(filename)
 
-    def update_memory_usage(self) -> None:
+    def _update_memory_usage(self) -> None:
         # return the memory usage in MB
         mem = self.process.memory_info()[0] / float(2**20)
         self.memory_usage_label.setText(f"Memory usage: {mem:.2f} Mb")
@@ -219,12 +228,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         LayoutManager.open_perspective("Default")
 
     def _show_about_dialog(self) -> None:
-        dlg = AboutDialog(self)
-        dlg.show()
+        dialog = AboutDialog(self)
+        dialog.show()
 
     def _show_settings_dialog(self) -> None:
-        dlg = SettingsDialog(self)
-        dlg.show()
+        dialog = SettingsDialog(self)
+        dialog.show()
+
+    def _show_export_merged_csv_dialog(self) -> None:
+        dialog = ExportMergedCsvDialog(manager.get_selected_dataset(), self)
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        dialog.exec()
 
     def _show_help(self) -> None:
         help_mode = self.settings.value("HelpMode", "online")
@@ -233,7 +247,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             help_manager.show_offline_help()
 
-    def import_dataset_dialog(self) -> None:
+    def _import_dataset_dialog(self) -> None:
         filter = (
             "Data Files (*.tse *.csv *.zip);;TSE Dataset Files (*.tse);;CSV Files (*.csv);;IntelliMaze Dataset Files (*.zip)"
             if CSV_IMPORT_ENABLED
@@ -333,7 +347,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             == QMessageBox.StandardButton.Yes
         ):
             LayoutManager.clear_dock_manager()
-            self.save_settings()
+            self._save_settings()
             LayoutManager.delete_dock_manager()
             help_manager.close_help_server()
             QApplication.closeAllWindows()

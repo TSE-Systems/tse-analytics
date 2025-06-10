@@ -52,6 +52,7 @@ tasks:
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_preprocessed_data_widget.ui -o tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_preprocessed_data_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_heatmap_widget.ui -o tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_heatmap_widget_ui.py
       - pyside6-uic tse_analytics/modules/intellicage/views/toolbox/place_preference/place_preference_settings_widget.ui -o tse_analytics/modules/intellicage/views/toolbox/place_preference/place_preference_settings_widget_ui.py
+      - pyside6-uic tse_analytics/modules/intellimaze/views/export_merged_csv/export_merged_csv_dialog.ui -o tse_analytics/modules/intellimaze/views/export_merged_csv/export_merged_csv_dialog_ui.py
 
   clean:
     desc: remove all build, test, coverage and Python artifacts

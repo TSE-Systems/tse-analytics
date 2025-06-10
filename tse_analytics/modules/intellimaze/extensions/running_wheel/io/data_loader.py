@@ -42,7 +42,7 @@ def _import_registration_df(folder_path: Path) -> pd.DataFrame | None:
         "DeviceId": str,
         "Left": np.int64,
         "Right": np.int64,
-        "Reset": np.int8,
+        "Reset": np.bool,
         "Tag": str,
     }
 

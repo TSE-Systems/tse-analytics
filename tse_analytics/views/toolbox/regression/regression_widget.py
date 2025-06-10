@@ -5,12 +5,10 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QToolBar, QVBoxLayout, QSplitter, QTextEdit, QWidgetAction, QLabel
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
-from pyqttoast import ToastPreset
 
 from tse_analytics.core import messaging, color_manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.views.misc.MplCanvas import MplCanvas
@@ -110,25 +108,12 @@ class RegressionWidget(QWidget):
         covariate = self.covariateVariableSelector.get_selected_variable()
         response = self.responseVariableSelector.get_selected_variable()
 
-        variables = (
-            {response.name: response}
-            if response.name == covariate.name
-            else {response.name: response, covariate.name: covariate}
+        variable_columns = [response.name] if response.name == covariate.name else [response.name, covariate.name]
+        df = self.datatable.get_df(
+            variable_columns,
+            split_mode,
+            selected_factor_name,
         )
-
-        if self.datatable.dataset.binning_settings.apply:
-            # Binning is applied
-            df = self.datatable.get_preprocessed_df(
-                variables,
-                split_mode,
-                selected_factor_name,
-                False,
-            )
-        else:
-            columns = list(variables.keys())
-            if by is not None:
-                columns.append(by)
-            df = self.datatable.get_filtered_df(columns)
 
         facet_grid = sns.lmplot(
             data=df,

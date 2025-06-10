@@ -119,22 +119,14 @@ class PcaWidget(QWidget):
         selected_factor_name: str,
         by: str,
     ) -> tuple[pd.DataFrame, str, str, SplitMode, str]:
-        if self.datatable.dataset.binning_settings.apply:
-            # Binning is applied
-            df = self.datatable.get_preprocessed_df(
-                variables=selected_variables,
-                split_mode=split_mode,
-                selected_factor_name=selected_factor_name,
-                dropna=True,
-            )
-        else:
-            columns = list(selected_variables.keys())
-            if by is not None:
-                columns.append(by)
-            df = self.datatable.get_filtered_df(columns)
-            df.dropna(inplace=True)
-
         selected_variable_names = list(selected_variables)
+
+        df = self.datatable.get_df(
+            selected_variable_names,
+            split_mode,
+            selected_factor_name,
+        )
+        df.dropna(inplace=True)
 
         # Standardize the data
         scaler = StandardScaler()

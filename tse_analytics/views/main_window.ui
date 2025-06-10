@@ -38,6 +38,7 @@
     <addaction name="menuOpenRecent"/>
     <addaction name="actionSaveWorkspace"/>
     <addaction name="actionImportDataset"/>
+    <addaction name="actionExportMergedCsv"/>
     <addaction name="separator"/>
     <addaction name="actionSettings"/>
     <addaction name="separator"/>
@@ -198,6 +199,21 @@
    </property>
    <property name="text">
     <string>New Workspace</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionExportMergedCsv">
+   <property name="icon">
+    <iconset resource="../../resources/resources.qrc">
+     <normaloff>:/icons/icons8-csv-16.png</normaloff>:/icons/icons8-csv-16.png</iconset>
+   </property>
+   <property name="text">
+    <string>Export Merged CSV...</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

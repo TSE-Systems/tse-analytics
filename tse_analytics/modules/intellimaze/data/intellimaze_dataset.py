@@ -23,6 +23,12 @@ class IntelliMazeDataset(Dataset):
 
         self.extensions_data: dict[str, ExtensionData] = {}
 
+    def get_tag_to_name_map(self) -> dict[str, str]:
+        tag_to_animal_map = {}
+        for animal in self.animals.values():
+            tag_to_animal_map[animal.properties["Tag"]] = animal.id
+        return tag_to_animal_map
+
     def rename_animal(self, old_id: str, animal: Animal) -> None:
         super().rename_animal(old_id, animal)
 
