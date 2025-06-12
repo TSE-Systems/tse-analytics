@@ -67,13 +67,15 @@ class Dataset:
 
     def extract_levels_from_property(self, property_name: str) -> dict[str, FactorLevel]:
         levels_dict: dict[str, list[str]] = {}
+        levels: dict[str, FactorLevel] = {}
         for animal in self.animals.values():
+            if property_name not in animal.properties:
+                return levels
             level_name = animal.properties[property_name]
             if level_name not in levels_dict:
                 levels_dict[level_name] = []
             levels_dict[level_name].append(animal.id)
 
-        levels: dict[str, FactorLevel] = {}
         index = 0
         for key, value in levels_dict.items():
             level = FactorLevel(
