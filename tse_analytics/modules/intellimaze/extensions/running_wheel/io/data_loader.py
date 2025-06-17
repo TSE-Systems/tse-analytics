@@ -3,22 +3,17 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
-from tse_analytics.modules.intellimaze.submodules.consumption_scale.data.consumption_scale_data import (
-    ConsumptionScaleData,
-)
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
+from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
+from tse_analytics.modules.intellimaze.extensions.running_wheel.data.running_wheel_data import RunningWheelData
 
 
-def import_consumptionscale_data(
+def import_data(
     folder_path: Path,
     dataset: IntelliMazeDataset,
-) -> ConsumptionScaleData | None:
-    if not folder_path.exists() or not folder_path.is_dir():
-        return None
-
+) -> RunningWheelData:
     raw_data = {
-        "Consumption": _import_consumption_df(folder_path),
+        "Registration": _import_registration_df(folder_path),
         "Model": _import_model_df(folder_path),
     }
 
@@ -26,23 +21,28 @@ def import_consumptionscale_data(
     if len(variables_data) > 0:
         raw_data = raw_data | variables_data
 
-    data = ConsumptionScaleData(
+    data = RunningWheelData(
         dataset,
-        "ConsumptionScale raw data",
+        "RunningWheel raw data",
         raw_data,
     )
+
+    data.preprocess_data()
+
     return data
 
 
-def _import_consumption_df(folder_path: Path) -> pd.DataFrame | None:
-    file_path = folder_path / "Consumption.txt"
+def _import_registration_df(folder_path: Path) -> pd.DataFrame | None:
+    file_path = folder_path / "Registration.txt"
     if not file_path.is_file():
         return None
 
     dtype = {
         "Time": str,
         "DeviceId": str,
-        "Consumption": np.float64,
+        "Left": np.int64,
+        "Right": np.int64,
+        "Reset": np.bool,
         "Tag": str,
     }
 
@@ -63,7 +63,6 @@ def _import_consumption_df(folder_path: Path) -> pd.DataFrame | None:
     # Convert categorical types
     df = df.astype({
         "DeviceId": "category",
-        # "Tag": "category",
     })
 
     df.sort_values(["Time"], inplace=True)

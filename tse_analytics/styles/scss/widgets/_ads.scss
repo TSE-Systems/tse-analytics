@@ -57,7 +57,8 @@ ads--CDockWidgetTab {
 }
 
 ads--CDockWidgetTab[activeTab="true"] {
-	background: palette(accent);
+	//background: palette(accent);
+    background: #F0F0F0;
 }
 
 ads--CDockWidgetTab QLabel {

@@ -9,12 +9,16 @@ import xmltodict
 from loguru import logger
 
 from tse_analytics.core.color_manager import get_color_hex
-from tse_analytics.core.data.shared import Animal
-from tse_analytics.modules.intellimaze.submodules.animal_gate.io.data_loader import import_animalgate_data
-from tse_analytics.modules.intellimaze.submodules.consumption_scale.io.data_loader import import_consumptionscale_data
+from tse_analytics.core.data.shared import Animal, Factor
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
-from tse_analytics.modules.intellimaze.data.main_table_helper import preprocess_main_table
-from tse_analytics.modules.intellimaze.submodules.running_wheel.io.data_loader import import_runningwheel_data
+from tse_analytics.modules.intellimaze.data.utils import preprocess_main_table
+from tse_analytics.modules.intellimaze.extensions import animal_gate, consumption_scale, running_wheel
+
+extension_data_loaders = {
+    animal_gate.EXTENSION_NAME: animal_gate.io.import_data,
+    consumption_scale.EXTENSION_NAME: consumption_scale.io.import_data,
+    running_wheel.EXTENSION_NAME: running_wheel.io.import_data,
+}
 
 
 def import_intellimaze_dataset(path: Path) -> IntelliMazeDataset | None:
@@ -37,7 +41,10 @@ def import_intellimaze_dataset(path: Path) -> IntelliMazeDataset | None:
             devices = _get_devices(metadata)
 
             if (tmp_path / "Groups").is_dir():
-                animals = _import_animals_v6(tmp_path / "Animals" / "Animals.animals")
+                animals = _import_animals_v6(
+                    tmp_path / "Animals" / "Animals.animals",
+                    tmp_path / "Groups" / "Groups.groups",
+                )
             else:
                 animals = _import_animals_v5(tmp_path / "Animals" / "Animals.animals")
 
@@ -59,16 +66,22 @@ def import_intellimaze_dataset(path: Path) -> IntelliMazeDataset | None:
                 devices=devices,
             )
 
-            if "AnimalGate" in devices and (tmp_path / "AnimalGate").is_dir():
-                dataset.animal_gate_data = import_animalgate_data(tmp_path / "AnimalGate", dataset)
+            for extension_name, data_loader in extension_data_loaders.items():
+                if extension_name in devices and (tmp_path / extension_name).is_dir():
+                    dataset.extensions_data[extension_name] = data_loader(tmp_path / extension_name, dataset)
 
-            if "RunningWheel" in devices and (tmp_path / "RunningWheel").is_dir():
-                dataset.running_wheel_data = import_runningwheel_data(tmp_path / "RunningWheel", dataset)
+    preprocess_main_table(dataset)
 
-            if "ConsumptionScale" in devices and (tmp_path / "ConsumptionScale").is_dir():
-                dataset.consumption_scale_data = import_consumptionscale_data(tmp_path / "ConsumptionScale", dataset)
+    # Extract factors from metadata
+    factors: dict[str, Factor] = {}
+    expected_factor_names = ("Group", "Sex", "Strain", "Treatment")
+    for factor_name in expected_factor_names:
+        factor = _extract_factor(factor_name, factors, dataset)
+        if factor is not None:
+            factors[factor.name] = factor
 
-    # dataset = preprocess_main_table(dataset, pd.to_timedelta(1, unit="minute"))
+    if len(factors) > 0:
+        dataset.set_factors(factors)
 
     logger.info(f"Import complete in {(timeit.default_timer() - tic):.3f} sec: {path}")
 
@@ -103,31 +116,44 @@ def _import_metadata(path: Path) -> dict | None:
     return result["ExperimentInfo"]
 
 
-def _import_animals_v5(path: Path) -> dict | None:
-    if not path.is_file():
+def _import_animals_v5(animals_file_path: Path) -> dict | None:
+    if not animals_file_path.is_file():
         return None
 
-    with open(path, encoding="utf-8-sig") as file:
-        json = xmltodict.parse(
+    with open(animals_file_path, encoding="utf-8-sig") as file:
+        animals_json = xmltodict.parse(
             file.read(),
             process_namespaces=False,
             xml_attribs=False,
         )
 
+    expected_fields = (
+        "Sex",
+        "Strain",
+        "Group",
+        "Treatment",
+        "Dosage",
+        "Notes",
+    )
+
+    present_fields = []
+    # Check if a field is present in any of the animal
+    for index, item in enumerate(animals_json["ArrayOfAnimal"]["Animal"]):
+        for field in expected_fields:
+            if field in item:
+                present_fields.append(field)
+
     animals = {}
-    for index, item in enumerate(json["ArrayOfAnimal"]["Animal"]):
+    for index, item in enumerate(animals_json["ArrayOfAnimal"]["Animal"]):
         properties = {
             "Tag": item["Tag"],
             "PMBoxNr": int(item["PMBoxNr"]),
-            "Sex": item["Sex"] if "Sex" in item else "",
-            "Strain": item["Strain"] if "Strain" in item else "",
-            "Group": item["Group"] if "Group" in item else "",
-            "Treatment": item["Treatment"] if "Treatment" in item else "",
-            "Dosage": item["Dosage"] if "Dosage" in item else "",
             "Weight": float(item["Weight"]),
-            "Age": item["Age"],
-            "Notes": item["Notes"] if "Notes" in item else "",
+            "Age": int(item["Age"]),
         }
+        # Add optional fields
+        for field in present_fields:
+            properties[field] = item[field] if field in item else ""
 
         animal = Animal(
             enabled=True,
@@ -139,32 +165,57 @@ def _import_animals_v5(path: Path) -> dict | None:
     return animals
 
 
-def _import_animals_v6(path: Path) -> dict | None:
+def _import_animals_v6(animals_file_path: Path, groups_file_path: Path) -> dict | None:
     # Data format starting from IntelliMaze 6.x
-    if not path.is_file():
+    if not animals_file_path.is_file() or not groups_file_path.is_file():
         return None
 
-    with open(path, encoding="utf-8-sig") as file:
-        json = xmltodict.parse(
+    with open(animals_file_path, encoding="utf-8-sig") as file:
+        animals_json = xmltodict.parse(
             file.read(),
             process_namespaces=False,
             xml_attribs=False,
         )
 
-    animals = {}
-    for index, item in enumerate(json["ArrayOfAnimal"]["Animal"]):
+    with open(groups_file_path, encoding="utf-8-sig") as file:
+        groups_json = xmltodict.parse(
+            file.read(),
+            process_namespaces=False,
+            xml_attribs=False,
+        )
+
+    groups: dict[str, str] = {}
+    # Map group id to group name
+    for index, item in enumerate(groups_json["ArrayOfGroup"]["Group"]):
+        groups[item["Id"]] = item["Name"]
+
+    expected_fields = (
+        "Sex",
+        "Strain",
+        "Treatment",
+        "Dosage",
+        "Notes",
+    )
+
+    present_fields = []
+    # Check if a field is present in any of the animal
+    for index, item in enumerate(animals_json["ArrayOfAnimal"]["Animal"]):
+        for field in expected_fields:
+            if field in item:
+                present_fields.append(field)
+
+    animals: dict[str, Animal] = {}
+    for index, item in enumerate(animals_json["ArrayOfAnimal"]["Animal"]):
         properties = {
             "Tag": item["Tag"],
             "PMBoxNr": int(item["PMBoxNr"]),
-            "Sex": item["Sex"] if "Sex" in item else "",
-            "Strain": item["Strain"] if "Strain" in item else "",
-            "Group": item["Group"] if "Group" in item else "",
-            "Treatment": item["Treatment"] if "Treatment" in item else "",
-            "Dosage": item["Dosage"] if "Dosage" in item else "",
+            "Group": groups[item["GroupId"]],
             "Weight": float(item["Weight"]),
-            "Age": item["Age"],
-            "Notes": item["Notes"] if "Notes" in item else "",
+            "Age": int(item["Age"]),
         }
+        # Add optional fields
+        for field in present_fields:
+            properties[field] = item[field] if field in item else ""
 
         animal = Animal(
             enabled=True,
@@ -174,3 +225,11 @@ def _import_animals_v6(path: Path) -> dict | None:
         )
         animals[animal.id] = animal
     return animals
+
+
+def _extract_factor(factor_name: str, factors: dict[str, Factor], dataset: IntelliMazeDataset) -> Factor | None:
+    levels = dataset.extract_levels_from_property(factor_name)
+    if len(levels) > 0:
+        return Factor(factor_name, list(levels.values()))
+    else:
+        return None

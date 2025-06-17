@@ -36,6 +36,7 @@ from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvD
 from tse_analytics.views.general.datasets.adjust_dataset_dialog import AdjustDatasetDialog
 from tse_analytics.views.general.datasets.datasets_merge_dialog import DatasetsMergeDialog
 from tse_analytics.views.misc.raw_data_widget.raw_data_widget import RawDataWidget
+from tse_analytics.views.toolbox.data_table.data_table_widget import DataTableWidget
 from tse_analytics.views.toolbox.toolbox_button import ToolboxButton
 
 
@@ -369,6 +370,14 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                 # TODO: check other cases!!
                 widget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
                 widget.show()
+            elif isinstance(item, DatatableTreeItem):
+                manager.set_selected_dataset(item.datatable.dataset)
+                manager.set_selected_datatable(item.datatable)
+                self.toolbox_button.set_enabled_actions(item.datatable.dataset, item.datatable)
+                widget = DataTableWidget(item.datatable)
+                LayoutManager.add_widget_to_central_area(
+                    item.datatable.dataset, widget, f"Table - {item.datatable.dataset.name}", QIcon(":/icons/table.png")
+                )
 
     def _checked_item_changed(self, item, state: bool):
         if isinstance(item, DatasetTreeItem):

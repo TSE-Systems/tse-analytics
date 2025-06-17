@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.9.0
+## Created by: Qt User Interface Compiler version 6.9.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -76,6 +76,13 @@ class Ui_MainWindow(object):
         icon7.addFile(u":/icons/icons8-file-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.actionNewWorkspace.setIcon(icon7)
         self.actionNewWorkspace.setMenuRole(QAction.MenuRole.NoRole)
+        self.actionExportMergedCsv = QAction(MainWindow)
+        self.actionExportMergedCsv.setObjectName(u"actionExportMergedCsv")
+        icon8 = QIcon()
+        icon8.addFile(u":/icons/icons8-csv-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.actionExportMergedCsv.setIcon(icon8)
+        self.actionExportMergedCsv.setVisible(False)
+        self.actionExportMergedCsv.setMenuRole(QAction.MenuRole.NoRole)
         self.centralWidget = QWidget(MainWindow)
         self.centralWidget.setObjectName(u"centralWidget")
         MainWindow.setCentralWidget(self.centralWidget)
@@ -109,6 +116,7 @@ class Ui_MainWindow(object):
         self.menuFile.addAction(self.menuOpenRecent.menuAction())
         self.menuFile.addAction(self.actionSaveWorkspace)
         self.menuFile.addAction(self.actionImportDataset)
+        self.menuFile.addAction(self.actionExportMergedCsv)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionSettings)
         self.menuFile.addSeparator()
@@ -156,6 +164,7 @@ class Ui_MainWindow(object):
         self.actionSettings.setToolTip(QCoreApplication.translate("MainWindow", u"Settings...", None))
 #endif // QT_CONFIG(tooltip)
         self.actionNewWorkspace.setText(QCoreApplication.translate("MainWindow", u"New Workspace", None))
+        self.actionExportMergedCsv.setText(QCoreApplication.translate("MainWindow", u"Export Merged CSV...", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"&File", None))
         self.menuOpenRecent.setTitle(QCoreApplication.translate("MainWindow", u"Open Recent", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"&Help", None))

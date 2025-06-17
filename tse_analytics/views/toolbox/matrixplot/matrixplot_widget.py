@@ -64,7 +64,7 @@ class MatrixPlotWidget(QWidget):
 
         self.toolbar.addSeparator()
         self.toolbar.addWidget(QLabel("Group by:"))
-        self.group_by_selector = GroupBySelector(self.toolbar, self.datatable)
+        self.group_by_selector = GroupBySelector(self.toolbar, self.datatable, check_binning=False)
         self.toolbar.addWidget(self.group_by_selector)
 
         # Insert toolbar to the widget
@@ -113,13 +113,6 @@ class MatrixPlotWidget(QWidget):
             ).show()
             return
 
-        df = self.datatable.get_preprocessed_df(
-            variables=selected_variables,
-            split_mode=split_mode,
-            selected_factor_name=selected_factor_name,
-            dropna=True,
-        )
-
         match split_mode:
             case SplitMode.ANIMAL:
                 hue = "Animal"
@@ -133,6 +126,12 @@ class MatrixPlotWidget(QWidget):
             case _:  # Total
                 hue = None
                 palette = color_manager.colormap_name
+
+        df = self.datatable.get_df(
+            list(selected_variables),
+            split_mode,
+            selected_factor_name,
+        )
 
         # pd.plotting.scatter_matrix(
         #     frame=df[list(selected_variables)],

@@ -4,17 +4,14 @@ import numpy as np
 import pandas as pd
 
 from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
-from tse_analytics.modules.intellimaze.submodules.animal_gate.data.animal_gate_data import AnimalGateData
+from tse_analytics.modules.intellimaze.extensions.animal_gate.data.animal_gate_data import AnimalGateData
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 
 
-def import_animalgate_data(
+def import_data(
     folder_path: Path,
     dataset: IntelliMazeDataset,
-) -> AnimalGateData | None:
-    if not folder_path.exists() or not folder_path.is_dir():
-        return None
-
+) -> AnimalGateData:
     raw_data = {
         "Sessions": _import_sessions_df(folder_path),
         "Antenna": _import_antenna_df(folder_path),
@@ -45,8 +42,8 @@ def _import_sessions_df(folder_path: Path) -> pd.DataFrame | None:
 
     dtype = {
         "DeviceId": str,
-        "IdSectionVisited": int,
-        "StandbySectionVisited": int,
+        "IdSectionVisited": np.int8,
+        "StandbySectionVisited": np.int8,
         "Direction": str,
         "Weight": np.float64,
         "Tag": str,

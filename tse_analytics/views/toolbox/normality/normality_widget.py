@@ -41,7 +41,7 @@ class NormalityWidget(QWidget):
 
         toolbar.addSeparator()
         toolbar.addWidget(QLabel("Group by:"))
-        self.group_by_selector = GroupBySelector(toolbar, self.datatable)
+        self.group_by_selector = GroupBySelector(toolbar, self.datatable, check_binning=False)
         toolbar.addWidget(self.group_by_selector)
 
         # Insert the toolbar to the widget
@@ -71,12 +71,12 @@ class NormalityWidget(QWidget):
             case _:
                 by = None
 
-        df = self.datatable.get_preprocessed_df(
-            variables={variable.name: variable},
-            split_mode=split_mode,
-            selected_factor_name=selected_factor_name,
-            dropna=True,
+        df = self.datatable.get_df(
+            [variable.name],
+            split_mode,
+            selected_factor_name,
         )
+        # df.dropna(inplace=True)
 
         if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:
             df[by] = df[by].cat.remove_unused_categories()

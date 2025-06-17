@@ -31,8 +31,6 @@ class TsneWidget(QWidget):
         self.title = "tSNE"
 
         self.datatable = datatable
-        self.split_mode = SplitMode.ANIMAL
-        self.selected_factor_name = ""
 
         # Setup toolbar
         toolbar = QToolBar(
@@ -60,8 +58,8 @@ class TsneWidget(QWidget):
 
         toolbar.addSeparator()
         toolbar.addWidget(QLabel("Group by:"))
-        group_by_selector = GroupBySelector(toolbar, self.datatable, self._group_by_callback)
-        toolbar.addWidget(group_by_selector)
+        self.group_by_selector = GroupBySelector(toolbar, self.datatable, check_binning=False)
+        toolbar.addWidget(self.group_by_selector)
 
         # Insert toolbar to the widget
         self.layout.addWidget(toolbar)
@@ -78,10 +76,6 @@ class TsneWidget(QWidget):
 
         self.toast = None
 
-    def _group_by_callback(self, mode: SplitMode, factor_name: str | None):
-        self.split_mode = mode
-        self.selected_factor_name = factor_name
-
     def _update(self):
         selected_variables = self.variables_table_widget.get_selected_variables_dict()
         if len(selected_variables) < 3:
@@ -95,26 +89,17 @@ class TsneWidget(QWidget):
             ).show()
             return
 
-        match self.split_mode:
+        split_mode, selected_factor_name = self.group_by_selector.get_group_by()
+
+        match split_mode:
             case SplitMode.ANIMAL:
                 by = "Animal"
             case SplitMode.RUN:
                 by = "Run"
             case SplitMode.FACTOR:
-                by = self.selected_factor_name
+                by = selected_factor_name
             case _:
                 by = None
-
-        if self.split_mode == SplitMode.FACTOR and self.selected_factor_name == "":
-            make_toast(
-                self,
-                self.title,
-                "Please select factor.",
-                duration=2000,
-                preset=ToastPreset.WARNING,
-                show_duration_bar=True,
-            ).show()
-            return
 
         # self.ui.pushButtonUpdate.setEnabled(False)
         # self.ui.pushButtonAddReport.setEnabled(False)
@@ -122,7 +107,7 @@ class TsneWidget(QWidget):
         self.toast = make_toast(self, self.title, "Processing...")
         self.toast.show()
 
-        worker = Worker(self._calculate, selected_variables, self.split_mode, self.selected_factor_name, by)
+        worker = Worker(self._calculate, selected_variables, split_mode, selected_factor_name, by)
         worker.signals.result.connect(self._result)
         worker.signals.finished.connect(self._finished)
         TaskManager.start_task(worker)
@@ -133,15 +118,15 @@ class TsneWidget(QWidget):
         split_mode: SplitMode,
         selected_factor_name: str,
         by: str,
-    ) -> tuple[pd.DataFrame, str, str]:
-        df = self.datatable.get_preprocessed_df(
-            variables=selected_variables,
-            split_mode=split_mode,
-            selected_factor_name=selected_factor_name,
-            dropna=True,
-        )
-
+    ) -> tuple[pd.DataFrame, str, str, SplitMode, str]:
         selected_variable_names = list(selected_variables)
+
+        df = self.datatable.get_df(
+            selected_variable_names,
+            split_mode,
+            selected_factor_name,
+        )
+        df.dropna(inplace=True)
 
         # Standardize the data
         scaler = StandardScaler()
@@ -155,23 +140,21 @@ class TsneWidget(QWidget):
         if by is not None:
             result_df = pd.concat([result_df, df[[by]]], axis=1)
 
-        return result_df, title, by
+        return result_df, title, by, split_mode, selected_factor_name
 
-    def _result(self, result: tuple):
+    def _result(self, result: tuple[pd.DataFrame, str, str, SplitMode, str]):
         self.canvas.clear(False)
         ax = self.canvas.figure.add_subplot(111)
 
-        df, title, by = result
+        df, title, by, split_mode, selected_factor_name = result
 
-        match self.split_mode:
+        match split_mode:
             case SplitMode.ANIMAL:
                 palette = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
             case SplitMode.RUN:
                 palette = color_manager.colormap_name
             case SplitMode.FACTOR:
-                palette = color_manager.get_level_to_color_dict(
-                    self.datatable.dataset.factors[self.selected_factor_name]
-                )
+                palette = color_manager.get_level_to_color_dict(self.datatable.dataset.factors[selected_factor_name])
             case _:
                 palette = color_manager.colormap_name
 

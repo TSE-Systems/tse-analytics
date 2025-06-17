@@ -28,17 +28,15 @@ def import_intellicage_dataset(path: Path) -> IntelliCageDataset | None:
                 dataset = import_intellicage_dataset_v2(path, tmp_path, data_descriptor)
 
     # Extract factors from metadata
-    sex_levels = dataset.extract_levels_from_property("Sex")
-    sex_factor = Factor("Sex", list(sex_levels.values()))
+    factors: dict[str, Factor] = {}
+    expected_factor_names = ("Sex", "Group")
+    for factor_name in expected_factor_names:
+        factor = _extract_factor(factor_name, factors, dataset)
+        if factor is not None:
+            factors[factor.name] = factor
 
-    group_levels = dataset.extract_levels_from_property("Group")
-    group_factor = Factor("Group", list(group_levels.values()))
-
-    factors = {
-        sex_factor.name: sex_factor,
-        group_factor.name: group_factor,
-    }
-    dataset.set_factors(factors)
+    if len(factors) > 0:
+        dataset.set_factors(factors)
 
     logger.info(f"Import complete in {(timeit.default_timer() - tic):.3f} sec: {path}")
 
@@ -57,3 +55,11 @@ def _import_data_descriptor(path: Path) -> dict | None:
         )
 
     return result["DataDescriptor"]
+
+
+def _extract_factor(factor_name: str, factors: dict[str, Factor], dataset: IntelliCageDataset) -> Factor | None:
+    levels = dataset.extract_levels_from_property(factor_name)
+    if len(levels) > 0:
+        return Factor(factor_name, list(levels.values()))
+    else:
+        return None

@@ -50,7 +50,7 @@ class CorrelationWidget(QWidget):
 
         self.toolbar.addSeparator()
         self.toolbar.addWidget(QLabel("Group by:"))
-        self.group_by_selector = GroupBySelector(self.toolbar, self.datatable)
+        self.group_by_selector = GroupBySelector(self.toolbar, self.datatable, check_binning=False)
         self.toolbar.addWidget(self.group_by_selector)
 
         # Insert toolbar to the widget
@@ -108,12 +108,11 @@ class CorrelationWidget(QWidget):
                 by = None
                 palette = color_manager.colormap_name
 
-        variables = {x_var.name: x_var} if x_var.name == y_var.name else {x_var.name: x_var, y_var.name: y_var}
-        df = self.datatable.get_preprocessed_df(
-            variables,
+        variable_columns = [x_var.name] if x_var.name == y_var.name else [x_var.name, y_var.name]
+        df = self.datatable.get_df(
+            variable_columns,
             split_mode,
             selected_factor_name,
-            False,
         )
 
         if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:

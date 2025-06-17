@@ -1,6 +1,6 @@
 [project]
 name = "tse-analytics"
-version = "1.5.0"
+version = "1.5.1"
 description = "TSE Analytics data analysys"
 license = "MIT"
 readme = "README.md"
@@ -9,31 +9,31 @@ authors = [
 ]
 homepage = "https://github.com/TSE-Systems/tse-analytics"
 repository = "https://github.com/TSE-Systems/tse-analytics"
-requires-python = "==3.13.3"
+requires-python = "==3.13.5"
 dependencies = [
     "astropy>=7.0.1",
     "lmfit==1.3.3",
     "loguru==0.7.3",
     "matplotlib==3.10.3",
     "openpyxl==3.1.5",
-    "pandas==2.2.3",
+    "pandas==2.3.0",
     "pingouin==0.5.5",
     "psutil==7.0.0",
     "pyqt-toast-notification==1.3.3",
     "pyqtgraph==0.13.7",
-    "pyside6==6.9.0",
-    "pyside6-qtads==4.4.0",
-    "scikit-learn==1.6.1",
+    "pyside6==6.9.1",
+    "pyside6-qtads==4.4.0.1",
+    "scikit-learn==1.7.0",
     "seaborn==0.13.2",
     "xmltodict==0.14.2",
 ]
 
 [dependency-groups]
 dev = [
-    "mypy==1.15.0",
-    "pyinstaller==6.13.0",
+    "mypy==1.16.1",
+    "pyinstaller==6.14.1",
     "qtsass==0.4.0",
-    "ruff==0.11.9",
+    "ruff==0.11.13",
 ]
 
 [project.scripts]

@@ -6,7 +6,7 @@ from tse_analytics.core.data.shared import SplitMode
 
 
 class GroupBySelector(QComboBox, messaging.MessengerListener):
-    def __init__(self, parent: QWidget, datatable: Datatable, callback=None):
+    def __init__(self, parent: QWidget, datatable: Datatable, callback=None, check_binning=True):
         super().__init__(parent)
 
         self.setMinimumWidth(80)
@@ -16,6 +16,7 @@ class GroupBySelector(QComboBox, messaging.MessengerListener):
 
         self.datatable = datatable
         self.callback = callback
+        self.check_binning = check_binning
 
         self.modes = []
         self._set_available_modes()
@@ -38,7 +39,7 @@ class GroupBySelector(QComboBox, messaging.MessengerListener):
             self._set_available_modes()
 
     def _set_available_modes(self) -> None:
-        modes = self.datatable.get_group_by_columns()
+        modes = self.datatable.get_group_by_columns(self.check_binning)
         if modes != self.modes:
             self.blockSignals(True)
             self.clear()
