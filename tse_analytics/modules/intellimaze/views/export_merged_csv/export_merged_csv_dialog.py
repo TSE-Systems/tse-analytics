@@ -117,7 +117,9 @@ class ExportMergedCsvDialog(QDialog):
                         row["AnimalTag"],
                         row["TableType"],
                     ]
-                    fields = [str(row[field_name]) if row[field_name] == row[field_name] else "" for field_name in field_names]
+                    fields = [
+                        str(row[field_name]) if row[field_name] == row[field_name] else "" for field_name in field_names
+                    ]
                     csvDataRows.append(start + preContent + fields + postContent)
 
                 fieldsOffset = fieldsOffset + headerLength

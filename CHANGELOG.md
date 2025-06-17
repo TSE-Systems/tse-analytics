@@ -1,6 +1,15 @@
 TSE Analytics Change Log
 ====================================================================================================
 
+# 1.5.1 (2025-06-17)
+
+- New: Support for IntelliMaze 6.x data format.
+- New: IntelliMaze merged CSV export.
+- Change: Group-by implementation for factors and Total mode.
+- Fix: CSV import options persistence.
+
+
+----------------------------------------------------------------------------------------------------
 # 1.5.0 (2025-05-13)
 
 - New: Data import for IntelliCage v1/v2 data formats.
