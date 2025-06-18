@@ -33,7 +33,7 @@ dev = [
     "mypy==1.16.1",
     "pyinstaller==6.14.1",
     "qtsass==0.4.0",
-    "ruff==0.11.13",
+    "ruff==0.12.0",
 ]
 
 [project.scripts]

@@ -1,3 +1,19 @@
+"""
+PhenoMaster CSV Dataset Loader Module
+
+This module provides functionality for loading PhenoMaster datasets from CSV files.
+It parses the specific format of CSV files exported by PhenoMaster systems, which
+typically contain several sections:
+- Header section: Contains metadata about the experiment
+- Animal section: Contains information about the animals in the experiment
+- Sample interval section: Contains information about the sampling intervals
+- Group section: Contains information about animal grouping
+- Data section: Contains the actual measurement data
+
+The module extracts information from these sections to create a structured
+PhenoMasterDataset object that can be used for analysis and visualization.
+"""
+
 from collections import namedtuple
 from io import StringIO
 from pathlib import Path
@@ -15,6 +31,22 @@ Section = namedtuple("Section", ["lines", "section_start_index", "section_end_in
 
 
 def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> PhenoMasterDataset | None:
+    """
+    Load a PhenoMaster dataset from a CSV file.
+
+    This function parses a CSV file exported by a PhenoMaster system and creates
+    a PhenoMasterDataset object containing the data. It extracts information from
+    various sections of the file (header, animal, sample interval, group, data)
+    and organizes it into a structured dataset.
+
+    Args:
+        path (Path): Path to the CSV file to load
+        csv_import_settings (CsvImportSettings): Settings for CSV import, including
+                                                delimiter, decimal separator, etc.
+
+    Returns:
+        PhenoMasterDataset | None: A dataset containing the loaded data, or None if loading failed
+    """
     with open(path) as f:
         lines = f.readlines()
 
@@ -183,7 +215,19 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
     return dataset
 
 
-def _get_header_section(lines: list[str]):
+def _get_header_section(lines: list[str]) -> Section:
+    """
+    Extract the header section from the CSV file.
+
+    The header section typically contains the experiment name, description,
+    and version information in the first two lines of the file.
+
+    Args:
+        lines (list[str]): All lines from the CSV file
+
+    Returns:
+        Section: A named tuple containing the header lines and their indices
+    """
     section = [lines[0], lines[1]]
     return Section(section, 0, 1)
 

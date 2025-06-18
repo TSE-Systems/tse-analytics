@@ -2,9 +2,22 @@ from __future__ import annotations
 
 
 class TreeItem:
-    """A Json item corresponding to a line in QTreeView"""
+    """
+    A tree item representing a node in a JSON data structure.
+
+    This class provides the foundation for building a hierarchical representation
+    of JSON data, with each item storing a key-value pair and maintaining
+    parent-child relationships. It is used by JsonModel to display and edit
+    JSON data in a tree view.
+    """
 
     def __init__(self, parent: TreeItem | None = None):
+        """
+        Initialize a tree item with the given parent.
+
+        Args:
+            parent (TreeItem, optional): The parent tree item. Defaults to None.
+        """
         self._parent = parent
         self._key = ""
         self._value = ""
@@ -63,17 +76,28 @@ class TreeItem:
 
     @classmethod
     def load(cls, value: list | dict, parent: TreeItem | None = None, sort=True) -> TreeItem:
-        """Create a 'root' TreeItem from a nested list or a nested dictonary
+        """
+        Create a tree structure from a nested list or dictionary.
+
+        This method recursively processes JSON-compatible data structures and
+        builds a corresponding tree of TreeItem objects. For dictionaries,
+        each key-value pair becomes a child item. For lists, each element
+        becomes a child item with its index as the key.
+
+        Args:
+            value (list | dict): The JSON-compatible data to convert to a tree.
+            parent (TreeItem, optional): The parent item for the new tree.
+                                        Defaults to None.
+            sort (bool, optional): Whether to sort dictionary keys alphabetically.
+                                  Defaults to True.
 
         Examples:
             with open("file.json") as file:
-                data = json.dump(file)
+                data = json.load(file)
                 root = TreeItem.load(data)
 
-        This method is a recursive function that calls itself.
-
         Returns:
-            TreeItem: TreeItem
+            TreeItem: The root item of the created tree structure.
         """
         rootItem = TreeItem(parent)
         rootItem.key = "root"

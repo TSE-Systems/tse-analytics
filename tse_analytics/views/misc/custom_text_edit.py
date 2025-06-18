@@ -8,7 +8,23 @@ IMAGE_EXTENSIONS = [".jpg", ".png", ".bmp"]
 
 
 class CustomTextEdit(QTextEdit):
+    """
+    A custom text editor with enhanced image handling capabilities.
+
+    This class extends QTextEdit to provide support for inserting images
+    from various sources including clipboard, drag-and-drop, and local files.
+    It handles common image formats like JPG, PNG, and BMP.
+    """
+
     def __init__(self, parent=None):
+        """
+        Initialize the CustomTextEdit widget.
+
+        Sets up auto-formatting and default font settings.
+
+        Args:
+            parent: The parent widget. Default is None.
+        """
         super().__init__(parent)
         self.setAutoFormatting(QTextEdit.AutoFormattingFlag.AutoAll)
         # Initialize default font size.
@@ -18,12 +34,33 @@ class CustomTextEdit(QTextEdit):
         self.setFontPointSize(12)
 
     def canInsertFromMimeData(self, source):
+        """
+        Check if the mime data can be inserted into the text edit.
+
+        Overrides the parent method to add support for image data.
+
+        Args:
+            source: The QMimeData object to check.
+
+        Returns:
+            True if the data can be inserted, False otherwise.
+        """
         if source.hasImage():
             return True
         else:
             return super().canInsertFromMimeData(source)
 
     def insertFromMimeData(self, source):
+        """
+        Insert content from mime data into the text edit.
+
+        Overrides the parent method to add support for inserting images from:
+        - Local image files (via URLs)
+        - Clipboard image data
+
+        Args:
+            source: The QMimeData object containing the data to insert.
+        """
         cursor = self.textCursor()
         document = self.document()
 

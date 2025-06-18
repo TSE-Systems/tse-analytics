@@ -13,6 +13,25 @@ def merge_datasets(
     continuous_mode: bool,
     generate_new_animal_names: bool,
 ) -> PhenoMasterDataset | None:
+    """
+    Merge multiple PhenoMaster datasets into a single dataset.
+
+    This function serves as the main entry point for merging PhenoMaster datasets.
+    It supports two merging modes: continuous (for sequential experiments) and
+    overlap (for parallel experiments with potentially overlapping data).
+
+    Args:
+        new_dataset_name (str): Name for the merged dataset
+        datasets (list[PhenoMasterDataset]): List of datasets to merge
+        single_run (bool): If True, all data will be treated as a single experimental run
+        continuous_mode (bool): If True, datasets are merged as sequential experiments;
+                               if False, datasets are merged as parallel experiments
+        generate_new_animal_names (bool): If True, animal IDs will be modified to ensure uniqueness
+                                         across datasets (only used in overlap mode)
+
+    Returns:
+        PhenoMasterDataset | None: The merged dataset, or None if merging failed
+    """
     # sort datasets by start time
     datasets.sort(key=lambda dataset: dataset.experiment_started)
 
@@ -32,6 +51,21 @@ def _merge_continuous(
     datasets: list[PhenoMasterDataset],
     single_run: bool,
 ) -> PhenoMasterDataset | None:
+    """
+    Merge datasets in continuous mode (sequential experiments).
+
+    This helper function merges datasets assuming they represent sequential experiments.
+    It concatenates the data from all datasets, adjusting run numbers and time-related
+    variables to create a continuous timeline.
+
+    Args:
+        merged_dataset_name (str): Name for the merged dataset
+        datasets (list[PhenoMasterDataset]): List of datasets to merge, sorted by start time
+        single_run (bool): If True, all data will be treated as a single experimental run
+
+    Returns:
+        PhenoMasterDataset | None: The merged dataset, or None if merging failed
+    """
     first_dataset = datasets[0]
 
     merged_animals = _merge_animals(datasets)
@@ -97,6 +131,23 @@ def _merge_overlap(
     single_run: bool,
     generate_new_animal_names: bool,
 ) -> PhenoMasterDataset | None:
+    """
+    Merge datasets in overlap mode (parallel experiments).
+
+    This helper function merges datasets assuming they represent parallel experiments
+    that may have overlapping time periods. It handles animal ID conflicts by optionally
+    generating new unique animal IDs.
+
+    Args:
+        merged_dataset_name (str): Name for the merged dataset
+        datasets (list[PhenoMasterDataset]): List of datasets to merge, sorted by start time
+        single_run (bool): If True, all data will be treated as a single experimental run
+        generate_new_animal_names (bool): If True, animal IDs will be modified to ensure
+                                         uniqueness across datasets
+
+    Returns:
+        PhenoMasterDataset | None: The merged dataset, or None if merging failed
+    """
     first_dataset = datasets[0]
 
     if generate_new_animal_names:
@@ -179,6 +230,22 @@ def _merge_metadata(
     merged_animals: dict[str, Animal],
     datasets: list[PhenoMasterDataset],
 ) -> dict:
+    """
+    Merge metadata from multiple datasets.
+
+    This helper function creates a new metadata dictionary for the merged dataset,
+    combining information from all source datasets. It determines the experiment
+    start and end times based on the merging mode.
+
+    Args:
+        merged_dataset_name (str): Name for the merged dataset
+        merging_mode (str): The mode used for merging ("continuous" or "overlap")
+        merged_animals (dict[str, Animal]): Dictionary of merged animal objects
+        datasets (list[PhenoMasterDataset]): List of datasets being merged
+
+    Returns:
+        dict: Merged metadata dictionary
+    """
     experiment_started = datasets[0].experiment_started
     if merging_mode == "continuous":
         experiment_stopped = datasets[len(datasets) - 1].experiment_stopped
@@ -200,6 +267,20 @@ def _merge_metadata(
 
 
 def _merge_animals(datasets: list[PhenoMasterDataset]) -> dict[str, Animal]:
+    """
+    Merge animal data from multiple datasets.
+
+    This helper function combines animal data from all datasets into a single dictionary.
+    When animals with the same ID exist in multiple datasets, the animal from the later
+    dataset (in the input list) takes precedence. The resulting dictionary is sorted by
+    animal ID.
+
+    Args:
+        datasets (list[PhenoMasterDataset]): List of datasets whose animal data will be merged
+
+    Returns:
+        dict[str, Animal]: Dictionary mapping animal IDs to Animal objects
+    """
     result: dict[str, Animal] = {}
     for animals in [dataset.animals for dataset in reversed(datasets)]:
         result.update(animals)

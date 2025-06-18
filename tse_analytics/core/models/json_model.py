@@ -6,9 +6,21 @@ from tse_analytics.core.models.json_tree_item import TreeItem
 
 
 class JsonModel(QAbstractItemModel):
-    """An editable model of Json data"""
+    """
+    An editable model for representing JSON data in a tree structure.
+
+    This model provides a hierarchical view of JSON data with support for
+    displaying and editing the key-value pairs. It uses TreeItem instances
+    to represent each node in the JSON structure.
+    """
 
     def __init__(self, parent: QObject | None = None):
+        """
+        Initialize the JSON model.
+
+        Args:
+            parent (QObject, optional): The parent object. Defaults to None.
+        """
         super().__init__(parent)
 
         self._rootItem = TreeItem()
@@ -168,6 +180,20 @@ class JsonModel(QAbstractItemModel):
             return flags
 
     def to_json(self, item=None):
+        """
+        Convert the model data back to a JSON-compatible Python object.
+
+        This method recursively traverses the tree structure and builds
+        a dictionary, list, or primitive value based on the item's type.
+
+        Args:
+            item (TreeItem, optional): The starting tree item to convert.
+                                      Defaults to the root item.
+
+        Returns:
+            dict, list, or primitive value: The JSON-compatible representation
+                                           of the model data.
+        """
         if item is None:
             item = self._rootItem
 

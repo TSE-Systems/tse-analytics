@@ -36,6 +36,11 @@ class SelectedTreeItemChangedMessage(Message):
     """Indicates that the selected TreeView item has changed"""
 
     def __init__(self, sender, tree_item: TreeItem):
+        """Create a new SelectedTreeItemChangedMessage
+
+        :param sender: The object sending the message
+        :param tree_item: The newly selected tree item
+        """
         super().__init__(sender)
         self.tree_item = tree_item
 
@@ -44,6 +49,11 @@ class DataChangedMessage(Message):
     """Indicates that selected data changed"""
 
     def __init__(self, sender, dataset: Dataset):
+        """Create a new DataChangedMessage
+
+        :param sender: The object sending the message
+        :param dataset: The dataset that changed
+        """
         super().__init__(sender)
         self.dataset = dataset
 
@@ -52,6 +62,11 @@ class WorkspaceChangedMessage(Message):
     """Indicates that the workspace has changed"""
 
     def __init__(self, sender, workspace: Workspace):
+        """Create a new WorkspaceChangedMessage
+
+        :param sender: The object sending the message
+        :param workspace: The workspace that changed
+        """
         super().__init__(sender)
         self.workspace = workspace
 
@@ -60,6 +75,11 @@ class DatasetChangedMessage(Message):
     """Indicates that the selected dataset is changed"""
 
     def __init__(self, sender, dataset: Dataset | None):
+        """Create a new DatasetChangedMessage
+
+        :param sender: The object sending the message
+        :param dataset: The newly selected dataset, or None if no dataset is selected
+        """
         super().__init__(sender)
         self.dataset = dataset
 
@@ -68,20 +88,38 @@ class DatatableChangedMessage(Message):
     """Indicates that the selected datatable is changed"""
 
     def __init__(self, sender, datatable: Datatable | None):
+        """Create a new DatatableChangedMessage
+
+        :param sender: The object sending the message
+        :param datatable: The newly selected datatable, or None if no datatable is selected
+        """
         super().__init__(sender)
         self.datatable = datatable
 
 
 class BinningMessage(Message):
-    """Binning signalling"""
+    """Indicates that a binning operation should be performed on a dataset"""
 
     def __init__(self, sender, dataset: Dataset, settings: BinningSettings):
+        """Create a new BinningMessage
+
+        :param sender: The object sending the message
+        :param dataset: The dataset to perform binning on
+        :param settings: The binning settings to use
+        """
         super().__init__(sender)
         self.dataset = dataset
         self.settings = settings
 
 
 class AddToReportMessage(Message):
+    """Indicates that a dataset should be added to the report"""
+
     def __init__(self, sender, dataset: Dataset):
+        """Create a new AddToReportMessage
+
+        :param sender: The object sending the message
+        :param dataset: The dataset to add to the report
+        """
         super().__init__(sender)
         self.dataset = dataset

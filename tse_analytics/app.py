@@ -1,3 +1,11 @@
+"""
+Main application module for TSE Analytics.
+
+This module initializes the application, sets up global configurations for various
+libraries (matplotlib, PyQtGraph, pandas, seaborn), and provides the main entry point
+for the TSE Analytics application.
+"""
+
 import ctypes
 import os
 import sys
@@ -40,7 +48,20 @@ sns.set_color_codes("pastel")
 
 
 class App(QApplication):
+    """
+    Main application class for TSE Analytics.
+
+    This class extends QApplication to provide TSE Analytics specific functionality,
+    including application styling, organization information, and task management.
+    """
+
     def __init__(self, args):
+        """
+        Initialize the TSE Analytics application.
+
+        Args:
+            args: Command line arguments passed to the application.
+        """
         # Force the light mode
         args += ["-platform", "windows:darkmode=1"]
 
@@ -66,11 +87,35 @@ class App(QApplication):
 
 
 def handle_exception(exc_type, exc_value, exc_traceback) -> None:
+    """
+    Global exception handler for uncaught exceptions.
+
+    This function is set as the sys.excepthook to catch and log any uncaught exceptions
+    that occur during the application's execution.
+
+    Args:
+        exc_type: The type of the exception.
+        exc_value: The exception instance.
+        exc_traceback: The traceback object.
+
+    Returns:
+        None
+    """
     # logging.critical("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
     logger.opt(exception=(exc_type, exc_value, exc_traceback)).critical("Uncaught exception")
 
 
 def main() -> None:
+    """
+    Main entry point for the TSE Analytics application.
+
+    This function initializes logging, sets up exception handling, creates the
+    application instance, shows the main window, and starts the application's
+    event loop.
+
+    Returns:
+        None
+    """
     # See: https://github.com/pyinstaller/pyinstaller/issues/7334#issuecomment-1357447176
     if sys.stdout is None:
         sys.stdout = open(os.devnull, "w")

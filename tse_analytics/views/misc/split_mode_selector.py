@@ -7,7 +7,24 @@ from tse_analytics.views.misc.factor_selector import FactorSelector
 
 
 class SplitModeSelector(QWidget, messaging.MessengerListener):
+    """
+    A widget for selecting how to split data for analysis.
+
+    This widget provides a combo box for selecting the split mode (by animal, total,
+    by run, or by factor) and a factor selector that appears when "By factor" is selected.
+    It listens for binning messages to update available split modes when binning changes.
+    """
+
     def __init__(self, parent: QWidget, datatable: Datatable, callback):
+        """
+        Initialize the SplitModeSelector widget.
+
+        Args:
+            parent: The parent widget.
+            datatable: The Datatable object containing the data to be split.
+            callback: Function to call when the split mode selection changes.
+                     The function should accept split_mode and factor_name parameters.
+        """
         super().__init__(parent)
 
         messaging.subscribe(self, messaging.BinningMessage, self._on_binning_applied)
@@ -36,10 +53,28 @@ class SplitModeSelector(QWidget, messaging.MessengerListener):
         self.setLayout(layout)
 
     def _on_binning_applied(self, message: messaging.BinningMessage):
+        """
+        Handle binning messages from the messaging system.
+
+        This method is called when binning is applied to a dataset. If the binning
+        was applied to the current dataset, it updates the available split modes.
+
+        Args:
+            message: The BinningMessage containing information about the binning operation.
+        """
         if message.dataset == self.datatable.dataset:
             self._set_available_split_modes(message.settings.apply)
 
     def _set_available_split_modes(self, binning_active: bool) -> None:
+        """
+        Update the available split modes based on the current data and binning status.
+
+        This method determines which split modes are available based on the current
+        datatable state and binning settings, then updates the combo box accordingly.
+
+        Args:
+            binning_active: Whether binning is currently active for the dataset.
+        """
         split_modes = ["By animal"]
         if "Bin" in self.datatable.active_df.columns or binning_active:
             split_modes.append("Total")
@@ -58,18 +93,49 @@ class SplitModeSelector(QWidget, messaging.MessengerListener):
             self.split_modes = split_modes
 
     def _split_mode_changed(self, mode: str) -> None:
+        """
+        Handle changes to the selected split mode.
+
+        This method is called when the user selects a different split mode.
+        It shows or hides the factor selector based on the selected mode
+        and calls the callback function with the new selection.
+
+        Args:
+            mode: The text of the newly selected mode.
+        """
         self.factorSelector.setVisible(mode == "By factor")
         self._call_callback()
 
     def _factor_name_changed(self, factor_name: str) -> None:
+        """
+        Handle changes to the selected factor.
+
+        This method is called when the user selects a different factor in the factor selector.
+        It calls the callback function with the new selection.
+
+        Args:
+            factor_name: The name of the newly selected factor.
+        """
         self._call_callback()
 
     def _call_callback(self) -> None:
+        """
+        Call the callback function with the current selection.
+
+        This method gets the current split mode and factor name and passes them
+        to the callback function provided during initialization.
+        """
         split_mode = self._get_split_mode()
         factor_name = self.factorSelector.currentText()
         self.callback(split_mode, factor_name)
 
     def _get_split_mode(self) -> SplitMode:
+        """
+        Convert the current text selection to a SplitMode enum value.
+
+        Returns:
+            The appropriate SplitMode enum value for the current selection.
+        """
         match self.split_mode_combobox.currentText():
             case "Total":
                 return SplitMode.TOTAL

@@ -112,6 +112,13 @@ class Messenger:
         return subscriber in self._subscriptions and message in self._subscriptions[subscriber]
 
     def get_handler(self, subscriber: MessengerListener, message: Message):
+        """Get the handler function for a subscriber and message type.
+
+        :param subscriber: The subscriber to get the handler for
+        :param message: The message type to get the handler for
+
+        :return: The handler function or None if not found
+        """
         if subscriber is None:
             return None
         try:
@@ -138,7 +145,16 @@ class Messenger:
             self._subscriptions.pop(subscriber)
 
     def _find_handlers(self, message: Message):
-        """Yields all (subscriber, handler) pairs that should receive a message"""
+        """Yields all (subscriber, handler) pairs that should receive a message.
+
+        This method finds all subscribers that have subscribed to the message type
+        or any of its superclasses, and yields the subscriber and handler function
+        for each match. For each subscriber, it selects the most specific message
+        class that matches the input message type.
+
+        :param message: The message to find handlers for
+        :yield: Tuples of (subscriber, handler) for each matching subscription
+        """
         # self._subscriptions:
         # subscriber => { message type => (filter, handler)}
 
@@ -194,4 +210,12 @@ class Messenger:
 
 
 def _mro_count(obj):
+    """Return the length of the method resolution order (MRO) for an object.
+
+    This is used to determine the most specific message class when multiple
+    message classes match a message type.
+
+    :param obj: The object to get the MRO length for
+    :return: The length of the MRO
+    """
     return len(getmro(obj))

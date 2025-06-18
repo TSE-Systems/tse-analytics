@@ -9,7 +9,22 @@ from tse_analytics.views.misc.MplCanvas import MplCanvas
 
 
 class PlotWidget(QWidget):
+    """
+    A widget for displaying matplotlib plots with navigation controls.
+
+    This widget provides a canvas for matplotlib figures along with a toolbar
+    that includes standard plot navigation controls (zoom, pan, save, etc.)
+    and the ability to add the plot to a report.
+    """
+
     def __init__(self, datatable: Datatable, parent=None):
+        """
+        Initialize the PlotWidget.
+
+        Args:
+            datatable: The Datatable object associated with this widget.
+            parent: The parent widget. Default is None.
+        """
         super().__init__(parent)
 
         self.datatable = datatable
@@ -38,8 +53,24 @@ class PlotWidget(QWidget):
         self.layout.addWidget(self.canvas)
 
     def clear(self, redraw: bool):
+        """
+        Clear the plot canvas.
+
+        This method removes all plots, axes, and other elements from the canvas.
+
+        Args:
+            redraw: If True, the canvas will be redrawn after clearing.
+                   If False, the canvas will not be redrawn until explicitly requested.
+        """
         self.canvas.clear(redraw)
 
     def _add_report(self):
+        """
+        Add the current plot to the dataset's report.
+
+        This method converts the matplotlib figure to an HTML image and appends it
+        to the dataset's report, then broadcasts a message to notify other components
+        that content has been added to the report.
+        """
         self.datatable.dataset.report += get_html_image(self.canvas.figure)
         messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))

@@ -17,9 +17,29 @@ from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.models.animals_model import AnimalsModel
 
+"""
+Animals widget module for TSE Analytics.
+
+This module provides a widget for displaying and managing animals in a dataset,
+including their properties and enabled/disabled state.
+"""
+
 
 class AnimalsWidget(QWidget, messaging.MessengerListener):
+    """
+    Widget for displaying and managing animals in a dataset.
+
+    This widget displays a table of animals with their properties and provides
+    functionality to check/uncheck all animals and add new properties.
+    """
+
     def __init__(self, parent: QWidget | None = None):
+        """
+        Initialize the AnimalsWidget with optional parent widget.
+
+        Args:
+            parent (QWidget | None, optional): Parent widget. Defaults to None.
+        """
         super().__init__(parent)
 
         self.dataset: Dataset | None = None
@@ -64,6 +84,14 @@ class AnimalsWidget(QWidget, messaging.MessengerListener):
         self.layout.addWidget(self.tableView)
 
     def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
+        """
+        Handle dataset changed message.
+
+        Updates the widget's dataset reference and refreshes the table view.
+
+        Args:
+            message (messaging.DatasetChangedMessage): The dataset changed message.
+        """
         self.dataset = message.dataset
         if self.dataset is None:
             self.tableView.model().setSourceModel(None)
@@ -71,11 +99,23 @@ class AnimalsWidget(QWidget, messaging.MessengerListener):
             self._set_model()
 
     def _set_model(self):
+        """
+        Set the animals model for the table view.
+
+        Creates a new AnimalsModel with the current dataset and sets it as the
+        source model for the table view's proxy model.
+        """
         model = AnimalsModel(self.dataset)
         self.tableView.model().setSourceModel(model)
         self.tableView.resizeColumnsToContents()
 
     def _set_animals_state(self, state: bool) -> None:
+        """
+        Set the enabled state for all animals in the dataset.
+
+        Args:
+            state (bool): The enabled state to set for all animals.
+        """
         if self.dataset is None:
             return
 
@@ -86,6 +126,12 @@ class AnimalsWidget(QWidget, messaging.MessengerListener):
         messaging.broadcast(messaging.DataChangedMessage(self, self.dataset))
 
     def _add_property(self) -> None:
+        """
+        Add a new property to all animals in the dataset.
+
+        Prompts the user for a property name and adds it to all animals
+        with a default value of 0.0.
+        """
         if self.dataset is None:
             return
 
@@ -112,4 +158,10 @@ class AnimalsWidget(QWidget, messaging.MessengerListener):
             self._set_model()
 
     def minimumSizeHint(self):
+        """
+        Return the minimum size hint for the widget.
+
+        Returns:
+            QSize: The minimum size hint.
+        """
         return QSize(300, 100)

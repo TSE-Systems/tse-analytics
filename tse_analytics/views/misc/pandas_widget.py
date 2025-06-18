@@ -12,7 +12,23 @@ from tse_analytics.views.misc.pandas_table_view import PandasTableView
 
 
 class PandasWidget(QWidget):
+    """
+    A widget for displaying and interacting with pandas DataFrame data.
+
+    This widget provides a table view of pandas DataFrame data along with a toolbar
+    that includes functionality for exporting data to CSV or Excel, resizing columns,
+    and adding the data to a report.
+    """
+
     def __init__(self, dataset: Dataset, title: str, parent=None):
+        """
+        Initialize the PandasWidget.
+
+        Args:
+            dataset: The Dataset object associated with this widget.
+            title: The title for this widget, used for Excel sheet name and display.
+            parent: The parent widget. Default is None.
+        """
         super().__init__(parent)
 
         self.dataset = dataset
@@ -56,10 +72,25 @@ class PandasWidget(QWidget):
         self.layout.addWidget(self.pandas_table_view)
 
     def set_data(self, df: pd.DataFrame) -> None:
+        """
+        Set the pandas DataFrame to be displayed in the widget.
+
+        This method updates the internal DataFrame reference and passes the data
+        to the table view for display.
+
+        Args:
+            df: The pandas DataFrame to display.
+        """
         self.df = df
         self.pandas_table_view.set_data(self.df)
 
     def _export_csv(self):
+        """
+        Export the current DataFrame to a CSV file.
+
+        This method prompts the user for a file location and saves the DataFrame
+        as a CSV file with semicolon separators and no index.
+        """
         if self.df is None:
             return
         filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "", "CSV Files (*.csv)")
@@ -67,6 +98,12 @@ class PandasWidget(QWidget):
             self.df.to_csv(filename, sep=";", index=False)
 
     def _export_excel(self):
+        """
+        Export the current DataFrame to an Excel file.
+
+        This method prompts the user for a file location and saves the DataFrame
+        as an Excel file with the widget's title as the sheet name.
+        """
         if self.df is None:
             return
         filename, _ = QFileDialog.getSaveFileName(self, "Export to Excel", "", "Excel Files (*.xlsx)")
@@ -75,12 +112,25 @@ class PandasWidget(QWidget):
                 self.df.to_excel(writer, sheet_name=self.title)
 
     def _resize_columns_width(self):
+        """
+        Resize the table columns to fit their contents.
+
+        This method uses a worker thread to resize the columns asynchronously,
+        preventing the UI from freezing during the operation.
+        """
         worker = Worker(
             self.pandas_table_view.resizeColumnsToContents
         )  # Any other args, kwargs are passed to the run function
         TaskManager.start_task(worker)
 
     def _add_report(self):
+        """
+        Add the current DataFrame to the dataset's report.
+
+        This method converts the DataFrame to HTML and appends it to the dataset's
+        report, then broadcasts a message to notify other components that content
+        has been added to the report.
+        """
         if self.df is None:
             return
         # self.df.style.set_caption(self.title)

@@ -5,9 +5,22 @@ from tse_analytics.core.data.shared import Factor
 
 
 class FactorsTableWidget(QTableWidget):
+    """
+    A table widget for displaying and selecting factors.
+
+    This widget presents factors and their levels in a table format,
+    allowing users to view and select factors for analysis.
+    """
+
     _COLUMN_NUMBER = 2
 
     def __init__(self, parent=None):
+        """
+        Initialize the FactorsTableWidget.
+
+        Args:
+            parent: The parent widget. Default is None.
+        """
         super().__init__(parent)
 
         self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -36,9 +49,24 @@ class FactorsTableWidget(QTableWidget):
         self.setPalette(pal)
 
     def set_selection_mode(self, mode: QAbstractItemView.SelectionMode) -> None:
+        """
+        Set the selection mode for the table.
+
+        Args:
+            mode: The selection mode to use (e.g., SingleSelection, MultiSelection).
+        """
         self.setSelectionMode(mode)
 
     def set_data(self, factors: dict[str, Factor]) -> None:
+        """
+        Populate the table with factor data.
+
+        This method clears any existing data and fills the table with the provided factors,
+        displaying their names and levels.
+
+        Args:
+            factors: Dictionary mapping factor names to Factor objects.
+        """
         self.setRowCount(len(factors))
         for i, factor in enumerate(factors.values()):
             self.setItem(i, 0, QTableWidgetItem(factor.name))
@@ -46,9 +74,20 @@ class FactorsTableWidget(QTableWidget):
             self.setItem(i, 1, QTableWidgetItem(f"{', '.join(level_names)}"))
 
     def clear_data(self) -> None:
+        """
+        Clear all data from the table.
+
+        This method removes all rows from the table, effectively clearing all factor data.
+        """
         self.setRowCount(0)
 
     def get_selected_factor_names(self) -> list[str]:
+        """
+        Get the names of all currently selected factors.
+
+        Returns:
+            A list of factor names that are currently selected in the table.
+        """
         selected_items = self.selectedItems()
         result = []
         for i in range(0, len(selected_items) // self._COLUMN_NUMBER):

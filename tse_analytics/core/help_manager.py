@@ -1,3 +1,10 @@
+"""
+Help documentation manager module for TSE Analytics.
+
+This module provides functions for displaying online and offline help documentation,
+as well as managing the local HTTP server for offline documentation.
+"""
+
 import os
 import subprocess
 import sys
@@ -11,10 +18,23 @@ _help_server_process: subprocess.Popen | None = None
 
 
 def show_online_help():
+    """
+    Open the online help documentation in the default web browser.
+
+    This function opens the TSE Analytics online documentation website
+    using the system's default web browser.
+    """
     QDesktopServices.openUrl("https://tse-systems.github.io/tse-analytics-docs")
 
 
 def show_offline_help():
+    """
+    Open the offline help documentation in the default web browser.
+
+    This function starts a local HTTP server to serve the offline documentation
+    if it's not already running, and then opens the documentation in the
+    system's default web browser.
+    """
     global _help_server_process
 
     if _help_server_process is None:
@@ -43,6 +63,13 @@ def show_offline_help():
 
 
 def close_help_server():
+    """
+    Close the local HTTP server for offline documentation.
+
+    This function terminates the HTTP server process if it's running.
+    It should be called when the application is shutting down to ensure
+    the server process is properly terminated.
+    """
     global _help_server_process
     if _help_server_process is not None:
         _help_server_process.kill()

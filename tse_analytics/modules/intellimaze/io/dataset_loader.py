@@ -22,6 +22,18 @@ extension_data_loaders = {
 
 
 def import_intellimaze_dataset(path: Path) -> IntelliMazeDataset | None:
+    """
+    Import an IntelliMaze dataset from a zip file.
+
+    This function extracts the zip file, imports metadata, devices, and animals,
+    creates an IntelliMazeDataset, and loads data for each extension.
+
+    Args:
+        path (Path): The path to the zip file containing the IntelliMaze dataset.
+
+    Returns:
+        IntelliMazeDataset | None: The imported dataset, or None if the file is not a valid IntelliMaze dataset.
+    """
     tic = timeit.default_timer()
 
     with zipfile.ZipFile(path, mode="r") as zip:
@@ -89,6 +101,17 @@ def import_intellimaze_dataset(path: Path) -> IntelliMazeDataset | None:
 
 
 def _get_devices(metadata: dict) -> dict[str, list[str]]:
+    """
+    Extract device information from metadata.
+
+    This function creates a dictionary mapping extension names to lists of device IDs.
+
+    Args:
+        metadata (dict): The metadata containing device information.
+
+    Returns:
+        dict[str, list[str]]: Dictionary mapping extension names to lists of device IDs.
+    """
     devices = {}
     for item in metadata["Components"]["ComponentInfo"]:
         extension_name = item["Extension"]
@@ -103,6 +126,17 @@ def _get_devices(metadata: dict) -> dict[str, list[str]]:
 
 
 def _import_metadata(path: Path) -> dict | None:
+    """
+    Import metadata from an XML file.
+
+    This function reads an XML file and parses it into a dictionary.
+
+    Args:
+        path (Path): The path to the XML file.
+
+    Returns:
+        dict | None: The parsed metadata, or None if the file doesn't exist.
+    """
     if not path.is_file():
         return None
 
@@ -117,6 +151,18 @@ def _import_metadata(path: Path) -> dict | None:
 
 
 def _import_animals_v5(animals_file_path: Path) -> dict | None:
+    """
+    Import animal data from IntelliMaze version 5 format.
+
+    This function reads an XML file containing animal data and creates a dictionary
+    mapping animal IDs to Animal objects.
+
+    Args:
+        animals_file_path (Path): The path to the XML file containing animal data.
+
+    Returns:
+        dict | None: Dictionary mapping animal IDs to Animal objects, or None if the file doesn't exist.
+    """
     if not animals_file_path.is_file():
         return None
 
@@ -166,6 +212,19 @@ def _import_animals_v5(animals_file_path: Path) -> dict | None:
 
 
 def _import_animals_v6(animals_file_path: Path, groups_file_path: Path) -> dict | None:
+    """
+    Import animal data from IntelliMaze version 6.x format.
+
+    This function reads XML files containing animal and group data and creates a dictionary
+    mapping animal IDs to Animal objects. In version 6.x, groups are stored in a separate file.
+
+    Args:
+        animals_file_path (Path): The path to the XML file containing animal data.
+        groups_file_path (Path): The path to the XML file containing group data.
+
+    Returns:
+        dict | None: Dictionary mapping animal IDs to Animal objects, or None if either file doesn't exist.
+    """
     # Data format starting from IntelliMaze 6.x
     if not animals_file_path.is_file() or not groups_file_path.is_file():
         return None
@@ -228,6 +287,19 @@ def _import_animals_v6(animals_file_path: Path, groups_file_path: Path) -> dict 
 
 
 def _extract_factor(factor_name: str, factors: dict[str, Factor], dataset: IntelliMazeDataset) -> Factor | None:
+    """
+    Extract a factor from dataset properties.
+
+    This function extracts levels for a factor from animal properties and creates a Factor object.
+
+    Args:
+        factor_name (str): The name of the factor to extract.
+        factors (dict[str, Factor]): Dictionary of existing factors.
+        dataset (IntelliMazeDataset): The dataset containing animal properties.
+
+    Returns:
+        Factor | None: The extracted factor, or None if no levels were found.
+    """
     levels = dataset.extract_levels_from_property(factor_name)
     if len(levels) > 0:
         return Factor(factor_name, list(levels.values()))

@@ -6,6 +6,18 @@ from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMa
 
 
 def get_combined_variables_table(extension_data: ExtensionData) -> pd.DataFrame:
+    """
+    Combine variable tables from different sources into a single DataFrame.
+
+    This function processes integer, double, and boolean variable tables and combines them
+    into a single DataFrame, sorted by datetime.
+
+    Args:
+        extension_data (ExtensionData): The extension data containing variable tables.
+
+    Returns:
+        pd.DataFrame: A combined DataFrame containing all variables.
+    """
     result = pd.DataFrame()
     table_names = ["IntegerVariables", "DoubleVariables", "BooleanVariables"]
     for table_name in table_names:
@@ -23,6 +35,26 @@ def get_combined_variables_table(extension_data: ExtensionData) -> pd.DataFrame:
 
 
 def _preprocess_variable_table(table_name: str, extension_data: ExtensionData) -> pd.DataFrame | None:
+    """
+    Preprocess a variable table for use in analysis.
+
+    This function performs several preprocessing steps:
+    1. Replaces animal tags with animal IDs
+    2. Renames columns for consistency
+    3. Drops unnecessary columns
+    4. Removes records without animal assignment
+    5. Sorts by datetime
+    6. Converts types
+    7. Drops duplicate rows
+    8. Pivots the data to create a wide-format table
+
+    Args:
+        table_name (str): The name of the table to preprocess.
+        extension_data (ExtensionData): The extension data containing the table.
+
+    Returns:
+        pd.DataFrame | None: The preprocessed DataFrame, or None if the table doesn't exist.
+    """
     if table_name not in extension_data.raw_data:
         return None
 
@@ -79,6 +111,16 @@ def _preprocess_variable_table(table_name: str, extension_data: ExtensionData) -
 
 
 def preprocess_main_table(dataset: IntelliMazeDataset) -> None:
+    """
+    Preprocess the main data table for an IntelliMazeDataset.
+
+    This function combines data from all extensions into a single main table,
+    performs type conversions, sorts the data, and adds the resulting datatable
+    to the dataset.
+
+    Args:
+        dataset (IntelliMazeDataset): The dataset to preprocess.
+    """
     datatables = []
 
     for extension_name in dataset.extensions_data.keys():
@@ -187,6 +229,29 @@ def _preprocess_animal(
     sampling_interval: pd.Timedelta,
     agg: dict[str, str],
 ) -> pd.DataFrame:
+    """
+    Preprocess data for a specific animal.
+
+    This function performs several preprocessing steps:
+    1. Decreases time resolution to minutes
+    2. Resamples data with the specified interval
+    3. Reindexes to the specified datetime range
+    4. Fills missing data
+    5. Adds Timedelta and Bin columns
+    6. Adds Animal and Box columns
+
+    Args:
+        animal_id (str): The ID of the animal.
+        box (int): The box number of the animal.
+        df (pd.DataFrame): The DataFrame containing the animal's data.
+        datetime_range (pd.DatetimeIndex): The datetime range to reindex to.
+        experiment_started (pd.Timestamp): The timestamp when the experiment started.
+        sampling_interval (pd.Timedelta): The sampling interval for resampling.
+        agg (dict[str, str]): Dictionary mapping column names to aggregation functions.
+
+    Returns:
+        pd.DataFrame: The preprocessed DataFrame for the animal.
+    """
     result = df.copy()
 
     # Decrease time resolution up to a minute

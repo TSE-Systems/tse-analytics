@@ -1,3 +1,11 @@
+"""
+Pipeline operator for time binning in a DataFrame.
+
+This module provides a function for processing time binning in a DataFrame
+based on the specified binning settings. It delegates to specific binning
+functions based on the binning mode (intervals, cycles, or phases).
+"""
+
 import pandas as pd
 
 from tse_analytics.core.data.binning import BinningMode, BinningSettings
@@ -13,6 +21,28 @@ def process_time_binning(
     variables: dict[str, Variable],
     experiment_started: pd.Timestamp,
 ) -> pd.DataFrame:
+    """
+    Process time binning in a DataFrame based on the specified binning settings.
+
+    This function applies time binning to the DataFrame according to the specified
+    binning settings, delegating to specific binning functions based on the binning mode.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The DataFrame to process.
+    settings : BinningSettings
+        Settings for time binning, including the mode and specific settings for each mode.
+    variables : dict[str, Variable]
+        Dictionary mapping variable names to Variable objects.
+    experiment_started : pd.Timestamp
+        The timestamp when the experiment started.
+
+    Returns
+    -------
+    pd.DataFrame
+        A DataFrame with time binning applied.
+    """
     if settings.apply:
         match settings.mode:
             case BinningMode.INTERVALS:
