@@ -5,9 +5,34 @@ from PySide6.QtWidgets import QDialog, QTableWidgetItem, QWidget
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.views.general.datasets.adjust_dataset_dialog_ui import Ui_AdjustDatasetDialog
 
+"""
+Adjust dataset dialog module for TSE Analytics.
+
+This module provides a dialog for adjusting various properties of a dataset,
+including renaming, resampling, trimming time, excluding time periods, and excluding animals.
+"""
+
 
 class AdjustDatasetDialog(QDialog):
+    """
+    Dialog for adjusting dataset properties.
+
+    This dialog allows users to modify various aspects of a dataset, including:
+    - Renaming the dataset
+    - Resampling the data at a different time interval
+    - Trimming the dataset to a specific time range
+    - Excluding specific time periods
+    - Excluding specific animals
+    """
+
     def __init__(self, dataset: Dataset, parent: QWidget | None = None):
+        """
+        Initialize the AdjustDatasetDialog with a dataset and optional parent widget.
+
+        Args:
+            dataset (Dataset): The dataset to adjust
+            parent (QWidget | None, optional): Parent widget. Defaults to None.
+        """
         super().__init__(parent)
         self.ui = Ui_AdjustDatasetDialog()
         self.ui.setupUi(self)
@@ -53,26 +78,41 @@ class AdjustDatasetDialog(QDialog):
                 self.ui.tableWidgetAnimals.setItem(i, j + 1, QTableWidgetItem(str(animal.properties[item])))
 
     def _rename(self) -> None:
+        """
+        Rename the dataset with the name entered in the line edit.
+        """
         name = self.ui.lineEditName.text()
         self.dataset.rename(name)
 
     def _resample(self) -> None:
+        """
+        Resample the dataset with the interval specified in the time edit.
+        """
         resampling_interval = pd.to_timedelta(
             self.ui.timeEditResamplingInterval.time().msecsSinceStartOfDay(), unit="ms"
         )
         self.dataset.resample(resampling_interval)
 
     def _trim_time(self) -> None:
+        """
+        Trim the dataset to the time range specified in the date time edits.
+        """
         start = self.ui.dateTimeEditTrimStart.dateTime().toPython()
         end = self.ui.dateTimeEditTrimEnd.dateTime().toPython()
         self.dataset.trim_time(start, end)
 
     def _exclude_time(self) -> None:
+        """
+        Exclude the time range specified in the date time edits from the dataset.
+        """
         start = self.ui.dateTimeEditExcludeStart.dateTime().toPython()
         end = self.ui.dateTimeEditExcludeEnd.dateTime().toPython()
         self.dataset.exclude_time(start, end)
 
     def _exclude_animals(self) -> None:
+        """
+        Exclude the selected animals from the dataset.
+        """
         selected_items = self.ui.tableWidgetAnimals.selectedItems()
         selected_animal_ids = set()
         for i in range(0, len(selected_items) // 6):
@@ -80,6 +120,11 @@ class AdjustDatasetDialog(QDialog):
         self.dataset.exclude_animals(selected_animal_ids)
 
     def _accepted(self) -> None:
+        """
+        Handle the accepted signal from the dialog.
+
+        Applies the selected adjustments to the dataset based on which group boxes are checked.
+        """
         if self.ui.groupBoxRename.isChecked():
             self._rename()
 

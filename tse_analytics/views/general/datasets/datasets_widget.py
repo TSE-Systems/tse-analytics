@@ -39,9 +39,31 @@ from tse_analytics.views.misc.raw_data_widget.raw_data_widget import RawDataWidg
 from tse_analytics.views.toolbox.data_table.data_table_widget import DataTableWidget
 from tse_analytics.views.toolbox.toolbox_button import ToolboxButton
 
+"""
+Datasets widget module for TSE Analytics.
+
+This module provides a widget for displaying and managing datasets in the application,
+including functionality for importing, merging, adjusting, and removing datasets.
+The widget displays datasets in a tree view and allows users to interact with them.
+"""
+
 
 class DatasetsWidget(QWidget, messaging.MessengerListener):
+    """
+    Widget for displaying and managing datasets.
+
+    This widget provides a tree view of datasets and a toolbar with actions for
+    importing, merging, adjusting, and removing datasets. It listens for workspace
+    changes and updates the tree view accordingly.
+    """
     def __init__(self, parent, toolbox_button: ToolboxButton):
+        """
+        Initialize the DatasetsWidget with parent widget and toolbox button.
+
+        Args:
+            parent: Parent widget
+            toolbox_button (ToolboxButton): Toolbox button associated with this widget
+        """
         super().__init__(parent)
 
         self.layout = QVBoxLayout(self)
@@ -129,10 +151,24 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
         messaging.subscribe(self, messaging.WorkspaceChangedMessage, self._workspace_changed)
 
     def _workspace_changed(self, message: messaging.WorkspaceChangedMessage) -> None:
+        """
+        Handle workspace changed message.
+
+        Updates the workspace model with the new workspace and expands all items in the tree view.
+
+        Args:
+            message (messaging.WorkspaceChangedMessage): The workspace changed message
+        """
         self.workspace_model.setupModelData(message.workspace)
         self.treeView.expandAll()
 
     def _get_selected_tree_item(self) -> TreeItem | None:
+        """
+        Get the currently selected tree item.
+
+        Returns:
+            TreeItem | None: The selected tree item, or None if no item is selected
+        """
         selected_indexes = self.treeView.selectedIndexes()
         if len(selected_indexes) > 0:
             selected_index = selected_indexes[0]
@@ -142,6 +178,12 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
         return None
 
     def _merge_datasets(self):
+        """
+        Merge checked datasets.
+
+        Collects all checked datasets, verifies they are compatible for merging,
+        and opens a dialog to configure the merge operation.
+        """
         checked_datasets: list[Dataset] = []
         for item in self.workspace_model.root_item.child_items:
             if item.checked:
@@ -181,6 +223,13 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                 item.checked = False
 
     def _import_drinkfeed_data(self):
+        """
+        Import drink/feed data from a CSV file.
+
+        Opens a file dialog to select a CSV file, then opens an ImportCsvDialog
+        to configure the import. If the dialog is accepted, calls the manager
+        to import the drink/feed data.
+        """
         path, _ = QFileDialog.getOpenFileName(
             self,
             "Import drink/feed data",
@@ -195,6 +244,13 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                 manager.import_drinkfeed_data(path)
 
     def _import_actimot_data(self):
+        """
+        Import ActiMot data from a CSV file.
+
+        Opens a file dialog to select a CSV file, then opens an ImportCsvDialog
+        to configure the import. If the dialog is accepted, calls the manager
+        to import the ActiMot data.
+        """
         path, _ = QFileDialog.getOpenFileName(
             self,
             "Import ActiMot data",
@@ -209,6 +265,13 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                 manager.import_actimot_data(path)
 
     def _import_calo_data(self):
+        """
+        Import calo data from a CSV file.
+
+        Opens a file dialog to select a CSV file, then opens an ImportCsvDialog
+        to configure the import. If the dialog is accepted, calls the manager
+        to import the calo data.
+        """
         path, _ = QFileDialog.getOpenFileName(
             self,
             "Import calo data",
@@ -223,6 +286,13 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                 manager.import_calo_data(path)
 
     def _import_trafficage_data(self):
+        """
+        Import TraffiCage data from a CSV file.
+
+        Opens a file dialog to select a CSV file, then opens an ImportCsvDialog
+        to configure the import. If the dialog is accepted, calls the manager
+        to import the TraffiCage data.
+        """
         path, _ = QFileDialog.getOpenFileName(
             self,
             "Import TraffiCage data",
@@ -237,6 +307,13 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                 manager.import_trafficage_data(path)
 
     def _adjust_dataset(self):
+        """
+        Adjust the selected dataset.
+
+        Opens an AdjustDatasetDialog to modify the selected dataset's properties.
+        If the dialog is accepted, updates the tree item name and sets the dataset
+        as the selected dataset.
+        """
         tree_item = self._get_selected_tree_item()
         dataset = tree_item.dataset
         dialog = AdjustDatasetDialog(dataset, self)
@@ -247,6 +324,12 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
             manager.set_selected_dataset(dataset)
 
     def _remove_item(self):
+        """
+        Remove the selected item from the workspace.
+
+        If the selected item is a dataset, prompts for confirmation before removing.
+        For other types of items, removes them without confirmation.
+        """
         tree_item = self._get_selected_tree_item()
         if tree_item is not None:
             if isinstance(tree_item, DatasetTreeItem):
@@ -278,6 +361,12 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                     self.merge_dataset_action.setEnabled(False)
 
     def _clone_dataset(self):
+        """
+        Clone the selected dataset.
+
+        Prompts the user for a new dataset name and creates a clone of the
+        selected dataset with that name.
+        """
         tree_item = self._get_selected_tree_item()
         if tree_item is not None and isinstance(tree_item, DatasetTreeItem):
             name, ok = QInputDialog.getText(
@@ -291,6 +380,17 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                 manager.clone_dataset(tree_item.dataset, name)
 
     def _treeview_current_changed(self, current: QModelIndex, previous: QModelIndex):
+        """
+        Handle selection changes in the tree view.
+
+        Updates the selected dataset and datatable in the manager, enables/disables
+        toolbar actions based on the selected item type, and broadcasts a message
+        about the selection change.
+
+        Args:
+            current (QModelIndex): The currently selected index
+            previous (QModelIndex): The previously selected index
+        """
         if current.isValid():
             item = current.model().getItem(current)
             messaging.broadcast(messaging.SelectedTreeItemChangedMessage(self, item))
@@ -316,6 +416,15 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
             self.toolbox_button.set_state(is_datatable_item)
 
     def _treeview_double_clicked(self, index: QModelIndex) -> None:
+        """
+        Handle double-click events in the tree view.
+
+        Opens appropriate dialogs based on the type of the double-clicked item,
+        such as CaloDialog for CaloDataTreeItem, ActimotDialog for ActimotTreeItem, etc.
+
+        Args:
+            index (QModelIndex): The index that was double-clicked
+        """
         if index.isValid():
             item = index.model().getItem(index)
             if isinstance(item, CaloDataTreeItem):
@@ -380,6 +489,16 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                 )
 
     def _checked_item_changed(self, item, state: bool):
+        """
+        Handle changes to the checked state of tree items.
+
+        Updates the enabled state of the merge datasets action based on the
+        number of checked datasets.
+
+        Args:
+            item: The tree item whose checked state changed
+            state (bool): The new checked state
+        """
         if isinstance(item, DatasetTreeItem):
             checked_datasets_number = 0
             for item in self.workspace_model.root_item.child_items:
@@ -388,4 +507,10 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
             self.merge_dataset_action.setDisabled(checked_datasets_number < 2)
 
     def minimumSizeHint(self) -> QSize:
+        """
+        Return the minimum size hint for the widget.
+
+        Returns:
+            QSize: The minimum size hint
+        """
         return QSize(300, 100)

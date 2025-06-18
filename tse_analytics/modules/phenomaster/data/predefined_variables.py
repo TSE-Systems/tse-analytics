@@ -1,3 +1,20 @@
+"""
+PhenoMaster Predefined Variables Module
+
+This module defines a comprehensive set of predefined variables for PhenoMaster data,
+including their units, descriptions, data types, and aggregation methods. These variables
+cover various measurements from PhenoMaster systems, such as:
+
+- Metabolic parameters (O2, CO2, RER, heat production)
+- Activity measurements (beam breaks, movement)
+- Food and water consumption
+- Environmental conditions (temperature, humidity)
+- Physiological parameters (body weight, temperature)
+
+The module provides functionality to apply these predefined settings to variable
+dictionaries, ensuring consistent handling of PhenoMaster data across the application.
+"""
+
 from tse_analytics.core.data.shared import Aggregation, Variable
 
 predefined_variables = {
@@ -195,6 +212,19 @@ predefined_variables = {
 
 
 def assign_predefined_values(variables: dict[str, Variable]) -> dict[str, Variable]:
+    """
+    Assign predefined properties to variables based on their names.
+
+    This function updates variable properties (unit, description, aggregation method)
+    by matching variable names with predefined variables. For each variable that matches
+    a predefined variable name, its properties are updated to match the predefined values.
+
+    Args:
+        variables (dict[str, Variable]): Dictionary of variables to update
+
+    Returns:
+        dict[str, Variable]: The updated variables dictionary with predefined properties applied
+    """
     for variable_name, variable in variables.items():
         if variable_name in predefined_variables:
             predefined_variable = predefined_variables[variable_name]

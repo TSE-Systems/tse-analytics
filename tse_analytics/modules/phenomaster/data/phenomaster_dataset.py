@@ -16,11 +16,32 @@ from tse_analytics.modules.phenomaster.submodules.trafficage.models.trafficage_t
 
 
 class PhenoMasterDataset(Dataset):
+    """
+    Dataset class for PhenoMaster experimental data.
+
+    This class extends the base Dataset class to handle specific data types and operations
+    related to PhenoMaster experiments. It manages data from different PhenoMaster modules
+    including calorimetry, drinking/feeding, activity monitoring, and traffic cage.
+
+    Attributes:
+        calo_data (CaloData | None): Calorimetry data containing metabolic measurements
+        drinkfeed_data (DrinkFeedData | None): Drinking and feeding data
+        actimot_data (ActimotData | None): Activity and motion tracking data
+        trafficage_data (TraffiCageData | None): Traffic cage movement data
+    """
+
     def __init__(
         self,
         metadata: dict | list[dict],
         animals: dict[str, Animal],
     ):
+        """
+        Initialize a PhenoMasterDataset.
+
+        Args:
+            metadata (dict | list[dict]): Metadata describing the dataset
+            animals (dict[str, Animal]): Dictionary mapping animal IDs to Animal objects
+        """
         super().__init__(
             metadata,
             animals,
@@ -32,6 +53,17 @@ class PhenoMasterDataset(Dataset):
         self.trafficage_data: TraffiCageData | None = None
 
     def rename_animal(self, old_id: str, animal: Animal) -> None:
+        """
+        Rename an animal in the dataset.
+
+        This method overrides the base class method to handle PhenoMaster-specific
+        data structures. It updates the animal ID in all relevant data components
+        and broadcasts a dataset changed message.
+
+        Args:
+            old_id (str): The current ID of the animal to be renamed
+            animal (Animal): The Animal object with the new ID and properties
+        """
         super().rename_animal(old_id, animal)
 
         # if self.drinkfeed_data is not None:
@@ -44,6 +76,16 @@ class PhenoMasterDataset(Dataset):
         messaging.broadcast(messaging.DatasetChangedMessage(self, self))
 
     def exclude_animals(self, animal_ids: set[str]) -> None:
+        """
+        Exclude specified animals from the dataset.
+
+        This method overrides the base class method to handle PhenoMaster-specific
+        data structures. It removes data for the specified animals from all
+        PhenoMaster data components (calo, drinkfeed, actimot).
+
+        Args:
+            animal_ids (set[str]): Set of animal IDs to exclude from the dataset
+        """
         super().exclude_animals(animal_ids)
 
         if self.calo_data is not None:
@@ -59,6 +101,17 @@ class PhenoMasterDataset(Dataset):
         self,
         fitting_results: dict[int, CaloFittingResult],
     ) -> None:
+        """
+        Append calorimetry fitting results to the dataset.
+
+        This method adds predicted values from calorimetry fitting results to the main
+        datatable. It creates new variables for predicted values if they don't exist,
+        and updates the dataset with the fitting results.
+
+        Args:
+            fitting_results (dict[int, CaloFittingResult]): Dictionary mapping box numbers
+                to calorimetry fitting results
+        """
         if len(fitting_results) > 0:
             main_datatable = self.datatables["Main"]
             active_df = main_datatable.original_df
@@ -106,6 +159,17 @@ class PhenoMasterDataset(Dataset):
             messaging.broadcast(messaging.DatasetChangedMessage(self, self))
 
     def add_children_tree_items(self, dataset_tree_item: DatasetTreeItem) -> None:
+        """
+        Add PhenoMaster-specific child items to the dataset tree.
+
+        This method overrides the base class method to add tree items for each
+        PhenoMaster data component (drinkfeed, actimot, calo, trafficage) if they exist.
+        These tree items allow for navigation and visualization of the different
+        data components in the UI.
+
+        Args:
+            dataset_tree_item (DatasetTreeItem): The parent dataset tree item to add children to
+        """
         super().add_children_tree_items(dataset_tree_item)
 
         if self.drinkfeed_data is not None:

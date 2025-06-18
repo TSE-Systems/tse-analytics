@@ -1,3 +1,10 @@
+"""
+Pipeline operator for grouping data by columns based on split mode.
+
+This module provides a function for grouping a DataFrame by different columns
+based on the specified split mode (by animal, factor, run, or total).
+"""
+
 import pandas as pd
 
 from tse_analytics.core.data.shared import Variable, SplitMode
@@ -6,6 +13,25 @@ from tse_analytics.core.data.shared import Variable, SplitMode
 def group_by_columns(
     df: pd.DataFrame, variables: dict[str, Variable], split_mode: SplitMode, selected_factor_name: str
 ) -> pd.DataFrame:
+    """
+    Group a DataFrame by columns based on the specified split mode.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The DataFrame to group.
+    variables : dict[str, Variable]
+        Dictionary mapping variable names to Variable objects.
+    split_mode : SplitMode
+        The mode to use for splitting the data (by animal, factor, run, or total).
+    selected_factor_name : str
+        The name of the factor to use when split_mode is FACTOR.
+
+    Returns
+    -------
+    pd.DataFrame
+        A grouped DataFrame with appropriate aggregations applied.
+    """
     if split_mode == SplitMode.ANIMAL:
         # No grouping needed
         return df

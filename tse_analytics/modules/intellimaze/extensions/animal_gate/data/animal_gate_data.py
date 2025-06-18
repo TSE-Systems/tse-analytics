@@ -1,3 +1,11 @@
+"""
+Animal Gate extension data handling for IntelliMaze experiments.
+
+This module provides functionality for processing and analyzing data from Animal Gate devices
+in IntelliMaze experiments. It defines the AnimalGateData class which extends the base
+ExtensionData class to handle Animal Gate specific data.
+"""
+
 import pandas as pd
 
 from tse_analytics.core.data.datatable import Datatable
@@ -9,12 +17,30 @@ EXTENSION_NAME = "AnimalGate"
 
 
 class AnimalGateData(ExtensionData):
+    """
+    Class for handling Animal Gate extension data.
+
+    This class extends the base ExtensionData class to provide functionality specific
+    to Animal Gate devices. It processes raw data from Animal Gate sessions and provides
+    methods for data analysis and export.
+
+    Attributes:
+        Inherits all attributes from ExtensionData.
+    """
     def __init__(
         self,
         dataset: "IntelliMazeDataset",
         name: str,
         raw_data: dict[str, pd.DataFrame],
     ):
+        """
+        Initialize an AnimalGateData object.
+
+        Args:
+            dataset (IntelliMazeDataset): The parent dataset.
+            name (str): The name of the extension.
+            raw_data (dict[str, pd.DataFrame]): Dictionary mapping data types to DataFrames.
+        """
         super().__init__(
             dataset,
             name,
@@ -23,6 +49,21 @@ class AnimalGateData(ExtensionData):
         )
 
     def get_combined_datatable(self) -> Datatable:
+        """
+        Get a combined datatable from the raw data.
+
+        This method processes the raw sessions data to create a datatable suitable for analysis.
+        It performs several preprocessing steps:
+        1. Replaces animal tags with animal IDs
+        2. Adds a duration column
+        3. Renames columns for consistency
+        4. Drops unnecessary columns
+        5. Adds a timedelta column
+        6. Converts types
+
+        Returns:
+            Datatable: A processed datatable containing Animal Gate data.
+        """
         df = self.raw_data["Sessions"].copy()
 
         # Replace animal tags with animal IDs
@@ -98,6 +139,20 @@ class AnimalGateData(ExtensionData):
         export_registrations: bool,
         export_variables: bool,
     ) -> tuple[str, dict[str, pd.DataFrame]]:
+        """
+        Get CSV data for export.
+
+        This method prepares data for export to CSV format. It can export both
+        registration data (sessions) and variable data.
+
+        Args:
+            export_registrations (bool): Whether to export registration data.
+            export_variables (bool): Whether to export variable data.
+
+        Returns:
+            tuple[str, dict[str, pd.DataFrame]]: A tuple containing the extension name and a dictionary
+                mapping data types to DataFrames ready for CSV export.
+        """
         result: dict[str, pd.DataFrame] = {}
 
         tag_to_animal_map = self.dataset.get_tag_to_name_map()

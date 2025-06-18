@@ -7,7 +7,20 @@ from tse_analytics.core.models.animals_simple_model import AnimalsSimpleModel
 
 
 class AnimalSelector(QComboBox):
+    """
+    A custom combo box for selecting animals from a dataset.
+
+    This widget displays a table view of animals in a dropdown list,
+    allowing users to select a single animal from the dataset.
+    """
+
     def __init__(self, parent=None):
+        """
+        Initialize the AnimalSelector widget.
+
+        Args:
+            parent: The parent widget. Default is None.
+        """
         super().__init__(parent)
 
         self.table_view = QTableView(
@@ -28,6 +41,15 @@ class AnimalSelector(QComboBox):
         self.dataset: Dataset | None = None
 
     def set_data(self, dataset: Dataset):
+        """
+        Set the dataset for the animal selector and update the model.
+
+        This method configures the combo box to display animals from the provided dataset
+        and adjusts the view to properly display all columns.
+
+        Args:
+            dataset: The Dataset object containing animal information.
+        """
         self.dataset = dataset
         model = AnimalsSimpleModel(self.dataset)
         self.setModel(model)
@@ -36,5 +58,11 @@ class AnimalSelector(QComboBox):
         self.table_view.setMinimumWidth(self.table_view.horizontalHeader().length())
 
     def get_selected_animal(self) -> Animal | None:
+        """
+        Get the currently selected animal from the combo box.
+
+        Returns:
+            The selected Animal object, or None if no animal is selected.
+        """
         animal_name = self.currentText()
         return self.dataset.animals[animal_name] if animal_name != "" else None

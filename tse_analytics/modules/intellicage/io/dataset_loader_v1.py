@@ -1,3 +1,11 @@
+"""
+IntelliCage Dataset Loader for Version 1 Format.
+
+This module provides functions for loading IntelliCage datasets in version 1 format.
+It includes functions for importing metadata, animals, visits, nosepokes, environment data,
+hardware events, and logs from the extracted dataset files.
+"""
+
 from pathlib import Path
 
 import numpy as np

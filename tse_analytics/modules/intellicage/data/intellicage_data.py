@@ -1,3 +1,10 @@
+"""
+IntelliCage Data Processing Module.
+
+This module provides the IntelliCageData class for processing raw IntelliCage data
+into structured datatables for analysis.
+"""
+
 import numpy as np
 import pandas as pd
 
@@ -6,12 +13,33 @@ from tse_analytics.core.data.shared import Aggregation, Variable
 
 
 class IntelliCageData:
+    """
+    Class for processing and managing IntelliCage experimental data.
+
+    This class handles the raw data from IntelliCage experiments and processes it
+    into structured datatables for visits and nosepokes, which can be used for
+    further analysis.
+    """
+
     def __init__(
         self,
         dataset: "IntelliCageDataset",
         name: str,
         raw_data: dict[str, pd.DataFrame],
     ):
+        """
+        Initialize the IntelliCageData object.
+
+        Parameters
+        ----------
+        dataset : IntelliCageDataset
+            The parent dataset that this data belongs to.
+        name : str
+            The name of this data collection.
+        raw_data : dict[str, pd.DataFrame]
+            Dictionary containing raw data from IntelliCage experiments,
+            with keys representing data types and values as pandas DataFrames.
+        """
         self.dataset = dataset
         self.name = name
         self.raw_data = raw_data
@@ -20,12 +48,41 @@ class IntelliCageData:
         self.device_ids.sort()
 
     def get_raw_data(self):
+        """
+        Get the raw data dictionary.
+
+        Returns
+        -------
+        dict[str, pd.DataFrame]
+            Dictionary containing raw data from IntelliCage experiments.
+        """
         return self.raw_data
 
     def get_device_ids(self):
+        """
+        Get the list of device IDs (cage identifiers) in the dataset.
+
+        Returns
+        -------
+        list
+            List of unique device IDs sorted in ascending order.
+        """
         return self.device_ids
 
     def preprocess_data(self) -> None:
+        """
+        Process raw IntelliCage data into structured datatables.
+
+        This method processes the raw data into two datatables:
+        1. Visits datatable - containing information about animal visits to corners
+        2. Nosepokes datatable - containing information about animal nosepokes
+
+        Both datatables are added to the parent dataset for further analysis.
+
+        Returns
+        -------
+        None
+        """
         visits_datatable = self._get_visits_datatable()
         self.dataset.add_datatable(visits_datatable)
 
@@ -33,6 +90,22 @@ class IntelliCageData:
         self.dataset.add_datatable(nosepokes_datatable)
 
     def _get_visits_datatable(self) -> Datatable:
+        """
+        Process raw visit data into a structured Datatable.
+
+        This method processes the raw 'Visits' data from IntelliCage experiments,
+        performing the following operations:
+        - Replacing animal tags with animal IDs
+        - Adding visit duration information
+        - Adding visit number for counting
+        - Merging with environmental data (temperature and illumination)
+        - Creating a structured Datatable with defined variables and factors
+
+        Returns
+        -------
+        Datatable
+            A structured datatable containing processed visit data.
+        """
         df = self.raw_data["Visits"].copy()
 
         # Replace animal tags with animal IDs
@@ -186,6 +259,28 @@ class IntelliCageData:
         return datatable
 
     def _get_nosepokes_datatable(self, visits_datatable: Datatable) -> Datatable:
+        """
+        Process raw nosepoke data into a structured Datatable.
+
+        This method processes the raw 'Nosepokes' data from IntelliCage experiments,
+        performing the following operations:
+        - Replacing animal tags with animal IDs
+        - Adding nosepoke duration information
+        - Adding lick number and duration information
+        - Adding water consumption estimation
+        - Merging with visit data to associate nosepokes with visits
+        - Creating a structured Datatable with defined variables and factors
+
+        Parameters
+        ----------
+        visits_datatable : Datatable
+            The processed visits datatable, used to associate nosepokes with visits.
+
+        Returns
+        -------
+        Datatable
+            A structured datatable containing processed nosepoke data.
+        """
         df = self.raw_data["Nosepokes"].copy()
         visits_preprocessed_df = visits_datatable.original_df.copy()
 

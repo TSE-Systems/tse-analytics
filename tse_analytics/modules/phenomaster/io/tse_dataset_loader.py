@@ -26,6 +26,27 @@ CALO_BIN_TABLE = "calo_bin"
 
 
 def load_tse_dataset(path: Path, import_settings: TseImportSettings) -> PhenoMasterDataset | None:
+    """
+    Loads and processes a PhenoMaster dataset from the specified path and settings.
+
+    This function reads metadata and animal information corresponding to a
+    PhenoMaster dataset, initializes a dataset object, and imports additional
+    data tables based on the provided import settings. It processes the main
+    dataset table, assigns predefined variable properties, and optionally
+    imports raw data from ActoMot, drink-feed bin, and calo bin tables, if they
+    are present and specified in the import settings.
+
+    :param path:
+        A pathlib.Path object representing the directory containing the dataset
+        to be loaded.
+    :param import_settings:
+        An instance of TseImportSettings that specifies which optional data
+        sets (ActoMot raw data, drink-feed bin data, calo bin data) should be
+        imported along with the PhenoMaster dataset.
+    :return:
+        A PhenoMasterDataset object containing the processed data, or None
+        if the dataset could not be loaded or processed.
+    """
     tic = timeit.default_timer()
 
     metadata = _read_metadata(path)

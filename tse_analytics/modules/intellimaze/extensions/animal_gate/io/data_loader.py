@@ -1,3 +1,11 @@
+"""
+Data loader for Animal Gate extension.
+
+This module provides functions for importing Animal Gate data from files.
+It includes functions for loading sessions, antenna, log, input, and output data,
+as well as variable data.
+"""
+
 from pathlib import Path
 
 import numpy as np
@@ -12,6 +20,19 @@ def import_data(
     folder_path: Path,
     dataset: IntelliMazeDataset,
 ) -> AnimalGateData:
+    """
+    Import Animal Gate data from files.
+
+    This function loads data from various files in the specified folder,
+    creates an AnimalGateData object, and preprocesses the data.
+
+    Args:
+        folder_path (Path): Path to the folder containing the data files.
+        dataset (IntelliMazeDataset): The dataset to add the data to.
+
+    Returns:
+        AnimalGateData: An AnimalGateData object containing the imported data.
+    """
     raw_data = {
         "Sessions": _import_sessions_df(folder_path),
         "Antenna": _import_antenna_df(folder_path),
@@ -36,6 +57,18 @@ def import_data(
 
 
 def _import_sessions_df(folder_path: Path) -> pd.DataFrame | None:
+    """
+    Import sessions data from a file.
+
+    This function loads data from the Sessions.txt file in the specified folder,
+    performs type conversions, and sorts the data by start time.
+
+    Args:
+        folder_path (Path): Path to the folder containing the Sessions.txt file.
+
+    Returns:
+        pd.DataFrame | None: A DataFrame containing the sessions data, or None if the file doesn't exist.
+    """
     file_path = folder_path / "Sessions.txt"
     if not file_path.is_file():
         return None
@@ -88,6 +121,18 @@ def _import_sessions_df(folder_path: Path) -> pd.DataFrame | None:
 
 
 def _import_antenna_df(folder_path: Path) -> pd.DataFrame | None:
+    """
+    Import antenna data from a file.
+
+    This function loads data from the Antenna.txt file in the specified folder,
+    performs type conversions, and sorts the data by time.
+
+    Args:
+        folder_path (Path): Path to the folder containing the Antenna.txt file.
+
+    Returns:
+        pd.DataFrame | None: A DataFrame containing the antenna data, or None if the file doesn't exist.
+    """
     file_path = folder_path / "Antenna.txt"
     if not file_path.is_file():
         return None
@@ -126,6 +171,18 @@ def _import_antenna_df(folder_path: Path) -> pd.DataFrame | None:
 
 
 def _import_log_df(folder_path: Path) -> pd.DataFrame | None:
+    """
+    Import log data from a file.
+
+    This function loads data from the Log.txt file in the specified folder,
+    performs type conversions, and sorts the data by datetime.
+
+    Args:
+        folder_path (Path): Path to the folder containing the Log.txt file.
+
+    Returns:
+        pd.DataFrame | None: A DataFrame containing the log data, or None if the file doesn't exist.
+    """
     file_path = folder_path / "Log.txt"
     if not file_path.is_file():
         return None
@@ -168,6 +225,17 @@ def _import_log_df(folder_path: Path) -> pd.DataFrame | None:
 
 
 def _import_input_df(folder_path: Path) -> pd.DataFrame | None:
+    """
+    Import input data from a file.
+
+    This function loads data from the Input.txt file in the specified folder.
+
+    Args:
+        folder_path (Path): Path to the folder containing the Input.txt file.
+
+    Returns:
+        pd.DataFrame | None: A DataFrame containing the input data, or None if the file doesn't exist.
+    """
     file_path = folder_path / "Input.txt"
     if not file_path.is_file():
         return None
@@ -181,6 +249,17 @@ def _import_input_df(folder_path: Path) -> pd.DataFrame | None:
 
 
 def _import_output_df(folder_path: Path) -> pd.DataFrame | None:
+    """
+    Import output data from a file.
+
+    This function loads data from the Output.txt file in the specified folder.
+
+    Args:
+        folder_path (Path): Path to the folder containing the Output.txt file.
+
+    Returns:
+        pd.DataFrame | None: A DataFrame containing the output data, or None if the file doesn't exist.
+    """
     file_path = folder_path / "Output.txt"
     if not file_path.is_file():
         return None
