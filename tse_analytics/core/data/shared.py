@@ -31,6 +31,7 @@ class Aggregation(StrEnum):
     MAX : str
         Find the maximum value.
     """
+
     MEAN = "mean"
     MEDIAN = "median"
     SUM = "sum"
@@ -54,6 +55,7 @@ class SplitMode(StrEnum):
     TOTAL : str
         No splitting, use total data.
     """
+
     ANIMAL = "Animal"
     FACTOR = "Factor"
     RUN = "Run"
@@ -76,6 +78,7 @@ class Animal:
     properties : dict[str, Any]
         Dictionary of animal properties.
     """
+
     enabled: bool
     id: str
     color: str
@@ -107,6 +110,7 @@ class FactorLevel:
     animal_ids : list[str]
         List of animal IDs that belong to this factor level.
     """
+
     name: str
     color: str
     animal_ids: list[str] = field(default_factory=list)
@@ -124,6 +128,7 @@ class Factor:
     levels : list[FactorLevel]
         List of levels for this factor.
     """
+
     name: str
     levels: list[FactorLevel] = field(default_factory=list)
 
@@ -148,6 +153,7 @@ class Variable:
     remove_outliers : bool
         Whether to remove outliers for this variable.
     """
+
     name: str
     unit: str
     description: str
@@ -179,6 +185,7 @@ class TimePhase:
     start_timestamp : pd.Timedelta
         The start time of the phase as a timedelta from the experiment start.
     """
+
     name: str
     start_timestamp: pd.Timedelta
 
@@ -195,5 +202,6 @@ class AnimalDiet:
     caloric_value : float
         The caloric value of the diet.
     """
+
     name: str
     caloric_value: float

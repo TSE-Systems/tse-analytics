@@ -27,6 +27,7 @@ class AnimalGateData(ExtensionData):
     Attributes:
         Inherits all attributes from ExtensionData.
     """
+
     def __init__(
         self,
         dataset: "IntelliMazeDataset",

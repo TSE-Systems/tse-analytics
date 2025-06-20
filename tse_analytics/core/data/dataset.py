@@ -30,6 +30,7 @@ class Dataset:
     and datatables. It provides methods for manipulating the dataset, such as renaming
     animals, excluding time ranges, and applying binning and outlier detection.
     """
+
     def __init__(
         self,
         metadata: dict | list[dict],

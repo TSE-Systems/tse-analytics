@@ -16,6 +16,7 @@ class ExtensionData:
         raw_data (dict[str, pd.DataFrame]): Dictionary mapping data types to DataFrames.
         device_ids (list[str]): List of device IDs associated with this extension.
     """
+
     def __init__(
         self,
         dataset: "IntelliMazeDataset",

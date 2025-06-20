@@ -14,7 +14,29 @@ from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
 class ActogramWidget(QWidget):
+    """Widget for visualizing activity patterns over time in a double-plotted actogram format.
+
+    An actogram is a graphical representation of activity data over multiple days,
+    typically used in chronobiology to visualize circadian rhythms. This widget
+    creates a double-plotted actogram where each row represents two consecutive days,
+    allowing for better visualization of activity patterns that cross midnight.
+
+    Attributes:
+        title: The title of the widget.
+        datatable: The datatable containing the data to visualize.
+        toolbar: The toolbar with controls for the actogram.
+        variableSelector: Selector for choosing which variable to visualize.
+        bins_spin_box: Control for setting the temporal resolution (bins per hour).
+        canvas: The matplotlib canvas where the actogram is drawn.
+    """
+
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
+        """Initialize the actogram widget.
+
+        Args:
+            datatable: The datatable containing the data to visualize.
+            parent: The parent widget, if any.
+        """
         super().__init__(parent)
 
         self.layout = QVBoxLayout(self)
@@ -63,6 +85,11 @@ class ActogramWidget(QWidget):
         self._add_plot_toolbar()
 
     def _add_plot_toolbar(self):
+        """Add a matplotlib navigation toolbar to the widget.
+
+        Creates and adds a matplotlib navigation toolbar that provides
+        functionality like zooming, panning, and saving the plot.
+        """
         self.plot_toolbar_action = QWidgetAction(self.toolbar)
         plot_toolbar = NavigationToolbar2QT(self.canvas, self)
         plot_toolbar.setIconSize(QSize(16, 16))
@@ -70,6 +97,12 @@ class ActogramWidget(QWidget):
         self.toolbar.insertAction(self.spacer_action, self.plot_toolbar_action)
 
     def _update(self):
+        """Update the actogram visualization.
+
+        Gets the selected variable and temporal resolution, processes the data,
+        and creates a new actogram visualization. This method is called when
+        the user changes settings or clicks the Update button.
+        """
         variable = self.variableSelector.get_selected_variable()
 
         columns = ["Animal", "DateTime", variable.name]
@@ -140,5 +173,11 @@ class ActogramWidget(QWidget):
         self._add_plot_toolbar()
 
     def _add_report(self):
+        """Add the current actogram to the dataset report.
+
+        Converts the current actogram figure to HTML and adds it to the
+        dataset's report. Also broadcasts a message to notify the application
+        that content has been added to the report.
+        """
         self.datatable.dataset.report += get_html_image(self.canvas.figure)
         messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))

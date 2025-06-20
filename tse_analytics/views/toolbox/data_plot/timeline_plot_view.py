@@ -14,7 +14,34 @@ from tse_analytics.views.misc.TimedeltaAxisItem import TimedeltaAxisItem
 
 
 class TimelinePlotView(pg.GraphicsLayoutWidget):
+    """Widget for displaying data as a timeline plot.
+
+    This widget creates and displays timeline plots using PyQtGraph.
+    It includes a main plot area and a smaller overview plot with a region selector
+    that allows zooming into specific time ranges. It supports different grouping
+    options, error bars, and scatter plot visualization.
+
+    Attributes:
+        plot_item1: The main plot area where data is displayed in detail.
+        plot_item2: The overview plot area showing the entire timeline with a region selector.
+        region: The linear region selector for zooming into specific time ranges.
+        legend: The legend for the plot showing the color coding for different groups.
+        datatable: The datatable containing the data being visualized.
+        _df: The DataFrame containing the processed data for plotting.
+        _variable: The variable being visualized.
+        _split_mode: The mode for splitting/grouping the data.
+        _selected_factor: The selected factor when split_mode is FACTOR.
+        _error_type: The type of error bars to display ("std" or "sem").
+        _display_errors: Whether to display error bars.
+        _scatter_plot: Whether to display data as scatter points instead of lines.
+    """
+
     def __init__(self, parent: QWidget):
+        """Initialize the timeline plot view.
+
+        Args:
+            parent: The parent widget.
+        """
         super().__init__(parent, show=False, size=None, title=None)
 
         # Set layout proportions
@@ -65,6 +92,20 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         selected_factor: Factor | None,
         scatter_plot: bool,
     ) -> None:
+        """Update the timeline plot with new data and settings.
+
+        This method clears the existing plots and redraws them with the new data
+        and settings. It handles different grouping options based on the split mode.
+
+        Args:
+            datatable: The datatable containing the data being visualized.
+            df: The DataFrame containing the processed data for plotting.
+            variable: The variable to visualize.
+            split_mode: The mode for splitting/grouping the data.
+            display_errors: Whether to display error bars.
+            selected_factor: The selected factor when split_mode is FACTOR.
+            scatter_plot: Whether to display data as scatter points instead of lines.
+        """
         self.plot_item1.clear()
         self.plot_item2.clearPlots()
         self.legend.clear()
@@ -98,13 +139,38 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         self.region.setRegion([x_min, x_max])
 
     def _region_changed(self):
+        """Handle changes in the region selector.
+
+        Updates the main plot's x-range when the region selector is moved.
+        """
         min_x, max_x = self.region.getRegion()
         self.plot_item1.setXRange(min_x, max_x, padding=0)
 
     def _x_range_changed(self, view_box, range):
+        """Handle changes in the main plot's x-range.
+
+        Updates the region selector when the main plot's x-range is changed.
+
+        Args:
+            view_box: The view box that changed.
+            range: The new x-range.
+        """
         self.region.setRegion(range)
 
     def _plot_item(self, data: pd.DataFrame, name: str, pen):
+        """Plot a single data series on both the main and overview plots.
+
+        This method plots the data for a single group (animal, factor level, run, or total)
+        on both the main plot and the overview plot. It also adds error bars if enabled.
+
+        Args:
+            data: The DataFrame containing the data for this group.
+            name: The name of the group to display in the legend.
+            pen: The pen (color and style) to use for plotting.
+
+        Returns:
+            A tuple containing the minimum and maximum x values in the data.
+        """
         # x = (data["DateTime"] - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
         x = data["Timedelta"].dt.total_seconds().to_numpy()
         y = data[self._variable.name].to_numpy()
@@ -135,6 +201,14 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
             return 0, 0
 
     def _plot_animals(self) -> tuple[float, float]:
+        """Plot data grouped by animal.
+
+        This method plots the data for each enabled animal in the dataset,
+        with each animal represented by a different color.
+
+        Returns:
+            A tuple containing the minimum and maximum x values across all animals.
+        """
         x_min = None
         x_max = None
 
@@ -154,6 +228,14 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         return x_min, x_max
 
     def _plot_factors(self) -> tuple[float, float]:
+        """Plot data grouped by factor levels.
+
+        This method plots the data for each level of the selected factor,
+        with each level represented by a different color.
+
+        Returns:
+            A tuple containing the minimum and maximum x values across all factor levels.
+        """
         x_min = None
         x_max = None
 
@@ -174,6 +256,14 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         return x_min, x_max
 
     def _plot_runs(self) -> tuple[float, float]:
+        """Plot data grouped by run.
+
+        This method plots the data for each run in the dataset,
+        with each run represented by a different color.
+
+        Returns:
+            A tuple containing the minimum and maximum x values across all runs.
+        """
         x_min = None
         x_max = None
 
@@ -192,11 +282,26 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         return x_min, x_max
 
     def _plot_total(self) -> tuple[float, float]:
+        """Plot data as a single total series.
+
+        This method plots all the data as a single series without any grouping.
+
+        Returns:
+            A tuple containing the minimum and maximum x values in the data.
+        """
         pen = pg.mkPen(color=color_manager.get_color_hex(0), width=1)
         x_min, x_max = self._plot_item(self._df, "Total", pen)
         return x_min, x_max
 
     def get_report(self) -> str:
+        """Get an HTML representation of the current timeline plot for reporting.
+
+        This method exports the main plot as a PNG image, encodes it as base64,
+        and returns it as an HTML img tag that can be included in reports.
+
+        Returns:
+            HTML string containing the timeline plot image.
+        """
         exporter = ImageExporter(self.plot_item1)
         img = exporter.export(toBytes=True)
 

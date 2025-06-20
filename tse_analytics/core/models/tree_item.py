@@ -9,6 +9,7 @@ class TreeItem:
     with parent-child relationships. It supports properties like name, icon,
     foreground color, tooltip, and checked state.
     """
+
     def __init__(self, name: str, parent=None):
         """
         Initialize a tree item with the given name and optional parent.

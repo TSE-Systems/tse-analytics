@@ -9,6 +9,7 @@ class PandasSimpleModel(QAbstractTableModel):
     This model provides a basic tabular representation of a pandas DataFrame
     without additional features like outlier highlighting.
     """
+
     def __init__(self, df: pd.DataFrame):
         """
         Initialize the simplified pandas model with the given DataFrame.

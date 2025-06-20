@@ -13,6 +13,7 @@ class DatasetTreeItem(TreeItem):
     This class extends TreeItem to represent a dataset object in a tree structure,
     providing access to the dataset and its visual representation properties.
     """
+
     def __init__(self, dataset):
         """
         Initialize a dataset tree item with the given dataset.

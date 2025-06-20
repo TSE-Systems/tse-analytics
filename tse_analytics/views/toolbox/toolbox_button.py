@@ -38,7 +38,24 @@ from tse_analytics.views.toolbox.data_table.data_table_widget import DataTableWi
 
 
 class ToolboxButton(QToolButton):
+    """A button that provides access to various analysis tools.
+
+    This button creates a dropdown menu with different categories of analysis tools
+    that can be applied to the selected dataset and datatable.
+
+    Attributes:
+        menu: The main dropdown menu containing all tool categories.
+        intellicage_menu: Submenu for IntelliCage-specific tools.
+        intellicage_transitions_action: Action for the Transitions analysis tool.
+        intellicage_place_preference_action: Action for the Place Preference analysis tool.
+    """
+
     def __init__(self, parent: QWidget):
+        """Initialize the toolbox button.
+
+        Args:
+            parent: The parent widget.
+        """
         super().__init__(parent)
 
         self.setText("Toolbox")
@@ -127,9 +144,23 @@ class ToolboxButton(QToolButton):
         self.setMenu(self.menu)
 
     def set_state(self, state: bool) -> None:
+        """Enable or disable the toolbox button.
+
+        Args:
+            state: True to enable the button, False to disable it.
+        """
         self.setEnabled(state)
 
     def set_enabled_actions(self, dataset: Dataset, datatable: Datatable | None) -> None:
+        """Enable or disable specific actions based on the selected dataset and datatable.
+
+        This method controls which analysis tools are available based on the type of dataset
+        and datatable that are currently selected.
+
+        Args:
+            dataset: The currently selected dataset.
+            datatable: The currently selected datatable, or None if no datatable is selected.
+        """
         if isinstance(dataset, IntelliCageDataset):
             self.intellicage_menu.setEnabled(True)
             self.intellicage_transitions_action.setEnabled(datatable is not None and datatable.name == "Visits")
@@ -138,6 +169,11 @@ class ToolboxButton(QToolButton):
             self.intellicage_menu.setEnabled(False)
 
     def _add_data_table_widget(self):
+        """Add a data table widget to the central area.
+
+        Gets the currently selected datatable and creates a DataTableWidget
+        to display its contents in tabular form.
+        """
         datatable = manager.get_selected_datatable()
         if datatable is None:
             return
@@ -147,6 +183,11 @@ class ToolboxButton(QToolButton):
         )
 
     def _add_data_plot_widget(self):
+        """Add a data plot widget to the central area.
+
+        Gets the currently selected datatable and creates a DataPlotWidget
+        to visualize its contents.
+        """
         datatable = manager.get_selected_datatable()
         if datatable is None:
             return
@@ -156,6 +197,11 @@ class ToolboxButton(QToolButton):
         )
 
     def _add_histogram_widget(self):
+        """Add a histogram widget to the central area.
+
+        Gets the currently selected datatable and creates a HistogramWidget
+        to visualize the distribution of data using histograms.
+        """
         datatable = manager.get_selected_datatable()
         if datatable is None:
             return
@@ -165,6 +211,11 @@ class ToolboxButton(QToolButton):
         )
 
     def _add_distribution_widget(self):
+        """Add a distribution widget to the central area.
+
+        Gets the currently selected datatable and creates a DistributionWidget
+        to visualize the probability distribution of data.
+        """
         datatable = manager.get_selected_datatable()
         if datatable is None:
             return
@@ -174,6 +225,11 @@ class ToolboxButton(QToolButton):
         )
 
     def _add_normality_widget(self):
+        """Add a normality test widget to the central area.
+
+        Gets the currently selected datatable and creates a NormalityWidget
+        to test and visualize whether the data follows a normal distribution.
+        """
         datatable = manager.get_selected_datatable()
         if datatable is None:
             return
@@ -183,6 +239,11 @@ class ToolboxButton(QToolButton):
         )
 
     def _add_correlation_widget(self):
+        """Add a correlation analysis widget to the central area.
+
+        Gets the currently selected datatable and creates a CorrelationWidget
+        to analyze and visualize correlations between variables.
+        """
         datatable = manager.get_selected_datatable()
         if datatable is None:
             return
@@ -192,6 +253,11 @@ class ToolboxButton(QToolButton):
         )
 
     def _add_regression_widget(self):
+        """Add a regression analysis widget to the central area.
+
+        Gets the currently selected datatable and creates a RegressionWidget
+        to perform and visualize regression analysis between variables.
+        """
         datatable = manager.get_selected_datatable()
         if datatable is None:
             return
@@ -201,6 +267,11 @@ class ToolboxButton(QToolButton):
         )
 
     def _add_one_way_anova_widget(self):
+        """Add a one-way ANOVA widget to the central area.
+
+        Gets the currently selected datatable and creates a OneWayAnovaWidget
+        to perform one-way analysis of variance.
+        """
         datatable = manager.get_selected_datatable()
         if datatable is None:
             return
@@ -210,6 +281,11 @@ class ToolboxButton(QToolButton):
         )
 
     def _add_n_way_anova_widget(self):
+        """Add an N-way ANOVA widget to the central area.
+
+        Gets the currently selected datatable and creates a NWayAnovaWidget
+        to perform multi-factor analysis of variance.
+        """
         datatable = manager.get_selected_datatable()
         if datatable is None:
             return
@@ -219,6 +295,11 @@ class ToolboxButton(QToolButton):
         )
 
     def _add_rm_anova_widget(self):
+        """Add a repeated measures ANOVA widget to the central area.
+
+        Gets the currently selected datatable and creates a RMAnovaWidget
+        to perform repeated measures analysis of variance.
+        """
         datatable = manager.get_selected_datatable()
         if datatable is None:
             return
@@ -228,6 +309,11 @@ class ToolboxButton(QToolButton):
         )
 
     def _add_mixed_anova_widget(self):
+        """Add a mixed-design ANOVA widget to the central area.
+
+        Gets the currently selected datatable and creates a MixedAnovaWidget
+        to perform mixed between-within subjects analysis of variance.
+        """
         datatable = manager.get_selected_datatable()
         if datatable is None:
             return
@@ -237,6 +323,11 @@ class ToolboxButton(QToolButton):
         )
 
     def _add_ancova_widget(self):
+        """Add an ANCOVA widget to the central area.
+
+        Gets the currently selected datatable and creates an AncovaWidget
+        to perform analysis of covariance.
+        """
         datatable = manager.get_selected_datatable()
         if datatable is None:
             return
@@ -246,6 +337,11 @@ class ToolboxButton(QToolButton):
         )
 
     def _add_matrixplot_widget(self):
+        """Add a matrix plot widget to the central area.
+
+        Gets the currently selected datatable and creates a MatrixPlotWidget
+        to visualize relationships between multiple variables in a matrix format.
+        """
         datatable = manager.get_selected_datatable()
         if datatable is None:
             return
@@ -255,6 +351,11 @@ class ToolboxButton(QToolButton):
         )
 
     def _add_pca_widget(self):
+        """Add a PCA widget to the central area.
+
+        Gets the currently selected datatable and creates a PcaWidget
+        to perform and visualize Principal Component Analysis.
+        """
         datatable = manager.get_selected_datatable()
         if datatable is None:
             return
@@ -264,6 +365,11 @@ class ToolboxButton(QToolButton):
         )
 
     def _add_tsne_widget(self):
+        """Add a t-SNE widget to the central area.
+
+        Gets the currently selected datatable and creates a TsneWidget
+        to perform and visualize t-Distributed Stochastic Neighbor Embedding.
+        """
         datatable = manager.get_selected_datatable()
         if datatable is None:
             return
@@ -273,6 +379,11 @@ class ToolboxButton(QToolButton):
         )
 
     def _add_timeseries_decomposition_widget(self):
+        """Add a time series decomposition widget to the central area.
+
+        Gets the currently selected datatable and creates a TimeseriesDecompositionWidget
+        to decompose time series data into trend, seasonal, and residual components.
+        """
         datatable = manager.get_selected_datatable()
         if datatable is None:
             return
@@ -282,6 +393,11 @@ class ToolboxButton(QToolButton):
         )
 
     def _add_timeseries_autocorrelation_widget(self) -> None:
+        """Add a time series autocorrelation widget to the central area.
+
+        Gets the currently selected datatable and creates a TimeseriesAutocorrelationWidget
+        to analyze and visualize autocorrelation in time series data.
+        """
         datatable = manager.get_selected_datatable()
         if datatable is None:
             return
@@ -291,6 +407,11 @@ class ToolboxButton(QToolButton):
         )
 
     def _add_actogram_widget(self) -> None:
+        """Add an actogram widget to the central area.
+
+        Gets the currently selected datatable and creates an ActogramWidget
+        to visualize activity patterns over time in a double-plotted format.
+        """
         datatable = manager.get_selected_datatable()
         if datatable is None:
             return
@@ -303,6 +424,11 @@ class ToolboxButton(QToolButton):
         )
 
     def _add_periodogram_widget(self) -> None:
+        """Add a periodogram widget to the central area.
+
+        Gets the currently selected datatable and creates a PeriodogramWidget
+        to analyze and visualize periodic patterns in time series data.
+        """
         datatable = manager.get_selected_datatable()
         if datatable is None:
             return
@@ -315,6 +441,12 @@ class ToolboxButton(QToolButton):
         )
 
     def _add_transitions_widget(self) -> None:
+        """Add a transitions widget to the central area.
+
+        Gets the currently selected datatable and creates a TransitionsWidget
+        to analyze and visualize transitions between different locations in IntelliCage data.
+        This widget is specific to IntelliCage datasets.
+        """
         datatable = manager.get_selected_datatable()
         if datatable is None:
             return
@@ -327,6 +459,12 @@ class ToolboxButton(QToolButton):
         )
 
     def _add_place_preference_widget(self) -> None:
+        """Add a place preference widget to the central area.
+
+        Gets the currently selected datatable and creates a PlacePreferenceWidget
+        to analyze and visualize place preference behavior in IntelliCage data.
+        This widget is specific to IntelliCage datasets.
+        """
         datatable = manager.get_selected_datatable()
         if datatable is None:
             return
@@ -339,6 +477,11 @@ class ToolboxButton(QToolButton):
         )
 
     def _add_report_widget(self) -> None:
+        """Add a reports widget to the central area.
+
+        Gets the currently selected dataset and creates a ReportsWidget
+        to generate and display reports summarizing the dataset.
+        """
         dataset = manager.get_selected_dataset()
         if dataset is None:
             return

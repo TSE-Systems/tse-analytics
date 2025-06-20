@@ -10,6 +10,7 @@ class FactorsModel(QAbstractTableModel):
     This model provides a tabular representation of Factor objects with two columns:
     one for the factor name and one for the comma-separated list of level names.
     """
+
     header = ("Name", "Levels")
 
     def __init__(self, items: list[Factor], parent=None):

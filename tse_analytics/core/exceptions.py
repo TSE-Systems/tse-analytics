@@ -12,6 +12,7 @@ class InvalidSubscriber(Exception):
     This exception is raised when a subscriber that is not properly registered
     attempts to receive messages.
     """
+
     pass
 
 
@@ -22,4 +23,5 @@ class InvalidMessage(Exception):
     This exception is raised when a message with an invalid format or content
     is attempted to be sent through the messaging system.
     """
+
     pass

@@ -1,3 +1,11 @@
+"""
+Consumption Scale extension data handling for IntelliMaze experiments.
+
+This module provides functionality for processing and analyzing data from Consumption Scale devices
+in IntelliMaze experiments. It defines the ConsumptionScaleData class which extends the base
+ExtensionData class to handle Consumption Scale specific data.
+"""
+
 import pandas as pd
 
 from tse_analytics.core.data.datatable import Datatable
@@ -9,12 +17,31 @@ EXTENSION_NAME = "ConsumptionScale"
 
 
 class ConsumptionScaleData(ExtensionData):
+    """
+    Class for handling Consumption Scale extension data.
+
+    This class extends the base ExtensionData class to provide functionality specific
+    to Consumption Scale devices. It processes raw data from Consumption Scale measurements
+    and provides methods for data analysis and export.
+
+    Attributes:
+        Inherits all attributes from ExtensionData.
+    """
+
     def __init__(
         self,
         dataset,
         name: str,
         raw_data: dict[str, pd.DataFrame],
     ):
+        """
+        Initialize a ConsumptionScaleData object.
+
+        Args:
+            dataset: The parent dataset.
+            name (str): The name of the extension.
+            raw_data (dict[str, pd.DataFrame]): Dictionary mapping data types to DataFrames.
+        """
         super().__init__(
             dataset,
             name,
@@ -23,6 +50,21 @@ class ConsumptionScaleData(ExtensionData):
         )
 
     def get_combined_datatable(self) -> Datatable:
+        """
+        Get a combined datatable from the raw data.
+
+        This method processes the raw consumption data to create a datatable suitable for analysis.
+        It performs several preprocessing steps:
+        1. Replaces animal tags with animal IDs
+        2. Converts cumulative consumption values to differential ones
+        3. Renames columns for consistency
+        4. Drops unnecessary columns
+        5. Adds a timedelta column
+        6. Converts types
+
+        Returns:
+            Datatable: A processed datatable containing Consumption Scale data.
+        """
         df = self.raw_data["Consumption"].copy()
 
         # Replace animal tags with animal IDs
@@ -102,6 +144,20 @@ class ConsumptionScaleData(ExtensionData):
         export_registrations: bool,
         export_variables: bool,
     ) -> tuple[str, dict[str, pd.DataFrame]]:
+        """
+        Get CSV data for export.
+
+        This method prepares data for export to CSV format. It can export both
+        registration data (consumption measurements) and variable data.
+
+        Args:
+            export_registrations (bool): Whether to export registration data.
+            export_variables (bool): Whether to export variable data.
+
+        Returns:
+            tuple[str, dict[str, pd.DataFrame]]: A tuple containing the extension name and a dictionary
+                mapping data types to DataFrames ready for CSV export.
+        """
         result: dict[str, pd.DataFrame] = {}
 
         tag_to_animal_map = self.dataset.get_tag_to_name_map()

@@ -12,6 +12,7 @@ class AnimalsModel(QAbstractTableModel):
     This model provides a tabular representation of animals with their properties,
     allowing for display, editing, and toggling of animal visibility.
     """
+
     def __init__(self, dataset: Dataset, parent=None):
         """
         Initialize the animals model with the given dataset.

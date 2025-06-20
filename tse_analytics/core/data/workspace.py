@@ -17,6 +17,7 @@ class Workspace:
     The Workspace class provides a container for organizing and managing
     multiple datasets.
     """
+
     def __init__(self, name: str):
         """
         Initialize a Workspace instance.

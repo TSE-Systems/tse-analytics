@@ -18,6 +18,7 @@ class IntelliMazeDataset(Dataset):
         devices (dict[str, list[str]]): Dictionary mapping extension names to lists of device IDs.
         extensions_data (dict[str, ExtensionData]): Dictionary mapping extension names to their data.
     """
+
     def __init__(
         self,
         metadata: dict | list[dict],

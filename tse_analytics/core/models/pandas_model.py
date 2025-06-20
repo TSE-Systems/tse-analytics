@@ -14,6 +14,7 @@ class PandasModel(QAbstractTableModel):
     This model provides a tabular representation of a pandas DataFrame,
     with support for highlighting outliers based on the dataset's outlier settings.
     """
+
     color = QColor("#f4a582")  # Color used for highlighting outliers
 
     def __init__(self, df: pd.DataFrame, datatable: Datatable, calculate=False, parent=None):

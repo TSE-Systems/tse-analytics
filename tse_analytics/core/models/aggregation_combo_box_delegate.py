@@ -10,6 +10,7 @@ class AggregationComboBoxDelegate(QStyledItemDelegate):
     This delegate displays a combo box with available aggregation operations
     when editing a cell in a view, allowing users to select from predefined options.
     """
+
     aggregation_operations = list(Aggregation)
 
     def paint(self, painter, option, index):
