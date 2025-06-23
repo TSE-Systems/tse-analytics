@@ -1,3 +1,10 @@
+"""
+Data loader for Consumption Scale extension.
+
+This module provides functions for importing Consumption Scale data from files.
+It includes functions for loading consumption and model data, as well as variable data.
+"""
+
 from pathlib import Path
 
 import numpy as np
@@ -14,6 +21,19 @@ def import_data(
     folder_path: Path,
     dataset: IntelliMazeDataset,
 ) -> ConsumptionScaleData:
+    """
+    Import Consumption Scale data from files.
+
+    This function loads data from various files in the specified folder,
+    creates a ConsumptionScaleData object, and preprocesses the data.
+
+    Args:
+        folder_path (Path): Path to the folder containing the data files.
+        dataset (IntelliMazeDataset): The dataset to add the data to.
+
+    Returns:
+        ConsumptionScaleData: A ConsumptionScaleData object containing the imported data.
+    """
     raw_data = {
         "Consumption": _import_consumption_df(folder_path),
         "Model": _import_model_df(folder_path),
@@ -35,6 +55,18 @@ def import_data(
 
 
 def _import_consumption_df(folder_path: Path) -> pd.DataFrame | None:
+    """
+    Import consumption data from a file.
+
+    This function loads data from the Consumption.txt file in the specified folder,
+    performs type conversions, and sorts the data by time.
+
+    Args:
+        folder_path (Path): Path to the folder containing the Consumption.txt file.
+
+    Returns:
+        pd.DataFrame | None: A DataFrame containing the consumption data, or None if the file doesn't exist.
+    """
     file_path = folder_path / "Consumption.txt"
     if not file_path.is_file():
         return None
@@ -73,6 +105,18 @@ def _import_consumption_df(folder_path: Path) -> pd.DataFrame | None:
 
 
 def _import_model_df(folder_path: Path) -> pd.DataFrame | None:
+    """
+    Import model data from a file.
+
+    This function loads data from the Model.txt file in the specified folder,
+    performs type conversions, and sorts the data by time.
+
+    Args:
+        folder_path (Path): Path to the folder containing the Model.txt file.
+
+    Returns:
+        pd.DataFrame | None: A DataFrame containing the model data, or None if the file doesn't exist.
+    """
     file_path = folder_path / "Model.txt"
     if not file_path.is_file():
         return None

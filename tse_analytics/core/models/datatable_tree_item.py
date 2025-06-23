@@ -14,6 +14,7 @@ class DatatableTreeItem(TreeItem):
     This class extends TreeItem to represent a datatable object in a tree structure,
     providing access to the datatable and its visual representation properties.
     """
+
     def __init__(self, datatable: Datatable):
         """
         Initialize a datatable tree item with the given datatable.

@@ -25,6 +25,7 @@ class BinningMode(StrEnum):
     PHASES : str
         Bin data into custom time phases.
     """
+
     INTERVALS = "Time Intervals"
     CYCLES = "Light/Dark Cycles"
     PHASES = "Time Phases"
@@ -37,6 +38,7 @@ class BinningSettings:
     This class holds the configuration for time binning, including the mode
     and specific settings for each binning mode.
     """
+
     def __init__(self):
         """
         Initialize default binning settings.
@@ -52,6 +54,7 @@ class TimeIntervalsBinningSettings:
     """
     Settings for binning data into fixed time intervals.
     """
+
     def __init__(self, unit: str, delta: int):
         """
         Initialize time intervals binning settings.
@@ -71,6 +74,7 @@ class TimeCyclesBinningSettings:
     """
     Settings for binning data into light and dark cycles.
     """
+
     def __init__(self, light_cycle_start: time, dark_cycle_start: time):
         """
         Initialize light/dark cycles binning settings.
@@ -90,6 +94,7 @@ class TimePhasesBinningSettings:
     """
     Settings for binning data into custom time phases.
     """
+
     def __init__(self, time_phases: list[TimePhase]):
         """
         Initialize time phases binning settings.

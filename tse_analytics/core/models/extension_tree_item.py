@@ -13,6 +13,7 @@ class ExtensionTreeItem(TreeItem):
     This class extends TreeItem to represent an extension object in a tree structure,
     providing access to the extension data and its visual representation properties.
     """
+
     def __init__(self, extension_data):
         """
         Initialize an extension tree item with the given extension data.

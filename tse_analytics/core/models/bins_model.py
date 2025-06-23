@@ -8,6 +8,7 @@ class BinsModel(QAbstractTableModel):
     This model provides a simple tabular representation of integer bin values
     in a single column.
     """
+
     header = ["Bin"]
 
     def __init__(self, items: list[int], parent=None):

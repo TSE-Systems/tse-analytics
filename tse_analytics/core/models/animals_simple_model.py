@@ -11,6 +11,7 @@ class AnimalsSimpleModel(QAbstractTableModel):
     This model provides a read-only tabular representation of animals with their properties.
     Unlike AnimalsModel, this model does not support editing the data.
     """
+
     def __init__(self, dataset: Dataset, parent=None):
         """
         Initialize the simplified animals model with the given dataset.

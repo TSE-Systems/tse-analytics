@@ -30,6 +30,7 @@ class Datatable:
     time ranges, resampling, and applying factors. It also has methods for retrieving
     processed data frames for analysis.
     """
+
     """Default columns that are always present in a datatable."""
     default_columns = ["Animal", "Timedelta", "DateTime"]
 

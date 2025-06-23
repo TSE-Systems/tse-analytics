@@ -22,6 +22,7 @@ class OutliersMode(StrEnum):
     REMOVE : str
         Outliers are removed from the data.
     """
+
     OFF = "Outliers detection off"
     HIGHLIGHT = "Highlight outliers"
     REMOVE = "Remove outliers"
@@ -34,6 +35,7 @@ class OutliersSettings:
     This class holds the configuration for outlier detection, including the mode
     and coefficient for determining what constitutes an outlier.
     """
+
     def __init__(self, mode: OutliersMode, coefficient: float):
         """
         Initialize outlier detection settings.

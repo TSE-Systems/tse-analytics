@@ -77,8 +77,12 @@ def _import_animals(path: Path) -> dict | None:
         "AnimalNotes": str,
     }
 
+    # Skip broken header
     df = pd.read_csv(
         path,
+        header=0,
+        usecols=["AnimalName", "AnimalTag", "Sex", "GroupName", "AnimalNotes"],
+        names=["AnimalName", "AnimalTag", "Sex", "GroupName", "AnimalNotes"],
         delimiter="\t",
         decimal=".",
         dtype=dtype,

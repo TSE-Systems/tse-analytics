@@ -56,6 +56,7 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
     importing, merging, adjusting, and removing datasets. It listens for workspace
     changes and updates the tree view accordingly.
     """
+
     def __init__(self, parent, toolbox_button: ToolboxButton):
         """
         Initialize the DatasetsWidget with parent widget and toolbox button.
