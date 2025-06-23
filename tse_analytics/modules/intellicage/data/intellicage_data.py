@@ -285,12 +285,21 @@ class IntelliCageData:
         visits_preprocessed_df = visits_datatable.original_df.copy()
 
         # Sanitize visits table before merging
+        columns_to_drop = [
+            "Timedelta",
+            "Temperature",
+            "Illumination",
+        ]
+
+        if "LickNumber" in visits_preprocessed_df.columns:
+            columns_to_drop.append("LickNumber")
+        if "LickContactTime" in visits_preprocessed_df.columns:
+            columns_to_drop.append("LickContactTime")
+        if "LickDuration" in visits_preprocessed_df.columns:
+            columns_to_drop.append("LickDuration")
+
         visits_preprocessed_df.drop(
-            columns=[
-                "Timedelta",
-                "Temperature",
-                "Illumination",
-            ],
+            columns=columns_to_drop,
             inplace=True,
         )
 

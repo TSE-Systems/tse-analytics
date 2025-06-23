@@ -1,6 +1,13 @@
 TSE Analytics Change Log
 ====================================================================================================
 
+# 1.5.2 (2025-06-23)
+
+- Fix: Support the latest IntelliCage Animals.txt formats (broken CSV headers).
+- Fix: Support the latest IntelliCage Visits.txt format (explicit licks information).
+
+
+----------------------------------------------------------------------------------------------------
 # 1.5.1 (2025-06-17)
 
 - New: Support for IntelliMaze 6.x data format.

@@ -1,6 +1,6 @@
 [project]
 name = "tse-analytics"
-version = "1.5.1"
+version = "1.5.2"
 description = "TSE Analytics data analysys"
 license = "MIT"
 readme = "README.md"
@@ -24,6 +24,7 @@ dependencies = [
     "pyside6==6.9.0",
     "pyside6-qtads==4.4.0",
     "scikit-learn==1.7.0",
+    "scipy==1.15.3",
     "seaborn==0.13.2",
     "xmltodict==0.14.2",
 ]
