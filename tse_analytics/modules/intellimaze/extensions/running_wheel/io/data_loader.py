@@ -23,7 +23,7 @@ def import_data(
 
     data = RunningWheelData(
         dataset,
-        "RunningWheel raw data",
+        "RunningWheel extension data",
         raw_data,
     )
 

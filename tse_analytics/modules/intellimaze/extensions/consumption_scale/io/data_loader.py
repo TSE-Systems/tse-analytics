@@ -45,7 +45,7 @@ def import_data(
 
     data = ConsumptionScaleData(
         dataset,
-        "ConsumptionScale raw data",
+        "ConsumptionScale extension data",
         raw_data,
     )
 

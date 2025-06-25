@@ -1,11 +1,3 @@
-"""
-Actor extension data handling for IntelliMaze experiments.
-
-This module provides functionality for processing and analyzing data from Actor devices
-in IntelliMaze experiments. It defines the ActorData class which extends the base
-ExtensionData class to handle Actor specific data.
-"""
-
 import pandas as pd
 
 from tse_analytics.core.data.datatable import Datatable
@@ -49,13 +41,7 @@ class ActorData(ExtensionData):
             dataset.devices[EXTENSION_NAME],
         )
 
-    def get_combined_datatable(self) -> Datatable:
-        """
-        Get a combined datatable from the raw data.
-
-        Returns:
-            Datatable: A processed datatable containing Actor data.
-        """
+    def preprocess_data(self) -> None:
         df = self.raw_data["State"].copy()
 
         # Replace animal tags with animal IDs
@@ -127,7 +113,7 @@ class ActorData(ExtensionData):
             None,
         )
 
-        return datatable
+        self.dataset.add_datatable(datatable)
 
     def get_csv_data(
         self,

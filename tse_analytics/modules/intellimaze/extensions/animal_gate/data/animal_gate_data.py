@@ -49,22 +49,7 @@ class AnimalGateData(ExtensionData):
             dataset.devices[EXTENSION_NAME],
         )
 
-    def get_combined_datatable(self) -> Datatable:
-        """
-        Get a combined datatable from the raw data.
-
-        This method processes the raw sessions data to create a datatable suitable for analysis.
-        It performs several preprocessing steps:
-        1. Replaces animal tags with animal IDs
-        2. Adds a duration column
-        3. Renames columns for consistency
-        4. Drops unnecessary columns
-        5. Adds a timedelta column
-        6. Converts types
-
-        Returns:
-            Datatable: A processed datatable containing Animal Gate data.
-        """
+    def preprocess_data(self) -> None:
         df = self.raw_data["Sessions"].copy()
 
         # Replace animal tags with animal IDs
@@ -133,7 +118,7 @@ class AnimalGateData(ExtensionData):
             None,
         )
 
-        return datatable
+        self.dataset.add_datatable(datatable)
 
     def get_csv_data(
         self,

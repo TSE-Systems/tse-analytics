@@ -42,7 +42,7 @@ def import_data(
 
     data = ActorData(
         dataset,
-        "Actor raw data",
+        "Actor extension data",
         raw_data,
     )
 

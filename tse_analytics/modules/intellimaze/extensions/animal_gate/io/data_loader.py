@@ -47,7 +47,7 @@ def import_data(
 
     data = AnimalGateData(
         dataset,
-        "AnimalGate raw data",
+        "AnimalGate extension data",
         raw_data,
     )
 

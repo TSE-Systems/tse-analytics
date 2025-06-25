@@ -12,13 +12,21 @@ from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.data.shared import Animal, Factor
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 from tse_analytics.modules.intellimaze.data.utils import preprocess_main_table
-from tse_analytics.modules.intellimaze.extensions import animal_gate, consumption_scale, running_wheel, actor
+from tse_analytics.modules.intellimaze.extensions import (
+    animal_gate,
+    consumption_scale,
+    running_wheel,
+    actor,
+    intellicage,
+)
+
 
 extension_data_loaders = {
     animal_gate.EXTENSION_NAME: animal_gate.io.import_data,
     consumption_scale.EXTENSION_NAME: consumption_scale.io.import_data,
     running_wheel.EXTENSION_NAME: running_wheel.io.import_data,
     actor.EXTENSION_NAME: actor.io.import_data,
+    intellicage.EXTENSION_NAME: intellicage.io.import_data,
 }
 
 

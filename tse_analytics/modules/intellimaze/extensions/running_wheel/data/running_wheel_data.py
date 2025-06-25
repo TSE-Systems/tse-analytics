@@ -1,11 +1,3 @@
-"""
-RunningWheel extension data handling for IntelliMaze experiments.
-
-This module provides functionality for processing and analyzing data from RunningWheel devices
-in IntelliMaze experiments. It defines the RunningWheelData class which extends the base
-ExtensionData class to handle RunningWheel specific data.
-"""
-
 import pandas as pd
 
 from tse_analytics.core.data.datatable import Datatable
@@ -30,7 +22,7 @@ class RunningWheelData(ExtensionData):
             dataset.devices[EXTENSION_NAME],
         )
 
-    def get_combined_datatable(self) -> Datatable:
+    def preprocess_data(self) -> None:
         df = self.raw_data["Registration"].copy()
 
         # Replace animal tags with animal IDs
@@ -108,7 +100,7 @@ class RunningWheelData(ExtensionData):
             None,
         )
 
-        return datatable
+        self.dataset.add_datatable(datatable)
 
     def get_csv_data(
         self,

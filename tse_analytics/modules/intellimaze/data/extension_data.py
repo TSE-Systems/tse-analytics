@@ -58,27 +58,6 @@ class ExtensionData:
         return self.device_ids
 
     def preprocess_data(self) -> None:
-        """
-        Preprocess the raw data and add a datatable to the dataset.
-
-        This method calls get_combined_datatable() to get a combined datatable
-        and adds it to the dataset.
-        """
-        main_datatable = self.get_combined_datatable()
-        self.dataset.add_datatable(main_datatable)
-
-    def get_combined_datatable(self) -> Datatable:
-        """
-        Get a combined datatable from the raw data.
-
-        This method must be implemented by subclasses.
-
-        Returns:
-            Datatable: A combined datatable.
-
-        Raises:
-            NotImplementedError: If the method is not implemented by a subclass.
-        """
         raise NotImplementedError("Subclasses must implement this method")
 
     def get_csv_data(self, export_registrations: bool, export_variables: bool) -> tuple[str, dict[str, pd.DataFrame]]:
