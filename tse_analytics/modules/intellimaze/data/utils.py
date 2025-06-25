@@ -75,12 +75,14 @@ def _preprocess_variable_table(table_name: str, extension_data: ExtensionData) -
     )
 
     # Drop the non-necessary columns
+    drop_columns = [
+        # "DeviceId",
+        "Tag",
+    ]
+    if "ConditionValue" in df.columns:
+        drop_columns.append("ConditionValue")
     df.drop(
-        columns=[
-            # "DeviceId",
-            "Tag",
-            "ConditionValue",
-        ],
+        columns=drop_columns,
         inplace=True,
     )
 
@@ -124,7 +126,8 @@ def preprocess_main_table(dataset: IntelliMazeDataset) -> None:
     datatables = []
 
     for extension_name in dataset.extensions_data.keys():
-        datatables.append(dataset.datatables[extension_name])
+        if extension_name in dataset.datatables:
+            datatables.append(dataset.datatables[extension_name])
 
     dataframes = []
     variables = {}

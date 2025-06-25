@@ -1,9 +1,9 @@
 """
-ConsumptionScale extension data handling for IntelliMaze experiments.
+Actor extension data handling for IntelliMaze experiments.
 
-This module provides functionality for processing and analyzing data from ConsumptionScale devices
-in IntelliMaze experiments. It defines the ConsumptionScaleData class which extends the base
-ExtensionData class to handle ConsumptionScale specific data.
+This module provides functionality for processing and analyzing data from Actor devices
+in IntelliMaze experiments. It defines the ActorData class which extends the base
+ExtensionData class to handle Actor specific data.
 """
 
 import pandas as pd
@@ -13,15 +13,15 @@ from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.modules.intellimaze.data.extension_data import ExtensionData
 from tse_analytics.modules.intellimaze.data.utils import get_combined_variables_table
 
-EXTENSION_NAME = "ConsumptionScale"
+EXTENSION_NAME = "Actor"
 
 
-class ConsumptionScaleData(ExtensionData):
+class ActorData(ExtensionData):
     """
-    Class for handling Consumption Scale extension data.
+    Class for handling Actor extension data.
 
     This class extends the base ExtensionData class to provide functionality specific
-    to Consumption Scale devices. It processes raw data from Consumption Scale measurements
+    to Actor devices. It processes raw data from Actor measurements
     and provides methods for data analysis and export.
 
     Attributes:
@@ -35,7 +35,7 @@ class ConsumptionScaleData(ExtensionData):
         raw_data: dict[str, pd.DataFrame],
     ):
         """
-        Initialize a ConsumptionScaleData object.
+        Initialize an ActorData object.
 
         Args:
             dataset: The parent dataset.
@@ -53,32 +53,14 @@ class ConsumptionScaleData(ExtensionData):
         """
         Get a combined datatable from the raw data.
 
-        This method processes the raw consumption data to create a datatable suitable for analysis.
-        It performs several preprocessing steps:
-        1. Replaces animal tags with animal IDs
-        2. Converts cumulative consumption values to differential ones
-        3. Renames columns for consistency
-        4. Drops unnecessary columns
-        5. Adds a timedelta column
-        6. Converts types
-
         Returns:
-            Datatable: A processed datatable containing Consumption Scale data.
+            Datatable: A processed datatable containing Actor data.
         """
-        df = self.raw_data["Consumption"].copy()
+        df = self.raw_data["State"].copy()
 
         # Replace animal tags with animal IDs
         tag_to_animal_map = self.dataset.get_tag_to_name_map()
-        df["Animal"] = df["Tag"].replace(tag_to_animal_map)
-
-        # Convert cumulative values to differential ones
-        preprocessed_device_df = []
-        device_ids = df["DeviceId"].unique().tolist()
-        for i, device_id in enumerate(device_ids):
-            device_data = df[df["DeviceId"] == device_id]
-            device_data["Consumption"] = device_data["Consumption"].diff().fillna(df["Consumption"]).round(5)
-            preprocessed_device_df.append(device_data)
-        df = pd.concat(preprocessed_device_df, ignore_index=True, sort=False)
+        df["Animal"] = df["AnimalTag"].replace(tag_to_animal_map)
 
         # Rename columns
         df.rename(
@@ -92,7 +74,7 @@ class ConsumptionScaleData(ExtensionData):
         df.drop(
             columns=[
                 "DeviceId",
-                "Tag",
+                "AnimalTag",
             ],
             inplace=True,
         )
@@ -101,11 +83,19 @@ class ConsumptionScaleData(ExtensionData):
         df.dropna(subset=["Animal"], inplace=True)
 
         variables = {
-            "Consumption": Variable(
-                "Consumption",
-                "g",
-                "ConsumptionScale intake",
-                "float64",
+            "Mode": Variable(
+                "Mode",
+                "category",
+                "Actor mode",
+                str,
+                Aggregation.SUM,
+                False,
+            ),
+            "State": Variable(
+                "State",
+                "category",
+                "Actor state",
+                str,
                 Aggregation.SUM,
                 False,
             ),
@@ -148,7 +138,7 @@ class ConsumptionScaleData(ExtensionData):
         Get CSV data for export.
 
         This method prepares data for export to CSV format. It can export both
-        registration data (consumption measurements) and variable data.
+        state data and variable data.
 
         Args:
             export_registrations (bool): Whether to export registration data.
@@ -163,25 +153,8 @@ class ConsumptionScaleData(ExtensionData):
         tag_to_animal_map = self.dataset.get_tag_to_name_map()
 
         if export_registrations:
-            data = {
-                "DateTime": [],
-                "DeviceType": EXTENSION_NAME,
-                "DeviceId": [],
-                "AnimalName": [],
-                "AnimalTag": [],
-                "TableType": "Consumption",
-                "Consumption": [],
-            }
-
-            for row in self.raw_data["Consumption"].itertuples():
-                data["DateTime"].append(row.Time)
-                data["DeviceId"].append(row.DeviceId)
-                data["AnimalName"].append(tag_to_animal_map[row.Tag] if row.Tag == row.Tag else "")
-                data["AnimalTag"].append(row.Tag if row.Tag == row.Tag else "")
-
-                data["Consumption"].append(row.Consumption)
-
-            result["Consumption"] = pd.DataFrame(data)
+            # Skip actor state data
+            pass
 
         if export_variables:
             variables_csv_data = self.get_variables_csv_data(EXTENSION_NAME, tag_to_animal_map)

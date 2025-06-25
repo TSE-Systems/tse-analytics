@@ -1,9 +1,9 @@
 """
-Running Wheel extension data handling for IntelliMaze experiments.
+RunningWheel extension data handling for IntelliMaze experiments.
 
-This module provides functionality for processing and analyzing data from Running Wheel devices
+This module provides functionality for processing and analyzing data from RunningWheel devices
 in IntelliMaze experiments. It defines the RunningWheelData class which extends the base
-ExtensionData class to handle Running Wheel specific data.
+ExtensionData class to handle RunningWheel specific data.
 """
 
 import pandas as pd
@@ -101,8 +101,8 @@ class RunningWheelData(ExtensionData):
 
         datatable = Datatable(
             self.dataset,
-            "RunningWheel",
-            "RunningWheel main table",
+            EXTENSION_NAME,
+            f"{EXTENSION_NAME} main table",
             variables,
             df,
             None,

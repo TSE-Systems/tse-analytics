@@ -291,12 +291,10 @@ class IntelliCageData:
             "Illumination",
         ]
 
-        if "LickNumber" in visits_preprocessed_df.columns:
-            columns_to_drop.append("LickNumber")
-        if "LickContactTime" in visits_preprocessed_df.columns:
-            columns_to_drop.append("LickContactTime")
-        if "LickDuration" in visits_preprocessed_df.columns:
-            columns_to_drop.append("LickDuration")
+        check_columns = ["LickNumber", "LickContactTime", "LickDuration"]
+        for column in check_columns:
+            if column in visits_preprocessed_df.columns:
+                columns_to_drop.append(column)
 
         visits_preprocessed_df.drop(
             columns=columns_to_drop,

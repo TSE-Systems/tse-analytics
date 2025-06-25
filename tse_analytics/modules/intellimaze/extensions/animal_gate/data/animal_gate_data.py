@@ -1,9 +1,9 @@
 """
-Animal Gate extension data handling for IntelliMaze experiments.
+AnimalGate extension data handling for IntelliMaze experiments.
 
-This module provides functionality for processing and analyzing data from Animal Gate devices
+This module provides functionality for processing and analyzing data from AnimalGate devices
 in IntelliMaze experiments. It defines the AnimalGateData class which extends the base
-ExtensionData class to handle Animal Gate specific data.
+ExtensionData class to handle AnimalGate specific data.
 """
 
 import pandas as pd
@@ -18,10 +18,10 @@ EXTENSION_NAME = "AnimalGate"
 
 class AnimalGateData(ExtensionData):
     """
-    Class for handling Animal Gate extension data.
+    Class for handling AnimalGate extension data.
 
     This class extends the base ExtensionData class to provide functionality specific
-    to Animal Gate devices. It processes raw data from Animal Gate sessions and provides
+    to AnimalGate devices. It processes raw data from Animal Gate sessions and provides
     methods for data analysis and export.
 
     Attributes:
@@ -126,8 +126,8 @@ class AnimalGateData(ExtensionData):
 
         datatable = Datatable(
             self.dataset,
-            "AnimalGate",
-            "AnimalGate main table",
+            EXTENSION_NAME,
+            f"{EXTENSION_NAME} main table",
             variables,
             df,
             None,
