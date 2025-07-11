@@ -144,7 +144,7 @@ class AnimalGateData(ExtensionData):
         tag_to_animal_map = self.dataset.get_tag_to_name_map()
 
         if export_registrations:
-            data = {
+            data: dict[str, list | str] = {
                 "DateTime": [],
                 "DeviceType": EXTENSION_NAME,
                 "DeviceId": [],

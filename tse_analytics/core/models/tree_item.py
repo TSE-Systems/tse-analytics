@@ -20,7 +20,7 @@ class TreeItem:
         """
         self.name = name
         self.parent_item = weakref.ref(parent) if parent else None
-        self.child_items = []
+        self.child_items: list[TreeItem] = []
         self._checked = False
 
     @property

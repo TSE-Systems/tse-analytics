@@ -46,9 +46,9 @@ class AnimalsWidget(QWidget, messaging.MessengerListener):
 
         messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
 
-        self.layout = QVBoxLayout(self)
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
         toolbar = QToolBar(
             "Animals Toolbar",
@@ -65,7 +65,7 @@ class AnimalsWidget(QWidget, messaging.MessengerListener):
         toolbar.addSeparator()
         toolbar.addAction(QIcon(":/icons/icons8-add-16.png"), "Add property").triggered.connect(self._add_property)
 
-        self.layout.addWidget(toolbar)
+        self._layout.addWidget(toolbar)
 
         proxy_model = QSortFilterProxyModel()
         proxy_model.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
@@ -81,7 +81,7 @@ class AnimalsWidget(QWidget, messaging.MessengerListener):
         self.tableView.setModel(proxy_model)
         self.tableView.sortByColumn(0, Qt.SortOrder.AscendingOrder)
 
-        self.layout.addWidget(self.tableView)
+        self._layout.addWidget(self.tableView)
 
     def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
         """

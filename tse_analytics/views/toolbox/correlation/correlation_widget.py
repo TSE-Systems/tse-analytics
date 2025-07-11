@@ -20,9 +20,9 @@ class CorrelationWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
-        self.layout = QVBoxLayout(self)
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
         self.title = "Correlation"
 
@@ -54,14 +54,14 @@ class CorrelationWidget(QWidget):
         self.toolbar.addWidget(self.group_by_selector)
 
         # Insert toolbar to the widget
-        self.layout.addWidget(self.toolbar)
+        self._layout.addWidget(self.toolbar)
 
         self.splitter = QSplitter(
             self,
             orientation=Qt.Orientation.Vertical,
         )
 
-        self.layout.addWidget(self.splitter)
+        self._layout.addWidget(self.splitter)
 
         self.canvas = MplCanvas(self.splitter)
         self.splitter.addWidget(self.canvas)

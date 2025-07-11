@@ -508,37 +508,53 @@ class IntelliCageData(ExtensionData):
         tag_to_animal_map = self.dataset.get_tag_to_name_map()
 
         if export_registrations:
-            data = {
+            visits_data: dict[str, list | str] = {
                 "DateTime": [],
                 "DeviceType": EXTENSION_NAME,
                 "DeviceId": [],
                 "AnimalName": [],
                 "AnimalTag": [],
-                "TableType": "Sessions",
-                "Direction": [],
+                "TableType": "Visits",
+                "ModuleName": [],
                 "Start": [],
                 "End": [],
                 "Duration": [],
-                "Weight": [],
-                "IdSectionVisited": [],
-                "StandbySectionVisited": [],
+                "Corner": [],
+                "CornerCondition": [],
+                "PlaceError": [],
+                "AntennaNumber": [],
+                "AntennaDuration": [],
+                "PresenceNumber": [],
+                "PresenceDuration": [],
+                "VisitSolution": [],
+                "LickNumber": [],
+                "LickContactTime": [],
+                "LickDuration": [],
             }
 
-            for row in self.raw_data["Sessions"].itertuples():
-                data["DateTime"].append(row.End if row.Direction == "Out" else row.Start)
-                data["DeviceId"].append(row.DeviceId)
-                data["AnimalName"].append(tag_to_animal_map[row.Tag] if row.Tag == row.Tag else "")
-                data["AnimalTag"].append(row.Tag if row.Tag == row.Tag else "")
+            for row in self.raw_data["Visits"].itertuples():
+                visits_data["DateTime"].append(row.Start)
+                visits_data["DeviceId"].append(row.DeviceId)
+                visits_data["AnimalName"].append(tag_to_animal_map[row.AnimalTag])
+                visits_data["AnimalTag"].append(row.AnimalTag)
 
-                data["Direction"].append(row.Direction)
-                data["Start"].append(row.Start)
-                data["End"].append(row.End)
-                data["Duration"].append((row.End - row.Start).total_seconds())
-                data["Weight"].append(row.Weight)
-                data["IdSectionVisited"].append(row.IdSectionVisited)
-                data["StandbySectionVisited"].append(row.StandbySectionVisited)
+                visits_data["ModuleName"].append(row.ModuleName)
+                visits_data["Start"].append(row.Start)
+                visits_data["End"].append(row.End)
+                visits_data["Duration"].append((row.End - row.Start).total_seconds())
+                visits_data["Corner"].append(row.Corner)
+                visits_data["CornerCondition"].append(row.CornerCondition)
+                visits_data["PlaceError"].append(row.PlaceError)
+                visits_data["AntennaNumber"].append(row.AntennaNumber)
+                visits_data["AntennaDuration"].append(row.AntennaDuration)
+                visits_data["PresenceNumber"].append(row.PresenceNumber)
+                visits_data["PresenceDuration"].append(row.PresenceDuration)
+                visits_data["VisitSolution"].append(row.VisitSolution)
+                visits_data["LickNumber"].append(row.LickNumber)
+                visits_data["LickContactTime"].append(row.LickContactTime)
+                visits_data["LickDuration"].append(row.LickDuration)
 
-            result["Sessions"] = pd.DataFrame(data)
+            result["Visits"] = pd.DataFrame(visits_data)
 
         if export_variables:
             variables_csv_data = self.get_variables_csv_data(EXTENSION_NAME, tag_to_animal_map)

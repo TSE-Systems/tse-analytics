@@ -35,9 +35,9 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
-        self.layout = QVBoxLayout(self)
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
         self.datatable = datatable
         self.df: pd.DataFrame | None = None
@@ -112,7 +112,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.add_report_action.setEnabled(False)
 
         # Insert toolbar to the widget
-        self.layout.addWidget(toolbar)
+        self._layout.addWidget(toolbar)
 
         self.table_view = QTableView(
             self,
@@ -125,7 +125,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.table_view.verticalHeader().setDefaultSectionSize(20)
         self.table_view.horizontalHeader().sectionClicked.connect(self._header_clicked)
 
-        self.layout.addWidget(self.table_view)
+        self._layout.addWidget(self.table_view)
 
         self._set_data()
 

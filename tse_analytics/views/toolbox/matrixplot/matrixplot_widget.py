@@ -28,9 +28,9 @@ class MatrixPlotWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
-        self.layout = QVBoxLayout(self)
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
         self.title = "Matrix Plot"
 
@@ -68,10 +68,10 @@ class MatrixPlotWidget(QWidget):
         self.toolbar.addWidget(self.group_by_selector)
 
         # Insert toolbar to the widget
-        self.layout.addWidget(self.toolbar)
+        self._layout.addWidget(self.toolbar)
 
         self.canvas = MplCanvas(self)
-        self.layout.addWidget(self.canvas)
+        self._layout.addWidget(self.canvas)
 
         self.spacer_action = QWidgetAction(self.toolbar)
         self.spacer_action.setDefaultWidget(get_h_spacer_widget(self.toolbar))
@@ -150,7 +150,7 @@ class MatrixPlotWidget(QWidget):
         canvas = FigureCanvasQTAgg(pair_grid.figure)
         canvas.updateGeometry()
         canvas.draw()
-        self.layout.replaceWidget(self.canvas, canvas)
+        self._layout.replaceWidget(self.canvas, canvas)
         self.canvas = canvas
 
         # Assign canvas to PlotToolbar

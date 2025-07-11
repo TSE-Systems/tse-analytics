@@ -20,9 +20,9 @@ class PdfWidget(QWidget):
             # | Qt.WindowType.WindowCloseButtonHint
         )
 
-        self.layout = QVBoxLayout(self)
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
         self.toolbar = QToolBar(
             "PDF Widget Toolbar",
@@ -30,7 +30,7 @@ class PdfWidget(QWidget):
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
         self.toolbar.addAction(QIcon(":/icons/icons8-export-16.png"), "Export PDF").triggered.connect(self._export_pdf)
-        self.layout.addWidget(self.toolbar)
+        self._layout.addWidget(self.toolbar)
 
         self.pdf_document = QPdfDocument(self)
 
@@ -46,7 +46,7 @@ class PdfWidget(QWidget):
         self.pdf_view.setPageMode(QPdfView.PageMode.MultiPage)
         self.pdf_view.setZoomMode(QPdfView.ZoomMode.FitInView)
 
-        self.layout.addWidget(self.pdf_view)
+        self._layout.addWidget(self.pdf_view)
 
     def _export_pdf(self):
         file_path, _ = QFileDialog.getSaveFileName(self, "Export PDF", "", "PDF Files (*.pdf)")

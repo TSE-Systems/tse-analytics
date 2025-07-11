@@ -102,7 +102,7 @@ class ExtensionData:
 
         for name, type in variables_dict.items():
             if name in self.raw_data:
-                data = {
+                data: dict[str, list | str] = {
                     "DateTime": [],
                     "DeviceType": extension_name,
                     "DeviceId": [],

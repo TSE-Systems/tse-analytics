@@ -67,9 +67,9 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
         """
         super().__init__(parent)
 
-        self.layout = QVBoxLayout(self)
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
         self.toolbox_button = toolbox_button
 
@@ -117,7 +117,7 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
         self.merge_dataset_action.setEnabled(False)
         self.merge_dataset_action.triggered.connect(self._merge_datasets)
 
-        self.layout.addWidget(toolbar)
+        self._layout.addWidget(toolbar)
 
         self.treeView = QTreeView(
             self,
@@ -147,7 +147,7 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
         self.treeView.selectionModel().currentChanged.connect(self._treeview_current_changed)
         self.treeView.doubleClicked.connect(self._treeview_double_clicked)
 
-        self.layout.addWidget(self.treeView)
+        self._layout.addWidget(self.treeView)
 
         messaging.subscribe(self, messaging.WorkspaceChangedMessage, self._workspace_changed)
 
