@@ -18,6 +18,7 @@ from tse_analytics.modules.intellimaze.extensions import (
     running_wheel,
     actor,
     intellicage,
+    operant_device,
 )
 
 
@@ -27,6 +28,7 @@ extension_data_loaders = {
     running_wheel.EXTENSION_NAME: running_wheel.io.import_data,
     actor.EXTENSION_NAME: actor.io.import_data,
     intellicage.EXTENSION_NAME: intellicage.io.import_data,
+    # operant_device.EXTENSION_NAME: operant_device.io.import_data,
 }
 
 

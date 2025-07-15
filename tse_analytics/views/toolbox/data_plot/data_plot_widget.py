@@ -276,7 +276,7 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         # Calculate error for timeline plot
         if calculate_errors is not None:
             result["Error"] = result[variable.name]
-            result["Error"] = calculate_errors
+            aggregation["Error"] = calculate_errors
 
         result = result.groupby(by, dropna=False, observed=False).aggregate(aggregation)
         result.reset_index(inplace=True)
