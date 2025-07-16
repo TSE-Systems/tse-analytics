@@ -26,7 +26,7 @@ class Ui_AddVariableDialog(object):
     def setupUi(self, AddVariableDialog):
         if not AddVariableDialog.objectName():
             AddVariableDialog.setObjectName(u"AddVariableDialog")
-        AddVariableDialog.resize(424, 478)
+        AddVariableDialog.resize(406, 579)
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -101,6 +101,11 @@ class Ui_AddVariableDialog(object):
 
         self.verticalLayout_3.addWidget(self.radioButtonOriginDifferential)
 
+        self.radioButtonOriginExpression = QRadioButton(self.groupBoxOrigin)
+        self.radioButtonOriginExpression.setObjectName(u"radioButtonOriginExpression")
+
+        self.verticalLayout_3.addWidget(self.radioButtonOriginExpression)
+
 
         self.verticalLayout.addWidget(self.groupBoxOrigin)
 
@@ -129,6 +134,19 @@ class Ui_AddVariableDialog(object):
 
         self.verticalLayout.addWidget(self.groupBoxOriginVariable)
 
+        self.groupBoxExpression = QGroupBox(AddVariableDialog)
+        self.groupBoxExpression.setObjectName(u"groupBoxExpression")
+        self.groupBoxExpression.setEnabled(False)
+        self.verticalLayout_2 = QVBoxLayout(self.groupBoxExpression)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.lineEditExpression = QLineEdit(self.groupBoxExpression)
+        self.lineEditExpression.setObjectName(u"lineEditExpression")
+
+        self.verticalLayout_2.addWidget(self.lineEditExpression)
+
+
+        self.verticalLayout.addWidget(self.groupBoxExpression)
+
         self.buttonBox = QDialogButtonBox(AddVariableDialog)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setOrientation(Qt.Orientation.Horizontal)
@@ -155,7 +173,9 @@ class Ui_AddVariableDialog(object):
         self.radioButtonOriginAnimalProperty.setText(QCoreApplication.translate("AddVariableDialog", u"Animal property", None))
         self.radioButtonOriginCumulative.setText(QCoreApplication.translate("AddVariableDialog", u"Cumulative variable", None))
         self.radioButtonOriginDifferential.setText(QCoreApplication.translate("AddVariableDialog", u"Differential variable", None))
+        self.radioButtonOriginExpression.setText(QCoreApplication.translate("AddVariableDialog", u"Expression", None))
         self.groupBoxAnimalProperty.setTitle(QCoreApplication.translate("AddVariableDialog", u"Animal Property", None))
         self.groupBoxOriginVariable.setTitle(QCoreApplication.translate("AddVariableDialog", u"Origin Variable", None))
+        self.groupBoxExpression.setTitle(QCoreApplication.translate("AddVariableDialog", u"Expression", None))
     # retranslateUi
 

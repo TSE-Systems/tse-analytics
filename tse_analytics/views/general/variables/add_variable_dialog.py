@@ -26,18 +26,32 @@ class AddVariableDialog(QDialog):
         self.ui.buttonBox.accepted.connect(self._accepted)
 
         self.ui.radioButtonOriginAnimalProperty.toggled.connect(
-            lambda toggled: self._refresh_ui(True) if toggled else None
+            lambda toggled: self._refresh_ui("AnimalProperty") if toggled else None
         )
         self.ui.radioButtonOriginCumulative.toggled.connect(
-            lambda toggled: self._refresh_ui(False) if toggled else None
+            lambda toggled: self._refresh_ui("Variable") if toggled else None
         )
         self.ui.radioButtonOriginDifferential.toggled.connect(
-            lambda toggled: self._refresh_ui(False) if toggled else None
+            lambda toggled: self._refresh_ui("Variable") if toggled else None
+        )
+        self.ui.radioButtonOriginExpression.toggled.connect(
+            lambda toggled: self._refresh_ui("Expression") if toggled else None
         )
 
-    def _refresh_ui(self, show_animal_properties: bool):
-        self.ui.groupBoxAnimalProperty.setEnabled(show_animal_properties)
-        self.ui.groupBoxOriginVariable.setEnabled(not show_animal_properties)
+    def _refresh_ui(self, origin: str):
+        match origin:
+            case "AnimalProperty":
+                self.ui.groupBoxAnimalProperty.setEnabled(True)
+                self.ui.groupBoxOriginVariable.setEnabled(False)
+                self.ui.groupBoxExpression.setEnabled(False)
+            case "Variable":
+                self.ui.groupBoxAnimalProperty.setEnabled(False)
+                self.ui.groupBoxOriginVariable.setEnabled(True)
+                self.ui.groupBoxExpression.setEnabled(False)
+            case "Expression":
+                self.ui.groupBoxAnimalProperty.setEnabled(False)
+                self.ui.groupBoxOriginVariable.setEnabled(False)
+                self.ui.groupBoxExpression.setEnabled(True)
 
     def _accepted(self) -> None:
         variable_name = self.ui.nameLineEdit.text()
@@ -53,8 +67,6 @@ class AddVariableDialog(QDialog):
 
         if self.ui.radioButtonOriginAnimalProperty.isChecked():
             animal_property = self.ui.comboBoxAnimalProperty.currentText()
-
-            # Add new variable column
             df[variable_name] = df["Animal"]
             values_map = {}
             for animal in self.datatable.dataset.animals.values():
@@ -69,6 +81,9 @@ class AddVariableDialog(QDialog):
             df[variable_name] = df.groupby("Animal", observed=False)[origin_variable.name].transform(pd.Series.diff)
             # Fill NA values from the original column
             df[variable_name] = df[variable_name].fillna(df[origin_variable.name])
+        elif self.ui.radioButtonOriginExpression.isChecked():
+            expression = self.ui.lineEditExpression.text()
+            df[variable_name] = df.eval(expression)
 
         try:
             # Set variable type

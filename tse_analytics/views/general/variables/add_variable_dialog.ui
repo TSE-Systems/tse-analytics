@@ -7,8 +7,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>424</width>
-    <height>478</height>
+    <width>406</width>
+    <height>579</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -100,6 +100,13 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QRadioButton" name="radioButtonOriginExpression">
+        <property name="text">
+         <string>Expression</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
@@ -126,6 +133,21 @@
      <layout class="QVBoxLayout" name="verticalLayout_5">
       <item>
        <widget class="VariableSelector" name="variableSelector"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxExpression">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="title">
+      <string>Expression</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QLineEdit" name="lineEditExpression"/>
       </item>
      </layout>
     </widget>
