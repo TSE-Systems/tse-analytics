@@ -3,8 +3,11 @@ TSE Analytics Change Log
 
 # 1.5.3 (2025-07-16)
 
-- Fix: Support the latest IntelliCage Animals.txt formats (broken CSV headers).
-- Fix: Support the latest IntelliCage Visits.txt format (explicit licks information).
+- New: Custom variables originated from expressions.
+- New: Support for IntelliMaze Actor extension.
+- New: Support for IntelliMaze IntelliCage extension.
+- Fix: Variable names refactoring to avoid conflicts with predefined QWidget properties.
+- Fix: Missing error bars in Total grouping mode.
 
 
 ----------------------------------------------------------------------------------------------------
