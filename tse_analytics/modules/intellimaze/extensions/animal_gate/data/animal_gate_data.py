@@ -1,9 +1,9 @@
 """
-Animal Gate extension data handling for IntelliMaze experiments.
+AnimalGate extension data handling for IntelliMaze experiments.
 
-This module provides functionality for processing and analyzing data from Animal Gate devices
+This module provides functionality for processing and analyzing data from AnimalGate devices
 in IntelliMaze experiments. It defines the AnimalGateData class which extends the base
-ExtensionData class to handle Animal Gate specific data.
+ExtensionData class to handle AnimalGate specific data.
 """
 
 import pandas as pd
@@ -18,10 +18,10 @@ EXTENSION_NAME = "AnimalGate"
 
 class AnimalGateData(ExtensionData):
     """
-    Class for handling Animal Gate extension data.
+    Class for handling AnimalGate extension data.
 
     This class extends the base ExtensionData class to provide functionality specific
-    to Animal Gate devices. It processes raw data from Animal Gate sessions and provides
+    to AnimalGate devices. It processes raw data from Animal Gate sessions and provides
     methods for data analysis and export.
 
     Attributes:
@@ -49,22 +49,7 @@ class AnimalGateData(ExtensionData):
             dataset.devices[EXTENSION_NAME],
         )
 
-    def get_combined_datatable(self) -> Datatable:
-        """
-        Get a combined datatable from the raw data.
-
-        This method processes the raw sessions data to create a datatable suitable for analysis.
-        It performs several preprocessing steps:
-        1. Replaces animal tags with animal IDs
-        2. Adds a duration column
-        3. Renames columns for consistency
-        4. Drops unnecessary columns
-        5. Adds a timedelta column
-        6. Converts types
-
-        Returns:
-            Datatable: A processed datatable containing Animal Gate data.
-        """
+    def preprocess_data(self) -> None:
         df = self.raw_data["Sessions"].copy()
 
         # Replace animal tags with animal IDs
@@ -126,14 +111,14 @@ class AnimalGateData(ExtensionData):
 
         datatable = Datatable(
             self.dataset,
-            "AnimalGate",
-            "AnimalGate main table",
+            EXTENSION_NAME,
+            f"{EXTENSION_NAME} main table",
             variables,
             df,
             None,
         )
 
-        return datatable
+        self.dataset.add_datatable(datatable)
 
     def get_csv_data(
         self,
@@ -159,7 +144,7 @@ class AnimalGateData(ExtensionData):
         tag_to_animal_map = self.dataset.get_tag_to_name_map()
 
         if export_registrations:
-            data = {
+            data: dict[str, list | str] = {
                 "DateTime": [],
                 "DeviceType": EXTENSION_NAME,
                 "DeviceId": [],

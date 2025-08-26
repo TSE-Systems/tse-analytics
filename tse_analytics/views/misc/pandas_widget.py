@@ -35,9 +35,9 @@ class PandasWidget(QWidget):
         self.title = title
         self.df: pd.DataFrame | None = None
 
-        self.layout = QVBoxLayout(self)
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
         # Setup toolbar
         toolbar = QToolBar(
@@ -66,10 +66,10 @@ class PandasWidget(QWidget):
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add to Report").triggered.connect(self._add_report)
 
-        self.layout.addWidget(toolbar)
+        self._layout.addWidget(toolbar)
 
         self.pandas_table_view = PandasTableView()
-        self.layout.addWidget(self.pandas_table_view)
+        self._layout.addWidget(self.pandas_table_view)
 
     def set_data(self, df: pd.DataFrame) -> None:
         """

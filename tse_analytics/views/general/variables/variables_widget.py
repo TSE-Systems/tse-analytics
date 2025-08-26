@@ -29,9 +29,9 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
 
         messaging.subscribe(self, messaging.DatatableChangedMessage, self._on_datatable_changed)
 
-        self.layout = QVBoxLayout(self)
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
         toolbar = QToolBar(
             "Variables Toolbar",
@@ -54,7 +54,7 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
         toolbar.addAction(QIcon(":/icons/icons8-add-16.png"), "Add").triggered.connect(self._add_variable)
         toolbar.addAction(QIcon(":/icons/icons8-remove-16.png"), "Delete").triggered.connect(self._delete_variable)
 
-        self.layout.addWidget(toolbar)
+        self._layout.addWidget(toolbar)
 
         self.tableView = QTableView(
             self,
@@ -74,7 +74,7 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
         self.tableView.sortByColumn(0, Qt.SortOrder.AscendingOrder)
         self.tableView.setItemDelegateForColumn(2, AggregationComboBoxDelegate(self.tableView))
 
-        self.layout.addWidget(self.tableView)
+        self._layout.addWidget(self.tableView)
 
     def _on_datatable_changed(self, message: messaging.DatatableChangedMessage):
         if message.datatable is None:

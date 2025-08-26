@@ -29,9 +29,9 @@ class PlotWidget(QWidget):
 
         self.datatable = datatable
 
-        self.layout = QVBoxLayout(self)
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
         self.canvas = MplCanvas(self)
 
@@ -49,8 +49,8 @@ class PlotWidget(QWidget):
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add to Report").triggered.connect(self._add_report)
 
-        self.layout.addWidget(toolbar)
-        self.layout.addWidget(self.canvas)
+        self._layout.addWidget(toolbar)
+        self._layout.addWidget(self.canvas)
 
     def clear(self, redraw: bool):
         """

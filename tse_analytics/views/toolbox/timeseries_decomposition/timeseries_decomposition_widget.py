@@ -18,9 +18,9 @@ class TimeseriesDecompositionWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
-        self.layout = QVBoxLayout(self)
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
         self.title = "Decomposition"
 
@@ -71,10 +71,10 @@ class TimeseriesDecompositionWidget(QWidget):
         self.model_combo_box.addItems(["additive", "multiplicative"])
         toolbar.addWidget(self.model_combo_box)
 
-        self.layout.addWidget(toolbar)
+        self._layout.addWidget(toolbar)
 
         self.canvas = MplCanvas(self)
-        self.layout.addWidget(self.canvas)
+        self._layout.addWidget(self.canvas)
 
         plot_toolbar = NavigationToolbar2QT(self.canvas, self)
         plot_toolbar.setIconSize(QSize(16, 16))

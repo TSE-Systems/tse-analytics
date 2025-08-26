@@ -11,6 +11,7 @@ from tse_analytics.modules.intellicage.views.toolbox.place_preference.place_pref
     PlacePreferenceWidget,
 )
 from tse_analytics.modules.intellicage.views.toolbox.transitions.transitions_widget import TransitionsWidget
+from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 from tse_analytics.views.toolbox.actogram.actogram_widget import ActogramWidget
 from tse_analytics.views.toolbox.ancova.ancova_widget import AncovaWidget
 from tse_analytics.views.toolbox.correlation.correlation_widget import CorrelationWidget
@@ -161,7 +162,7 @@ class ToolboxButton(QToolButton):
             dataset: The currently selected dataset.
             datatable: The currently selected datatable, or None if no datatable is selected.
         """
-        if isinstance(dataset, IntelliCageDataset):
+        if isinstance(dataset, IntelliCageDataset) or isinstance(dataset, IntelliMazeDataset):
             self.intellicage_menu.setEnabled(True)
             self.intellicage_transitions_action.setEnabled(datatable is not None and datatable.name == "Visits")
             self.intellicage_place_preference_action.setEnabled(datatable is not None and datatable.name == "Visits")

@@ -17,9 +17,9 @@ class FactorsWidget(QWidget, messaging.MessengerListener):
 
         messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
 
-        self.layout = QVBoxLayout(self)
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
         toolbar = QToolBar(
             "Factors Toolbar",
@@ -31,7 +31,7 @@ class FactorsWidget(QWidget, messaging.MessengerListener):
         self.edit_factors_action.triggered.connect(self._edit_factors)
         self.edit_factors_action.setEnabled(False)
 
-        self.layout.addWidget(toolbar)
+        self._layout.addWidget(toolbar)
 
         proxy_model = QSortFilterProxyModel()
         proxy_model.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
@@ -46,7 +46,7 @@ class FactorsWidget(QWidget, messaging.MessengerListener):
         self.tableView.verticalHeader().setDefaultSectionSize(20)
         self.tableView.setModel(proxy_model)
 
-        self.layout.addWidget(self.tableView)
+        self._layout.addWidget(self.tableView)
 
     def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
         if message.dataset is None:

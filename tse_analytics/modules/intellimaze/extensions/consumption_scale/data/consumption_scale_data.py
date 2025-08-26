@@ -1,9 +1,9 @@
 """
-Consumption Scale extension data handling for IntelliMaze experiments.
+ConsumptionScale extension data handling for IntelliMaze experiments.
 
-This module provides functionality for processing and analyzing data from Consumption Scale devices
+This module provides functionality for processing and analyzing data from ConsumptionScale devices
 in IntelliMaze experiments. It defines the ConsumptionScaleData class which extends the base
-ExtensionData class to handle Consumption Scale specific data.
+ExtensionData class to handle ConsumptionScale specific data.
 """
 
 import pandas as pd
@@ -49,22 +49,7 @@ class ConsumptionScaleData(ExtensionData):
             dataset.devices[EXTENSION_NAME],
         )
 
-    def get_combined_datatable(self) -> Datatable:
-        """
-        Get a combined datatable from the raw data.
-
-        This method processes the raw consumption data to create a datatable suitable for analysis.
-        It performs several preprocessing steps:
-        1. Replaces animal tags with animal IDs
-        2. Converts cumulative consumption values to differential ones
-        3. Renames columns for consistency
-        4. Drops unnecessary columns
-        5. Adds a timedelta column
-        6. Converts types
-
-        Returns:
-            Datatable: A processed datatable containing Consumption Scale data.
-        """
+    def preprocess_data(self) -> None:
         df = self.raw_data["Consumption"].copy()
 
         # Replace animal tags with animal IDs
@@ -130,8 +115,8 @@ class ConsumptionScaleData(ExtensionData):
 
         datatable = Datatable(
             self.dataset,
-            "ConsumptionScale",
-            "ConsumptionScale main table",
+            EXTENSION_NAME,
+            f"{EXTENSION_NAME} main table",
             variables,
             df,
             None,

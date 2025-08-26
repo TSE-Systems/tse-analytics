@@ -1,88 +1,29 @@
-"""
-IntelliCage Data Processing Module.
-
-This module provides the IntelliCageData class for processing raw IntelliCage data
-into structured datatables for analysis.
-"""
-
 import numpy as np
 import pandas as pd
 
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
+from tse_analytics.modules.intellimaze.data.extension_data import ExtensionData
 
 
-class IntelliCageData:
-    """
-    Class for processing and managing IntelliCage experimental data.
+EXTENSION_NAME = "IntelliCage"
 
-    This class handles the raw data from IntelliCage experiments and processes it
-    into structured datatables for visits and nosepokes, which can be used for
-    further analysis.
-    """
 
+class IntelliCageData(ExtensionData):
     def __init__(
         self,
-        dataset: "IntelliCageDataset",
+        dataset: "IntelliMazeDataset",
         name: str,
         raw_data: dict[str, pd.DataFrame],
     ):
-        """
-        Initialize the IntelliCageData object.
-
-        Parameters
-        ----------
-        dataset : IntelliCageDataset
-            The parent dataset that this data belongs to.
-        name : str
-            The name of this data collection.
-        raw_data : dict[str, pd.DataFrame]
-            Dictionary containing raw data from IntelliCage experiments,
-            with keys representing data types and values as pandas DataFrames.
-        """
-        self.dataset = dataset
-        self.name = name
-        self.raw_data = raw_data
-
-        self.device_ids = self.raw_data["HardwareEvents"]["Cage"].unique().tolist()
-        self.device_ids.sort()
-
-    def get_raw_data(self):
-        """
-        Get the raw data dictionary.
-
-        Returns
-        -------
-        dict[str, pd.DataFrame]
-            Dictionary containing raw data from IntelliCage experiments.
-        """
-        return self.raw_data
-
-    def get_device_ids(self):
-        """
-        Get the list of device IDs (cage identifiers) in the dataset.
-
-        Returns
-        -------
-        list
-            List of unique device IDs sorted in ascending order.
-        """
-        return self.device_ids
+        super().__init__(
+            dataset,
+            name,
+            raw_data,
+            dataset.devices[EXTENSION_NAME],
+        )
 
     def preprocess_data(self) -> None:
-        """
-        Process raw IntelliCage data into structured datatables.
-
-        This method processes the raw data into two datatables:
-        1. Visits datatable - containing information about animal visits to corners
-        2. Nosepokes datatable - containing information about animal nosepokes
-
-        Both datatables are added to the parent dataset for further analysis.
-
-        Returns
-        -------
-        None
-        """
         visits_datatable = self._get_visits_datatable()
         self.dataset.add_datatable(visits_datatable)
 
@@ -143,21 +84,13 @@ class IntelliCageData:
         )
 
         # Add temperature and illumination
-        if self.dataset.metadata["data_descriptor"]["Version"] == "Version1":
-            df = pd.merge_asof(
-                df,
-                self.raw_data["Environment"],
-                on="DateTime",
-                direction="nearest",
-            )
-        else:
-            df = pd.merge_asof(
-                df,
-                self.raw_data["Environment"],
-                on="DateTime",
-                by="Cage",
-                direction="nearest",
-            )
+        df = pd.merge_asof(
+            df,
+            self.raw_data["Environment"],
+            on="DateTime",
+            by="DeviceId",
+            direction="nearest",
+        )
 
         variables = {
             "VisitNumber": Variable(
@@ -337,21 +270,13 @@ class IntelliCageData:
         )
 
         # Add temperature and illumination
-        if self.dataset.metadata["data_descriptor"]["Version"] == "Version1":
-            df = pd.merge_asof(
-                df,
-                self.raw_data["Environment"],
-                on="DateTime",
-                direction="nearest",
-            )
-        else:
-            df = pd.merge_asof(
-                df,
-                self.raw_data["Environment"],
-                on="DateTime",
-                by="Cage",
-                direction="nearest",
-            )
+        df = pd.merge_asof(
+            df,
+            self.raw_data["Environment"],
+            on="DateTime",
+            by="DeviceId",
+            direction="nearest",
+        )
 
         variables = {
             "NosepokeNumber": Variable(
@@ -434,17 +359,15 @@ class IntelliCageData:
                 Aggregation.SUM,
                 False,
             ),
-        }
-
-        if self.dataset.metadata["data_descriptor"]["Version"] != "Version1":
-            visits_datatable.variables["LicksContactTime"] = Variable(
+            "LicksContactTime": Variable(
                 "LickContactTime",
                 "sec",
                 "Lick contact time",
                 "float64",
                 Aggregation.SUM,
                 False,
-            )
+            ),
+        }
 
         # Sort variables by name
         variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))
@@ -457,27 +380,16 @@ class IntelliCageData:
         df.insert(loc=2, column="Timedelta", value=df["DateTime"] - experiment_started)
 
         # Add nosepoke-related columns to visits dataframe
-        if self.dataset.metadata["data_descriptor"]["Version"] == "Version1":
-            grouped_by_visit = df.groupby("VisitID").aggregate(
-                NosepokesNumber=("VisitID", "size"),
-                NosepokesDuration=("NosepokeDuration", "sum"),
-                LicksNumber=("LickNumber", "sum"),
-                LicksDuration=("LickDuration", "sum"),
-                SideErrors=("SideError", "sum"),
-                TimeErrors=("TimeError", "sum"),
-                ConditionErrors=("ConditionError", "sum"),
-            )
-        else:
-            grouped_by_visit = df.groupby("VisitID").aggregate(
-                NosepokesNumber=("VisitID", "size"),
-                NosepokesDuration=("NosepokeDuration", "sum"),
-                LicksNumber=("LickNumber", "sum"),
-                LicksContactTime=("LickContactTime", "sum"),
-                LicksDuration=("LickDuration", "sum"),
-                SideErrors=("SideError", "sum"),
-                TimeErrors=("TimeError", "sum"),
-                ConditionErrors=("ConditionError", "sum"),
-            )
+        grouped_by_visit = df.groupby("VisitID").aggregate(
+            NosepokesNumber=("VisitID", "size"),
+            NosepokesDuration=("NosepokeDuration", "sum"),
+            LicksNumber=("LickNumber", "sum"),
+            LicksContactTime=("LickContactTime", "sum"),
+            LicksDuration=("LickDuration", "sum"),
+            SideErrors=("SideError", "sum"),
+            TimeErrors=("TimeError", "sum"),
+            ConditionErrors=("ConditionError", "sum"),
+        )
         visits_datatable.original_df = visits_datatable.original_df.join(grouped_by_visit, on="VisitID")
         visits_datatable.refresh_active_df()
 
@@ -538,17 +450,15 @@ class IntelliCageData:
                 Aggregation.SUM,
                 False,
             ),
-        }
-
-        if self.dataset.metadata["data_descriptor"]["Version"] != "Version1":
-            visits_datatable.variables["LicksContactTime"] = Variable(
+            "LicksContactTime": Variable(
                 "LicksContactTime",
                 "sec",
                 "Licks contact time",
                 "float64",
                 Aggregation.SUM,
                 False,
-            )
+            ),
+        }
 
         # Sort visits variables by name
         visits_datatable.variables = dict(sorted(visits_datatable.variables.items(), key=lambda x: x[0].lower()))
@@ -573,3 +483,81 @@ class IntelliCageData:
         )
 
         return datatable
+
+    def get_csv_data(
+        self,
+        export_registrations: bool,
+        export_variables: bool,
+    ) -> tuple[str, dict[str, pd.DataFrame]]:
+        """
+        Get CSV data for export.
+
+        This method prepares data for export to CSV format. It can export both
+        registration data (sessions) and variable data.
+
+        Args:
+            export_registrations (bool): Whether to export registration data.
+            export_variables (bool): Whether to export variable data.
+
+        Returns:
+            tuple[str, dict[str, pd.DataFrame]]: A tuple containing the extension name and a dictionary
+                mapping data types to DataFrames ready for CSV export.
+        """
+        result: dict[str, pd.DataFrame] = {}
+
+        tag_to_animal_map = self.dataset.get_tag_to_name_map()
+
+        if export_registrations:
+            visits_data: dict[str, list | str] = {
+                "DateTime": [],
+                "DeviceType": EXTENSION_NAME,
+                "DeviceId": [],
+                "AnimalName": [],
+                "AnimalTag": [],
+                "TableType": "Visits",
+                "ModuleName": [],
+                "Start": [],
+                "End": [],
+                "Duration": [],
+                "Corner": [],
+                "CornerCondition": [],
+                "PlaceError": [],
+                "AntennaNumber": [],
+                "AntennaDuration": [],
+                "PresenceNumber": [],
+                "PresenceDuration": [],
+                "VisitSolution": [],
+                "LickNumber": [],
+                "LickContactTime": [],
+                "LickDuration": [],
+            }
+
+            for row in self.raw_data["Visits"].itertuples():
+                visits_data["DateTime"].append(row.Start)
+                visits_data["DeviceId"].append(row.DeviceId)
+                visits_data["AnimalName"].append(tag_to_animal_map[row.AnimalTag])
+                visits_data["AnimalTag"].append(row.AnimalTag)
+
+                visits_data["ModuleName"].append(row.ModuleName)
+                visits_data["Start"].append(row.Start)
+                visits_data["End"].append(row.End)
+                visits_data["Duration"].append((row.End - row.Start).total_seconds())
+                visits_data["Corner"].append(row.Corner)
+                visits_data["CornerCondition"].append(row.CornerCondition)
+                visits_data["PlaceError"].append(row.PlaceError)
+                visits_data["AntennaNumber"].append(row.AntennaNumber)
+                visits_data["AntennaDuration"].append(row.AntennaDuration)
+                visits_data["PresenceNumber"].append(row.PresenceNumber)
+                visits_data["PresenceDuration"].append(row.PresenceDuration)
+                visits_data["VisitSolution"].append(row.VisitSolution)
+                visits_data["LickNumber"].append(row.LickNumber)
+                visits_data["LickContactTime"].append(row.LickContactTime)
+                visits_data["LickDuration"].append(row.LickDuration)
+
+            result["Visits"] = pd.DataFrame(visits_data)
+
+        if export_variables:
+            variables_csv_data = self.get_variables_csv_data(EXTENSION_NAME, tag_to_animal_map)
+            result.update(variables_csv_data)
+
+        return EXTENSION_NAME, result

@@ -24,9 +24,9 @@ class PcaWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
-        self.layout = QVBoxLayout(self)
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
         self.title = "PCA"
 
@@ -62,10 +62,10 @@ class PcaWidget(QWidget):
         toolbar.addWidget(self.group_by_selector)
 
         # Insert toolbar to the widget
-        self.layout.addWidget(toolbar)
+        self._layout.addWidget(toolbar)
 
         self.canvas = MplCanvas(self)
-        self.layout.addWidget(self.canvas)
+        self._layout.addWidget(self.canvas)
 
         plot_toolbar = NavigationToolbar2QT(self.canvas, self)
         plot_toolbar.setIconSize(QSize(16, 16))

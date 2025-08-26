@@ -72,9 +72,9 @@ class LogWidget(QWidget):
         """
         super().__init__(parent)
 
-        self.layout = QVBoxLayout(self)
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
         self.toolbar = QToolBar(
             "Log Toolbar",
@@ -84,7 +84,7 @@ class LogWidget(QWidget):
 
         self.toolbar.addAction(QIcon(":/icons/icons8-erase-16.png"), "Clear log").triggered.connect(self._clear_log)
 
-        self.layout.addWidget(self.toolbar)
+        self._layout.addWidget(self.toolbar)
 
         self.text_edit = QTextEdit(
             self,
@@ -99,7 +99,7 @@ class LogWidget(QWidget):
             enqueue=True,
             format="{message}",
         )
-        self.layout.addWidget(self.text_edit)
+        self._layout.addWidget(self.text_edit)
 
     def _clear_log(self):
         """

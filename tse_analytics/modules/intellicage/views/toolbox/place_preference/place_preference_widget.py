@@ -20,9 +20,9 @@ class PlacePreferenceWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
-        self.layout = QVBoxLayout(self)
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
         self.title = "Place Preference"
 
@@ -60,10 +60,10 @@ class PlacePreferenceWidget(QWidget):
         self.export_excel_action.setEnabled(False)
 
         # Insert the toolbar to the widget
-        self.layout.addWidget(toolbar)
+        self._layout.addWidget(toolbar)
 
         self.tab_widget = QTabWidget()
-        self.layout.addWidget(self.tab_widget)
+        self._layout.addWidget(self.tab_widget)
 
         self.visit_counts_plot_widget = PlotWidget(self.datatable)
         self.tab_widget.addTab(self.visit_counts_plot_widget, "Visit Counts")

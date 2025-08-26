@@ -11,11 +11,13 @@ from matplotlib.axes import Axes
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.figure import Figure
+from pyqttoast import ToastPreset
 from scipy.stats import chi2
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Animal
+from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.views.general.pdf.pdf_widget import PdfWidget
 from tse_analytics.views.misc.MplCanvas import MplCanvas
@@ -26,9 +28,9 @@ class TransitionsWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
-        self.layout = QVBoxLayout(self)
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
         self.title = "Transitions"
 
@@ -50,10 +52,10 @@ class TransitionsWidget(QWidget):
         toolbar.addWidget(self.animalSelector)
 
         # Insert toolbar to the widget
-        self.layout.addWidget(toolbar)
+        self._layout.addWidget(toolbar)
 
         self.canvas = MplCanvas(self)
-        self.layout.addWidget(self.canvas)
+        self._layout.addWidget(self.canvas)
 
         plot_toolbar = NavigationToolbar2QT(self.canvas, self)
         plot_toolbar.setIconSize(QSize(16, 16))
@@ -92,6 +94,17 @@ class TransitionsWidget(QWidget):
         fig: Figure,
     ) -> None:
         df = df[df["Animal"] == animal.id].copy()
+        if df.empty:
+            make_toast(
+                self,
+                self.title,
+                "No visits were recorded for this animal.",
+                duration=2000,
+                preset=ToastPreset.INFORMATION,
+                show_duration_bar=True,
+            ).show()
+            return
+
         df.reset_index(drop=True, inplace=True)
 
         # Sort by timestamp to get the sequence of visits

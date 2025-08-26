@@ -39,9 +39,9 @@ class ActogramWidget(QWidget):
         """
         super().__init__(parent)
 
-        self.layout = QVBoxLayout(self)
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
         self.title = "Actogram"
 
@@ -72,10 +72,10 @@ class ActogramWidget(QWidget):
         self.toolbar.addWidget(self.bins_spin_box)
 
         # Insert toolbar to the widget
-        self.layout.addWidget(self.toolbar)
+        self._layout.addWidget(self.toolbar)
 
         self.canvas = FigureCanvasQTAgg(None)
-        self.layout.addWidget(self.canvas)
+        self._layout.addWidget(self.canvas)
 
         self.spacer_action = QWidgetAction(self.toolbar)
         self.spacer_action.setDefaultWidget(get_h_spacer_widget(self.toolbar))
@@ -159,7 +159,7 @@ class ActogramWidget(QWidget):
         canvas = FigureCanvasQTAgg(fig)
         # canvas.updateGeometry()
         canvas.draw()
-        self.layout.replaceWidget(self.canvas, canvas)
+        self._layout.replaceWidget(self.canvas, canvas)
 
         # Cleanup
         self.canvas.figure.clear()

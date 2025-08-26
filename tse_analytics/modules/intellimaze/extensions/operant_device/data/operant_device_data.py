@@ -5,13 +5,13 @@ from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.modules.intellimaze.data.extension_data import ExtensionData
 
 
-EXTENSION_NAME = "RunningWheel"
+EXTENSION_NAME = "OperantDevice"
 
 
-class RunningWheelData(ExtensionData):
+class OperantDeviceData(ExtensionData):
     def __init__(
         self,
-        dataset,
+        dataset: "IntelliMazeDataset",
         name: str,
         raw_data: dict[str, pd.DataFrame],
     ):
@@ -23,26 +23,19 @@ class RunningWheelData(ExtensionData):
         )
 
     def preprocess_data(self) -> None:
-        df = self.raw_data["Registration"].copy()
+        df = self.raw_data["Sessions"].copy()
 
         # Replace animal tags with animal IDs
         tag_to_animal_map = self.dataset.get_tag_to_name_map()
         df["Animal"] = df["Tag"].replace(tag_to_animal_map)
 
-        # Convert cumulative values to differential ones
-        preprocessed_device_df = []
-        device_ids = df["DeviceId"].unique().tolist()
-        for i, device_id in enumerate(device_ids):
-            device_data = df[df["DeviceId"] == device_id]
-            device_data["Left"] = device_data["Left"].diff().fillna(df["Left"])
-            device_data["Right"] = device_data["Right"].diff().fillna(df["Right"])
-            preprocessed_device_df.append(device_data)
-        df = pd.concat(preprocessed_device_df, ignore_index=True, sort=False)
+        # Add duration column
+        df["Duration"] = (df["End"] - df["Start"]).dt.total_seconds()
 
         # Rename columns
         df.rename(
             columns={
-                "Time": "DateTime",
+                "Start": "DateTime",
             },
             inplace=True,
         )
@@ -50,31 +43,28 @@ class RunningWheelData(ExtensionData):
         # Drop the non-necessary columns
         df.drop(
             columns=[
+                "End",
                 "DeviceId",
                 "Tag",
-                "Reset",
             ],
             inplace=True,
         )
 
-        # Remove records without animal assignment
-        df.dropna(subset=["Animal"], inplace=True)
-
         variables = {
-            "Left": Variable(
-                "Left",
-                "count",
-                "RunningWheel left rotations counter",
-                "int64",
+            "Duration": Variable(
+                "Duration",
+                "sec",
+                "AnimalGate session duration",
+                "float64",
                 Aggregation.SUM,
                 False,
             ),
-            "Right": Variable(
-                "Right",
-                "count",
-                "RunningWheel right rotations counter",
-                "int64",
-                Aggregation.SUM,
+            "Weight": Variable(
+                "Weight",
+                "g",
+                "AnimalGate weight",
+                "float64",
+                Aggregation.MEAN,
                 False,
             ),
         }
@@ -89,6 +79,7 @@ class RunningWheelData(ExtensionData):
         # Convert types
         df = df.astype({
             "Animal": "category",
+            "Direction": "category",
         })
 
         datatable = Datatable(
@@ -107,6 +98,20 @@ class RunningWheelData(ExtensionData):
         export_registrations: bool,
         export_variables: bool,
     ) -> tuple[str, dict[str, pd.DataFrame]]:
+        """
+        Get CSV data for export.
+
+        This method prepares data for export to CSV format. It can export both
+        registration data (sessions) and variable data.
+
+        Args:
+            export_registrations (bool): Whether to export registration data.
+            export_variables (bool): Whether to export variable data.
+
+        Returns:
+            tuple[str, dict[str, pd.DataFrame]]: A tuple containing the extension name and a dictionary
+                mapping data types to DataFrames ready for CSV export.
+        """
         result: dict[str, pd.DataFrame] = {}
 
         tag_to_animal_map = self.dataset.get_tag_to_name_map()
@@ -118,23 +123,31 @@ class RunningWheelData(ExtensionData):
                 "DeviceId": [],
                 "AnimalName": [],
                 "AnimalTag": [],
-                "TableType": "Registration",
-                "Left": [],
-                "Right": [],
-                "Reset": [],
+                "TableType": "Sessions",
+                "Direction": [],
+                "Start": [],
+                "End": [],
+                "Duration": [],
+                "Weight": [],
+                "IdSectionVisited": [],
+                "StandbySectionVisited": [],
             }
 
-            for row in self.raw_data["Registration"].itertuples():
-                data["DateTime"].append(row.Time)
+            for row in self.raw_data["Sessions"].itertuples():
+                data["DateTime"].append(row.End if row.Direction == "Out" else row.Start)
                 data["DeviceId"].append(row.DeviceId)
                 data["AnimalName"].append(tag_to_animal_map[row.Tag] if row.Tag == row.Tag else "")
                 data["AnimalTag"].append(row.Tag if row.Tag == row.Tag else "")
 
-                data["Left"].append(row.Left)
-                data["Right"].append(row.Right)
-                data["Reset"].append(row.Reset)
+                data["Direction"].append(row.Direction)
+                data["Start"].append(row.Start)
+                data["End"].append(row.End)
+                data["Duration"].append((row.End - row.Start).total_seconds())
+                data["Weight"].append(row.Weight)
+                data["IdSectionVisited"].append(row.IdSectionVisited)
+                data["StandbySectionVisited"].append(row.StandbySectionVisited)
 
-            result["Registration"] = pd.DataFrame(data)
+            result["Sessions"] = pd.DataFrame(data)
 
         if export_variables:
             variables_csv_data = self.get_variables_csv_data(EXTENSION_NAME, tag_to_animal_map)

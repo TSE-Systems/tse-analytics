@@ -49,9 +49,9 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         """
         super().__init__(parent)
 
-        self.layout = QVBoxLayout(self)
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
         self.datatable = datatable
         self.split_mode = SplitMode.ANIMAL
@@ -89,14 +89,14 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         self.error_type_action.setVisible(False)
 
         # Insert toolbar to the widget
-        self.layout.addWidget(toolbar)
+        self._layout.addWidget(toolbar)
 
         self.timelinePlotView = TimelinePlotView(self)
-        self.layout.addWidget(self.timelinePlotView)
+        self._layout.addWidget(self.timelinePlotView)
 
         self.barPlotView = BarPlotView(self)
         self.barPlotView.hide()
-        self.layout.addWidget(self.barPlotView)
+        self._layout.addWidget(self.barPlotView)
 
         plot_toolbar = NavigationToolbar2QT(self.barPlotView.canvas, self)
         plot_toolbar.setIconSize(QSize(16, 16))
@@ -276,7 +276,7 @@ class DataPlotWidget(QWidget, messaging.MessengerListener):
         # Calculate error for timeline plot
         if calculate_errors is not None:
             result["Error"] = result[variable.name]
-            result["Error"] = calculate_errors
+            aggregation["Error"] = calculate_errors
 
         result = result.groupby(by, dropna=False, observed=False).aggregate(aggregation)
         result.reset_index(inplace=True)

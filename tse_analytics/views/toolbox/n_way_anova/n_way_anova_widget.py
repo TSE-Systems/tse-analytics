@@ -20,9 +20,9 @@ class NWayAnovaWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
-        self.layout = QVBoxLayout(self)
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
         self.title = "N-way ANOVA"
 
@@ -93,7 +93,7 @@ class NWayAnovaWidget(QWidget):
         self.settings_widget_ui.comboBoxEffectSizeType.setCurrentText("Hedges g")
 
         # Insert toolbar to the widget
-        self.layout.addWidget(toolbar)
+        self._layout.addWidget(toolbar)
 
         self.textEdit = QTextEdit(
             toolbar,
@@ -102,7 +102,7 @@ class NWayAnovaWidget(QWidget):
             lineWrapMode=QTextEdit.LineWrapMode.NoWrap,
         )
         self.textEdit.document().setDefaultStyleSheet(style_descriptive_table)
-        self.layout.addWidget(self.textEdit)
+        self._layout.addWidget(self.textEdit)
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add to Report").triggered.connect(self._add_report)
