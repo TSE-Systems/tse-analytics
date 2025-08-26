@@ -1,7 +1,7 @@
 TSE Analytics Change Log
 ====================================================================================================
 
-# 1.5.3 (2025-07-16)
+# 1.5.3 (2025-08-26)
 
 - New: Custom variables originated from expressions.
 - New: Support for IntelliMaze Actor extension.
