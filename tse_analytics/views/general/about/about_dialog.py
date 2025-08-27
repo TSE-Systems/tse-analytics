@@ -1,4 +1,5 @@
 import importlib.metadata
+from pathlib import Path
 
 from PySide6.QtWidgets import QDialog, QWidget
 
@@ -32,3 +33,13 @@ class AboutDialog(QDialog, Ui_AboutDialog):
 
         version = importlib.metadata.version("tse-analytics")
         self.labelVersion.setText(f"Version {version}")
+
+        path = Path(__file__).parent
+        with open(path / "about.md", "r") as f:
+            self.textBrowserAbout.setMarkdown(f.read())
+
+        with open(path / "license.md", "r") as f:
+            self.textBrowserLicense.setMarkdown(f.read())
+
+        with open(path / "libraries.md", "r") as f:
+            self.textBrowserLibraries.setMarkdown(f.read())

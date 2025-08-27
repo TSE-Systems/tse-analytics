@@ -9,6 +9,7 @@ datas = [
     ('../docs', 'docs'),
     ('../tse_analytics/styles', 'styles'),
     ('../tse_analytics/resources_rc.py', '.'),
+    ('../tse_analytics/views/general/about/*.md', 'tse_analytics/views/general/about'),
 ]
 
 datas += copy_metadata('numpy')

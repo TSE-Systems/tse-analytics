@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QComboBox, QFileDialog, QFontComboBox, QToolBar, Q
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.styles.css import style_descriptive_table
-from tse_analytics.views.toolbox.reports.reports_widget_ui import Ui_ReportsWidget
+from tse_analytics.toolbox.reports.reports_widget_ui import Ui_ReportsWidget
 
 FONT_SIZES = [
     7,

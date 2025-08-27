@@ -13,8 +13,8 @@ from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import p
 from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_h_spacer_widget
-from tse_analytics.views.toolbox.data_plot.bar_plot_view import BarPlotView
-from tse_analytics.views.toolbox.data_plot.timeline_plot_view import TimelinePlotView
+from tse_analytics.toolbox.data_plot.bar_plot_view import BarPlotView
+from tse_analytics.toolbox.data_plot.timeline_plot_view import TimelinePlotView
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 

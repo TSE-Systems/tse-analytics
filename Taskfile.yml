@@ -15,6 +15,7 @@ tasks:
   build-ui:
     deps:
       - build-ui:views
+      - build-ui:toolbox
       - build-ui:phenomaster
       - build-ui:intellicage
       - build-ui:intellimaze
@@ -30,11 +31,14 @@ tasks:
       - pyside6-uic tse_analytics/views/general/settings/binning_settings_widget.ui -o tse_analytics/views/general/settings/binning_settings_widget_ui.py
       - pyside6-uic tse_analytics/views/general/about/about_dialog.ui -o tse_analytics/views/general/about/about_dialog_ui.py
       - pyside6-uic tse_analytics/views/general/settings/settings_dialog.ui -o tse_analytics/views/general/settings/settings_dialog_ui.py
-      - pyside6-uic tse_analytics/views/toolbox/n_way_anova/n_way_anova_settings_widget.ui -o tse_analytics/views/toolbox/n_way_anova/n_way_anova_settings_widget_ui.py
-      - pyside6-uic tse_analytics/views/toolbox/rm_anova/rm_anova_settings_widget.ui -o tse_analytics/views/toolbox/rm_anova/rm_anova_settings_widget_ui.py
-      - pyside6-uic tse_analytics/views/toolbox/mixed_anova/mixed_anova_settings_widget.ui -o tse_analytics/views/toolbox/mixed_anova/mixed_anova_settings_widget_ui.py
-      - pyside6-uic tse_analytics/views/toolbox/ancova/ancova_settings_widget.ui -o tse_analytics/views/toolbox/ancova/ancova_settings_widget_ui.py
-      - pyside6-uic tse_analytics/views/toolbox/reports/reports_widget.ui -o tse_analytics/views/toolbox/reports/reports_widget_ui.py
+
+  build-ui:toolbox:
+    cmds:
+      - pyside6-uic tse_analytics/toolbox/n_way_anova/n_way_anova_settings_widget.ui -o tse_analytics/toolbox/n_way_anova/n_way_anova_settings_widget_ui.py
+      - pyside6-uic tse_analytics/toolbox/rm_anova/rm_anova_settings_widget.ui -o tse_analytics/toolbox/rm_anova/rm_anova_settings_widget_ui.py
+      - pyside6-uic tse_analytics/toolbox/mixed_anova/mixed_anova_settings_widget.ui -o tse_analytics/toolbox/mixed_anova/mixed_anova_settings_widget_ui.py
+      - pyside6-uic tse_analytics/toolbox/ancova/ancova_settings_widget.ui -o tse_analytics/toolbox/ancova/ancova_settings_widget_ui.py
+      - pyside6-uic tse_analytics/toolbox/reports/reports_widget.ui -o tse_analytics/toolbox/reports/reports_widget_ui.py
 
   build-ui:phenomaster:
     cmds:
