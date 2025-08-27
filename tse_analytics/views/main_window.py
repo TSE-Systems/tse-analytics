@@ -271,7 +271,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                             manager.import_csv_dataset(path)
                     case ".tse":
                         dialog = ImportTseDialog(path, self)
-                        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
                         # TODO: check other cases!!
                         if dialog.exec() == QDialog.DialogCode.Accepted:
                             import_settings = dialog.get_import_settings()
