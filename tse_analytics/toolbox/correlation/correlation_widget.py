@@ -1,10 +1,13 @@
+import pandas as pd
 import pingouin as pg
+import statsmodels.api as sm
 import seaborn as sns
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QSplitter, QTextEdit, QWidgetAction
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from scipy.stats import pearsonr
 
 from tse_analytics.core import messaging, color_manager
 from tse_analytics.core.data.datatable import Datatable
@@ -136,8 +139,29 @@ class CorrelationWidget(QWidget):
         self.toolbar.removeAction(self.plot_toolbar_action)
         self._add_plot_toolbar()
 
-        t_test = pg.ttest(df[x_var.name], df[y_var.name])
-        corr = pg.pairwise_corr(data=df, columns=[x_var.name, y_var.name], method="pearson")
+        # t_test = pg.ttest(df[x_var.name], df[y_var.name])
+        t_value, p_value, dof = sm.stats.ttest_ind(df[x_var.name], df[y_var.name])
+        t_test_df = pd.DataFrame(
+            [
+                {
+                    "T-value": t_value,
+                    "p-value": p_value,
+                    "Degrees of freedom": dof,
+                }
+            ],
+        )
+
+        pearson_coeff, pearson_p_value = pearsonr(df[x_var.name], df[y_var.name])
+        corr_df = pd.DataFrame(
+            [
+                {
+                    "Correlation coefficient": pearson_coeff,
+                    "p-value": pearson_p_value,
+                }
+            ],
+        )
+
+        # corr = pg.pairwise_corr(data=df, columns=[x_var.name, y_var.name], method="pearson")
 
         html_template = """
             <h2>t-test</h2>
@@ -147,8 +171,8 @@ class CorrelationWidget(QWidget):
             """
 
         html = html_template.format(
-            t_test=t_test.to_html(),
-            corr=corr.to_html(),
+            t_test=t_test_df.to_html(index=False),
+            corr=corr_df.to_html(index=False),
         )
         self.textEdit.document().setHtml(html)
 

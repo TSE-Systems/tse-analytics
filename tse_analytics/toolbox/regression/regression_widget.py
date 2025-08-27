@@ -1,4 +1,4 @@
-import pingouin as pg
+import statsmodels.api as sm
 import seaborn as sns
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
@@ -142,7 +142,7 @@ class RegressionWidget(QWidget):
                     output = (
                         output
                         + f"<h3>Animal: {animal}</h3>"
-                        + pg.linear_regression(data[covariate.name], data[response.name], remove_na=True).to_html()
+                        + sm.OLS(df[response.name], df[covariate.name], missing="drop").fit().summary2().as_html()
                     )
             case SplitMode.FACTOR:
                 output = ""
@@ -151,7 +151,7 @@ class RegressionWidget(QWidget):
                     output = (
                         output
                         + f"<h3>Level: {level}</h3>"
-                        + pg.linear_regression(data[covariate.name], data[response.name], remove_na=True).to_html()
+                        + sm.OLS(df[response.name], df[covariate.name], missing="drop").fit().summary2().as_html()
                     )
             case SplitMode.RUN:
                 output = ""
@@ -160,10 +160,11 @@ class RegressionWidget(QWidget):
                     output = (
                         output
                         + f"<h3>Run: {run}</h3>"
-                        + pg.linear_regression(data[covariate.name], data[response.name], remove_na=True).to_html()
+                        + sm.OLS(df[response.name], df[covariate.name], missing="drop").fit().summary2().as_html()
                     )
             case _:
-                output = pg.linear_regression(df[covariate.name], df[response.name], remove_na=True).to_html()
+                output = sm.OLS(df[response.name], df[covariate.name], missing="drop").fit().summary2().as_html()
+                # output = pg.linear_regression(df[covariate.name], df[response.name], remove_na=True).to_html()
 
         html_template = """
                 <h2>Linear Regression</h2>

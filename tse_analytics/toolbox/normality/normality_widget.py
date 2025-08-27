@@ -1,4 +1,4 @@
-import pingouin as pg
+import statsmodels.api as sm
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QToolBar, QVBoxLayout, QLabel
@@ -89,9 +89,10 @@ class NormalityWidget(QWidget):
                 nrows, ncols = self._get_plot_layout(len(animals))
                 for index, animal in enumerate(animals):
                     ax = self.canvas.figure.add_subplot(nrows, ncols, index + 1)
-                    pg.qqplot(
+                    sm.qqplot(
                         df[df["Animal"] == animal][variable.name],
-                        dist="norm",
+                        fit=True,
+                        line="45",
                         marker=".",
                         ax=ax,
                     )
@@ -104,9 +105,10 @@ class NormalityWidget(QWidget):
                     if level != level:
                         continue
                     ax = self.canvas.figure.add_subplot(nrows, ncols, index + 1)
-                    pg.qqplot(
+                    sm.qqplot(
                         df[df[selected_factor_name] == level][variable.name],
-                        dist="norm",
+                        fit=True,
+                        line="45",
                         marker=".",
                         ax=ax,
                     )
@@ -116,18 +118,20 @@ class NormalityWidget(QWidget):
                 nrows, ncols = self._get_plot_layout(len(runs))
                 for index, run in enumerate(runs):
                     ax = self.canvas.figure.add_subplot(nrows, ncols, index + 1)
-                    pg.qqplot(
+                    sm.qqplot(
                         df[df["Run"] == run][variable.name],
-                        dist="norm",
+                        fit=True,
+                        line="45",
                         marker=".",
                         ax=ax,
                     )
                     ax.set_title(f"Run: {run}")
             case SplitMode.TOTAL:
                 ax = self.canvas.figure.add_subplot(1, 1, 1)
-                pg.qqplot(
+                sm.qqplot(
                     df[variable.name],
-                    dist="norm",
+                    fit=True,
+                    line="45",
                     marker=".",
                     ax=ax,
                 )
