@@ -169,6 +169,13 @@ class AncovaWidget(QWidget):
             between=factor_name,
         ).round(5)
 
+        ancova_new = pg.ancova(
+            data=df,
+            dv=dependent_variable_name,
+            covar=selected_covariates,
+            between=factor_name,
+        ).round(5)
+
         pairwise_tests = pg.pairwise_tests(
             data=df,
             dv=dependent_variable_name,
@@ -182,6 +189,8 @@ class AncovaWidget(QWidget):
                         <h1>Factor: {factor_name}</h1>
                         <h2>ANCOVA</h2>
                         {ancova}
+                        <h2>ANCOVA (NEW)</h2>
+                        {ancova_new}
                         <h2>Pairwise post-hoc tests</h2>
                         {pairwise_tests}
                         """
@@ -189,6 +198,7 @@ class AncovaWidget(QWidget):
         html = html_template.format(
             factor_name=factor_name,
             ancova=ancova.to_html(),
+            ancova_new=ancova_new.to_html(),
             pairwise_tests=pairwise_tests.to_html(),
         )
         self.textEdit.document().setHtml(html)

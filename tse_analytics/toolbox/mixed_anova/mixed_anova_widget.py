@@ -13,6 +13,8 @@ from tse_analytics.core.utils import get_widget_tool_button, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.toolbox.mixed_anova.mixed_anova_settings_widget_ui import Ui_MixedAnovaSettingsWidget
+from tse_analytics.toolbox.mixed_anova.processor import mixed_anova_manual, posthoc_tests
+from tse_analytics.toolbox.rm_anova.processor import mauchly_test
 from tse_analytics.views.misc.factor_selector import FactorSelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
@@ -163,6 +165,8 @@ class MixedAnovaWidget(QWidget):
             subject="Animal",
         ).round(5)
 
+        anova_new = mixed_anova_manual(df, 'Animal', factor_name, 'Bin', dependent_variable_name).round(5)
+
         spher, W, chisq, dof, pval = pg.sphericity(
             data=df,
             dv=dependent_variable_name,
@@ -174,6 +178,8 @@ class MixedAnovaWidget(QWidget):
             [[spher, W, chisq, dof, pval]],
             columns=["Sphericity", "W", "Chi-square", "DOF", "p-value"],
         ).round(5)
+
+        sphericity_new = mauchly_test(df, dependent_variable_name, "Bin", "Animal").to_frame().round(5)
 
         if do_pairwise_tests:
             effsize = self.eff_size[self.settings_widget_ui.comboBoxEffectSizeType.currentText()]
@@ -193,15 +199,21 @@ class MixedAnovaWidget(QWidget):
             html_template = """
                                         <h2>Sphericity test</h2>
                                         {sphericity}
+                                        <h2>Sphericity test (NEW)</h2>
+                                        {sphericity_new}
                                         <h2>Mixed-design ANOVA</h2>
                                         {anova}
+                                        <h2>Mixed-design ANOVA (NEW)</h2>
+                                        {anova_new}
                                         <h2>Pairwise post-hoc tests</h2>
                                         {pairwise_tests}
                                         """
 
             html = html_template.format(
                 sphericity=sphericity.to_html(),
+                sphericity_new=sphericity_new.to_html(),
                 anova=anova.to_html(),
+                anova_new=anova_new.to_html(),
                 pairwise_tests=pairwise_tests.to_html(),
             )
         else:

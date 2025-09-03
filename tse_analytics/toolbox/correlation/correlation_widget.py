@@ -1,5 +1,4 @@
 import pandas as pd
-import pingouin as pg
 import statsmodels.api as sm
 import seaborn as sns
 from PySide6.QtCore import QSize, Qt
@@ -164,9 +163,9 @@ class CorrelationWidget(QWidget):
         # corr = pg.pairwise_corr(data=df, columns=[x_var.name, y_var.name], method="pearson")
 
         html_template = """
-            <h2>t-test</h2>
+            <h2>T-test</h2>
             {t_test}
-            <h2>Pearson correlation</h2>
+            <h2>Pearson Correlation</h2>
             {corr}
             """
 

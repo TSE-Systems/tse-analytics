@@ -1,17 +1,20 @@
-import pingouin as pg
+import pandas as pd
+import scikit_posthocs as sp
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QTextEdit, QComboBox
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QTextEdit
 from pyqttoast import ToastPreset
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
+from statsmodels.stats.oneway import anova_oneway
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
-from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
+from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.styles.css import style_descriptive_table
+from tse_analytics.toolbox.one_way_anova.processor import normality_test, homoscedasticity_test
 from tse_analytics.views.misc.factor_selector import FactorSelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
@@ -47,22 +50,6 @@ class OneWayAnovaWidget(QWidget):
         self.factor_selector = FactorSelector(toolbar)
         self.factor_selector.set_data(self.datatable.dataset.factors, add_empty_item=False)
         toolbar.addWidget(self.factor_selector)
-
-        self.eff_size = {
-            "No effect size": "none",
-            "Unbiased Cohen d": "cohen",
-            "Hedges g": "hedges",
-            # "Pearson correlation coefficient": "r",
-            "Eta-square": "eta-square",
-            "Odds ratio": "odds-ratio",
-            "Area Under the Curve": "AUC",
-            "Common Language Effect Size": "CLES",
-        }
-        toolbar.addWidget(QLabel("Effect size type:"))
-        self.comboBoxEffectSizeType = QComboBox(toolbar)
-        self.comboBoxEffectSizeType.addItems(self.eff_size.keys())
-        self.comboBoxEffectSizeType.setCurrentText("Hedges g")
-        toolbar.addWidget(self.comboBoxEffectSizeType)
 
         # Insert toolbar to the widget
         self._layout.addWidget(toolbar)
@@ -113,7 +100,7 @@ class OneWayAnovaWidget(QWidget):
         columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + list(variables)
         df = self.datatable.get_filtered_df(columns)
 
-        # Binning
+        # Group by animal
         df = process_time_interval_binning(
             df,
             TimeIntervalsBinningSettings("day", 365),
@@ -124,42 +111,52 @@ class OneWayAnovaWidget(QWidget):
         # TODO: should or should not?
         df.dropna(inplace=True)
 
-        effsize = self.eff_size[self.comboBoxEffectSizeType.currentText()]
+        normality = normality_test(df, dependent_variable_name, factor_name).round(5)
+        homoscedasticity = homoscedasticity_test(df, dependent_variable_name, factor_name).round(5)
 
-        normality = pg.normality(df, group=factor_name, dv=dependent_variable_name).round(5)
-        homoscedasticity = pg.homoscedasticity(df, group=factor_name, dv=dependent_variable_name).round(5)
+        equal_var = homoscedasticity.iloc[0]["equal"]
+        if equal_var:
+            anova_result = anova_oneway(
+                df[dependent_variable_name], df[factor_name], use_var="equal", welch_correction=False
+            )
+            anova = pd.DataFrame([
+                {
+                    "F": anova_result.statistic,
+                    "p-value": anova_result.pvalue,
+                    "DoF": anova_result.df_num,
+                }
+            ]).round(5)
+            anova_header = "One-way standard ANOVA"
 
-        if homoscedasticity.loc["levene"]["equal_var"]:
-            anova = pg.anova(
-                data=df,
-                dv=dependent_variable_name,
-                between=factor_name,
-                detailed=True,
+            post_hoc_test = sp.posthoc_tukey(
+                df,
+                val_col=dependent_variable_name,
+                group_col=factor_name,
             ).round(5)
-            anova_header = "One-way classic ANOVA"
-
-            post_hoc_test = pg.pairwise_tukey(
-                data=df,
-                dv=dependent_variable_name,
-                between=factor_name,
-                effsize=effsize,
-            ).round(5)
-            post_hoc_test_header = "Pairwise Tukey-HSD post-hoc test"
+            post_hoc_test_header = "Pairwise Tukey's post-hoc test"
         else:
-            anova = pg.welch_anova(
-                data=df,
-                dv=dependent_variable_name,
-                between=factor_name,
-            ).round(5)
+            anova_result = anova_oneway(
+                df[dependent_variable_name],
+                df[factor_name],
+                use_var="unequal",
+                welch_correction=True,
+            )
+            anova = pd.DataFrame([
+                {
+                    "F": anova_result.statistic,
+                    "p-value": anova_result.pvalue,
+                    "DoF": anova_result.df_num,
+                }
+            ]).round(5)
             anova_header = "One-way Welch ANOVA"
 
-            post_hoc_test = pg.pairwise_gameshowell(
-                data=df,
-                dv=dependent_variable_name,
-                between=factor_name,
-                effsize=effsize,
+            post_hoc_test = sp.posthoc_tamhane(
+                df,
+                val_col=dependent_variable_name,
+                group_col=factor_name,
+                welch=False,
             ).round(5)
-            post_hoc_test_header = "Pairwise Games-Howell post-hoc test"
+            post_hoc_test_header = "Pairwise Tamhane's T2 post-hoc test"
 
         pairwise_tukeyhsd_res = pairwise_tukeyhsd(df[dependent_variable_name], df[factor_name])
         fig = pairwise_tukeyhsd_res.plot_simultaneous(ylabel="Level", xlabel=dependent_variable_name)
@@ -181,11 +178,11 @@ class OneWayAnovaWidget(QWidget):
 
         html = html_template.format(
             factor_name=factor_name,
-            anova=anova.to_html(index=False),
+            anova=anova.to_html(),
             anova_header=anova_header,
             normality=normality.to_html(),
-            homoscedasticity=homoscedasticity.to_html(),
-            post_hoc_test=post_hoc_test.to_html(index=False),
+            homoscedasticity=homoscedasticity.to_html(index=False),
+            post_hoc_test=post_hoc_test.to_html(),
             post_hoc_test_header=post_hoc_test_header,
             img_html=img_html,
         )
