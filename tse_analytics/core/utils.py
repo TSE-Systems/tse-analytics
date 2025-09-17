@@ -18,7 +18,7 @@ from matplotlib.figure import Figure
 
 IS_RELEASE = Path("_internal").exists()
 
-CSV_IMPORT_ENABLED = False
+CSV_IMPORT_ENABLED = True
 
 
 def get_html_image(figure: Figure) -> str:

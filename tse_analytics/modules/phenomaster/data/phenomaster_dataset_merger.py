@@ -92,7 +92,8 @@ def _merge_continuous(
             new_df["Run"] = 1
 
         # Drop "Bin" column
-        new_df.drop(columns=["Bin"], inplace=True)
+        if "Bin" in new_df.columns:
+            new_df.drop(columns=["Bin"], inplace=True)
 
         # reassign bin and timedelta
         start_date_time = result.experiment_started
