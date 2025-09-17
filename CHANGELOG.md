@@ -4,6 +4,7 @@ TSE Analytics Change Log
 # 1.5.4 (2025-09-17)
 
 - Fix: Repeated data merging without the "Bin" column.
+- Fix: Resampling interval checks are improved.
 
 
 ----------------------------------------------------------------------------------------------------

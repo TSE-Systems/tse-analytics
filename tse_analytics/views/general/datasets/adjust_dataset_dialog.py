@@ -49,7 +49,9 @@ class AdjustDatasetDialog(QDialog):
             resampling_interval = pd.to_timedelta("0 days 01:00:00")
         resampling_qtime = QTime.fromMSecsSinceStartOfDay(int(resampling_interval.total_seconds() * 1000))
         self.ui.timeEditResamplingInterval.setTime(resampling_qtime)
-        self.ui.timeEditResamplingInterval.setMinimumTime(resampling_qtime)
+
+        if "Main" in dataset.datatables and dataset.datatables["Main"].sampling_interval is not None:
+            self.ui.timeEditResamplingInterval.setMinimumTime(resampling_qtime)
 
         self.ui.dateTimeEditTrimStart.setMinimumDateTime(dataset.experiment_started)
         self.ui.dateTimeEditTrimStart.setMaximumDateTime(dataset.experiment_stopped)

@@ -878,7 +878,7 @@ wheels = [
 
 [[package]]
 name = "tse-analytics"
-version = "1.5.4b1"
+version = "1.5.4b2"
 source = { editable = "." }
 dependencies = [
     { name = "astropy" },

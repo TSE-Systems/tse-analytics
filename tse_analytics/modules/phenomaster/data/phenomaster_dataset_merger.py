@@ -192,7 +192,8 @@ def _merge_overlap(
             new_df["Run"] = 1
 
         # Drop "Bin" column
-        new_df.drop(columns=["Bin"], inplace=True)
+        if "Bin" in new_df.columns:
+            new_df.drop(columns=["Bin"], inplace=True)
 
         # convert categorical types
         new_df = new_df.astype({
