@@ -101,12 +101,12 @@ def mixed_anova_manual(df, subject_col, between_col, within_col, dv_col):
 
     # Create results table
     results = pd.DataFrame({
-        'Source': ['Between (Group)', 'Within (Time)', 'Interaction', 'Error (Between)', 'Error (Within)'],
-        'SS': [ss_between, ss_within, ss_interaction, ss_error_between, ss_error_within],
-        'df': [df_between, df_within, df_interaction, df_error_between, df_error_within],
-        'MS': [ms_between, ms_within, ms_interaction, ms_error_between, ms_error_within],
-        'F': [f_between, f_within, f_interaction, np.nan, np.nan],
-        'p-value': [p_between, p_within, p_interaction, np.nan, np.nan]
+        "Source": ["Between (Group)", "Within (Time)", "Interaction", "Error (Between)", "Error (Within)"],
+        "SS": [ss_between, ss_within, ss_interaction, ss_error_between, ss_error_within],
+        "df": [df_between, df_within, df_interaction, df_error_between, df_error_within],
+        "MS": [ms_between, ms_within, ms_interaction, ms_error_between, ms_error_within],
+        "F": [f_between, f_within, f_interaction, np.nan, np.nan],
+        "p-value": [p_between, p_within, p_interaction, np.nan, np.nan],
     })
 
     return results
@@ -136,15 +136,10 @@ def posthoc_tests(df, subject_col, between_col, within_col, dv_col):
     within_levels = df[within_col].unique()
     print(f"\nWithin-subjects pairwise comparisons:")
 
-    pivot_df = df.pivot_table(
-        values=dv_col,
-        index=subject_col,
-        columns=within_col,
-        aggfunc='mean'
-    )
+    pivot_df = df.pivot_table(values=dv_col, index=subject_col, columns=within_col, aggfunc="mean")
 
     for i, level1 in enumerate(within_levels):
-        for level2 in within_levels[i + 1:]:
+        for level2 in within_levels[i + 1 :]:
             t_stat, p_val = ttest_rel(pivot_df[level1], pivot_df[level2])
             print(f"{level1} vs {level2}: t={t_stat:.3f}, p={p_val:.3f}")
 
@@ -152,15 +147,10 @@ def posthoc_tests(df, subject_col, between_col, within_col, dv_col):
     print(f"\nSimple effects (Time within each Group):")
     for group in between_groups:
         group_data = df[df[between_col] == group]
-        group_pivot = group_data.pivot_table(
-            values=dv_col,
-            index=subject_col,
-            columns=within_col,
-            aggfunc='mean'
-        )
+        group_pivot = group_data.pivot_table(values=dv_col, index=subject_col, columns=within_col, aggfunc="mean")
 
         print(f"\n{group} group:")
         for i, level1 in enumerate(within_levels):
-            for level2 in within_levels[i + 1:]:
+            for level2 in within_levels[i + 1 :]:
                 t_stat, p_val = ttest_rel(group_pivot[level1], group_pivot[level2])
                 print(f"  {level1} vs {level2}: t={t_stat:.3f}, p={p_val:.3f}")

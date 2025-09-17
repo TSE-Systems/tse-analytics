@@ -2,7 +2,7 @@ import pandas as pd
 import pingouin as pg
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QToolBar, QLabel, QTextEdit, QVBoxLayout
+from PySide6.QtWidgets import QWidget, QToolBar, QLabel, QTextEdit, QVBoxLayout, QComboBox
 from pyqttoast import ToastPreset
 from statsmodels.stats.anova import AnovaRM
 
@@ -12,7 +12,7 @@ from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_h_spacer_widget
 from tse_analytics.styles.css import style_descriptive_table
-from tse_analytics.toolbox.rm_anova.processor import mauchly_test
+from tse_analytics.toolbox.rm_anova.processor import mauchly_test, repeated_measures_anova_posthoc
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
@@ -42,6 +42,17 @@ class RMAnovaWidget(QWidget):
         self.variable_selector = VariableSelector(toolbar)
         self.variable_selector.set_data(self.datatable.variables)
         toolbar.addWidget(self.variable_selector)
+
+        self.p_adjustment = {
+            "No correction": "none",
+            "Bonferroni": "bonf",
+            "Holm": "holm",
+        }
+        toolbar.addWidget(QLabel("P-values adjustment:"))
+        self.p_adjustment_combobox = QComboBox(toolbar)
+        self.p_adjustment_combobox.addItems(self.p_adjustment.keys())
+        self.p_adjustment_combobox.setCurrentText("No correction")
+        toolbar.addWidget(self.p_adjustment_combobox)
 
         # Insert toolbar to the widget
         self._layout.addWidget(toolbar)
@@ -116,6 +127,27 @@ class RMAnovaWidget(QWidget):
         aov = AnovaRM(df, depvar=dependent_variable, subject="Animal", within=["Bin"])
         anova_new = aov.fit().summary().as_html()
 
+        padjust = self.p_adjustment[self.p_adjustment_combobox.currentText()]
+
+        post_hoc_test = pg.pairwise_tests(
+            data=df,
+            dv=dependent_variable,
+            within="Bin",
+            subject="Animal",
+            return_desc=True,
+            padjust=padjust,
+        ).round(5)
+
+        post_hoc_test_new = pd.DataFrame(
+            repeated_measures_anova_posthoc(
+                df,
+                "Bin",
+                dependent_variable,
+                alpha=0.05,
+                method=padjust,
+            )
+        ).round(5)
+
         html_template = """
         <h2>Sphericity test</h2>
         {sphericity}
@@ -125,6 +157,10 @@ class RMAnovaWidget(QWidget):
         {anova}
         <h2>Repeated measures one-way ANOVA (NEW)</h2>
         {anova_new}
+        <h2>Post-hoc test</h2>
+        {post_hoc_test}
+        <h2>Post-hoc test (NEW)</h2>
+        {post_hoc_test_new}
         """
 
         html = html_template.format(
@@ -132,6 +168,8 @@ class RMAnovaWidget(QWidget):
             sphericity_new=sphericity_new.to_html(),
             anova=anova.to_html(),
             anova_new=anova_new,
+            post_hoc_test=post_hoc_test.to_html(),
+            post_hoc_test_new=post_hoc_test_new.to_html(),
         )
 
         self.textEdit.document().setHtml(html)
