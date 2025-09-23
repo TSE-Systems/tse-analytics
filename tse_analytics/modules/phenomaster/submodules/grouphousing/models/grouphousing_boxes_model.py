@@ -1,10 +1,12 @@
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
-from tse_analytics.modules.phenomaster.submodules.trafficage.data.trafficage_animal_item import TraffiCageAnimalItem
+from tse_analytics.modules.phenomaster.submodules.grouphousing.data.grouphousing_animal_item import (
+    GroupHousingAnimalItem,
+)
 
 
-class TraffiCageBoxesModel(QAbstractTableModel):
-    def __init__(self, items: list[TraffiCageAnimalItem], header: list[str], parent=None):
+class GroupHousingBoxesModel(QAbstractTableModel):
+    def __init__(self, items: list[GroupHousingAnimalItem], header: list[str], parent=None):
         super().__init__(parent)
 
         self.items = items

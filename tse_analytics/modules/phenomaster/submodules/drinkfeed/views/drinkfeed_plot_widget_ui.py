@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'drinkfeed_plot_widget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.9.0
+## Created by: Qt User Interface Compiler version 6.9.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -25,6 +25,7 @@ class Ui_DrinkFeedPlotWidget(object):
     def setupUi(self, DrinkFeedPlotWidget):
         if not DrinkFeedPlotWidget.objectName():
             DrinkFeedPlotWidget.setObjectName(u"DrinkFeedPlotWidget")
+        DrinkFeedPlotWidget.resize(1074, 748)
         self.verticalLayout = QVBoxLayout(DrinkFeedPlotWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()
@@ -63,7 +64,7 @@ class Ui_DrinkFeedPlotWidget(object):
     # setupUi
 
     def retranslateUi(self, DrinkFeedPlotWidget):
-        DrinkFeedPlotWidget.setWindowTitle(QCoreApplication.translate("DrinkFeedPlotWidget", u"Form", None))
+        DrinkFeedPlotWidget.setWindowTitle(QCoreApplication.translate("DrinkFeedPlotWidget", u"DrinkFeed", None))
         self.label.setText(QCoreApplication.translate("DrinkFeedPlotWidget", u"Variable:", None))
     # retranslateUi
 

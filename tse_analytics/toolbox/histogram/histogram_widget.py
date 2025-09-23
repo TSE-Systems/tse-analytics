@@ -47,7 +47,7 @@ class HistogramWidget(QWidget):
         # self.log_scale_checkbox = QCheckBox("Log Scale")
         # toolbar.addWidget(self.log_scale_checkbox)
 
-        # Insert toolbar to the widget
+        # Insert the toolbar to the widget
         self._layout.addWidget(toolbar)
 
         self.canvas = MplCanvas(self)

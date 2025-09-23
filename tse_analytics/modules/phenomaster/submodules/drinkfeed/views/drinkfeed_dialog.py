@@ -70,7 +70,7 @@ class DrinkFeedDialog(QWidget):
 
         # Setup toolbar
         toolbar = QToolBar(
-            "DrinkFeed Toolbar",
+            "Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )

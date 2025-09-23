@@ -63,20 +63,20 @@ class Ui_RawDataWidget(object):
 
         self.horizontalLayout.addWidget(self.groupBoxData)
 
-        self.groupBoxDevices = QGroupBox(RawDataWidget)
-        self.groupBoxDevices.setObjectName(u"groupBoxDevices")
-        self.verticalLayout_2 = QVBoxLayout(self.groupBoxDevices)
+        self.groupBoxAnimals = QGroupBox(RawDataWidget)
+        self.groupBoxAnimals.setObjectName(u"groupBoxAnimals")
+        self.verticalLayout_2 = QVBoxLayout(self.groupBoxAnimals)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.listWidgetDevices = QListWidget(self.groupBoxDevices)
-        self.listWidgetDevices.setObjectName(u"listWidgetDevices")
-        self.listWidgetDevices.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
-        self.listWidgetDevices.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
+        self.listWidgetAnimals = QListWidget(self.groupBoxAnimals)
+        self.listWidgetAnimals.setObjectName(u"listWidgetAnimals")
+        self.listWidgetAnimals.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
+        self.listWidgetAnimals.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
 
-        self.verticalLayout_2.addWidget(self.listWidgetDevices)
+        self.verticalLayout_2.addWidget(self.listWidgetAnimals)
 
 
-        self.horizontalLayout.addWidget(self.groupBoxDevices)
+        self.horizontalLayout.addWidget(self.groupBoxAnimals)
 
 
         self.retranslateUi(RawDataWidget)
@@ -87,7 +87,7 @@ class Ui_RawDataWidget(object):
     def retranslateUi(self, RawDataWidget):
         self.groupBoxTables.setTitle(QCoreApplication.translate("RawDataWidget", u"Data Tables", None))
         self.groupBoxData.setTitle(QCoreApplication.translate("RawDataWidget", u"Data", None))
-        self.groupBoxDevices.setTitle(QCoreApplication.translate("RawDataWidget", u"Devices", None))
+        self.groupBoxAnimals.setTitle(QCoreApplication.translate("RawDataWidget", u"Animals", None))
         pass
     # retranslateUi
 

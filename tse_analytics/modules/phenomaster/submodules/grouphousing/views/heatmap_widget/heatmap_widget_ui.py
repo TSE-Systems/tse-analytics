@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'trafficage_heatmap_widget.ui'
+## Form generated from reading UI file 'heatmap_widget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.9.0
+## Created by: Qt User Interface Compiler version 6.9.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -22,13 +22,13 @@ from PySide6.QtWidgets import (QAbstractItemView, QAbstractScrollArea, QApplicat
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 import resources_rc
 
-class Ui_TraffiCageHeatmapWidget(object):
-    def setupUi(self, TraffiCageHeatmapWidget):
-        if not TraffiCageHeatmapWidget.objectName():
-            TraffiCageHeatmapWidget.setObjectName(u"TraffiCageHeatmapWidget")
-        self.horizontalLayout = QHBoxLayout(TraffiCageHeatmapWidget)
+class Ui_HeatmapWidget(object):
+    def setupUi(self, HeatmapWidget):
+        if not HeatmapWidget.objectName():
+            HeatmapWidget.setObjectName(u"HeatmapWidget")
+        self.horizontalLayout = QHBoxLayout(HeatmapWidget)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.canvas = MplCanvas(TraffiCageHeatmapWidget)
+        self.canvas = MplCanvas(HeatmapWidget)
         self.canvas.setObjectName(u"canvas")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(1)
@@ -38,7 +38,7 @@ class Ui_TraffiCageHeatmapWidget(object):
 
         self.horizontalLayout.addWidget(self.canvas)
 
-        self.groupBoxAnimals = QGroupBox(TraffiCageHeatmapWidget)
+        self.groupBoxAnimals = QGroupBox(HeatmapWidget)
         self.groupBoxAnimals.setObjectName(u"groupBoxAnimals")
         self.verticalLayout_2 = QVBoxLayout(self.groupBoxAnimals)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
@@ -53,13 +53,13 @@ class Ui_TraffiCageHeatmapWidget(object):
         self.horizontalLayout.addWidget(self.groupBoxAnimals)
 
 
-        self.retranslateUi(TraffiCageHeatmapWidget)
+        self.retranslateUi(HeatmapWidget)
 
-        QMetaObject.connectSlotsByName(TraffiCageHeatmapWidget)
+        QMetaObject.connectSlotsByName(HeatmapWidget)
     # setupUi
 
-    def retranslateUi(self, TraffiCageHeatmapWidget):
-        self.groupBoxAnimals.setTitle(QCoreApplication.translate("TraffiCageHeatmapWidget", u"Animals", None))
+    def retranslateUi(self, HeatmapWidget):
+        self.groupBoxAnimals.setTitle(QCoreApplication.translate("HeatmapWidget", u"Animals", None))
         pass
     # retranslateUi
 

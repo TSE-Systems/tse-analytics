@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'trafficage_preprocessed_data_widget.ui'
+## Form generated from reading UI file 'preprocessed_data_widget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.9.0
+## Created by: Qt User Interface Compiler version 6.9.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -20,16 +20,17 @@ from PySide6.QtWidgets import (QAbstractItemView, QAbstractScrollArea, QApplicat
     QSizePolicy, QTableView, QVBoxLayout, QWidget)
 import resources_rc
 
-class Ui_TraffiCagePreprocessedDataWidget(object):
-    def setupUi(self, TraffiCagePreprocessedDataWidget):
-        if not TraffiCagePreprocessedDataWidget.objectName():
-            TraffiCagePreprocessedDataWidget.setObjectName(u"TraffiCagePreprocessedDataWidget")
-        self.horizontalLayout = QHBoxLayout(TraffiCagePreprocessedDataWidget)
+class Ui_PreprocessedDataWidget(object):
+    def setupUi(self, PreprocessedDataWidget):
+        if not PreprocessedDataWidget.objectName():
+            PreprocessedDataWidget.setObjectName(u"PreprocessedDataWidget")
+        self.horizontalLayout = QHBoxLayout(PreprocessedDataWidget)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.groupBoxTables = QGroupBox(TraffiCagePreprocessedDataWidget)
+        self.groupBoxTables = QGroupBox(PreprocessedDataWidget)
         self.groupBoxTables.setObjectName(u"groupBoxTables")
         self.verticalLayout = QVBoxLayout(self.groupBoxTables)
         self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.listWidgetTables = QListWidget(self.groupBoxTables)
         self.listWidgetTables.setObjectName(u"listWidgetTables")
         self.listWidgetTables.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
@@ -39,24 +40,34 @@ class Ui_TraffiCagePreprocessedDataWidget(object):
 
         self.horizontalLayout.addWidget(self.groupBoxTables)
 
-        self.tableView = QTableView(TraffiCagePreprocessedDataWidget)
-        self.tableView.setObjectName(u"tableView")
-        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.groupBoxData = QGroupBox(PreprocessedDataWidget)
+        self.groupBoxData.setObjectName(u"groupBoxData")
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.tableView.sizePolicy().hasHeightForWidth())
-        self.tableView.setSizePolicy(sizePolicy)
+        sizePolicy.setHeightForWidth(self.groupBoxData.sizePolicy().hasHeightForWidth())
+        self.groupBoxData.setSizePolicy(sizePolicy)
+        self.tableLayout = QVBoxLayout(self.groupBoxData)
+        self.tableLayout.setSpacing(0)
+        self.tableLayout.setObjectName(u"tableLayout")
+        self.tableLayout.setContentsMargins(0, 0, 0, 0)
+        self.tableView = QTableView(self.groupBoxData)
+        self.tableView.setObjectName(u"tableView")
         self.tableView.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.tableView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.tableView.verticalHeader().setMinimumSectionSize(20)
         self.tableView.verticalHeader().setDefaultSectionSize(20)
 
-        self.horizontalLayout.addWidget(self.tableView)
+        self.tableLayout.addWidget(self.tableView)
 
-        self.groupBoxAnimals = QGroupBox(TraffiCagePreprocessedDataWidget)
+
+        self.horizontalLayout.addWidget(self.groupBoxData)
+
+        self.groupBoxAnimals = QGroupBox(PreprocessedDataWidget)
         self.groupBoxAnimals.setObjectName(u"groupBoxAnimals")
         self.verticalLayout_2 = QVBoxLayout(self.groupBoxAnimals)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.listWidgetAnimals = QListWidget(self.groupBoxAnimals)
         self.listWidgetAnimals.setObjectName(u"listWidgetAnimals")
         self.listWidgetAnimals.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
@@ -68,14 +79,15 @@ class Ui_TraffiCagePreprocessedDataWidget(object):
         self.horizontalLayout.addWidget(self.groupBoxAnimals)
 
 
-        self.retranslateUi(TraffiCagePreprocessedDataWidget)
+        self.retranslateUi(PreprocessedDataWidget)
 
-        QMetaObject.connectSlotsByName(TraffiCagePreprocessedDataWidget)
+        QMetaObject.connectSlotsByName(PreprocessedDataWidget)
     # setupUi
 
-    def retranslateUi(self, TraffiCagePreprocessedDataWidget):
-        self.groupBoxTables.setTitle(QCoreApplication.translate("TraffiCagePreprocessedDataWidget", u"Data Tables", None))
-        self.groupBoxAnimals.setTitle(QCoreApplication.translate("TraffiCagePreprocessedDataWidget", u"Animals", None))
+    def retranslateUi(self, PreprocessedDataWidget):
+        self.groupBoxTables.setTitle(QCoreApplication.translate("PreprocessedDataWidget", u"Data Tables", None))
+        self.groupBoxData.setTitle(QCoreApplication.translate("PreprocessedDataWidget", u"Data", None))
+        self.groupBoxAnimals.setTitle(QCoreApplication.translate("PreprocessedDataWidget", u"Animals", None))
         pass
     # retranslateUi
 

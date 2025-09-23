@@ -1,38 +1,40 @@
+import pandas as pd
 import seaborn as sns
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
-from tse_analytics.modules.phenomaster.submodules.trafficage.views.trafficage_heatmap_widget_ui import (
-    Ui_TraffiCageHeatmapWidget,
+from tse_analytics.modules.phenomaster.submodules.grouphousing.data.grouphousing_data import GroupHousingData
+from tse_analytics.modules.phenomaster.submodules.grouphousing.views.heatmap_widget.heatmap_widget_ui import (
+    Ui_HeatmapWidget,
 )
 
 
-class TraffiCageHeatmapWidget(QWidget):
-    def __init__(self, dataset: PhenoMasterDataset, parent: QWidget | None = None):
+class HeatmapWidget(QWidget):
+    def __init__(self, data: GroupHousingData, parent: QWidget | None = None):
         super().__init__(parent)
-        self.ui = Ui_TraffiCageHeatmapWidget()
+        self.ui = Ui_HeatmapWidget()
         self.ui.setupUi(self)
 
-        self.dataset = dataset
+        self.data = data
+        self.preprocessed_data: dict[str, pd.DataFrame] | None = None
+        self.selected_animals: list[str] = []
 
-        animal_ids = list(self.dataset.animals.keys())
-        animal_ids.sort()
-        self.ui.listWidgetAnimals.addItems(animal_ids)
+        self.ui.listWidgetAnimals.addItems(self.data.animal_ids)
         self.ui.listWidgetAnimals.itemSelectionChanged.connect(self._animals_selection_changed)
 
-        self.df = self.dataset.trafficage_data.df
-        self.selected_animals: list[str] = []
+    def set_preprocessed_data(self, preprocessed_data: dict[str, pd.DataFrame]):
+        self.preprocessed_data = preprocessed_data
+        self._set_data()
 
     def _animals_selection_changed(self):
         self.selected_animals = [item.text() for item in self.ui.listWidgetAnimals.selectedItems()]
         self._set_data()
 
     def _set_data(self) -> None:
-        df = self.df
+        df = self.preprocessed_data["All"]
         if len(self.selected_animals) > 0:
             df = df[df["Animal"].isin(self.selected_animals)]
 
-        grouped = df.groupby("ChannelType").aggregate(
+        grouped = df.groupby("ChannelType", observed=True).aggregate(
             Count=("Activity", "count"),
         )
 

@@ -3,8 +3,16 @@
  <author>Anton Rau</author>
  <class>DrinkFeedPlotWidget</class>
  <widget class="QWidget" name="DrinkFeedPlotWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1074</width>
+    <height>748</height>
+   </rect>
+  </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>DrinkFeed</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>

@@ -4,14 +4,13 @@ import numpy as np
 import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
-from tse_analytics.core.data.shared import Variable
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
-from tse_analytics.modules.phenomaster.submodules.trafficage.data.trafficage_data import TraffiCageData
+from tse_analytics.modules.phenomaster.submodules.grouphousing.data.grouphousing_data import GroupHousingData
 
 
-def import_trafficage_csv_data(
+def import_grouphousing_csv_data(
     filename: str, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings
-) -> TraffiCageData | None:
+) -> GroupHousingData | None:
     path = Path(filename)
     if path.is_file() and path.suffix.lower() == ".csv":
         return _load_from_csv(path, dataset, csv_import_settings)
@@ -26,7 +25,7 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
         "BoxNo": np.int64,
         "ChannelNo": np.int64,
         "Channel type": str,
-        "Tag": str,
+        "Animal": str,
     }
 
     raw_df = pd.read_csv(
@@ -36,6 +35,16 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
         skiprows=1,  # Skip header part
         low_memory=False,
         dtype=dtype,
+    )
+
+    # Rename table columns
+    raw_df.rename(
+        columns={
+            "BoxNo": "Box",
+            "ChannelNo": "Channel",
+            "Channel type": "ChannelType",
+        },
+        inplace=True,
     )
 
     # Convert DateTime column
@@ -48,19 +57,15 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
             format=csv_import_settings.datetime_format if csv_import_settings.use_datetime_format else None,
         ),
     )
-    raw_df.drop(columns=["Date", "Time"], inplace=True)
+    raw_df.drop(columns=["Date", "Time", "Number"], inplace=True)
 
-    # Calo sampling interval
-    sampling_interval = raw_df.iloc[1].at["DateTime"] - raw_df.iloc[0].at["DateTime"]
+    raw_df.sort_values(by=["DateTime"], inplace=True)
+    raw_df.reset_index(drop=True, inplace=True)
 
-    variables: dict[str, Variable] = {}
-
-    data = TraffiCageData(
+    data = GroupHousingData(
         dataset,
-        "TraffiCage",
+        "GroupHousing",
         str(path),
-        variables,
         raw_df,
-        sampling_interval,
     )
     return data

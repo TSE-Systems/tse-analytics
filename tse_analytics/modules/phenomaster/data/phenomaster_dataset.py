@@ -11,8 +11,8 @@ from tse_analytics.modules.phenomaster.submodules.calo.data.calo_data import Cal
 from tse_analytics.modules.phenomaster.submodules.calo.models.calo_tree_item import CaloDataTreeItem
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_data import DrinkFeedData
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.models.drinkfeed_tree_item import DrinkFeedTreeItem
-from tse_analytics.modules.phenomaster.submodules.trafficage.data.trafficage_data import TraffiCageData
-from tse_analytics.modules.phenomaster.submodules.trafficage.models.trafficage_tree_item import TraffiCageTreeItem
+from tse_analytics.modules.phenomaster.submodules.grouphousing.data.grouphousing_data import GroupHousingData
+from tse_analytics.modules.phenomaster.submodules.grouphousing.models.grouphousing_tree_item import GroupHousingTreeItem
 
 
 class PhenoMasterDataset(Dataset):
@@ -21,13 +21,13 @@ class PhenoMasterDataset(Dataset):
 
     This class extends the base Dataset class to handle specific data types and operations
     related to PhenoMaster experiments. It manages data from different PhenoMaster modules
-    including calorimetry, drinking/feeding, activity monitoring, and traffic cage.
+    including calorimetry, drinking/feeding, activity monitoring, and group housing.
 
     Attributes:
         calo_data (CaloData | None): Calorimetry data containing metabolic measurements
         drinkfeed_data (DrinkFeedData | None): Drinking and feeding data
         actimot_data (ActimotData | None): Activity and motion tracking data
-        trafficage_data (TraffiCageData | None): Traffic cage movement data
+        grouphousing_data (GroupHousingData | None): Group housing data
     """
 
     def __init__(
@@ -50,7 +50,7 @@ class PhenoMasterDataset(Dataset):
         self.calo_data: CaloData | None = None
         self.drinkfeed_data: DrinkFeedData | None = None
         self.actimot_data: ActimotData | None = None
-        self.trafficage_data: TraffiCageData | None = None
+        self.grouphousing_data: GroupHousingData | None = None
 
     def rename_animal(self, old_id: str, animal: Animal) -> None:
         """
@@ -163,7 +163,7 @@ class PhenoMasterDataset(Dataset):
         Add PhenoMaster-specific child items to the dataset tree.
 
         This method overrides the base class method to add tree items for each
-        PhenoMaster data component (drinkfeed, actimot, calo, trafficage) if they exist.
+        PhenoMaster data component (drinkfeed, actimot, calo, grouphousing) if they exist.
         These tree items allow for navigation and visualization of the different
         data components in the UI.
 
@@ -181,5 +181,5 @@ class PhenoMasterDataset(Dataset):
         if self.calo_data is not None:
             dataset_tree_item.add_child(CaloDataTreeItem(self.calo_data))
 
-        if self.trafficage_data is not None:
-            dataset_tree_item.add_child(TraffiCageTreeItem(self.trafficage_data))
+        if hasattr(self, "grouphousing_data") and self.grouphousing_data is not None:
+            dataset_tree_item.add_child(GroupHousingTreeItem(self.grouphousing_data))
