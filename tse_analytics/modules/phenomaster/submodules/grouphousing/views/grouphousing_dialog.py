@@ -1,7 +1,7 @@
 import pandas as pd
 from PySide6.QtCore import QSettings, Qt, QSize
 from PySide6.QtGui import QCloseEvent, QIcon
-from PySide6.QtWidgets import QWidget, QToolBar
+from PySide6.QtWidgets import QWidget, QToolBar, QCheckBox
 
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.submodules.grouphousing.views.activity_widget import ActivityWidget
@@ -33,6 +33,7 @@ class GroupHousingDialog(QWidget):
         self.restoreGeometry(settings.value("GroupHousingDialog/Geometry"))
 
         self.dataset = dataset
+        self._remove_repeating_records = True
 
         # Setup toolbar
         toolbar = QToolBar(
@@ -45,6 +46,12 @@ class GroupHousingDialog(QWidget):
         self.add_datatable_action = toolbar.addAction(QIcon(":/icons/icons8-insert-table-16.png"), "Add Datatable...")
         self.add_datatable_action.setEnabled(False)
         self.add_datatable_action.triggered.connect(self._add_datatable)
+
+        self.checkBoxRemoveRepeatingRecords = QCheckBox("Remove Repeating Records", toolbar)
+        self.checkBoxRemoveRepeatingRecords.setChecked(True)
+        self.checkBoxRemoveRepeatingRecords.checkStateChanged.connect(self._remove_repeating_records_changed)
+        toolbar.addWidget(self.checkBoxRemoveRepeatingRecords)
+
         self.ui.verticalLayout.insertWidget(0, toolbar)
 
         self.raw_data_widget = RawDataWidget(self.dataset.grouphousing_data, self)
@@ -70,7 +77,7 @@ class GroupHousingDialog(QWidget):
         self.ui.tabWidget.setTabVisible(self.heatmap_tab_index, is_preprocessed)
 
     def _preprocess(self) -> None:
-        self.preprocessed_df = self.dataset.grouphousing_data.get_preprocessed_data()
+        self.preprocessed_df = self.dataset.grouphousing_data.get_preprocessed_data(self._remove_repeating_records)
         self.preprocessed_view.set_preprocessed_data(self.preprocessed_df)
         self.activity_widget.set_preprocessed_data(self.dataset.grouphousing_data, self.preprocessed_df)
         self.heatmap_widget.set_preprocessed_data(self.preprocessed_df)
@@ -78,6 +85,9 @@ class GroupHousingDialog(QWidget):
 
     def _add_datatable(self) -> None:
         pass
+
+    def _remove_repeating_records_changed(self, state: Qt.CheckState) -> None:
+        self._remove_repeating_records = state == Qt.CheckState.Checked
 
     def closeEvent(self, event: QCloseEvent) -> None:
         settings = QSettings()

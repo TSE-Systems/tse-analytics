@@ -25,9 +25,6 @@
         <property name="sizeAdjustPolicy">
          <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents</enum>
         </property>
-        <property name="selectionMode">
-         <enum>QAbstractItemView::SelectionMode::MultiSelection</enum>
-        </property>
        </widget>
       </item>
      </layout>
