@@ -71,9 +71,7 @@ class HeatmapWidget(QWidget):
             linewidth=0.5,
             ax=ax,
         )
-
-        # ax.pcolormesh(x, y, c)
-        # ax.set_frame_on(False)  # remove all spines
+        ax.set_title("Antennas Registrations")
 
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()

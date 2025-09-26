@@ -24,35 +24,35 @@ class GroupHousingData:
     def get_preprocessed_data(self, remove_repeating_records: bool) -> dict[str, pd.DataFrame]:
         df = self.raw_df.copy()
 
-        if remove_repeating_records:
-            # Remove repeating neighbor rows
-            df.sort_values(["Animal", "DateTime"], inplace=True)
-            drop = df[df["Animal"].eq(df["Animal"].shift()) & df["Channel"].eq(df["Channel"].shift())].index
-            df.drop(drop, inplace=True)
-
-        # Sort again by DateTime
-        df.sort_values(by=["DateTime"], inplace=True)
-        df.reset_index(drop=True, inplace=True)
-
-        df["Activity"] = df.groupby("Animal").cumcount()
-
         # convert categorical types
         df = df.astype({
             "Animal": "category",
             "ChannelType": "category",
         })
 
-        # Split dataframes by antenna type
-        trafficage_df = df[df["Channel"] > 4]
-        trafficage_df["Activity"] = trafficage_df.groupby("Animal", observed=False).cumcount()
-        trafficage_df.reset_index(drop=True, inplace=True)
-
-        drinkfeed_df = df[df["Channel"] < 5]
-        drinkfeed_df.drop(columns=["Activity"], inplace=True)
-        drinkfeed_df.reset_index(drop=True, inplace=True)
+        # Split data by antenna type
+        all_df = self._preprocess_df(df, remove_repeating_records)
+        trafficage_df = self._preprocess_df(df[df["Channel"] > 4], remove_repeating_records)
+        drinkfeed_df = self._preprocess_df(df[df["Channel"] < 5], remove_repeating_records)
 
         return {
-            "All": df,
+            "All": all_df,
             "TraffiCage": trafficage_df,
             "DrinkFeed": drinkfeed_df,
         }
+
+    def _preprocess_df(self, df: pd.DataFrame, remove_repeating_records: bool) -> pd.DataFrame:
+        df.sort_values(["Animal", "DateTime"], inplace=True)
+
+        if remove_repeating_records:
+            # Remove repeating neighbor rows
+            drop = df[df["Animal"].eq(df["Animal"].shift()) & df["Channel"].eq(df["Channel"].shift())].index
+            df.drop(drop, inplace=True)
+
+        df["PreviousChannelType"] = df[df["Animal"].eq(df["Animal"].shift())]["ChannelType"].shift()
+        df["Activity"] = df.groupby("Animal", observed=False).cumcount()
+
+        df.sort_values(by=["DateTime"], inplace=True)
+        df.reset_index(drop=True, inplace=True)
+
+        return df

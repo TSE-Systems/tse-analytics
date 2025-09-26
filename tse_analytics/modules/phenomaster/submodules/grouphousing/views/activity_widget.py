@@ -1,7 +1,7 @@
 import pandas as pd
 import pyqtgraph as pg
 from PySide6.QtCore import QSize, Qt
-from PySide6.QtWidgets import QWidget, QToolBar, QVBoxLayout, QCheckBox
+from PySide6.QtWidgets import QWidget, QToolBar, QVBoxLayout, QComboBox, QLabel
 
 from tse_analytics.modules.phenomaster.submodules.grouphousing.data.grouphousing_data import GroupHousingData
 
@@ -23,11 +23,13 @@ class ActivityWidget(QWidget):
 
         self.data = None
         self.preprocessed_data: dict[str, pd.DataFrame] | None = None
-        self._include_drinkfeed = False
+        self._channel_type = "TraffiCage"
 
-        self.checkBoxIncludeDrinkFeed = QCheckBox("Include DrinkFeed", toolbar)
-        self.checkBoxIncludeDrinkFeed.checkStateChanged.connect(self._include_drinkfeed_changed)
-        toolbar.addWidget(self.checkBoxIncludeDrinkFeed)
+        toolbar.addWidget(QLabel("Channel Type:"))
+        self.channel_type_combobox = QComboBox(toolbar)
+        self.channel_type_combobox.addItems(["TraffiCage", "DrinkFeed", "All"])
+        self.channel_type_combobox.currentTextChanged.connect(self._channel_type_changed)
+        toolbar.addWidget(self.channel_type_combobox)
 
         # Insert the toolbar to the widget
         self._layout.addWidget(toolbar)
@@ -63,8 +65,8 @@ class ActivityWidget(QWidget):
         self.preprocessed_data = preprocessed_data
         self._refresh_plot()
 
-    def _include_drinkfeed_changed(self, state: Qt.CheckState) -> None:
-        self._include_drinkfeed = state == Qt.CheckState.Checked
+    def _channel_type_changed(self, channel_type: str):
+        self._channel_type = channel_type
         self._refresh_plot()
 
     def _refresh_plot(self):
@@ -72,7 +74,7 @@ class ActivityWidget(QWidget):
         self.p2.clearPlots()
         self.legend.clear()
 
-        df = self.preprocessed_data["All"] if self._include_drinkfeed else self.preprocessed_data["TraffiCage"]
+        df = self.preprocessed_data[self._channel_type]
         x_min, x_max = self._plot_animals(self.data, df)
         # bound the LinearRegionItem to the plotted data
         self.region.setRegion([x_min, x_max])
