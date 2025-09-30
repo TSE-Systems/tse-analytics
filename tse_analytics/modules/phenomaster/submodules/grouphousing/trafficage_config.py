@@ -1,4 +1,4 @@
-trafficage_positions = {
+TRAFFICAGE_POSITIONS = {
     "TraffiCage1": (0, 0),
     "TraffiCage2": (0, 1),
     "TraffiCage3": (1, 0),

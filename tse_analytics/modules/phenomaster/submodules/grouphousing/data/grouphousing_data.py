@@ -1,4 +1,17 @@
+import math
+
 import pandas as pd
+
+from tse_analytics.modules.phenomaster.submodules.grouphousing.trafficage_config import TRAFFICAGE_POSITIONS
+
+
+def _calculate_distance(row: pd.Series):
+    if pd.isna(row["PreviousChannelType"]):
+        return None
+    loc1 = TRAFFICAGE_POSITIONS[row["ChannelType"]]
+    loc2 = TRAFFICAGE_POSITIONS[row["PreviousChannelType"]]
+    distance = math.sqrt((loc1[0] - loc2[0])**2 + (loc1[1] - loc2[1])**2)
+    return distance
 
 
 class GroupHousingData:
@@ -35,6 +48,9 @@ class GroupHousingData:
         trafficage_df = self._preprocess_df(df[df["Channel"] > 4], remove_repeating_records)
         drinkfeed_df = self._preprocess_df(df[df["Channel"] < 5], remove_repeating_records)
 
+        # Preprocess TraffiCage data
+        trafficage_df["Distance"] = trafficage_df.apply(_calculate_distance, axis=1)
+
         return {
             "All": all_df,
             "TraffiCage": trafficage_df,
@@ -49,7 +65,12 @@ class GroupHousingData:
             drop = df[df["Animal"].eq(df["Animal"].shift()) & df["Channel"].eq(df["Channel"].shift())].index
             df.drop(drop, inplace=True)
 
-        df["PreviousChannelType"] = df[df["Animal"].eq(df["Animal"].shift())]["ChannelType"].shift()
+        # df["PreviousChannelType"] = df[df["Animal"].eq(df["Animal"].shift())]["ChannelType"].shift()
+        # df.insert(df.columns.get_loc("ChannelType"), "PreviousChannelType", df[df["Animal"].eq(df["Animal"].shift())]["ChannelType"].shift())
+
+        for animal in self.animal_ids:
+            df.loc[df["Animal"] == animal, "PreviousChannelType"] = df[df["Animal"] == animal]["ChannelType"].shift()
+
         df["Activity"] = df.groupby("Animal", observed=False).cumcount()
 
         df.sort_values(by=["DateTime"], inplace=True)

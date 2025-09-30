@@ -13,19 +13,16 @@ from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
-from tse_analytics.modules.phenomaster.io.tse_import_settings import TseImportSettings
+from tse_analytics.modules.phenomaster.io import tse_import_settings
 from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_data import ActimotData
 from tse_analytics.modules.phenomaster.submodules.calo.data.calo_data import CaloData
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_data import DrinkFeedData
+from tse_analytics.modules.phenomaster.submodules.grouphousing.data.grouphousing_data import GroupHousingData
 
 CHUNK_SIZE = 1000000
 
-ACTIMOT_RAW_TABLE = "actimot_raw"
-DRINKFEED_BIN_TABLE = "drinkfeed_bin"
-CALO_BIN_TABLE = "calo_bin"
 
-
-def load_tse_dataset(path: Path, import_settings: TseImportSettings) -> PhenoMasterDataset | None:
+def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportSettings) -> PhenoMasterDataset | None:
     """
     Loads and processes a PhenoMaster dataset from the specified path and settings.
 
@@ -73,21 +70,27 @@ def load_tse_dataset(path: Path, import_settings: TseImportSettings) -> PhenoMas
 
     # Import ActoMot raw data if present
     if import_settings.import_actimot_raw:
-        if ACTIMOT_RAW_TABLE in metadata["tables"]:
+        if tse_import_settings.ACTIMOT_RAW_TABLE in metadata["tables"]:
             actimot_data = _read_actimot_raw(path, dataset)
             dataset.actimot_data = actimot_data
 
     # Import drinkfeed bin data if present
     if import_settings.import_drinkfeed_bin:
-        if DRINKFEED_BIN_TABLE in metadata["tables"]:
+        if tse_import_settings.DRINKFEED_BIN_TABLE in metadata["tables"]:
             drinkfeed_data = _read_drinkfeed_bin(path, dataset)
             dataset.drinkfeed_data = drinkfeed_data
 
     # Import calo bin data if present
     if import_settings.import_calo_bin:
-        if CALO_BIN_TABLE in metadata["tables"]:
+        if tse_import_settings.CALO_BIN_TABLE in metadata["tables"]:
             calo_data = _read_calo_bin(path, dataset)
             dataset.calo_data = calo_data
+
+        # Import group housing data if present
+        if import_settings.import_grouphousing:
+            if tse_import_settings.GROUP_HOUSING_TABLE in metadata["tables"]:
+                grouphousing_data = _read_grouphousing(path, dataset)
+                dataset.grouphousing_data = grouphousing_data
 
     logger.info(f"Import complete in {(timeit.default_timer() - tic):.3f} sec: {path}")
 
@@ -118,14 +121,14 @@ def _read_metadata(path: Path) -> dict:
     metadata["experiment"]["runtime"] = str(pd.to_timedelta(metadata["experiment"]["runtime"], unit="ms"))
     metadata["experiment"]["cycle_interval"] = str(pd.to_timedelta(metadata["experiment"]["cycle_interval"], unit="ms"))
 
-    if "main_table" in metadata["tables"]:
-        metadata["tables"]["main_table"]["sample_interval"] = str(
-            pd.to_timedelta(metadata["tables"]["main_table"]["sample_interval"], unit="ms")
+    if tse_import_settings.MAIN_TABLE in metadata["tables"]:
+        metadata["tables"][tse_import_settings.MAIN_TABLE]["sample_interval"] = str(
+            pd.to_timedelta(metadata["tables"][tse_import_settings.MAIN_TABLE]["sample_interval"], unit="ms")
         )
 
-    if "actimot_raw" in metadata["tables"]:
-        metadata["tables"]["actimot_raw"]["sample_interval"] = str(
-            pd.to_timedelta(metadata["tables"]["actimot_raw"]["sample_interval"], unit="ms")
+    if tse_import_settings.ACTIMOT_RAW_TABLE in metadata["tables"]:
+        metadata["tables"][tse_import_settings.ACTIMOT_RAW_TABLE]["sample_interval"] = str(
+            pd.to_timedelta(metadata["tables"][tse_import_settings.ACTIMOT_RAW_TABLE]["sample_interval"], unit="ms")
         )
 
     return metadata
@@ -141,6 +144,11 @@ def _get_animals(data: dict) -> dict[str, Animal]:
             "Text2": item["text2"],
             "Text3": item["text3"],
         }
+
+        # Add Tag property if exists
+        if "Tag" in item:
+            properties["Tag"] = item["Tag"]
+
         animal = Animal(
             enabled=bool(item["enabled"]),
             id=str(item["id"]),
@@ -155,7 +163,7 @@ def _read_main_table(
     path: Path,
     dataset: PhenoMasterDataset,
 ) -> tuple[pd.DataFrame, dict[str, Variable], pd.Timedelta]:
-    metadata = dataset.metadata["tables"]["main_table"]
+    metadata = dataset.metadata["tables"][tse_import_settings.MAIN_TABLE]
 
     sample_interval = pd.Timedelta(metadata["sample_interval"])
 
@@ -178,7 +186,7 @@ def _read_main_table(
     df = pd.DataFrame()
     with sqlite3.connect(path, check_same_thread=False) as connection:
         for chunk in pd.read_sql_query(
-            "SELECT * FROM main_table",
+            f"SELECT * FROM {tse_import_settings.MAIN_TABLE}",
             connection,
             dtype=dtypes,
             chunksize=CHUNK_SIZE,
@@ -212,7 +220,7 @@ def _read_main_table(
 
 
 def _read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> ActimotData:
-    metadata = dataset.metadata["tables"][ACTIMOT_RAW_TABLE]
+    metadata = dataset.metadata["tables"][tse_import_settings.ACTIMOT_RAW_TABLE]
 
     sample_interval = pd.Timedelta(metadata["sample_interval"])
 
@@ -239,7 +247,7 @@ def _read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> ActimotData:
     df = pd.DataFrame()
     with sqlite3.connect(path, check_same_thread=False) as connection:
         for chunk in pd.read_sql_query(
-            f"SELECT * FROM {ACTIMOT_RAW_TABLE}",
+            f"SELECT * FROM {tse_import_settings.ACTIMOT_RAW_TABLE}",
             connection,
             dtype=dtypes,
             chunksize=CHUNK_SIZE,
@@ -256,7 +264,7 @@ def _read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> ActimotData:
 
     actimot_data = ActimotData(
         dataset,
-        ACTIMOT_RAW_TABLE,
+        tse_import_settings.ACTIMOT_RAW_TABLE,
         str(path),
         variables,
         df,
@@ -267,7 +275,7 @@ def _read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> ActimotData:
 
 
 def _read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedData:
-    metadata = dataset.metadata["tables"][DRINKFEED_BIN_TABLE]
+    metadata = dataset.metadata["tables"][tse_import_settings.DRINKFEED_BIN_TABLE]
 
     # Read variables list
     skipped_variables = ["DateTime", "Box"]
@@ -292,7 +300,7 @@ def _read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedDat
     df = pd.DataFrame()
     with sqlite3.connect(path, check_same_thread=False) as connection:
         for chunk in pd.read_sql_query(
-            f"SELECT * FROM {DRINKFEED_BIN_TABLE}",
+            f"SELECT * FROM {tse_import_settings.DRINKFEED_BIN_TABLE}",
             connection,
             dtype=dtypes,
             chunksize=CHUNK_SIZE,
@@ -313,7 +321,7 @@ def _read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedDat
 
     drinkfeed_data = DrinkFeedData(
         dataset,
-        DRINKFEED_BIN_TABLE,
+        tse_import_settings.DRINKFEED_BIN_TABLE,
         str(path),
         variables,
         df,
@@ -323,7 +331,7 @@ def _read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedDat
 
 
 def _read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
-    metadata = dataset.metadata["tables"][CALO_BIN_TABLE]
+    metadata = dataset.metadata["tables"][tse_import_settings.CALO_BIN_TABLE]
 
     sample_interval = pd.Timedelta(metadata["sample_interval"])
 
@@ -350,7 +358,7 @@ def _read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
     df = pd.DataFrame()
     with sqlite3.connect(path, check_same_thread=False) as connection:
         for chunk in pd.read_sql_query(
-            f"SELECT * FROM {CALO_BIN_TABLE}",
+            f"SELECT * FROM {tse_import_settings.CALO_BIN_TABLE}",
             connection,
             dtype=dtypes,
             chunksize=CHUNK_SIZE,
@@ -419,7 +427,7 @@ def _read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
 
     calo_data = CaloData(
         dataset,
-        CALO_BIN_TABLE,
+        tse_import_settings.CALO_BIN_TABLE,
         str(path),
         variables,
         df,
@@ -427,3 +435,53 @@ def _read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
     )
 
     return calo_data
+
+
+def _read_grouphousing(path: Path, dataset: PhenoMasterDataset) -> GroupHousingData:
+    metadata = dataset.metadata["tables"][tse_import_settings.GROUP_HOUSING_TABLE]
+
+    # Read variables list
+    skipped_variables = ["DateTime", "Box"]
+    variables: dict[str, Variable] = {}
+    dtypes = {}
+    for item in metadata["columns"].values():
+        variable = Variable(
+            item["id"],
+            item["unit"],
+            item["description"],
+            item["type"],
+            Aggregation.MEAN,
+            False,
+        )
+        if variable.name not in skipped_variables:
+            variables[variable.name] = variable
+        dtypes[variable.name] = item["type"]
+    # Ignore the time for "DateTime" column
+    dtypes.pop("DateTime")
+
+    # Read measurements data
+    df = pd.DataFrame()
+    with sqlite3.connect(path, check_same_thread=False) as connection:
+        for chunk in pd.read_sql_query(
+            f"SELECT * FROM {tse_import_settings.GROUP_HOUSING_TABLE}",
+            connection,
+            dtype=dtypes,
+            chunksize=CHUNK_SIZE,
+        ):
+            df = pd.concat([df, chunk], ignore_index=True)
+
+    # Convert DateTime from POSIX format
+    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
+
+    df = df.astype({
+        "Animal": "category",
+    })
+
+    hrouphousing_data = GroupHousingData(
+        dataset,
+        tse_import_settings.GROUP_HOUSING_TABLE,
+        str(path),
+        df,
+    )
+
+    return hrouphousing_data

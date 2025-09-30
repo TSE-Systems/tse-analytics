@@ -36,6 +36,13 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxGroupHousing">
+          <property name="text">
+           <string>Group Housing data</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </item>

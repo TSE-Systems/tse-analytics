@@ -3,7 +3,9 @@ from PySide6.QtCore import QSettings, Qt, QSize
 from PySide6.QtGui import QCloseEvent, QIcon
 from PySide6.QtWidgets import QWidget, QToolBar, QCheckBox
 
+from tse_analytics.core import manager
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
+from tse_analytics.modules.phenomaster.submodules.grouphousing.data.processor import preprocess_trafficage_datatable
 from tse_analytics.modules.phenomaster.submodules.grouphousing.views.activity_widget import ActivityWidget
 from tse_analytics.modules.phenomaster.submodules.grouphousing.views.grouphousing_dialog_ui import Ui_GroupHousingDialog
 from tse_analytics.modules.phenomaster.submodules.grouphousing.views.heatmap_widget.heatmap_widget import HeatmapWidget
@@ -82,9 +84,14 @@ class GroupHousingDialog(QWidget):
         self.activity_widget.set_preprocessed_data(self.dataset.grouphousing_data, self.preprocessed_df)
         self.heatmap_widget.set_preprocessed_data(self.preprocessed_df)
         self._update_tabs()
+        self.add_datatable_action.setEnabled(True)
 
     def _add_datatable(self) -> None:
-        pass
+        if self.preprocessed_df is None or "TraffiCage" not in self.preprocessed_df:
+            return
+
+        datatable = preprocess_trafficage_datatable(self.dataset, self.preprocessed_df["TraffiCage"])
+        manager.add_datatable(datatable)
 
     def _remove_repeating_records_changed(self, state: Qt.CheckState) -> None:
         self._remove_repeating_records = state == Qt.CheckState.Checked
