@@ -7,12 +7,12 @@ from PySide6.QtWidgets import QAbstractItemView, QMenu, QTableView, QWidget
 
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_animal_item import DrinkFeedAnimalItem
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.models.drinkfeed_boxes_model import (
-    DrinkFeedBoxesModel,
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.models.drinkfeed_animals_model import (
+    DrinkFeedAnimalsModel,
 )
 
 
-class DrinkFeedBoxSelector(QTableView):
+class DrinkFeedAnimalSelector(QTableView):
     def __init__(self, callback, settings_widget, parent: QWidget | None = None):
         super().__init__(parent)
         self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -62,7 +62,7 @@ class DrinkFeedBoxSelector(QTableView):
                         x.factors[factor.name] = level.name
                         break
 
-        model = DrinkFeedBoxesModel(list(items.values()), header)
+        model = DrinkFeedAnimalsModel(list(items.values()), header)
         self.model().setSourceModel(model)
         # See https://forum.pythonguis.com/t/resizecolumnstocontents-not-working-with-qsortfilterproxymodel-and-tableview/1285
         QTimer.singleShot(0, self.resizeColumnsToContents)
@@ -70,16 +70,16 @@ class DrinkFeedBoxSelector(QTableView):
     def _on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
         proxy_model = self.model()
         model = proxy_model.sourceModel()
-        selected_boxes: list[DrinkFeedAnimalItem] = []
+        selected_animals: list[DrinkFeedAnimalItem] = []
         for index in self.selectedIndexes():
             if index.column() != 0:
                 continue
             if index.isValid():
                 source_index = proxy_model.mapToSource(index)
                 row = source_index.row()
-                box = model.items[row]
-                selected_boxes.append(box)
-        self.callback(selected_boxes)
+                animal = model.items[row]
+                selected_animals.append(animal)
+        self.callback(selected_animals)
 
     def _open_context_menu(self, position):
         menu = QMenu(self)

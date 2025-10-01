@@ -276,7 +276,11 @@ def _extract_events(
 
 
 def _extract_sensor_episodes(
-    animal_no: int, box_no: int, start_timestamp: pd.Timestamp, events_df: pd.DataFrame, sensor: str
+    animal_no: int,
+    box_no: int,
+    start_timestamp: pd.Timestamp,
+    events_df: pd.DataFrame,
+    sensor: str,
 ) -> pd.DataFrame:
     id_ = []
     start_ = []

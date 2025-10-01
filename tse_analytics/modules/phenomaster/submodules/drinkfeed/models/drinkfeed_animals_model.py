@@ -4,7 +4,7 @@ from PySide6.QtCore import QAbstractTableModel, QModelIndex, QPersistentModelInd
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_animal_item import DrinkFeedAnimalItem
 
 
-class DrinkFeedBoxesModel(QAbstractTableModel):
+class DrinkFeedAnimalsModel(QAbstractTableModel):
     def __init__(self, items: list[DrinkFeedAnimalItem], header: list[str], parent=None):
         super().__init__(parent)
 
@@ -24,10 +24,12 @@ class DrinkFeedBoxesModel(QAbstractTableModel):
                     return item.diet
                 case _:
                     return item.factors[self.header[column]]
+        return None
 
     def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = ...):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             return self.header[col]
+        return None
 
     def rowCount(self, parent: QModelIndex | QPersistentModelIndex = ...):
         return len(self.items)
@@ -46,4 +48,4 @@ class DrinkFeedBoxesModel(QAbstractTableModel):
             self.items[row].diet = diet
 
     def get_diets_dict(self):
-        return {item.box: item.diet for item in self.items}
+        return {item.animal: item.diet for item in self.items}

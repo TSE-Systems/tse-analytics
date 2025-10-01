@@ -45,9 +45,7 @@ tasks:
       - pyside6-uic tse_analytics/modules/phenomaster/views/import_csv_dialog.ui -o tse_analytics/modules/phenomaster/views/import_csv_dialog_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/views/import_tse_dialog.ui -o tse_analytics/modules/phenomaster/views/import_tse_dialog_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_dialog.ui -o tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_dialog_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_plot_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_settings_widget.ui -o tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_settings_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_episodes_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_episodes_plot_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/calo_dialog.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/calo_dialog_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/calo_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/calo_plot_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/calo_settings_widget.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/calo_settings_widget_ui.py

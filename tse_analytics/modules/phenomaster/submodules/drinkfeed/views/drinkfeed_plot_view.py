@@ -74,21 +74,22 @@ class DrinkFeedPlotView(pg.GraphicsLayoutWidget):
         if self._df is None or self._variable == "":
             return
 
-        box_ids = self._df["Box"].unique().tolist()
-        for i, box_id in enumerate(box_ids):
-            filtered_data = self._df[self._df["Box"] == box_id]
+        variable_df = self._df[self._df["Sensor"] == self._variable]
+        animal_ids = variable_df["Animal"].unique().tolist()
+        for i, animal_id in enumerate(animal_ids):
+            filtered_data = variable_df[variable_df["Animal"] == animal_id]
 
             x = filtered_data["DateTime"]
             x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
             x = x.to_numpy()
-            y = filtered_data[self._variable].to_numpy()
+            y = filtered_data["Value"].to_numpy()
 
-            pen = mkPen(color=(i, len(box_ids)), width=1)
+            pen = mkPen(color=(i, len(animal_ids)), width=1)
             # p1d = self.p1.plot(x, y, symbol='o', symbolSize=2, symbolPen=pen, pen=pen)
             p1d = self.p1.plot(x, y, pen=pen)
 
-            self.plot_data_items[box_id] = p1d
-            self.legend.addItem(p1d, f"Box {box_id}")
+            self.plot_data_items[animal_id] = p1d
+            self.legend.addItem(p1d, f"Animal: {animal_id}")
 
             p2d: pg.PlotDataItem = self.p2.plot(x, y, pen=pen)
 

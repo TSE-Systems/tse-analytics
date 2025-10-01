@@ -35,7 +35,7 @@ def preprocess_trafficage_datatable(dataset: PhenoMasterDataset, df: pd.DataFram
             "float64",
             Aggregation.SUM,
             False,
-        )
+        ),
     }
 
     datatable = Datatable(

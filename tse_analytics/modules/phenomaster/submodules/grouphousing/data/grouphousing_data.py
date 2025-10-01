@@ -10,7 +10,7 @@ def _calculate_distance(row: pd.Series):
         return None
     loc1 = TRAFFICAGE_POSITIONS[row["ChannelType"]]
     loc2 = TRAFFICAGE_POSITIONS[row["PreviousChannelType"]]
-    distance = math.sqrt((loc1[0] - loc2[0])**2 + (loc1[1] - loc2[1])**2)
+    distance = math.sqrt((loc1[0] - loc2[0]) ** 2 + (loc1[1] - loc2[1]) ** 2)
     return distance
 
 
