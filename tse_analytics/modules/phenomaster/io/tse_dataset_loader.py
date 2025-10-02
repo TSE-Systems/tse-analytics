@@ -16,10 +16,8 @@ from tse_analytics.modules.phenomaster.data.predefined_variables import assign_p
 from tse_analytics.modules.phenomaster.io import tse_import_settings
 from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_data import ActimotData
 from tse_analytics.modules.phenomaster.submodules.calo.data.calo_data import CaloData
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_data import DrinkFeedData
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.io.data_loader import read_drinkfeed_bin
 from tse_analytics.modules.phenomaster.submodules.grouphousing.data.grouphousing_data import GroupHousingData
-
-CHUNK_SIZE = 1000000
 
 
 def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportSettings) -> PhenoMasterDataset | None:
@@ -77,7 +75,7 @@ def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportS
     # Import drinkfeed bin data if present
     if import_settings.import_drinkfeed_bin:
         if tse_import_settings.DRINKFEED_BIN_TABLE in metadata["tables"]:
-            drinkfeed_data = _read_drinkfeed_bin(path, dataset)
+            drinkfeed_data = read_drinkfeed_bin(path, dataset)
             dataset.drinkfeed_data = drinkfeed_data
 
     # Import calo bin data if present
@@ -189,7 +187,7 @@ def _read_main_table(
             f"SELECT * FROM {tse_import_settings.MAIN_TABLE}",
             connection,
             dtype=dtypes,
-            chunksize=CHUNK_SIZE,
+            chunksize=tse_import_settings.CHUNK_SIZE,
         ):
             df = pd.concat([df, chunk], ignore_index=True)
 
@@ -250,7 +248,7 @@ def _read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> ActimotData:
             f"SELECT * FROM {tse_import_settings.ACTIMOT_RAW_TABLE}",
             connection,
             dtype=dtypes,
-            chunksize=CHUNK_SIZE,
+            chunksize=tse_import_settings.CHUNK_SIZE,
         ):
             chunk["X"] = np.left_shift(chunk["X2"].to_numpy(dtype=np.uint64), 32) + chunk["X1"].to_numpy(
                 dtype=np.uint64
@@ -272,62 +270,6 @@ def _read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> ActimotData:
     )
 
     return actimot_data
-
-
-def _read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedData:
-    metadata = dataset.metadata["tables"][tse_import_settings.DRINKFEED_BIN_TABLE]
-
-    # Read variables list
-    skipped_variables = ["DateTime", "Box"]
-    variables: dict[str, Variable] = {}
-    dtypes = {}
-    for item in metadata["columns"].values():
-        variable = Variable(
-            item["id"],
-            item["unit"],
-            item["description"],
-            item["type"],
-            Aggregation.MEAN,
-            False,
-        )
-        if variable.name not in skipped_variables:
-            variables[variable.name] = variable
-        dtypes[variable.name] = item["type"]
-    # Ignore the time for "DateTime" column
-    dtypes.pop("DateTime")
-
-    # Read measurements data
-    df = pd.DataFrame()
-    with sqlite3.connect(path, check_same_thread=False) as connection:
-        for chunk in pd.read_sql_query(
-            f"SELECT * FROM {tse_import_settings.DRINKFEED_BIN_TABLE}",
-            connection,
-            dtype=dtypes,
-            chunksize=CHUNK_SIZE,
-        ):
-            df = pd.concat([df, chunk], ignore_index=True)
-
-    # Convert DateTime from POSIX format
-    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
-
-    # Add Animal column
-    box_to_animal_map = {}
-    for animal in dataset.animals.values():
-        box_to_animal_map[animal.properties["Box"]] = animal.id
-    df["Animal"] = df["Box"].replace(box_to_animal_map)
-    df = df.astype({
-        "Animal": "category",
-    })
-
-    drinkfeed_data = DrinkFeedData(
-        dataset,
-        tse_import_settings.DRINKFEED_BIN_TABLE,
-        str(path),
-        variables,
-        df,
-    )
-
-    return drinkfeed_data
 
 
 def _read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
@@ -361,7 +303,7 @@ def _read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
             f"SELECT * FROM {tse_import_settings.CALO_BIN_TABLE}",
             connection,
             dtype=dtypes,
-            chunksize=CHUNK_SIZE,
+            chunksize=tse_import_settings.CHUNK_SIZE,
         ):
             df = pd.concat([df, chunk], ignore_index=True)
 
@@ -466,7 +408,7 @@ def _read_grouphousing(path: Path, dataset: PhenoMasterDataset) -> GroupHousingD
             f"SELECT * FROM {tse_import_settings.GROUP_HOUSING_TABLE}",
             connection,
             dtype=dtypes,
-            chunksize=CHUNK_SIZE,
+            chunksize=tse_import_settings.CHUNK_SIZE,
         ):
             df = pd.concat([df, chunk], ignore_index=True)
 

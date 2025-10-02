@@ -12,11 +12,11 @@ from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
+from tse_analytics.modules.phenomaster.io import tse_import_settings
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_animal_item import DrinkFeedAnimalItem
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_data import DrinkFeedData
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.drinkfeed_settings import DrinkFeedSettings
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.interval_processor import process_drinkfeed_intervals
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.sequential_processor import process_drinkfeed_sequences
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.sequential_processor2 import process_drinkfeed_sequences2
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_animal_selector import (
     DrinkFeedAnimalSelector,
@@ -59,10 +59,26 @@ class DrinkFeedDialog(QWidget):
         self.restoreGeometry(settings.value("DrinkFeedDialog/Geometry"))
 
         self.drinkfeed_data = drinkfeed_data
-
         self.selected_animals: list[DrinkFeedAnimalItem] = []
 
-        self.events_df: pd.DataFrame | None = self.drinkfeed_data.raw_df
+        self.raw_df = self.drinkfeed_data.raw_df
+        if (
+            self.drinkfeed_data.name == tse_import_settings.DRINKFEED_BIN_TABLE
+            # TODO: remove later
+            or self.drinkfeed_data.name == "DrinkFeed Data"
+        ):
+            self.raw_long_df = pd.melt(
+                self.raw_df,
+                id_vars=["DateTime", "Animal", "Box"],
+                var_name="Sensor",
+                value_name="Value",
+            )
+            self.raw_long_df.sort_values(by=["DateTime"], inplace=True)
+            self.raw_long_df.reset_index(drop=True, inplace=True)
+        else:
+            self.raw_long_df = self.raw_df
+
+        self.events_df: pd.DataFrame | None = None
         self.episodes_df: pd.DataFrame | None = None
         self.intervals_df: pd.DataFrame | None = None
 
@@ -81,20 +97,23 @@ class DrinkFeedDialog(QWidget):
         self.add_datatable_action.triggered.connect(self._add_datatable)
         self.ui.verticalLayout.insertWidget(0, toolbar)
 
-        self.events_table_view = DrinkFeedTableView()
-        self.events_table_view.set_data(drinkfeed_data.raw_df)
-        self.ui.tabWidget.addTab(self.events_table_view, "Events")
+        self.raw_table_view = DrinkFeedTableView()
+        self.raw_table_view.set_data(self.raw_df)
+        self.ui.tabWidget.addTab(self.raw_table_view, "Raw Data")
 
-        self.drinkfeed_plot_widget = DrinkFeedPlotWidget()
-        self.drinkfeed_plot_widget.set_variables(drinkfeed_data.variables)
-        # self.drinkfeed_plot_widget.set_data(drinkfeed_data.raw_df)
-        self.ui.tabWidget.addTab(self.drinkfeed_plot_widget, "Events Plot")
+        self.raw_plot_widget = DrinkFeedPlotWidget()
+        self.raw_plot_widget.set_data(self.raw_long_df)
+        self.raw_plot_widget.set_variables(drinkfeed_data.variables)
+        self.ui.tabWidget.addTab(self.raw_plot_widget, "Raw Data Plot")
 
         self.intervals_table_view = DrinkFeedTableView()
         self.intervals_table_tab_index = self.ui.tabWidget.addTab(self.intervals_table_view, "Intervals")
 
         self.intervals_plot_widget = DrinkFeedIntervalsPlotWidget()
         self.intervals_plot_tab_index = self.ui.tabWidget.addTab(self.intervals_plot_widget, "Intervals Plots")
+
+        self.events_table_view = DrinkFeedTableView()
+        self.events_table_tab_index = self.ui.tabWidget.addTab(self.events_table_view, "Events")
 
         self.episodes_table_view = DrinkFeedTableView()
         self.episodes_table_tab_index = self.ui.tabWidget.addTab(self.episodes_table_view, "Episodes")
@@ -130,6 +149,7 @@ class DrinkFeedDialog(QWidget):
     def _update_tabs(self):
         settings = self.drinkfeed_settings_widget.get_drinkfeed_settings()
         show_episodes = settings.sequential_analysis_type and self.episodes_df is not None
+        self.ui.tabWidget.setTabVisible(self.events_table_tab_index, show_episodes)
         self.ui.tabWidget.setTabVisible(self.episodes_table_tab_index, show_episodes)
         self.ui.tabWidget.setTabVisible(self.episodes_offset_tab_index, show_episodes)
         self.ui.tabWidget.setTabVisible(self.episodes_imi_tab_index, show_episodes)
@@ -141,6 +161,7 @@ class DrinkFeedDialog(QWidget):
     def _filter_animals(self, selected_animals: list[DrinkFeedAnimalItem]):
         self.selected_animals = selected_animals
 
+        raw_long_df = self.raw_long_df
         events_df = self.events_df
         episodes_df = self.episodes_df
         intervals_df = self.intervals_df
@@ -148,14 +169,19 @@ class DrinkFeedDialog(QWidget):
         if len(self.selected_animals) > 0:
             animal_ids = [item.animal for item in self.selected_animals]
 
-            events_df = events_df[events_df["Animal"].isin(animal_ids)]
+            raw_long_df = raw_long_df[raw_long_df["Animal"].isin(animal_ids)]
+
+            if events_df is not None:
+                events_df = events_df[events_df["Animal"].isin(animal_ids)]
             if episodes_df is not None:
                 episodes_df = episodes_df[episodes_df["Animal"].isin(animal_ids)]
             if intervals_df is not None:
                 intervals_df = intervals_df[intervals_df["Animal"].isin(animal_ids)]
 
-        self.events_table_view.set_data(events_df)
-        self.drinkfeed_plot_widget.set_data(events_df)
+        self.raw_plot_widget.set_data(raw_long_df)
+
+        if events_df is not None:
+            self.events_table_view.set_data(events_df)
 
         if episodes_df is not None:
             self.episodes_table_view.set_data(episodes_df)

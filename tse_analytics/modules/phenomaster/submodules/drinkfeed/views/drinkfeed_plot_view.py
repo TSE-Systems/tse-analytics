@@ -71,7 +71,7 @@ class DrinkFeedPlotView(pg.GraphicsLayoutWidget):
         self.p2.clearPlots()
         self.legend.clear()
 
-        if self._df is None or self._variable == "":
+        if self._df is None or self._df.empty or self._variable == "":
             return
 
         variable_df = self._df[self._df["Sensor"] == self._variable]

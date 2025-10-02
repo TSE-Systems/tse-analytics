@@ -27,7 +27,7 @@ from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMast
 from tse_analytics.modules.phenomaster.io.csv_dataset_loader import load_csv_dataset
 from tse_analytics.modules.phenomaster.submodules.actimot.io.data_loader import import_actimot_csv_data
 from tse_analytics.modules.phenomaster.submodules.calo.io.data_loader import import_calo_csv_data
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.io.data_loader import import_drinkfeed_csv_data
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.io.data_loader import import_drinkfeed_bin_csv_data
 from tse_analytics.modules.phenomaster.submodules.grouphousing.io.data_loader import import_grouphousing_csv_data
 
 
@@ -149,7 +149,7 @@ class Manager:
         """
         dataset = self.get_selected_dataset()
         if dataset is not None and isinstance(dataset, PhenoMasterDataset):
-            data = import_drinkfeed_csv_data(path, dataset, get_csv_import_settings())
+            data = import_drinkfeed_bin_csv_data(path, dataset, get_csv_import_settings())
             if data is not None:
                 dataset.drinkfeed_data = data
                 messaging.broadcast(messaging.WorkspaceChangedMessage(self, self._workspace))

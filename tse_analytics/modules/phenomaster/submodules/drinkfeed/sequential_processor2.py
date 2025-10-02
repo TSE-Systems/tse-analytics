@@ -25,6 +25,10 @@ def process_drinkfeed_sequences2(
         var_name="Sensor",
         value_name="Value",
     )
+
+    # TODO: drop unnecessary rows
+    long_df = long_df.loc[~(long_df["Value"] == 0)]
+
     long_df.sort_values(by=["DateTime"], inplace=True)
     long_df.reset_index(drop=True, inplace=True)
 
@@ -102,8 +106,6 @@ def _extract_sensor_events(
 ) -> pd.DataFrame:
     events_df = df.copy()
 
-    events_df.drop_duplicates(subset=["DateTime"], inplace=True)
-
     timedelta = pd.Timedelta(
         hours=settings.intermeal_interval.hour,
         minutes=settings.intermeal_interval.minute,
@@ -118,7 +120,7 @@ def _extract_sensor_events(
     episode_start = None
     episode_last_timestamp = None
 
-    for index, row in df.iterrows():
+    for index, row in events_df.iterrows():
         timestamp = row["DateTime"]
 
         if row["Value"] > 0:
