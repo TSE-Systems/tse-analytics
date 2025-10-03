@@ -54,7 +54,6 @@ class DrinkFeedIntervalsPlotWidget(QWidget):
 
         selected_variable = self.variableSelector.currentText()
         df = self.df
-        # df = self.df.groupby(["Bin"], dropna=False, observed=False).mean(numeric_only=True)
 
         self.canvas.clear(False)
         ax = self.canvas.figure.add_subplot(111)

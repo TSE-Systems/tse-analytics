@@ -17,7 +17,7 @@ from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_anima
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_data import DrinkFeedData
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.drinkfeed_settings import DrinkFeedSettings
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.interval_processor import process_drinkfeed_intervals
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.sequential_processor2 import process_drinkfeed_sequences2
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.sequential_processor import process_drinkfeed_sequences
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_animal_selector import (
     DrinkFeedAnimalSelector,
 )
@@ -215,7 +215,7 @@ class DrinkFeedDialog(QWidget):
     ):
         tic = timeit.default_timer()
 
-        self.events_df, self.episodes_df = process_drinkfeed_sequences2(self.drinkfeed_data, settings, diets_dict)
+        self.events_df, self.episodes_df = process_drinkfeed_sequences(self.drinkfeed_data, settings, diets_dict)
         # self.events_df, self.episodes_df = process_drinkfeed_sequences(self.drinkfeed_data, settings, diets_dict)
 
         logger.info(f"DrinkFeed analysis complete: {timeit.default_timer() - tic} sec")
