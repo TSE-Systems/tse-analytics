@@ -10,6 +10,10 @@ from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMast
 def preprocess_trafficage_datatable(dataset: PhenoMasterDataset, df: pd.DataFrame) -> Datatable:
     df = df.copy()
 
+    # Rename columns to be compatible with Datatable format
+    df.rename(columns={"StartDateTime": "DateTime"}, inplace=True)
+    df.drop(columns=["EndDateTime"], inplace=True)
+
     # Calculate time delta
     first_timestamp = df["DateTime"].min()
     if first_timestamp > dataset.experiment_started:

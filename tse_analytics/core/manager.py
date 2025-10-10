@@ -151,7 +151,7 @@ class Manager:
         if dataset is not None and isinstance(dataset, PhenoMasterDataset):
             data = import_drinkfeed_bin_csv_data(path, dataset, get_csv_import_settings())
             if data is not None:
-                dataset.drinkfeed_data = data
+                dataset.drinkfeed_bin_data = data
                 messaging.broadcast(messaging.WorkspaceChangedMessage(self, self._workspace))
 
     def import_actimot_data(self, path: str) -> None:

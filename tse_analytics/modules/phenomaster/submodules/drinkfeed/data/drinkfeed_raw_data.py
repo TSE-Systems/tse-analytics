@@ -3,7 +3,7 @@ import pandas as pd
 from tse_analytics.core.data.shared import Variable
 
 
-class DrinkFeedData:
+class DrinkFeedRawData:
     def __init__(
         self,
         dataset,

@@ -76,6 +76,8 @@ class ActivityWidget(QWidget):
 
         df = self.preprocessed_data[self._channel_type]
         x_min, x_max = self._plot_animals(self.data, df)
+        if x_min is None or x_max is None:
+            return
         # bound the LinearRegionItem to the plotted data
         self.region.setRegion([x_min, x_max])
 
@@ -106,7 +108,7 @@ class ActivityWidget(QWidget):
         return x_min, x_max
 
     def _plot_item(self, df: pd.DataFrame, name: str, pen):
-        x = df["DateTime"]
+        x = df["StartDateTime"]
         x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
         x = x.to_numpy()
         y = df["Activity"].to_numpy()

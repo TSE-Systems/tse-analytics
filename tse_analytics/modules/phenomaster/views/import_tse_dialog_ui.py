@@ -41,6 +41,11 @@ class Ui_ImportTseDialog(object):
 
         self.verticalLayout_3.addWidget(self.checkBoxDrinkFeedBin)
 
+        self.checkBoxDrinkFeedRaw = QCheckBox(self.groupBoxImportSettings)
+        self.checkBoxDrinkFeedRaw.setObjectName(u"checkBoxDrinkFeedRaw")
+
+        self.verticalLayout_3.addWidget(self.checkBoxDrinkFeedRaw)
+
         self.checkBoxActiMotRaw = QCheckBox(self.groupBoxImportSettings)
         self.checkBoxActiMotRaw.setObjectName(u"checkBoxActiMotRaw")
 
@@ -77,6 +82,7 @@ class Ui_ImportTseDialog(object):
         self.groupBoxImportSettings.setTitle(QCoreApplication.translate("ImportTseDialog", u"Import", None))
         self.checkBoxCaloBin.setText(QCoreApplication.translate("ImportTseDialog", u"Calo bin data", None))
         self.checkBoxDrinkFeedBin.setText(QCoreApplication.translate("ImportTseDialog", u"DrinkFeed bin data", None))
+        self.checkBoxDrinkFeedRaw.setText(QCoreApplication.translate("ImportTseDialog", u"DrinkFeed raw data", None))
         self.checkBoxActiMotRaw.setText(QCoreApplication.translate("ImportTseDialog", u"ActiMot raw data", None))
         self.checkBoxGroupHousing.setText(QCoreApplication.translate("ImportTseDialog", u"Group Housing data", None))
     # retranslateUi

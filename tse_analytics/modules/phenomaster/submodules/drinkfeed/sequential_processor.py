@@ -1,6 +1,6 @@
 import pandas as pd
 
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_data import DrinkFeedData
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_bin_data import DrinkFeedBinData
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.drinkfeed_settings import DrinkFeedSettings
 
 
@@ -15,16 +15,19 @@ def _find_invalid_episodes(events_df: pd.DataFrame, minimum_amount: float):
 
 
 def process_drinkfeed_sequences(
-    drinkfeed_data: DrinkFeedData,
+    drinkfeed_data: DrinkFeedBinData,
     settings: DrinkFeedSettings,
     diets_dict: dict[str, float],
 ):
-    long_df = pd.melt(
-        drinkfeed_data.raw_df,
-        id_vars=["DateTime", "Animal", "Box"],
-        var_name="Sensor",
-        value_name="Value",
-    )
+    if isinstance(drinkfeed_data, DrinkFeedBinData):
+        long_df = pd.melt(
+            drinkfeed_data.raw_df,
+            id_vars=["DateTime", "Animal", "Box"],
+            var_name="Sensor",
+            value_name="Value",
+        )
+    else :
+        long_df = drinkfeed_data.raw_df
 
     # TODO: drop unnecessary rows
     long_df = long_df.loc[~(long_df["Value"] == 0)]

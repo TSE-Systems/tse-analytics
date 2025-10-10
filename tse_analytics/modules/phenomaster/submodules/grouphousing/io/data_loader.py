@@ -1,11 +1,78 @@
+import sqlite3
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
+from tse_analytics.core.data.shared import Variable, Aggregation
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
+from tse_analytics.modules.phenomaster.io import tse_import_settings
 from tse_analytics.modules.phenomaster.submodules.grouphousing.data.grouphousing_data import GroupHousingData
+
+
+def read_grouphousing(path: Path, dataset: PhenoMasterDataset) -> GroupHousingData:
+    metadata = dataset.metadata["tables"][tse_import_settings.GROUP_HOUSING_TABLE]
+    hardware_metadata = dataset.metadata["hardware"][tse_import_settings.GROUP_HOUSING_TABLE]
+
+    # Read variables list
+    dtypes = {}
+    for item in metadata["columns"].values():
+        variable = Variable(
+            item["id"],
+            item["unit"],
+            item["description"],
+            item["type"],
+            Aggregation.MEAN,
+            False,
+        )
+        dtypes[variable.name] = item["type"]
+    # Ignore the time for "DateTime" columns
+    # dtypes.pop("StartDateTime")
+    # dtypes.pop("EndDateTime")
+
+    dtypes["EndDateTime"] = "Int64"
+    dtypes["Animal"] = str
+
+    # Read measurements data
+    df = pd.DataFrame()
+    with sqlite3.connect(path, check_same_thread=False) as connection:
+        for chunk in pd.read_sql_query(
+            f"SELECT * FROM {tse_import_settings.GROUP_HOUSING_TABLE}",
+            connection,
+            dtype=dtypes,
+            chunksize=tse_import_settings.CHUNK_SIZE,
+        ):
+            df = pd.concat([df, chunk], ignore_index=True)
+
+    # Convert DateTime from POSIX format
+    df["StartDateTime"] = pd.to_datetime(df["StartDateTime"], origin="unix", unit="ns")
+    df["EndDateTime"] = pd.to_datetime(df["EndDateTime"], origin="unix", unit="ns")
+
+    # Convert dict keys type from str to int
+    channel_to_channel_type_mapping = {int(k): v for k, v in hardware_metadata["channels"].items()}
+    df.insert(
+        df.columns.get_loc("Channel") + 1,
+        "ChannelType",
+        df["Channel"].replace(channel_to_channel_type_mapping),
+    )
+
+    df = df.astype({
+        "Animal": "category",
+        "ChannelType": "category",
+    })
+
+    df.sort_values(by=["StartDateTime"], inplace=True)
+    df.reset_index(drop=True, inplace=True)
+
+    data = GroupHousingData(
+        dataset,
+        tse_import_settings.GROUP_HOUSING_TABLE,
+        str(path),
+        df,
+    )
+
+    return data
 
 
 def import_grouphousing_csv_data(
@@ -17,7 +84,7 @@ def import_grouphousing_csv_data(
     return None
 
 
-def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings):
+def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings) -> GroupHousingData:
     dtype = {
         "Number": np.int64,
         "Date": str,
@@ -28,7 +95,7 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
         "Animal": str,
     }
 
-    raw_df = pd.read_csv(
+    df = pd.read_csv(
         path,
         delimiter=csv_import_settings.delimiter,
         decimal=csv_import_settings.decimal_separator,
@@ -38,7 +105,7 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     )
 
     # Rename table columns
-    raw_df.rename(
+    df.rename(
         columns={
             "BoxNo": "Box",
             "ChannelNo": "Channel",
@@ -48,24 +115,38 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     )
 
     # Convert DateTime column
-    raw_df.insert(
+    df.insert(
         0,
-        "DateTime",
+        "StartDateTime",
         pd.to_datetime(
-            raw_df["Date"] + " " + raw_df["Time"],
+            df["Date"] + " " + df["Time"],
             dayfirst=csv_import_settings.day_first,
             format=csv_import_settings.datetime_format if csv_import_settings.use_datetime_format else None,
         ),
     )
-    raw_df.drop(columns=["Date", "Time", "Number"], inplace=True)
+    df.insert(
+        df.columns.get_loc("StartDateTime") + 1,
+        "EndDateTime",
+        df["StartDateTime"],
+    )
 
-    raw_df.sort_values(by=["DateTime"], inplace=True)
-    raw_df.reset_index(drop=True, inplace=True)
+    df.drop(columns=["Date", "Time", "Number"], inplace=True)
+
+    df = df.astype({
+        "Animal": "category",
+        "ChannelType": "category",
+    })
+
+    # TODO: fix the bug with channels offset +1 in CSV export?
+    df["Channel"] = df["Channel"] - 1
+
+    df.sort_values(by=["StartDateTime"], inplace=True)
+    df.reset_index(drop=True, inplace=True)
 
     data = GroupHousingData(
         dataset,
-        "GroupHousing",
+        tse_import_settings.GROUP_HOUSING_TABLE,
         str(path),
-        raw_df,
+        df,
     )
     return data

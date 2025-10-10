@@ -6,6 +6,7 @@ CHUNK_SIZE = 1000000
 MAIN_TABLE = "main_table"
 ACTIMOT_RAW_TABLE = "actimot_raw"
 DRINKFEED_BIN_TABLE = "drinkfeed_bin"
+DRINKFEED_RAW_TABLE = "drinkfeed_raw"
 CALO_BIN_TABLE = "calo_bin"
 GROUP_HOUSING_TABLE = "group_housing"
 
@@ -14,5 +15,6 @@ GROUP_HOUSING_TABLE = "group_housing"
 class TseImportSettings:
     import_calo_bin: bool
     import_drinkfeed_bin: bool
+    import_drinkfeed_raw: bool
     import_actimot_raw: bool
     import_grouphousing: bool

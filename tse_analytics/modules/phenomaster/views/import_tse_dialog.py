@@ -18,6 +18,7 @@ class ImportTseDialog(QDialog):
 
         self.ui.checkBoxCaloBin.setEnabled(tse_import_settings.CALO_BIN_TABLE in tables)
         self.ui.checkBoxDrinkFeedBin.setEnabled(tse_import_settings.DRINKFEED_BIN_TABLE in tables)
+        self.ui.checkBoxDrinkFeedRaw.setEnabled(tse_import_settings.DRINKFEED_RAW_TABLE in tables)
         self.ui.checkBoxActiMotRaw.setEnabled(tse_import_settings.ACTIMOT_RAW_TABLE in tables)
         self.ui.checkBoxGroupHousing.setEnabled(tse_import_settings.GROUP_HOUSING_TABLE in tables)
 
@@ -25,6 +26,7 @@ class ImportTseDialog(QDialog):
         import_settings = tse_import_settings.TseImportSettings(
             import_calo_bin=self.ui.checkBoxCaloBin.isChecked(),
             import_drinkfeed_bin=self.ui.checkBoxDrinkFeedBin.isChecked(),
+            import_drinkfeed_raw=self.ui.checkBoxDrinkFeedRaw.isChecked(),
             import_actimot_raw=self.ui.checkBoxActiMotRaw.isChecked(),
             import_grouphousing=self.ui.checkBoxGroupHousing.isChecked(),
         )

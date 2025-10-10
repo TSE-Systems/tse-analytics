@@ -36,7 +36,7 @@ class HeatmapWidget(QWidget):
 
         df = self.preprocessed_data["All"]
         df = df[df["Animal"].isin(self.selected_animals)]
-        df["Hour"] = df["DateTime"].dt.hour
+        df["Hour"] = df["StartDateTime"].dt.hour
 
         grouped = df.groupby(["ChannelType", df["Hour"]], observed=False).aggregate(
             Count=("Activity", "count"),
@@ -45,21 +45,8 @@ class HeatmapWidget(QWidget):
         grouped.reset_index(inplace=True)
 
         grid = grouped.pivot(index="ChannelType", columns="Hour", values="Count")
-
-        # grouped = df.groupby("ChannelType", observed=False).resample("1H", on="DateTime").aggregate(
-        #     Count=("Activity", "count"),
-        # )
-        # grouped.sort_values(["DateTime", "ChannelType"], inplace=True)
-        # grouped.reset_index(inplace=True)
-        #
-        #
-        # first_timestamp = grouped.at[0, "DateTime"]
-        # delta = grouped["DateTime"] - first_timestamp
-        # hours = delta.dt.total_seconds() / 3600
-        # grouped["Hour"] = hours.astype(int)
-        # grouped["TimeOfDay"] = grouped["DateTime"].dt.hour
-        #
-        # grid = grouped.pivot(index="ChannelType", columns="TimeOfDay", values="Count")
+        if grid.empty:
+            return
 
         self.ui.canvas.clear(False)
         ax = self.ui.canvas.figure.add_subplot(111)

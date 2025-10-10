@@ -12,9 +12,9 @@ from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
-from tse_analytics.modules.phenomaster.io import tse_import_settings
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_animal_item import DrinkFeedAnimalItem
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_data import DrinkFeedData
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_bin_data import DrinkFeedBinData
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_raw_data import DrinkFeedRawData
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.drinkfeed_settings import DrinkFeedSettings
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.interval_processor import process_drinkfeed_intervals
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.sequential_processor import process_drinkfeed_sequences
@@ -42,7 +42,7 @@ from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_tabl
 
 
 class DrinkFeedDialog(QWidget):
-    def __init__(self, drinkfeed_data: DrinkFeedData, parent: QWidget):
+    def __init__(self, drinkfeed_data: DrinkFeedBinData | DrinkFeedRawData, parent: QWidget):
         super().__init__(parent)
 
         self.ui = Ui_DrinkFeedDialog()
@@ -62,11 +62,8 @@ class DrinkFeedDialog(QWidget):
         self.selected_animals: list[DrinkFeedAnimalItem] = []
 
         self.raw_df = self.drinkfeed_data.raw_df
-        if (
-            self.drinkfeed_data.name == tse_import_settings.DRINKFEED_BIN_TABLE
-            # TODO: remove later
-            or self.drinkfeed_data.name == "DrinkFeed Data"
-        ):
+        # Check if dealing with DrinkFeedBin or DrinkFeedRaw data
+        if isinstance(drinkfeed_data, DrinkFeedBinData):
             self.raw_long_df = pd.melt(
                 self.raw_df,
                 id_vars=["DateTime", "Animal", "Box"],
@@ -161,6 +158,7 @@ class DrinkFeedDialog(QWidget):
     def _filter_animals(self, selected_animals: list[DrinkFeedAnimalItem]):
         self.selected_animals = selected_animals
 
+        raw_df = self.raw_df
         raw_long_df = self.raw_long_df
         events_df = self.events_df
         episodes_df = self.episodes_df
@@ -169,6 +167,7 @@ class DrinkFeedDialog(QWidget):
         if len(self.selected_animals) > 0:
             animal_ids = [item.animal for item in self.selected_animals]
 
+            raw_df = raw_df[raw_df["Animal"].isin(animal_ids)]
             raw_long_df = raw_long_df[raw_long_df["Animal"].isin(animal_ids)]
 
             if events_df is not None:
@@ -178,6 +177,7 @@ class DrinkFeedDialog(QWidget):
             if intervals_df is not None:
                 intervals_df = intervals_df[intervals_df["Animal"].isin(animal_ids)]
 
+        self.raw_table_view.set_data(raw_df)
         self.raw_plot_widget.set_data(raw_long_df)
 
         if events_df is not None:

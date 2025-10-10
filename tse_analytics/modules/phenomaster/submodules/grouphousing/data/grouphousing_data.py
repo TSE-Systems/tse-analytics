@@ -32,7 +32,7 @@ class GroupHousingData:
 
     @property
     def start_timestamp(self):
-        return self.raw_df.at[0, "DateTime"]
+        return self.raw_df.at[0, "StartDateTime"]
 
     def get_preprocessed_data(self, remove_repeating_records: bool) -> dict[str, pd.DataFrame]:
         df = self.raw_df.copy()
@@ -45,8 +45,8 @@ class GroupHousingData:
 
         # Split data by antenna type
         all_df = self._preprocess_df(df, remove_repeating_records)
-        trafficage_df = self._preprocess_df(df[df["Channel"] > 4], remove_repeating_records)
-        drinkfeed_df = self._preprocess_df(df[df["Channel"] < 5], remove_repeating_records)
+        trafficage_df = self._preprocess_df(df[df["Channel"] > 3], remove_repeating_records)
+        drinkfeed_df = self._preprocess_df(df[df["Channel"] < 4], remove_repeating_records)
 
         # Preprocess TraffiCage data
         trafficage_df["Distance"] = trafficage_df.apply(_calculate_distance, axis=1)
@@ -58,7 +58,7 @@ class GroupHousingData:
         }
 
     def _preprocess_df(self, df: pd.DataFrame, remove_repeating_records: bool) -> pd.DataFrame:
-        df.sort_values(["Animal", "DateTime"], inplace=True)
+        df.sort_values(["Animal", "StartDateTime"], inplace=True)
 
         if remove_repeating_records:
             # Remove repeating neighbor rows
@@ -73,7 +73,7 @@ class GroupHousingData:
 
         df["Activity"] = df.groupby("Animal", observed=False).cumcount()
 
-        df.sort_values(by=["DateTime"], inplace=True)
+        df.sort_values(by=["StartDateTime"], inplace=True)
         df.reset_index(drop=True, inplace=True)
 
         return df
