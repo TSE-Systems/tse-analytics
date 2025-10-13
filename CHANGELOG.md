@@ -1,7 +1,7 @@
 TSE Analytics Change Log
 ====================================================================================================
 
-# 1.6.0 (2025-09-30)
+# 1.6.0 (2025-10-13)
 
 - New: Group housing data compatibility (PhenoMaster module).
 - New: TraffiCage datatable processing.

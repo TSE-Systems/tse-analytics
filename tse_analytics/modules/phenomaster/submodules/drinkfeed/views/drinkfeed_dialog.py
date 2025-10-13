@@ -87,11 +87,19 @@ class DrinkFeedDialog(QWidget):
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
+
         self.calculate_action = toolbar.addAction(QIcon(":/icons/icons8-analyze-16.png"), "Calculate")
         self.calculate_action.triggered.connect(self._calculate)
+
         self.add_datatable_action = toolbar.addAction(QIcon(":/icons/icons8-insert-table-16.png"), "Add Datatable...")
         self.add_datatable_action.setEnabled(False)
         self.add_datatable_action.triggered.connect(self._add_datatable)
+
+        self.assign_animals_action = toolbar.addAction(QIcon(":/icons/icons8-merge-files-16.png"), "Assign Animals")
+        self.assign_animals_action.setToolTip("Assign animals IDs using Group Housing data")
+        self.assign_animals_action.setEnabled(self.drinkfeed_data.dataset.grouphousing_data is not None)
+        self.assign_animals_action.triggered.connect(self._assign_animals)
+
         self.ui.verticalLayout.insertWidget(0, toolbar)
 
         self.raw_table_view = DrinkFeedTableView()
@@ -177,7 +185,7 @@ class DrinkFeedDialog(QWidget):
             if intervals_df is not None:
                 intervals_df = intervals_df[intervals_df["Animal"].isin(animal_ids)]
 
-        self.raw_table_view.set_data(raw_df)
+        self.raw_table_view.set_data(raw_long_df)
         self.raw_plot_widget.set_data(raw_long_df)
 
         if events_df is not None:
@@ -193,6 +201,7 @@ class DrinkFeedDialog(QWidget):
     def _calculate(self):
         self.calculate_action.setEnabled(False)
         self.add_datatable_action.setEnabled(False)
+        self.assign_animals_action.setEnabled(False)
 
         self.toast = make_toast(self, "DrinkFeed Analysis", "Processing...")
         self.toast.show()
@@ -215,8 +224,12 @@ class DrinkFeedDialog(QWidget):
     ):
         tic = timeit.default_timer()
 
-        self.events_df, self.episodes_df = process_drinkfeed_sequences(self.drinkfeed_data, settings, diets_dict)
-        # self.events_df, self.episodes_df = process_drinkfeed_sequences(self.drinkfeed_data, settings, diets_dict)
+        self.events_df, self.episodes_df = process_drinkfeed_sequences(
+            self.drinkfeed_data,
+            self.raw_long_df,
+            settings,
+            diets_dict,
+        )
 
         logger.info(f"DrinkFeed analysis complete: {timeit.default_timer() - tic} sec")
 
@@ -231,6 +244,7 @@ class DrinkFeedDialog(QWidget):
         self._update_tabs()
         self.add_datatable_action.setEnabled(True)
         self.calculate_action.setEnabled(True)
+        self.assign_animals_action.setEnabled(self.drinkfeed_data.dataset.grouphousing_data is not None)
         self.toast.hide()
 
     def _do_interval_analysis(
@@ -240,7 +254,12 @@ class DrinkFeedDialog(QWidget):
     ):
         tic = timeit.default_timer()
 
-        self.intervals_df = process_drinkfeed_intervals(self.drinkfeed_data, settings, diets_dict)
+        self.intervals_df = process_drinkfeed_intervals(
+            self.drinkfeed_data,
+            self.raw_long_df,
+            settings,
+            diets_dict,
+        )
 
         logger.info(f"DrinkFeed analysis complete: {timeit.default_timer() - tic} sec")
 
@@ -251,6 +270,7 @@ class DrinkFeedDialog(QWidget):
         self._update_tabs()
         self.add_datatable_action.setEnabled(True)
         self.calculate_action.setEnabled(True)
+        self.assign_animals_action.setEnabled(self.drinkfeed_data.dataset.grouphousing_data is not None)
         self.toast.hide()
 
     def _add_datatable(self):
@@ -285,6 +305,39 @@ class DrinkFeedDialog(QWidget):
                 timedelta,
             )
             manager.add_datatable(datatable)
+
+    def _assign_animals(self):
+        grouphousing_df = self.drinkfeed_data.dataset.grouphousing_data.get_preprocessed_data(True)["DrinkFeed"]
+        grouphousing_df.rename(
+            columns={
+                "StartDateTime": "DateTime",
+                "ChannelType": "Sensor",
+            },
+            inplace=True,
+        )
+        grouphousing_df = grouphousing_df[["DateTime", "Box", "Sensor", "Animal"]]
+        grouphousing_df["Sensor"] = grouphousing_df["Sensor"].astype(str)
+        grouphousing_df.reset_index(inplace=True)
+
+        drinkfeed_df = self.raw_long_df.copy()
+        drinkfeed_df.drop(columns=["Animal"], inplace=True)
+        drinkfeed_df["Sensor"] = drinkfeed_df["Sensor"].astype(str)
+        drinkfeed_df.reset_index(inplace=True)
+
+        df = pd.merge_asof(
+            drinkfeed_df,
+            grouphousing_df,
+            on="DateTime",
+            by=["Box", "Sensor"],
+            direction="backward",
+        )
+        df.drop(columns=["index_x", "index_y"], inplace=True)
+        df["Sensor"] = df["Sensor"].astype("category")
+        df.reset_index(inplace=True, drop=True)
+
+        self.raw_long_df = df
+        self.raw_table_view.set_data(self.raw_long_df)
+        self.raw_plot_widget.set_data(self.raw_long_df)
 
     def closeEvent(self, event: QCloseEvent) -> None:
         settings = QSettings()

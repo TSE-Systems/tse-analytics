@@ -48,6 +48,12 @@ def read_grouphousing(path: Path, dataset: PhenoMasterDataset) -> GroupHousingDa
     # Convert DateTime from POSIX format
     df["StartDateTime"] = pd.to_datetime(df["StartDateTime"], origin="unix", unit="ns")
     df["EndDateTime"] = pd.to_datetime(df["EndDateTime"], origin="unix", unit="ns")
+    # Insert Duration column
+    df.insert(
+        df.columns.get_loc("EndDateTime") + 1,
+        "Duration",
+        df["EndDateTime"] - df["StartDateTime"],
+    )
 
     # Convert dict keys type from str to int
     channel_to_channel_type_mapping = {int(k): v for k, v in hardware_metadata["channels"].items()}
