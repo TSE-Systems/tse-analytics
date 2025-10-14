@@ -5,7 +5,6 @@ from PySide6.QtWidgets import QVBoxLayout, QWidget, QToolBar, QToolButton, QMenu
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.utils import get_h_spacer_widget
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.views.misc.pandas_table_view import PandasTableView
@@ -63,26 +62,23 @@ class PandasWidget(QWidget):
         toolbar.addAction(QIcon(":/icons/icons8-resize-horizontal-16.png"), "Resize Columns").triggered.connect(
             self._resize_columns_width
         )
-        toolbar.addWidget(get_h_spacer_widget(toolbar))
-        toolbar.addAction("Add to Report").triggered.connect(self._add_report)
+        # toolbar.addWidget(get_h_spacer_widget(toolbar))
+        # toolbar.addAction("Add to Report").triggered.connect(self._add_report)
 
         self._layout.addWidget(toolbar)
 
         self.pandas_table_view = PandasTableView()
         self._layout.addWidget(self.pandas_table_view)
 
-    def set_data(self, df: pd.DataFrame) -> None:
+    def set_data(self, df: pd.DataFrame, resize_columns=True) -> None:
         """
         Set the pandas DataFrame to be displayed in the widget.
 
         This method updates the internal DataFrame reference and passes the data
         to the table view for display.
-
-        Args:
-            df: The pandas DataFrame to display.
         """
         self.df = df
-        self.pandas_table_view.set_data(self.df)
+        self.pandas_table_view.set_data(self.df, resize_columns)
 
     def _export_csv(self):
         """

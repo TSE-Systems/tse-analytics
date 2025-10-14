@@ -45,9 +45,7 @@ tasks:
       - pyside6-uic tse_analytics/modules/phenomaster/views/import_csv_dialog.ui -o tse_analytics/modules/phenomaster/views/import_csv_dialog_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/views/import_tse_dialog.ui -o tse_analytics/modules/phenomaster/views/import_tse_dialog_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_dialog.ui -o tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_dialog_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_plot_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_settings_widget.ui -o tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_settings_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_episodes_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_episodes_plot_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/calo_dialog.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/calo_dialog_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/calo_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/calo_plot_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/calo_settings_widget.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/calo_settings_widget_ui.py
@@ -61,10 +59,10 @@ tasks:
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_heatmap_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_heatmap_plot_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_trajectory_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_trajectory_plot_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_frames_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_frames_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_dialog.ui -o tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_dialog_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_raw_data_widget.ui -o tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_raw_data_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_preprocessed_data_widget.ui -o tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_preprocessed_data_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_heatmap_widget.ui -o tse_analytics/modules/phenomaster/submodules/trafficage/views/trafficage_heatmap_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/grouphousing/views/grouphousing_dialog.ui -o tse_analytics/modules/phenomaster/submodules/grouphousing/views/grouphousing_dialog_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/grouphousing/views/heatmap_widget/heatmap_widget.ui -o tse_analytics/modules/phenomaster/submodules/grouphousing/views/heatmap_widget/heatmap_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/grouphousing/views/raw_data_widget/raw_data_widget.ui -o tse_analytics/modules/phenomaster/submodules/grouphousing/views/raw_data_widget/raw_data_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/grouphousing/views/preprocessed_data_widget/preprocessed_data_widget.ui -o tse_analytics/modules/phenomaster/submodules/grouphousing/views/preprocessed_data_widget/preprocessed_data_widget_ui.py
 
   build-ui:intellicage:
     cmds:

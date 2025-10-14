@@ -1,8 +1,11 @@
 TSE Analytics Change Log
 ====================================================================================================
 
-# 1.5.4 (2025-09-17)
+# 1.6.0 (2025-10-13)
 
+- New: Group housing data compatibility (PhenoMaster module).
+- New: TraffiCage datatable processing.
+- Change: PySide6-QtAds updated to version 4.4.1
 - Fix: Repeated data merging without the "Bin" column.
 - Fix: Resampling interval checks are improved.
 

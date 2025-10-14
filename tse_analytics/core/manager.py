@@ -27,8 +27,8 @@ from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMast
 from tse_analytics.modules.phenomaster.io.csv_dataset_loader import load_csv_dataset
 from tse_analytics.modules.phenomaster.submodules.actimot.io.data_loader import import_actimot_csv_data
 from tse_analytics.modules.phenomaster.submodules.calo.io.data_loader import import_calo_csv_data
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.io.data_loader import import_drinkfeed_csv_data
-from tse_analytics.modules.phenomaster.submodules.trafficage.io.data_loader import import_trafficage_csv_data
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.io.data_loader import import_drinkfeed_bin_csv_data
+from tse_analytics.modules.phenomaster.submodules.grouphousing.io.data_loader import import_grouphousing_csv_data
 
 
 class Manager:
@@ -149,9 +149,9 @@ class Manager:
         """
         dataset = self.get_selected_dataset()
         if dataset is not None and isinstance(dataset, PhenoMasterDataset):
-            data = import_drinkfeed_csv_data(path, dataset, get_csv_import_settings())
+            data = import_drinkfeed_bin_csv_data(path, dataset, get_csv_import_settings())
             if data is not None:
-                dataset.drinkfeed_data = data
+                dataset.drinkfeed_bin_data = data
                 messaging.broadcast(messaging.WorkspaceChangedMessage(self, self._workspace))
 
     def import_actimot_data(self, path: str) -> None:
@@ -182,18 +182,18 @@ class Manager:
                 dataset.calo_data = data
                 messaging.broadcast(messaging.WorkspaceChangedMessage(self, self._workspace))
 
-    def import_trafficage_data(self, path: str) -> None:
+    def import_grouphousing_data(self, path: str) -> None:
         """
-        Import TrafficAge data into the currently selected PhenoMaster dataset.
+        Import group housing data into the currently selected PhenoMaster dataset.
 
         Args:
-            path: The path to the TrafficAge CSV file to import.
+            path: The path to the group housing CSV file to import.
         """
         dataset = self.get_selected_dataset()
         if dataset is not None and isinstance(dataset, PhenoMasterDataset):
-            data = import_trafficage_csv_data(path, dataset, get_csv_import_settings())
+            data = import_grouphousing_csv_data(path, dataset, get_csv_import_settings())
             if data is not None:
-                dataset.trafficage_data = data
+                dataset.grouphousing_data = data
                 messaging.broadcast(messaging.WorkspaceChangedMessage(self, self._workspace))
 
     def add_datatable(self, datatable: Datatable) -> None:
@@ -324,7 +324,7 @@ import_csv_dataset = _instance.import_csv_dataset
 import_drinkfeed_data = _instance.import_drinkfeed_data
 import_actimot_data = _instance.import_actimot_data
 import_calo_data = _instance.import_calo_data
-import_trafficage_data = _instance.import_trafficage_data
+import_grouphousing_data = _instance.import_grouphousing_data
 add_dataset = _instance.add_dataset
 remove_dataset = _instance.remove_dataset
 add_datatable = _instance.add_datatable
