@@ -259,6 +259,7 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     # convert categorical types
     new_df = new_df.astype({
         "Animal": "category",
+        "Box": int,
     })
 
     data = DrinkFeedBinData(

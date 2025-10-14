@@ -1,12 +1,12 @@
 import timeit
 
 import pandas as pd
-import traja
-from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QIcon, QKeyEvent, QHideEvent
 from PySide6.QtWidgets import QDialog, QFileDialog, QWidget
+from pyqttoast import ToastPreset
 
+import traja
 from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
@@ -26,10 +26,10 @@ from tse_analytics.modules.phenomaster.submodules.actimot.views.actimot_settings
 from tse_analytics.modules.phenomaster.submodules.actimot.views.actimot_stream_plot_widget import (
     ActimotStreamPlotWidget,
 )
-from tse_analytics.modules.phenomaster.submodules.actimot.views.actimot_table_view import ActimotTableView
 from tse_analytics.modules.phenomaster.submodules.actimot.views.actimot_trajectory_plot_widget import (
     ActimotTrajectoryPlotWidget,
 )
+from tse_analytics.views.misc.pandas_widget import PandasWidget
 
 
 class ActimotDialog(QDialog):
@@ -44,7 +44,7 @@ class ActimotDialog(QDialog):
 
         self.actimot_data = actimot_data
 
-        self.actimot_table_view = ActimotTableView(self)
+        self.actimot_table_view = PandasWidget(actimot_data.dataset, "ActiMot Events")
         self.ui.tabWidget.addTab(self.actimot_table_view, "Events")
 
         self.actimot_plot_widget = ActimotPlotWidget(self)
@@ -87,7 +87,7 @@ class ActimotDialog(QDialog):
 
         self.df = self.actimot_data.raw_df[self.actimot_data.raw_df["Box"] == selected_box.box]
 
-        self.actimot_table_view.set_data(self.df)
+        self.actimot_table_view.set_data(self.df, False)
         self.actimot_frames_widget.set_data(self.df)
 
         self.actimot_trajectory_plot_widget.set_data(None)
@@ -178,7 +178,7 @@ class ActimotDialog(QDialog):
                 False,
             )
 
-            self.actimot_table_view.set_data(df)
+            self.actimot_table_view.set_data(df, False)
 
             self.actimot_plot_widget.set_variables(self.actimot_data.variables)
             self.actimot_plot_widget.set_data(df)

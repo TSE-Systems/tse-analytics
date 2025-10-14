@@ -38,7 +38,7 @@ from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_plot
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_settings_widget import (
     DrinkFeedSettingsWidget,
 )
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_table_view import DrinkFeedTableView
+from tse_analytics.views.misc.pandas_widget import PandasWidget
 
 
 class DrinkFeedDialog(QWidget):
@@ -102,8 +102,8 @@ class DrinkFeedDialog(QWidget):
 
         self.ui.verticalLayout.insertWidget(0, toolbar)
 
-        self.raw_table_view = DrinkFeedTableView()
-        self.raw_table_view.set_data(self.raw_df)
+        self.raw_table_view = PandasWidget(self.drinkfeed_data.dataset, "Drink/Feed Raw Data")
+        self.raw_table_view.set_data(self.raw_df, False)
         self.ui.tabWidget.addTab(self.raw_table_view, "Raw Data")
 
         self.raw_plot_widget = DrinkFeedPlotWidget()
@@ -111,16 +111,16 @@ class DrinkFeedDialog(QWidget):
         self.raw_plot_widget.set_variables(drinkfeed_data.variables)
         self.ui.tabWidget.addTab(self.raw_plot_widget, "Raw Data Plot")
 
-        self.intervals_table_view = DrinkFeedTableView()
+        self.intervals_table_view = PandasWidget(self.drinkfeed_data.dataset, "Drink/Feed Intervals")
         self.intervals_table_tab_index = self.ui.tabWidget.addTab(self.intervals_table_view, "Intervals")
 
         self.intervals_plot_widget = DrinkFeedIntervalsPlotWidget()
         self.intervals_plot_tab_index = self.ui.tabWidget.addTab(self.intervals_plot_widget, "Intervals Plots")
 
-        self.events_table_view = DrinkFeedTableView()
+        self.events_table_view = PandasWidget(self.drinkfeed_data.dataset, "Drink/Feed Events")
         self.events_table_tab_index = self.ui.tabWidget.addTab(self.events_table_view, "Events")
 
-        self.episodes_table_view = DrinkFeedTableView()
+        self.episodes_table_view = PandasWidget(self.drinkfeed_data.dataset, "Drink/Feed Episodes")
         self.episodes_table_tab_index = self.ui.tabWidget.addTab(self.episodes_table_view, "Episodes")
 
         self.episodes_offset_plot_widget = DrinkFeedEpisodesOffsetPlotWidget()
@@ -189,7 +189,7 @@ class DrinkFeedDialog(QWidget):
         self.raw_plot_widget.set_data(raw_long_df)
 
         if events_df is not None:
-            self.events_table_view.set_data(events_df)
+            self.events_table_view.set_data(events_df, False)
 
         if episodes_df is not None:
             self.episodes_table_view.set_data(episodes_df)
@@ -234,7 +234,7 @@ class DrinkFeedDialog(QWidget):
         logger.info(f"DrinkFeed analysis complete: {timeit.default_timer() - tic} sec")
 
     def _sequential_analysis_finished(self):
-        self.events_table_view.set_data(self.events_df)
+        self.events_table_view.set_data(self.events_df, False)
         self.episodes_table_view.set_data(self.episodes_df)
 
         self.episodes_offset_plot_widget.set_data(self.episodes_df, self.drinkfeed_data.variables)
@@ -281,14 +281,24 @@ class DrinkFeedDialog(QWidget):
         variables = self.drinkfeed_data.variables
 
         if settings.sequential_analysis_type and self.episodes_df is not None:
+            # Make dataframe compatible with Datatable format
+            episodes_df = self.episodes_df.rename(columns={
+                "Start": "DateTime",
+                "Offset": "Timedelta",
+            })
+
+            episodes_df = episodes_df.pivot(index=["DateTime", "Timedelta", "Duration", "Animal"], columns="Sensor", values="Quantity")
+            episodes_df.reset_index(inplace=True)
+
             datatable = Datatable(
                 self.drinkfeed_data.dataset,
                 f"DrinkFeedEpisodes [{now_string}]",
                 "Drink/Feed episodes",
                 variables,
-                self.episodes_df,
+                episodes_df,
                 None,
             )
+            datatable.set_factors(self.drinkfeed_data.dataset.factors)
             manager.add_datatable(datatable)
         elif self.intervals_df is not None:
             timedelta = pd.Timedelta(
@@ -304,6 +314,7 @@ class DrinkFeedDialog(QWidget):
                 self.intervals_df,
                 timedelta,
             )
+            datatable.set_factors(self.drinkfeed_data.dataset.factors)
             manager.add_datatable(datatable)
 
     def _assign_animals(self):

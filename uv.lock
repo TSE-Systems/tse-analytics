@@ -22,7 +22,7 @@ wheels = [
 
 [[package]]
 name = "astropy"
-version = "7.1.0"
+version = "7.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "astropy-iers-data" },
@@ -31,24 +31,24 @@ dependencies = [
     { name = "pyerfa" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/83/91/124d020cea78e4e4b6db7ff726c2c2e4a5865293d0a4355d13b0312d99f1/astropy-7.1.0.tar.gz", hash = "sha256:c8f254322295b1b8cf24303d6f155bf7efdb6c1282882b966ce3040eff8c53c5", size = 6976116, upload-time = "2025-05-20T13:40:10.557Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e9/e1/6b8846dabc54b6fdc0262adefa041259f52ece9c929b10e0e90937691345/astropy-7.1.1.tar.gz", hash = "sha256:6d128f0005e2c34f70113484468bf9d0e4ca1ee15a279cfd08bdd979d38db0f8", size = 6982773, upload-time = "2025-10-10T20:36:49.347Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a3/d6/ec68703aff787ca1bb2ed92a109256a6e4d9975aeee0b4bd2b0ab84b2993/astropy-7.1.0-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:116149abdebafab193f7ca16427bd6bb4afc111677c78c32f48cffbc0ecb6a18", size = 6375607, upload-time = "2025-05-20T13:39:57.6Z" },
-    { url = "https://files.pythonhosted.org/packages/2b/79/0f6eacbe575c3b677d70193c22b68c3a95bec68204ccf53068b657c7ed06/astropy-7.1.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:734d5e93e76d2e2175f991b17ca130463f2edb56c107fbc07c6532ca461a6ea7", size = 6296640, upload-time = "2025-05-20T13:39:58.973Z" },
-    { url = "https://files.pythonhosted.org/packages/c7/c1/06bd8bd17b2302c05d75079ca89d79825dede63c00876e439ec91f120405/astropy-7.1.0-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1fd94f755f2e9104c5caf0afe69175d2620708828233d387c1dad0044e79f543", size = 10030192, upload-time = "2025-05-20T13:40:01.129Z" },
-    { url = "https://files.pythonhosted.org/packages/17/ce/f9e103e6be3d801cadffef8eb814bd10e4de3603b9ba9f97dd41c6a59bde/astropy-7.1.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:49effea6de855dcdba09a211d51ca279766c66284c8db3d911b4523bbd96eae9", size = 10079889, upload-time = "2025-05-20T13:40:03.076Z" },
-    { url = "https://files.pythonhosted.org/packages/a3/fe/605a09e74b03ea2981632cd9a9a3720bd8d232ddaa729fc63ce46d538218/astropy-7.1.0-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:52709e6bbe65c6d6c2a342506ad8c2801ff2aed80cc0a5d7817387122e0ac616", size = 10084024, upload-time = "2025-05-20T13:40:04.776Z" },
-    { url = "https://files.pythonhosted.org/packages/af/e9/8259c4699227e5ee71d5d15a297f1e9469b99a980a1fd3140ecf68e98c4d/astropy-7.1.0-cp313-cp313-win32.whl", hash = "sha256:a77d07a104ec24ed7f8a45de3935f46071551aa2eb6d6b62efebdc888f65b6d6", size = 6150536, upload-time = "2025-05-20T13:40:06.638Z" },
-    { url = "https://files.pythonhosted.org/packages/0b/dd/d9c55247172f7156696d85c9146b64b41c30405bf86b775a731bed4d52f8/astropy-7.1.0-cp313-cp313-win_amd64.whl", hash = "sha256:8e317f34e33a8f5517bc9fc6fbc005f42730d3be7d2820ef41e0468bcb796843", size = 6278127, upload-time = "2025-05-20T13:40:08.643Z" },
+    { url = "https://files.pythonhosted.org/packages/12/31/77eb5e630da8df9eb30bf9b8234926dd229466cbff01b08590448b3941ae/astropy-7.1.1-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:91b8e62cf97d532be28cc794ffe33a394e04e53af24586cea209362aec9ecea1", size = 6397035, upload-time = "2025-10-10T20:36:25.425Z" },
+    { url = "https://files.pythonhosted.org/packages/6d/18/af991251dc2f84b1e86b2ec1aa7c77831d90962a69668bba75402da9ad68/astropy-7.1.1-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:c0c587ff3eab76474e696917273242d434c11de3d729971598b773cf15ef8ff0", size = 6344625, upload-time = "2025-10-10T20:36:26.785Z" },
+    { url = "https://files.pythonhosted.org/packages/b9/aa/afd0e18e74fa116469c0ef9aed4c214053412786466f1a1a857af086c616/astropy-7.1.1-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:fc05407cf0ac68896308bf974bad506f1357821b755d0cb60b87b3a1655d96c5", size = 10165691, upload-time = "2025-10-10T20:36:28.73Z" },
+    { url = "https://files.pythonhosted.org/packages/0e/37/0fd95850cc52939498b861501bef8d7dc496c2ec6217c1b85a3d2c34940a/astropy-7.1.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:fed17a4895edf118e1348560de9deb0596596a41f33314c0d05edce02eb3d1e8", size = 10226235, upload-time = "2025-10-10T20:36:30.915Z" },
+    { url = "https://files.pythonhosted.org/packages/d9/df/4539355f72f240de8498494757ba9ddd8562aca83670c39820b917f616dc/astropy-7.1.1-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:b4dcf39226ecad586a11d19207a8a236a3bb0e0412c06574b90ed8799ef202b8", size = 10165501, upload-time = "2025-10-10T20:36:32.588Z" },
+    { url = "https://files.pythonhosted.org/packages/1a/46/d881221dcf7f55a3cd945ad55daf994866b4622e796eb27ad59f144568f9/astropy-7.1.1-cp313-cp313-win32.whl", hash = "sha256:33c359bceaa13758be066f878c37d226e899a4faa8cea2711bf68dbbc4a1cb0f", size = 6156145, upload-time = "2025-10-10T20:36:34.299Z" },
+    { url = "https://files.pythonhosted.org/packages/45/58/ba5dad5c22a5338ae2954cc81e895add48f8c9b07961a5842cbc2e1f62f2/astropy-7.1.1-cp313-cp313-win_amd64.whl", hash = "sha256:0a3d70df518cb7f400f4ec496b2cbba887c0a0c596fbb15e9bda4fcba07c3f59", size = 6285781, upload-time = "2025-10-10T20:36:35.779Z" },
 ]
 
 [[package]]
 name = "astropy-iers-data"
-version = "0.2025.10.6.0.35.25"
+version = "0.2025.10.13.0.37.17"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/c8/d2/7a41e765d318449d00a42a9bc29a1c8c681709615adb6555ae62c326074b/astropy_iers_data-0.2025.10.6.0.35.25.tar.gz", hash = "sha256:60a0a8ff69dcb2d3470071f444c58685b06299c48214349a1a0ce2d44e178f76", size = 1910387, upload-time = "2025-10-06T00:36:05.541Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/af/0b/330240e26e2b9c15852b53b77420940c98a50fe8fc1bb4574a301b1b387a/astropy_iers_data-0.2025.10.13.0.37.17.tar.gz", hash = "sha256:c1ecc6a8fc407e2388a309490a28bddfea6e049269ce490607218dab97cd0df6", size = 1911429, upload-time = "2025-10-13T00:37:57.348Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c5/38/be921eaf8fc67333fd2c2657ea965103ccc4050c29a66d5fd5f3db881c0f/astropy_iers_data-0.2025.10.6.0.35.25-py3-none-any.whl", hash = "sha256:b6f572ee3ae4e02e4ae377229b533ed89d6f8eb027ae31e380cbc8096735ba49", size = 1966052, upload-time = "2025-10-06T00:36:03.945Z" },
+    { url = "https://files.pythonhosted.org/packages/ae/ba/38b9767b35ee85a3f793140ea43757c0a0a2de093117f6c227e7d1add4df/astropy_iers_data-0.2025.10.13.0.37.17-py3-none-any.whl", hash = "sha256:e22cd7e7d00383988b08a7fcc0b77b9b3e9cd22a061103405c3d6efdd08a6e5e", size = 1967221, upload-time = "2025-10-13T00:37:55.585Z" },
 ]
 
 [[package]]
@@ -911,7 +911,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "astropy", specifier = "==7.1.0" },
+    { name = "astropy", specifier = "==7.1.1" },
     { name = "lmfit", specifier = "==1.3.4" },
     { name = "loguru", specifier = "==0.7.3" },
     { name = "matplotlib", specifier = "==3.10.7" },
