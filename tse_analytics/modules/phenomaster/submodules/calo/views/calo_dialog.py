@@ -3,30 +3,30 @@ import timeit
 from multiprocessing import Pool
 
 import pandas as pd
-from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, Qt
 from PySide6.QtGui import QIcon, QKeyEvent, QHideEvent
 from PySide6.QtWidgets import QDialog, QFileDialog, QWidget
+from pyqttoast import ToastPreset
 
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.modules.phenomaster.submodules.calo.calo_fitting_result import CaloFittingResult
 from tse_analytics.modules.phenomaster.submodules.calo.calo_processor import process_box
 from tse_analytics.modules.phenomaster.submodules.calo.calo_settings import CaloSettings
-from tse_analytics.modules.phenomaster.submodules.calo.data.calo_data import CaloData
 from tse_analytics.modules.phenomaster.submodules.calo.data.calo_box import CaloBox
+from tse_analytics.modules.phenomaster.submodules.calo.data.calo_data import CaloData
 from tse_analytics.modules.phenomaster.submodules.calo.fitting_params import FittingParams
 from tse_analytics.modules.phenomaster.submodules.calo.views.calo_bin_selector import CaloBinSelector
 from tse_analytics.modules.phenomaster.submodules.calo.views.calo_box_selector import CaloBoxSelector
+from tse_analytics.modules.phenomaster.submodules.calo.views.calo_dialog_ui import Ui_CaloDialog
 from tse_analytics.modules.phenomaster.submodules.calo.views.calo_plot_widget import CaloPlotWidget
 from tse_analytics.modules.phenomaster.submodules.calo.views.calo_rer_widget import CaloRerWidget
 from tse_analytics.modules.phenomaster.submodules.calo.views.calo_settings_widget import (
     CaloSettingsWidget,
 )
-from tse_analytics.modules.phenomaster.submodules.calo.views.calo_table_view import CaloTableView
 from tse_analytics.modules.phenomaster.submodules.calo.views.calo_test_fit_widget import (
     CaloTestFitWidget,
 )
-from tse_analytics.modules.phenomaster.submodules.calo.views.calo_dialog_ui import Ui_CaloDialog
+from tse_analytics.views.misc.pandas_widget import PandasWidget
 
 
 class CaloDialog(QDialog):
@@ -40,8 +40,8 @@ class CaloDialog(QDialog):
 
         self.calo_data = calo_data
 
-        self.calo_table_view = CaloTableView()
-        self.calo_table_view.set_data(calo_data.raw_df)
+        self.calo_table_view = PandasWidget(calo_data.dataset, "Calorimetry Data")
+        self.calo_table_view.set_data(calo_data.raw_df, False)
         self.ui.tabWidget.addTab(self.calo_table_view, "Data")
 
         self.calo_plot_widget = CaloPlotWidget()

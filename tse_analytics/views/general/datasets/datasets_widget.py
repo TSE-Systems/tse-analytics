@@ -30,8 +30,8 @@ from tse_analytics.modules.phenomaster.submodules.calo.models.calo_tree_item imp
 from tse_analytics.modules.phenomaster.submodules.calo.views.calo_dialog import CaloDialog
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.models.drinkfeed_tree_item import DrinkFeedTreeItem
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_dialog import DrinkFeedDialog
-from tse_analytics.modules.phenomaster.submodules.trafficage.models.trafficage_tree_item import TraffiCageTreeItem
-from tse_analytics.modules.phenomaster.submodules.trafficage.views.trafficage_dialog import TraffiCageDialog
+from tse_analytics.modules.phenomaster.submodules.grouphousing.models.grouphousing_tree_item import GroupHousingTreeItem
+from tse_analytics.modules.phenomaster.submodules.grouphousing.views.grouphousing_dialog import GroupHousingDialog
 from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvDialog
 from tse_analytics.toolbox.toolbox_button import ToolboxButton
 from tse_analytics.views.general.datasets.adjust_dataset_dialog import AdjustDatasetDialog
@@ -92,7 +92,7 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
             import_menu.addAction("Import calo data...").triggered.connect(self._import_calo_data)
             import_menu.addAction("Import drink/feed data...").triggered.connect(self._import_drinkfeed_data)
             import_menu.addAction("Import ActiMot data...").triggered.connect(self._import_actimot_data)
-            import_menu.addAction("Import TraffiCage data...").triggered.connect(self._import_trafficage_data)
+            import_menu.addAction("Import group housing data...").triggered.connect(self._import_grouphousing_data)
             self.import_button.setMenu(import_menu)
 
             toolbar.addWidget(self.import_button)
@@ -286,17 +286,13 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
             if dialog.exec() == QDialog.DialogCode.Accepted:
                 manager.import_calo_data(path)
 
-    def _import_trafficage_data(self):
+    def _import_grouphousing_data(self):
         """
-        Import TraffiCage data from a CSV file.
-
-        Opens a file dialog to select a CSV file, then opens an ImportCsvDialog
-        to configure the import. If the dialog is accepted, calls the manager
-        to import the TraffiCage data.
+        Import group housing data from a CSV file.
         """
         path, _ = QFileDialog.getOpenFileName(
             self,
-            "Import TraffiCage data",
+            "Import group housing data",
             "",
             "CSV Files (*.csv)",
         )
@@ -305,7 +301,7 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
             # TODO: check other cases!!
             dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
             if dialog.exec() == QDialog.DialogCode.Accepted:
-                manager.import_trafficage_data(path)
+                manager.import_grouphousing_data(path)
 
     def _adjust_dataset(self):
         """
@@ -449,14 +445,11 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                 del dialog
                 if result == QDialog.DialogCode.Accepted:
                     pass
-            elif isinstance(item, TraffiCageTreeItem):
-                dialog = TraffiCageDialog(item.trafficage_data.dataset, self)
+            elif isinstance(item, GroupHousingTreeItem):
+                dialog = GroupHousingDialog(item.grouphousing_data.dataset, self)
                 # TODO: check other cases!!
                 dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-                result = dialog.exec()
-                del dialog
-                if result == QDialog.DialogCode.Accepted:
-                    pass
+                dialog.show()
             elif isinstance(item, ExtensionTreeItem):
                 match item.name:
                     case "IntelliCage raw data":

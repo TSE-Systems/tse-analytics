@@ -1,3 +1,4 @@
+import sqlite3
 from datetime import timedelta
 from pathlib import Path
 
@@ -5,8 +6,116 @@ import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.shared import Aggregation, Variable
+from tse_analytics.modules.phenomaster.io import tse_import_settings
 from tse_analytics.modules.phenomaster.submodules.calo.data.calo_data import CaloData
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
+
+
+def read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
+    metadata = dataset.metadata["tables"][tse_import_settings.CALO_BIN_TABLE]
+
+    sample_interval = pd.Timedelta(metadata["sample_interval"])
+
+    # Read variables list
+    skipped_variables = ["DateTime", "Box"]
+    variables: dict[str, Variable] = {}
+    dtypes = {}
+    for item in metadata["columns"].values():
+        variable = Variable(
+            item["id"],
+            item["unit"],
+            item["description"],
+            item["type"],
+            Aggregation.MEAN,
+            False,
+        )
+        if variable.name not in skipped_variables:
+            variables[variable.name] = variable
+        dtypes[variable.name] = item["type"]
+    # Ignore the time for "DateTime" column
+    dtypes.pop("DateTime")
+
+    # Read measurements data
+    df = pd.DataFrame()
+    with sqlite3.connect(path, check_same_thread=False) as connection:
+        for chunk in pd.read_sql_query(
+            f"SELECT * FROM {tse_import_settings.CALO_BIN_TABLE}",
+            connection,
+            dtype=dtypes,
+            chunksize=tse_import_settings.CHUNK_SIZE,
+        ):
+            df = pd.concat([df, chunk], ignore_index=True)
+
+    # Convert DateTime from POSIX format
+    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
+
+    # Sort dataframe
+    df.sort_values(["Box", "DateTime"], inplace=True)
+
+    # Assign bins
+    previous_timestamp = None
+    previous_box = None
+    bins = []
+    offsets = []
+    timedeltas = []
+    time_gap = timedelta(seconds=10)
+    offset = 0
+    for row in df.itertuples():
+        timestamp = row.DateTime
+        box = row.Box
+
+        if box != previous_box:
+            start_timestamp = timestamp
+
+        if previous_timestamp is None:
+            bins = [0]
+        elif timestamp - previous_timestamp > time_gap:
+            bin_number = bins[-1]
+            bin_number = bin_number + 1
+
+            offset = 0
+
+            # reset bin number for a new box
+            if box != previous_box:
+                bin_number = 0
+
+            bins.append(bin_number)
+            start_timestamp = timestamp
+        else:
+            bin_number = bins[-1]
+
+            # reset bin number for a new box
+            if box != previous_box:
+                bin_number = 0
+                offset = 0
+
+            bins.append(bin_number)
+
+        if box != previous_box:
+            previous_box = box
+
+        td = timestamp - start_timestamp
+        timedeltas.append(td)
+
+        # offset = td.total_seconds()
+        offsets.append(offset)
+        offset = offset + 1
+        previous_timestamp = timestamp
+
+    df.insert(1, "Timedelta", timedeltas)
+    df.insert(2, "Bin", bins)
+    df.insert(3, "Offset", offsets)
+
+    calo_data = CaloData(
+        dataset,
+        tse_import_settings.CALO_BIN_TABLE,
+        str(path),
+        variables,
+        df,
+        sample_interval,
+    )
+
+    return calo_data
 
 
 def import_calo_csv_data(
@@ -18,7 +127,7 @@ def import_calo_csv_data(
     return None
 
 
-def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings):
+def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings) -> CaloData:
     columns_line = None
     with open(path) as f:
         lines = f.readlines()

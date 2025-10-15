@@ -4,11 +4,12 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QIcon
 
 from tse_analytics.core.models.tree_item import TreeItem
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_data import DrinkFeedData
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_bin_data import DrinkFeedBinData
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_raw_data import DrinkFeedRawData
 
 
 class DrinkFeedTreeItem(TreeItem):
-    def __init__(self, drinkfeed_data: DrinkFeedData):
+    def __init__(self, drinkfeed_data: DrinkFeedBinData | DrinkFeedRawData):
         super().__init__(drinkfeed_data.name)
 
         self._drinkfeed_data = weakref.ref(drinkfeed_data)

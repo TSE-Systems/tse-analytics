@@ -13,27 +13,13 @@ class PandasTableView(QTableView):
     """
 
     def __init__(self, parent: QWidget | None = None):
-        """
-        Initialize the PandasTableView widget.
-
-        Args:
-            parent: The parent widget. Default is None.
-        """
         super().__init__(parent)
         self.verticalHeader().setDefaultSectionSize(20)
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
 
-    def set_data(self, df: pd.DataFrame):
-        """
-        Set the pandas DataFrame to be displayed in the table view.
-
-        This method creates a new PandasSimpleModel with the provided DataFrame,
-        sets it as the model for this view, and adjusts column widths to fit the content.
-
-        Args:
-            df: The pandas DataFrame to display.
-        """
+    def set_data(self, df: pd.DataFrame, resize_columns = True):
         model = PandasSimpleModel(df)
         self.setModel(model)
-        self.resizeColumnsToContents()
+        if resize_columns:
+            self.resizeColumnsToContents()

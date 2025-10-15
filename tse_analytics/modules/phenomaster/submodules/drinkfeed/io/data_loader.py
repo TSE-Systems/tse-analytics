@@ -1,3 +1,4 @@
+import sqlite3
 from pathlib import Path
 
 import pandas as pd
@@ -5,19 +6,155 @@ import pandas as pd
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_data import DrinkFeedData
+from tse_analytics.modules.phenomaster.io import tse_import_settings
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_bin_data import DrinkFeedBinData
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_raw_data import DrinkFeedRawData
 
 
-def import_drinkfeed_csv_data(
-    filename: str, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings
-) -> DrinkFeedData | None:
+def read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedBinData:
+    metadata = dataset.metadata["tables"][tse_import_settings.DRINKFEED_BIN_TABLE]
+
+    # Read variables list
+    skipped_variables = ["DateTime", "Box"]
+    variables: dict[str, Variable] = {}
+    dtypes = {}
+    for item in metadata["columns"].values():
+        variable = Variable(
+            item["id"],
+            item["unit"],
+            item["description"],
+            item["type"],
+            Aggregation.MEAN,
+            False,
+        )
+        if variable.name not in skipped_variables:
+            variables[variable.name] = variable
+        dtypes[variable.name] = item["type"]
+
+    # Read measurements data
+    df = pd.DataFrame()
+    with sqlite3.connect(path, check_same_thread=False) as connection:
+        for chunk in pd.read_sql_query(
+            f"SELECT * FROM {tse_import_settings.DRINKFEED_BIN_TABLE}",
+            connection,
+            dtype=dtypes,
+            chunksize=tse_import_settings.CHUNK_SIZE,
+        ):
+            df = pd.concat([df, chunk], ignore_index=True)
+
+    # Convert DateTime from POSIX format
+    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
+
+    # Add Animal column
+    box_to_animal_map = {}
+    for animal in dataset.animals.values():
+        box_to_animal_map[animal.properties["Box"]] = animal.id
+
+    df.insert(
+        df.columns.get_loc("Box") + 1,
+        "Animal",
+        df["Box"].replace(box_to_animal_map),
+    )
+
+    df = df.astype({
+        "Animal": "category",
+    })
+
+    data = DrinkFeedBinData(
+        dataset,
+        tse_import_settings.DRINKFEED_BIN_TABLE,
+        str(path),
+        variables,
+        df,
+    )
+
+    return data
+
+
+def read_drinkfeed_raw(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedRawData:
+    table_metadata = dataset.metadata["tables"][tse_import_settings.DRINKFEED_RAW_TABLE]
+    hardware_metadata = dataset.metadata["hardware"][tse_import_settings.DRINKFEED_RAW_TABLE]
+
+    # Prepare dtypes
+    dtypes = {}
+    for item in table_metadata["columns"].values():
+        dtypes[item["id"]] = item["type"]
+
+    # Read measurements data
+    df = pd.DataFrame()
+    with sqlite3.connect(path, check_same_thread=False) as connection:
+        for chunk in pd.read_sql_query(
+            f"SELECT * FROM {tse_import_settings.DRINKFEED_RAW_TABLE}",
+            connection,
+            dtype=dtypes,
+            chunksize=tse_import_settings.CHUNK_SIZE,
+        ):
+            df = pd.concat([df, chunk], ignore_index=True)
+
+    # Convert DateTime from POSIX format
+    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
+
+    # Convert dict keys type from str to int
+    param_to_sensor_mapping = {int(k): v for k, v in hardware_metadata["params"].items()}
+    # Replace Param column
+    df.insert(
+        df.columns.get_loc("Box") + 1,
+        "Sensor",
+        df["Param"].replace(param_to_sensor_mapping),
+    )
+    df.drop(columns=["Param"], inplace=True)
+
+    # Add Animal column
+    box_to_animal_map = {}
+    for animal in dataset.animals.values():
+        box_to_animal_map[animal.properties["Box"]] = animal.id
+
+    df.insert(
+        df.columns.get_loc("Box") + 1,
+        "Animal",
+        df["Box"].replace(box_to_animal_map),
+    )
+
+    df = df.astype({
+        "Animal": "category",
+        "Sensor": "category",
+    })
+
+    variables: dict[str, Variable] = {}
+    sensors = df["Sensor"].unique().tolist()
+    for sensor in sensors:
+        variables[sensor] = Variable(
+            sensor,
+            "",
+            "Sensor value",
+            "float64",
+            Aggregation.MEAN,
+            False,
+        )
+
+    data = DrinkFeedRawData(
+        dataset,
+        tse_import_settings.DRINKFEED_RAW_TABLE,
+        str(path),
+        variables,
+        df,
+    )
+
+    return data
+
+
+def import_drinkfeed_bin_csv_data(
+    filename: str,
+    dataset: PhenoMasterDataset,
+    csv_import_settings: CsvImportSettings,
+) -> DrinkFeedBinData | None:
     path = Path(filename)
     if path.is_file() and path.suffix.lower() == ".csv":
         return _load_from_csv(path, dataset, csv_import_settings)
     return None
 
 
-def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings):
+def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings) -> DrinkFeedBinData:
     with open(path) as f:
         lines = f.readlines()
 
@@ -122,13 +259,14 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     # convert categorical types
     new_df = new_df.astype({
         "Animal": "category",
+        "Box": int,
     })
 
-    drinkfeed_data = DrinkFeedData(
+    data = DrinkFeedBinData(
         dataset,
-        f"DrinkFeed Data",
+        tse_import_settings.DRINKFEED_BIN_TABLE,
         str(path),
         variables,
         new_df,
     )
-    return drinkfeed_data
+    return data
