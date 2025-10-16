@@ -37,13 +37,16 @@ class VariablesTableWidget(QTableWidget):
 
         self.variables: dict[str, Variable] = {}
 
-    def set_data(self, variables: dict[str, Variable]) -> None:
+    def set_data(self, variables: dict[str, Variable], selected_variables=None) -> None:
         self.variables = variables
         self.setRowCount(len(variables))
         for i, variable in enumerate(variables.values()):
             self.setItem(i, 0, QTableWidgetItem(variable.name))
             self.setItem(i, 1, QTableWidgetItem(variable.unit))
             self.setItem(i, 2, QTableWidgetItem(variable.description))
+            if selected_variables is not None:
+                if variable.name in selected_variables:
+                    self.selectRow(i)
         self.resizeColumnsToContents()
 
     def clear_data(self) -> None:

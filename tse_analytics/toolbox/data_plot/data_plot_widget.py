@@ -1,6 +1,8 @@
+from dataclasses import dataclass, field
+
 import pandas as pd
 import seaborn.objects as so
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QWidget,
@@ -9,7 +11,8 @@ from PySide6.QtWidgets import (
     QLabel,
     QAbstractItemView,
     QAbstractScrollArea,
-    QDoubleSpinBox, QComboBox,
+    QDoubleSpinBox,
+    QComboBox,
 )
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 
@@ -23,6 +26,14 @@ from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 
 
+@dataclass
+class DataPlotWidgetSettings:
+    error_bar: str = "Standard Error"
+    line_width: float = 1.0
+    group_by: str = "Animal"
+    selected_variables: list[str] = field(default_factory=list)
+
+
 class DataPlotWidget(QWidget):
     error_bar = {
         "None": None,
@@ -34,6 +45,21 @@ class DataPlotWidget(QWidget):
 
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
+
+        # Settings management
+        settings = QSettings()
+        self._settings: DataPlotWidgetSettings = settings.value(self.__class__.__name__, DataPlotWidgetSettings())
+        self.destroyed.connect(
+            lambda: settings.setValue(
+                self.__class__.__name__,
+                DataPlotWidgetSettings(
+                    self.comboBoxErrorBar.currentText(),
+                    self.linewidth_spin_box.value(),
+                    self.group_by_selector.currentText(),
+                    self.variables_table_widget.get_selected_variable_names(),
+                ),
+            )
+        )
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -53,7 +79,7 @@ class DataPlotWidget(QWidget):
 
         self.variables_table_widget = VariablesTableWidget()
         self.variables_table_widget.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
-        self.variables_table_widget.set_data(self.datatable.variables)
+        self.variables_table_widget.set_data(self.datatable.variables, self._settings.selected_variables)
         self.variables_table_widget.setMaximumHeight(600)
         self.variables_table_widget.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
 
@@ -68,12 +94,13 @@ class DataPlotWidget(QWidget):
         toolbar.addSeparator()
         toolbar.addWidget(QLabel("Group by:"))
         self.group_by_selector = GroupBySelector(toolbar, self.datatable, check_binning=False)
+        self.group_by_selector.setCurrentText(self._settings.group_by)
         toolbar.addWidget(self.group_by_selector)
 
         toolbar.addWidget(QLabel("Error Bar:"))
         self.comboBoxErrorBar = QComboBox(toolbar)
         self.comboBoxErrorBar.addItems(DataPlotWidget.error_bar.keys())
-        self.comboBoxErrorBar.setCurrentText("Standard Error")
+        self.comboBoxErrorBar.setCurrentText(self._settings.error_bar)
         toolbar.addWidget(self.comboBoxErrorBar)
 
         toolbar.addSeparator()
@@ -83,7 +110,7 @@ class DataPlotWidget(QWidget):
             minimum=0,
             maximum=3,
             singleStep=0.5,
-            value=1.0,
+            value=self._settings.line_width,
         )
         toolbar.addWidget(self.linewidth_spin_box)
 

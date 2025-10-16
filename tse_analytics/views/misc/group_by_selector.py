@@ -6,41 +6,25 @@ from tse_analytics.core.data.shared import SplitMode
 
 
 class GroupBySelector(QComboBox, messaging.MessengerListener):
-    """
-    A combo box widget for selecting how to group data.
-
-    This widget allows users to select different ways to group data for analysis,
-    such as by animal, by factor, by run, or as a total. It dynamically updates
-    available options based on the current dataset and binning settings.
-    """
 
     def __init__(self, parent: QWidget, datatable: Datatable, callback=None, check_binning=True):
-        """
-        Initialize the GroupBySelector widget.
-
-        Args:
-            parent: The parent widget.
-            datatable: The Datatable object containing the data to be grouped.
-            callback: Optional function to call when the grouping selection changes.
-                     The function should accept split_mode and selected_factor_name parameters.
-            check_binning: If True, considers binning when determining available grouping options.
-                          Default is True.
-        """
         super().__init__(parent)
 
         self.setMinimumWidth(80)
 
-        messaging.subscribe(self, messaging.BinningMessage, self._on_binning_applied)
-        self.destroyed.connect(lambda: messaging.unsubscribe_all(self))
-
         self.datatable = datatable
         self.callback = callback
         self.check_binning = check_binning
-
         self.modes = []
+
+        if check_binning:
+            messaging.subscribe(self, messaging.BinningMessage, self._on_binning_applied)
+            self.destroyed.connect(lambda: messaging.unsubscribe_all(self))
+
         self._set_available_modes()
 
-        self.currentTextChanged.connect(self._mode_changed)
+        if callback is not None:
+            self.currentTextChanged.connect(self._mode_changed)
 
     def get_group_by(self) -> tuple[SplitMode, str]:
         """
