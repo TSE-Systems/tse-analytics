@@ -1,13 +1,14 @@
+import seaborn.objects as so
 import pingouin as pg
-import seaborn as sns
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QToolBar, QVBoxLayout, QSplitter, QTextEdit, QWidgetAction, QLabel
+from PySide6.QtWidgets import QWidget, QToolBar, QVBoxLayout, QSplitter, QTextEdit, QLabel
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 
 from tse_analytics.core import messaging, color_manager
+from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
 from tse_analytics.styles.css import style_descriptive_table
@@ -29,32 +30,32 @@ class RegressionWidget(QWidget):
         self.datatable = datatable
 
         # Setup toolbar
-        self.toolbar = QToolBar(
+        toolbar = QToolBar(
             "Data Plot Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
 
-        self.toolbar.addAction(QIcon(":/icons/icons8-refresh-16.png"), "Update").triggered.connect(self._update)
-        self.toolbar.addSeparator()
+        toolbar.addAction(QIcon(":/icons/icons8-refresh-16.png"), "Update").triggered.connect(self._update)
+        toolbar.addSeparator()
 
-        self.toolbar.addWidget(QLabel("Covariate:"))
-        self.covariateVariableSelector = VariableSelector(self.toolbar)
+        toolbar.addWidget(QLabel("Covariate:"))
+        self.covariateVariableSelector = VariableSelector(toolbar)
         self.covariateVariableSelector.set_data(self.datatable.variables)
-        self.toolbar.addWidget(self.covariateVariableSelector)
+        toolbar.addWidget(self.covariateVariableSelector)
 
-        self.toolbar.addWidget(QLabel("Response:"))
-        self.responseVariableSelector = VariableSelector(self.toolbar)
+        toolbar.addWidget(QLabel("Response:"))
+        self.responseVariableSelector = VariableSelector(toolbar)
         self.responseVariableSelector.set_data(self.datatable.variables)
-        self.toolbar.addWidget(self.responseVariableSelector)
+        toolbar.addWidget(self.responseVariableSelector)
 
-        self.toolbar.addSeparator()
-        self.toolbar.addWidget(QLabel("Group by:"))
-        self.group_by_selector = GroupBySelector(self.toolbar, self.datatable, check_binning=False)
-        self.toolbar.addWidget(self.group_by_selector)
+        toolbar.addSeparator()
+        toolbar.addWidget(QLabel("Group by:"))
+        self.group_by_selector = GroupBySelector(toolbar, self.datatable, check_binning=False)
+        toolbar.addWidget(self.group_by_selector)
 
         # Insert toolbar to the widget
-        self._layout.addWidget(self.toolbar)
+        self._layout.addWidget(toolbar)
 
         self.splitter = QSplitter(
             self,
@@ -74,22 +75,33 @@ class RegressionWidget(QWidget):
         self.textEdit.document().setDefaultStyleSheet(style_descriptive_table)
         self.splitter.addWidget(self.textEdit)
 
-        self.spacer_action = QWidgetAction(self.toolbar)
-        self.spacer_action.setDefaultWidget(get_h_spacer_widget(self.toolbar))
-        self.toolbar.addAction(self.spacer_action)
-
-        self.toolbar.addAction("Add to Report").triggered.connect(self._add_report)
-        self._add_plot_toolbar()
-
-    def _add_plot_toolbar(self):
-        self.plot_toolbar_action = QWidgetAction(self.toolbar)
         plot_toolbar = NavigationToolbar2QT(self.canvas, self)
         plot_toolbar.setIconSize(QSize(16, 16))
-        self.plot_toolbar_action.setDefaultWidget(plot_toolbar)
-        self.toolbar.insertAction(self.spacer_action, self.plot_toolbar_action)
+        toolbar.addWidget(plot_toolbar)
+
+        toolbar.addWidget(get_h_spacer_widget(toolbar))
+        toolbar.addAction("Add to Report").triggered.connect(self._add_report)
 
     def _update(self):
         split_mode, selected_factor_name = self.group_by_selector.get_group_by()
+
+        covariate = self.covariateVariableSelector.get_selected_variable()
+        response = self.responseVariableSelector.get_selected_variable()
+
+        variable_columns = [response.name] if response.name == covariate.name else [response.name, covariate.name]
+        columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + variable_columns
+        df = self.datatable.get_filtered_df(columns)
+
+        # Group by animal
+        df = process_time_interval_binning(
+            df,
+            TimeIntervalsBinningSettings("day", 365),
+            {
+                covariate.name: covariate,
+                response.name: response,
+            },
+            origin=self.datatable.dataset.experiment_started,
+        )
 
         match split_mode:
             case SplitMode.ANIMAL:
@@ -105,45 +117,32 @@ class RegressionWidget(QWidget):
                 by = None
                 palette = color_manager.colormap_name
 
-        covariate = self.covariateVariableSelector.get_selected_variable()
-        response = self.responseVariableSelector.get_selected_variable()
+        self.canvas.clear(False)
+        ax = self.canvas.figure.add_subplot(1, 1, 1)
 
-        variable_columns = [response.name] if response.name == covariate.name else [response.name, covariate.name]
-        df = self.datatable.get_df(
-            variable_columns,
-            split_mode,
-            selected_factor_name,
+        (
+            so.Plot(
+                df,
+                x=covariate.name,
+                y=response.name,
+                color=by,
+            )
+            .add(so.Dot())
+            .add(
+                so.Line(),  # adds the regression line
+                so.PolyFit(order=1),
+            )
+            .scale(color=palette)
+            .on(ax)
+            .plot(True)
         )
 
-        facet_grid = sns.lmplot(
-            data=df,
-            x=covariate.name,
-            y=response.name,
-            hue=by,
-            palette=palette,
-            robust=False,
-            markers=".",
-        )
-        self.canvas = FigureCanvasQTAgg(facet_grid.figure)
-
-        self.canvas.updateGeometry()
+        self.canvas.figure.tight_layout()
         self.canvas.draw()
-        self.splitter.replaceWidget(0, self.canvas)
-
-        # Assign canvas to PlotToolbar
-        self.toolbar.removeAction(self.plot_toolbar_action)
-        self._add_plot_toolbar()
 
         match split_mode:
             case SplitMode.ANIMAL:
                 output = ""
-                for animal in df["Animal"].unique().tolist():
-                    data = df[df["Animal"] == animal]
-                    output = (
-                        output
-                        + f"<h3>Animal: {animal}</h3>"
-                        + pg.linear_regression(data[covariate.name], data[response.name], remove_na=True).to_html()
-                    )
             case SplitMode.FACTOR:
                 output = ""
                 for level in df[selected_factor_name].unique().tolist():
@@ -163,7 +162,8 @@ class RegressionWidget(QWidget):
                         + pg.linear_regression(data[covariate.name], data[response.name], remove_na=True).to_html()
                     )
             case _:
-                output = pg.linear_regression(df[covariate.name], df[response.name], remove_na=True).to_html()
+                data = df
+                output = pg.linear_regression(data[covariate.name], data[response.name], remove_na=True).to_html()
 
         html_template = """
                 <h2>Linear Regression</h2>

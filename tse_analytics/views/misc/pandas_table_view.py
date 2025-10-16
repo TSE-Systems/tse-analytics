@@ -18,7 +18,7 @@ class PandasTableView(QTableView):
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
 
-    def set_data(self, df: pd.DataFrame, resize_columns = True):
+    def set_data(self, df: pd.DataFrame, resize_columns=True):
         model = PandasSimpleModel(df)
         self.setModel(model)
         if resize_columns:

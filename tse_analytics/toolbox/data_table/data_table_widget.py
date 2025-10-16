@@ -44,7 +44,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
         # Setup toolbar
         toolbar = QToolBar(
-            "Data Table Toolbar",
+            "Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
