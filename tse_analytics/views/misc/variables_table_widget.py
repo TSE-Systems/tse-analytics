@@ -37,7 +37,7 @@ class VariablesTableWidget(QTableWidget):
 
         self.variables: dict[str, Variable] = {}
 
-    def set_data(self, variables: dict[str, Variable], selected_variables=None) -> None:
+    def set_data(self, variables: dict[str, Variable], selected_variables: list[str] = None) -> None:
         self.variables = variables
         self.setRowCount(len(variables))
         for i, variable in enumerate(variables.values()):

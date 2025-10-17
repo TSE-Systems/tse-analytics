@@ -58,7 +58,7 @@ class TsneWidget(QWidget):
 
         toolbar.addSeparator()
         toolbar.addWidget(QLabel("Group by:"))
-        self.group_by_selector = GroupBySelector(toolbar, self.datatable, check_binning=False)
+        self.group_by_selector = GroupBySelector(toolbar, self.datatable)
         toolbar.addWidget(self.group_by_selector)
 
         # Insert toolbar to the widget

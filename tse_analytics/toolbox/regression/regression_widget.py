@@ -1,6 +1,8 @@
+from dataclasses import dataclass
+
 import seaborn.objects as so
 import pingouin as pg
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QToolBar, QVBoxLayout, QSplitter, QTextEdit, QLabel
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
@@ -17,9 +19,23 @@ from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
+@dataclass
+class RegressionWidgetSettings:
+    group_by: str = "Animal"
+    covariate_variable: str = None
+    response_variable: str = None
+
+
 class RegressionWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
+
+        # Connect destructor to unsubscribe and save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
+        # Settings management
+        settings = QSettings()
+        self._settings: RegressionWidgetSettings = settings.value(self.__class__.__name__, RegressionWidgetSettings())
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -31,7 +47,7 @@ class RegressionWidget(QWidget):
 
         # Setup toolbar
         toolbar = QToolBar(
-            "Data Plot Toolbar",
+            "Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
@@ -41,17 +57,17 @@ class RegressionWidget(QWidget):
 
         toolbar.addWidget(QLabel("Covariate:"))
         self.covariateVariableSelector = VariableSelector(toolbar)
-        self.covariateVariableSelector.set_data(self.datatable.variables)
+        self.covariateVariableSelector.set_data(self.datatable.variables, self._settings.covariate_variable)
         toolbar.addWidget(self.covariateVariableSelector)
 
         toolbar.addWidget(QLabel("Response:"))
         self.responseVariableSelector = VariableSelector(toolbar)
-        self.responseVariableSelector.set_data(self.datatable.variables)
+        self.responseVariableSelector.set_data(self.datatable.variables, self._settings.response_variable)
         toolbar.addWidget(self.responseVariableSelector)
 
         toolbar.addSeparator()
         toolbar.addWidget(QLabel("Group by:"))
-        self.group_by_selector = GroupBySelector(toolbar, self.datatable, check_binning=False)
+        self.group_by_selector = GroupBySelector(toolbar, self.datatable, selected_mode=self._settings.group_by)
         toolbar.addWidget(self.group_by_selector)
 
         # Insert toolbar to the widget
@@ -82,7 +98,21 @@ class RegressionWidget(QWidget):
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add to Report").triggered.connect(self._add_report)
 
+    def _destroyed(self):
+        settings = QSettings()
+        settings.setValue(
+            self.__class__.__name__,
+            RegressionWidgetSettings(
+                self.group_by_selector.currentText(),
+                self.covariateVariableSelector.currentText(),
+                self.responseVariableSelector.currentText(),
+            ),
+        )
+
     def _update(self):
+        # Clear the plot
+        self.canvas.clear(False)
+
         split_mode, selected_factor_name = self.group_by_selector.get_group_by()
 
         covariate = self.covariateVariableSelector.get_selected_variable()
@@ -117,9 +147,6 @@ class RegressionWidget(QWidget):
                 by = None
                 palette = color_manager.colormap_name
 
-        self.canvas.clear(False)
-        ax = self.canvas.figure.add_subplot(1, 1, 1)
-
         (
             so.Plot(
                 df,
@@ -133,7 +160,7 @@ class RegressionWidget(QWidget):
                 so.PolyFit(order=1),
             )
             .scale(color=palette)
-            .on(ax)
+            .on(self.canvas.figure)
             .plot(True)
         )
 

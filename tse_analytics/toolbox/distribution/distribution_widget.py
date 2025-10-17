@@ -1,7 +1,9 @@
+from dataclasses import dataclass
+
 import seaborn as sns
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, QSettings
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QComboBox, QLabel
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QComboBox, QLabel, QCheckBox
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 
 from tse_analytics.core import messaging, color_manager
@@ -13,9 +15,26 @@ from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
+@dataclass
+class DistributionWidgetSettings:
+    group_by: str = "Animal"
+    selected_variable: str = None
+    show_points: bool = False
+    plot_type: str = "Violin plot"
+
+
 class DistributionWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
+
+        # Connect destructor to unsubscribe and save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
+        # Settings management
+        settings = QSettings()
+        self._settings: DistributionWidgetSettings = settings.value(
+            self.__class__.__name__, DistributionWidgetSettings()
+        )
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -36,17 +55,22 @@ class DistributionWidget(QWidget):
         toolbar.addSeparator()
 
         self.variableSelector = VariableSelector(toolbar)
-        self.variableSelector.set_data(self.datatable.variables)
+        self.variableSelector.set_data(self.datatable.variables, selected_variable=self._settings.selected_variable)
         toolbar.addWidget(self.variableSelector)
 
         toolbar.addSeparator()
         toolbar.addWidget(QLabel("Group by:"))
-        self.group_by_selector = GroupBySelector(toolbar, self.datatable, check_binning=False)
+        self.group_by_selector = GroupBySelector(toolbar, self.datatable, selected_mode=self._settings.group_by)
         toolbar.addWidget(self.group_by_selector)
 
         self.plot_type_combobox = QComboBox(toolbar)
         self.plot_type_combobox.addItems(["Violin plot", "Box plot"])
+        self.plot_type_combobox.setCurrentText(self._settings.plot_type)
         toolbar.addWidget(self.plot_type_combobox)
+
+        self.checkBoxShowPoints = QCheckBox("Show Points", toolbar)
+        self.checkBoxShowPoints.setChecked(self._settings.show_points)
+        toolbar.addWidget(self.checkBoxShowPoints)
 
         # Insert toolbar to the widget
         self._layout.addWidget(toolbar)
@@ -61,7 +85,22 @@ class DistributionWidget(QWidget):
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add to Report").triggered.connect(self._add_report)
 
+    def _destroyed(self):
+        settings = QSettings()
+        settings.setValue(
+            self.__class__.__name__,
+            DistributionWidgetSettings(
+                self.group_by_selector.currentText(),
+                self.variableSelector.currentText(),
+                self.checkBoxShowPoints.isChecked(),
+                self.plot_type_combobox.currentText(),
+            ),
+        )
+
     def _update(self):
+        # Clear the plot
+        self.canvas.clear(False)
+
         split_mode, selected_factor_name = self.group_by_selector.get_group_by()
         variable = self.variableSelector.get_selected_variable()
 
@@ -88,8 +127,7 @@ class DistributionWidget(QWidget):
         if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:
             df[x] = df[x].cat.remove_unused_categories()
 
-        self.canvas.clear(False)
-        ax = self.canvas.figure.add_subplot(111)
+        ax = self.canvas.figure.add_subplot(1, 1, 1)
         ax.tick_params(axis="x", rotation=90)
 
         if self.plot_type_combobox.currentText() == "Violin plot":
@@ -99,6 +137,9 @@ class DistributionWidget(QWidget):
                 y=variable.name,
                 hue=x,
                 palette=palette,
+                inner="quartile" if self.checkBoxShowPoints.isChecked() else "box",
+                saturation=1,
+                fill=not self.checkBoxShowPoints.isChecked(),
                 legend=False,
                 ax=ax,
             )
@@ -109,8 +150,22 @@ class DistributionWidget(QWidget):
                 y=variable.name,
                 hue=x,
                 palette=palette,
+                saturation=1,
+                fill=not self.checkBoxShowPoints.isChecked(),
                 legend=False,
                 gap=0.1,
+                ax=ax,
+            )
+
+        if self.checkBoxShowPoints.isChecked():
+            sns.stripplot(
+                data=df,
+                x=x,
+                y=variable.name,
+                hue=x,
+                palette=palette,
+                legend=False,
+                marker=".",
                 ax=ax,
             )
 

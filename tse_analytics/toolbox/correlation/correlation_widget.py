@@ -1,6 +1,8 @@
+from dataclasses import dataclass
+
 import pingouin as pg
 import seaborn as sns
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QSplitter, QTextEdit, QWidgetAction
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
@@ -16,9 +18,23 @@ from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
+@dataclass
+class CorrelationWidgetSettings:
+    group_by: str = "Animal"
+    x_variable: str = None
+    y_variable: str = None
+
+
 class CorrelationWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
+
+        # Connect destructor to unsubscribe and save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
+        # Settings management
+        settings = QSettings()
+        self._settings: CorrelationWidgetSettings = settings.value(self.__class__.__name__, CorrelationWidgetSettings())
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -30,7 +46,7 @@ class CorrelationWidget(QWidget):
 
         # Setup toolbar
         self.toolbar = QToolBar(
-            "Data Plot Toolbar",
+            "Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
@@ -40,17 +56,17 @@ class CorrelationWidget(QWidget):
 
         self.toolbar.addWidget(QLabel("X:"))
         self.xVariableSelector = VariableSelector(self.toolbar)
-        self.xVariableSelector.set_data(self.datatable.variables)
+        self.xVariableSelector.set_data(self.datatable.variables, self._settings.x_variable)
         self.toolbar.addWidget(self.xVariableSelector)
 
         self.toolbar.addWidget(QLabel("Y:"))
         self.yVariableSelector = VariableSelector(self.toolbar)
-        self.yVariableSelector.set_data(self.datatable.variables)
+        self.yVariableSelector.set_data(self.datatable.variables, self._settings.y_variable)
         self.toolbar.addWidget(self.yVariableSelector)
 
         self.toolbar.addSeparator()
         self.toolbar.addWidget(QLabel("Group by:"))
-        self.group_by_selector = GroupBySelector(self.toolbar, self.datatable, check_binning=False)
+        self.group_by_selector = GroupBySelector(self.toolbar, self.datatable, selected_mode=self._settings.group_by)
         self.toolbar.addWidget(self.group_by_selector)
 
         # Insert toolbar to the widget
@@ -80,6 +96,17 @@ class CorrelationWidget(QWidget):
 
         self.toolbar.addAction("Add to Report").triggered.connect(self._add_report)
         self._add_plot_toolbar()
+
+    def _destroyed(self):
+        settings = QSettings()
+        settings.setValue(
+            self.__class__.__name__,
+            CorrelationWidgetSettings(
+                self.group_by_selector.currentText(),
+                self.xVariableSelector.currentText(),
+                self.yVariableSelector.currentText(),
+            ),
+        )
 
     def _add_plot_toolbar(self):
         self.plot_toolbar_action = QWidgetAction(self.toolbar)

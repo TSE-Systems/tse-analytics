@@ -43,18 +43,12 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
+        # Connect destructor to unsubscribe and save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
         # Settings management
         settings = QSettings()
         self._settings: DataTableWidgetSettings = settings.value(self.__class__.__name__, DataTableWidgetSettings())
-        self.destroyed.connect(
-            lambda: settings.setValue(
-                self.__class__.__name__,
-                DataTableWidgetSettings(
-                    self.group_by_selector.currentText(),
-                    self.variables_table_widget.get_selected_variable_names(),
-                ),
-            )
-        )
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -75,7 +69,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.variables_table_widget.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
         self.variables_table_widget.itemSelectionChanged.connect(self._variables_selection_changed)
         self.variables_table_widget.set_data(self.datatable.variables, self._settings.selected_variables)
-        self.variables_table_widget.setMaximumHeight(400)
+        self.variables_table_widget.setMaximumHeight(600)
         self.variables_table_widget.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
         self.variables_table_widget.blockSignals(False)
 
@@ -89,10 +83,13 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
         toolbar.addSeparator()
         toolbar.addWidget(QLabel("Group by:"))
-        self.group_by_selector = GroupBySelector(toolbar, self.datatable, self._group_by_callback)
-        self.group_by_selector.blockSignals(True)
-        self.group_by_selector.setCurrentText(self._settings.group_by)
-        self.group_by_selector.blockSignals(False)
+        self.group_by_selector = GroupBySelector(
+            toolbar,
+            self.datatable,
+            check_binning=True,
+            selected_mode=self._settings.group_by,
+        )
+        self.group_by_selector.currentTextChanged.connect(self._set_data)
         toolbar.addWidget(self.group_by_selector)
 
         toolbar.addSeparator()
@@ -157,10 +154,17 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
         messaging.subscribe(self, messaging.BinningMessage, self._on_binning_applied)
         messaging.subscribe(self, messaging.DataChangedMessage, self._on_data_changed)
-        self.destroyed.connect(lambda: messaging.unsubscribe_all(self))
 
-    def _group_by_callback(self, mode: SplitMode, factor_name: str | None):
-        self._set_data()
+    def _destroyed(self):
+        messaging.unsubscribe_all(self)
+        settings = QSettings()
+        settings.setValue(
+            self.__class__.__name__,
+            DataTableWidgetSettings(
+                self.group_by_selector.currentText(),
+                self.variables_table_widget.get_selected_variable_names(),
+            ),
+        )
 
     def _resize_columns_width(self):
         worker = Worker(

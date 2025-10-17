@@ -1,9 +1,12 @@
-from PySide6.QtCore import QSize, Qt
+from dataclasses import dataclass
+
+import seaborn.objects as so
+from PySide6.QtCore import QSize, Qt, QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 
-from tse_analytics.core import messaging
+from tse_analytics.core import messaging, color_manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
@@ -12,9 +15,22 @@ from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
+@dataclass
+class HistogramWidgetSettings:
+    group_by: str = "Animal"
+    selected_variable: str = None
+
+
 class HistogramWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
+
+        # Connect destructor to unsubscribe and save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
+        # Settings management
+        settings = QSettings()
+        self._settings: HistogramWidgetSettings = settings.value(self.__class__.__name__, HistogramWidgetSettings())
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -35,17 +51,13 @@ class HistogramWidget(QWidget):
         toolbar.addSeparator()
 
         self.variableSelector = VariableSelector(toolbar)
-        self.variableSelector.set_data(self.datatable.variables)
+        self.variableSelector.set_data(self.datatable.variables, selected_variable=self._settings.selected_variable)
         toolbar.addWidget(self.variableSelector)
 
         toolbar.addSeparator()
         toolbar.addWidget(QLabel("Group by:"))
-        self.group_by_selector = GroupBySelector(toolbar, self.datatable, check_binning=False)
+        self.group_by_selector = GroupBySelector(toolbar, self.datatable, selected_mode=self._settings.group_by)
         toolbar.addWidget(self.group_by_selector)
-
-        # toolbar.addSeparator()
-        # self.log_scale_checkbox = QCheckBox("Log Scale")
-        # toolbar.addWidget(self.log_scale_checkbox)
 
         # Insert the toolbar to the widget
         self._layout.addWidget(toolbar)
@@ -60,19 +72,22 @@ class HistogramWidget(QWidget):
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add to Report").triggered.connect(self._add_report)
 
+    def _destroyed(self):
+        settings = QSettings()
+        settings.setValue(
+            self.__class__.__name__,
+            HistogramWidgetSettings(
+                self.group_by_selector.currentText(),
+                self.variableSelector.currentText(),
+            ),
+        )
+
     def _update(self):
+        # Clear the plot
+        self.canvas.clear(False)
+
         split_mode, selected_factor_name = self.group_by_selector.get_group_by()
         variable = self.variableSelector.get_selected_variable()
-
-        match split_mode:
-            case SplitMode.ANIMAL:
-                by = "Animal"
-            case SplitMode.RUN:
-                by = "Run"
-            case SplitMode.FACTOR:
-                by = selected_factor_name
-            case _:
-                by = None
 
         df = self.datatable.get_df(
             [variable.name],
@@ -80,48 +95,35 @@ class HistogramWidget(QWidget):
             selected_factor_name,
         )
 
-        number_of_elements = 1
-        if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:
-            df[by] = df[by].cat.remove_unused_categories()
-            number_of_elements = len(df[by].cat.categories)
-        elif split_mode == SplitMode.RUN:
-            number_of_elements = df[by].nunique()
+        match split_mode:
+            case SplitMode.ANIMAL:
+                by = "Animal"
+                palette = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
+            case SplitMode.RUN:
+                by = "Run"
+                palette = color_manager.colormap_name
+            case SplitMode.FACTOR:
+                by = selected_factor_name
+                palette = color_manager.get_level_to_color_dict(self.datatable.dataset.factors[selected_factor_name])
+            case _:
+                by = None
+                palette = color_manager.colormap_name
 
-        self.canvas.clear(False)
-        ax = self.canvas.figure.add_subplot(111)
-
-        # Use non-equal bin sizes, such that they look equal on a log scale.
-        # nbins = 20
-        # bins = (
-        #     np.geomspace(df[variable.name].min(), df[variable.name].max(), nbins + 1)
-        #     if self.log_scale_checkbox.isChecked()
-        #     else nbins
-        # )
-
-        df.plot(
-            kind="hist",
-            column=[variable.name],
-            by=by,
-            bins=20,
-            sharex=False,
-            sharey=False,
-            # logx=self.log_scale_checkbox.isChecked(),
-            layout=self._get_plot_layout(number_of_elements),
-            ax=ax,
+        (
+            so.Plot(
+                df,
+                x=variable.name,
+                color=by,
+            )
+            .facet(col=by, wrap=3)
+            .add(so.Bars(), so.Hist())
+            .scale(color=palette)
+            .on(self.canvas.figure)
+            .plot(True)
         )
 
         self.canvas.figure.tight_layout()
         self.canvas.draw()
-
-    def _get_plot_layout(self, number_of_elements: int):
-        if number_of_elements == 1:
-            return 1, 1
-        elif number_of_elements == 2:
-            return 1, 2
-        elif number_of_elements <= 4:
-            return 2, 2
-        else:
-            return round(number_of_elements / 3) + 1, 3
 
     def _add_report(self) -> None:
         self.datatable.dataset.report += get_html_image(self.canvas.figure)

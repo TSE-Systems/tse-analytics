@@ -14,34 +14,7 @@ from tse_analytics.views.misc.TimedeltaAxisItem import TimedeltaAxisItem
 
 
 class TimelinePlotView(pg.GraphicsLayoutWidget):
-    """Widget for displaying data as a timeline plot.
-
-    This widget creates and displays timeline plots using PyQtGraph.
-    It includes a main plot area and a smaller overview plot with a region selector
-    that allows zooming into specific time ranges. It supports different grouping
-    options, error bars, and scatter plot visualization.
-
-    Attributes:
-        plot_item1: The main plot area where data is displayed in detail.
-        plot_item2: The overview plot area showing the entire timeline with a region selector.
-        region: The linear region selector for zooming into specific time ranges.
-        legend: The legend for the plot showing the color coding for different groups.
-        datatable: The datatable containing the data being visualized.
-        _df: The DataFrame containing the processed data for plotting.
-        _variable: The variable being visualized.
-        _split_mode: The mode for splitting/grouping the data.
-        _selected_factor: The selected factor when split_mode is FACTOR.
-        _error_type: The type of error bars to display ("std" or "sem").
-        _display_errors: Whether to display error bars.
-        _scatter_plot: Whether to display data as scatter points instead of lines.
-    """
-
     def __init__(self, parent: QWidget):
-        """Initialize the timeline plot view.
-
-        Args:
-            parent: The parent widget.
-        """
         super().__init__(parent, show=False, size=None, title=None)
 
         # Set layout proportions
@@ -78,8 +51,6 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         self._variable: Variable | None = None
         self._split_mode = SplitMode.ANIMAL
         self._selected_factor: Factor | None = None
-        self._error_type = "std"
-        self._display_errors = False
         self._scatter_plot = False
 
     def refresh_data(
@@ -88,24 +59,9 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         df: pd.DataFrame,
         variable: Variable,
         split_mode: SplitMode,
-        display_errors: bool,
         selected_factor: Factor | None,
         scatter_plot: bool,
     ) -> None:
-        """Update the timeline plot with new data and settings.
-
-        This method clears the existing plots and redraws them with the new data
-        and settings. It handles different grouping options based on the split mode.
-
-        Args:
-            datatable: The datatable containing the data being visualized.
-            df: The DataFrame containing the processed data for plotting.
-            variable: The variable to visualize.
-            split_mode: The mode for splitting/grouping the data.
-            display_errors: Whether to display error bars.
-            selected_factor: The selected factor when split_mode is FACTOR.
-            scatter_plot: Whether to display data as scatter points instead of lines.
-        """
         self.plot_item1.clear()
         self.plot_item2.clearPlots()
         self.legend.clear()
@@ -114,14 +70,12 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
             self._df = None
             self._variable = None
             self._selected_factor = None
-            self._display_errors = False
             return
 
         self.datatable = datatable
         self._df = df
         self._variable = variable
         self._split_mode = split_mode
-        self._display_errors = display_errors
         self._selected_factor = selected_factor
         self._scatter_plot = scatter_plot
 
@@ -158,19 +112,6 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         self.region.setRegion(range)
 
     def _plot_item(self, data: pd.DataFrame, name: str, pen):
-        """Plot a single data series on both the main and overview plots.
-
-        This method plots the data for a single group (animal, factor level, run, or total)
-        on both the main plot and the overview plot. It also adds error bars if enabled.
-
-        Args:
-            data: The DataFrame containing the data for this group.
-            name: The name of the group to display in the legend.
-            pen: The pen (color and style) to use for plotting.
-
-        Returns:
-            A tuple containing the minimum and maximum x values in the data.
-        """
         # x = (data["DateTime"] - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
         x = data["Timedelta"].dt.total_seconds().to_numpy()
         y = data[self._variable.name].to_numpy()
@@ -181,15 +122,6 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
             else self.plot_item1.plot(x, y, pen=pen)
         )
         self.plot_item1.setTitle(self._variable.name)
-
-        if self._display_errors and "Error" in data.columns:
-            # Error bars
-            error_plot = pg.ErrorBarItem(beam=0.2)
-            error = data["Error"].to_numpy()
-            error_plot.setData(x=x, y=y, top=error, bottom=error, pen=pen)
-            self.plot_item1.addItem(error_plot)
-
-            plot_data_item.visibleChanged.connect(lambda: error_plot.setVisible(plot_data_item.isVisible()))
 
         self.legend.addItem(plot_data_item, name)
 

@@ -28,10 +28,10 @@ from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 
 @dataclass
 class DataPlotWidgetSettings:
-    error_bar: str = "Standard Error"
-    line_width: float = 1.0
     group_by: str = "Animal"
     selected_variables: list[str] = field(default_factory=list)
+    error_bar: str = "Standard Error"
+    line_width: float = 1.0
 
 
 class DataPlotWidget(QWidget):
@@ -46,20 +46,12 @@ class DataPlotWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
+        # Connect destructor to unsubscribe and save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
         # Settings management
         settings = QSettings()
         self._settings: DataPlotWidgetSettings = settings.value(self.__class__.__name__, DataPlotWidgetSettings())
-        self.destroyed.connect(
-            lambda: settings.setValue(
-                self.__class__.__name__,
-                DataPlotWidgetSettings(
-                    self.comboBoxErrorBar.currentText(),
-                    self.linewidth_spin_box.value(),
-                    self.group_by_selector.currentText(),
-                    self.variables_table_widget.get_selected_variable_names(),
-                ),
-            )
-        )
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -93,8 +85,7 @@ class DataPlotWidget(QWidget):
 
         toolbar.addSeparator()
         toolbar.addWidget(QLabel("Group by:"))
-        self.group_by_selector = GroupBySelector(toolbar, self.datatable, check_binning=False)
-        self.group_by_selector.setCurrentText(self._settings.group_by)
+        self.group_by_selector = GroupBySelector(toolbar, self.datatable, selected_mode=self._settings.group_by)
         toolbar.addWidget(self.group_by_selector)
 
         toolbar.addWidget(QLabel("Error Bar:"))
@@ -126,6 +117,18 @@ class DataPlotWidget(QWidget):
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add to Report").triggered.connect(self._add_report)
+
+    def _destroyed(self):
+        settings = QSettings()
+        settings.setValue(
+            self.__class__.__name__,
+            DataPlotWidgetSettings(
+                self.group_by_selector.currentText(),
+                self.variables_table_widget.get_selected_variable_names(),
+                self.comboBoxErrorBar.currentText(),
+                self.linewidth_spin_box.value(),
+            ),
+        )
 
     def _update(self):
         # Clear the plot
@@ -203,7 +206,6 @@ class DataPlotWidget(QWidget):
                 result,
                 settings.time_intervals_settings,
                 variables,
-                None,
                 origin=self.datatable.dataset.experiment_started,
             )
 

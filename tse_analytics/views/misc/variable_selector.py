@@ -26,13 +26,15 @@ class VariableSelector(QComboBox):
 
         self.variables: dict[str, Variable] = {}
 
-    def set_data(self, variables: dict[str, Variable]):
+    def set_data(self, variables: dict[str, Variable], selected_variable: str = None) -> None:
         self.variables = variables
         model = VariablesSimpleModel(list(variables.values()))
         self.setModel(model)
         self.table_view.resizeColumnsToContents()
         self.table_view.resizeRowsToContents()
         self.table_view.setMinimumWidth(self.table_view.horizontalHeader().length())
+        if selected_variable is not None:
+            self.setCurrentText(selected_variable)
 
     def get_selected_variable(self) -> Variable | None:
         var_name = self.currentText()

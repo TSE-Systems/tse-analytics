@@ -1,6 +1,8 @@
+from dataclasses import dataclass
+
 import pandas as pd
-from PySide6.QtCore import QSize, Qt
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QCheckBox, QComboBox, QLabel
+from PySide6.QtCore import QSize, Qt, QSettings
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QCheckBox, QLabel
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
 
@@ -19,17 +21,31 @@ from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
+@dataclass
+class FastDataPlotWidgetSettings:
+    group_by: str = "Animal"
+    selected_variable: str = None
+    scatter_plot: bool = False
+
+
 class FastDataPlotWidget(QWidget, messaging.MessengerListener):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
+
+        # Connect destructor to unsubscribe and save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
+        # Settings management
+        settings = QSettings()
+        self._settings: FastDataPlotWidgetSettings = settings.value(
+            self.__class__.__name__, FastDataPlotWidgetSettings()
+        )
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
 
         self.datatable = datatable
-        self.split_mode = SplitMode.ANIMAL
-        self.selected_factor_name = ""
 
         # Setup toolbar
         toolbar = QToolBar(
@@ -39,28 +55,25 @@ class FastDataPlotWidget(QWidget, messaging.MessengerListener):
         )
 
         self.variableSelector = VariableSelector(toolbar)
-        self.variableSelector.set_data(self.datatable.variables)
+        self.variableSelector.set_data(self.datatable.variables, selected_variable=self._settings.selected_variable)
         self.variableSelector.currentTextChanged.connect(self._variable_changed)
         toolbar.addWidget(self.variableSelector)
 
         toolbar.addSeparator()
         toolbar.addWidget(QLabel("Group by:"))
-        self.group_by_selector = GroupBySelector(toolbar, self.datatable, self._group_by_callback)
+        self.group_by_selector = GroupBySelector(
+            toolbar,
+            self.datatable,
+            check_binning=True,
+            selected_mode=self._settings.group_by,
+        )
+        self.group_by_selector.currentTextChanged.connect(self._refresh_data)
         toolbar.addWidget(self.group_by_selector)
 
         self.checkBoxScatterPlot = QCheckBox("Scatter Plot", toolbar)
+        self.checkBoxScatterPlot.setChecked(self._settings.scatter_plot)
         self.checkBoxScatterPlot.checkStateChanged.connect(self._set_scatter_plot)
         toolbar.addWidget(self.checkBoxScatterPlot)
-
-        self.checkBoxDisplayErrors = QCheckBox("Display Errors", toolbar)
-        self.checkBoxDisplayErrors.checkStateChanged.connect(self._display_errors_changed)
-        toolbar.addWidget(self.checkBoxDisplayErrors)
-
-        self.error_type_combobox = QComboBox(toolbar)
-        self.error_type_combobox.addItems(["Standard Error", "Standard Deviation"])
-        self.error_type_combobox.currentTextChanged.connect(self._error_type_changed)
-        self.error_type_action = toolbar.addWidget(self.error_type_combobox)
-        self.error_type_action.setVisible(False)
 
         # Insert toolbar to the widget
         self._layout.addWidget(toolbar)
@@ -85,82 +98,36 @@ class FastDataPlotWidget(QWidget, messaging.MessengerListener):
 
         messaging.subscribe(self, messaging.BinningMessage, self._on_binning_applied)
         messaging.subscribe(self, messaging.DataChangedMessage, self._on_data_changed)
-        self.destroyed.connect(lambda: messaging.unsubscribe_all(self))
 
-    def _group_by_callback(self, mode: SplitMode, factor_name: str | None):
-        """Handle changes in the group by selector.
-
-        Args:
-            mode: The selected split mode (ANIMAL, FACTOR, RUN, TOTAL).
-            factor_name: The name of the selected factor when mode is FACTOR.
-        """
-        self.split_mode = mode
-        self.selected_factor_name = factor_name
-        self._refresh_data()
+    def _destroyed(self):
+        messaging.unsubscribe_all(self)
+        settings = QSettings()
+        settings.setValue(
+            self.__class__.__name__,
+            FastDataPlotWidgetSettings(
+                self.group_by_selector.currentText(),
+                self.variableSelector.currentText(),
+                self.checkBoxScatterPlot.isChecked(),
+            ),
+        )
 
     def _variable_changed(self, variable: str) -> None:
-        """Handle changes in the variable selector.
-
-        Args:
-            variable: The name of the selected variable.
-        """
-        self._refresh_data()
-
-    def _error_type_changed(self, text: str):
-        """Handle changes in the error type combobox.
-
-        Args:
-            text: The selected error type ("Standard Error" or "Standard Deviation").
-        """
-        self._refresh_data()
-
-    def _display_errors_changed(self, state: Qt.CheckState) -> None:
-        """Handle changes in the display errors checkbox.
-
-        Args:
-            state: The new state of the checkbox.
-        """
-        self.error_type_action.setVisible(state == Qt.CheckState.Checked)
         self._refresh_data()
 
     def _set_scatter_plot(self, state: Qt.CheckState):
-        """Handle changes in the scatter plot checkbox.
-
-        Args:
-            state: The new state of the checkbox.
-        """
         self._refresh_data()
 
     def _on_binning_applied(self, message: messaging.BinningMessage):
-        """Handle binning applied messages.
-
-        Refreshes the data when binning settings are changed for the current dataset.
-
-        Args:
-            message: The binning message containing the affected dataset.
-        """
         if message.dataset == self.datatable.dataset:
             self._refresh_data()
 
     def _on_data_changed(self, message: messaging.DataChangedMessage):
-        """Handle data changed messages.
-
-        Refreshes the data when the current dataset is modified.
-
-        Args:
-            message: The data changed message containing the affected dataset.
-        """
         if message.dataset == self.datatable.dataset:
             self._refresh_data()
 
     def _refresh_data(self):
-        """Refresh the data visualization based on current settings.
-
-        This method determines which type of plot to display (timeline or bar)
-        based on the current binning settings and updates the visualization
-        with the selected variable and grouping options.
-        """
-        if self.split_mode == SplitMode.FACTOR and self.selected_factor_name == "":
+        split_mode, selected_factor_name = self.group_by_selector.get_group_by()
+        if split_mode == SplitMode.FACTOR and selected_factor_name == "":
             make_toast(
                 self,
                 "Data Plot",
@@ -172,24 +139,26 @@ class FastDataPlotWidget(QWidget, messaging.MessengerListener):
             return
 
         selected_variable = self.variableSelector.get_selected_variable()
-        display_errors = self.checkBoxDisplayErrors.isChecked()
 
         if not self.datatable.dataset.binning_settings.apply:
-            self._display_timeline_plot(selected_variable, self.split_mode, self.selected_factor_name, display_errors)
+            self._display_timeline_plot(
+                selected_variable,
+                split_mode,
+                selected_factor_name,
+            )
         else:
             if self.datatable.dataset.binning_settings.mode == BinningMode.INTERVALS:
                 self._display_timeline_plot(
                     selected_variable,
-                    self.split_mode,
-                    self.selected_factor_name,
-                    display_errors,
+                    split_mode,
+                    selected_factor_name,
                 )
             else:
                 self._display_bar_plot(
                     selected_variable,
-                    self.split_mode,
-                    self.selected_factor_name,
-                    display_errors,
+                    split_mode,
+                    selected_factor_name,
+                    True,
                 )
 
     def _get_timeline_plot_df(
@@ -197,22 +166,7 @@ class FastDataPlotWidget(QWidget, messaging.MessengerListener):
         variable: Variable,
         split_mode: SplitMode,
         selected_factor_name: str,
-        calculate_errors: str | None,
     ) -> pd.DataFrame:
-        """Process data for timeline plot visualization.
-
-        This method retrieves the data for the selected variable, applies time interval
-        binning if enabled, and performs grouping based on the selected split mode.
-
-        Args:
-            variable: The variable to visualize.
-            split_mode: The mode for splitting/grouping the data.
-            selected_factor_name: The name of the selected factor when split_mode is FACTOR.
-            calculate_errors: The type of error to calculate ("sem", "std", or None).
-
-        Returns:
-            A DataFrame containing the processed data for timeline plot visualization.
-        """
         columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + [variable.name]
         result = self.datatable.get_filtered_df(columns)
 
@@ -223,7 +177,6 @@ class FastDataPlotWidget(QWidget, messaging.MessengerListener):
                 result,
                 settings.time_intervals_settings,
                 {variable.name: variable},
-                calculate_errors,
                 origin=self.datatable.dataset.experiment_started,
             )
 
@@ -247,11 +200,6 @@ class FastDataPlotWidget(QWidget, messaging.MessengerListener):
             variable.name: "mean",
         }
 
-        # Calculate error for timeline plot
-        if calculate_errors is not None:
-            result["Error"] = result[variable.name]
-            aggregation["Error"] = calculate_errors
-
         result = result.groupby(by, dropna=False, observed=False).aggregate(aggregation)
         result.reset_index(inplace=True)
 
@@ -262,34 +210,16 @@ class FastDataPlotWidget(QWidget, messaging.MessengerListener):
         selected_variable: Variable,
         split_mode: SplitMode,
         selected_factor_name: str,
-        display_errors: bool,
     ):
-        """Display data in a timeline plot.
-
-        This method processes the data and updates the timeline plot view
-        with the selected variable, grouping options, and visualization settings.
-
-        Args:
-            selected_variable: The variable to visualize.
-            split_mode: The mode for splitting/grouping the data.
-            selected_factor_name: The name of the selected factor when split_mode is FACTOR.
-            display_errors: Whether to display error bars.
-        """
         self.barPlotView.hide()
         self.plot_toolbar_action.setVisible(False)
         self.timelinePlotView.show()
         self.checkBoxScatterPlot.setVisible(True)
 
-        if display_errors:
-            calculate_errors = "sem" if self.error_type_combobox.currentText() == "Standard Error" else "std"
-        else:
-            calculate_errors = None
-
         df = self._get_timeline_plot_df(
             variable=selected_variable,
             split_mode=split_mode,
             selected_factor_name=selected_factor_name,
-            calculate_errors=calculate_errors,
         )
 
         selected_factor = (
@@ -303,7 +233,6 @@ class FastDataPlotWidget(QWidget, messaging.MessengerListener):
             df,
             selected_variable,
             split_mode,
-            display_errors,
             selected_factor,
             self.checkBoxScatterPlot.isChecked(),
         )
@@ -312,17 +241,6 @@ class FastDataPlotWidget(QWidget, messaging.MessengerListener):
         self,
         variable: Variable,
     ) -> pd.DataFrame:
-        """Process data for bar plot visualization.
-
-        This method retrieves the data for the selected variable and applies
-        appropriate binning (cycles or phases) based on the current binning settings.
-
-        Args:
-            variable: The variable to visualize.
-
-        Returns:
-            A DataFrame containing the processed data for bar plot visualization.
-        """
         columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + [variable.name]
         result = self.datatable.get_filtered_df(columns)
 
@@ -352,24 +270,13 @@ class FastDataPlotWidget(QWidget, messaging.MessengerListener):
         selected_factor_name: str,
         display_errors: bool,
     ):
-        """Display data in a bar plot.
-
-        This method processes the data and updates the bar plot view
-        with the selected variable, grouping options, and visualization settings.
-
-        Args:
-            selected_variable: The variable to visualize.
-            split_mode: The mode for splitting/grouping the data.
-            selected_factor_name: The name of the selected factor when split_mode is FACTOR.
-            display_errors: Whether to display error bars.
-        """
         self.timelinePlotView.hide()
         self.barPlotView.show()
         self.plot_toolbar_action.setVisible(True)
         self.checkBoxScatterPlot.setVisible(False)
 
         if display_errors:
-            calculate_errors = "se" if self.error_type_combobox.currentText() == "Standard Error" else "sd"
+            calculate_errors = "se"
         else:
             calculate_errors = None
 

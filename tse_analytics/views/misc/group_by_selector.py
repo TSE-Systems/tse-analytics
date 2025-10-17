@@ -6,14 +6,18 @@ from tse_analytics.core.data.shared import SplitMode
 
 
 class GroupBySelector(QComboBox, messaging.MessengerListener):
-
-    def __init__(self, parent: QWidget, datatable: Datatable, callback=None, check_binning=True):
+    def __init__(
+        self,
+        parent: QWidget,
+        datatable: Datatable,
+        check_binning=False,
+        selected_mode: str = None,
+    ):
         super().__init__(parent)
 
         self.setMinimumWidth(80)
 
         self.datatable = datatable
-        self.callback = callback
         self.check_binning = check_binning
         self.modes = []
 
@@ -23,8 +27,8 @@ class GroupBySelector(QComboBox, messaging.MessengerListener):
 
         self._set_available_modes()
 
-        if callback is not None:
-            self.currentTextChanged.connect(self._mode_changed)
+        if selected_mode is not None:
+            self.setCurrentText(selected_mode)
 
     def get_group_by(self) -> tuple[SplitMode, str]:
         """
@@ -77,20 +81,6 @@ class GroupBySelector(QComboBox, messaging.MessengerListener):
             self.blockSignals(False)
             self.addItems(modes)
             self.modes = modes
-
-    def _mode_changed(self, mode: str) -> None:
-        """
-        Handle changes to the selected grouping mode.
-
-        This method is called when the user selects a different grouping option.
-        If a callback function was provided, it calls that function with the new selection.
-
-        Args:
-            mode: The text of the newly selected mode.
-        """
-        if self.callback is not None:
-            split_mode, selected_factor_name = self.get_group_by()
-            self.callback(split_mode, selected_factor_name)
 
     def _get_split_mode(self) -> SplitMode:
         """
