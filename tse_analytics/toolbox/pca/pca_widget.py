@@ -1,6 +1,8 @@
+from dataclasses import dataclass, field
+
 import pandas as pd
-import seaborn as sns
-from PySide6.QtCore import QSize, Qt
+import seaborn.objects as so
+from PySide6.QtCore import QSize, Qt, QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QAbstractItemView, QWidget, QVBoxLayout, QToolBar, QAbstractScrollArea, QLabel
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
@@ -20,9 +22,22 @@ from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 
 
+@dataclass
+class PcaWidgetSettings:
+    group_by: str = "Animal"
+    selected_variables: list[str] = field(default_factory=list)
+
+
 class PcaWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
+
+        # Connect destructor to unsubscribe and save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
+        # Settings management
+        settings = QSettings()
+        self._settings: PcaWidgetSettings = settings.value(self.__class__.__name__, PcaWidgetSettings())
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -31,21 +46,23 @@ class PcaWidget(QWidget):
         self.title = "PCA"
 
         self.datatable = datatable
+        self._toast = None
 
         # Setup toolbar
         toolbar = QToolBar(
-            "Data Plot Toolbar",
+            "Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
 
-        toolbar.addAction(QIcon(":/icons/icons8-refresh-16.png"), "Update").triggered.connect(self._update)
+        self.update_action = toolbar.addAction(QIcon(":/icons/icons8-refresh-16.png"), "Update")
+        self.update_action.triggered.connect(self._update)
         toolbar.addSeparator()
 
         self.variables_table_widget = VariablesTableWidget()
         self.variables_table_widget.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
-        self.variables_table_widget.set_data(self.datatable.variables)
-        self.variables_table_widget.setMaximumHeight(400)
+        self.variables_table_widget.set_data(self.datatable.variables, self._settings.selected_variables)
+        self.variables_table_widget.setMaximumHeight(600)
         self.variables_table_widget.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
 
         variables_button = get_widget_tool_button(
@@ -58,7 +75,7 @@ class PcaWidget(QWidget):
 
         toolbar.addSeparator()
         toolbar.addWidget(QLabel("Group by:"))
-        self.group_by_selector = GroupBySelector(toolbar, self.datatable)
+        self.group_by_selector = GroupBySelector(toolbar, self.datatable, selected_mode=self._settings.group_by)
         toolbar.addWidget(self.group_by_selector)
 
         # Insert toolbar to the widget
@@ -72,11 +89,23 @@ class PcaWidget(QWidget):
         toolbar.addWidget(plot_toolbar)
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
-        toolbar.addAction("Add to Report").triggered.connect(self._add_report)
+        self.add_report_action = toolbar.addAction("Add to Report")
+        self.add_report_action.triggered.connect(self._add_report)
 
-        self.toast = None
+    def _destroyed(self):
+        settings = QSettings()
+        settings.setValue(
+            self.__class__.__name__,
+            PcaWidgetSettings(
+                self.group_by_selector.currentText(),
+                self.variables_table_widget.get_selected_variable_names(),
+            ),
+        )
 
     def _update(self):
+        self.update_action.setEnabled(False)
+        self.add_report_action.setEnabled(False)
+
         selected_variables = self.variables_table_widget.get_selected_variables_dict()
         if len(selected_variables) < 3:
             make_toast(
@@ -101,11 +130,8 @@ class PcaWidget(QWidget):
             case _:
                 by = None
 
-        # self.ui.pushButtonUpdate.setEnabled(False)
-        # self.ui.pushButtonAddReport.setEnabled(False)
-
-        self.toast = make_toast(self, self.title, "Processing...")
-        self.toast.show()
+        self._toast = make_toast(self, self.title, "Processing...")
+        self._toast.show()
 
         worker = Worker(self._calculate, selected_variables, split_mode, selected_factor_name, by)
         worker.signals.result.connect(self._result)
@@ -144,8 +170,8 @@ class PcaWidget(QWidget):
         return result_df, title, by, split_mode, selected_factor_name
 
     def _result(self, result: tuple[pd.DataFrame, str, str, SplitMode, str]):
+        # Clear the plot
         self.canvas.clear(False)
-        ax = self.canvas.figure.add_subplot(111)
 
         df, title, by, split_mode, selected_factor_name = result
 
@@ -159,24 +185,27 @@ class PcaWidget(QWidget):
             case _:
                 palette = color_manager.colormap_name
 
-        sns.scatterplot(
-            data=df,
-            x="PC1",
-            y="PC2",
-            hue=by,
-            marker=".",
-            palette=palette,
-            ax=ax,
+        (
+            so.Plot(
+                df,
+                x="PC1",
+                y="PC2",
+                color=by,
+            )
+            .add(so.Dot(pointsize=3))
+            .scale(color=palette)
+            .label(title=title)
+            .on(self.canvas.figure)
+            .plot(True)
         )
-        ax.set_title(title)
 
         self.canvas.figure.tight_layout()
         self.canvas.draw()
 
     def _finished(self):
-        self.toast.hide()
-        # self.ui.pushButtonUpdate.setEnabled(True)
-        # self.ui.pushButtonAddReport.setEnabled(True)
+        self._toast.hide()
+        self.update_action.setEnabled(True)
+        self.add_report_action.setEnabled(True)
 
     def _add_report(self):
         self.datatable.dataset.report += get_html_image(self.canvas.figure)

@@ -19,6 +19,7 @@ from tse_analytics.toolbox.data_plot.data_plot_widget import DataPlotWidget
 from tse_analytics.toolbox.distribution.distribution_widget import DistributionWidget
 from tse_analytics.toolbox.histogram.histogram_widget import HistogramWidget
 from tse_analytics.toolbox.matrixplot.matrixplot_widget import MatrixPlotWidget
+from tse_analytics.toolbox.mds.mds_widget import MdsWidget
 from tse_analytics.toolbox.mixed_anova.mixed_anova_widget import MixedAnovaWidget
 from tse_analytics.toolbox.n_way_anova.n_way_anova_widget import NWayAnovaWidget
 from tse_analytics.toolbox.normality.normality_widget import NormalityWidget
@@ -96,6 +97,9 @@ class ToolboxButton(QToolButton):
         )
         dimensionality_menu.addAction(QIcon(":/icons/dimensionality.png"), "tSNE").triggered.connect(
             self._add_tsne_widget
+        )
+        dimensionality_menu.addAction(QIcon(":/icons/dimensionality.png"), "MDS").triggered.connect(
+            self._add_mds_widget
         )
 
         utils_menu = self.menu.addMenu("Time Series")
@@ -369,6 +373,15 @@ class ToolboxButton(QToolButton):
         if datatable is None:
             return
         widget = TsneWidget(datatable)
+        LayoutManager.add_widget_to_central_area(
+            datatable.dataset, widget, f"{widget.title} - {datatable.dataset.name}", QIcon(":/icons/dimensionality.png")
+        )
+
+    def _add_mds_widget(self):
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
+            return
+        widget = MdsWidget(datatable)
         LayoutManager.add_widget_to_central_area(
             datatable.dataset, widget, f"{widget.title} - {datatable.dataset.name}", QIcon(":/icons/dimensionality.png")
         )

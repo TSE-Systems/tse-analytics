@@ -35,6 +35,7 @@ dev = [
     "pyinstaller==6.16.0",
     "qtsass==0.4.0",
     "ruff==0.14.1",
+    "ty==0.0.1a23",
 ]
 
 [project.scripts]
@@ -83,3 +84,6 @@ select = [
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.ty.environment]
+root = ["./tse_analytics"]

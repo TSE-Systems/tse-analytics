@@ -99,6 +99,11 @@ tasks:
     cmds:
       - mypy tse_analytics
 
+  ty:
+    cmds:
+      - ty check
+    ignore_error: true
+
   pylint:
     cmds:
       - pylint -j 8 tse_analytics
