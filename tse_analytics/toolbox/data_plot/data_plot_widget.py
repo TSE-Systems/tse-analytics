@@ -157,7 +157,7 @@ class DataPlotWidget(QWidget):
 
         df = self._get_timeline_plot_df(selected_variables_dict)
 
-        plot = (
+        (
             so.Plot(
                 df,
                 x="Hours",
@@ -166,11 +166,10 @@ class DataPlotWidget(QWidget):
             .pair(y=list(selected_variables_dict))
             .add(so.Line(linewidth=self.linewidth_spin_box.value()), so.Est())  # Line with mean estimate
             .add(so.Band(alpha=0.15), so.Est(errorbar=error_bar))  # Shaded CI band
+            .scale(color=palette)
             .on(self.canvas.figure)
+            .plot(True)
         )
-        if split_mode != SplitMode.FACTOR:
-            plot = plot.scale(color=palette)
-        plot.plot(True)
 
         # Draw light/dark bands
         if True:

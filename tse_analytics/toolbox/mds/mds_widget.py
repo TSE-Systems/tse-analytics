@@ -4,8 +4,16 @@ import pandas as pd
 import seaborn.objects as so
 from PySide6.QtCore import QSize, Qt, QSettings
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QAbstractItemView, QWidget, QVBoxLayout, QToolBar, QAbstractScrollArea, QLabel, \
-    QDoubleSpinBox, QSpinBox
+from PySide6.QtWidgets import (
+    QAbstractItemView,
+    QWidget,
+    QVBoxLayout,
+    QToolBar,
+    QAbstractScrollArea,
+    QLabel,
+    QDoubleSpinBox,
+    QSpinBox,
+)
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
 from sklearn.manifold import MDS

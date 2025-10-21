@@ -1,10 +1,11 @@
-from PySide6.QtCore import QSize, QSortFilterProxyModel, Qt
+from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QDialog, QToolBar, QWidget, QVBoxLayout, QTableView, QAbstractItemView
+from PySide6.QtWidgets import QDialog, QToolBar, QWidget, QVBoxLayout, QTreeView
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Factor
+from tse_analytics.core.models.color_dialog_delegate import ColorDialogDelegate
 from tse_analytics.core.models.factors_model import FactorsModel
 from tse_analytics.views.general.factors.factors_dialog import FactorsDialog
 
@@ -33,31 +34,23 @@ class FactorsWidget(QWidget, messaging.MessengerListener):
 
         self._layout.addWidget(toolbar)
 
-        proxy_model = QSortFilterProxyModel()
-        proxy_model.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
-
-        self.tableView = QTableView(
+        self.treeView = QTreeView(
             self,
-            sortingEnabled=True,
+            headerHidden=True,
         )
-        self.tableView.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self.tableView.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
-        self.tableView.verticalHeader().setMinimumSectionSize(20)
-        self.tableView.verticalHeader().setDefaultSectionSize(20)
-        self.tableView.setModel(proxy_model)
-
-        self._layout.addWidget(self.tableView)
+        self.treeView.setItemDelegate(ColorDialogDelegate(self.treeView))
+        self._layout.addWidget(self.treeView)
 
     def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
         if message.dataset is None:
             self.dataset = None
             self.edit_factors_action.setEnabled(False)
-            self.tableView.model().setSourceModel(None)
+            self.treeView.setModel(None)
         else:
             self.dataset = message.dataset
-            model = FactorsModel(list(self.dataset.factors.values()))
-            self.tableView.model().setSourceModel(model)
-            self.tableView.resizeColumnsToContents()
+            model = FactorsModel(self.dataset.factors, self)
+            self.treeView.setModel(model)
+            self.treeView.expandAll()
             self.edit_factors_action.setEnabled(True)
 
     def _edit_factors(self):

@@ -47,6 +47,15 @@ def get_color_hex(index: int) -> str:
     return rgb2hex(get_color_tuple(index))
 
 
+def get_factor_level_color_hex(index: int) -> str:
+    palette = sns.color_palette("deep")
+    n_colors = len(palette)
+    if index > n_colors:
+        index = index - (n_colors * (index // n_colors))
+    color_tuple = palette[index]
+    return rgb2hex(color_tuple)
+
+
 def get_animal_to_color_dict(animals: dict[str, Animal]) -> dict[str, str]:
     """
     Create a dictionary mapping animal IDs to their colors.
