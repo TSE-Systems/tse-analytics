@@ -46,7 +46,7 @@ class DistributionWidget(QWidget):
 
         # Setup toolbar
         toolbar = QToolBar(
-            "Distribution Toolbar",
+            "Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )

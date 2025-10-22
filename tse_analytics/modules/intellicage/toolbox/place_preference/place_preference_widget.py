@@ -9,7 +9,7 @@ from scipy.stats import chisquare, kruskal
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_widget_tool_button
-from tse_analytics.modules.intellicage.views.toolbox.place_preference.place_preference_settings_widget_ui import (
+from tse_analytics.modules.intellicage.toolbox.place_preference.place_preference_settings_widget_ui import (
     Ui_PlacePreferencesSettingsWidget,
 )
 from tse_analytics.views.misc.pandas_widget import PandasWidget
@@ -35,7 +35,7 @@ class PlacePreferenceWidget(QWidget):
 
         # Setup toolbar
         toolbar = QToolBar(
-            "Place Preference Toolbar",
+            "Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )

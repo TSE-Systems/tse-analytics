@@ -1,6 +1,8 @@
+from dataclasses import dataclass
+
 import pandas as pd
 import pingouin as pg
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QMessageBox, QWidget, QToolBar, QLabel, QTextEdit, QVBoxLayout
 from pyqttoast import ToastPreset
@@ -16,9 +18,21 @@ from tse_analytics.toolbox.rm_anova.rm_anova_settings_widget_ui import Ui_RMAnov
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
+@dataclass
+class RMAnovaWidgetSettings:
+    selected_variable: str = None
+
+
 class RMAnovaWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
+
+        # Connect destructor to unsubscribe and save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
+        # Settings management
+        settings = QSettings()
+        self._settings: RMAnovaWidgetSettings = settings.value(self.__class__.__name__, RMAnovaWidgetSettings())
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -30,7 +44,7 @@ class RMAnovaWidget(QWidget):
 
         # Setup toolbar
         toolbar = QToolBar(
-            "Data Plot Toolbar",
+            "Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
@@ -40,7 +54,7 @@ class RMAnovaWidget(QWidget):
 
         toolbar.addWidget(QLabel("Dependent variable:"))
         self.variable_selector = VariableSelector(toolbar)
-        self.variable_selector.set_data(self.datatable.variables)
+        self.variable_selector.set_data(self.datatable.variables, selected_variable=self._settings.selected_variable)
         toolbar.addWidget(self.variable_selector)
 
         self.settings_widget = QWidget()
@@ -92,6 +106,15 @@ class RMAnovaWidget(QWidget):
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add to Report").triggered.connect(self._add_report)
+
+    def _destroyed(self):
+        settings = QSettings()
+        settings.setValue(
+            self.__class__.__name__,
+            RMAnovaWidgetSettings(
+                self.variable_selector.currentText(),
+            ),
+        )
 
     def _update(self):
         selected_dependent_variable = self.variable_selector.get_selected_variable()

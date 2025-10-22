@@ -1,5 +1,7 @@
+from dataclasses import dataclass, field
+
 import pingouin as pg
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QAbstractItemView, QAbstractScrollArea, QTextEdit
 from pyqttoast import ToastPreset
@@ -16,9 +18,22 @@ from tse_analytics.views.misc.factors_table_widget import FactorsTableWidget
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
+@dataclass
+class NWayAnovaWidgetSettings:
+    selected_variable: str = None
+    selected_factors: list[str] = field(default_factory=list)
+
+
 class NWayAnovaWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
+
+        # Connect destructor to unsubscribe and save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
+        # Settings management
+        settings = QSettings()
+        self._settings: NWayAnovaWidgetSettings = settings.value(self.__class__.__name__, NWayAnovaWidgetSettings())
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -30,7 +45,7 @@ class NWayAnovaWidget(QWidget):
 
         # Setup toolbar
         toolbar = QToolBar(
-            "Data Plot Toolbar",
+            "Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
@@ -40,12 +55,14 @@ class NWayAnovaWidget(QWidget):
 
         toolbar.addWidget(QLabel("Dependent variable:"))
         self.variable_selector = VariableSelector(toolbar)
-        self.variable_selector.set_data(self.datatable.variables)
+        self.variable_selector.set_data(self.datatable.variables, selected_variable=self._settings.selected_variable)
         toolbar.addWidget(self.variable_selector)
 
         self.factors_table_widget = FactorsTableWidget()
         self.factors_table_widget.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
-        self.factors_table_widget.set_data(self.datatable.dataset.factors)
+        self.factors_table_widget.set_data(
+            self.datatable.dataset.factors, selected_factors=self._settings.selected_factors
+        )
         self.factors_table_widget.setMaximumHeight(400)
         self.factors_table_widget.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
 
@@ -106,6 +123,16 @@ class NWayAnovaWidget(QWidget):
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add to Report").triggered.connect(self._add_report)
+
+    def _destroyed(self):
+        settings = QSettings()
+        settings.setValue(
+            self.__class__.__name__,
+            NWayAnovaWidgetSettings(
+                self.variable_selector.currentText(),
+                self.factors_table_widget.get_selected_factor_names(),
+            ),
+        )
 
     def _update(self):
         selected_dependent_variable = self.variable_selector.get_selected_variable()

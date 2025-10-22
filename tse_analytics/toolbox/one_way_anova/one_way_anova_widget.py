@@ -1,5 +1,7 @@
+from dataclasses import dataclass
+
 import pingouin as pg
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QTextEdit, QComboBox
 from pyqttoast import ToastPreset
@@ -16,9 +18,22 @@ from tse_analytics.views.misc.factor_selector import FactorSelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
+@dataclass
+class OneWayAnovaWidgetSettings:
+    selected_variable: str = None
+    selected_factor: str = None
+
+
 class OneWayAnovaWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
+
+        # Connect destructor to unsubscribe and save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
+        # Settings management
+        settings = QSettings()
+        self._settings: OneWayAnovaWidgetSettings = settings.value(self.__class__.__name__, OneWayAnovaWidgetSettings())
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -30,7 +45,7 @@ class OneWayAnovaWidget(QWidget):
 
         # Setup toolbar
         toolbar = QToolBar(
-            "Data Plot Toolbar",
+            "Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
@@ -40,12 +55,12 @@ class OneWayAnovaWidget(QWidget):
 
         toolbar.addWidget(QLabel("Dependent variable:"))
         self.variable_selector = VariableSelector(toolbar)
-        self.variable_selector.set_data(self.datatable.variables)
+        self.variable_selector.set_data(self.datatable.variables, selected_variable=self._settings.selected_variable)
         toolbar.addWidget(self.variable_selector)
 
         toolbar.addWidget(QLabel("Factor:"))
         self.factor_selector = FactorSelector(toolbar)
-        self.factor_selector.set_data(self.datatable.dataset.factors, add_empty_item=False)
+        self.factor_selector.set_data(self.datatable.dataset.factors, selected_factor=self._settings.selected_factor)
         toolbar.addWidget(self.factor_selector)
 
         self.eff_size = {
@@ -60,7 +75,7 @@ class OneWayAnovaWidget(QWidget):
         }
         toolbar.addWidget(QLabel("Effect size type:"))
         self.comboBoxEffectSizeType = QComboBox(toolbar)
-        self.comboBoxEffectSizeType.addItems(self.eff_size.keys())
+        self.comboBoxEffectSizeType.addItems(list(self.eff_size))
         self.comboBoxEffectSizeType.setCurrentText("Hedges g")
         toolbar.addWidget(self.comboBoxEffectSizeType)
 
@@ -78,6 +93,16 @@ class OneWayAnovaWidget(QWidget):
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add to Report").triggered.connect(self._add_report)
+
+    def _destroyed(self):
+        settings = QSettings()
+        settings.setValue(
+            self.__class__.__name__,
+            OneWayAnovaWidgetSettings(
+                self.variable_selector.currentText(),
+                self.factor_selector.currentText(),
+            ),
+        )
 
     def _update(self):
         dependent_variable = self.variable_selector.get_selected_variable()

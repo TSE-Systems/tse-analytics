@@ -1,6 +1,8 @@
+from dataclasses import dataclass
+
 import numpy as np
 import pandas as pd
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel
 from astropy.timeseries import LombScargle
@@ -14,9 +16,22 @@ from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
+@dataclass
+class PeriodogramWidgetSettings:
+    group_by: str = "Animal"
+    selected_variable: str = None
+
+
 class PeriodogramWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
+
+        # Connect destructor to unsubscribe and save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
+        # Settings management
+        settings = QSettings()
+        self._settings: PeriodogramWidgetSettings = settings.value(self.__class__.__name__, PeriodogramWidgetSettings())
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -28,7 +43,7 @@ class PeriodogramWidget(QWidget):
 
         # Setup toolbar
         toolbar = QToolBar(
-            "Data Plot Toolbar",
+            "Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
@@ -37,12 +52,14 @@ class PeriodogramWidget(QWidget):
         toolbar.addSeparator()
 
         self.variableSelector = VariableSelector(toolbar)
-        self.variableSelector.set_data(self.datatable.variables)
+        self.variableSelector.set_data(self.datatable.variables, selected_variable=self._settings.selected_variable)
         toolbar.addWidget(self.variableSelector)
 
         toolbar.addSeparator()
         toolbar.addWidget(QLabel("Group by:"))
-        self.group_by_selector = GroupBySelector(toolbar, self.datatable, check_binning=True)
+        self.group_by_selector = GroupBySelector(
+            toolbar, self.datatable, check_binning=True, selected_mode=self._settings.group_by
+        )
         toolbar.addWidget(self.group_by_selector)
 
         # Insert toolbar to the widget
@@ -58,7 +75,20 @@ class PeriodogramWidget(QWidget):
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add to Report").triggered.connect(self._add_report)
 
+    def _destroyed(self):
+        settings = QSettings()
+        settings.setValue(
+            self.__class__.__name__,
+            PeriodogramWidgetSettings(
+                self.group_by_selector.currentText(),
+                self.variableSelector.currentText(),
+            ),
+        )
+
     def _update(self):
+        # Clear the plot
+        self.canvas.clear(False)
+
         split_mode, selected_factor_name = self.group_by_selector.get_group_by()
 
         variable = self.variableSelector.get_selected_variable()
@@ -101,7 +131,6 @@ class PeriodogramWidget(QWidget):
         # Sort by phase for line plotting
         phase_df.sort_values("Phase", inplace=True)
 
-        self.canvas.clear(False)
         axs = self.canvas.figure.subplots(2, 1)
 
         axs[0].plot(period, power)

@@ -1,25 +1,40 @@
+from dataclasses import dataclass
+
 import pingouin as pg
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, QSettings
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QTextEdit, QAbstractItemView, QAbstractScrollArea
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QTextEdit
 from pyqttoast import ToastPreset
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
-from tse_analytics.core.utils import get_widget_tool_button, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
+from tse_analytics.core.utils import get_widget_tool_button, get_h_spacer_widget
 from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.toolbox.ancova.ancova_settings_widget_ui import Ui_AncovaSettingsWidget
 from tse_analytics.views.misc.factor_selector import FactorSelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
-from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
+
+
+@dataclass
+class AncovaWidgetSettings:
+    selected_variable: str = None
+    selected_covariate: str = None
+    selected_factor: str = None
 
 
 class AncovaWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
+
+        # Connect destructor to unsubscribe and save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
+        # Settings management
+        settings = QSettings()
+        self._settings: AncovaWidgetSettings = settings.value(self.__class__.__name__, AncovaWidgetSettings())
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -41,26 +56,17 @@ class AncovaWidget(QWidget):
 
         toolbar.addWidget(QLabel("Dependent variable:"))
         self.variable_selector = VariableSelector(toolbar)
-        self.variable_selector.set_data(self.datatable.variables)
+        self.variable_selector.set_data(self.datatable.variables, selected_variable=self._settings.selected_variable)
         toolbar.addWidget(self.variable_selector)
 
-        self.covariates_table_widget = VariablesTableWidget()
-        self.covariates_table_widget.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
-        self.covariates_table_widget.set_data(self.datatable.variables)
-        self.covariates_table_widget.setMaximumHeight(400)
-        self.covariates_table_widget.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
-
-        covariates_button = get_widget_tool_button(
-            toolbar,
-            self.covariates_table_widget,
-            "Covariates",
-            QIcon(":/icons/variables.png"),
-        )
-        toolbar.addWidget(covariates_button)
+        toolbar.addWidget(QLabel("Covariate variable:"))
+        self.covariate_selector = VariableSelector(toolbar)
+        self.covariate_selector.set_data(self.datatable.variables, selected_variable=self._settings.selected_covariate)
+        toolbar.addWidget(self.covariate_selector)
 
         toolbar.addWidget(QLabel("Factor:"))
         self.factor_selector = FactorSelector(toolbar)
-        self.factor_selector.set_data(self.datatable.dataset.factors, add_empty_item=False)
+        self.factor_selector.set_data(self.datatable.dataset.factors, selected_factor=self._settings.selected_factor)
         toolbar.addWidget(self.factor_selector)
 
         self.settings_widget = QWidget()
@@ -113,8 +119,21 @@ class AncovaWidget(QWidget):
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add to Report").triggered.connect(self._add_report)
 
+    def _destroyed(self):
+        settings = QSettings()
+        settings.setValue(
+            self.__class__.__name__,
+            AncovaWidgetSettings(
+                self.variable_selector.currentText(),
+                self.covariate_selector.currentText(),
+                self.factor_selector.currentText(),
+            ),
+        )
+
     def _update(self):
         dependent_variable = self.variable_selector.get_selected_variable()
+        selected_covariate = self.covariate_selector.get_selected_variable()
+
         if dependent_variable is None:
             make_toast(
                 self,
@@ -125,8 +144,6 @@ class AncovaWidget(QWidget):
                 show_duration_bar=True,
             ).show()
             return
-
-        dependent_variable_name = dependent_variable.name
 
         factor_name = self.factor_selector.currentText()
         if factor_name == "":
@@ -140,10 +157,10 @@ class AncovaWidget(QWidget):
             ).show()
             return
 
-        selected_covariate_variables = self.covariates_table_widget.get_selected_variables_dict()
-        selected_covariates = list(selected_covariate_variables)
-
-        variables = {dependent_variable_name: dependent_variable} | selected_covariate_variables
+        variables = {
+            dependent_variable.name: dependent_variable,
+            selected_covariate.name: selected_covariate,
+        }
 
         columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + list(variables)
         df = self.datatable.get_filtered_df(columns)
@@ -164,14 +181,14 @@ class AncovaWidget(QWidget):
 
         ancova = pg.ancova(
             data=df,
-            dv=dependent_variable_name,
-            covar=selected_covariates,
+            dv=dependent_variable.name,
+            covar=selected_covariate.name,
             between=factor_name,
         ).round(5)
 
         pairwise_tests = pg.pairwise_tests(
             data=df,
-            dv=dependent_variable_name,
+            dv=dependent_variable.name,
             between=factor_name,
             effsize=effsize,
             padjust=padjust,

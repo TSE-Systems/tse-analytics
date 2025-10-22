@@ -1,9 +1,10 @@
+from dataclasses import dataclass
 from io import BytesIO
 
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel
 from matplotlib import pyplot as plt
@@ -24,9 +25,21 @@ from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.animal_selector import AnimalSelector
 
 
+@dataclass
+class TransitionsWidgetSettings:
+    selected_animal: str = None
+
+
 class TransitionsWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
+
+        # Connect destructor to unsubscribe and save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
+        # Settings management
+        settings = QSettings()
+        self._settings: TransitionsWidgetSettings = settings.value(self.__class__.__name__, TransitionsWidgetSettings())
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -38,7 +51,7 @@ class TransitionsWidget(QWidget):
 
         # Setup toolbar
         toolbar = QToolBar(
-            "Transitions Toolbar",
+            "Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
@@ -48,7 +61,7 @@ class TransitionsWidget(QWidget):
 
         toolbar.addWidget(QLabel("Animal:"))
         self.animalSelector = AnimalSelector(toolbar)
-        self.animalSelector.set_data(self.datatable.dataset)
+        self.animalSelector.set_data(self.datatable.dataset, selected_animal=self._settings.selected_animal)
         toolbar.addWidget(self.animalSelector)
 
         # Insert toolbar to the widget
@@ -66,6 +79,15 @@ class TransitionsWidget(QWidget):
         toolbar.addAction("Generate PDF").triggered.connect(self._generate_pdf)
 
         self.pdf_widget: PdfWidget | None = None
+
+    def _destroyed(self):
+        settings = QSettings()
+        settings.setValue(
+            self.__class__.__name__,
+            TransitionsWidgetSettings(
+                self.animalSelector.currentText(),
+            ),
+        )
 
     def _update(self):
         animal = self.animalSelector.get_selected_animal()
