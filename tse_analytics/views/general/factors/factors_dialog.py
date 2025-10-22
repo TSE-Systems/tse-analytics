@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QInputDialog, QListWidgetItem, QWidget
 
-from tse_analytics.core.color_manager import get_color_hex
+from tse_analytics.core.color_manager import get_factor_level_color_hex
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Factor, FactorLevel
 from tse_analytics.views.general.factors.factors_dialog_ui import Ui_FactorsDialog
@@ -55,7 +55,7 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
             if result:
                 level = FactorLevel(
                     name=text,
-                    color=get_color_hex(len(self.selected_factor.levels)),
+                    color=get_factor_level_color_hex(len(self.selected_factor.levels)),
                 )
                 self.selected_factor.levels.append(level)
                 self.listWidgetLevels.addItem(text)

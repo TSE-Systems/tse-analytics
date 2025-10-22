@@ -13,9 +13,22 @@ from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
+@dataclass
+class NormalityWidgetSettings:
+    group_by: str = "Animal"
+    selected_variable: str = None
+
+
 class NormalityWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
+
+        # Connect destructor to unsubscribe and save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
+        # Settings management
+        settings = QSettings()
+        self._settings: NormalityWidgetSettings = settings.value(self.__class__.__name__, NormalityWidgetSettings())
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -36,12 +49,12 @@ class NormalityWidget(QWidget):
         toolbar.addSeparator()
 
         self.variableSelector = VariableSelector(toolbar)
-        self.variableSelector.set_data(self.datatable.variables)
+        self.variableSelector.set_data(self.datatable.variables, selected_variable=self._settings.selected_variable)
         toolbar.addWidget(self.variableSelector)
 
         toolbar.addSeparator()
         toolbar.addWidget(QLabel("Group by:"))
-        self.group_by_selector = GroupBySelector(toolbar, self.datatable, check_binning=False)
+        self.group_by_selector = GroupBySelector(toolbar, self.datatable, selected_mode=self._settings.group_by)
         toolbar.addWidget(self.group_by_selector)
 
         # Insert the toolbar to the widget
@@ -57,7 +70,20 @@ class NormalityWidget(QWidget):
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add to Report").triggered.connect(self._add_report)
 
+    def _destroyed(self):
+        settings = QSettings()
+        settings.setValue(
+            self.__class__.__name__,
+            NormalityWidgetSettings(
+                self.group_by_selector.currentText(),
+                self.variableSelector.currentText(),
+            ),
+        )
+
     def _update(self):
+        # Clear the plot
+        self.canvas.clear(False)
+
         split_mode, selected_factor_name = self.group_by_selector.get_group_by()
         variable = self.variableSelector.get_selected_variable()
 
@@ -80,8 +106,6 @@ class NormalityWidget(QWidget):
 
         if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:
             df[by] = df[by].cat.remove_unused_categories()
-
-        self.canvas.clear(False)
 
         match split_mode:
             case SplitMode.ANIMAL:

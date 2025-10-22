@@ -12,25 +12,11 @@ class FactorSelector(QComboBox):
     """
 
     def __init__(self, parent=None):
-        """
-        Initialize the FactorSelector widget.
-
-        Args:
-            parent: The parent widget. Default is None.
-        """
         super().__init__(parent)
 
-    def set_data(self, factors: dict[str, Factor], add_empty_item=True):
-        """
-        Populate the combo box with factor names.
-
-        This method clears any existing items and adds the names of the provided factors.
-
-        Args:
-            factors: Dictionary mapping factor names to Factor objects.
-            add_empty_item: If True, adds an empty item at the beginning of the list.
-                           Default is True.
-        """
+    def set_data(self, factors: dict[str, Factor], selected_factor: str = None) -> None:
         self.clear()
-        items = [""] + list(factors.keys()) if add_empty_item else list(factors.keys())
+        items = list(factors)
         self.addItems(items)
+        if selected_factor is not None:
+            self.setCurrentText(selected_factor)

@@ -43,6 +43,9 @@ pd.options.mode.copy_on_write = "warn"
 pd.set_option("colheader_justify", "center")  # FOR TABLE <th>
 # pd.set_option("display.precision", 3)
 
+# Global Seaborn settings
+# sns.objects.Plot.config.display["format"] = "svg"
+sns.objects.Plot.config.theme.update(sns.axes_style("whitegrid"))
 sns.set_theme(style="whitegrid")
 sns.set_color_codes("pastel")
 

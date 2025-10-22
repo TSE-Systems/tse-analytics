@@ -19,9 +19,22 @@ from tse_analytics.views.misc.factor_selector import FactorSelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
+@dataclass
+class OneWayAnovaWidgetSettings:
+    selected_variable: str = None
+    selected_factor: str = None
+
+
 class OneWayAnovaWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
+
+        # Connect destructor to unsubscribe and save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
+        # Settings management
+        settings = QSettings()
+        self._settings: OneWayAnovaWidgetSettings = settings.value(self.__class__.__name__, OneWayAnovaWidgetSettings())
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -33,7 +46,7 @@ class OneWayAnovaWidget(QWidget):
 
         # Setup toolbar
         toolbar = QToolBar(
-            "Data Plot Toolbar",
+            "Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
@@ -43,12 +56,12 @@ class OneWayAnovaWidget(QWidget):
 
         toolbar.addWidget(QLabel("Dependent variable:"))
         self.variable_selector = VariableSelector(toolbar)
-        self.variable_selector.set_data(self.datatable.variables)
+        self.variable_selector.set_data(self.datatable.variables, selected_variable=self._settings.selected_variable)
         toolbar.addWidget(self.variable_selector)
 
         toolbar.addWidget(QLabel("Factor:"))
         self.factor_selector = FactorSelector(toolbar)
-        self.factor_selector.set_data(self.datatable.dataset.factors, add_empty_item=False)
+        self.factor_selector.set_data(self.datatable.dataset.factors, selected_factor=self._settings.selected_factor)
         toolbar.addWidget(self.factor_selector)
 
         # Insert toolbar to the widget
@@ -65,6 +78,16 @@ class OneWayAnovaWidget(QWidget):
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add to Report").triggered.connect(self._add_report)
+
+    def _destroyed(self):
+        settings = QSettings()
+        settings.setValue(
+            self.__class__.__name__,
+            OneWayAnovaWidgetSettings(
+                self.variable_selector.currentText(),
+                self.factor_selector.currentText(),
+            ),
+        )
 
     def _update(self):
         dependent_variable = self.variable_selector.get_selected_variable()

@@ -1,4 +1,6 @@
-from PySide6.QtCore import QSize, Qt
+from dataclasses import dataclass
+
+from PySide6.QtCore import QSize, Qt, QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QWidgetAction, QLabel, QSpinBox
 from matplotlib import pyplot as plt
@@ -13,6 +15,12 @@ from tse_analytics.core.utils import get_html_image, get_h_spacer_widget, time_t
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
+@dataclass
+class ActogramWidgetSettings:
+    selected_variable: str = None
+    bins_per_hour: int = 6
+
+
 class ActogramWidget(QWidget):
     """Widget for visualizing activity patterns over time in a double-plotted actogram format.
 
@@ -20,24 +28,17 @@ class ActogramWidget(QWidget):
     typically used in chronobiology to visualize circadian rhythms. This widget
     creates a double-plotted actogram where each row represents two consecutive days,
     allowing for better visualization of activity patterns that cross midnight.
-
-    Attributes:
-        title: The title of the widget.
-        datatable: The datatable containing the data to visualize.
-        toolbar: The toolbar with controls for the actogram.
-        variableSelector: Selector for choosing which variable to visualize.
-        bins_spin_box: Control for setting the temporal resolution (bins per hour).
-        canvas: The matplotlib canvas where the actogram is drawn.
     """
 
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
-        """Initialize the actogram widget.
-
-        Args:
-            datatable: The datatable containing the data to visualize.
-            parent: The parent widget, if any.
-        """
         super().__init__(parent)
+
+        # Connect destructor to unsubscribe and save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
+        # Settings management
+        settings = QSettings()
+        self._settings: ActogramWidgetSettings = settings.value(self.__class__.__name__, ActogramWidgetSettings())
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -49,7 +50,7 @@ class ActogramWidget(QWidget):
 
         # Setup toolbar
         self.toolbar = QToolBar(
-            "Data Plot Toolbar",
+            "Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
@@ -58,7 +59,7 @@ class ActogramWidget(QWidget):
         self.toolbar.addSeparator()
 
         self.variableSelector = VariableSelector(self.toolbar)
-        self.variableSelector.set_data(self.datatable.variables)
+        self.variableSelector.set_data(self.datatable.variables, selected_variable=self._settings.selected_variable)
         self.toolbar.addWidget(self.variableSelector)
 
         self.toolbar.addWidget(QLabel("Bins per hour:"))
@@ -67,7 +68,7 @@ class ActogramWidget(QWidget):
             minimum=1,
             maximum=60,
             singleStep=1,
-            value=4,
+            value=self._settings.bins_per_hour,
         )
         self.toolbar.addWidget(self.bins_spin_box)
 
@@ -83,6 +84,16 @@ class ActogramWidget(QWidget):
 
         self.toolbar.addAction("Add to Report").triggered.connect(self._add_report)
         self._add_plot_toolbar()
+
+    def _destroyed(self):
+        settings = QSettings()
+        settings.setValue(
+            self.__class__.__name__,
+            ActogramWidgetSettings(
+                self.variableSelector.currentText(),
+                self.bins_spin_box.value(),
+            ),
+        )
 
     def _add_plot_toolbar(self):
         """Add a matplotlib navigation toolbar to the widget.

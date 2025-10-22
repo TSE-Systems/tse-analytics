@@ -10,7 +10,7 @@ class TreeItem:
     foreground color, tooltip, and checked state.
     """
 
-    def __init__(self, name: str, parent=None):
+    def __init__(self, name: str, parent=None, color: str | None = None):
         """
         Initialize a tree item with the given name and optional parent.
 
@@ -19,6 +19,7 @@ class TreeItem:
             parent (TreeItem, optional): The parent tree item. Defaults to None.
         """
         self.name = name
+        self.color = color
         self.parent_item = weakref.ref(parent) if parent else None
         self.child_items: list[TreeItem] = []
         self._checked = False

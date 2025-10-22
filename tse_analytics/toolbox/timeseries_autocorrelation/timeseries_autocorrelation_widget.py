@@ -1,5 +1,7 @@
+from dataclasses import dataclass
+
 import pandas as pd
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
@@ -16,9 +18,24 @@ from tse_analytics.views.misc.animal_selector import AnimalSelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
+@dataclass
+class TimeseriesAutocorrelationWidgetSettings:
+    selected_variable: str = None
+    selected_animal: str = None
+
+
 class TimeseriesAutocorrelationWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
+
+        # Connect destructor to unsubscribe and save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
+        # Settings management
+        settings = QSettings()
+        self._settings: TimeseriesAutocorrelationWidgetSettings = settings.value(
+            self.__class__.__name__, TimeseriesAutocorrelationWidgetSettings()
+        )
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -30,7 +47,7 @@ class TimeseriesAutocorrelationWidget(QWidget):
 
         # Setup toolbar
         toolbar = QToolBar(
-            "Data Plot Toolbar",
+            "Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
@@ -42,12 +59,12 @@ class TimeseriesAutocorrelationWidget(QWidget):
         filtered_variables = {
             key: value for (key, value) in datatable.variables.items() if value.aggregation == Aggregation.MEAN
         }
-        self.variableSelector.set_data(filtered_variables)
+        self.variableSelector.set_data(filtered_variables, selected_variable=self._settings.selected_variable)
         toolbar.addWidget(self.variableSelector)
 
         toolbar.addWidget(QLabel("Animal:"))
         self.animalSelector = AnimalSelector(toolbar)
-        self.animalSelector.set_data(self.datatable.dataset)
+        self.animalSelector.set_data(self.datatable.dataset, selected_animal=self._settings.selected_animal)
         toolbar.addWidget(self.animalSelector)
 
         # Insert toolbar to the widget
@@ -63,7 +80,20 @@ class TimeseriesAutocorrelationWidget(QWidget):
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add to Report").triggered.connect(self._add_report)
 
+    def _destroyed(self):
+        settings = QSettings()
+        settings.setValue(
+            self.__class__.__name__,
+            TimeseriesAutocorrelationWidgetSettings(
+                self.variableSelector.currentText(),
+                self.animalSelector.currentText(),
+            ),
+        )
+
     def _update(self):
+        # Clear the plot
+        self.canvas.clear(False)
+
         if self.datatable.dataset.binning_settings.apply:
             make_toast(
                 self,
@@ -77,8 +107,6 @@ class TimeseriesAutocorrelationWidget(QWidget):
 
         variable = self.variableSelector.get_selected_variable()
         animal = self.animalSelector.get_selected_animal()
-
-        self.canvas.clear(False)
 
         columns = ["DateTime", "Timedelta", "Animal", variable.name]
         df = self.datatable.get_filtered_df(columns)

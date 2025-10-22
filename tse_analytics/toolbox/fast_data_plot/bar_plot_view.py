@@ -11,28 +11,7 @@ from tse_analytics.core.utils import get_html_image
 
 
 class BarPlotView(QWidget):
-    """Widget for displaying data as a bar plot.
-
-    This widget creates and displays bar plots using seaborn's catplot functionality.
-    It supports different grouping options and can display error bars.
-
-    Attributes:
-        datatable: The datatable containing the data being visualized.
-        canvas: The matplotlib canvas where the bar plot is drawn.
-        _df: The DataFrame containing the processed data for plotting.
-        _variable: The variable being visualized.
-        _split_mode: The mode for splitting/grouping the data.
-        _selected_factor: The selected factor when split_mode is FACTOR.
-        _error_type: The type of error bars to display ("se" or "sd").
-        _display_errors: Whether to display error bars.
-    """
-
     def __init__(self, parent: QWidget):
-        """Initialize the bar plot view.
-
-        Args:
-            parent: The parent widget.
-        """
         super().__init__(parent)
 
         self.setLayout(QVBoxLayout(self))
@@ -58,17 +37,6 @@ class BarPlotView(QWidget):
         display_errors: bool,
         error_type: str,
     ) -> None:
-        """Update the bar plot with new data and settings.
-
-        Args:
-            datatable: The datatable containing the data being visualized.
-            df: The DataFrame containing the processed data for plotting.
-            variable: The variable to visualize.
-            split_mode: The mode for splitting/grouping the data.
-            selected_factor: The selected factor when split_mode is FACTOR.
-            display_errors: Whether to display error bars.
-            error_type: The type of error bars to display ("se" or "sd").
-        """
         self.datatable = datatable
         self._df = df
         self._variable = variable
@@ -80,12 +48,6 @@ class BarPlotView(QWidget):
         self._update_plot()
 
     def _update_plot(self):
-        """Update the bar plot visualization.
-
-        This method creates a new bar plot using seaborn's catplot functionality
-        based on the current data and settings. It handles different grouping options
-        and can display error bars.
-        """
         self.layout().removeWidget(self.canvas)
         self.canvas.figure.clear()
         self.canvas.draw()
@@ -133,9 +95,4 @@ class BarPlotView(QWidget):
             self.layout().addWidget(self.canvas)
 
     def get_report(self) -> str:
-        """Get an HTML representation of the current bar plot for reporting.
-
-        Returns:
-            HTML string containing the bar plot image.
-        """
         return get_html_image(self.canvas.figure)

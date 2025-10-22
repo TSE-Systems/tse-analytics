@@ -57,21 +57,21 @@ class FactorsTableWidget(QTableWidget):
         """
         self.setSelectionMode(mode)
 
-    def set_data(self, factors: dict[str, Factor]) -> None:
+    def set_data(self, factors: dict[str, Factor], selected_factors: list[str] = None) -> None:
         """
         Populate the table with factor data.
 
         This method clears any existing data and fills the table with the provided factors,
         displaying their names and levels.
-
-        Args:
-            factors: Dictionary mapping factor names to Factor objects.
         """
         self.setRowCount(len(factors))
         for i, factor in enumerate(factors.values()):
             self.setItem(i, 0, QTableWidgetItem(factor.name))
             level_names = [level.name for level in factor.levels]
             self.setItem(i, 1, QTableWidgetItem(f"{', '.join(level_names)}"))
+            if selected_factors is not None:
+                if factor.name in selected_factors:
+                    self.selectRow(i)
 
     def clear_data(self) -> None:
         """

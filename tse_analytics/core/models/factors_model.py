@@ -1,91 +1,103 @@
-from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
+from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt
+from PySide6.QtGui import QColor
+from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core.data.shared import Factor
+from tse_analytics.core.models.tree_item import TreeItem
 
 
-class FactorsModel(QAbstractTableModel):
-    """
-    A table model for displaying factors and their levels.
-
-    This model provides a tabular representation of Factor objects with two columns:
-    one for the factor name and one for the comma-separated list of level names.
-    """
-
-    header = ("Name", "Levels")
-
-    def __init__(self, items: list[Factor], parent=None):
-        """
-        Initialize the factors model with the given list of factors.
-
-        Args:
-            items (list[Factor]): The list of Factor objects to display.
-            parent (QObject, optional): The parent object. Defaults to None.
-        """
+class FactorsModel(QAbstractItemModel):
+    def __init__(self, factors: dict[str, Factor], widget: QWidget, parent=None):
         super().__init__(parent)
 
-        self.items = items
+        self.factors = factors
+        self.widget = widget
 
-    def data(self, index: QModelIndex, role: Qt.ItemDataRole = ...):
-        """
-        Return the data stored at the given index for the specified role.
+        self.root_item = TreeItem("Root Item")
+        self.setupModelData()
 
-        Args:
-            index (QModelIndex): The index of the requested data.
-            role (Qt.ItemDataRole): The role for which to return the data.
+    def setupModelData(self):
+        self.beginResetModel()
+        self.root_item.clear()
+        for factor in self.factors.values():
+            factor_tree_item = TreeItem(factor.name)
+            for level in factor.levels:
+                factor_tree_item.add_child(TreeItem(level.name, color=level.color))
+            self.root_item.add_child(factor_tree_item)
+        self.endResetModel()
 
-        Returns:
-            str or None:
-                - For column 0: The factor name
-                - For column 1: A comma-separated list of level names
-                - None for unsupported roles
-        """
-        item = self.items[index.row()]
-        match index.column():
-            case 0:
-                if role == Qt.ItemDataRole.DisplayRole:
-                    return item.name
-            case 1:
-                if role == Qt.ItemDataRole.DisplayRole:
-                    level_names = [level.name for level in item.levels]
-                    return f"{', '.join(level_names)}"
+    def getItem(self, index: QModelIndex):
+        """Helper method to get the TreeNode from a QModelIndex."""
+        if index.isValid():
+            item = index.internalPointer()
+            if item is not None:
+                return item
+        return self.root_item  # Return root item for invalid or root index
 
-    def headerData(self, col: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = ...):
-        """
-        Return the header data for the given role, section and orientation.
+    def index(self, row, column, parent=QModelIndex()):
+        if not self.hasIndex(row, column, parent):
+            return QModelIndex()
 
-        Args:
-            col (int): The column/row number.
-            orientation (Qt.Orientation): The orientation of the header.
-            role (Qt.ItemDataRole): The role for which to return the data.
+        parentItem = self.getItem(parent)
+        childItem = parentItem.child(row)
+        if childItem:
+            # Pass the child_item as an internal pointer
+            return self.createIndex(row, column, childItem)
+        return QModelIndex()
 
-        Returns:
-            str or None: The header text for horizontal headers with DisplayRole,
-                         None otherwise.
-        """
-        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
-            return self.header[col]
-        return None
+    def parent(self, index: QModelIndex = ...) -> QModelIndex:
+        if index.isValid():
+            p = index.internalPointer().parent()
+            if p:
+                return self.createIndex(p.row(), 0, p)
+        return QModelIndex()
 
     def rowCount(self, parent: QModelIndex = ...):
-        """
-        Return the number of rows in the model.
-
-        Args:
-            parent (QModelIndex): The parent index (unused in table models).
-
-        Returns:
-            int: The number of factors.
-        """
-        return len(self.items)
+        parent_item = self.getItem(parent)
+        return parent_item.child_count()
 
     def columnCount(self, parent: QModelIndex = ...):
-        """
-        Return the number of columns in the model.
+        return 1
 
-        Args:
-            parent (QModelIndex): The parent index (unused in table models).
+    def data(self, index: QModelIndex, role: Qt.ItemDataRole = None):
+        if not index.isValid():
+            return None
 
-        Returns:
-            int: Always 2, for the "Name" and "Levels" columns.
-        """
-        return len(self.header)
+        item = self.getItem(index)
+        if role == Qt.ItemDataRole.DisplayRole:
+            return item.name
+        elif role == Qt.ItemDataRole.EditRole:
+            return item
+        elif role == Qt.ItemDataRole.DecorationRole and item.color is not None:
+            return QColor(item.color)
+
+        return None
+
+    def setData(self, index: QModelIndex, value, role=Qt.ItemDataRole.EditRole):
+        if not index.isValid():
+            return False
+
+        if role == Qt.ItemDataRole.EditRole and value is not None:
+            item = self.getItem(index)
+            item.color = value.name()
+            factor = self.factors[item.parent_item().name]
+            for level in factor.levels:
+                if level.name == item.name:
+                    level.color = item.color
+                    break
+            return True
+
+        return False
+
+    def flags(self, index: QModelIndex):
+        if not index.isValid():
+            return Qt.ItemFlag.NoItemFlags
+
+        item = self.getItem(index)
+        if item.color is not None:
+            return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsEditable
+        else:
+            return Qt.ItemFlag.ItemIsEnabled
+
+    def headerData(self, section, orientation: Qt.Orientation, role=Qt.ItemDataRole.DisplayRole):
+        return None

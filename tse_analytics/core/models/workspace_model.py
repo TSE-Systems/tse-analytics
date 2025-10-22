@@ -57,31 +57,29 @@ class WorkspaceModel(QAbstractItemModel):
         return 1
 
     def data(self, index: QModelIndex, role: Qt.ItemDataRole = None):
+        if not index.isValid():
+            return None
+
         item = self.getItem(index)
 
-        if role == Qt.ItemDataRole.ToolTipRole:
-            if index.column() == 0:
+        match role:
+            case Qt.ItemDataRole.ToolTipRole:
                 return item.tooltip
-
-        if role == Qt.ItemDataRole.DecorationRole:
-            if index.column() == 0:
+            case Qt.ItemDataRole.DecorationRole:
                 return item.icon
-
-        if role == Qt.ItemDataRole.ForegroundRole:
-            if index.column() == 0:
+            case Qt.ItemDataRole.ForegroundRole:
                 return item.foreground
-
-        if role == Qt.ItemDataRole.CheckStateRole:
-            if index.column() == 0:
+            case Qt.ItemDataRole.CheckStateRole if isinstance(item, DatasetTreeItem):
                 return Qt.CheckState.Checked if item.checked else Qt.CheckState.Unchecked
-
-        if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
-            if index.column() != 1:
+            case Qt.ItemDataRole.DisplayRole | Qt.ItemDataRole.EditRole:
                 return item.data(index.column())
 
         return None
 
     def setData(self, index: QModelIndex, value, role=Qt.ItemDataRole.EditRole):
+        if not index.isValid():
+            return False
+
         if role == Qt.ItemDataRole.CheckStateRole:
             item = self.getItem(index)
             item.checked = not item.checked
@@ -94,10 +92,7 @@ class WorkspaceModel(QAbstractItemModel):
         if not index.isValid():
             return Qt.ItemFlag.NoItemFlags
 
-        # Make only the first column checkable
-        if index.column() == 0:
-            return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsUserCheckable
-        return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
+        return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsUserCheckable
 
     def headerData(self, section, orientation: Qt.Orientation, role=Qt.ItemDataRole.DisplayRole):
-        return "Name"
+        return None

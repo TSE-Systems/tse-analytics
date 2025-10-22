@@ -1,5 +1,8 @@
+from dataclasses import dataclass, field
+from typing import Literal
+
 import seaborn as sns
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, QSettings, QTimer
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -9,6 +12,7 @@ from PySide6.QtWidgets import (
     QAbstractScrollArea,
     QWidgetAction,
     QLabel,
+    QComboBox,
 )
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
@@ -24,9 +28,30 @@ from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 
 
+@dataclass
+class MatrixPlotWidgetSettings:
+    group_by: str = "Animal"
+    selected_variables: list[str] = field(default_factory=list)
+    plot_type: str = "Scatter Plot"
+
+
 class MatrixPlotWidget(QWidget):
+    plot_kind: dict[str, Literal["scatter", "kde", "hist", "reg"]] = {
+        "Scatter Plot": "scatter",
+        "Histogram": "hist",
+        "Kernel Density Estimate": "kde",
+        "Regression": "reg",
+    }
+
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
+
+        # Connect destructor to unsubscribe and save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
+        # Settings management
+        settings = QSettings()
+        self._settings: MatrixPlotWidgetSettings = settings.value(self.__class__.__name__, MatrixPlotWidgetSettings())
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -40,7 +65,7 @@ class MatrixPlotWidget(QWidget):
 
         # Setup toolbar
         self.toolbar = QToolBar(
-            "Data Plot Toolbar",
+            "Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
@@ -50,8 +75,8 @@ class MatrixPlotWidget(QWidget):
 
         self.variables_table_widget = VariablesTableWidget()
         self.variables_table_widget.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
-        self.variables_table_widget.set_data(self.datatable.variables)
-        self.variables_table_widget.setMaximumHeight(400)
+        self.variables_table_widget.set_data(self.datatable.variables, self._settings.selected_variables)
+        self.variables_table_widget.setMaximumHeight(600)
         self.variables_table_widget.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
 
         variables_button = get_widget_tool_button(
@@ -64,8 +89,14 @@ class MatrixPlotWidget(QWidget):
 
         self.toolbar.addSeparator()
         self.toolbar.addWidget(QLabel("Group by:"))
-        self.group_by_selector = GroupBySelector(self.toolbar, self.datatable, check_binning=False)
+        self.group_by_selector = GroupBySelector(self.toolbar, self.datatable, selected_mode=self._settings.group_by)
         self.toolbar.addWidget(self.group_by_selector)
+
+        self.toolbar.addWidget(QLabel("Plot Type:"))
+        self.comboBoxPlotType = QComboBox(self.toolbar)
+        self.comboBoxPlotType.addItems(MatrixPlotWidget.plot_kind.keys())
+        self.comboBoxPlotType.setCurrentText(self._settings.plot_type)
+        self.toolbar.addWidget(self.comboBoxPlotType)
 
         # Insert toolbar to the widget
         self._layout.addWidget(self.toolbar)
@@ -79,6 +110,17 @@ class MatrixPlotWidget(QWidget):
 
         self.toolbar.addAction("Add to Report").triggered.connect(self._add_report)
         self._add_plot_toolbar()
+
+    def _destroyed(self):
+        settings = QSettings()
+        settings.setValue(
+            self.__class__.__name__,
+            MatrixPlotWidgetSettings(
+                self.group_by_selector.currentText(),
+                self.variables_table_widget.get_selected_variable_names(),
+                self.comboBoxPlotType.currentText(),
+            ),
+        )
 
     def _add_plot_toolbar(self):
         self.plot_toolbar_action = QWidgetAction(self.toolbar)
@@ -133,29 +175,29 @@ class MatrixPlotWidget(QWidget):
             selected_factor_name,
         )
 
-        # pd.plotting.scatter_matrix(
-        #     frame=df[list(selected_variables)],
-        #     diagonal="hist",
-        #     c=colors,
-        #     ax=ax,
-        # )
-
         pair_grid = sns.pairplot(
             df[[hue] + list(selected_variables)] if hue is not None else df[list(selected_variables)],
             hue=hue,
+            kind=MatrixPlotWidget.plot_kind[self.comboBoxPlotType.currentText()],
+            diag_kind="auto",
             palette=palette,
             markers=".",
         )
+        # sns.move_legend(pair_grid, "upper right")
+        # pair_grid.map_lower(sns.kdeplot, levels=4, color=".2")
 
         canvas = FigureCanvasQTAgg(pair_grid.figure)
-        canvas.updateGeometry()
-        canvas.draw()
         self._layout.replaceWidget(self.canvas, canvas)
         self.canvas = canvas
+
+        canvas.draw()
 
         # Assign canvas to PlotToolbar
         self.toolbar.removeAction(self.plot_toolbar_action)
         self._add_plot_toolbar()
+
+        # See https://forum.pythonguis.com/t/resizecolumnstocontents-not-working-with-qsortfilterproxymodel-and-tableview/1285
+        QTimer.singleShot(0, canvas.figure.tight_layout)
 
     def _add_report(self):
         self.datatable.dataset.report += get_html_image(self.canvas.figure)

@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
 )
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
-from sklearn.manifold import TSNE
+from sklearn.manifold import MDS
 from sklearn.preprocessing import StandardScaler
 
 from tse_analytics.core import messaging, color_manager
@@ -32,14 +32,13 @@ from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 
 
 @dataclass
-class TsneWidgetSettings:
+class MdsWidgetSettings:
     group_by: str = "Animal"
     selected_variables: list[str] = field(default_factory=list)
-    perplexity: float = 30.0
-    maximum_iterations: int = 1000
+    maximum_iterations: int = 300
 
 
-class TsneWidget(QWidget):
+class MdsWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
@@ -48,13 +47,13 @@ class TsneWidget(QWidget):
 
         # Settings management
         settings = QSettings()
-        self._settings: TsneWidgetSettings = settings.value(self.__class__.__name__, TsneWidgetSettings())
+        self._settings: MdsWidgetSettings = settings.value(self.__class__.__name__, MdsWidgetSettings())
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
 
-        self.title = "tSNE"
+        self.title = "MDS"
 
         self.datatable = datatable
         self._toast = None
@@ -90,22 +89,12 @@ class TsneWidget(QWidget):
         toolbar.addWidget(self.group_by_selector)
 
         toolbar.addSeparator()
-        toolbar.addWidget(QLabel("Perplexity:"))
-        self.perplexity_spin_box = QDoubleSpinBox(
-            toolbar,
-            minimum=5,
-            maximum=50,
-            singleStep=1,
-            value=self._settings.perplexity,
-        )
-        toolbar.addWidget(self.perplexity_spin_box)
-
         toolbar.addWidget(QLabel("Maximum Iterations:"))
         self.maximum_iterations_spin_box = QSpinBox(
             toolbar,
-            minimum=250,
-            maximum=10000,
-            singleStep=250,
+            minimum=100,
+            maximum=1000,
+            singleStep=100,
             value=self._settings.maximum_iterations,
         )
         toolbar.addWidget(self.maximum_iterations_spin_box)
@@ -128,10 +117,9 @@ class TsneWidget(QWidget):
         settings = QSettings()
         settings.setValue(
             self.__class__.__name__,
-            TsneWidgetSettings(
+            MdsWidgetSettings(
                 self.group_by_selector.currentText(),
                 self.variables_table_widget.get_selected_variable_names(),
-                self.perplexity_spin_box.value(),
                 self.maximum_iterations_spin_box.value(),
             ),
         )
@@ -192,16 +180,15 @@ class TsneWidget(QWidget):
         scaler = StandardScaler()
         scaled_data = scaler.fit_transform(df[selected_variable_names])
 
-        tsne = TSNE(
+        tsne = MDS(
             n_components=2,
-            perplexity=self.perplexity_spin_box.value(),
             max_iter=self.maximum_iterations_spin_box.value(),
             random_state=0,
         )
         data = tsne.fit_transform(scaled_data)
-        title = "t-SNE"
+        title = "Multidimensional Scaling (MDS)"
 
-        result_df = pd.DataFrame(data=data, columns=["tSNE1", "tSNE2"])
+        result_df = pd.DataFrame(data=data, columns=["MDS1", "MDS2"])
         if by is not None:
             result_df = pd.concat([result_df, df[[by]]], axis=1)
 
@@ -226,8 +213,8 @@ class TsneWidget(QWidget):
         (
             so.Plot(
                 df,
-                x="tSNE1",
-                y="tSNE2",
+                x="MDS1",
+                y="MDS2",
                 color=by,
             )
             .add(so.Dot(pointsize=3))

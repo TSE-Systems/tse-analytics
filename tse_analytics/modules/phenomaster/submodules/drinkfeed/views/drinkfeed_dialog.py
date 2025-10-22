@@ -282,12 +282,16 @@ class DrinkFeedDialog(QWidget):
 
         if settings.sequential_analysis_type and self.episodes_df is not None:
             # Make dataframe compatible with Datatable format
-            episodes_df = self.episodes_df.rename(columns={
-                "Start": "DateTime",
-                "Offset": "Timedelta",
-            })
+            episodes_df = self.episodes_df.rename(
+                columns={
+                    "Start": "DateTime",
+                    "Offset": "Timedelta",
+                }
+            )
 
-            episodes_df = episodes_df.pivot(index=["DateTime", "Timedelta", "Duration", "Animal"], columns="Sensor", values="Quantity")
+            episodes_df = episodes_df.pivot(
+                index=["DateTime", "Timedelta", "Duration", "Animal"], columns="Sensor", values="Quantity"
+            )
             episodes_df.reset_index(inplace=True)
 
             datatable = Datatable(

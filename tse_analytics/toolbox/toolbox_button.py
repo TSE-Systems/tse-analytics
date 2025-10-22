@@ -7,17 +7,19 @@ from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
-from tse_analytics.modules.intellicage.views.toolbox.place_preference.place_preference_widget import (
+from tse_analytics.modules.intellicage.toolbox.place_preference.place_preference_widget import (
     PlacePreferenceWidget,
 )
-from tse_analytics.modules.intellicage.views.toolbox.transitions.transitions_widget import TransitionsWidget
+from tse_analytics.modules.intellicage.toolbox.transitions.transitions_widget import TransitionsWidget
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 from tse_analytics.toolbox.actogram.actogram_widget import ActogramWidget
 from tse_analytics.toolbox.ancova.ancova_widget import AncovaWidget
 from tse_analytics.toolbox.correlation.correlation_widget import CorrelationWidget
+from tse_analytics.toolbox.data_plot.data_plot_widget import DataPlotWidget
 from tse_analytics.toolbox.distribution.distribution_widget import DistributionWidget
 from tse_analytics.toolbox.histogram.histogram_widget import HistogramWidget
 from tse_analytics.toolbox.matrixplot.matrixplot_widget import MatrixPlotWidget
+from tse_analytics.toolbox.mds.mds_widget import MdsWidget
 from tse_analytics.toolbox.mixed_anova.mixed_anova_widget import MixedAnovaWidget
 from tse_analytics.toolbox.n_way_anova.n_way_anova_widget import NWayAnovaWidget
 from tse_analytics.toolbox.normality.normality_widget import NormalityWidget
@@ -34,29 +36,12 @@ from tse_analytics.toolbox.timeseries_decomposition.timeseries_decomposition_wid
     TimeseriesDecompositionWidget,
 )
 from tse_analytics.toolbox.tsne.tsne_widget import TsneWidget
-from tse_analytics.toolbox.data_plot.data_plot_widget import DataPlotWidget
+from tse_analytics.toolbox.fast_data_plot.fast_data_plot_widget import FastDataPlotWidget
 from tse_analytics.toolbox.data_table.data_table_widget import DataTableWidget
 
 
 class ToolboxButton(QToolButton):
-    """A button that provides access to various analysis tools.
-
-    This button creates a dropdown menu with different categories of analysis tools
-    that can be applied to the selected dataset and datatable.
-
-    Attributes:
-        menu: The main dropdown menu containing all tool categories.
-        intellicage_menu: Submenu for IntelliCage-specific tools.
-        intellicage_transitions_action: Action for the Transitions analysis tool.
-        intellicage_place_preference_action: Action for the Place Preference analysis tool.
-    """
-
     def __init__(self, parent: QWidget):
-        """Initialize the toolbox button.
-
-        Args:
-            parent: The parent widget.
-        """
         super().__init__(parent)
 
         self.setText("Toolbox")
@@ -68,6 +53,7 @@ class ToolboxButton(QToolButton):
         self.menu = QMenu("ToolboxMenu", self)
         data_menu = self.menu.addMenu("Data")
         data_menu.addAction(QIcon(":/icons/table.png"), "Table").triggered.connect(self._add_data_table_widget)
+        data_menu.addAction(QIcon(":/icons/plot.png"), "Fast Plot").triggered.connect(self._add_fast_data_plot_widget)
         data_menu.addAction(QIcon(":/icons/plot.png"), "Plot").triggered.connect(self._add_data_plot_widget)
 
         exploration_menu = self.menu.addMenu("Exploration")
@@ -111,6 +97,9 @@ class ToolboxButton(QToolButton):
         )
         dimensionality_menu.addAction(QIcon(":/icons/dimensionality.png"), "tSNE").triggered.connect(
             self._add_tsne_widget
+        )
+        dimensionality_menu.addAction(QIcon(":/icons/dimensionality.png"), "MDS").triggered.connect(
+            self._add_mds_widget
         )
 
         utils_menu = self.menu.addMenu("Time Series")
@@ -183,12 +172,21 @@ class ToolboxButton(QToolButton):
             datatable.dataset, widget, f"Table - {datatable.dataset.name}", QIcon(":/icons/table.png")
         )
 
-    def _add_data_plot_widget(self):
+    def _add_fast_data_plot_widget(self):
         """Add a data plot widget to the central area.
 
         Gets the currently selected datatable and creates a DataPlotWidget
         to visualize its contents.
         """
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
+            return
+        widget = FastDataPlotWidget(datatable)
+        LayoutManager.add_widget_to_central_area(
+            datatable.dataset, widget, f"Fast Plot - {datatable.dataset.name}", QIcon(":/icons/plot.png")
+        )
+
+    def _add_data_plot_widget(self):
         datatable = manager.get_selected_datatable()
         if datatable is None:
             return
@@ -375,6 +373,15 @@ class ToolboxButton(QToolButton):
         if datatable is None:
             return
         widget = TsneWidget(datatable)
+        LayoutManager.add_widget_to_central_area(
+            datatable.dataset, widget, f"{widget.title} - {datatable.dataset.name}", QIcon(":/icons/dimensionality.png")
+        )
+
+    def _add_mds_widget(self):
+        datatable = manager.get_selected_datatable()
+        if datatable is None:
+            return
+        widget = MdsWidget(datatable)
         LayoutManager.add_widget_to_central_area(
             datatable.dataset, widget, f"{widget.title} - {datatable.dataset.name}", QIcon(":/icons/dimensionality.png")
         )

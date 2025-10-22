@@ -40,7 +40,7 @@ class AnimalSelector(QComboBox):
 
         self.dataset: Dataset | None = None
 
-    def set_data(self, dataset: Dataset):
+    def set_data(self, dataset: Dataset, selected_animal: str = None) -> None:
         """
         Set the dataset for the animal selector and update the model.
 
@@ -49,6 +49,7 @@ class AnimalSelector(QComboBox):
 
         Args:
             dataset: The Dataset object containing animal information.
+            selected_animal: Animal ID to select.
         """
         self.dataset = dataset
         model = AnimalsSimpleModel(self.dataset)
@@ -56,6 +57,8 @@ class AnimalSelector(QComboBox):
         self.table_view.resizeColumnsToContents()
         self.table_view.resizeRowsToContents()
         self.table_view.setMinimumWidth(self.table_view.horizontalHeader().length())
+        if selected_animal is not None:
+            self.setCurrentText(selected_animal)
 
     def get_selected_animal(self) -> Animal | None:
         """

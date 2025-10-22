@@ -13,7 +13,7 @@ from uuid import uuid4
 import pandas as pd
 
 from tse_analytics.core import messaging
-from tse_analytics.core.color_manager import get_color_hex
+from tse_analytics.core.color_manager import get_factor_level_color_hex
 from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings
@@ -194,7 +194,7 @@ class Dataset:
         for key, value in levels_dict.items():
             level = FactorLevel(
                 name=key,
-                color=get_color_hex(index),
+                color=get_factor_level_color_hex(index),
                 animal_ids=value,
             )
             levels[level.name] = level

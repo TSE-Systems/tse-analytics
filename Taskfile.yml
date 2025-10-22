@@ -64,7 +64,7 @@ tasks:
 
   build-ui:intellicage:
     cmds:
-      - pyside6-uic tse_analytics/modules/intellicage/views/toolbox/place_preference/place_preference_settings_widget.ui -o tse_analytics/modules/intellicage/views/toolbox/place_preference/place_preference_settings_widget_ui.py
+      - pyside6-uic tse_analytics/modules/intellicage/toolbox/place_preference/place_preference_settings_widget.ui -o tse_analytics/modules/intellicage/toolbox/place_preference/place_preference_settings_widget_ui.py
 
   build-ui:intellimaze:
     cmds:
@@ -96,6 +96,11 @@ tasks:
   mypy:
     cmds:
       - mypy tse_analytics
+
+  ty:
+    cmds:
+      - ty check
+    ignore_error: true
 
   pylint:
     cmds:
