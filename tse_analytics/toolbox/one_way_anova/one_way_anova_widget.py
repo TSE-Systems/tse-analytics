@@ -1,6 +1,8 @@
+from dataclasses import dataclass
+
 import pandas as pd
 import scikit_posthocs as sp
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QTextEdit
 from pyqttoast import ToastPreset

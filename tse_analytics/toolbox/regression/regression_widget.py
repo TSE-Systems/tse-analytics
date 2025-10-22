@@ -1,6 +1,8 @@
+from dataclasses import dataclass
+
 import statsmodels.api as sm
-import seaborn as sns
-from PySide6.QtCore import QSize, Qt
+import seaborn.objects as so
+from PySide6.QtCore import QSize, Qt, QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QToolBar, QVBoxLayout, QSplitter, QTextEdit, QLabel
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
