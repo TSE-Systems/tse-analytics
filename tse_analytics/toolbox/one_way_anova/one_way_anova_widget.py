@@ -11,7 +11,7 @@ from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
-from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
+from tse_analytics.core.utils import get_html_image_from_figure, get_h_spacer_widget, get_html_table
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.views.misc.factor_selector import FactorSelector
@@ -25,6 +25,17 @@ class OneWayAnovaWidgetSettings:
 
 
 class OneWayAnovaWidget(QWidget):
+    eff_size = {
+        "No effect size": "none",
+        "Unbiased Cohen d": "cohen",
+        "Hedges g": "hedges",
+        # "Pearson correlation coefficient": "r",
+        "Eta-square": "eta-square",
+        "Odds ratio": "odds-ratio",
+        "Area Under the Curve": "AUC",
+        "Common Language Effect Size": "CLES",
+    }
+
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
@@ -63,16 +74,6 @@ class OneWayAnovaWidget(QWidget):
         self.factor_selector.set_data(self.datatable.dataset.factors, selected_factor=self._settings.selected_factor)
         toolbar.addWidget(self.factor_selector)
 
-        self.eff_size = {
-            "No effect size": "none",
-            "Unbiased Cohen d": "cohen",
-            "Hedges g": "hedges",
-            # "Pearson correlation coefficient": "r",
-            "Eta-square": "eta-square",
-            "Odds ratio": "odds-ratio",
-            "Area Under the Curve": "AUC",
-            "Common Language Effect Size": "CLES",
-        }
         toolbar.addWidget(QLabel("Effect size type:"))
         self.comboBoxEffectSizeType = QComboBox(toolbar)
         self.comboBoxEffectSizeType.addItems(list(self.eff_size))
@@ -151,8 +152,8 @@ class OneWayAnovaWidget(QWidget):
 
         effsize = self.eff_size[self.comboBoxEffectSizeType.currentText()]
 
-        normality = pg.normality(df, group=factor_name, dv=dependent_variable_name).round(5)
-        homoscedasticity = pg.homoscedasticity(df, group=factor_name, dv=dependent_variable_name).round(5)
+        normality = pg.normality(df, group=factor_name, dv=dependent_variable_name)
+        homoscedasticity = pg.homoscedasticity(df, group=factor_name, dv=dependent_variable_name)
 
         if homoscedasticity.loc["levene"]["equal_var"]:
             anova = pg.anova(
@@ -160,7 +161,7 @@ class OneWayAnovaWidget(QWidget):
                 dv=dependent_variable_name,
                 between=factor_name,
                 detailed=True,
-            ).round(5)
+            )
             anova_header = "One-way classic ANOVA"
 
             post_hoc_test = pg.pairwise_tukey(
@@ -168,14 +169,14 @@ class OneWayAnovaWidget(QWidget):
                 dv=dependent_variable_name,
                 between=factor_name,
                 effsize=effsize,
-            ).round(5)
+            )
             post_hoc_test_header = "Pairwise Tukey-HSD post-hoc test"
         else:
             anova = pg.welch_anova(
                 data=df,
                 dv=dependent_variable_name,
                 between=factor_name,
-            ).round(5)
+            )
             anova_header = "One-way Welch ANOVA"
 
             post_hoc_test = pg.pairwise_gameshowell(
@@ -183,35 +184,29 @@ class OneWayAnovaWidget(QWidget):
                 dv=dependent_variable_name,
                 between=factor_name,
                 effsize=effsize,
-            ).round(5)
+            )
             post_hoc_test_header = "Pairwise Games-Howell post-hoc test"
 
         pairwise_tukeyhsd_res = pairwise_tukeyhsd(df[dependent_variable_name], df[factor_name])
-        fig = pairwise_tukeyhsd_res.plot_simultaneous(ylabel="Level", xlabel=dependent_variable_name)
-        img_html = get_html_image(fig)
-        fig.clear()
+        figure = pairwise_tukeyhsd_res.plot_simultaneous(ylabel="Level", xlabel=dependent_variable_name)
+        img_html = get_html_image_from_figure(figure)
+        figure.clear()
 
         html_template = """
-                <h1>Factor: {factor_name}</h1>
-                <h2>Univariate normality test</h2>
+                <h2>Factor: {factor_name}</h2>
                 {normality}
-                <h2>Homoscedasticity (equality of variances)</h2>
                 {homoscedasticity}
-                <h2>{anova_header}</h2>
                 {anova}
-                <h2>{post_hoc_test_header}</h2>
                 {post_hoc_test}
                 {img_html}
                 """
 
         html = html_template.format(
             factor_name=factor_name,
-            anova=anova.to_html(index=False),
-            anova_header=anova_header,
-            normality=normality.to_html(),
-            homoscedasticity=homoscedasticity.to_html(),
-            post_hoc_test=post_hoc_test.to_html(index=False),
-            post_hoc_test_header=post_hoc_test_header,
+            anova=get_html_table(anova, anova_header, index=False),
+            normality=get_html_table(normality, "Univariate normality test"),
+            homoscedasticity=get_html_table(homoscedasticity, "Homoscedasticity (equality of variances)"),
+            post_hoc_test=get_html_table(post_hoc_test, post_hoc_test_header, index=False),
             img_html=img_html,
         )
         self.textEdit.document().setHtml(html)

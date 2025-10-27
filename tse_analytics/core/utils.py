@@ -7,6 +7,9 @@ Qt widgets, and time conversions.
 """
 
 import sqlite3
+
+import pandas as pd
+import seaborn.objects as so
 from base64 import b64encode
 from datetime import time
 from io import BytesIO
@@ -21,7 +24,7 @@ IS_RELEASE = Path("_internal").exists()
 CSV_IMPORT_ENABLED = True
 
 
-def get_html_image(figure: Figure) -> str:
+def get_html_image_from_figure(figure: Figure) -> str:
     """
     Convert a matplotlib figure to an HTML image tag with embedded base64 data.
 
@@ -38,6 +41,20 @@ def get_html_image(figure: Figure) -> str:
     figure.savefig(io, format="png")
     encoded = b64encode(io.getvalue()).decode("utf-8")
     return f"<img src='data:image/png;base64,{encoded}'><br/>"
+
+
+def get_html_image_from_plot(plot: so.Plot) -> str:
+    io = BytesIO()
+    plot.save(io, format="png", bbox_inches="tight")
+    encoded = b64encode(io.getvalue()).decode("utf-8")
+    return f"<img src='data:image/png;base64,{encoded}'><br/>"
+
+
+def get_html_table(df: pd.DataFrame, caption: str, precision=5, index=True) -> str:
+    styler = df.style.set_caption(caption).format(precision=precision)
+    if not index:
+        styler = styler.hide(axis="index")
+    return styler.to_html()
 
 
 def get_available_sqlite_tables(path: Path) -> list[str]:

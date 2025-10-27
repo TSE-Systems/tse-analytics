@@ -7,7 +7,7 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Factor, SplitMode, Variable
-from tse_analytics.core.utils import get_html_image
+from tse_analytics.core.utils import get_html_image_from_figure
 
 
 class BarPlotView(QWidget):
@@ -95,4 +95,4 @@ class BarPlotView(QWidget):
             self.layout().addWidget(self.canvas)
 
     def get_report(self) -> str:
-        return get_html_image(self.canvas.figure)
+        return get_html_image_from_figure(self.canvas.figure)

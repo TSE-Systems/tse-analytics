@@ -12,7 +12,7 @@ from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
+from tse_analytics.core.utils import get_html_image_from_figure, get_h_spacer_widget
 from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
@@ -203,7 +203,7 @@ class RegressionWidget(QWidget):
         self.textEdit.document().setHtml(html)
 
     def _add_report(self):
-        html = get_html_image(self.canvas.figure)
+        html = get_html_image_from_figure(self.canvas.figure)
         html += self.textEdit.toHtml()
         self.datatable.dataset.report += html
         messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))

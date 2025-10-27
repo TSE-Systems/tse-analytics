@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QVBoxLayout, QWidget, QToolBar
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.utils import get_h_spacer_widget, get_html_image
+from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 
 
@@ -72,5 +72,5 @@ class PlotWidget(QWidget):
         to the dataset's report, then broadcasts a message to notify other components
         that content has been added to the report.
         """
-        self.datatable.dataset.report += get_html_image(self.canvas.figure)
+        self.datatable.dataset.report += get_html_image_from_figure(self.canvas.figure)
         messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))

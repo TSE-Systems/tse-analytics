@@ -23,7 +23,7 @@ from tse_analytics.core import messaging, color_manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.core.utils import get_html_image, get_widget_tool_button, get_h_spacer_widget
+from tse_analytics.core.utils import get_html_image_from_figure, get_widget_tool_button, get_h_spacer_widget
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.views.misc.MplCanvas import MplCanvas
@@ -233,5 +233,5 @@ class MdsWidget(QWidget):
         self.add_report_action.setEnabled(True)
 
     def _add_report(self):
-        self.datatable.dataset.report += get_html_image(self.canvas.figure)
+        self.datatable.dataset.report += get_html_image_from_figure(self.canvas.figure)
         messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))

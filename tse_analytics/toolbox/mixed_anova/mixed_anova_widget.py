@@ -2,16 +2,22 @@ from dataclasses import dataclass
 
 import pandas as pd
 import pingouin as pg
+import seaborn.objects as so
 from PySide6.QtCore import QSize, Qt, QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QMessageBox, QWidget, QVBoxLayout, QToolBar, QLabel, QTextEdit
 from pyqttoast import ToastPreset
 
-from tse_analytics.core import messaging
+from tse_analytics.core import messaging, color_manager
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.utils import get_widget_tool_button, get_h_spacer_widget
+from tse_analytics.core.utils import (
+    get_widget_tool_button,
+    get_h_spacer_widget,
+    get_html_table,
+    get_html_image_from_plot,
+)
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.toolbox.mixed_anova.mixed_anova_settings_widget_ui import Ui_MixedAnovaSettingsWidget
@@ -26,6 +32,26 @@ class MixedAnovaWidgetSettings:
 
 
 class MixedAnovaWidget(QWidget):
+    p_adjustment = {
+        "No correction": "none",
+        "One-step Bonferroni": "bonf",
+        "One-step Sidak": "sidak",
+        "Step-down Bonferroni": "holm",
+        "Benjamini/Hochberg FDR": "fdr_bh",
+        "Benjamini/Yekutieli FDR": "fdr_by",
+    }
+
+    eff_size = {
+        "No effect size": "none",
+        "Unbiased Cohen d": "cohen",
+        "Hedges g": "hedges",
+        # "Pearson correlation coefficient": "r",
+        "Eta-square": "eta-square",
+        "Odds ratio": "odds-ratio",
+        "Area Under the Curve": "AUC",
+        "Common Language Effect Size": "CLES",
+    }
+
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
@@ -75,27 +101,9 @@ class MixedAnovaWidget(QWidget):
         )
         toolbar.addWidget(settings_button)
 
-        self.p_adjustment = {
-            "No correction": "none",
-            "One-step Bonferroni": "bonf",
-            "One-step Sidak": "sidak",
-            "Step-down Bonferroni": "holm",
-            "Benjamini/Hochberg FDR": "fdr_bh",
-            "Benjamini/Yekutieli FDR": "fdr_by",
-        }
         self.settings_widget_ui.comboBoxPAdjustment.addItems(self.p_adjustment.keys())
         self.settings_widget_ui.comboBoxPAdjustment.setCurrentText("No correction")
 
-        self.eff_size = {
-            "No effect size": "none",
-            "Unbiased Cohen d": "cohen",
-            "Hedges g": "hedges",
-            # "Pearson correlation coefficient": "r",
-            "Eta-square": "eta-square",
-            "Odds ratio": "odds-ratio",
-            "Area Under the Curve": "AUC",
-            "Common Language Effect Size": "CLES",
-        }
         self.settings_widget_ui.comboBoxEffectSizeType.addItems(self.eff_size.keys())
         self.settings_widget_ui.comboBoxEffectSizeType.setCurrentText("Hedges g")
 
@@ -125,8 +133,8 @@ class MixedAnovaWidget(QWidget):
         )
 
     def _update(self):
-        dependent_variable = self.variable_selector.get_selected_variable()
-        if dependent_variable is None:
+        variable = self.variable_selector.get_selected_variable()
+        if variable is None:
             make_toast(
                 self,
                 self.title,
@@ -136,8 +144,6 @@ class MixedAnovaWidget(QWidget):
                 show_duration_bar=True,
             ).show()
             return
-
-        dependent_variable_name = dependent_variable.name
 
         factor_name = self.factor_selector.currentText()
         if factor_name == "":
@@ -174,7 +180,7 @@ class MixedAnovaWidget(QWidget):
                 do_pairwise_tests = False
 
         df = self.datatable.get_preprocessed_df(
-            variables={dependent_variable_name: dependent_variable},
+            variables={variable.name: variable},
             split_mode=SplitMode.ANIMAL,
             selected_factor_name=None,
             dropna=True,
@@ -182,15 +188,15 @@ class MixedAnovaWidget(QWidget):
 
         anova = pg.mixed_anova(
             data=df,
-            dv=dependent_variable_name,
+            dv=variable.name,
             between=factor_name,
             within="Bin",
             subject="Animal",
-        ).round(5)
+        )
 
         spher, W, chisq, dof, pval = pg.sphericity(
             data=df,
-            dv=dependent_variable_name,
+            dv=variable.name,
             within="Bin",
             subject="Animal",
             method="mauchly",
@@ -198,7 +204,29 @@ class MixedAnovaWidget(QWidget):
         sphericity = pd.DataFrame(
             [[spher, W, chisq, dof, pval]],
             columns=["Sphericity", "W", "Chi-square", "DOF", "p-value"],
-        ).round(5)
+        )
+
+        plot = (
+            so.Plot(
+                df,
+                x="Bin",
+                y=variable.name,
+                color=factor_name,
+            )
+            .add(so.Range(), so.Est(errorbar="se"))
+            .add(so.Dot(), so.Agg())
+            .add(so.Line(), so.Agg())
+            .scale(color=color_manager.get_level_to_color_dict(self.datatable.dataset.factors[factor_name]))
+            .label(title=f"{variable.name} over time")
+            .layout(size=(10, 5))
+        )
+        img_html = get_html_image_from_plot(plot)
+
+        html_template = """
+                        {img_html}
+                        {sphericity}
+                        {anova}
+                        """
 
         if do_pairwise_tests:
             effsize = self.eff_size[self.settings_widget_ui.comboBoxEffectSizeType.currentText()]
@@ -206,40 +234,30 @@ class MixedAnovaWidget(QWidget):
 
             pairwise_tests = pg.pairwise_tests(
                 data=df,
-                dv=dependent_variable_name,
+                dv=variable.name,
                 within="Bin",
                 between=factor_name,
                 subject="Animal",
                 return_desc=True,
                 effsize=effsize,
                 padjust=padjust,
-            ).round(5)
+            )
 
-            html_template = """
-                                        <h2>Sphericity test</h2>
-                                        {sphericity}
-                                        <h2>Mixed-design ANOVA</h2>
-                                        {anova}
-                                        <h2>Pairwise post-hoc tests</h2>
+            html_template += """
                                         {pairwise_tests}
                                         """
 
             html = html_template.format(
-                sphericity=sphericity.to_html(),
-                anova=anova.to_html(),
-                pairwise_tests=pairwise_tests.to_html(),
+                img_html=img_html,
+                sphericity=get_html_table(sphericity, "Sphericity Test", index=False),
+                anova=get_html_table(anova, "Mixed-design ANOVA", index=False),
+                pairwise_tests=get_html_table(pairwise_tests, "Pairwise post-hoc tests", index=False),
             )
         else:
-            html_template = """
-                                        <h2>Sphericity test</h2>
-                                        {sphericity}
-                                        <h2>Mixed-design ANOVA</h2>
-                                        {anova}
-                                        """
-
             html = html_template.format(
-                sphericity=sphericity.to_html(),
-                anova=anova.to_html(),
+                img_html=img_html,
+                sphericity=get_html_table(sphericity, "Sphericity Test", index=False),
+                anova=get_html_table(anova, "Mixed-design ANOVA", index=False),
             )
 
         self.textEdit.document().setHtml(html)

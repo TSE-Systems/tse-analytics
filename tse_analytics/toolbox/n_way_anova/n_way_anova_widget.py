@@ -10,7 +10,7 @@ from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
-from tse_analytics.core.utils import get_widget_tool_button, get_h_spacer_widget
+from tse_analytics.core.utils import get_widget_tool_button, get_h_spacer_widget, get_html_table
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.toolbox.n_way_anova.n_way_anova_settings_widget_ui import Ui_NWayAnovaSettingsWidget
@@ -25,6 +25,26 @@ class NWayAnovaWidgetSettings:
 
 
 class NWayAnovaWidget(QWidget):
+    p_adjustment = {
+        "No correction": "none",
+        "One-step Bonferroni": "bonf",
+        "One-step Sidak": "sidak",
+        "Step-down Bonferroni": "holm",
+        "Benjamini/Hochberg FDR": "fdr_bh",
+        "Benjamini/Yekutieli FDR": "fdr_by",
+    }
+
+    eff_size = {
+        "No effect size": "none",
+        "Unbiased Cohen d": "cohen",
+        "Hedges g": "hedges",
+        # "Pearson correlation coefficient": "r",
+        "Eta-square": "eta-square",
+        "Odds ratio": "odds-ratio",
+        "Area Under the Curve": "AUC",
+        "Common Language Effect Size": "CLES",
+    }
+
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
@@ -85,27 +105,9 @@ class NWayAnovaWidget(QWidget):
         )
         toolbar.addWidget(settings_button)
 
-        self.p_adjustment = {
-            "No correction": "none",
-            "One-step Bonferroni": "bonf",
-            "One-step Sidak": "sidak",
-            "Step-down Bonferroni": "holm",
-            "Benjamini/Hochberg FDR": "fdr_bh",
-            "Benjamini/Yekutieli FDR": "fdr_by",
-        }
         self.settings_widget_ui.comboBoxPAdjustment.addItems(self.p_adjustment.keys())
         self.settings_widget_ui.comboBoxPAdjustment.setCurrentText("No correction")
 
-        self.eff_size = {
-            "No effect size": "none",
-            "Unbiased Cohen d": "cohen",
-            "Hedges g": "hedges",
-            # "Pearson correlation coefficient": "r",
-            "Eta-square": "eta-square",
-            "Odds ratio": "odds-ratio",
-            "Area Under the Curve": "AUC",
-            "Common Language Effect Size": "CLES",
-        }
         self.settings_widget_ui.comboBoxEffectSizeType.addItems(self.eff_size.keys())
         self.settings_widget_ui.comboBoxEffectSizeType.setCurrentText("Hedges g")
 
@@ -198,20 +200,18 @@ class NWayAnovaWidget(QWidget):
             dv=dependent_variable,
             between=factor_names,
             detailed=True,
-        ).round(5)
+        )
 
         effsize = self.eff_size[self.settings_widget_ui.comboBoxEffectSizeType.currentText()]
         padjust = self.p_adjustment[self.settings_widget_ui.comboBoxPAdjustment.currentText()]
 
-        if len(factor_names) > 2:
-            html_template = """
-                            <h2>{anova_header}</h2>
-                            {anova}
-                            """
+        html_template = """
+                        {anova}
+                        """
 
+        if len(factor_names) > 2:
             html = html_template.format(
-                anova_header=anova_header,
-                anova=anova.to_html(),
+                anova=get_html_table(anova, anova_header, index=False),
             )
         else:
             post_hoc_test = pg.pairwise_tests(
@@ -222,19 +222,15 @@ class NWayAnovaWidget(QWidget):
                 effsize=effsize,
                 padjust=padjust,
                 nan_policy="listwise",
-            ).round(5)
+            )
 
-            html_template = """
-                            <h2>{anova_header}</h2>
-                            {anova}
-                            <h2>Pairwise post-hoc tests</h2>
+            html_template += """
                             {post_hoc_test}
                             """
 
             html = html_template.format(
-                anova_header=anova_header,
-                anova=anova.to_html(),
-                post_hoc_test=post_hoc_test.to_html(),
+                anova=get_html_table(anova, anova_header, index=False),
+                post_hoc_test=get_html_table(post_hoc_test, "Pairwise post-hoc tests", index=False),
             )
 
         self.textEdit.document().setHtml(html)

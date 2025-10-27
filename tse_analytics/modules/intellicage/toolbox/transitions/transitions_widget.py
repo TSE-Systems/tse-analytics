@@ -19,7 +19,7 @@ from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Animal
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
+from tse_analytics.core.utils import get_html_image_from_figure, get_h_spacer_widget
 from tse_analytics.views.general.pdf.pdf_widget import PdfWidget
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.animal_selector import AnimalSelector
@@ -235,7 +235,7 @@ class TransitionsWidget(QWidget):
         fig.tight_layout()
 
     def _add_report(self):
-        self.datatable.dataset.report += get_html_image(self.canvas.figure)
+        self.datatable.dataset.report += get_html_image_from_figure(self.canvas.figure)
         messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))
 
     def _generate_pdf(self):

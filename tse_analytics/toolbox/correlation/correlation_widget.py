@@ -11,7 +11,7 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from tse_analytics.core import messaging, color_manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
+from tse_analytics.core.utils import get_html_image_from_figure, get_h_spacer_widget
 from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
@@ -180,7 +180,7 @@ class CorrelationWidget(QWidget):
         self.textEdit.document().setHtml(html)
 
     def _add_report(self):
-        html = get_html_image(self.canvas.figure)
+        html = get_html_image_from_figure(self.canvas.figure)
         html += self.textEdit.toHtml()
         self.datatable.dataset.report += html
         messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))

@@ -20,7 +20,12 @@ from tse_analytics.core import messaging, color_manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.shared import SplitMode, Variable
-from tse_analytics.core.utils import get_html_image, get_h_spacer_widget, time_to_float, get_widget_tool_button
+from tse_analytics.core.utils import (
+    get_html_image_from_figure,
+    get_h_spacer_widget,
+    time_to_float,
+    get_widget_tool_button,
+)
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
@@ -213,5 +218,5 @@ class DataPlotWidget(QWidget):
         return result
 
     def _add_report(self) -> None:
-        self.datatable.dataset.report += get_html_image(self.canvas.figure)
+        self.datatable.dataset.report += get_html_image_from_figure(self.canvas.figure)
         messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))

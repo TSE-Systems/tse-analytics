@@ -11,7 +11,7 @@ from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.core.utils import get_widget_tool_button, get_h_spacer_widget
+from tse_analytics.core.utils import get_widget_tool_button, get_h_spacer_widget, get_html_table
 from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.toolbox.ancova.ancova_settings_widget_ui import Ui_AncovaSettingsWidget
 from tse_analytics.views.misc.factor_selector import FactorSelector
@@ -26,6 +26,26 @@ class AncovaWidgetSettings:
 
 
 class AncovaWidget(QWidget):
+    p_adjustment = {
+        "No correction": "none",
+        "One-step Bonferroni": "bonf",
+        "One-step Sidak": "sidak",
+        "Step-down Bonferroni": "holm",
+        "Benjamini/Hochberg FDR": "fdr_bh",
+        "Benjamini/Yekutieli FDR": "fdr_by",
+    }
+
+    eff_size = {
+        "No effect size": "none",
+        "Unbiased Cohen d": "cohen",
+        "Hedges g": "hedges",
+        # "Pearson correlation coefficient": "r",
+        "Eta-square": "eta-square",
+        "Odds ratio": "odds-ratio",
+        "Area Under the Curve": "AUC",
+        "Common Language Effect Size": "CLES",
+    }
+
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
@@ -80,27 +100,9 @@ class AncovaWidget(QWidget):
         )
         toolbar.addWidget(settings_button)
 
-        self.p_adjustment = {
-            "No correction": "none",
-            "One-step Bonferroni": "bonf",
-            "One-step Sidak": "sidak",
-            "Step-down Bonferroni": "holm",
-            "Benjamini/Hochberg FDR": "fdr_bh",
-            "Benjamini/Yekutieli FDR": "fdr_by",
-        }
         self.settings_widget_ui.comboBoxPAdjustment.addItems(self.p_adjustment.keys())
         self.settings_widget_ui.comboBoxPAdjustment.setCurrentText("No correction")
 
-        self.eff_size = {
-            "No effect size": "none",
-            "Unbiased Cohen d": "cohen",
-            "Hedges g": "hedges",
-            # "Pearson correlation coefficient": "r",
-            "Eta-square": "eta-square",
-            "Odds ratio": "odds-ratio",
-            "Area Under the Curve": "AUC",
-            "Common Language Effect Size": "CLES",
-        }
         self.settings_widget_ui.comboBoxEffectSizeType.addItems(self.eff_size.keys())
         self.settings_widget_ui.comboBoxEffectSizeType.setCurrentText("Hedges g")
 
@@ -184,7 +186,7 @@ class AncovaWidget(QWidget):
             dv=dependent_variable.name,
             covar=selected_covariate.name,
             between=factor_name,
-        ).round(5)
+        )
 
         pairwise_tests = pg.pairwise_tests(
             data=df,
@@ -193,20 +195,16 @@ class AncovaWidget(QWidget):
             effsize=effsize,
             padjust=padjust,
             return_desc=True,
-        ).round(5)
+        )
 
         html_template = """
-                        <h1>Factor: {factor_name}</h1>
-                        <h2>ANCOVA</h2>
                         {ancova}
-                        <h2>Pairwise post-hoc tests</h2>
                         {pairwise_tests}
                         """
 
         html = html_template.format(
-            factor_name=factor_name,
-            ancova=ancova.to_html(),
-            pairwise_tests=pairwise_tests.to_html(),
+            ancova=get_html_table(ancova, "ANCOVA", index=False),
+            pairwise_tests=get_html_table(pairwise_tests, "Pairwise post-hoc tests", index=False),
         )
         self.textEdit.document().setHtml(html)
 

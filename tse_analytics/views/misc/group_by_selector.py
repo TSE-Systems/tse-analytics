@@ -12,6 +12,7 @@ class GroupBySelector(QComboBox, messaging.MessengerListener):
         datatable: Datatable,
         check_binning=False,
         selected_mode: str = None,
+        disable_total_mode: bool = False,
     ):
         super().__init__(parent)
 
@@ -19,6 +20,7 @@ class GroupBySelector(QComboBox, messaging.MessengerListener):
 
         self.datatable = datatable
         self.check_binning = check_binning
+        self.disable_total_mode = disable_total_mode
         self.modes = []
 
         if check_binning:
@@ -74,7 +76,7 @@ class GroupBySelector(QComboBox, messaging.MessengerListener):
         This method retrieves the current available grouping options from the datatable
         and updates the combo box items if they have changed.
         """
-        modes = self.datatable.get_group_by_columns(self.check_binning)
+        modes = self.datatable.get_group_by_columns(self.check_binning, disable_total_mode=self.disable_total_mode)
         if modes != self.modes:
             self.blockSignals(True)
             self.clear()

@@ -9,7 +9,7 @@ from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from tse_analytics.core import messaging, color_manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.utils import get_html_image, get_h_spacer_widget
+from tse_analytics.core.utils import get_html_image_from_figure, get_h_spacer_widget
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
@@ -173,5 +173,5 @@ class DistributionWidget(QWidget):
         self.canvas.draw()
 
     def _add_report(self):
-        self.datatable.dataset.report += get_html_image(self.canvas.figure)
+        self.datatable.dataset.report += get_html_image_from_figure(self.canvas.figure)
         messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))

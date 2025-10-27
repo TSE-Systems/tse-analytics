@@ -2,28 +2,56 @@ from dataclasses import dataclass
 
 import pandas as pd
 import pingouin as pg
+import seaborn.objects as so
 from PySide6.QtCore import QSize, Qt, QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QMessageBox, QWidget, QToolBar, QLabel, QTextEdit, QVBoxLayout
 from pyqttoast import ToastPreset
 
-from tse_analytics.core import messaging
+from tse_analytics.core import messaging, color_manager
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.utils import get_widget_tool_button, get_h_spacer_widget
 from tse_analytics.core.toaster import make_toast
+from tse_analytics.core.utils import (
+    get_widget_tool_button,
+    get_h_spacer_widget,
+    get_html_image_from_plot,
+    get_html_table,
+)
 from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.toolbox.rm_anova.rm_anova_settings_widget_ui import Ui_RMAnovaSettingsWidget
+from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
 @dataclass
 class RMAnovaWidgetSettings:
+    group_by: str = "Animal"
     selected_variable: str = None
 
 
 class RMAnovaWidget(QWidget):
+    p_adjustment = {
+        "No correction": "none",
+        "One-step Bonferroni": "bonf",
+        "One-step Sidak": "sidak",
+        "Step-down Bonferroni": "holm",
+        "Benjamini/Hochberg FDR": "fdr_bh",
+        "Benjamini/Yekutieli FDR": "fdr_by",
+    }
+
+    eff_size = {
+        "No effect size": "none",
+        "Unbiased Cohen d": "cohen",
+        "Hedges g": "hedges",
+        # "Pearson correlation coefficient": "r",
+        "Eta-square": "eta-square",
+        "Odds ratio": "odds-ratio",
+        "Area Under the Curve": "AUC",
+        "Common Language Effect Size": "CLES",
+    }
+
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
@@ -57,6 +85,16 @@ class RMAnovaWidget(QWidget):
         self.variable_selector.set_data(self.datatable.variables, selected_variable=self._settings.selected_variable)
         toolbar.addWidget(self.variable_selector)
 
+        toolbar.addSeparator()
+        toolbar.addWidget(QLabel("Group by:"))
+        self.group_by_selector = GroupBySelector(
+            toolbar,
+            self.datatable,
+            selected_mode=self._settings.group_by,
+            disable_total_mode=True,
+        )
+        toolbar.addWidget(self.group_by_selector)
+
         self.settings_widget = QWidget()
         self.settings_widget_ui = Ui_RMAnovaSettingsWidget()
         self.settings_widget_ui.setupUi(self.settings_widget)
@@ -68,27 +106,9 @@ class RMAnovaWidget(QWidget):
         )
         toolbar.addWidget(settings_button)
 
-        self.p_adjustment = {
-            "No correction": "none",
-            "One-step Bonferroni": "bonf",
-            "One-step Sidak": "sidak",
-            "Step-down Bonferroni": "holm",
-            "Benjamini/Hochberg FDR": "fdr_bh",
-            "Benjamini/Yekutieli FDR": "fdr_by",
-        }
         self.settings_widget_ui.comboBoxPAdjustment.addItems(self.p_adjustment.keys())
         self.settings_widget_ui.comboBoxPAdjustment.setCurrentText("No correction")
 
-        self.eff_size = {
-            "No effect size": "none",
-            "Unbiased Cohen d": "cohen",
-            "Hedges g": "hedges",
-            # "Pearson correlation coefficient": "r",
-            "Eta-square": "eta-square",
-            "Odds ratio": "odds-ratio",
-            "Area Under the Curve": "AUC",
-            "Common Language Effect Size": "CLES",
-        }
         self.settings_widget_ui.comboBoxEffectSizeType.addItems(self.eff_size.keys())
         self.settings_widget_ui.comboBoxEffectSizeType.setCurrentText("Hedges g")
 
@@ -112,24 +132,14 @@ class RMAnovaWidget(QWidget):
         settings.setValue(
             self.__class__.__name__,
             RMAnovaWidgetSettings(
+                self.group_by_selector.currentText(),
                 self.variable_selector.currentText(),
             ),
         )
 
     def _update(self):
-        selected_dependent_variable = self.variable_selector.get_selected_variable()
-        if selected_dependent_variable is None:
-            make_toast(
-                self,
-                self.title,
-                "Please select dependent variable.",
-                duration=2000,
-                preset=ToastPreset.WARNING,
-                show_duration_bar=True,
-            ).show()
-            return
-
-        dependent_variable = selected_dependent_variable.name
+        split_mode, selected_factor_name = self.group_by_selector.get_group_by()
+        variable = self.variable_selector.get_selected_variable()
 
         do_pairwise_tests = True
         if not self.datatable.dataset.binning_settings.apply:
@@ -154,31 +164,67 @@ class RMAnovaWidget(QWidget):
                 do_pairwise_tests = False
 
         df = self.datatable.get_preprocessed_df(
-            variables={dependent_variable: selected_dependent_variable},
+            variables={variable.name: variable},
             split_mode=SplitMode.ANIMAL,
             selected_factor_name=None,
             dropna=True,
         )
 
+        match split_mode:
+            case SplitMode.ANIMAL:
+                subject = "Animal"
+                palette = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
+            case SplitMode.RUN:
+                subject = "Run"
+                palette = color_manager.colormap_name
+            case SplitMode.FACTOR:
+                subject = selected_factor_name
+                palette = color_manager.get_level_to_color_dict(self.datatable.dataset.factors[selected_factor_name])
+            case _:
+                # Disabled for Total grouping mode
+                subject = None
+
         spher, W, chisq, dof, pval = pg.sphericity(
             data=df,
-            dv=dependent_variable,
+            dv=variable.name,
             within="Bin",
-            subject="Animal",
+            subject=subject,
             method="mauchly",
         )
         sphericity = pd.DataFrame(
             [[spher, W, chisq, dof, pval]],
             columns=["Sphericity", "W", "Chi-square", "DOF", "p-value"],
-        ).round(5)
+        )
 
         anova = pg.rm_anova(
             data=df,
-            dv=dependent_variable,
+            dv=variable.name,
             within="Bin",
-            subject="Animal",
+            subject=subject,
             detailed=True,
-        ).round(5)
+        )
+
+        plot = (
+            so.Plot(
+                df,
+                x="Bin",
+                y=variable.name,
+                color=subject if not split_mode == SplitMode.ANIMAL else None,
+            )
+            .add(so.Range(), so.Est(errorbar="se"))
+            .add(so.Dot(), so.Agg())
+            .add(so.Line(), so.Agg())
+            .scale(color=palette)
+            .label(title=f"{variable.name} over time")
+            .layout(size=(10, 5))
+        )
+        img_html = get_html_image_from_plot(plot)
+
+        html_template = """
+                        {img_html}
+                        {sphericity}
+                        {anova}
+                        """
 
         if do_pairwise_tests:
             effsize = self.eff_size[self.settings_widget_ui.comboBoxEffectSizeType.currentText()]
@@ -186,39 +232,29 @@ class RMAnovaWidget(QWidget):
 
             pairwise_tests = pg.pairwise_tests(
                 data=df,
-                dv=dependent_variable,
+                dv=variable.name,
                 within="Bin",
-                subject="Animal",
+                subject=subject,
                 return_desc=True,
                 effsize=effsize,
                 padjust=padjust,
-            ).round(5)
+            )
 
-            html_template = """
-                                        <h2>Sphericity test</h2>
-                                        {sphericity}
-                                        <h2>Repeated measures one-way ANOVA</h2>
-                                        {anova}
-                                        <h2>Pairwise post-hoc tests</h2>
-                                        {pairwise_tests}
-                                        """
+            html_template += """
+                            {pairwise_tests}
+                            """
 
             html = html_template.format(
-                sphericity=sphericity.to_html(),
-                anova=anova.to_html(),
-                pairwise_tests=pairwise_tests.to_html(),
+                img_html=img_html,
+                sphericity=get_html_table(sphericity, "Sphericity Test", index=False),
+                anova=get_html_table(anova, "Repeated measures one-way ANOVA", index=False),
+                pairwise_tests=get_html_table(pairwise_tests, "Pairwise post-hoc tests", index=False),
             )
         else:
-            html_template = """
-                                        <h2>Sphericity test</h2>
-                                        {sphericity}
-                                        <h2>Repeated measures one-way ANOVA</h2>
-                                        {anova}
-                                        """
-
             html = html_template.format(
-                sphericity=sphericity.to_html(),
-                anova=anova.to_html(),
+                img_html=img_html,
+                sphericity=get_html_table(sphericity, "Sphericity Test", index=False),
+                anova=get_html_table(anova, "Repeated measures one-way ANOVA", index=False),
             )
 
         self.textEdit.document().setHtml(html)

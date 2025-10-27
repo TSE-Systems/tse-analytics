@@ -11,7 +11,7 @@ from tse_analytics.core import messaging, color_manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.helper import normalize_nd_array
 from tse_analytics.core.plotting.actogram_utils import dataframe_to_actogram, plot_enhanced_actogram
-from tse_analytics.core.utils import get_html_image, get_h_spacer_widget, time_to_float
+from tse_analytics.core.utils import get_html_image_from_figure, get_h_spacer_widget, time_to_float
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
@@ -190,5 +190,5 @@ class ActogramWidget(QWidget):
         dataset's report. Also broadcasts a message to notify the application
         that content has been added to the report.
         """
-        self.datatable.dataset.report += get_html_image(self.canvas.figure)
+        self.datatable.dataset.report += get_html_image_from_figure(self.canvas.figure)
         messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))

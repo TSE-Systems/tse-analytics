@@ -150,7 +150,7 @@ class Datatable:
         columns = self.active_df.select_dtypes(include=["category"]).columns.tolist()
         return columns
 
-    def get_group_by_columns(self, check_binning=True) -> list[str]:
+    def get_group_by_columns(self, check_binning=True, disable_total_mode=False) -> list[str]:
         """
         Get the columns that can be used for grouping data.
 
@@ -158,6 +158,8 @@ class Datatable:
         ----------
         check_binning : bool, default=True
             Whether to check if binning is applied or available.
+        disable_total_mode : bool, default=False
+            Whether Total mode should be available.
 
         Returns
         -------
@@ -168,7 +170,8 @@ class Datatable:
         if check_binning:
             if not ("Bin" in self.active_df.columns or self.dataset.binning_settings.apply):
                 return modes
-        modes.append("Total")
+        if not disable_total_mode:
+            modes.append("Total")
         if self.get_merging_mode() is not None:
             modes.append("Run")
         if len(self.dataset.factors) > 0:
