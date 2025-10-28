@@ -113,10 +113,10 @@ class PhenoMasterDataset(Dataset):
             active_df = main_datatable.original_df
             active_df["O2-p"] = np.nan
             active_df["CO2-p"] = np.nan
-            active_df["VO2(3)-p"] = np.nan
-            active_df["VCO2(3)-p"] = np.nan
+            active_df["VO2-p"] = np.nan
+            active_df["VCO2-p"] = np.nan
             active_df["RER-p"] = np.nan
-            active_df["H(3)-p"] = np.nan
+            active_df["EE-p"] = np.nan
             for result in fitting_results.values():
                 for _index, row in result.df.iterrows():
                     bin_number = row["Bin"]
@@ -124,8 +124,8 @@ class PhenoMasterDataset(Dataset):
                     # TODO: TODO: check int -> str conversion for general table!
                     active_df.loc[
                         active_df[(active_df["Box"] == result.box_number) & (active_df["Bin"] == bin_number)].index[0],
-                        ["O2-p", "CO2-p", "VO2(3)-p", "VCO2(3)-p", "RER-p", "H(3)-p"],
-                    ] = [row["O2-p"], row["CO2-p"], row["VO2(3)-p"], row["VCO2(3)-p"], row["RER-p"], row["H(3)-p"]]
+                        ["O2-p", "CO2-p", "VO2-p", "VCO2-p", "RER-p", "EE-p"],
+                    ] = [row["O2-p"], row["CO2-p"], row["VO2-p"], row["VCO2-p"], row["RER-p"], row["EE-p"]]
 
             if "O2-p" not in main_datatable.variables:
                 main_datatable.variables["O2-p"] = Variable(
@@ -135,21 +135,21 @@ class PhenoMasterDataset(Dataset):
                 main_datatable.variables["CO2-p"] = Variable(
                     "CO2-p", "[%]", "Predicted CO2", "float64", Aggregation.MEAN, False
                 )
-            if "VO2(3)-p" not in main_datatable.variables:
-                main_datatable.variables["VO2(3)-p"] = Variable(
-                    "VO2(3)-p", "[ml/h]", "Predicted VO2(3)", "float64", Aggregation.MEAN, False
+            if "VO2-p" not in main_datatable.variables:
+                main_datatable.variables["VO2-p"] = Variable(
+                    "VO2-p", "[ml/h]", "Predicted VO2", "float64", Aggregation.MEAN, False
                 )
-            if "VCO2(3)-p" not in main_datatable.variables:
-                main_datatable.variables["VCO2(3)-p"] = Variable(
-                    "VCO2(3)-p", "[ml/h]", "Predicted VCO2(3)", "float64", Aggregation.MEAN, False
+            if "VCO2-p" not in main_datatable.variables:
+                main_datatable.variables["VCO2-p"] = Variable(
+                    "VCO2-p", "[ml/h]", "Predicted VCO2", "float64", Aggregation.MEAN, False
                 )
             if "RER-p" not in main_datatable.variables:
                 main_datatable.variables["RER-p"] = Variable(
                     "RER-p", "", "Predicted RER", "float64", Aggregation.MEAN, False
                 )
-            if "H(3)-p" not in main_datatable.variables:
-                main_datatable.variables["H(3)-p"] = Variable(
-                    "H(3)-p", "[kcal/h]", "Predicted H(3)", "float64", Aggregation.MEAN, False
+            if "EE-p" not in main_datatable.variables:
+                main_datatable.variables["EE-p"] = Variable(
+                    "EE-p", "[kcal/h]", "Predicted energy expenditure", "float64", Aggregation.MEAN, False
                 )
             main_datatable.refresh_active_df()
             messaging.broadcast(messaging.DatasetChangedMessage(self, self))

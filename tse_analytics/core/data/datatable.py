@@ -179,21 +179,6 @@ class Datatable:
                 modes.append(factor)
         return modes
 
-    def delete_variables(self, variable_names: list[str]) -> None:
-        """
-        Delete variables from the datatable.
-
-        Parameters
-        ----------
-        variable_names : list[str]
-            List of variable names to delete.
-        """
-        for var_name in variable_names:
-            self.variables.pop(var_name)
-
-        self.original_df.drop(columns=variable_names, inplace=True)
-        self.active_df.drop(columns=variable_names, inplace=True)
-
     def rename_animal(self, old_id: str, animal: Animal) -> None:
         """
         Rename an animal in the datatable.
@@ -524,6 +509,30 @@ class Datatable:
         This method updates the active dataframe by applying the current factors.
         """
         self.set_factors(self.dataset.factors)
+
+    def delete_variables(self, variable_names: list[str]) -> None:
+        """
+        Delete variables from the datatable.
+
+        Parameters
+        ----------
+        variable_names : list[str]
+            List of variable names to delete.
+        """
+        for var_name in variable_names:
+            self.variables.pop(var_name, None)
+
+        self.original_df.drop(columns=variable_names, inplace=True, errors="ignore")
+        self.active_df.drop(columns=variable_names, inplace=True, errors="ignore")
+
+    def rename_variables(self, variable_name_map: dict[str, str]) -> None:
+        for old_name, new_name in variable_name_map.items():
+            if old_name in self.variables:
+                self.variables[new_name] = self.variables.pop(old_name, None)
+                self.variables[new_name].name = new_name
+
+        self.original_df.rename(columns=variable_name_map, inplace=True, errors="ignore")
+        self.active_df.rename(columns=variable_name_map, inplace=True, errors="ignore")
 
     def __getstate__(self):
         """

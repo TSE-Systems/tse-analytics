@@ -15,9 +15,11 @@ from PySide6.QtWidgets import (
 from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.outliers import OutliersMode
+from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.models.aggregation_combo_box_delegate import AggregationComboBoxDelegate
 from tse_analytics.core.models.variables_model import VariablesModel
 from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
+from tse_analytics.modules.phenomaster.data.variables_helper import cleanup_variables
 from tse_analytics.views.general.variables.add_variable_dialog import AddVariableDialog
 
 
@@ -34,7 +36,7 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
         self._layout.setContentsMargins(0, 0, 0, 0)
 
         toolbar = QToolBar(
-            "Variables Toolbar",
+            "Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
@@ -104,10 +106,20 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
 
     def _reset_variables(self):
         if self.datatable is not None:
-            self.datatable.variables = assign_predefined_values(self.datatable.variables)
-            model = VariablesModel(self.datatable)
-            self.tableView.model().setSourceModel(model)
-            self.tableView.resizeColumnsToContents()
+            if (
+                QMessageBox.question(self, "Reset Variables", "Do you want to reset variables to default state?")
+                == QMessageBox.StandardButton.Yes
+            ):
+                # Close all affected widgets
+                LayoutManager.delete_dataset_widgets(self.datatable.dataset)
+
+                # Cleanup old variables
+                cleanup_variables(self.datatable.dataset)
+                self.datatable.variables = assign_predefined_values(self.datatable.variables)
+
+                model = VariablesModel(self.datatable)
+                self.tableView.model().setSourceModel(model)
+                self.tableView.resizeColumnsToContents()
 
     def _add_variable(self) -> None:
         if self.datatable is None:

@@ -62,9 +62,9 @@ def process_box(params: FittingParams) -> CaloFittingResult:
     measured_ref_o2 = params.main_df["Ref.O2"].tolist() if "Ref.O2" in params.main_df.columns else None
     measured_co2 = params.main_df["CO2"].tolist()
     measured_ref_co2 = params.main_df["Ref.CO2"].tolist() if "Ref.CO2" in params.main_df.columns else None
-    measured_vo2 = params.main_df["VO2(3)"].tolist()
-    measured_vco2 = params.main_df["VCO2(3)"].tolist()
-    measured_h = params.main_df["H(3)"].tolist()
+    measured_vo2 = params.main_df["VO2"].tolist()
+    measured_vco2 = params.main_df["VCO2"].tolist()
+    measured_h = params.main_df["EE"].tolist()
 
     predicted_o2 = df_predicted_measurements["O2"].tolist()
     predicted_ref_o2 = df_ref_predicted_measurements["O2"].tolist()
@@ -85,12 +85,12 @@ def process_box(params: FittingParams) -> CaloFittingResult:
             "Ref.CO2-p": predicted_ref_co2,
             "RER": measured_rer,
             "RER-p": predicted_rer,
-            "VO2(3)": measured_vo2,
-            "VO2(3)-p": predicted_vo2,
-            "VCO2(3)": measured_vco2,
-            "VCO2(3)-p": predicted_vco2,
-            "H(3)": measured_h,
-            "H(3)-p": predicted_h,
+            "VO2": measured_vo2,
+            "VO2-p": predicted_vo2,
+            "VCO2": measured_vco2,
+            "VCO2-p": predicted_vco2,
+            "EE": measured_h,
+            "EE-p": predicted_h,
         }
     )
 
