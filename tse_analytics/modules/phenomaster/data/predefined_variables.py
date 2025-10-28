@@ -81,6 +81,7 @@ predefined_variables = {
         False,
     ),
     "H(3)": Variable("H(3)", "kcal/h", "Heat production, uncorrected values", "float64", Aggregation.MEAN, False),
+    "EE": Variable("EE", "kcal/h", "Energy expenditure", "float64", Aggregation.MEAN, False),
     "HeartRate": Variable("HeartRate", "bpm", "Heart beats per minute", "float64", Aggregation.MEAN, False),
     "Hum": Variable("Hum", "%", "Relative humidity", "float64", Aggregation.MEAN, False),
     "HumC": Variable("HumC", "%", "Humidity climate chamber (actual value)", "float64", Aggregation.MEAN, False),
@@ -157,6 +158,9 @@ predefined_variables = {
     "VCO2(3)": Variable(
         "VCO2(3)", "ml/h", "CO2 production (V = volume), uncorrected values", "float64", Aggregation.MEAN, False
     ),
+    "VCO2": Variable(
+        "VCO2", "ml/h", "CO2 production (V = volume), uncorrected values", "float64", Aggregation.MEAN, False
+    ),
     "VO2(1)": Variable(
         "VO2(1)",
         "ml/h/kg",
@@ -175,6 +179,9 @@ predefined_variables = {
     ),
     "VO2(3)": Variable(
         "VO2(3)", "ml/h", "O2 consumption (V = volume), uncorrected values", "float64", Aggregation.MEAN, False
+    ),
+    "VO2": Variable(
+        "VO2", "ml/h", "O2 consumption (V = volume), uncorrected values", "float64", Aggregation.MEAN, False
     ),
     "Weight": Variable("Weight", "g", "Body weight (absolute data)", "float64", Aggregation.MEAN, False),
     "XA": Variable("XA", "count", "X beam interruptions for ambulatory movement", "uint64", Aggregation.SUM, False),
@@ -232,4 +239,8 @@ def assign_predefined_values(variables: dict[str, Variable]) -> dict[str, Variab
             variable.description = predefined_variable.description
             variable.aggregation = predefined_variable.aggregation
             variable.remove_outliers = False
+
+    # Sort variables by name
+    variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))
+
     return variables
