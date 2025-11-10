@@ -105,7 +105,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.export_button.setIcon(QIcon(":/icons/icons8-export-16.png"))
 
         export_menu = QMenu("Export", self.export_button)
-        export_menu.addAction("Export to CVS...").triggered.connect(self._export_csv)
+        export_menu.addAction("Export to CSV...").triggered.connect(self._export_csv)
         export_menu.addAction("Export to Excel...").triggered.connect(self._export_excel)
         self.export_button.setMenu(export_menu)
 
