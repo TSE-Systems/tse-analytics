@@ -53,12 +53,12 @@ tasks:
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/calo_test_fit_widget.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/calo_test_fit_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/calo_rer_widget.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/calo_rer_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_dialog.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_dialog_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_plot_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_settings_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_settings_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_stream_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_stream_plot_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_heatmap_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_heatmap_plot_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_trajectory_plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_trajectory_plot_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_frames_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_frames_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/plot/plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/plot/plot_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/settings/settings_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/settings/settings_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/stream/stream_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/stream/stream_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/heatmap/heatmap_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/heatmap/heatmap_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/trajectory/trajectory_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/trajectory/trajectory_widget_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/frames/frames_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/frames/frames_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/grouphousing/views/grouphousing_dialog.ui -o tse_analytics/modules/phenomaster/submodules/grouphousing/views/grouphousing_dialog_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/grouphousing/views/heatmap_widget/heatmap_widget.ui -o tse_analytics/modules/phenomaster/submodules/grouphousing/views/heatmap_widget/heatmap_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/grouphousing/views/raw_data_widget/raw_data_widget.ui -o tse_analytics/modules/phenomaster/submodules/grouphousing/views/raw_data_widget/raw_data_widget_ui.py

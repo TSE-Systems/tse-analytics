@@ -78,7 +78,6 @@ class DrinkFeedDialog(QWidget):
         self.events_df: pd.DataFrame | None = None
         self.episodes_df: pd.DataFrame | None = None
         self.intervals_df: pd.DataFrame | None = None
-
         self.toast = None
 
         # Setup toolbar

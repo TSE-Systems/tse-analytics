@@ -1,17 +1,15 @@
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.modules.phenomaster.submodules.actimot.actimot_settings import ActimotSettings
-from tse_analytics.modules.phenomaster.submodules.actimot.views.actimot_settings_widget_ui import (
-    Ui_ActimotSettingsWidget,
-)
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
+from tse_analytics.modules.phenomaster.submodules.actimot.views.settings.settings_widget_ui import Ui_SettingsWidget
 
 
-class ActimotSettingsWidget(QWidget):
+class SettingsWidget(QWidget):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
 
-        self.ui = Ui_ActimotSettingsWidget()
+        self.ui = Ui_SettingsWidget()
         self.ui.setupUi(self)
 
         self.ui.pushButtonResetSettings.clicked.connect(self._reset_settings)

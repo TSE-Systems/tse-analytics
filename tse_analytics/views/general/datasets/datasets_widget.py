@@ -441,10 +441,7 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                 dialog = ActimotDialog(item.actimot_data, self)
                 # TODO: check other cases!!
                 dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-                result = dialog.exec()
-                del dialog
-                if result == QDialog.DialogCode.Accepted:
-                    pass
+                dialog.show()
             elif isinstance(item, GroupHousingTreeItem):
                 dialog = GroupHousingDialog(item.grouphousing_data.dataset, self)
                 # TODO: check other cases!!

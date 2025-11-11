@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'actimot_settings_widget.ui'
+## Form generated from reading UI file 'settings_widget.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.10.0
 ##
@@ -20,15 +20,15 @@ from PySide6.QtWidgets import (QApplication, QFrame, QGroupBox, QHBoxLayout,
     QSpacerItem, QSpinBox, QVBoxLayout, QWidget)
 import resources_rc
 
-class Ui_ActimotSettingsWidget(object):
-    def setupUi(self, ActimotSettingsWidget):
-        if not ActimotSettingsWidget.objectName():
-            ActimotSettingsWidget.setObjectName(u"ActimotSettingsWidget")
-        self.verticalLayout = QVBoxLayout(ActimotSettingsWidget)
+class Ui_SettingsWidget(object):
+    def setupUi(self, SettingsWidget):
+        if not SettingsWidget.objectName():
+            SettingsWidget.setObjectName(u"SettingsWidget")
+        self.verticalLayout = QVBoxLayout(SettingsWidget)
         self.verticalLayout.setSpacing(4)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(4, 4, 4, 4)
-        self.scrollArea = QScrollArea(ActimotSettingsWidget)
+        self.scrollArea = QScrollArea(SettingsWidget)
         self.scrollArea.setObjectName(u"scrollArea")
         self.scrollArea.setFrameShape(QFrame.Shape.NoFrame)
         self.scrollArea.setWidgetResizable(True)
@@ -105,16 +105,16 @@ class Ui_ActimotSettingsWidget(object):
         self.verticalLayout.addWidget(self.scrollArea)
 
 
-        self.retranslateUi(ActimotSettingsWidget)
+        self.retranslateUi(SettingsWidget)
 
-        QMetaObject.connectSlotsByName(ActimotSettingsWidget)
+        QMetaObject.connectSlotsByName(SettingsWidget)
     # setupUi
 
-    def retranslateUi(self, ActimotSettingsWidget):
-        self.groupBoxSmoothing.setTitle(QCoreApplication.translate("ActimotSettingsWidget", u"Smoothing (Savitzky-Golay filtering)", None))
-        self.groupBoxWindowSize.setTitle(QCoreApplication.translate("ActimotSettingsWidget", u"Window Size", None))
-        self.labelPolynomialOrder.setText(QCoreApplication.translate("ActimotSettingsWidget", u"Polynomial Order:", None))
-        self.pushButtonResetSettings.setText(QCoreApplication.translate("ActimotSettingsWidget", u"Reset Settings", None))
+    def retranslateUi(self, SettingsWidget):
+        self.groupBoxSmoothing.setTitle(QCoreApplication.translate("SettingsWidget", u"Smoothing (Savitzky-Golay filtering)", None))
+        self.groupBoxWindowSize.setTitle(QCoreApplication.translate("SettingsWidget", u"Window Size", None))
+        self.labelPolynomialOrder.setText(QCoreApplication.translate("SettingsWidget", u"Polynomial Order:", None))
+        self.pushButtonResetSettings.setText(QCoreApplication.translate("SettingsWidget", u"Reset Settings", None))
         pass
     # retranslateUi
 

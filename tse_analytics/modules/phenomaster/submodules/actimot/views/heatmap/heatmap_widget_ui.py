@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'actimot_heatmap_plot_widget.ui'
+## Form generated from reading UI file 'heatmap_widget.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.10.0
 ##
@@ -21,26 +21,26 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QHBoxLayout, QLabel,
 
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 
-class Ui_ActimotHeatmapPlotWidget(object):
-    def setupUi(self, ActimotHeatmapPlotWidget):
-        if not ActimotHeatmapPlotWidget.objectName():
-            ActimotHeatmapPlotWidget.setObjectName(u"ActimotHeatmapPlotWidget")
-        self.verticalLayout = QVBoxLayout(ActimotHeatmapPlotWidget)
+class Ui_HeatmapWidget(object):
+    def setupUi(self, HeatmapWidget):
+        if not HeatmapWidget.objectName():
+            HeatmapWidget.setObjectName(u"HeatmapWidget")
+        self.verticalLayout = QVBoxLayout(HeatmapWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.toolButtonCalculate = QToolButton(ActimotHeatmapPlotWidget)
+        self.toolButtonCalculate = QToolButton(HeatmapWidget)
         self.toolButtonCalculate.setObjectName(u"toolButtonCalculate")
         self.toolButtonCalculate.setEnabled(False)
 
         self.horizontalLayout.addWidget(self.toolButtonCalculate)
 
-        self.labelBins = QLabel(ActimotHeatmapPlotWidget)
+        self.labelBins = QLabel(HeatmapWidget)
         self.labelBins.setObjectName(u"labelBins")
 
         self.horizontalLayout.addWidget(self.labelBins)
 
-        self.spinBoxBins = QSpinBox(ActimotHeatmapPlotWidget)
+        self.spinBoxBins = QSpinBox(HeatmapWidget)
         self.spinBoxBins.setObjectName(u"spinBoxBins")
         self.spinBoxBins.setMinimum(1)
         self.spinBoxBins.setMaximum(64)
@@ -48,12 +48,12 @@ class Ui_ActimotHeatmapPlotWidget(object):
 
         self.horizontalLayout.addWidget(self.spinBoxBins)
 
-        self.checkBoxNormalize = QCheckBox(ActimotHeatmapPlotWidget)
+        self.checkBoxNormalize = QCheckBox(HeatmapWidget)
         self.checkBoxNormalize.setObjectName(u"checkBoxNormalize")
 
         self.horizontalLayout.addWidget(self.checkBoxNormalize)
 
-        self.checkBoxLog = QCheckBox(ActimotHeatmapPlotWidget)
+        self.checkBoxLog = QCheckBox(HeatmapWidget)
         self.checkBoxLog.setObjectName(u"checkBoxLog")
 
         self.horizontalLayout.addWidget(self.checkBoxLog)
@@ -65,7 +65,7 @@ class Ui_ActimotHeatmapPlotWidget(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout)
 
-        self.canvas = MplCanvas(ActimotHeatmapPlotWidget)
+        self.canvas = MplCanvas(HeatmapWidget)
         self.canvas.setObjectName(u"canvas")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -76,16 +76,16 @@ class Ui_ActimotHeatmapPlotWidget(object):
         self.verticalLayout.addWidget(self.canvas)
 
 
-        self.retranslateUi(ActimotHeatmapPlotWidget)
+        self.retranslateUi(HeatmapWidget)
 
-        QMetaObject.connectSlotsByName(ActimotHeatmapPlotWidget)
+        QMetaObject.connectSlotsByName(HeatmapWidget)
     # setupUi
 
-    def retranslateUi(self, ActimotHeatmapPlotWidget):
-        self.toolButtonCalculate.setText(QCoreApplication.translate("ActimotHeatmapPlotWidget", u"Calculate", None))
-        self.labelBins.setText(QCoreApplication.translate("ActimotHeatmapPlotWidget", u"Bins:", None))
-        self.checkBoxNormalize.setText(QCoreApplication.translate("ActimotHeatmapPlotWidget", u"Normalize", None))
-        self.checkBoxLog.setText(QCoreApplication.translate("ActimotHeatmapPlotWidget", u"Log", None))
+    def retranslateUi(self, HeatmapWidget):
+        self.toolButtonCalculate.setText(QCoreApplication.translate("HeatmapWidget", u"Calculate", None))
+        self.labelBins.setText(QCoreApplication.translate("HeatmapWidget", u"Bins:", None))
+        self.checkBoxNormalize.setText(QCoreApplication.translate("HeatmapWidget", u"Normalize", None))
+        self.checkBoxLog.setText(QCoreApplication.translate("HeatmapWidget", u"Log", None))
         pass
     # retranslateUi
 

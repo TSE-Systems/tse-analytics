@@ -1,3 +1,5 @@
+import timeit
+
 import numpy as np
 import pandas as pd
 import traja
@@ -72,6 +74,8 @@ def get_pixmap_and_centroid(x: int, y: int) -> (QPixmap, tuple):
 
 
 def calculate_trj(original_df: pd.DataFrame, actimot_settings: ActimotSettings) -> (pd.DataFrame, traja.TrajaDataFrame):
+    tic = timeit.default_timer()
+
     df = original_df[["DateTime", "X", "Y"]].copy()
     df.dropna(subset=["X", "Y"], inplace=True)
     df.reset_index(inplace=True, drop=True)
@@ -101,4 +105,6 @@ def calculate_trj(original_df: pd.DataFrame, actimot_settings: ActimotSettings) 
     result = pd.concat([df, preprocessed_trj], ignore_index=False, axis="columns")
     result.reset_index(inplace=True, drop=True)
 
-    return result, trj_df
+    elapsed_time = timeit.default_timer() - tic
+
+    return result, trj_df, elapsed_time

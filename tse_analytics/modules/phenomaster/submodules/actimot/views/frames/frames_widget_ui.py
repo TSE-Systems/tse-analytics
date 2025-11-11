@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'actimot_frames_widget.ui'
+## Form generated from reading UI file 'frames_widget.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.10.0
 ##
@@ -18,20 +18,20 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QSizePolicy,
     QSlider, QSpacerItem, QVBoxLayout, QWidget)
 
-class Ui_ActimotFramesWidget(object):
-    def setupUi(self, ActimotFramesWidget):
-        if not ActimotFramesWidget.objectName():
-            ActimotFramesWidget.setObjectName(u"ActimotFramesWidget")
-        self.verticalLayout = QVBoxLayout(ActimotFramesWidget)
+class Ui_FramesWidget(object):
+    def setupUi(self, FramesWidget):
+        if not FramesWidget.objectName():
+            FramesWidget.setObjectName(u"FramesWidget")
+        self.verticalLayout = QVBoxLayout(FramesWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.labelFrameNumber = QLabel(ActimotFramesWidget)
+        self.labelFrameNumber = QLabel(FramesWidget)
         self.labelFrameNumber.setObjectName(u"labelFrameNumber")
 
         self.horizontalLayout.addWidget(self.labelFrameNumber)
 
-        self.labelCentroid = QLabel(ActimotFramesWidget)
+        self.labelCentroid = QLabel(FramesWidget)
         self.labelCentroid.setObjectName(u"labelCentroid")
 
         self.horizontalLayout.addWidget(self.labelCentroid)
@@ -43,7 +43,7 @@ class Ui_ActimotFramesWidget(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout)
 
-        self.labelFrameImage = QLabel(ActimotFramesWidget)
+        self.labelFrameImage = QLabel(FramesWidget)
         self.labelFrameImage.setObjectName(u"labelFrameImage")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -53,7 +53,7 @@ class Ui_ActimotFramesWidget(object):
 
         self.verticalLayout.addWidget(self.labelFrameImage)
 
-        self.horizontalSlider = QSlider(ActimotFramesWidget)
+        self.horizontalSlider = QSlider(FramesWidget)
         self.horizontalSlider.setObjectName(u"horizontalSlider")
         self.horizontalSlider.setMinimumSize(QSize(0, 30))
         self.horizontalSlider.setOrientation(Qt.Orientation.Horizontal)
@@ -63,14 +63,14 @@ class Ui_ActimotFramesWidget(object):
         self.verticalLayout.addWidget(self.horizontalSlider)
 
 
-        self.retranslateUi(ActimotFramesWidget)
+        self.retranslateUi(FramesWidget)
 
-        QMetaObject.connectSlotsByName(ActimotFramesWidget)
+        QMetaObject.connectSlotsByName(FramesWidget)
     # setupUi
 
-    def retranslateUi(self, ActimotFramesWidget):
-        self.labelFrameNumber.setText(QCoreApplication.translate("ActimotFramesWidget", u"Frame:", None))
-        self.labelCentroid.setText(QCoreApplication.translate("ActimotFramesWidget", u"Centroid:", None))
+    def retranslateUi(self, FramesWidget):
+        self.labelFrameNumber.setText(QCoreApplication.translate("FramesWidget", u"Frame:", None))
+        self.labelCentroid.setText(QCoreApplication.translate("FramesWidget", u"Centroid:", None))
         pass
     # retranslateUi
 

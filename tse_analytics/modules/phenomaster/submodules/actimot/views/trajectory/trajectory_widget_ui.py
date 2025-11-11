@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'actimot_trajectory_plot_widget.ui'
+## Form generated from reading UI file 'trajectory_widget.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.10.0
 ##
@@ -21,26 +21,26 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QHBoxLayout, QSizePolicy
 
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 
-class Ui_ActimotTrajectoryPlotWidget(object):
-    def setupUi(self, ActimotTrajectoryPlotWidget):
-        if not ActimotTrajectoryPlotWidget.objectName():
-            ActimotTrajectoryPlotWidget.setObjectName(u"ActimotTrajectoryPlotWidget")
-        self.verticalLayout = QVBoxLayout(ActimotTrajectoryPlotWidget)
+class Ui_TrajectoryWidget(object):
+    def setupUi(self, TrajectoryWidget):
+        if not TrajectoryWidget.objectName():
+            TrajectoryWidget.setObjectName(u"TrajectoryWidget")
+        self.verticalLayout = QVBoxLayout(TrajectoryWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.toolButtonCalculate = QToolButton(ActimotTrajectoryPlotWidget)
+        self.toolButtonCalculate = QToolButton(TrajectoryWidget)
         self.toolButtonCalculate.setObjectName(u"toolButtonCalculate")
         self.toolButtonCalculate.setEnabled(False)
 
         self.horizontalLayout.addWidget(self.toolButtonCalculate)
 
-        self.checkBoxDrawNPoints = QCheckBox(ActimotTrajectoryPlotWidget)
+        self.checkBoxDrawNPoints = QCheckBox(TrajectoryWidget)
         self.checkBoxDrawNPoints.setObjectName(u"checkBoxDrawNPoints")
 
         self.horizontalLayout.addWidget(self.checkBoxDrawNPoints)
 
-        self.spinBoxN = QSpinBox(ActimotTrajectoryPlotWidget)
+        self.spinBoxN = QSpinBox(TrajectoryWidget)
         self.spinBoxN.setObjectName(u"spinBoxN")
         self.spinBoxN.setEnabled(False)
         self.spinBoxN.setMinimum(1)
@@ -56,7 +56,7 @@ class Ui_ActimotTrajectoryPlotWidget(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout)
 
-        self.canvas = MplCanvas(ActimotTrajectoryPlotWidget)
+        self.canvas = MplCanvas(TrajectoryWidget)
         self.canvas.setObjectName(u"canvas")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -67,14 +67,14 @@ class Ui_ActimotTrajectoryPlotWidget(object):
         self.verticalLayout.addWidget(self.canvas)
 
 
-        self.retranslateUi(ActimotTrajectoryPlotWidget)
+        self.retranslateUi(TrajectoryWidget)
 
-        QMetaObject.connectSlotsByName(ActimotTrajectoryPlotWidget)
+        QMetaObject.connectSlotsByName(TrajectoryWidget)
     # setupUi
 
-    def retranslateUi(self, ActimotTrajectoryPlotWidget):
-        self.toolButtonCalculate.setText(QCoreApplication.translate("ActimotTrajectoryPlotWidget", u"Calculate", None))
-        self.checkBoxDrawNPoints.setText(QCoreApplication.translate("ActimotTrajectoryPlotWidget", u"Draw N points:", None))
+    def retranslateUi(self, TrajectoryWidget):
+        self.toolButtonCalculate.setText(QCoreApplication.translate("TrajectoryWidget", u"Calculate", None))
+        self.checkBoxDrawNPoints.setText(QCoreApplication.translate("TrajectoryWidget", u"Draw N points:", None))
         pass
     # retranslateUi
 

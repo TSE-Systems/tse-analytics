@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'actimot_stream_plot_widget.ui'
+## Form generated from reading UI file 'stream_widget.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.10.0
 ##
@@ -21,26 +21,26 @@ from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QSizePolicy,
 
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 
-class Ui_ActimotStreamPlotWidget(object):
-    def setupUi(self, ActimotStreamPlotWidget):
-        if not ActimotStreamPlotWidget.objectName():
-            ActimotStreamPlotWidget.setObjectName(u"ActimotStreamPlotWidget")
-        self.verticalLayout = QVBoxLayout(ActimotStreamPlotWidget)
+class Ui_StreamWidget(object):
+    def setupUi(self, StreamWidget):
+        if not StreamWidget.objectName():
+            StreamWidget.setObjectName(u"StreamWidget")
+        self.verticalLayout = QVBoxLayout(StreamWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.toolButtonCalculate = QToolButton(ActimotStreamPlotWidget)
+        self.toolButtonCalculate = QToolButton(StreamWidget)
         self.toolButtonCalculate.setObjectName(u"toolButtonCalculate")
         self.toolButtonCalculate.setEnabled(False)
 
         self.horizontalLayout.addWidget(self.toolButtonCalculate)
 
-        self.labelBins = QLabel(ActimotStreamPlotWidget)
+        self.labelBins = QLabel(StreamWidget)
         self.labelBins.setObjectName(u"labelBins")
 
         self.horizontalLayout.addWidget(self.labelBins)
 
-        self.spinBoxBins = QSpinBox(ActimotStreamPlotWidget)
+        self.spinBoxBins = QSpinBox(StreamWidget)
         self.spinBoxBins.setObjectName(u"spinBoxBins")
         self.spinBoxBins.setMinimum(1)
         self.spinBoxBins.setMaximum(1000)
@@ -55,7 +55,7 @@ class Ui_ActimotStreamPlotWidget(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout)
 
-        self.canvas = MplCanvas(ActimotStreamPlotWidget)
+        self.canvas = MplCanvas(StreamWidget)
         self.canvas.setObjectName(u"canvas")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -66,14 +66,14 @@ class Ui_ActimotStreamPlotWidget(object):
         self.verticalLayout.addWidget(self.canvas)
 
 
-        self.retranslateUi(ActimotStreamPlotWidget)
+        self.retranslateUi(StreamWidget)
 
-        QMetaObject.connectSlotsByName(ActimotStreamPlotWidget)
+        QMetaObject.connectSlotsByName(StreamWidget)
     # setupUi
 
-    def retranslateUi(self, ActimotStreamPlotWidget):
-        self.toolButtonCalculate.setText(QCoreApplication.translate("ActimotStreamPlotWidget", u"Calculate", None))
-        self.labelBins.setText(QCoreApplication.translate("ActimotStreamPlotWidget", u"Bins:", None))
+    def retranslateUi(self, StreamWidget):
+        self.toolButtonCalculate.setText(QCoreApplication.translate("StreamWidget", u"Calculate", None))
+        self.labelBins.setText(QCoreApplication.translate("StreamWidget", u"Bins:", None))
         pass
     # retranslateUi
 

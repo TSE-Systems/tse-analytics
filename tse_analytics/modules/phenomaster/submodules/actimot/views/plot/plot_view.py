@@ -3,7 +3,7 @@ import pyqtgraph as pg
 from PySide6.QtWidgets import QWidget
 
 
-class ActimotPlotView(pg.GraphicsLayoutWidget):
+class PlotView(pg.GraphicsLayoutWidget):
     def __init__(self, parent: QWidget):
         super().__init__(parent, show=False, size=None, title=None)
 
@@ -42,7 +42,7 @@ class ActimotPlotView(pg.GraphicsLayoutWidget):
         rgn = viewRange[0]
         self.region.setRegion(rgn)
 
-    def set_data(self, df: pd.DataFrame):
+    def set_data(self, df: pd.DataFrame | None):
         self._df = df
         self._update_plot()
 

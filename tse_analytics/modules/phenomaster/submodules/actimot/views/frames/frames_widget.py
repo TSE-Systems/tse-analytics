@@ -3,14 +3,14 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.modules.phenomaster.submodules.actimot.actimot_processor import get_pixmap_and_centroid
-from tse_analytics.modules.phenomaster.submodules.actimot.views.actimot_frames_widget_ui import Ui_ActimotFramesWidget
+from tse_analytics.modules.phenomaster.submodules.actimot.views.frames.frames_widget_ui import Ui_FramesWidget
 
 
-class ActimotFramesWidget(QWidget):
+class FramesWidget(QWidget):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
 
-        self.ui = Ui_ActimotFramesWidget()
+        self.ui = Ui_FramesWidget()
         self.ui.setupUi(self)
 
         self.ui.horizontalSlider.valueChanged.connect(self._slider_value_changed)

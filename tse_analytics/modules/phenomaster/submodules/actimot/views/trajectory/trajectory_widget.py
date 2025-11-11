@@ -6,16 +6,16 @@ from PySide6.QtWidgets import QWidget
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
-from tse_analytics.modules.phenomaster.submodules.actimot.views.actimot_trajectory_plot_widget_ui import (
-    Ui_ActimotTrajectoryPlotWidget,
+from tse_analytics.modules.phenomaster.submodules.actimot.views.trajectory.trajectory_widget_ui import (
+    Ui_TrajectoryWidget,
 )
 
 
-class ActimotTrajectoryPlotWidget(QWidget):
+class TrajectoryWidget(QWidget):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
 
-        self.ui = Ui_ActimotTrajectoryPlotWidget()
+        self.ui = Ui_TrajectoryWidget()
         self.ui.setupUi(self)
 
         self.ui.toolButtonCalculate.clicked.connect(self._update_plot)

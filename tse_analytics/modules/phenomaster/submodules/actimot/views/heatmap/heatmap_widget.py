@@ -6,16 +6,14 @@ from PySide6.QtWidgets import QWidget
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
-from tse_analytics.modules.phenomaster.submodules.actimot.views.actimot_heatmap_plot_widget_ui import (
-    Ui_ActimotHeatmapPlotWidget,
-)
+from tse_analytics.modules.phenomaster.submodules.actimot.views.heatmap.heatmap_widget_ui import Ui_HeatmapWidget
 
 
-class ActimotHeatmapPlotWidget(QWidget):
+class HeatmapWidget(QWidget):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
 
-        self.ui = Ui_ActimotHeatmapPlotWidget()
+        self.ui = Ui_HeatmapWidget()
         self.ui.setupUi(self)
 
         self.ui.toolButtonCalculate.clicked.connect(self._update_plot)

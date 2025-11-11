@@ -72,7 +72,7 @@ class GroupHousingDialog(QWidget):
 
         self._update_tabs()
 
-    def _update_tabs(self):
+    def _update_tabs(self) -> None:
         is_preprocessed = self.preprocessed_df is not None
         self.ui.tabWidget.setTabVisible(self.preprocessed_data_tab_index, is_preprocessed)
         self.ui.tabWidget.setTabVisible(self.activity_tab_index, is_preprocessed)
