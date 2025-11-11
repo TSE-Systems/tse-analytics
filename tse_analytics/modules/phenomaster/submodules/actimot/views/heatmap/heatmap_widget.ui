@@ -29,10 +29,10 @@
         <number>1</number>
        </property>
        <property name="maximum">
-        <number>64</number>
+        <number>32</number>
        </property>
        <property name="value">
-        <number>64</number>
+        <number>32</number>
        </property>
       </widget>
      </item>

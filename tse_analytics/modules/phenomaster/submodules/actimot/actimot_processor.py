@@ -56,6 +56,18 @@ def get_centroid_lookup(value, value_range):
         return np.nan
 
 
+def get_centroid_x(value):
+    return get_centroid_lookup(value, x_range)
+
+
+def get_centroid_y(value):
+    return get_centroid_lookup(value, y_range)
+
+
+def get_cent(row):
+    return get_centroid_lookup(row["X"], x_range), get_centroid_lookup(row["Y"], y_range)
+
+
 def get_pixmap_and_centroid(x: int, y: int) -> (QPixmap, tuple):
     bitmask = np.zeros([32, 64], dtype=np.uint8)
 
@@ -83,21 +95,26 @@ def calculate_trj(original_df: pd.DataFrame, actimot_settings: ActimotSettings) 
     first_timestamp = df.at[0, "DateTime"]
     df["time"] = df["DateTime"] - first_timestamp
 
+    # df = df.transform({"DateTime": lambda x: x, "X": get_centroid_x, "Y": get_centroid_y})
+    # df.rename(columns={"X": "x", "Y": "y"}, inplace=True)
+
+    # df[["x", "y"]] = df.apply(get_cent, axis=1).to_list()
+
     df["x"] = df["X"].apply(get_centroid_lookup, value_range=x_range)
     df["y"] = df["Y"].apply(get_centroid_lookup, value_range=y_range)
 
-    # df["CentX"] = df["X"].map(lambda  x: get_centroid(x, x_range))
-    # df["CentY"] = df["Y"].map(lambda  x: get_centroid(x, y_range))
+    # df["x"] = df["X"].map(lambda  x: get_centroid(x, x_range))
+    # df["y"] = df["Y"].map(lambda  x: get_centroid(x, y_range))
 
-    # df["CentX"] = df["X"].apply(get_centroid, value_range=x_range)
-    # df["CentY"] = df["Y"].apply(get_centroid, value_range=y_range)
+    # df["x"] = df["X"].apply(get_centroid, value_range=x_range)
+    # df["y"] = df["Y"].apply(get_centroid, value_range=y_range)
 
     trj_df = traja.from_df(df=df)
-    trj_df.spatial_units = "cm"
+    trj_df.spatial_units = "beams"
 
     if actimot_settings.use_smooting:
         trj_df = traja.smooth_sg(
-            trj_df, w=actimot_settings.smoothing_window_size, p=actimot_settings.smoothing_polynomial_order
+            trj_df, w=actimot_settings.smoothing_window_size, p=actimot_settings.smoothing_polynomial_order,
         )
 
     preprocessed_trj = traja.get_derivatives(trj_df)

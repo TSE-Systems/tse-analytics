@@ -43,7 +43,7 @@ class Ui_StreamWidget(object):
         self.spinBoxBins = QSpinBox(StreamWidget)
         self.spinBoxBins.setObjectName(u"spinBoxBins")
         self.spinBoxBins.setMinimum(1)
-        self.spinBoxBins.setMaximum(1000)
+        self.spinBoxBins.setMaximum(32)
         self.spinBoxBins.setValue(10)
 
         self.horizontalLayout.addWidget(self.spinBoxBins)

@@ -1,4 +1,6 @@
 import traja
+import seaborn as sns
+import numpy as np
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
@@ -41,27 +43,31 @@ class HeatmapWidget(QWidget):
         self.toast.show()
 
         worker = Worker(self._work)
-        worker.signals.finished.connect(self._work_finished)
+        worker.signals.result.connect(self._work_result)
         TaskManager.start_task(worker)
 
     def _work(self):
-        ax = self.ui.canvas.figure.add_subplot(111)
-
         bins = self.ui.spinBoxBins.value()
         normalize = self.ui.checkBoxNormalize.isChecked()
         log = self.ui.checkBoxLog.isChecked()
 
-        _ = traja.trip_grid(
+        hist, _ = traja.trip_grid(
             self.trj_df,
-            ax=ax,
             bins=bins,
             log=log,
             normalize=normalize,
+            hist_only=True,
         )
 
-    def _work_finished(self):
+        return hist
+
+    def _work_result(self, hist: np.ndarray):
         self.toast.hide()
         self.ui.toolButtonCalculate.setEnabled(True)
+
+        ax = self.ui.canvas.figure.add_subplot(1, 1, 1)
+
+        sns.heatmap(hist, ax=ax,)
 
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()

@@ -1,7 +1,9 @@
+import numpy as np
 import traja
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
+from traja import coords_to_flow
 
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
@@ -41,24 +43,28 @@ class StreamWidget(QWidget):
         self.toast.show()
 
         worker = Worker(self._work)
-        worker.signals.finished.connect(self._work_finished)
+        worker.signals.result.connect(self._work_result)
         TaskManager.start_task(worker)
 
     def _work(self):
-        ax = self.ui.canvas.figure.add_subplot(111)
-
         bins = self.ui.spinBoxBins.value()
 
-        _ = traja.plot_stream(
-            self.trj_df,
-            ax=ax,
-            bins=bins,
-            # cmap="Reds",
-        )
+        X, Y, U, V = coords_to_flow(self.trj_df, bins)
+        Z = np.sqrt(U * U + V * V)
 
-    def _work_finished(self):
+        return X, Y, Z, U, V
+
+    def _work_result(self, result: tuple):
+        x, y, z, u, v = result
         self.toast.hide()
         self.ui.toolButtonCalculate.setEnabled(True)
+
+        ax = self.ui.canvas.figure.add_subplot(1, 1, 1)
+
+        # ax.contourf(x, y, z)
+        # ax.contour(x, y, z, colors="k", linewidths=1, linestyles="solid")
+        ax.streamplot(x, y, u, v, color=z, cmap="viridis")
+        ax.set_aspect("equal")
 
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()

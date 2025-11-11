@@ -43,8 +43,8 @@ class Ui_HeatmapWidget(object):
         self.spinBoxBins = QSpinBox(HeatmapWidget)
         self.spinBoxBins.setObjectName(u"spinBoxBins")
         self.spinBoxBins.setMinimum(1)
-        self.spinBoxBins.setMaximum(64)
-        self.spinBoxBins.setValue(64)
+        self.spinBoxBins.setMaximum(32)
+        self.spinBoxBins.setValue(32)
 
         self.horizontalLayout.addWidget(self.spinBoxBins)
 
