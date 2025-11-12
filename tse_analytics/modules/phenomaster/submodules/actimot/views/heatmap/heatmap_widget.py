@@ -67,7 +67,10 @@ class HeatmapWidget(QWidget):
 
         ax = self.ui.canvas.figure.add_subplot(1, 1, 1)
 
-        sns.heatmap(hist, ax=ax,)
+        sns.heatmap(
+            hist,
+            ax=ax,
+        )
 
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()

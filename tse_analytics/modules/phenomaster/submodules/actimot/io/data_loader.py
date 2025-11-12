@@ -1,14 +1,14 @@
-import sqlite3
 from pathlib import Path
 
+import connectorx as cx
 import numpy as np
 import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
-from tse_analytics.core.data.shared import Variable, Aggregation
+from tse_analytics.core.data.shared import Variable
+from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.io import tse_import_settings
 from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_data import ActimotData
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 
 
 def read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> ActimotData:
@@ -16,40 +16,23 @@ def read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> ActimotData:
 
     sample_interval = pd.Timedelta(metadata["sample_interval"])
 
-    # Read variables list
-    skipped_variables = ["DateTime", "Box", "X1", "X2", "Y1", "Y2", "Z1", "Z2"]
-    variables: dict[str, Variable] = {}
-    dtypes = {}
-    for item in metadata["columns"].values():
-        variable = Variable(
-            item["id"],
-            item["unit"],
-            item["description"],
-            item["type"],
-            Aggregation.MEAN,
-            False,
-        )
-        if variable.name not in skipped_variables:
-            variables[variable.name] = variable
-        dtypes[variable.name] = item["type"]
-    # Ignore the time for "DateTime" column
-    dtypes.pop("DateTime")
+    df = cx.read_sql(
+        f"sqlite:///{path}",
+        f"SELECT DateTime, Box, X1, X2, Y1 FROM {tse_import_settings.ACTIMOT_RAW_TABLE}",
+        return_type="pandas",
+    )
 
-    # Read measurements data
-    df = pd.DataFrame()
-    with sqlite3.connect(path, check_same_thread=False) as connection:
-        for chunk in pd.read_sql_query(
-            f"SELECT * FROM {tse_import_settings.ACTIMOT_RAW_TABLE}",
-            connection,
-            dtype=dtypes,
-            chunksize=tse_import_settings.CHUNK_SIZE,
-        ):
-            chunk["X"] = np.left_shift(chunk["X2"].to_numpy(dtype=np.uint64), 32) + chunk["X1"].to_numpy(
-                dtype=np.uint64
-            )
-            chunk.rename(columns={"Y1": "Y"}, inplace=True)
-            chunk.drop(columns=["X1", "X2"], inplace=True)
-            df = pd.concat([df, chunk], ignore_index=True)
+    # Convert types
+    df = df.astype(
+        {
+            "Box": "int16",
+        },
+        errors="ignore",
+    )
+
+    df["X"] = np.left_shift(df["X2"].to_numpy(dtype=np.uint64), 32) + df["X1"].to_numpy(dtype=np.uint64)
+    df.drop(columns=["X1", "X2"], inplace=True)
+    df.rename(columns={"Y1": "Y"}, inplace=True)
 
     # Convert DateTime from POSIX format
     df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
@@ -58,7 +41,7 @@ def read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> ActimotData:
         dataset,
         tse_import_settings.ACTIMOT_RAW_TABLE,
         str(path),
-        variables,
+        {},
         df,
         sample_interval,
     )

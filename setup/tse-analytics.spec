@@ -13,6 +13,7 @@ datas = [
 ]
 
 datas += copy_metadata('numpy')
+datas += copy_metadata('connectorx')
 
 
 a = Analysis(

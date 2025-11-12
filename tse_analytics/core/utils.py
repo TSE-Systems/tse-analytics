@@ -6,8 +6,7 @@ application, including functions for working with images, SQLite databases,
 Qt widgets, and time conversions.
 """
 
-import sqlite3
-
+import connectorx as cx
 import pandas as pd
 import seaborn.objects as so
 from base64 import b64encode
@@ -70,12 +69,12 @@ def get_available_sqlite_tables(path: Path) -> list[str]:
     Returns:
         A list of strings containing the names of all tables in the database.
     """
-    with sqlite3.connect(path, check_same_thread=False) as connection:
-        cursor = connection.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-        tables = cursor.fetchall()
-        cursor.close()
-    return [item[0] for item in tables]
+    df = cx.read_sql(
+        f"sqlite:///{path}",
+        "SELECT name FROM sqlite_master WHERE type='table';",
+        return_type="pandas",
+    )
+    return df["name"].tolist()
 
 
 def get_widget_tool_button(parent: QWidget, widget: QWidget, text: str, icon: QIcon) -> QToolButton:

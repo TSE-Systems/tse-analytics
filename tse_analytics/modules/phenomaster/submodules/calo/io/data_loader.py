@@ -1,7 +1,7 @@
-import sqlite3
 from datetime import timedelta
 from pathlib import Path
 
+import connectorx as cx
 import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
@@ -36,15 +36,14 @@ def read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
     dtypes.pop("DateTime")
 
     # Read measurements data
-    df = pd.DataFrame()
-    with sqlite3.connect(path, check_same_thread=False) as connection:
-        for chunk in pd.read_sql_query(
-            f"SELECT * FROM {tse_import_settings.CALO_BIN_TABLE}",
-            connection,
-            dtype=dtypes,
-            chunksize=tse_import_settings.CHUNK_SIZE,
-        ):
-            df = pd.concat([df, chunk], ignore_index=True)
+    df = cx.read_sql(
+        f"sqlite:///{path}",
+        f"SELECT * FROM {tse_import_settings.CALO_BIN_TABLE}",
+        return_type="pandas",
+    )
+
+    # Convert types according to metadata
+    df = df.astype(dtypes, errors="ignore")
 
     # Convert DateTime from POSIX format
     df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")

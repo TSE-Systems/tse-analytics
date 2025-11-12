@@ -1,8 +1,8 @@
 import json
-import sqlite3
 import timeit
 from pathlib import Path
 
+import connectorx as cx
 import pandas as pd
 from loguru import logger
 
@@ -99,12 +99,12 @@ def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportS
 
 
 def _read_metadata(path: Path) -> dict:
-    with sqlite3.connect(path, check_same_thread=False) as connection:
-        df = pd.read_sql_query(
-            "SELECT * FROM metadata",
-            connection,
-        )
-        metadata_str = df.iloc[0]["json"]
+    df = cx.read_sql(
+        f"sqlite:///{path}",
+        "SELECT * FROM metadata",
+        return_type="pandas",
+    )
+    metadata_str = df.iloc[0]["json"]
     metadata = json.loads(metadata_str)
 
     # Convert animal IDs to strings
@@ -184,15 +184,14 @@ def _read_main_table(
     variables.pop("Box")
 
     # Read measurements data
-    df = pd.DataFrame()
-    with sqlite3.connect(path, check_same_thread=False) as connection:
-        for chunk in pd.read_sql_query(
-            f"SELECT * FROM {tse_import_settings.MAIN_TABLE}",
-            connection,
-            dtype=dtypes,
-            chunksize=tse_import_settings.CHUNK_SIZE,
-        ):
-            df = pd.concat([df, chunk], ignore_index=True)
+    df = cx.read_sql(
+        f"sqlite:///{path}",
+        f"SELECT * FROM {tse_import_settings.MAIN_TABLE}",
+        return_type="pandas",
+    )
+
+    # Convert types according to metadata
+    df = df.astype(dtypes, errors="ignore")
 
     # Convert DateTime from POSIX format
     df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")

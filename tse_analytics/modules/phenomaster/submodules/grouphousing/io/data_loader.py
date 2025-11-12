@@ -1,6 +1,6 @@
-import sqlite3
 from pathlib import Path
 
+import connectorx as cx
 import numpy as np
 import pandas as pd
 
@@ -27,23 +27,19 @@ def read_grouphousing(path: Path, dataset: PhenoMasterDataset) -> GroupHousingDa
             False,
         )
         dtypes[variable.name] = item["type"]
-    # Ignore the time for "DateTime" columns
-    # dtypes.pop("StartDateTime")
-    # dtypes.pop("EndDateTime")
 
     dtypes["EndDateTime"] = "Int64"
     dtypes["Animal"] = str
 
     # Read measurements data
-    df = pd.DataFrame()
-    with sqlite3.connect(path, check_same_thread=False) as connection:
-        for chunk in pd.read_sql_query(
-            f"SELECT * FROM {tse_import_settings.GROUP_HOUSING_TABLE}",
-            connection,
-            dtype=dtypes,
-            chunksize=tse_import_settings.CHUNK_SIZE,
-        ):
-            df = pd.concat([df, chunk], ignore_index=True)
+    df = cx.read_sql(
+        f"sqlite:///{path}",
+        f"SELECT * FROM {tse_import_settings.GROUP_HOUSING_TABLE}",
+        return_type="pandas",
+    )
+
+    # Convert types according to metadata
+    df = df.astype(dtypes, errors="ignore")
 
     # Convert DateTime from POSIX format
     df["StartDateTime"] = pd.to_datetime(df["StartDateTime"], origin="unix", unit="ns")

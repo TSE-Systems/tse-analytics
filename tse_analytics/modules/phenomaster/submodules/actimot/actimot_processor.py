@@ -1,4 +1,5 @@
 import timeit
+from multiprocessing import Pool
 
 import numpy as np
 import pandas as pd
@@ -85,6 +86,10 @@ def get_pixmap_and_centroid(x: int, y: int) -> (QPixmap, tuple):
     return pixmap, centroid
 
 
+def work(input):
+    return input[0], input[1].apply(get_centroid_lookup, value_range=input[2])
+
+
 def calculate_trj(original_df: pd.DataFrame, actimot_settings: ActimotSettings) -> (pd.DataFrame, traja.TrajaDataFrame):
     tic = timeit.default_timer()
 
@@ -100,8 +105,22 @@ def calculate_trj(original_df: pd.DataFrame, actimot_settings: ActimotSettings) 
 
     # df[["x", "y"]] = df.apply(get_cent, axis=1).to_list()
 
-    df["x"] = df["X"].apply(get_centroid_lookup, value_range=x_range)
-    df["y"] = df["Y"].apply(get_centroid_lookup, value_range=y_range)
+    output = {}
+    with Pool(processes=2) as pool:
+        # call the same function with different data in parallel
+        for result in pool.map(work, (("x", df["X"], x_range), ("y", df["Y"], y_range))):
+            # report the value to show progress
+            output[result[0]] = result[1]
+
+    # output = Parallel(n_jobs=2, backend="multiprocessing")(
+    #     delayed(work)(input) for input in (("x", df["X"], x_range), ("y", df["Y"], y_range))
+    # )
+
+    df["x"] = output["x"]
+    df["y"] = output["y"]
+
+    # df["x"] = df["X"].apply(get_centroid_lookup, value_range=x_range)
+    # df["y"] = df["Y"].apply(get_centroid_lookup, value_range=y_range)
 
     # df["x"] = df["X"].map(lambda  x: get_centroid(x, x_range))
     # df["y"] = df["Y"].map(lambda  x: get_centroid(x, y_range))
@@ -114,7 +133,9 @@ def calculate_trj(original_df: pd.DataFrame, actimot_settings: ActimotSettings) 
 
     if actimot_settings.use_smooting:
         trj_df = traja.smooth_sg(
-            trj_df, w=actimot_settings.smoothing_window_size, p=actimot_settings.smoothing_polynomial_order,
+            trj_df,
+            w=actimot_settings.smoothing_window_size,
+            p=actimot_settings.smoothing_polynomial_order,
         )
 
     preprocessed_trj = traja.get_derivatives(trj_df)
