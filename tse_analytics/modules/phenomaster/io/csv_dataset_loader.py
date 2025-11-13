@@ -24,8 +24,8 @@ from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
-from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
+from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
 
 Section = namedtuple("Section", ["lines", "section_start_index", "section_end_index"])
 

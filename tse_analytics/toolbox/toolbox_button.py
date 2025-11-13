@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QToolButton, QMenu, QWidget
+from PySide6.QtWidgets import QMenu, QToolButton, QWidget
 
 from tse_analytics.core import manager
 from tse_analytics.core.data.dataset import Dataset
@@ -16,7 +16,9 @@ from tse_analytics.toolbox.actogram.actogram_widget import ActogramWidget
 from tse_analytics.toolbox.ancova.ancova_widget import AncovaWidget
 from tse_analytics.toolbox.correlation.correlation_widget import CorrelationWidget
 from tse_analytics.toolbox.data_plot.data_plot_widget import DataPlotWidget
+from tse_analytics.toolbox.data_table.data_table_widget import DataTableWidget
 from tse_analytics.toolbox.distribution.distribution_widget import DistributionWidget
+from tse_analytics.toolbox.fast_data_plot.fast_data_plot_widget import FastDataPlotWidget
 from tse_analytics.toolbox.histogram.histogram_widget import HistogramWidget
 from tse_analytics.toolbox.matrixplot.matrixplot_widget import MatrixPlotWidget
 from tse_analytics.toolbox.mds.mds_widget import MdsWidget
@@ -36,8 +38,6 @@ from tse_analytics.toolbox.timeseries_decomposition.timeseries_decomposition_wid
     TimeseriesDecompositionWidget,
 )
 from tse_analytics.toolbox.tsne.tsne_widget import TsneWidget
-from tse_analytics.toolbox.fast_data_plot.fast_data_plot_widget import FastDataPlotWidget
-from tse_analytics.toolbox.data_table.data_table_widget import DataTableWidget
 
 
 class ToolboxButton(QToolButton):

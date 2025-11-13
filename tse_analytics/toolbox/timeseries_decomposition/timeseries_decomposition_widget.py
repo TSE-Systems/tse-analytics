@@ -1,17 +1,17 @@
 from dataclasses import dataclass
 
 import pandas as pd
-from PySide6.QtCore import QSize, Qt, QSettings
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel, QSpinBox, QComboBox
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
+from PySide6.QtCore import QSettings, QSize, Qt
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QComboBox, QLabel, QSpinBox, QToolBar, QVBoxLayout, QWidget
 from statsmodels.tsa.seasonal import STL, seasonal_decompose
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.utils import get_html_image_from_figure, get_h_spacer_widget
-from tse_analytics.views.misc.MplCanvas import MplCanvas
+from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure
 from tse_analytics.views.misc.animal_selector import AnimalSelector
+from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.tooltip_widget import TooltipWidget
 from tse_analytics.views.misc.variable_selector import VariableSelector
 

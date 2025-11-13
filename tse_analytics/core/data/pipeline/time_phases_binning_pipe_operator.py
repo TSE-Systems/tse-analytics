@@ -1,7 +1,7 @@
 import pandas as pd
 
 from tse_analytics.core.data.binning import TimePhasesBinningSettings
-from tse_analytics.core.data.shared import Variable
+from tse_analytics.core.data.shared import Aggregation, Variable
 
 default_columns = ["Timedelta", "Animal", "Run", "Bin"]
 
@@ -26,7 +26,7 @@ def process_time_phases_binning(
     categories = [item.name for item in settings.time_phases]
     df["Bin"] = df["Bin"].cat.set_categories(categories, ordered=True)
 
-    agg = {}
+    agg: dict[str, str | Aggregation] = {}
     for column in df.columns:
         if column not in default_columns:
             if df.dtypes[column].name != "category":

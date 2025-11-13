@@ -4,25 +4,25 @@ from io import BytesIO
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from PySide6.QtCore import QSize, Qt, QSettings
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.figure import Figure
 from pyqttoast import ToastPreset
+from PySide6.QtCore import QSettings, QSize, Qt
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QLabel, QToolBar, QVBoxLayout, QWidget
 from scipy.stats import chi2
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Animal
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.core.utils import get_html_image_from_figure, get_h_spacer_widget
+from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure
 from tse_analytics.views.general.pdf.pdf_widget import PdfWidget
-from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.animal_selector import AnimalSelector
+from tse_analytics.views.misc.MplCanvas import MplCanvas
 
 
 @dataclass

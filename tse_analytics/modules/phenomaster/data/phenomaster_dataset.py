@@ -6,8 +6,8 @@ from tse_analytics.core.data.shared import Aggregation, Animal, Variable
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_data import ActimotData
 from tse_analytics.modules.phenomaster.submodules.actimot.models.actimot_tree_item import ActimotTreeItem
-from tse_analytics.modules.phenomaster.submodules.calo.fitting_result import FittingResult
 from tse_analytics.modules.phenomaster.submodules.calo.data.calo_data import CaloData
+from tse_analytics.modules.phenomaster.submodules.calo.fitting_result import FittingResult
 from tse_analytics.modules.phenomaster.submodules.calo.models.calo_tree_item import CaloDataTreeItem
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_bin_data import DrinkFeedBinData
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_raw_data import DrinkFeedRawData

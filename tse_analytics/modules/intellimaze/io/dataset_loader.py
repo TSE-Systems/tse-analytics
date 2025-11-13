@@ -13,14 +13,12 @@ from tse_analytics.core.data.shared import Animal, Factor
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 from tse_analytics.modules.intellimaze.data.utils import preprocess_main_table
 from tse_analytics.modules.intellimaze.extensions import (
+    actor,
     animal_gate,
     consumption_scale,
-    running_wheel,
-    actor,
     intellicage,
-    operant_device,
+    running_wheel,
 )
-
 
 extension_data_loaders = {
     animal_gate.EXTENSION_NAME: animal_gate.io.import_data,
@@ -195,7 +193,7 @@ def _import_animals_v5(animals_file_path: Path) -> dict | None:
 
     present_fields = []
     # Check if a field is present in any of the animal
-    for index, item in enumerate(animals_json["ArrayOfAnimal"]["Animal"]):
+    for _, item in enumerate(animals_json["ArrayOfAnimal"]["Animal"]):
         for field in expected_fields:
             if field in item:
                 present_fields.append(field)
@@ -256,7 +254,7 @@ def _import_animals_v6(animals_file_path: Path, groups_file_path: Path) -> dict 
 
     groups: dict[str, str] = {}
     # Map group id to group name
-    for index, item in enumerate(groups_json["ArrayOfGroup"]["Group"]):
+    for _, item in enumerate(groups_json["ArrayOfGroup"]["Group"]):
         groups[item["Id"]] = item["Name"]
 
     expected_fields = (
@@ -269,7 +267,7 @@ def _import_animals_v6(animals_file_path: Path, groups_file_path: Path) -> dict 
 
     present_fields = []
     # Check if a field is present in any of the animal
-    for index, item in enumerate(animals_json["ArrayOfAnimal"]["Animal"]):
+    for _, item in enumerate(animals_json["ArrayOfAnimal"]["Animal"]):
         for field in expected_fields:
             if field in item:
                 present_fields.append(field)

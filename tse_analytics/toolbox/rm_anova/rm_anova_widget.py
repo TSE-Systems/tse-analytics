@@ -3,21 +3,21 @@ from dataclasses import dataclass
 import pandas as pd
 import pingouin as pg
 import seaborn.objects as so
-from PySide6.QtCore import QSize, Qt, QSettings
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QMessageBox, QWidget, QToolBar, QLabel, QTextEdit, QVBoxLayout
 from pyqttoast import ToastPreset
+from PySide6.QtCore import QSettings, QSize, Qt
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QLabel, QMessageBox, QTextEdit, QToolBar, QVBoxLayout, QWidget
 
-from tse_analytics.core import messaging, color_manager
+from tse_analytics.core import color_manager, messaging
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import (
-    get_widget_tool_button,
     get_h_spacer_widget,
     get_html_image_from_plot,
     get_html_table,
+    get_widget_tool_button,
 )
 from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.toolbox.rm_anova.rm_anova_settings_widget_ui import Ui_RMAnovaSettingsWidget

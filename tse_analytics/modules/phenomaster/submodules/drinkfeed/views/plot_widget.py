@@ -1,6 +1,6 @@
 import pandas as pd
 from PySide6.QtCore import QSize, Qt
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar
+from PySide6.QtWidgets import QToolBar, QVBoxLayout, QWidget
 
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.plot_view import PlotView

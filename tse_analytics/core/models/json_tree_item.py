@@ -19,7 +19,7 @@ class TreeItem:
             parent (TreeItem, optional): The parent tree item. Defaults to None.
         """
         self._parent = parent
-        self._key = ""
+        self._key: str | int = ""
         self._value = ""
         self._value_type = None
         self._children: list[TreeItem] = []

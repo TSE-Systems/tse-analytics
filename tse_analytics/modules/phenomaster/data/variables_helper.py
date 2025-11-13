@@ -1,7 +1,6 @@
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.io import tse_import_settings
 
-
 VARIABLES_TO_REMOVE = [
     "VO2(1)",
     "VO2(2)",

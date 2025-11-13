@@ -1,2 +1,3 @@
-from . import io, data
-from .data.intellicage_data import EXTENSION_NAME
+from . import data as data
+from . import io as io
+from .data.intellicage_data import EXTENSION_NAME as EXTENSION_NAME

@@ -1,17 +1,17 @@
 from dataclasses import dataclass
 
-from PySide6.QtCore import QSize, Qt, QSettings
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QWidgetAction, QLabel, QSpinBox
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from PySide6.QtCore import QSettings, QSize, Qt
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QLabel, QSpinBox, QToolBar, QVBoxLayout, QWidget, QWidgetAction
 
-from tse_analytics.core import messaging, color_manager
+from tse_analytics.core import color_manager, messaging
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.helper import normalize_nd_array
 from tse_analytics.core.plotting.actogram_utils import dataframe_to_actogram, plot_enhanced_actogram
-from tse_analytics.core.utils import get_html_image_from_figure, get_h_spacer_widget, time_to_float
+from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure, time_to_float
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 

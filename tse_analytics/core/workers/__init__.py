@@ -10,8 +10,8 @@ Classes:
     WorkerSignals: Defines signals that can be emitted by worker threads.
 """
 
-from tse_analytics.core.workers.worker import Worker
 from tse_analytics.core.workers.task_manager import TaskManager
+from tse_analytics.core.workers.worker import Worker
 from tse_analytics.core.workers.worker_signals import WorkerSignals
 
 __all__ = ["Worker", "TaskManager", "WorkerSignals"]

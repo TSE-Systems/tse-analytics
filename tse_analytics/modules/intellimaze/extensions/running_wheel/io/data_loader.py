@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
-from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
 from tse_analytics.modules.intellimaze.extensions.running_wheel.data.running_wheel_data import RunningWheelData
+from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
 
 
 def import_data(

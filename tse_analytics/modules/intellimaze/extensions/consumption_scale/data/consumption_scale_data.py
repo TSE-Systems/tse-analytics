@@ -59,7 +59,7 @@ class ConsumptionScaleData(ExtensionData):
         # Convert cumulative values to differential ones
         preprocessed_device_df = []
         device_ids = df["DeviceId"].unique().tolist()
-        for i, device_id in enumerate(device_ids):
+        for _, device_id in enumerate(device_ids):
             device_data = df[df["DeviceId"] == device_id]
             device_data["Consumption"] = device_data["Consumption"].diff().fillna(df["Consumption"]).round(5)
             preprocessed_device_df.append(device_data)

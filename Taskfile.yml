@@ -90,10 +90,15 @@ tasks:
     cmds:
       - pytest --cov=$(SOURCE_DIR) tests/
 
-  build-dist:
+  deploy:
     cmds:
       - uv sync
       - pyinstaller --clean setup/tse-analytics.spec
+
+  deploy-pyside:
+    cmds:
+      - uv sync
+      - pyside6-deploy -c pysidedeploy.spec
 
   mypy:
     cmds:

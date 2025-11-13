@@ -1,15 +1,15 @@
 from PySide6.QtCore import QSize, QSortFilterProxyModel, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
-    QComboBox,
-    QDoubleSpinBox,
-    QToolBar,
-    QWidget,
-    QVBoxLayout,
-    QTableView,
     QAbstractItemView,
-    QMessageBox,
+    QComboBox,
     QDialog,
+    QDoubleSpinBox,
+    QMessageBox,
+    QTableView,
+    QToolBar,
+    QVBoxLayout,
+    QWidget,
 )
 
 from tse_analytics.core import messaging

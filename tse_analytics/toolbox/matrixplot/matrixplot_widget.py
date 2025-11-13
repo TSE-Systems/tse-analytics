@@ -2,29 +2,29 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 import seaborn as sns
-from PySide6.QtCore import QSize, Qt, QSettings, QTimer
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import (
-    QAbstractItemView,
-    QWidget,
-    QVBoxLayout,
-    QToolBar,
-    QAbstractScrollArea,
-    QWidgetAction,
-    QLabel,
-    QComboBox,
-)
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from pyqttoast import ToastPreset
+from PySide6.QtCore import QSettings, QSize, Qt, QTimer
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import (
+    QAbstractItemView,
+    QAbstractScrollArea,
+    QComboBox,
+    QLabel,
+    QToolBar,
+    QVBoxLayout,
+    QWidget,
+    QWidgetAction,
+)
 
-from tse_analytics.core import messaging, color_manager
+from tse_analytics.core import color_manager, messaging
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.core.utils import get_html_image_from_figure, get_h_spacer_widget, get_widget_tool_button
-from tse_analytics.views.misc.MplCanvas import MplCanvas
+from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure, get_widget_tool_button
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
+from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 
 

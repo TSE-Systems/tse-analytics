@@ -1,7 +1,7 @@
 import pandas as pd
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QToolBar, QToolButton, QMenu, QFileDialog
+from PySide6.QtWidgets import QFileDialog, QMenu, QToolBar, QToolButton, QWidget
 
 from tse_analytics.core.models.pandas_simple_model import PandasSimpleModel
 from tse_analytics.core.workers.task_manager import TaskManager

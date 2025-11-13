@@ -1,9 +1,9 @@
 import pandas as pd
 import seaborn as sns
+from pyqttoast import ToastPreset
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QFileDialog, QTabWidget
-from pyqttoast import ToastPreset
+from PySide6.QtWidgets import QFileDialog, QTabWidget, QToolBar, QVBoxLayout, QWidget
 from scipy.stats import chisquare, kruskal
 
 from tse_analytics.core.data.datatable import Datatable

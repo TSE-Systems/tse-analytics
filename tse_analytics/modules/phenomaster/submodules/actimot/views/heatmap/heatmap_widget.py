@@ -1,6 +1,6 @@
-import traja
-import seaborn as sns
 import numpy as np
+import seaborn as sns
+import traja
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget

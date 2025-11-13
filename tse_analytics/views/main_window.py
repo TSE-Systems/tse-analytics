@@ -3,18 +3,18 @@ import zipfile
 from functools import partial
 from pathlib import Path
 
-import PySide6QtAds
 import psutil
+import PySide6QtAds
+from pyqttoast import Toast, ToastPreset
 from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QCloseEvent, QIcon
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QMessageBox
-from pyqttoast import Toast, ToastPreset
 
-from tse_analytics.core import manager, help_manager
+from tse_analytics.core import help_manager, manager
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.utils import CSV_IMPORT_ENABLED, IS_RELEASE
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.toaster import make_toast
+from tse_analytics.core.utils import CSV_IMPORT_ENABLED, IS_RELEASE
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.intellicage.io.dataset_loader import import_intellicage_dataset
@@ -33,8 +33,8 @@ from tse_analytics.views.general.info.info_widget import InfoWidget
 from tse_analytics.views.general.logs.log_widget import LogWidget
 from tse_analytics.views.general.settings.binning_settings_widget import BinningSettingsWidget
 from tse_analytics.views.general.settings.settings_dialog import SettingsDialog
-from tse_analytics.views.main_window_ui import Ui_MainWindow
 from tse_analytics.views.general.variables.variables_widget import VariablesWidget
+from tse_analytics.views.main_window_ui import Ui_MainWindow
 
 MAX_RECENT_FILES = 10
 

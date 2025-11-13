@@ -1,11 +1,10 @@
+from dataclasses import dataclass
+
+
+@dataclass
 class CaloBox:
-    def __init__(
-        self,
-        box: int,
-        ref_box: int | None,
-    ):
-        self.box = box
-        self.ref_box = ref_box
+    box: int
+    ref_box: int | None
 
 
 def get_ref_box_number(box: int, boxes: list[int]) -> int | None:

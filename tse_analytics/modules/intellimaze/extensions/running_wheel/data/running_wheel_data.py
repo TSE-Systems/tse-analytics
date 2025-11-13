@@ -4,7 +4,6 @@ from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.modules.intellimaze.data.extension_data import ExtensionData
 
-
 EXTENSION_NAME = "RunningWheel"
 
 
@@ -32,7 +31,7 @@ class RunningWheelData(ExtensionData):
         # Convert cumulative values to differential ones
         preprocessed_device_df = []
         device_ids = df["DeviceId"].unique().tolist()
-        for i, device_id in enumerate(device_ids):
+        for _, device_id in enumerate(device_ids):
             device_data = df[df["DeviceId"] == device_id]
             device_data["Left"] = device_data["Left"].diff().fillna(df["Left"])
             device_data["Right"] = device_data["Right"].diff().fillna(df["Right"])

@@ -1,6 +1,6 @@
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QDialog, QToolBar, QWidget, QVBoxLayout, QTreeView
+from PySide6.QtWidgets import QDialog, QToolBar, QTreeView, QVBoxLayout, QWidget
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset

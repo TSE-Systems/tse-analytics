@@ -10,9 +10,9 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QToolBar,
     QToolButton,
-    QWidget,
-    QVBoxLayout,
     QTreeView,
+    QVBoxLayout,
+    QWidget,
 )
 
 from tse_analytics.core import manager, messaging
@@ -33,11 +33,11 @@ from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_dial
 from tse_analytics.modules.phenomaster.submodules.grouphousing.models.grouphousing_tree_item import GroupHousingTreeItem
 from tse_analytics.modules.phenomaster.submodules.grouphousing.views.grouphousing_dialog import GroupHousingDialog
 from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvDialog
+from tse_analytics.toolbox.data_table.data_table_widget import DataTableWidget
 from tse_analytics.toolbox.toolbox_button import ToolboxButton
 from tse_analytics.views.general.datasets.adjust_dataset_dialog import AdjustDatasetDialog
 from tse_analytics.views.general.datasets.datasets_merge_dialog import DatasetsMergeDialog
 from tse_analytics.views.misc.raw_data_widget.raw_data_widget import RawDataWidget
-from tse_analytics.toolbox.data_table.data_table_widget import DataTableWidget
 
 """
 Datasets widget module for TSE Analytics.
@@ -193,7 +193,7 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
         # check variables compatibility
         first_dataset = checked_datasets[0]
         for dataset in checked_datasets:
-            if type(dataset) != type(first_dataset):
+            if type(dataset) is not type(first_dataset):
                 QMessageBox.warning(
                     self,
                     "Cannot merge datasets",

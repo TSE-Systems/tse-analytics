@@ -2,9 +2,9 @@ from PySide6.QtCore import QItemSelection, QSortFilterProxyModel, Qt, QTimer
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QAbstractItemView, QTableView, QWidget
 
+from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_animal_item import ActimotAnimalItem
 from tse_analytics.modules.phenomaster.submodules.actimot.models.actimot_boxes_model import ActimotBoxesModel
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 
 
 class BoxSelector(QTableView):

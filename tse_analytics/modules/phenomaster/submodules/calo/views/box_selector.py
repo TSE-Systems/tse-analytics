@@ -2,9 +2,9 @@ from PySide6.QtCore import QItemSelection, QSortFilterProxyModel, Qt
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QAbstractItemView, QTableView, QWidget
 
+from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.submodules.calo.data.calo_box import CaloBox, get_ref_box_number
 from tse_analytics.modules.phenomaster.submodules.calo.models.calo_boxes_model import CaloBoxesModel
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 
 
 class BoxSelector(QTableView):

@@ -6,17 +6,17 @@ application, including functions for working with images, SQLite databases,
 Qt widgets, and time conversions.
 """
 
-import connectorx as cx
-import pandas as pd
-import seaborn.objects as so
 from base64 import b64encode
 from datetime import time
 from io import BytesIO
 from pathlib import Path
 
-from PySide6.QtGui import QIcon, Qt
-from PySide6.QtWidgets import QToolButton, QWidget, QWidgetAction, QSizePolicy
+import connectorx as cx
+import pandas as pd
+import seaborn.objects as so
 from matplotlib.figure import Figure
+from PySide6.QtGui import QIcon, Qt
+from PySide6.QtWidgets import QSizePolicy, QToolButton, QWidget, QWidgetAction
 
 IS_RELEASE = Path("_internal").exists()
 

@@ -1,6 +1,6 @@
 import pandas as pd
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QDialog, QWidget, QListWidgetItem, QFileDialog
+from PySide6.QtWidgets import QDialog, QFileDialog, QListWidgetItem, QWidget
 
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 from tse_analytics.modules.intellimaze.views.export_merged_csv.export_merged_csv_dialog_ui import (
@@ -61,8 +61,8 @@ class ExportMergedCsvDialog(QDialog):
     ) -> None:
         result_df = pd.DataFrame()
 
-        for extension_name, csv_data in extension_csv_data.items():
-            for table_name, df in csv_data.items():
+        for _, csv_data in extension_csv_data.items():
+            for _, df in csv_data.items():
                 result_df = pd.concat([result_df, df])
 
         result_df.sort_values(["DateTime"], inplace=True)
@@ -101,14 +101,14 @@ class ExportMergedCsvDialog(QDialog):
         numberOfColumns = len(headers3)
         fieldsOffset = 0
         csvDataRows: list[list[str]] = []
-        for extension_name, csv_data in extension_csv_data.items():
-            for tableName, df in csv_data.items():
+        for _, csv_data in extension_csv_data.items():
+            for _, df in csv_data.items():
                 field_names = list(set(df.columns.values.tolist()) - core_headers_set)
                 headerLength = len(field_names)
                 preContent = ["" for i in range(fieldsOffset)]
                 postContent = ["" for i in range(numberOfColumns - fieldsOffset - commonColumnNumber - headerLength)]
 
-                for index, row in df.iterrows():
+                for _, row in df.iterrows():
                     start = [
                         str(row["DateTime"]),
                         row["DeviceType"],

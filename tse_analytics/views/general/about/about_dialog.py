@@ -35,11 +35,11 @@ class AboutDialog(QDialog, Ui_AboutDialog):
         self.labelVersion.setText(f"Version {version}")
 
         path = Path(__file__).parent
-        with open(path / "about.md", "r") as f:
+        with open(path / "about.md") as f:
             self.textBrowserAbout.setMarkdown(f.read())
 
-        with open(path / "license.md", "r") as f:
+        with open(path / "license.md") as f:
             self.textBrowserLicense.setMarkdown(f.read())
 
-        with open(path / "libraries.md", "r") as f:
+        with open(path / "libraries.md") as f:
             self.textBrowserLibraries.setMarkdown(f.read())

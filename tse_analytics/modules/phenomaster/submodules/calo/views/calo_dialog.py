@@ -3,18 +3,18 @@ import timeit
 from multiprocessing import Pool
 
 import pandas as pd
-from PySide6.QtCore import QSettings, Qt, QSize
-from PySide6.QtGui import QIcon, QCloseEvent
-from PySide6.QtWidgets import QDialog, QWidget, QToolBar, QMessageBox
 from pyqttoast import ToastPreset
+from PySide6.QtCore import QSettings, QSize, Qt
+from PySide6.QtGui import QCloseEvent, QIcon
+from PySide6.QtWidgets import QDialog, QMessageBox, QToolBar, QWidget
 
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.modules.phenomaster.submodules.calo.fitting_result import FittingResult
-from tse_analytics.modules.phenomaster.submodules.calo.processor import process_box
 from tse_analytics.modules.phenomaster.submodules.calo.calo_settings import CaloSettings
 from tse_analytics.modules.phenomaster.submodules.calo.data.calo_box import CaloBox
 from tse_analytics.modules.phenomaster.submodules.calo.data.calo_data import CaloData
 from tse_analytics.modules.phenomaster.submodules.calo.fitting_params import FittingParams
+from tse_analytics.modules.phenomaster.submodules.calo.fitting_result import FittingResult
+from tse_analytics.modules.phenomaster.submodules.calo.processor import process_box
 from tse_analytics.modules.phenomaster.submodules.calo.views.bin_selector import BinSelector
 from tse_analytics.modules.phenomaster.submodules.calo.views.box_selector import BoxSelector
 from tse_analytics.modules.phenomaster.submodules.calo.views.calo_dialog_ui import Ui_CaloDialog

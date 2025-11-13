@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
-from tse_analytics.core.data.shared import Variable, Aggregation
+from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.io import tse_import_settings
 from tse_analytics.modules.phenomaster.submodules.grouphousing.data.grouphousing_data import GroupHousingData

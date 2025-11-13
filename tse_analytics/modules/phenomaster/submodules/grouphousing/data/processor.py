@@ -3,7 +3,7 @@ from datetime import datetime
 import pandas as pd
 
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import Variable, Aggregation
+from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 
 

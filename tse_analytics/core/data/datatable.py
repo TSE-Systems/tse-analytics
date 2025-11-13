@@ -12,7 +12,7 @@ from uuid import uuid4
 
 import pandas as pd
 
-from tse_analytics.core.data.helper import rename_animal_df, reassign_df_timedelta_and_bin
+from tse_analytics.core.data.helper import reassign_df_timedelta_and_bin, rename_animal_df
 from tse_analytics.core.data.outliers import OutliersMode
 from tse_analytics.core.data.pipeline.animal_filter_pipe_operator import filter_animals
 from tse_analytics.core.data.pipeline.group_by_pipe_operator import group_by_columns

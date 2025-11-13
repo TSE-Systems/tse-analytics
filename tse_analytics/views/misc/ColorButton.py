@@ -1,6 +1,6 @@
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QColor, Qt
-from PySide6.QtWidgets import QPushButton, QColorDialog
+from PySide6.QtWidgets import QColorDialog, QPushButton
 
 
 class ColorButton(QPushButton):

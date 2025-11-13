@@ -6,9 +6,9 @@ import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.shared import Aggregation, Variable
+from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.io import tse_import_settings
 from tse_analytics.modules.phenomaster.submodules.calo.data.calo_data import CaloData
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 
 
 def read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
@@ -240,7 +240,7 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
 
     calo_data = CaloData(
         dataset,
-        f"calo_bin",
+        "calo_bin",
         str(path),
         variables,
         df,

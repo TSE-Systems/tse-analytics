@@ -1,17 +1,13 @@
+from dataclasses import dataclass
+
+
+@dataclass
 class CaloGasSettings:
-    def __init__(
-        self,
-        gas_name: str,
-        start_offset: int,
-        end_offset: int,
-        bounds: tuple[tuple[float, float, float], tuple[float, float, float]],
-        ref_bounds: tuple[tuple[float, float, float], tuple[float, float, float]],
-    ):
-        self.gas_name = gas_name
-        self.start_offset = start_offset
-        self.end_offset = end_offset
-        self.bounds = bounds
-        self.ref_bounds = ref_bounds
+    gas_name: str
+    start_offset: int
+    end_offset: int
+    bounds: tuple[tuple[float, float, float], tuple[float, float, float]]
+    ref_bounds: tuple[tuple[float, float, float], tuple[float, float, float]]
 
 
 class CaloSettings:

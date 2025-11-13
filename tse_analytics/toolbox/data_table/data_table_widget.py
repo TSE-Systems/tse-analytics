@@ -2,22 +2,22 @@ from dataclasses import dataclass, field
 
 import numpy as np
 import pandas as pd
-from PySide6.QtCore import Qt, QSize, QSettings
+from pyqttoast import ToastPreset
+from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QAbstractItemView,
-    QWidget,
-    QToolBar,
-    QTableView,
-    QVBoxLayout,
-    QTextEdit,
     QAbstractScrollArea,
-    QToolButton,
-    QMenu,
     QFileDialog,
     QLabel,
+    QMenu,
+    QTableView,
+    QTextEdit,
+    QToolBar,
+    QToolButton,
+    QVBoxLayout,
+    QWidget,
 )
-from pyqttoast import ToastPreset
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import BinningMode
@@ -25,7 +25,7 @@ from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.models.pandas_model import PandasModel
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.core.utils import get_widget_tool_button, get_h_spacer_widget
+from tse_analytics.core.utils import get_h_spacer_widget, get_widget_tool_button
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.styles.css import style_descriptive_table

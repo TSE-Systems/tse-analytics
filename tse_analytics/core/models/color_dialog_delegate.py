@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QStyledItemDelegate, QColorDialog
+from PySide6.QtWidgets import QColorDialog, QStyledItemDelegate
 
 
 class ColorDialogDelegate(QStyledItemDelegate):

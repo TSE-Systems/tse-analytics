@@ -1,10 +1,10 @@
 from io import BytesIO
 
-from PySide6.QtCore import QSize, Qt, QBuffer, QIODevice, QByteArray
+from PySide6.QtCore import QBuffer, QByteArray, QIODevice, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtPdf import QPdfDocument
 from PySide6.QtPdfWidgets import QPdfView
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QFileDialog
+from PySide6.QtWidgets import QFileDialog, QToolBar, QVBoxLayout, QWidget
 
 
 class PdfWidget(QWidget):

@@ -2,32 +2,32 @@ from dataclasses import dataclass, field
 
 import pandas as pd
 import seaborn.objects as so
-from PySide6.QtCore import QSize, Qt, QSettings
+from matplotlib.backends.backend_qt import NavigationToolbar2QT
+from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QToolBar,
-    QLabel,
     QAbstractItemView,
     QAbstractScrollArea,
-    QDoubleSpinBox,
     QComboBox,
+    QDoubleSpinBox,
+    QLabel,
+    QToolBar,
+    QVBoxLayout,
+    QWidget,
 )
-from matplotlib.backends.backend_qt import NavigationToolbar2QT
 
-from tse_analytics.core import messaging, color_manager
+from tse_analytics.core import color_manager, messaging
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.utils import (
-    get_html_image_from_figure,
     get_h_spacer_widget,
-    time_to_float,
+    get_html_image_from_figure,
     get_widget_tool_button,
+    time_to_float,
 )
-from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
+from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 
 

@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.modules.phenomaster.submodules.actimot.actimot_settings import ActimotSettings
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
+from tse_analytics.modules.phenomaster.submodules.actimot.actimot_settings import ActimotSettings
 from tse_analytics.modules.phenomaster.submodules.actimot.views.settings.settings_widget_ui import Ui_SettingsWidget
 
 

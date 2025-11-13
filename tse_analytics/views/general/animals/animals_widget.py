@@ -3,14 +3,14 @@ from functools import partial
 from PySide6.QtCore import QSize, QSortFilterProxyModel, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
-    QToolBar,
-    QWidget,
-    QVBoxLayout,
-    QTableView,
     QAbstractItemView,
     QInputDialog,
     QLineEdit,
     QMessageBox,
+    QTableView,
+    QToolBar,
+    QVBoxLayout,
+    QWidget,
 )
 
 from tse_analytics.core import messaging

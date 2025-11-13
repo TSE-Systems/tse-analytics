@@ -1,9 +1,9 @@
 import logging
 
+from loguru import logger
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
-from loguru import logger
-from PySide6.QtWidgets import QTextEdit, QWidget, QVBoxLayout, QToolBar
+from PySide6.QtWidgets import QTextEdit, QToolBar, QVBoxLayout, QWidget
 
 """
 Log widget module for displaying application logs in the UI.

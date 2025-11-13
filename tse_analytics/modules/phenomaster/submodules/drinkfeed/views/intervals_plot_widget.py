@@ -2,7 +2,7 @@ import pandas as pd
 import seaborn as sns
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from PySide6.QtCore import QSize, Qt
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar
+from PySide6.QtWidgets import QToolBar, QVBoxLayout, QWidget
 
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.views.misc.MplCanvas import MplCanvas

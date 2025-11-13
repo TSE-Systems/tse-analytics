@@ -54,13 +54,13 @@ def import_intellicage_dataset(path: Path) -> IntelliCageDataset | None:
         "Version1": import_intellicage_dataset_v1,  # Version 1 of the new data structure
         "Version_2_2": import_intellicage_dataset_v2,  # Data structure of the release 2.2
         "IntelliCage_Plus_2_2_2": import_intellicage_dataset_v2,  # Data structure of the IntelliCage Plus 2.2.2
-        "IntelliCage_Plus_2_3": import_intellicage_dataset_v2,  # Data structure of the IntelliCage Plus 2.3
-        "IntelliCage_Plus_3": import_intellicage_dataset_v2,  # Data structure of the IntelliCage Plus 2.3.1+
-        "IntelliCage_Plus_3_1": import_intellicage_dataset_v2,  # Data structure of the IntelliCage Plus 3.1.x+
-        "IntelliCage_Plus_3_3_8": import_intellicage_dataset_v2,  # Data structure of the IntelliCage Plus 3.3.8+
-        "IntelliCage_Plus_3_6_0": import_intellicage_dataset_v2,  # Data structure of the IntelliCage Plus 3.6.0+ (new ActivityBox data format)
-        "IntelliCage_Plus_3_6_4": import_intellicage_dataset_v2,  # Data structure of the IntelliCage Plus 3.6.4 (TTL Data added)
-        "IntelliCage_Plus_3_6_5": import_intellicage_dataset_v2,  # Data structure of the IntelliCage Plus 3.6.5 (MqttSocialBox Data added)
+        "IntelliCage_Plus_2_3": import_intellicage_dataset_v2,  # IntelliCage Plus 2.3
+        "IntelliCage_Plus_3": import_intellicage_dataset_v2,  # IntelliCage Plus 2.3.1+
+        "IntelliCage_Plus_3_1": import_intellicage_dataset_v2,  # IntelliCage Plus 3.1.x+
+        "IntelliCage_Plus_3_3_8": import_intellicage_dataset_v2,  # IntelliCage Plus 3.3.8+
+        "IntelliCage_Plus_3_6_0": import_intellicage_dataset_v2,  # IntelliCage Plus 3.6.0+ (ActivityBox data format)
+        "IntelliCage_Plus_3_6_4": import_intellicage_dataset_v2,  # IntelliCage Plus 3.6.4 (TTL data added)
+        "IntelliCage_Plus_3_6_5": import_intellicage_dataset_v2,  # IntelliCage Plus 3.6.5 (MqttSocialBox data added)
     }
 
     with zipfile.ZipFile(path, mode="r") as zip:

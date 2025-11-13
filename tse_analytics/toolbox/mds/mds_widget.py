@@ -2,32 +2,31 @@ from dataclasses import dataclass, field
 
 import pandas as pd
 import seaborn.objects as so
-from PySide6.QtCore import QSize, Qt, QSettings
+from matplotlib.backends.backend_qt import NavigationToolbar2QT
+from pyqttoast import ToastPreset
+from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QAbstractItemView,
-    QWidget,
-    QVBoxLayout,
-    QToolBar,
     QAbstractScrollArea,
     QLabel,
-    QDoubleSpinBox,
     QSpinBox,
+    QToolBar,
+    QVBoxLayout,
+    QWidget,
 )
-from matplotlib.backends.backend_qt import NavigationToolbar2QT
-from pyqttoast import ToastPreset
 from sklearn.manifold import MDS
 from sklearn.preprocessing import StandardScaler
 
-from tse_analytics.core import messaging, color_manager
+from tse_analytics.core import color_manager, messaging
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.core.utils import get_html_image_from_figure, get_widget_tool_button, get_h_spacer_widget
+from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure, get_widget_tool_button
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
-from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
+from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 
 

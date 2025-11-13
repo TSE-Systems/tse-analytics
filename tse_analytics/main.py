@@ -1,5 +1,5 @@
 """
-Main application module for TSE Analytics.
+Entry point module for running the TSE Analytics package as a script.
 
 This module initializes the application, sets up global configurations for various
 libraries (matplotlib, PyQtGraph, pandas, seaborn), and provides the main entry point
@@ -9,15 +9,16 @@ for the TSE Analytics application.
 import ctypes
 import os
 import sys
+from multiprocessing import freeze_support
 
 import matplotlib
 import pandas as pd
 import seaborn as sns
+from loguru import logger
+from pyqtgraph import setConfigOptions
 from PySide6.QtCore import QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
-from loguru import logger
-from pyqtgraph import setConfigOptions
 
 from tse_analytics.core.utils import IS_RELEASE
 from tse_analytics.core.workers.task_manager import TaskManager
@@ -108,17 +109,10 @@ def handle_exception(exc_type, exc_value, exc_traceback) -> None:
     logger.opt(exception=(exc_type, exc_value, exc_traceback)).critical("Uncaught exception")
 
 
-def main() -> None:
-    """
-    Main entry point for the TSE Analytics application.
+if __name__ == "__main__":
+    # See https://docs.python.org/3/library/multiprocessing.html#multiprocessing.freeze_support
+    freeze_support()
 
-    This function initializes logging, sets up exception handling, creates the
-    application instance, shows the main window, and starts the application's
-    event loop.
-
-    Returns:
-        None
-    """
     # See: https://github.com/pyinstaller/pyinstaller/issues/7334#issuecomment-1357447176
     if sys.stdout is None:
         sys.stdout = open(os.devnull, "w")

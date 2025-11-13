@@ -1,27 +1,27 @@
 import pandas as pd
-from PySide6.QtCore import QSettings, Qt, QSize
-from PySide6.QtGui import QIcon, QCloseEvent
-from PySide6.QtWidgets import QDialog, QWidget, QToolBar
-from pyqttoast import ToastPreset
-
 import traja
+from pyqttoast import ToastPreset
+from PySide6.QtCore import QSettings, QSize, Qt
+from PySide6.QtGui import QCloseEvent, QIcon
+from PySide6.QtWidgets import QDialog, QToolBar, QWidget
+
 from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
-from tse_analytics.modules.phenomaster.submodules.actimot.processor import calculate_trj
 from tse_analytics.modules.phenomaster.submodules.actimot.actimot_settings import ActimotSettings
 from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_animal_item import ActimotAnimalItem
 from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_data import ActimotData
-from tse_analytics.modules.phenomaster.submodules.actimot.views.box_selector import BoxSelector
+from tse_analytics.modules.phenomaster.submodules.actimot.processor import calculate_trj
 from tse_analytics.modules.phenomaster.submodules.actimot.views.actimot_dialog_ui import Ui_ActimotDialog
+from tse_analytics.modules.phenomaster.submodules.actimot.views.box_selector import BoxSelector
 from tse_analytics.modules.phenomaster.submodules.actimot.views.frames.frames_widget import FramesWidget
+from tse_analytics.modules.phenomaster.submodules.actimot.views.heatmap.heatmap_widget import HeatmapWidget
+from tse_analytics.modules.phenomaster.submodules.actimot.views.plot.plot_widget import PlotWidget
 from tse_analytics.modules.phenomaster.submodules.actimot.views.settings.settings_widget import SettingsWidget
 from tse_analytics.modules.phenomaster.submodules.actimot.views.stream.stream_widget import (
     StreamWidget,
 )
-from tse_analytics.modules.phenomaster.submodules.actimot.views.heatmap.heatmap_widget import HeatmapWidget
-from tse_analytics.modules.phenomaster.submodules.actimot.views.plot.plot_widget import PlotWidget
 from tse_analytics.modules.phenomaster.submodules.actimot.views.trajectory.trajectory_widget import TrajectoryWidget
 from tse_analytics.views.misc.pandas_widget import PandasWidget
 

@@ -1,7 +1,7 @@
 import pandas as pd
 import pyqtgraph as pg
 from PySide6.QtCore import QSize, Qt
-from PySide6.QtWidgets import QWidget, QToolBar, QVBoxLayout, QComboBox, QLabel
+from PySide6.QtWidgets import QComboBox, QLabel, QToolBar, QVBoxLayout, QWidget
 
 from tse_analytics.modules.phenomaster.submodules.grouphousing.data.grouphousing_data import GroupHousingData
 
@@ -92,7 +92,7 @@ class ActivityWidget(QWidget):
         x_min = None
         x_max = None
 
-        for i, animal in enumerate(data.dataset.animals.values()):
+        for _, animal in enumerate(data.dataset.animals.values()):
             filtered_data = df[df["Animal"] == animal.id]
             if filtered_data.empty:
                 continue

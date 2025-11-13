@@ -7,9 +7,9 @@ from lmfit import Parameters, minimize
 # from scipy.optimize import curve_fit
 from loguru import logger
 
-from tse_analytics.modules.phenomaster.submodules.calo.fitting_result import FittingResult
 from tse_analytics.modules.phenomaster.submodules.calo.calo_settings import CaloSettings
 from tse_analytics.modules.phenomaster.submodules.calo.fitting_params import FittingParams
+from tse_analytics.modules.phenomaster.submodules.calo.fitting_result import FittingResult
 
 
 def process_box(params: FittingParams) -> FittingResult:

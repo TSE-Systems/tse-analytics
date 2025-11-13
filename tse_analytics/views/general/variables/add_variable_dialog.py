@@ -1,8 +1,8 @@
 import pandas as pd
-from PySide6.QtWidgets import QDialog, QWidget, QMessageBox
+from PySide6.QtWidgets import QDialog, QMessageBox, QWidget
 
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import Variable, Aggregation
+from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.views.general.variables.add_variable_dialog_ui import Ui_AddVariableDialog
 
 

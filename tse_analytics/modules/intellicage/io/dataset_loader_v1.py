@@ -96,7 +96,7 @@ def _import_animals(path: Path) -> dict | None:
 
     animals = {}
     index = 0
-    for i, row in df.iterrows():
+    for _, row in df.iterrows():
         properties = {
             "Tag": row["Tag"],
             "Sex": row["Sex"],

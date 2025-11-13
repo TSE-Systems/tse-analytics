@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
 import pandas as pd
-from PySide6.QtCore import QSize, Qt, QSettings
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QCheckBox, QLabel
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
+from PySide6.QtCore import QSettings, QSize, Qt
+from PySide6.QtWidgets import QCheckBox, QLabel, QToolBar, QVBoxLayout, QWidget
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.binning import BinningMode

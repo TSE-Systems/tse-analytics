@@ -10,4 +10,6 @@ Each extension provides functionality for importing, processing, and analyzing
 data from a specific type of IntelliMaze device.
 """
 
-from . import animal_gate, consumption_scale, running_wheel
+from . import animal_gate as animal_gate
+from . import consumption_scale as consumption_scale
+from . import running_wheel as running_wheel

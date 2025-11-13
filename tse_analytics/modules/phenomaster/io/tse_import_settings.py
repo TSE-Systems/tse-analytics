@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-
 CHUNK_SIZE = 1000000
 
 MAIN_TABLE = "main_table"

@@ -3,9 +3,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 from tse_analytics.modules.intellimaze.extensions.operant_device.data.operant_device_data import OperantDeviceData
 from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
-from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 
 
 def import_data(

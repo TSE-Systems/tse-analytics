@@ -1,20 +1,20 @@
 from dataclasses import dataclass
 
 import pandas as pd
-from PySide6.QtCore import QSize, Qt, QSettings
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QToolBar, QLabel
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
+from PySide6.QtCore import QSettings, QSize, Qt
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QLabel, QToolBar, QVBoxLayout, QWidget
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.core.utils import get_html_image_from_figure, get_h_spacer_widget
-from tse_analytics.views.misc.MplCanvas import MplCanvas
+from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure
 from tse_analytics.views.misc.animal_selector import AnimalSelector
+from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 

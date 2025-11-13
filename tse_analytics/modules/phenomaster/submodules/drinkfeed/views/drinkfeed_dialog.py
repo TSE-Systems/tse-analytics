@@ -2,10 +2,10 @@ import timeit
 from datetime import datetime
 
 import pandas as pd
-from PySide6.QtCore import QSettings, Qt, QSize
-from PySide6.QtGui import QCloseEvent, QIcon
-from PySide6.QtWidgets import QWidget, QToolBar
 from loguru import logger
+from PySide6.QtCore import QSettings, QSize, Qt
+from PySide6.QtGui import QCloseEvent, QIcon
+from PySide6.QtWidgets import QToolBar, QWidget
 
 from tse_analytics.core import manager
 from tse_analytics.core.data.datatable import Datatable

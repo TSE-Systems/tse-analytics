@@ -1,7 +1,5 @@
 import pandas as pd
 
-from tse_analytics.core.data.datatable import Datatable
-
 
 class ExtensionData:
     """

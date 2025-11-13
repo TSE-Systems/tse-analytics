@@ -17,7 +17,7 @@ datas += copy_metadata('connectorx')
 
 
 a = Analysis(
-    ['../tse_analytics/__main__.py'],
+    ['../tse_analytics/main.py'],
     pathex=[pathex],
     binaries=[('../.venv/Scripts/python.exe', '.'),],
     datas=datas,

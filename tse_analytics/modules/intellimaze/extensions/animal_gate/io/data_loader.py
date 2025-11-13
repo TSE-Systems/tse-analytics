@@ -11,9 +11,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
-from tse_analytics.modules.intellimaze.extensions.animal_gate.data.animal_gate_data import AnimalGateData
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
+from tse_analytics.modules.intellimaze.extensions.animal_gate.data.animal_gate_data import AnimalGateData
+from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
 
 
 def import_data(

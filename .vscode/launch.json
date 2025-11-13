@@ -8,7 +8,7 @@
             "name": "Python Debugger: TSE Analytics",
             "type": "debugpy",
             "request": "launch",
-            "program": "tse_analytics/__main__.py",
+            "program": "tse_analytics/main.py",
             "console": "integratedTerminal"
         }
     ]

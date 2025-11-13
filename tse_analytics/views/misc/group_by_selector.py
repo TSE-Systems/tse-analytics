@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QComboBox
+from PySide6.QtWidgets import QComboBox, QWidget
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable

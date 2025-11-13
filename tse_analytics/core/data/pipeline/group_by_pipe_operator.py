@@ -7,7 +7,7 @@ based on the specified split mode (by animal, factor, run, or total).
 
 import pandas as pd
 
-from tse_analytics.core.data.shared import Variable, SplitMode
+from tse_analytics.core.data.shared import SplitMode, Variable
 
 
 def group_by_columns(
