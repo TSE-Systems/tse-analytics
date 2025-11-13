@@ -9,11 +9,11 @@ from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
-from tse_analytics.modules.phenomaster.submodules.actimot.actimot_processor import calculate_trj
+from tse_analytics.modules.phenomaster.submodules.actimot.processor import calculate_trj
 from tse_analytics.modules.phenomaster.submodules.actimot.actimot_settings import ActimotSettings
 from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_animal_item import ActimotAnimalItem
 from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_data import ActimotData
-from tse_analytics.modules.phenomaster.submodules.actimot.views.actimot_box_selector import ActimotBoxSelector
+from tse_analytics.modules.phenomaster.submodules.actimot.views.box_selector import BoxSelector
 from tse_analytics.modules.phenomaster.submodules.actimot.views.actimot_dialog_ui import Ui_ActimotDialog
 from tse_analytics.modules.phenomaster.submodules.actimot.views.frames.frames_widget import FramesWidget
 from tse_analytics.modules.phenomaster.submodules.actimot.views.settings.settings_widget import SettingsWidget
@@ -86,11 +86,11 @@ class ActimotDialog(QDialog):
             actimot_settings = ActimotSettings.get_default()
             self.settings_widget.set_data(self.actimot_data.dataset, actimot_settings)
 
-        self.actimot_box_selector = ActimotBoxSelector(self._select_box, self.settings_widget, self)
-        self.actimot_box_selector.set_data(actimot_data.dataset)
+        self.box_selector = BoxSelector(self._select_box, self.settings_widget, self)
+        self.box_selector.set_data(actimot_data.dataset)
 
         self.ui.toolBox.removeItem(0)
-        self.ui.toolBox.addItem(self.actimot_box_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Boxes")
+        self.ui.toolBox.addItem(self.box_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Boxes")
         self.ui.toolBox.addItem(self.settings_widget, QIcon(":/icons/icons8-dog-tag-16.png"), "Settings")
 
         self._update_tabs()

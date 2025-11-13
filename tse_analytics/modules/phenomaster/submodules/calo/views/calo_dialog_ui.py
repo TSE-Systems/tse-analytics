@@ -15,44 +15,20 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractButton, QApplication, QDialog, QDialogButtonBox,
-    QHBoxLayout, QSizePolicy, QSpacerItem, QSplitter,
-    QTabWidget, QToolBox, QToolButton, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QSizePolicy, QSplitter, QTabWidget,
+    QToolBox, QVBoxLayout, QWidget)
 import resources_rc
 
 class Ui_CaloDialog(object):
     def setupUi(self, CaloDialog):
         if not CaloDialog.objectName():
             CaloDialog.setObjectName(u"CaloDialog")
-        CaloDialog.resize(1020, 854)
-        CaloDialog.setSizeGripEnabled(True)
+        CaloDialog.resize(1020, 705)
+        CaloDialog.setProperty(u"sizeGripEnabled", True)
         self.verticalLayout = QVBoxLayout(CaloDialog)
+        self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.toolbarLayout = QHBoxLayout()
-        self.toolbarLayout.setObjectName(u"toolbarLayout")
-        self.toolButtonCalculate = QToolButton(CaloDialog)
-        self.toolButtonCalculate.setObjectName(u"toolButtonCalculate")
-
-        self.toolbarLayout.addWidget(self.toolButtonCalculate)
-
-        self.toolButtonResetSettings = QToolButton(CaloDialog)
-        self.toolButtonResetSettings.setObjectName(u"toolButtonResetSettings")
-
-        self.toolbarLayout.addWidget(self.toolButtonResetSettings)
-
-        self.toolButtonExport = QToolButton(CaloDialog)
-        self.toolButtonExport.setObjectName(u"toolButtonExport")
-
-        self.toolbarLayout.addWidget(self.toolButtonExport)
-
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.toolbarLayout.addItem(self.horizontalSpacer)
-
-
-        self.verticalLayout.addLayout(self.toolbarLayout)
-
+        self.verticalLayout.setContentsMargins(5, 5, 5, 5)
         self.splitter = QSplitter(CaloDialog)
         self.splitter.setObjectName(u"splitter")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -68,23 +44,14 @@ class Ui_CaloDialog(object):
         self.toolBox.setObjectName(u"toolBox")
         self.page = QWidget()
         self.page.setObjectName(u"page")
-        self.page.setGeometry(QRect(0, 0, 873, 745))
+        self.page.setGeometry(QRect(0, 0, 881, 665))
         self.toolBox.addItem(self.page, u"Page 1")
         self.splitter.addWidget(self.toolBox)
 
         self.verticalLayout.addWidget(self.splitter)
 
-        self.buttonBox = QDialogButtonBox(CaloDialog)
-        self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setOrientation(Qt.Orientation.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
-
-        self.verticalLayout.addWidget(self.buttonBox)
-
 
         self.retranslateUi(CaloDialog)
-        self.buttonBox.accepted.connect(CaloDialog.accept)
-        self.buttonBox.rejected.connect(CaloDialog.reject)
 
         self.tabWidget.setCurrentIndex(-1)
         self.toolBox.setCurrentIndex(0)
@@ -95,9 +62,6 @@ class Ui_CaloDialog(object):
 
     def retranslateUi(self, CaloDialog):
         CaloDialog.setWindowTitle(QCoreApplication.translate("CaloDialog", u"Calo", None))
-        self.toolButtonCalculate.setText(QCoreApplication.translate("CaloDialog", u"Calculate prediction for selected boxes", None))
-        self.toolButtonResetSettings.setText(QCoreApplication.translate("CaloDialog", u"Reset default settings", None))
-        self.toolButtonExport.setText(QCoreApplication.translate("CaloDialog", u"Export selected data", None))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("CaloDialog", u"Page 1", None))
     # retranslateUi
 

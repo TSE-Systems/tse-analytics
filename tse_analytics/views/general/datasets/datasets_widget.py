@@ -428,10 +428,7 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                 dialog = CaloDialog(item.calo_data, self)
                 # TODO: check other cases!!
                 dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-                result = dialog.exec()
-                if result == QDialog.DialogCode.Accepted:
-                    dataset = item.calo_data.dataset
-                    dataset.append_fitting_results(dialog.fitting_results)
+                dialog.show()
             elif isinstance(item, DrinkFeedTreeItem):
                 dialog = DrinkFeedDialog(item.drinkfeed_data, self)
                 # TODO: check other cases!!

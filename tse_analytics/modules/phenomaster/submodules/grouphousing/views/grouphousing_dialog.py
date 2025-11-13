@@ -8,17 +8,17 @@ from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMast
 from tse_analytics.modules.phenomaster.submodules.grouphousing.data.processor import preprocess_trafficage_datatable
 from tse_analytics.modules.phenomaster.submodules.grouphousing.views.activity_widget import ActivityWidget
 from tse_analytics.modules.phenomaster.submodules.grouphousing.views.grouphousing_dialog_ui import Ui_GroupHousingDialog
-from tse_analytics.modules.phenomaster.submodules.grouphousing.views.heatmap_widget.heatmap_widget import HeatmapWidget
-from tse_analytics.modules.phenomaster.submodules.grouphousing.views.preprocessed_data_widget.preprocessed_data_widget import (
+from tse_analytics.modules.phenomaster.submodules.grouphousing.views.heatmap.heatmap_widget import HeatmapWidget
+from tse_analytics.modules.phenomaster.submodules.grouphousing.views.preprocessed_data.preprocessed_data_widget import (
     PreprocessedDataWidget,
 )
-from tse_analytics.modules.phenomaster.submodules.grouphousing.views.raw_data_widget.raw_data_widget import (
+from tse_analytics.modules.phenomaster.submodules.grouphousing.views.raw_data.raw_data_widget import (
     RawDataWidget,
 )
 
 
 class GroupHousingDialog(QWidget):
-    def __init__(self, dataset: PhenoMasterDataset, parent: QWidget | None = None):
+    def __init__(self, dataset: PhenoMasterDataset, parent: QWidget):
         super().__init__(parent)
 
         self.ui = Ui_GroupHousingDialog()

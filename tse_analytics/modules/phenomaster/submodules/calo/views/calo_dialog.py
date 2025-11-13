@@ -3,62 +3,90 @@ import timeit
 from multiprocessing import Pool
 
 import pandas as pd
-from PySide6.QtCore import QSettings, Qt
-from PySide6.QtGui import QIcon, QKeyEvent, QHideEvent
-from PySide6.QtWidgets import QDialog, QFileDialog, QWidget
+from PySide6.QtCore import QSettings, Qt, QSize
+from PySide6.QtGui import QIcon, QCloseEvent
+from PySide6.QtWidgets import QDialog, QWidget, QToolBar, QMessageBox
 from pyqttoast import ToastPreset
 
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.modules.phenomaster.submodules.calo.calo_fitting_result import CaloFittingResult
-from tse_analytics.modules.phenomaster.submodules.calo.calo_processor import process_box
+from tse_analytics.modules.phenomaster.submodules.calo.fitting_result import FittingResult
+from tse_analytics.modules.phenomaster.submodules.calo.processor import process_box
 from tse_analytics.modules.phenomaster.submodules.calo.calo_settings import CaloSettings
 from tse_analytics.modules.phenomaster.submodules.calo.data.calo_box import CaloBox
 from tse_analytics.modules.phenomaster.submodules.calo.data.calo_data import CaloData
 from tse_analytics.modules.phenomaster.submodules.calo.fitting_params import FittingParams
-from tse_analytics.modules.phenomaster.submodules.calo.views.calo_bin_selector import CaloBinSelector
-from tse_analytics.modules.phenomaster.submodules.calo.views.calo_box_selector import CaloBoxSelector
+from tse_analytics.modules.phenomaster.submodules.calo.views.bin_selector import BinSelector
+from tse_analytics.modules.phenomaster.submodules.calo.views.box_selector import BoxSelector
 from tse_analytics.modules.phenomaster.submodules.calo.views.calo_dialog_ui import Ui_CaloDialog
-from tse_analytics.modules.phenomaster.submodules.calo.views.calo_plot_widget import CaloPlotWidget
-from tse_analytics.modules.phenomaster.submodules.calo.views.calo_rer_widget import CaloRerWidget
-from tse_analytics.modules.phenomaster.submodules.calo.views.calo_settings_widget import (
-    CaloSettingsWidget,
+from tse_analytics.modules.phenomaster.submodules.calo.views.plot.plot_widget import PlotWidget
+from tse_analytics.modules.phenomaster.submodules.calo.views.rer.rer_widget import RerWidget
+from tse_analytics.modules.phenomaster.submodules.calo.views.settings.settings_widget import (
+    SettingsWidget,
 )
-from tse_analytics.modules.phenomaster.submodules.calo.views.calo_test_fit_widget import (
-    CaloTestFitWidget,
+from tse_analytics.modules.phenomaster.submodules.calo.views.test_fit.test_fit_widget import (
+    TestFitWidget,
 )
 from tse_analytics.views.misc.pandas_widget import PandasWidget
 
 
 class CaloDialog(QDialog):
-    def __init__(self, calo_data: CaloData, parent: QWidget | None = None):
+    def __init__(self, calo_data: CaloData, parent: QWidget):
         super().__init__(parent)
+
         self.ui = Ui_CaloDialog()
         self.ui.setupUi(self)
+
+        self.setWindowFlags(
+            Qt.WindowType.Window
+            # | Qt.WindowType.CustomizeWindowHint
+            # | Qt.WindowType.WindowTitleHint
+            # | Qt.WindowType.WindowCloseButtonHint
+        )
 
         settings = QSettings()
         self.restoreGeometry(settings.value("CaloDialog/Geometry"))
 
         self.calo_data = calo_data
 
+        self.selected_boxes: list[CaloBox] = []
+        self.selected_bins: list[int] = []
+        self.fitting_results: dict[int, FittingResult] = {}
+
+        # Setup toolbar
+        toolbar = QToolBar(
+            "Toolbar",
+            iconSize=QSize(16, 16),
+            toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
+        )
+        self.preprocess_action = toolbar.addAction(
+            QIcon(":/icons/preprocess.png"), "Calculate prediction for selected boxes"
+        )
+        self.preprocess_action.triggered.connect(self._calculate)
+        self.reset_action = toolbar.addAction(QIcon(":/icons/icons8-undo-16.png"), "Reset settings")
+        self.reset_action.triggered.connect(self._reset_settings)
+        self.add_datatable_action = toolbar.addAction(
+            QIcon(":/icons/icons8-insert-table-16.png"), "Append prediction to Main table"
+        )
+        self.add_datatable_action.setEnabled(False)
+        self.add_datatable_action.triggered.connect(self._append_to_datatable)
+
+        self.ui.verticalLayout.insertWidget(0, toolbar)
+
         self.calo_table_view = PandasWidget(calo_data.dataset, "Calorimetry Data")
         self.calo_table_view.set_data(calo_data.raw_df, False)
         self.ui.tabWidget.addTab(self.calo_table_view, "Data")
 
-        self.calo_plot_widget = CaloPlotWidget()
+        self.calo_plot_widget = PlotWidget()
         self.calo_plot_widget.set_variables(calo_data.variables)
         self.ui.tabWidget.addTab(self.calo_plot_widget, "Plot")
 
         self.ui.toolBox.removeItem(0)
 
-        self.ui.toolButtonCalculate.clicked.connect(self._calculate)
-        self.ui.toolButtonResetSettings.clicked.connect(self._reset_settings)
-        self.ui.toolButtonExport.clicked.connect(self._export)
-
-        self.calo_box_selector = CaloBoxSelector(self._filter_boxes)
+        self.calo_box_selector = BoxSelector(self._filter_boxes)
         self.calo_box_selector.set_data(calo_data.dataset)
         self.ui.toolBox.addItem(self.calo_box_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Boxes")
 
-        self.calo_bin_selector = CaloBinSelector(self._filter_bins)
+        self.calo_bin_selector = BinSelector(self._filter_bins)
         self.calo_bin_selector.set_data(calo_data.dataset)
         self.ui.toolBox.addItem(self.calo_bin_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Bins")
 
@@ -67,23 +95,18 @@ class CaloDialog(QDialog):
         except Exception:
             calo_settings = CaloSettings.get_default()
 
-        self.calo_settings_widget = CaloSettingsWidget()
+        self.calo_settings_widget = SettingsWidget()
         self.calo_settings_widget.set_settings(calo_settings)
         self.calo_settings_widget.set_data(self.calo_data.dataset)
         self.ui.toolBox.addItem(self.calo_settings_widget, QIcon(":/icons/icons8-dog-tag-16.png"), "Settings")
 
-        self.calo_test_fit_widget = CaloTestFitWidget(self.calo_settings_widget)
+        self.calo_test_fit_widget = TestFitWidget(self.calo_settings_widget)
         self.ui.tabWidget.addTab(self.calo_test_fit_widget, "Test")
 
-        self.calo_rer_widget = CaloRerWidget()
+        self.calo_rer_widget = RerWidget()
         self.ui.tabWidget.addTab(self.calo_rer_widget, "RER")
 
         self.ui.splitter.setStretchFactor(0, 3)
-
-        self.selected_boxes: list[CaloBox] = []
-        self.selected_bins: list[int] = []
-
-        self.fitting_results: dict[int, CaloFittingResult] = {}
 
     def _filter_boxes(self, selected_boxes: list[CaloBox]):
         self.selected_boxes = selected_boxes
@@ -107,15 +130,22 @@ class CaloDialog(QDialog):
         self.calo_test_fit_widget.set_data(df)
 
     def _reset_settings(self):
-        calo_settings = CaloSettings.get_default()
-        self.calo_settings_widget.set_settings(calo_settings)
+        if (
+            QMessageBox.question(self, "Reset Settings", "Do you want to reset settings to default state?")
+            == QMessageBox.StandardButton.Yes
+        ):
+            calo_settings = CaloSettings.get_default()
+            self.calo_settings_widget.set_settings(calo_settings)
 
-    def _export(self):
-        df = self._get_selected_data()
-        filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "", "CSV Files (*.csv)")
-        if filename:
-            if not df.empty:
-                df.to_csv(filename, sep=";", index=False)
+    def _append_to_datatable(self):
+        if len(self.fitting_results) == 0:
+            return
+
+        if (
+            QMessageBox.question(self, "Append Data", "Do you want to append fitting results to Main table?")
+            == QMessageBox.StandardButton.Yes
+        ):
+            self.calo_data.dataset.append_fitting_results(self.fitting_results)
 
     def _get_selected_data(self) -> pd.DataFrame:
         df = self.calo_data.raw_df
@@ -130,6 +160,9 @@ class CaloDialog(QDialog):
         return df
 
     def _calculate(self):
+        if len(self.selected_boxes) == 0:
+            return
+
         calo_settings = self.calo_settings_widget.get_calo_settings()
 
         # remove last bin
@@ -175,14 +208,11 @@ class CaloDialog(QDialog):
             echo_to_logger=True,
         ).show()
 
-    def hideEvent(self, event: QHideEvent) -> None:
+        self.add_datatable_action.setEnabled(True)
+
+    def closeEvent(self, event: QCloseEvent) -> None:
         settings = QSettings()
         settings.setValue("CaloDialog/Geometry", self.saveGeometry())
 
         calo_settings = self.calo_settings_widget.get_calo_settings()
         settings.setValue("CaloSettings", calo_settings)
-
-    def keyPressEvent(self, event: QKeyEvent):
-        if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Escape:
-            return
-        super().keyPressEvent(event)

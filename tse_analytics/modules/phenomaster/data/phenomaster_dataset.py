@@ -6,7 +6,7 @@ from tse_analytics.core.data.shared import Aggregation, Animal, Variable
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_data import ActimotData
 from tse_analytics.modules.phenomaster.submodules.actimot.models.actimot_tree_item import ActimotTreeItem
-from tse_analytics.modules.phenomaster.submodules.calo.calo_fitting_result import CaloFittingResult
+from tse_analytics.modules.phenomaster.submodules.calo.fitting_result import FittingResult
 from tse_analytics.modules.phenomaster.submodules.calo.data.calo_data import CaloData
 from tse_analytics.modules.phenomaster.submodules.calo.models.calo_tree_item import CaloDataTreeItem
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_bin_data import DrinkFeedBinData
@@ -95,7 +95,7 @@ class PhenoMasterDataset(Dataset):
 
     def append_fitting_results(
         self,
-        fitting_results: dict[int, CaloFittingResult],
+        fitting_results: dict[int, FittingResult],
     ) -> None:
         """
         Append calorimetry fitting results to the dataset.
@@ -105,7 +105,7 @@ class PhenoMasterDataset(Dataset):
         and updates the dataset with the fitting results.
 
         Args:
-            fitting_results (dict[int, CaloFittingResult]): Dictionary mapping box numbers
+            fitting_results (dict[int, FittingResult]): Dictionary mapping box numbers
                 to calorimetry fitting results
         """
         if len(fitting_results) > 0:

@@ -18,25 +18,25 @@ from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_raw_d
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.drinkfeed_settings import DrinkFeedSettings
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.interval_processor import process_drinkfeed_intervals
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.sequential_processor import process_drinkfeed_sequences
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_animal_selector import (
-    DrinkFeedAnimalSelector,
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.animal_selector import (
+    AnimalSelector,
 )
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_dialog_ui import Ui_DrinkFeedDialog
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_episodes_gap_plot_widget import (
-    DrinkFeedEpisodesGapPlotWidget,
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.episodes_gap_plot_widget import (
+    EpisodesGapPlotWidget,
 )
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_episodes_intake_plot_widget import (
-    DrinkFeedEpisodesIntakePlotWidget,
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.episodes_intake_plot_widget import (
+    EpisodesIntakePlotWidget,
 )
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_episodes_offset_plot_widget import (
-    DrinkFeedEpisodesOffsetPlotWidget,
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.episodes_offset_plot_widget import (
+    EpisodesOffsetPlotWidget,
 )
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_intervals_plot_widget import (
-    DrinkFeedIntervalsPlotWidget,
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.intervals_plot_widget import (
+    IntervalsPlotWidget,
 )
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_plot_widget import DrinkFeedPlotWidget
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_settings_widget import (
-    DrinkFeedSettingsWidget,
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.plot_widget import PlotWidget
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.settings.settings_widget import (
+    SettingsWidget,
 )
 from tse_analytics.views.misc.pandas_widget import PandasWidget
 
@@ -105,7 +105,7 @@ class DrinkFeedDialog(QWidget):
         self.raw_table_view.set_data(self.raw_df, False)
         self.ui.tabWidget.addTab(self.raw_table_view, "Raw Data")
 
-        self.raw_plot_widget = DrinkFeedPlotWidget()
+        self.raw_plot_widget = PlotWidget()
         self.raw_plot_widget.set_data(self.raw_long_df)
         self.raw_plot_widget.set_variables(drinkfeed_data.variables)
         self.ui.tabWidget.addTab(self.raw_plot_widget, "Raw Data Plot")
@@ -113,7 +113,7 @@ class DrinkFeedDialog(QWidget):
         self.intervals_table_view = PandasWidget(self.drinkfeed_data.dataset, "Drink/Feed Intervals")
         self.intervals_table_tab_index = self.ui.tabWidget.addTab(self.intervals_table_view, "Intervals")
 
-        self.intervals_plot_widget = DrinkFeedIntervalsPlotWidget()
+        self.intervals_plot_widget = IntervalsPlotWidget()
         self.intervals_plot_tab_index = self.ui.tabWidget.addTab(self.intervals_plot_widget, "Intervals Plots")
 
         self.events_table_view = PandasWidget(self.drinkfeed_data.dataset, "Drink/Feed Events")
@@ -122,16 +122,16 @@ class DrinkFeedDialog(QWidget):
         self.episodes_table_view = PandasWidget(self.drinkfeed_data.dataset, "Drink/Feed Episodes")
         self.episodes_table_tab_index = self.ui.tabWidget.addTab(self.episodes_table_view, "Episodes")
 
-        self.episodes_offset_plot_widget = DrinkFeedEpisodesOffsetPlotWidget()
+        self.episodes_offset_plot_widget = EpisodesOffsetPlotWidget()
         self.episodes_offset_tab_index = self.ui.tabWidget.addTab(self.episodes_offset_plot_widget, "Episodes Offset")
 
-        self.episodes_gap_plot_widget = DrinkFeedEpisodesGapPlotWidget()
+        self.episodes_gap_plot_widget = EpisodesGapPlotWidget()
         self.episodes_imi_tab_index = self.ui.tabWidget.addTab(self.episodes_gap_plot_widget, "Episodes IMI")
 
-        self.episodes_intake_plot_widget = DrinkFeedEpisodesIntakePlotWidget()
+        self.episodes_intake_plot_widget = EpisodesIntakePlotWidget()
         self.episodes_intake_tab_index = self.ui.tabWidget.addTab(self.episodes_intake_plot_widget, "Episodes Intake")
 
-        self.drinkfeed_settings_widget = DrinkFeedSettingsWidget()
+        self.drinkfeed_settings_widget = SettingsWidget()
         try:
             drinkfeed_settings = settings.value("DrinkFeedSettings", DrinkFeedSettings.get_default())
             self.drinkfeed_settings_widget.set_data(self.drinkfeed_data.dataset, drinkfeed_settings)
@@ -139,7 +139,7 @@ class DrinkFeedDialog(QWidget):
             drinkfeed_settings = DrinkFeedSettings.get_default()
             self.drinkfeed_settings_widget.set_data(self.drinkfeed_data.dataset, drinkfeed_settings)
 
-        self.drinkfeed_animal_selector = DrinkFeedAnimalSelector(self._filter_animals, self.drinkfeed_settings_widget)
+        self.drinkfeed_animal_selector = AnimalSelector(self._filter_animals, self.drinkfeed_settings_widget)
         self.drinkfeed_animal_selector.set_data(drinkfeed_data.dataset)
 
         self.ui.toolBox.removeItem(0)

@@ -2,7 +2,7 @@
 Worker thread implementation module.
 
 This module provides the Worker class for executing functions in separate threads
-with signal handling for results, errors, and completion status.
+with signal handling for results, errors and completion status.
 """
 
 import sys

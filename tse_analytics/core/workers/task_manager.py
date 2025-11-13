@@ -25,7 +25,7 @@ class TaskManager(QObject):
 
     threadpool: QThreadPool | None = None
 
-    def __init__(self, parent: QObject | None = None):
+    def __init__(self, parent: QObject):
         """
         Initialize the TaskManager with a new thread pool.
 

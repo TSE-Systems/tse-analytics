@@ -25,7 +25,9 @@ class Ui_ActimotDialog(object):
             ActimotDialog.setObjectName(u"ActimotDialog")
         ActimotDialog.resize(986, 750)
         self.verticalLayout = QVBoxLayout(ActimotDialog)
+        self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout.setContentsMargins(5, 5, 5, 5)
         self.splitter = QSplitter(ActimotDialog)
         self.splitter.setObjectName(u"splitter")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -42,7 +44,7 @@ class Ui_ActimotDialog(object):
         self.toolBox.setMaximumSize(QSize(300, 16777215))
         self.page = QWidget()
         self.page.setObjectName(u"page")
-        self.page.setGeometry(QRect(0, 0, 300, 702))
+        self.page.setGeometry(QRect(0, 0, 300, 710))
         self.toolBox.addItem(self.page, u"Page 1")
         self.splitter.addWidget(self.toolBox)
 

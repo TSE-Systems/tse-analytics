@@ -2,7 +2,7 @@ import pandas as pd
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.modules.phenomaster.submodules.actimot.actimot_processor import get_pixmap_and_centroid
+from tse_analytics.modules.phenomaster.submodules.actimot.processor import get_pixmap_and_centroid
 from tse_analytics.modules.phenomaster.submodules.actimot.views.frames.frames_widget_ui import Ui_FramesWidget
 
 
