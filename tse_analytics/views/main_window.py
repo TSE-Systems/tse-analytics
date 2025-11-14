@@ -249,9 +249,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def _import_dataset_dialog(self) -> None:
         filter = (
-            "Data Files (*.tse *.csv *.zip);;TSE Dataset Files (*.tse);;CSV Files (*.csv);;IntelliMaze Dataset Files (*.zip)"
+            "Data Files (*.tse *.csv *.zip);;TSE Datasets (*.tse);;CSV Files (*.csv);;IntelliMaze Datasets (*.zip)"
             if CSV_IMPORT_ENABLED
-            else "Data Files (*.tse *.zip);;TSE Dataset Files (*.tse);;IntelliMaze Dataset Files (*.zip)"
+            else "Data Files (*.tse *.zip);;TSE Datasets (*.tse);;IntelliMaze Datasets (*.zip)"
         )
         filename, _ = QFileDialog.getOpenFileName(
             self,

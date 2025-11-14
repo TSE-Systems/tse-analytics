@@ -20,7 +20,7 @@ from PySide6.QtWidgets import QSizePolicy, QToolButton, QWidget, QWidgetAction
 
 IS_RELEASE = Path("_internal").exists()
 
-CSV_IMPORT_ENABLED = True
+CSV_IMPORT_ENABLED = False
 
 
 def get_html_image_from_figure(figure: Figure) -> str:

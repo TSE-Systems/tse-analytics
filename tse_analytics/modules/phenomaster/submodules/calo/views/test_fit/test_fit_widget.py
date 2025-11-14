@@ -187,7 +187,8 @@ class TestFitWidget(QWidget):
                     break
 
         self.ui.labelT90.setText(
-            f"T90 [O2: {o2_t90}, CO2: {co2_t90}]; T95 [O2: {o2_t95}, CO2: {co2_t95}]; T99 [O2: {o2_t99}, CO2: {co2_t99}]"
+            f"T90 [O2: {o2_t90}, CO2: {co2_t90}]; T95 [O2: {o2_t95},"
+            f" CO2: {co2_t95}]; T99 [O2: {o2_t99}, CO2: {co2_t99}]"
         )
 
         self.df.plot(

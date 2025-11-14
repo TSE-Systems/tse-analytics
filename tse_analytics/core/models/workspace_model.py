@@ -31,7 +31,7 @@ class WorkspaceModel(QAbstractItemModel):
                 return item
         return self.root_item  # Return root item for invalid or root index
 
-    def index(self, row, column, parent=QModelIndex()):
+    def index(self, row, column, parent: QModelIndex = ...):
         if not self.hasIndex(row, column, parent):
             return QModelIndex()
 

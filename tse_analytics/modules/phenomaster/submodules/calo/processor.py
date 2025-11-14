@@ -95,7 +95,8 @@ def process_box(params: FittingParams) -> FittingResult:
     )
 
     logger.info(
-        f"Done! Box: {params.calo_box.box}, Ref box: {params.calo_box.ref_box}, Sample time: {sample_time}, Number of bins: {len(bin_numbers)}, Number of ref bins: {len(ref_bin_numbers)}"
+        f"Done! Box: {params.calo_box.box}, Ref box: {params.calo_box.ref_box}, Sample time: {sample_time}, "
+        f"Number of bins: {len(bin_numbers)}, Number of ref bins: {len(ref_bin_numbers)}"
     )
 
     return FittingResult(

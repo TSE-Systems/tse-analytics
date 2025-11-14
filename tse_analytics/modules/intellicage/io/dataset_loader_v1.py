@@ -193,8 +193,8 @@ def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame | None:
     if not file_path.is_file():
         return None
 
-    with open(file_path) as file:
-        first_line = file.readline()
+    # with open(file_path) as file:
+    #     first_line = file.readline()
 
     dtype = {
         "VisitID": np.int64,

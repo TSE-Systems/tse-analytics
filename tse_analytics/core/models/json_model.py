@@ -107,7 +107,7 @@ class JsonModel(QAbstractItemModel):
         if orientation == Qt.Orientation.Horizontal:
             return self._headers[section]
 
-    def index(self, row: int, column: int, parent=QModelIndex()) -> QModelIndex:
+    def index(self, row: int, column: int, parent: QModelIndex = ...) -> QModelIndex:
         """Override from QAbstractItemModel
 
         Return index according row, column and parent
@@ -145,7 +145,7 @@ class JsonModel(QAbstractItemModel):
 
         return self.createIndex(parentItem.row(), 0, parentItem)
 
-    def rowCount(self, parent=QModelIndex()):
+    def rowCount(self, parent: QModelIndex = ...):
         """Override from QAbstractItemModel
 
         Return row count from parent index
@@ -160,7 +160,7 @@ class JsonModel(QAbstractItemModel):
 
         return parentItem.childCount()
 
-    def columnCount(self, parent=QModelIndex()):
+    def columnCount(self, parent: QModelIndex = ...):
         """Override from QAbstractItemModel
 
         Return column number. For the model, it always return 2 columns

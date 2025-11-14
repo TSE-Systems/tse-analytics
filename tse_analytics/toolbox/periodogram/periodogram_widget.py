@@ -137,7 +137,8 @@ class PeriodogramWidget(QWidget):
         axs[0].set(
             xlabel="Period (hours)",
             ylabel="Power",
-            title=f"Lomb-Scargle Periodogram of {variable.name}. Strongest detected period: {strongest_period:.2f} hours",
+            title=f"Lomb-Scargle Periodogram of {variable.name}."
+            f" Strongest detected period: {strongest_period:.2f} hours",
         )
 
         # Add vertical lines at expected periods

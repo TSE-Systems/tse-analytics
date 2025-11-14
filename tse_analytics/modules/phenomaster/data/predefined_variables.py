@@ -150,7 +150,8 @@ predefined_variables = {
     "VCO2(2)": Variable(
         "VCO2(2)",
         "ml/h/kg",
-        "CO2 production (V = volume), normalized to approximate lean body mass (75 % of bodyweight) for allometric scaling",
+        "CO2 production (V = volume), "
+        "normalized to approximate lean body mass (75 % of bodyweight) for allometric scaling",
         "float64",
         Aggregation.MEAN,
         False,
@@ -172,7 +173,8 @@ predefined_variables = {
     "VO2(2)": Variable(
         "VO2(2)",
         "ml/h/kg",
-        "O2 consumption (V = volume), normalized to approximate lean body mass (75 % of bodyweight) for allometric scaling",
+        "O2 consumption (V = volume), "
+        "normalized to approximate lean body mass (75 % of bodyweight) for allometric scaling",
         "float64",
         Aggregation.MEAN,
         False,

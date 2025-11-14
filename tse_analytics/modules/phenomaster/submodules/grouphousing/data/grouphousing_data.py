@@ -65,9 +65,6 @@ class GroupHousingData:
             drop = df[df["Animal"].eq(df["Animal"].shift()) & df["Channel"].eq(df["Channel"].shift())].index
             df.drop(drop, inplace=True)
 
-        # df["PreviousChannelType"] = df[df["Animal"].eq(df["Animal"].shift())]["ChannelType"].shift()
-        # df.insert(df.columns.get_loc("ChannelType"), "PreviousChannelType", df[df["Animal"].eq(df["Animal"].shift())]["ChannelType"].shift())
-
         for animal in self.animal_ids:
             df.loc[df["Animal"] == animal, "PreviousChannelType"] = df[df["Animal"] == animal]["ChannelType"].shift()
 

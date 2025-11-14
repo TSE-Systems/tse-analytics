@@ -1,6 +1,6 @@
 [project]
 name = "tse-analytics"
-version = "1.6.0beta4"
+version = "1.6.0"
 description = "TSE Analytics data analysys"
 license = "MIT"
 readme = "README.md"
@@ -37,7 +37,7 @@ dev = [
     "mypy==1.18.2",
     "pyinstaller==6.16.0",
     "qtsass==0.4.0",
-    "ruff==0.14.4",
+    "ruff==0.14.5",
     "ty==0.0.1a23",
 ]
 
@@ -83,6 +83,10 @@ select = [
     "C4",  # flake8-comprehensions
     "UP",  # pyupgrade
     "NPY201",  # numpy2-deprecation
+]
+ignore = [
+    "F821", # Undefined name
+    "E501", # Line too long
 ]
 
 [tool.ruff.lint.pydocstyle]

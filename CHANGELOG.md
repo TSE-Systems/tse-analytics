@@ -1,7 +1,7 @@
 TSE Analytics Change Log
 ====================================================================================================
 
-# 1.6.0 (2025-11-13)
+# 1.6.0 (2025-11-14)
 
 - New: Group housing data compatibility (PhenoMaster module).
 - New: TraffiCage datatable processing.
@@ -10,6 +10,7 @@ TSE Analytics Change Log
 - New: Customizable factor level colors.
 - Change: PySide6-QtAds updated to version 4.4.1
 - Change: Improved ANOVA/ANCOVA toolbox widgets.
+- Change: ActiMot calculations parallelization.
 - Fix: Repeated data merging without the "Bin" column.
 - Fix: Resampling interval checks are improved.
 
