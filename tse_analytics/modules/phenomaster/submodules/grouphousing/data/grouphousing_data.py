@@ -34,7 +34,9 @@ class GroupHousingData:
     def start_timestamp(self):
         return self.raw_df.at[0, "StartDateTime"]
 
-    def get_preprocessed_data(self, remove_repeating_records: bool) -> dict[str, pd.DataFrame]:
+    def get_preprocessed_data(
+        self, remove_repeating_records: bool, remove_overlapping: bool, overlapping_ms: int,
+    ) -> dict[str, pd.DataFrame]:
         df = self.raw_df.copy()
 
         # convert categorical types
@@ -50,6 +52,21 @@ class GroupHousingData:
 
         # Preprocess TraffiCage data
         trafficage_df["Distance"] = trafficage_df.apply(_calculate_distance, axis=1)
+        # Detect overlapping records
+        for animal in self.animal_ids:
+            trafficage_df.loc[trafficage_df["Animal"] == animal, "TimeDiff"] = trafficage_df[
+                trafficage_df["Animal"] == animal
+            ]["StartDateTime"].diff(2)
+            trafficage_df.loc[trafficage_df["Animal"] == animal, "ChannelDiff"] = trafficage_df[
+                trafficage_df["Animal"] == animal
+            ]["Channel"].diff(2)
+
+        if remove_overlapping:
+            trafficage_df = trafficage_df[~
+                ((trafficage_df["ChannelDiff"] == 0) & (trafficage_df["TimeDiff"] < pd.Timedelta(milliseconds=overlapping_ms)))
+            ]
+            # Recalculate activity
+            trafficage_df["Activity"] = trafficage_df.groupby("Animal", observed=False).cumcount()
 
         return {
             "All": all_df,

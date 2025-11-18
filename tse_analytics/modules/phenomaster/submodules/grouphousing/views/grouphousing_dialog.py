@@ -1,7 +1,7 @@
 import pandas as pd
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QCloseEvent, QIcon
-from PySide6.QtWidgets import QCheckBox, QToolBar, QWidget
+from PySide6.QtWidgets import QCheckBox, QToolBar, QWidget, QLabel, QSpinBox
 
 from tse_analytics.core import manager
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
@@ -35,7 +35,6 @@ class GroupHousingDialog(QWidget):
         self.restoreGeometry(settings.value("GroupHousingDialog/Geometry"))
 
         self.dataset = dataset
-        self._remove_repeating_records = True
 
         # Setup toolbar
         toolbar = QToolBar(
@@ -51,8 +50,23 @@ class GroupHousingDialog(QWidget):
 
         self.checkBoxRemoveRepeatingRecords = QCheckBox("Remove Repeating Records", toolbar)
         self.checkBoxRemoveRepeatingRecords.setChecked(True)
-        self.checkBoxRemoveRepeatingRecords.checkStateChanged.connect(self._remove_repeating_records_changed)
         toolbar.addWidget(self.checkBoxRemoveRepeatingRecords)
+
+        self.checkBoxRemoveOverlappingRecords = QCheckBox("Remove Overlapping Records", toolbar)
+        self.checkBoxRemoveOverlappingRecords.setChecked(False)
+        self.checkBoxRemoveOverlappingRecords.checkStateChanged.connect(lambda state: self.overlapping_timediff_spin_box.setEnabled(state == Qt.CheckState.Checked))
+        toolbar.addWidget(self.checkBoxRemoveOverlappingRecords)
+
+        toolbar.addWidget(QLabel("Time diff [ms]:"))
+        self.overlapping_timediff_spin_box = QSpinBox(
+            toolbar,
+            minimum=1000,
+            maximum=10000,
+            singleStep=250,
+            value=1500,
+        )
+        self.overlapping_timediff_spin_box.setEnabled(False)
+        toolbar.addWidget(self.overlapping_timediff_spin_box)
 
         self.ui.verticalLayout.insertWidget(0, toolbar)
 
@@ -79,7 +93,11 @@ class GroupHousingDialog(QWidget):
         self.ui.tabWidget.setTabVisible(self.heatmap_tab_index, is_preprocessed)
 
     def _preprocess(self) -> None:
-        self.preprocessed_df = self.dataset.grouphousing_data.get_preprocessed_data(self._remove_repeating_records)
+        self.preprocessed_df = self.dataset.grouphousing_data.get_preprocessed_data(
+            self.checkBoxRemoveRepeatingRecords.isChecked(),
+            self.checkBoxRemoveOverlappingRecords.isChecked(),
+            self.overlapping_timediff_spin_box.value(),
+        )
         self.preprocessed_view.set_preprocessed_data(self.preprocessed_df)
         self.activity_widget.set_preprocessed_data(self.dataset.grouphousing_data, self.preprocessed_df)
         self.heatmap_widget.set_preprocessed_data(self.preprocessed_df)
@@ -92,9 +110,6 @@ class GroupHousingDialog(QWidget):
 
         datatable = preprocess_trafficage_datatable(self.dataset, self.preprocessed_df["TraffiCage"])
         manager.add_datatable(datatable)
-
-    def _remove_repeating_records_changed(self, state: Qt.CheckState) -> None:
-        self._remove_repeating_records = state == Qt.CheckState.Checked
 
     def closeEvent(self, event: QCloseEvent) -> None:
         settings = QSettings()

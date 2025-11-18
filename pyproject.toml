@@ -1,6 +1,6 @@
 [project]
 name = "tse-analytics"
-version = "1.6.0"
+version = "1.6.1beta0"
 description = "TSE Analytics data analysys"
 license = "MIT"
 readme = "README.md"
@@ -22,7 +22,7 @@ dependencies = [
     "pingouin==0.5.5",
     "psutil==7.1.3",
     "pyqt-toast-notification==1.3.3",
-    "pyqtgraph==0.13.7",
+    "pyqtgraph==0.14.0",
     "pyside6==6.10.0",
     "pyside6-qtads==4.4.1.1",
     "scikit-learn==1.7.2",
