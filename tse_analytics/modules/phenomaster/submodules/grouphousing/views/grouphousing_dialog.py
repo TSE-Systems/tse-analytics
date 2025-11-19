@@ -54,7 +54,9 @@ class GroupHousingDialog(QWidget):
 
         self.checkBoxRemoveOverlappingRecords = QCheckBox("Remove Overlapping Records", toolbar)
         self.checkBoxRemoveOverlappingRecords.setChecked(False)
-        self.checkBoxRemoveOverlappingRecords.checkStateChanged.connect(lambda state: self.overlapping_timediff_spin_box.setEnabled(state == Qt.CheckState.Checked))
+        self.checkBoxRemoveOverlappingRecords.checkStateChanged.connect(
+            lambda state: self.overlapping_timediff_spin_box.setEnabled(state == Qt.CheckState.Checked)
+        )
         toolbar.addWidget(self.checkBoxRemoveOverlappingRecords)
 
         toolbar.addWidget(QLabel("Time diff [ms]:"))

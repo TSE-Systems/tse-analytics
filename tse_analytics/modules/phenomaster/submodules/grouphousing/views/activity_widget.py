@@ -41,13 +41,13 @@ class ActivityWidget(QWidget):
         self._glw.ci.layout.setRowStretchFactor(0, 2)
 
         self.p1 = self._glw.ci.addPlot(row=0, col=0)
-        self.p1.setAxisItems({"bottom": pg.DateAxisItem()})
+        self.p1.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
         self.p1.showGrid(x=True, y=True)
 
         self.legend = self.p1.addLegend((10, 10))
 
         self.p2 = self._glw.ci.addPlot(row=1, col=0)
-        self.p2.setAxisItems({"bottom": pg.DateAxisItem()})
+        self.p2.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
         self.p2.showGrid(x=True, y=True)
 
         self.region = pg.LinearRegionItem()
@@ -109,8 +109,7 @@ class ActivityWidget(QWidget):
 
     def _plot_item(self, df: pd.DataFrame, name: str, pen):
         x = df["StartDateTime"]
-        x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
-        x = x.to_numpy()
+        x = x.astype("int64") // 10 ** 9
         y = df["Activity"].to_numpy()
 
         plot_data_item = self.p1.plot(x, y, pen=pen)

@@ -11,13 +11,13 @@ class PlotView(pg.GraphicsLayoutWidget):
         self.ci.layout.setRowStretchFactor(0, 2)
 
         self.p1 = self.ci.addPlot(row=0, col=0)
-        self.p1.setAxisItems({"bottom": pg.DateAxisItem()})
+        self.p1.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
         self.p1.showGrid(x=True, y=True)
 
         self.legend = self.p1.addLegend((10, 10))
 
         self.p2 = self.ci.addPlot(row=1, col=0)
-        self.p2.setAxisItems({"bottom": pg.DateAxisItem()})
+        self.p2.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
         self.p2.showGrid(x=True, y=True)
 
         self.region = pg.LinearRegionItem()
@@ -59,8 +59,7 @@ class PlotView(pg.GraphicsLayoutWidget):
             return
 
         x = self._df["DateTime"]
-        x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
-        x = x.to_numpy()
+        x = x.astype("int64") // 10 ** 9
         y = self._df[self._variable].to_numpy()
 
         pen = pg.mkPen(color=(1, 1), width=1)

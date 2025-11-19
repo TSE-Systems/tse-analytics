@@ -27,13 +27,13 @@ class PlotView(pg.GraphicsLayoutWidget):
         # customize the averaged curve that can be activated from the context menu:
         self.p1.avgPen = pg.mkPen("#FFFFFF")
         self.p1.avgShadowPen = pg.mkPen("#8080DD", width=10)
-        self.p1.setAxisItems({"bottom": pg.DateAxisItem()})
+        self.p1.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
         self.p1.showGrid(x=True, y=True)
 
         self.legend = self.p1.addLegend((10, 10))
 
         self.p2: pg.PlotItem = self.addPlot(row=1, col=0)
-        self.p2.setAxisItems({"bottom": pg.DateAxisItem()})
+        self.p2.setAxisItems({"bottom": pg.DateAxisItem(utcOffset=0)})
         self.p2.showGrid(x=True, y=True)
 
         self.region = pg.LinearRegionItem()
@@ -79,8 +79,10 @@ class PlotView(pg.GraphicsLayoutWidget):
             filtered_data = self._df[self._df["Box"] == box_id]
 
             x = filtered_data["DateTime"]
-            x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
-            x = x.to_numpy()
+            # x = x.apply(lambda x: x.timestamp()).to_numpy()
+            x = x.astype("int64") // 10 ** 9
+            # x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
+            # x = x.to_numpy()
             y = filtered_data[self._variable].to_numpy()
 
             pen = mkPen(color=(i, len(box_ids)), width=1)

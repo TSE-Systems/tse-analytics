@@ -1,10 +1,13 @@
 import pandas as pd
-import seaborn as sns
+import seaborn.objects as so
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import QToolBar, QVBoxLayout, QWidget
 
+from tse_analytics.core import color_manager
 from tse_analytics.core.data.shared import Variable
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_bin_data import DrinkFeedBinData
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_raw_data import DrinkFeedRawData
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
@@ -38,10 +41,12 @@ class IntervalsPlotWidget(QWidget):
         toolbar.addWidget(plot_toolbar)
 
         self.df: pd.DataFrame | None = None
+        self.drinkfeed_data: DrinkFeedBinData | DrinkFeedRawData | None = None
 
-    def set_data(self, df: pd.DataFrame, variables: dict[str, Variable]) -> None:
+    def set_data(self, df: pd.DataFrame, drinkfeed_data: DrinkFeedBinData | DrinkFeedRawData) -> None:
         self.df = df
-        self.variableSelector.set_data(variables)
+        self.drinkfeed_data = drinkfeed_data
+        self.variableSelector.set_data(drinkfeed_data.variables)
         self._update_plot()
 
     def _variable_changed(self, variable: str):
@@ -55,13 +60,19 @@ class IntervalsPlotWidget(QWidget):
         selected_variable = self.variableSelector.currentText()
         df = self.df
 
-        self.canvas.clear(False)
-        ax = self.canvas.figure.add_subplot(111)
-
-        sns.barplot(data=df, x="Bin", y=selected_variable, errorbar="se", ax=ax)
-        ax.set_xlabel("Time [bin]")
         unit = "g" if "Feed" in selected_variable else "ml"
-        ax.set_ylabel(f"Meal size [{unit}]")
 
+        self.canvas.clear(False)
+        (
+            so.Plot(df, x="Bin", y=selected_variable, color="Animal")
+            .add(so.Bars())
+            .scale(color=color_manager.get_animal_to_color_dict(self.drinkfeed_data.dataset.animals))
+            .label(
+                x="Time [bin]",
+                y=f"Meal size [{unit}]",
+            )
+            .on(self.canvas.figure)
+            .plot(True)
+        )
         self.canvas.figure.tight_layout()
         self.canvas.draw()

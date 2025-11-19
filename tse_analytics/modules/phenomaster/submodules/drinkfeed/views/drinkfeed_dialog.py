@@ -165,7 +165,7 @@ class DrinkFeedDialog(QWidget):
     def _filter_animals(self, selected_animals: list[DrinkFeedAnimalItem]):
         self.selected_animals = selected_animals
 
-        raw_df = self.raw_df
+        # raw_df = self.raw_df
         raw_long_df = self.raw_long_df
         events_df = self.events_df
         episodes_df = self.episodes_df
@@ -174,7 +174,7 @@ class DrinkFeedDialog(QWidget):
         if len(self.selected_animals) > 0:
             animal_ids = [item.animal for item in self.selected_animals]
 
-            raw_df = raw_df[raw_df["Animal"].isin(animal_ids)]
+            # raw_df = raw_df[raw_df["Animal"].isin(animal_ids)]
             raw_long_df = raw_long_df[raw_long_df["Animal"].isin(animal_ids)]
 
             if events_df is not None:
@@ -195,9 +195,12 @@ class DrinkFeedDialog(QWidget):
 
         if intervals_df is not None:
             self.intervals_table_view.set_data(intervals_df)
-            self.intervals_plot_widget.set_data(intervals_df, self.drinkfeed_data.variables)
+            self.intervals_plot_widget.set_data(intervals_df, self.drinkfeed_data)
 
     def _calculate(self):
+        self.events_df = None
+        self.intervals_df = None
+
         self.calculate_action.setEnabled(False)
         self.add_datatable_action.setEnabled(False)
         self.assign_animals_action.setEnabled(False)
@@ -264,7 +267,7 @@ class DrinkFeedDialog(QWidget):
 
     def _interval_analysis_finished(self):
         self.intervals_table_view.set_data(self.intervals_df)
-        self.intervals_plot_widget.set_data(self.intervals_df, self.drinkfeed_data.variables)
+        self.intervals_plot_widget.set_data(self.intervals_df, self.drinkfeed_data)
 
         self._update_tabs()
         self.add_datatable_action.setEnabled(True)
@@ -321,7 +324,9 @@ class DrinkFeedDialog(QWidget):
             manager.add_datatable(datatable)
 
     def _assign_animals(self):
-        grouphousing_df = self.drinkfeed_data.dataset.grouphousing_data.get_preprocessed_data(True)["DrinkFeed"]
+        grouphousing_df = self.drinkfeed_data.dataset.grouphousing_data.get_preprocessed_data(True, False, None)[
+            "DrinkFeed"
+        ]
         grouphousing_df.rename(
             columns={
                 "StartDateTime": "DateTime",

@@ -35,7 +35,10 @@ class GroupHousingData:
         return self.raw_df.at[0, "StartDateTime"]
 
     def get_preprocessed_data(
-        self, remove_repeating_records: bool, remove_overlapping: bool, overlapping_ms: int,
+        self,
+        remove_repeating_records: bool,
+        remove_overlapping: bool,
+        overlapping_ms: int | None,
     ) -> dict[str, pd.DataFrame]:
         df = self.raw_df.copy()
 
@@ -62,8 +65,11 @@ class GroupHousingData:
             ]["Channel"].diff(2)
 
         if remove_overlapping:
-            trafficage_df = trafficage_df[~
-                ((trafficage_df["ChannelDiff"] == 0) & (trafficage_df["TimeDiff"] < pd.Timedelta(milliseconds=overlapping_ms)))
+            trafficage_df = trafficage_df[
+                ~(
+                    (trafficage_df["ChannelDiff"] == 0)
+                    & (trafficage_df["TimeDiff"] < pd.Timedelta(milliseconds=overlapping_ms))
+                )
             ]
             # Recalculate activity
             trafficage_df["Activity"] = trafficage_df.groupby("Animal", observed=False).cumcount()
