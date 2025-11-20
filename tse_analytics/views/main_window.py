@@ -31,6 +31,7 @@ from tse_analytics.views.general.datasets.datasets_widget import DatasetsWidget
 from tse_analytics.views.general.factors.factors_widget import FactorsWidget
 from tse_analytics.views.general.info.info_widget import InfoWidget
 from tse_analytics.views.general.logs.log_widget import LogWidget
+from tse_analytics.views.general.pipeline.pipeline_editor_widget import PipelineEditorWidget
 from tse_analytics.views.general.settings.binning_settings_widget import BinningSettingsWidget
 from tse_analytics.views.general.settings.settings_dialog import SettingsDialog
 from tse_analytics.views.general.variables.variables_widget import VariablesWidget
@@ -111,6 +112,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         LayoutManager.add_dock_widget_to_area(
             PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area
         )
+
+        # Add pipeline editor in center
+        pipeline_editor_widget = LayoutManager.register_dock_widget(
+            PipelineEditorWidget(), "Pipeline Editor", QIcon(":/icons/datasets.png")
+        )
+        LayoutManager.add_dock_widget(PySide6QtAds.CenterDockWidgetArea, pipeline_editor_widget)
+
 
         self.actionImportDataset.triggered.connect(self._import_dataset_dialog)
         self.actionNewWorkspace.triggered.connect(self._new_workspace)

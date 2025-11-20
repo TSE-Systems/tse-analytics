@@ -350,6 +350,18 @@ wheels = [
 ]
 
 [[package]]
+name = "nodegraphqt"
+version = "0.6.43"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "qt-py" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/64/43/b0fe0a5682fbf5265eb9137c2505da2fd1fec8920d87cf8d0cb2b9f0940e/nodegraphqt-0.6.43.tar.gz", hash = "sha256:a981f579fd02de88bc1b3c60218b7918de3d6d4cccaa3f927b2af40fee301fc7", size = 115772, upload-time = "2025-09-30T22:58:39.702Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2b/8b/083fcc12457ed1272bc6e2160120e837e88b081cac84a1dd73e59f7243cc/nodegraphqt-0.6.43-py3-none-any.whl", hash = "sha256:7ac80b563f6d66e3acc0e217d7de04406e9826a4975895158cdc692d238b5709", size = 140957, upload-time = "2025-09-30T22:58:38.066Z" },
+]
+
+[[package]]
 name = "numpy"
 version = "2.3.5"
 source = { registry = "https://pypi.org/simple" }
@@ -749,6 +761,18 @@ wheels = [
 ]
 
 [[package]]
+name = "qt-py"
+version = "1.4.8"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "types-pyside2" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/41/7f/3602c68c0c1545ced4560efc2ef7fa6cf23978380816b462039913db2071/qt_py-1.4.8.tar.gz", hash = "sha256:3ca0e4526bc53cf0a8c6d1fbf1dce2554ed5daa1a4abf0e3e67f73bbc9799b39", size = 62828, upload-time = "2025-10-17T19:57:08.36Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/71/a0/47b2b80fb0aa22fedaf1ceafb1e0a2dccb65ca7de55e61eeb0c07bcde248/qt_py-1.4.8-py2.py3-none-any.whl", hash = "sha256:bccb05611a904689569ef73372adfd2c47bd9307ee9f795477cc2b981b0fce65", size = 44454, upload-time = "2025-10-17T19:57:06.708Z" },
+]
+
+[[package]]
 name = "qtpy"
 version = "2.4.3"
 source = { registry = "https://pypi.org/simple" }
@@ -991,6 +1015,7 @@ dependencies = [
     { name = "lmfit" },
     { name = "loguru" },
     { name = "matplotlib" },
+    { name = "nodegraphqt" },
     { name = "openpyxl" },
     { name = "pandas" },
     { name = "pingouin" },
@@ -1023,6 +1048,7 @@ requires-dist = [
     { name = "lmfit", specifier = "==1.3.4" },
     { name = "loguru", specifier = "==0.7.3" },
     { name = "matplotlib", specifier = "==3.10.7" },
+    { name = "nodegraphqt", specifier = ">=0.6.43" },
     { name = "openpyxl", specifier = "==3.1.5" },
     { name = "pandas", specifier = "==2.3.3" },
     { name = "pingouin", specifier = "==0.5.5" },
@@ -1070,6 +1096,14 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/7b/f9/abf666971434ea259a8d2006d2943eac0727a14aeccd24359341d377c2d1/ty-0.0.1a23-py3-none-win32.whl", hash = "sha256:0cc7500131a6a533d4000401026427cd538e33fda4e9004d7ad0db5a6f5500b1", size = 8279664, upload-time = "2025-10-16T18:18:53.132Z" },
     { url = "https://files.pythonhosted.org/packages/c6/3d/cb99e90adba6296f260ceaf3d02cc20563ec623b23a92ab94d17791cb537/ty-0.0.1a23-py3-none-win_amd64.whl", hash = "sha256:c89564e90dcc2f9564564d4a02cd703ed71cd9ccbb5a6a38ee49c44d86375f24", size = 8912398, upload-time = "2025-10-16T18:18:55.585Z" },
     { url = "https://files.pythonhosted.org/packages/77/33/9fffb57f66317082fe3de4d08bb71557105c47676a114bdc9d52f6d3a910/ty-0.0.1a23-py3-none-win_arm64.whl", hash = "sha256:71aa203d6ae4de863a7f4626a8fe5f723beaa219988d176a6667f021b78a2af3", size = 8400343, upload-time = "2025-10-16T18:18:57.387Z" },
+]
+
+[[package]]
+name = "types-pyside2"
+version = "5.15.2.1.8"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0f/13/d22cdd7bd73908767ae96572852b4d77afaaccbfd88357fa153a2e6b13c4/types_pyside2-5.15.2.1.8-py2.py3-none-any.whl", hash = "sha256:8d2d9e506b6db88d8ea6f04c56051d7567203ba630122e41de3b52e4842e6474", size = 576975, upload-time = "2025-11-01T19:30:09.336Z" },
 ]
 
 [[package]]
