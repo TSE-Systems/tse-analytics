@@ -113,12 +113,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area
         )
 
-        # Add pipeline editor in center
-        pipeline_editor_widget = LayoutManager.register_dock_widget(
-            PipelineEditorWidget(), "Pipeline Editor", QIcon(":/icons/datasets.png")
+        # Add pipeline editor
+        pipeline_dock_widget = LayoutManager.register_dock_widget(
+            PipelineEditorWidget(), "Pipeline Editor", QIcon(":/icons/icons8-genealogy-16.png")
         )
-        LayoutManager.add_dock_widget(PySide6QtAds.CenterDockWidgetArea, pipeline_editor_widget)
-
+        LayoutManager.add_dock_widget_tab_to_area(pipeline_dock_widget, LayoutManager.get_central_area_widget())
+        pipeline_dock_widget.toggleViewAction().trigger()
 
         self.actionImportDataset.triggered.connect(self._import_dataset_dialog)
         self.actionNewWorkspace.triggered.connect(self._new_workspace)

@@ -1,14 +1,12 @@
-"""Pipeline editor widget using NodeGraphQt."""
-
-import json
 from pathlib import Path
 
-from NodeGraphQt import NodeGraph
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QAction, QIcon
+from NodeGraphQt import NodesPaletteWidget, NodesTreeWidget
+from PySide6.QtCore import Signal, QSize, Qt
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QToolBar, QVBoxLayout, QWidget
 
-from tse_analytics.views.general.pipeline.nodes import (
+from tse_analytics.pipeline import PipelineNodeGraph
+from tse_analytics.pipeline.nodes import (
     ANOVANode,
     AggregateNode,
     BinningNode,
@@ -20,6 +18,10 @@ from tse_analytics.views.general.pipeline.nodes import (
     StatisticsNode,
     TTestNode,
     ViewerNode,
+    MyGroupNode,
+    DropdownMenuNode,
+    TextInputNode,
+    CheckboxNode,
 )
 
 
@@ -34,82 +36,98 @@ class PipelineEditorWidget(QWidget):
         self._init_graph()
         self._current_file = None
 
+        self.nodes_palette = NodesPaletteWidget(parent=parent, node_graph=self.graph)
+        self.nodes_palette.setWindowFlags(Qt.WindowType.Tool)
+
+        self.nodes_tree = NodesTreeWidget(parent=self, node_graph=self.graph)
+        self.nodes_tree.setWindowFlags(Qt.WindowType.Tool)
+
     def _init_ui(self):
         """Initialize the user interface."""
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
         # Create toolbar
-        self.toolbar = QToolBar("Pipeline Toolbar")
-        self.toolbar.setMovable(False)
+        self.toolbar = QToolBar(
+            "Pipeline Toolbar",
+            iconSize=QSize(16, 16),
+            toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
+        )
 
         # Add toolbar actions
-        self.action_new = QAction(QIcon(":/icons/new.png"), "New Pipeline", self)
+        self.action_new = self.toolbar.addAction(QIcon(":/icons/icons8-file-16.png"), "New")
         self.action_new.setToolTip("Create a new pipeline")
         self.action_new.triggered.connect(self._new_pipeline)
-        self.toolbar.addAction(self.action_new)
 
-        self.action_open = QAction(QIcon(":/icons/open.png"), "Open Pipeline", self)
+        self.action_open = self.toolbar.addAction(QIcon(":/icons/icons8-opened-folder-16.png"), "Open")
         self.action_open.setToolTip("Open an existing pipeline")
         self.action_open.triggered.connect(self._open_pipeline)
-        self.toolbar.addAction(self.action_open)
 
-        self.action_save = QAction(QIcon(":/icons/save.png"), "Save Pipeline", self)
+        self.action_save = self.toolbar.addAction(QIcon(":/icons/icons8-save-16.png"), "Save")
         self.action_save.setToolTip("Save the current pipeline")
         self.action_save.triggered.connect(self._save_pipeline)
-        self.toolbar.addAction(self.action_save)
 
-        self.action_save_as = QAction(QIcon(":/icons/save.png"), "Save Pipeline As...", self)
+        self.action_save_as = self.toolbar.addAction(QIcon(":/icons/icons8-save-as-16.png"), "Save As...")
         self.action_save_as.setToolTip("Save the pipeline with a new name")
         self.action_save_as.triggered.connect(self._save_pipeline_as)
-        self.toolbar.addAction(self.action_save_as)
 
         self.toolbar.addSeparator()
 
-        self.action_execute = QAction(QIcon(":/icons/play.png"), "Execute Pipeline", self)
+        self.action_nodes_palette = self.toolbar.addAction(QIcon(":/icons/icons8-themes-16.png"), "Palette")
+        self.action_nodes_palette.setToolTip("Show nodes palette widget")
+        self.action_nodes_palette.triggered.connect(self._show_nodes_palette)
+
+        self.action_nodes_tree = self.toolbar.addAction(QIcon(":/icons/icons8-folder-tree-16.png"), "Tree")
+        self.action_nodes_tree.setToolTip("Show nodes tree widget")
+        self.action_nodes_tree.triggered.connect(self._show_nodes_tree)
+
+        self.toolbar.addSeparator()
+
+        self.action_execute = self.toolbar.addAction(QIcon(":/icons/icons8-play-16.png"), "Execute Pipeline")
         self.action_execute.setToolTip("Execute the current pipeline")
         self.action_execute.triggered.connect(self._execute_pipeline)
-        self.toolbar.addAction(self.action_execute)
 
-        layout.addWidget(self.toolbar)
+        self._layout.addWidget(self.toolbar)
 
     def _init_graph(self):
-        """Initialize the node graph."""
         # Create the node graph
-        self.graph = NodeGraph()
+        self.graph = PipelineNodeGraph(self)
 
-        # set up context menu for the node graph.
-        BASE_PATH = Path(__file__).parent.resolve()
-        hotkey_path = Path(BASE_PATH, '', 'hotkeys.json')
-        self.graph.set_context_menu_from_file(hotkey_path, 'graph')
+        self._init_menu()
 
         # Register all custom nodes
-        self.graph.register_nodes(
-            [
-                # Base nodes
-                DatasetInputNode,
-                DatasetOutputNode,
-                ViewerNode,
-                # Transform nodes
-                FilterNode,
-                AggregateNode,
-                MergeNode,
-                BinningNode,
-                # Analysis nodes
-                StatisticsNode,
-                CorrelationNode,
-                TTestNode,
-                ANOVANode,
-            ]
-        )
+        self.graph.register_nodes([
+            # Base nodes
+            DatasetInputNode,
+            DatasetOutputNode,
+            ViewerNode,
+            # Transform nodes
+            FilterNode,
+            AggregateNode,
+            MergeNode,
+            BinningNode,
+            # Analysis nodes
+            StatisticsNode,
+            CorrelationNode,
+            TTestNode,
+            ANOVANode,
+            MyGroupNode,
+            DropdownMenuNode,
+            TextInputNode,
+            CheckboxNode,
+        ])
 
         # Get the graph widget and add it to the layout
-        self.graph_widget = self.graph.widget
-        self.layout().addWidget(self.graph_widget)
+        self._layout.addWidget(self.graph.widget)
 
         # Configure graph appearance
-        self.graph_widget.setMinimumSize(400, 300)
+        # self.graph.widget.setMinimumSize(400, 300)
+
+    def _init_menu(self):
+        BASE_PATH = Path(__file__).parent.resolve()
+        hotkey_path = Path(BASE_PATH, "hotkeys.json")
+        self.graph.set_context_menu_from_file(hotkey_path, "graph")
 
     def _new_pipeline(self):
         """Create a new pipeline."""
@@ -160,6 +178,14 @@ class PipelineEditorWidget(QWidget):
             self.graph.save_session(file_path)
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to save pipeline: {str(e)}")
+
+    def _show_nodes_palette(self):
+        if not self.nodes_palette.isVisible():
+            self.nodes_palette.show()
+
+    def _show_nodes_tree(self):
+        if not self.nodes_tree.isVisible():
+            self.nodes_tree.show()
 
     def _execute_pipeline(self):
         """Execute the current pipeline."""
