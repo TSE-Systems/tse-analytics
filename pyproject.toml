@@ -1,6 +1,6 @@
 [project]
 name = "tse-analytics"
-version = "1.6.1beta0"
+version = "1.6.1"
 description = "TSE Analytics data analysys"
 license = "MIT"
 readme = "README.md"
@@ -35,9 +35,9 @@ dependencies = [
 [dependency-groups]
 dev = [
     "mypy==1.18.2",
-    "pyinstaller==6.16.0",
+    "pyinstaller==6.17.0",
     "qtsass==0.4.0",
-    "ruff==0.14.5",
+    "ruff==0.14.6",
     "ty==0.0.1a23",
 ]
 

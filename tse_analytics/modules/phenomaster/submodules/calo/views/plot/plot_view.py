@@ -80,9 +80,9 @@ class PlotView(pg.GraphicsLayoutWidget):
 
             x = filtered_data["DateTime"]
             # x = x.apply(lambda x: x.timestamp()).to_numpy()
-            x = x.astype("int64") // 10 ** 9
+            x = x.astype("int64") // 10**9
             # x = (x - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")  # Convert to POSIX timestamp
-            # x = x.to_numpy()
+            x = x.to_numpy()
             y = filtered_data[self._variable].to_numpy()
 
             pen = mkPen(color=(i, len(box_ids)), width=1)

@@ -109,7 +109,8 @@ class ActivityWidget(QWidget):
 
     def _plot_item(self, df: pd.DataFrame, name: str, pen):
         x = df["StartDateTime"]
-        x = x.astype("int64") // 10 ** 9
+        x = x.astype("int64") // 10**9
+        x = x.to_numpy()
         y = df["Activity"].to_numpy()
 
         plot_data_item = self.p1.plot(x, y, pen=pen)

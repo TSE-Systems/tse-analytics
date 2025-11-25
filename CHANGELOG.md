@@ -1,6 +1,14 @@
 TSE Analytics Change Log
 ====================================================================================================
 
+# 1.6.1 (2025-11-25)
+
+- New: TraffiCage overlapping records detection.
+- Fix: fast plots Timestamp conversion to POSIX format.
+- Change: Refactoring of the DrinkFeed interval bar plot.
+
+
+----------------------------------------------------------------------------------------------------
 # 1.6.0 (2025-11-14)
 
 - New: Group housing data compatibility (PhenoMaster module).
@@ -16,7 +24,6 @@ TSE Analytics Change Log
 
 
 ----------------------------------------------------------------------------------------------------
-
 # 1.5.3 (2025-08-26)
 
 - New: Custom variables originated from expressions.
