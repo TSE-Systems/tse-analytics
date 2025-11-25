@@ -59,7 +59,8 @@ class PlotView(pg.GraphicsLayoutWidget):
             return
 
         x = self._df["DateTime"]
-        x = x.astype("int64") // 10 ** 9
+        x = x.astype("int64") // 10**9
+        x = x.to_numpy()
         y = self._df[self._variable].to_numpy()
 
         pen = pg.mkPen(color=(1, 1), width=1)

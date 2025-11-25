@@ -80,7 +80,8 @@ class PlotView(pg.GraphicsLayoutWidget):
             filtered_data = variable_df[variable_df["Animal"] == animal_id]
 
             x = filtered_data["DateTime"]
-            x = x.astype("int64") // 10 ** 9
+            x = x.astype("int64") // 10**9
+            x = x.to_numpy()
             y = filtered_data["Value"].to_numpy()
 
             pen = mkPen(color=(i, len(animal_ids)), width=1)
