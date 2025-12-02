@@ -1,11 +1,13 @@
 """Custom nodes for data analysis pipeline."""
 
 from tse_analytics.pipeline.nodes.base_nodes import (
-    DatasetInputNode,
     DatasetOutputNode,
     ViewerNode,
 )
+from tse_analytics.pipeline.nodes.dataset_input_node import DatasetInputNode
+from tse_analytics.pipeline.nodes.datatable_input_node import DatatableInputNode
 from tse_analytics.pipeline.nodes.group_node import MyGroupNode
+from tse_analytics.pipeline.nodes.start_node import StartNode
 from tse_analytics.pipeline.nodes.widget_nodes import DropdownMenuNode, TextInputNode, CheckboxNode
 from tse_analytics.pipeline.nodes.transform_nodes import (
     AggregateNode,
@@ -22,6 +24,7 @@ from tse_analytics.pipeline.nodes.analysis_nodes import (
 
 __all__ = [
     DatasetInputNode,
+    DatatableInputNode,
     DatasetOutputNode,
     ViewerNode,
     AggregateNode,
@@ -36,4 +39,5 @@ __all__ = [
     DropdownMenuNode,
     TextInputNode,
     CheckboxNode,
+    StartNode,
 ]

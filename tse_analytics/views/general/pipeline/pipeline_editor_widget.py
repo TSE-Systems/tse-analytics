@@ -4,7 +4,9 @@ from NodeGraphQt import NodesPaletteWidget, NodesTreeWidget
 from PySide6.QtCore import Signal, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QToolBar, QVBoxLayout, QWidget
+from loguru import logger
 
+from tse_analytics.core import manager
 from tse_analytics.pipeline import PipelineNodeGraph
 from tse_analytics.pipeline.nodes import (
     ANOVANode,
@@ -22,6 +24,7 @@ from tse_analytics.pipeline.nodes import (
     DropdownMenuNode,
     TextInputNode,
     CheckboxNode,
+    StartNode, DatatableInputNode,
 )
 
 
@@ -84,8 +87,12 @@ class PipelineEditorWidget(QWidget):
 
         self.toolbar.addSeparator()
 
+        self.action_initialize = self.toolbar.addAction(QIcon(":/icons/icons8-refresh-16.png"), "Initialize Pipeline")
+        self.action_initialize.setToolTip("Initialize the current pipeline with default values")
+        self.action_initialize.triggered.connect(self._initialize_pipeline)
+
         self.action_execute = self.toolbar.addAction(QIcon(":/icons/icons8-play-16.png"), "Execute Pipeline")
-        self.action_execute.setToolTip("Execute the current pipeline")
+        self.action_execute.setToolTip("Execute current pipeline")
         self.action_execute.triggered.connect(self._execute_pipeline)
 
         self._layout.addWidget(self.toolbar)
@@ -100,6 +107,7 @@ class PipelineEditorWidget(QWidget):
         self.graph.register_nodes([
             # Base nodes
             DatasetInputNode,
+            DatatableInputNode,
             DatasetOutputNode,
             ViewerNode,
             # Transform nodes
@@ -116,6 +124,7 @@ class PipelineEditorWidget(QWidget):
             DropdownMenuNode,
             TextInputNode,
             CheckboxNode,
+            StartNode,
         ])
 
         # Get the graph widget and add it to the layout
@@ -166,7 +175,10 @@ class PipelineEditorWidget(QWidget):
     def _save_pipeline_as(self):
         """Save the current pipeline with a new name."""
         file_path, _ = QFileDialog.getSaveFileName(
-            self, "Save Pipeline", "", "Pipeline Files (*.pipeline);;JSON Files (*.json)"
+            self,
+            "Save Pipeline",
+            "",
+            "Pipeline Files (*.pipeline);;JSON Files (*.json)",
         )
         if file_path:
             self._save_to_file(file_path)
@@ -187,43 +199,35 @@ class PipelineEditorWidget(QWidget):
         if not self.nodes_tree.isVisible():
             self.nodes_tree.show()
 
+    def _initialize_pipeline(self):
+        if (
+            QMessageBox.question(
+                self,
+                "Pipeline",
+                "Do you want to initialize the pipeline with default values?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            )
+            == QMessageBox.StandardButton.No
+        ):
+            return
+
+        dataset = manager.get_selected_dataset()
+        self.graph.initialize_pipeline(dataset)
+
     def _execute_pipeline(self):
         """Execute the current pipeline."""
         try:
             # Get all nodes in topological order
-            nodes = self._get_execution_order()
+            nodes = self.graph.get_execution_order()
 
             if not nodes:
                 QMessageBox.information(self, "Pipeline", "Pipeline is empty. Add nodes to execute.")
                 return
 
+            logger.info("\r".join([node.name() for node in nodes]))
+
             # Execute nodes in order
-            node_outputs = {}
-            for node in nodes:
-                # Get inputs from connected nodes
-                inputs = []
-                for input_port in node.input_ports():
-                    connected_ports = input_port.connected_ports()
-                    if connected_ports:
-                        # Get the output from the connected node
-                        connected_node = connected_ports[0].node()
-                        if connected_node.id in node_outputs:
-                            inputs.append(node_outputs[connected_node.id])
-                        else:
-                            inputs.append(None)
-                    else:
-                        inputs.append(None)
-
-                # Execute the node
-                if hasattr(node, "process"):
-                    result = node.process(*inputs) if inputs else node.process(None)
-                elif hasattr(node, "get_dataset"):
-                    result = node.get_dataset()
-                else:
-                    result = None
-
-                # Store the output
-                node_outputs[node.id] = result
+            node_outputs = self.graph.execute_pipeline()
 
             # Emit signal with results
             self.pipeline_executed.emit(node_outputs)
@@ -232,40 +236,6 @@ class PipelineEditorWidget(QWidget):
 
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to execute pipeline: {str(e)}")
-
-    def _get_execution_order(self):
-        """Get nodes in topological execution order."""
-        # Simple topological sort
-        all_nodes = self.graph.all_nodes()
-        if not all_nodes:
-            return []
-
-        # Build dependency graph
-        in_degree = {node.id: 0 for node in all_nodes}
-        adj_list = {node.id: [] for node in all_nodes}
-
-        for node in all_nodes:
-            for output_port in node.output_ports():
-                for connected_port in output_port.connected_ports():
-                    connected_node = connected_port.node()
-                    adj_list[node.id].append(connected_node)
-                    in_degree[connected_node.id] += 1
-
-        # Topological sort using Kahn's algorithm
-        queue = [node for node in all_nodes if in_degree[node.id] == 0]
-        result = []
-
-        while queue:
-            node = queue.pop(0)
-            result.append(node)
-
-            if node.id in adj_list:
-                for neighbor in adj_list[node.id]:
-                    in_degree[neighbor.id] -= 1
-                    if in_degree[neighbor.id] == 0:
-                        queue.append(neighbor)
-
-        return result
 
     def get_graph(self):
         """Get the node graph instance."""
