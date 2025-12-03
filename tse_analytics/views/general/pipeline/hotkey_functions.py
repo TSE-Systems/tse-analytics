@@ -66,7 +66,7 @@ def save_session(graph: NodeGraph):
     current = graph.current_session()
     if current:
         graph.save_session(current)
-        msg = "Session layout saved:\n{}".format(current)
+        msg = f"Session layout saved:\n{current}"
         viewer = graph.viewer()
         viewer.message_dialog(msg, title="Session Saved")
     else:

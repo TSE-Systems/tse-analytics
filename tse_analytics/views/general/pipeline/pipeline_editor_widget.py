@@ -1,31 +1,31 @@
 from pathlib import Path
 
+from loguru import logger
 from NodeGraphQt import NodesPaletteWidget, NodesTreeWidget
-from PySide6.QtCore import Signal, QSize, Qt
+from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QToolBar, QVBoxLayout, QWidget
-from loguru import logger
 
 from tse_analytics.core import manager
 from tse_analytics.pipeline import PipelineNodeGraph
 from tse_analytics.pipeline.nodes import (
-    ANOVANode,
     AggregateNode,
+    ANOVANode,
     BinningNode,
+    CheckboxNode,
     CorrelationNode,
     DatasetInputNode,
     DatasetOutputNode,
+    DatatableInputNode,
+    DropdownMenuNode,
     FilterNode,
     MergeNode,
+    MyGroupNode,
+    StartNode,
     StatisticsNode,
+    TextInputNode,
     TTestNode,
     ViewerNode,
-    MyGroupNode,
-    DropdownMenuNode,
-    TextInputNode,
-    CheckboxNode,
-    StartNode,
-    DatatableInputNode,
 )
 
 

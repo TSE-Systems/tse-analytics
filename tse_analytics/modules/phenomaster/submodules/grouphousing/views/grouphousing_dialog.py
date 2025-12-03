@@ -1,7 +1,7 @@
 import pandas as pd
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QCloseEvent, QIcon
-from PySide6.QtWidgets import QCheckBox, QToolBar, QWidget, QLabel, QSpinBox
+from PySide6.QtWidgets import QCheckBox, QLabel, QSpinBox, QToolBar, QWidget
 
 from tse_analytics.core import manager
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset

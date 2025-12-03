@@ -1,10 +1,6 @@
 """Base nodes for pipeline editor."""
 
 from NodeGraphQt import BaseNode
-from NodeGraphQt.constants import NodePropWidgetEnum
-from PySide6.QtWidgets import QComboBox
-
-from tse_analytics.core import manager
 
 
 class DatasetOutputNode(BaseNode):

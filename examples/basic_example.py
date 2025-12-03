@@ -1,19 +1,17 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 import signal
 from pathlib import Path
 
-from Qt import QtCore, QtWidgets
-
-# import example nodes from the "nodes" sub-package
-from examples.nodes import basic_nodes, custom_ports_node, group_node, widget_nodes
 from NodeGraphQt import (
     NodeGraph,
     NodesPaletteWidget,
     NodesTreeWidget,
     PropertiesBinWidget,
 )
-from NodeGraphQt.constants import LayoutDirectionEnum
+from Qt import QtCore, QtWidgets
+
+# import example nodes from the "nodes" sub-package
+from examples.nodes import basic_nodes, custom_ports_node, group_node, widget_nodes
 
 BASE_PATH = Path(__file__).parent.resolve()
 

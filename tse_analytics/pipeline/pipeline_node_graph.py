@@ -1,4 +1,4 @@
-from NodeGraphQt import NodeGraph, PropertiesBinWidget, BaseNode
+from NodeGraphQt import BaseNode, NodeGraph, PropertiesBinWidget
 from PySide6.QtCore import Qt
 
 from tse_analytics.core.data.dataset import Dataset

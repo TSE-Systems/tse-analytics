@@ -8,7 +8,7 @@ and applying binning and outlier detection.
 
 from copy import deepcopy
 from datetime import datetime
-from uuid import uuid4, UUID
+from uuid import UUID, uuid4
 
 import pandas as pd
 
