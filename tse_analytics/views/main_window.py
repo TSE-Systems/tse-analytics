@@ -113,17 +113,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area
         )
 
-        # Add pipeline editor
-        pipeline_dock_widget = LayoutManager.register_dock_widget(
-            PipelineEditorWidget(), "Pipeline Editor", QIcon(":/icons/icons8-genealogy-16.png")
-        )
-        LayoutManager.add_dock_widget_tab_to_area(pipeline_dock_widget, LayoutManager.get_central_area_widget())
-        pipeline_dock_widget.toggleViewAction().trigger()
-
         self.actionImportDataset.triggered.connect(self._import_dataset_dialog)
         self.actionNewWorkspace.triggered.connect(self._new_workspace)
         self.actionOpenWorkspace.triggered.connect(self._load_workspace_dialog)
         self.actionSaveWorkspace.triggered.connect(self._save_workspace_dialog)
+        self.actionPipelineEditor.triggered.connect(self._show_pipeline_editor)
         self.actionSaveLayout.triggered.connect(self._save_layout)
         self.actionRestoreLayout.triggered.connect(self._restore_layout)
         self.actionResetLayout.triggered.connect(self._reset_layout)
@@ -234,6 +228,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def _reset_layout(self) -> None:
         LayoutManager.open_perspective("Default")
+
+    def _show_pipeline_editor(self):
+        # Add pipeline editor
+        widget = PipelineEditorWidget()
+        LayoutManager.add_widget_to_central_area(
+            None, widget, "Pipeline Editor", QIcon(":/icons/icons8-genealogy-16.png")
+        )
 
     def _show_about_dialog(self) -> None:
         dialog = AboutDialog(self)

@@ -26,6 +26,9 @@ from tse_analytics.pipeline.nodes import (
     TextInputNode,
     TTestNode,
     ViewerNode,
+    ResampleNode,
+    ReportNode,
+    DescriptiveStatsNode,
 )
 
 
@@ -126,6 +129,9 @@ class PipelineEditorWidget(QWidget):
             TextInputNode,
             CheckboxNode,
             StartNode,
+            ResampleNode,
+            ReportNode,
+            DescriptiveStatsNode,
         ])
 
         # Get the graph widget and add it to the layout
@@ -217,26 +223,34 @@ class PipelineEditorWidget(QWidget):
 
     def _execute_pipeline(self):
         """Execute the current pipeline."""
-        try:
-            # Get all nodes in topological order
-            nodes = self.graph.get_execution_order()
+        # Get all nodes in topological order
+        nodes = self.graph.get_execution_order()
 
-            if not nodes:
-                QMessageBox.information(self, "Pipeline", "Pipeline is empty. Add nodes to execute.")
-                return
+        if not nodes:
+            QMessageBox.information(self, "Pipeline", "Pipeline is empty. Add nodes to execute.")
+            return
 
-            logger.info("\r".join([node.name() for node in nodes]))
+        logger.info("\r".join([node.name() for node in nodes]))
 
-            # Execute nodes in order
-            node_outputs = self.graph.execute_pipeline()
+        # Execute nodes in order
+        node_outputs = self.graph.execute_pipeline()
 
-            # Emit signal with results
-            self.pipeline_executed.emit(node_outputs)
+        # Emit signal with results
+        self.pipeline_executed.emit(node_outputs)
 
-            QMessageBox.information(self, "Pipeline", "Pipeline executed successfully!")
+        QMessageBox.information(self, "Pipeline", "Pipeline executed successfully!")
 
-        except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to execute pipeline: {str(e)}")
+        # try:
+        #     # Execute nodes in order
+        #     node_outputs = self.graph.execute_pipeline()
+        #
+        #     # Emit signal with results
+        #     self.pipeline_executed.emit(node_outputs)
+        #
+        #     QMessageBox.information(self, "Pipeline", "Pipeline executed successfully!")
+        #
+        # except Exception as e:
+        #     QMessageBox.critical(self, "Error", f"Failed to execute pipeline: {str(e)}")
 
     def get_graph(self):
         """Get the node graph instance."""

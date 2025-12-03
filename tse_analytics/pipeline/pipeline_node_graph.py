@@ -10,7 +10,7 @@ class PipelineNodeGraph(NodeGraph):
 
         # Properties bin widget.
         self._properties_bin = PropertiesBinWidget(node_graph=self)
-        self._properties_bin.setWindowFlags(Qt.WindowType.Tool)
+        self._properties_bin.setWindowFlags(Qt.WindowType.Tool | Qt.WindowType.WindowStaysOnTopHint)
 
         # wire signal.
         self.node_double_clicked.connect(self.display_prop_bin)

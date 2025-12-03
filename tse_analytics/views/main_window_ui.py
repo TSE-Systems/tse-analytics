@@ -83,6 +83,12 @@ class Ui_MainWindow(object):
         self.actionExportMergedCsv.setIcon(icon8)
         self.actionExportMergedCsv.setVisible(False)
         self.actionExportMergedCsv.setMenuRole(QAction.MenuRole.NoRole)
+        self.actionPipelineEditor = QAction(MainWindow)
+        self.actionPipelineEditor.setObjectName(u"actionPipelineEditor")
+        icon9 = QIcon()
+        icon9.addFile(u":/icons/icons8-genealogy-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.actionPipelineEditor.setIcon(icon9)
+        self.actionPipelineEditor.setMenuRole(QAction.MenuRole.NoRole)
         self.centralWidget = QWidget(MainWindow)
         self.centralWidget.setObjectName(u"centralWidget")
         MainWindow.setCentralWidget(self.centralWidget)
@@ -133,6 +139,8 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionSaveWorkspace)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionImportDataset)
+        self.toolBar.addSeparator()
+        self.toolBar.addAction(self.actionPipelineEditor)
 
         self.retranslateUi(MainWindow)
 
@@ -165,11 +173,14 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.actionNewWorkspace.setText(QCoreApplication.translate("MainWindow", u"New Workspace", None))
         self.actionExportMergedCsv.setText(QCoreApplication.translate("MainWindow", u"Export Merged CSV...", None))
+        self.actionPipelineEditor.setText(QCoreApplication.translate("MainWindow", u"Pipeline Editor", None))
+#if QT_CONFIG(tooltip)
+        self.actionPipelineEditor.setToolTip(QCoreApplication.translate("MainWindow", u"Open data analysis pipeline editor", None))
+#endif // QT_CONFIG(tooltip)
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"&File", None))
         self.menuOpenRecent.setTitle(QCoreApplication.translate("MainWindow", u"Open Recent", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"&Help", None))
         self.menuView.setTitle(QCoreApplication.translate("MainWindow", u"&View", None))
         self.menuStyle.setTitle(QCoreApplication.translate("MainWindow", u"Style", None))
-        self.toolBar.setWindowTitle(QCoreApplication.translate("MainWindow", u"ToolBar", None))
     # retranslateUi
 

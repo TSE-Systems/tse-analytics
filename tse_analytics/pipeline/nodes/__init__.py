@@ -12,7 +12,10 @@ from tse_analytics.pipeline.nodes.base_nodes import (
 )
 from tse_analytics.pipeline.nodes.dataset_input_node import DatasetInputNode
 from tse_analytics.pipeline.nodes.datatable_input_node import DatatableInputNode
+from tse_analytics.pipeline.nodes.descriptive_stats_node import DescriptiveStatsNode
 from tse_analytics.pipeline.nodes.group_node import MyGroupNode
+from tse_analytics.pipeline.nodes.report_node import ReportNode
+from tse_analytics.pipeline.nodes.resample_node import ResampleNode
 from tse_analytics.pipeline.nodes.start_node import StartNode
 from tse_analytics.pipeline.nodes.transform_nodes import (
     AggregateNode,
@@ -40,4 +43,7 @@ __all__ = [
     TextInputNode,
     CheckboxNode,
     StartNode,
+    ResampleNode,
+    ReportNode,
+    DescriptiveStatsNode,
 ]

@@ -5,7 +5,11 @@
  <widget class="QWidget" name="ReportWidget">
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="CustomTextEdit" name="editor"/>
+    <widget class="CustomTextEdit" name="editor">
+     <property name="lineWrapMode">
+      <enum>QTextEdit::LineWrapMode::NoWrap</enum>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

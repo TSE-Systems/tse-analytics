@@ -17,7 +17,7 @@ class DatatableInputNode(BaseNode):
 
         self.add_combo_menu(
             "datatable_name",
-            "Datatables",
+            "Datatable",
             items=[],
             tooltip="Please select a datatable",
         )
@@ -37,7 +37,7 @@ class DatatableInputNode(BaseNode):
 
     def process(self, context=None):
         datatable = self.get_datatable()
-        print(f"'{self.NODE_NAME}' node processed")
+        return datatable
 
     def get_datatable(self):
         """Get the selected datatable."""

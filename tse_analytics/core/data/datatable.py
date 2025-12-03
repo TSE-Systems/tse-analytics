@@ -534,6 +534,11 @@ class Datatable:
         self.original_df.rename(columns=variable_name_map, inplace=True, errors="ignore")
         self.active_df.rename(columns=variable_name_map, inplace=True, errors="ignore")
 
+    def clone(self):
+        return Datatable(
+            self.dataset, self.name, self.description, self.variables, self.original_df.copy(), self.sampling_interval
+        )
+
     def __getstate__(self):
         """
         Prepare the object state for pickling.
