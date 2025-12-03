@@ -8,7 +8,7 @@ and applying binning and outlier detection.
 
 from copy import deepcopy
 from datetime import datetime
-from uuid import uuid4
+from uuid import uuid4, UUID
 
 import pandas as pd
 
@@ -17,9 +17,12 @@ from tse_analytics.core.color_manager import get_factor_level_color_hex
 from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings
+from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import Animal, Factor, FactorLevel
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.datatable_tree_item import DatatableTreeItem
+from tse_analytics.core.models.report_tree_item import ReportTreeItem
+from tse_analytics.core.models.tree_item import TreeItem
 
 
 class Dataset:
@@ -56,7 +59,7 @@ class Dataset:
         self.outliers_settings = OutliersSettings(OutliersMode.OFF, 1.5)
         self.binning_settings = BinningSettings()
 
-        self.report = ""
+        self.reports: dict[UUID, Report] = {}
 
     @property
     def name(self) -> str:
@@ -398,6 +401,19 @@ class Dataset:
         for datatable in self.datatables.values():
             dataset_tree_item.add_child(DatatableTreeItem(datatable))
 
+        # Add reports nodes
+        if len(self.reports) > 0:
+            reports_node = TreeItem("Reports")
+            dataset_tree_item.add_child(reports_node)
+            for report in self.reports.values():
+                reports_node.add_child(ReportTreeItem(report))
+
+    def add_report(self, report: Report) -> None:
+        self.reports[report.id] = report
+
+    def delete_report(self, id: UUID) -> None:
+        self.reports.pop(id)
+
     def __setstate__(self, state):
         """
         Restore the state of the dataset during unpickling.
@@ -414,3 +430,7 @@ class Dataset:
         for datatable in self.datatables.values():
             # Recalculate active_df dataframes
             datatable.refresh_active_df()
+
+        # TODO: remove the check in the future
+        if "reports" not in self.__dict__:
+            self.reports = {}

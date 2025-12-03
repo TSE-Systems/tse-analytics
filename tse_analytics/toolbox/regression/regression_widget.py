@@ -7,10 +7,11 @@ from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QLabel, QSplitter, QTextEdit, QToolBar, QVBoxLayout, QWidget
 
-from tse_analytics.core import color_manager, messaging
+from tse_analytics.core import color_manager, manager
 from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
+from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure
 from tse_analytics.styles.css import style_descriptive_table
@@ -205,5 +206,11 @@ class RegressionWidget(QWidget):
     def _add_report(self):
         html = get_html_image_from_figure(self.canvas.figure)
         html += self.textEdit.toHtml()
-        self.datatable.dataset.report += html
-        messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))
+
+        manager.add_report(
+            Report(
+                self.datatable.dataset,
+                self.title,
+                html,
+            )
+        )

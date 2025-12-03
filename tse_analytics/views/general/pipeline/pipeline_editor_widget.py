@@ -24,7 +24,8 @@ from tse_analytics.pipeline.nodes import (
     DropdownMenuNode,
     TextInputNode,
     CheckboxNode,
-    StartNode, DatatableInputNode,
+    StartNode,
+    DatatableInputNode,
 )
 
 

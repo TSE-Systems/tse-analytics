@@ -21,6 +21,7 @@ from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.datatable_tree_item import DatatableTreeItem
 from tse_analytics.core.models.extension_tree_item import ExtensionTreeItem
+from tse_analytics.core.models.report_tree_item import ReportTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
 from tse_analytics.core.models.workspace_model import WorkspaceModel
 from tse_analytics.core.utils import CSV_IMPORT_ENABLED
@@ -34,6 +35,7 @@ from tse_analytics.modules.phenomaster.submodules.grouphousing.models.grouphousi
 from tse_analytics.modules.phenomaster.submodules.grouphousing.views.grouphousing_dialog import GroupHousingDialog
 from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvDialog
 from tse_analytics.toolbox.data_table.data_table_widget import DataTableWidget
+from tse_analytics.toolbox.reports.report_widget import ReportWidget
 from tse_analytics.toolbox.toolbox_button import ToolboxButton
 from tse_analytics.views.general.datasets.adjust_dataset_dialog import AdjustDatasetDialog
 from tse_analytics.views.general.datasets.datasets_merge_dialog import DatasetsMergeDialog
@@ -102,10 +104,10 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
         self.adjust_dataset_action.setEnabled(False)
         self.adjust_dataset_action.triggered.connect(self._adjust_dataset)
 
-        self.remove_action = toolbar.addAction(QIcon(":/icons/icons8-remove-16.png"), "Remove")
-        self.remove_action.setToolTip("Remove selected item")
-        self.remove_action.setEnabled(False)
-        self.remove_action.triggered.connect(self._remove_item)
+        self.delete_action = toolbar.addAction(QIcon(":/icons/icons8-remove-16.png"), "Delete")
+        self.delete_action.setToolTip("Delete selected item")
+        self.delete_action.setEnabled(False)
+        self.delete_action.triggered.connect(self._delete_item)
 
         self.clone_dataset_action = toolbar.addAction(QIcon(":/icons/icons8-copy-16.png"), "Clone")
         self.clone_dataset_action.setToolTip("Clone selected dataset")
@@ -150,6 +152,7 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
         self._layout.addWidget(self.treeView)
 
         messaging.subscribe(self, messaging.WorkspaceChangedMessage, self._workspace_changed)
+        messaging.subscribe(self, messaging.ReportsChangedMessage, self._reports_changed)
 
     def _workspace_changed(self, message: messaging.WorkspaceChangedMessage) -> None:
         """
@@ -161,6 +164,10 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
             message (messaging.WorkspaceChangedMessage): The workspace changed message
         """
         self.workspace_model.setupModelData(message.workspace)
+        self.treeView.expandAll()
+
+    def _reports_changed(self, message: messaging.ReportsChangedMessage) -> None:
+        self.workspace_model.update_reports(message.report)
         self.treeView.expandAll()
 
     def _get_selected_tree_item(self) -> TreeItem | None:
@@ -320,9 +327,9 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
             tree_item.name = dataset.name
             manager.set_selected_dataset(dataset)
 
-    def _remove_item(self):
+    def _delete_item(self):
         """
-        Remove the selected item from the workspace.
+        Delete the selected item from the workspace.
 
         If the selected item is a dataset, prompts for confirmation before removing.
         For other types of items, removes them without confirmation.
@@ -331,31 +338,30 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
         if tree_item is not None:
             if isinstance(tree_item, DatasetTreeItem):
                 if (
-                    QMessageBox.question(self, "Remove Dataset", "Do you really want to remove dataset?")
+                    QMessageBox.question(self, "Delete Dataset", "Do you want to delete selected dataset?")
                     == QMessageBox.StandardButton.Yes
                 ):
                     LayoutManager.delete_dataset_widgets(tree_item.dataset)
                     manager.remove_dataset(tree_item.dataset)
-                    self.toolbox_button.set_state(False)
-                    if CSV_IMPORT_ENABLED:
-                        self.import_button.setEnabled(False)
-                    self.adjust_dataset_action.setEnabled(False)
-                    self.remove_action.setEnabled(False)
-                    self.clone_dataset_action.setEnabled(False)
-                    self.merge_dataset_action.setEnabled(False)
             elif isinstance(tree_item, DatatableTreeItem):
                 if (
-                    QMessageBox.question(self, "Remove Datatable", "Do you really want to remove datatable?")
+                    QMessageBox.question(self, "Delete Datatable", "Do you want to delete selected datatable?")
                     == QMessageBox.StandardButton.Yes
                 ):
                     manager.remove_datatable(tree_item.datatable)
-                    self.toolbox_button.set_state(False)
-                    if CSV_IMPORT_ENABLED:
-                        self.import_button.setEnabled(False)
-                    self.adjust_dataset_action.setEnabled(False)
-                    self.remove_action.setEnabled(False)
-                    self.clone_dataset_action.setEnabled(False)
-                    self.merge_dataset_action.setEnabled(False)
+            elif isinstance(tree_item, ReportTreeItem):
+                if (
+                    QMessageBox.question(self, "Delete Report", "Do you want to delete selected report?")
+                    == QMessageBox.StandardButton.Yes
+                ):
+                    manager.delete_report(tree_item.report)
+            self.toolbox_button.set_state(False)
+            if CSV_IMPORT_ENABLED:
+                self.import_button.setEnabled(False)
+            self.adjust_dataset_action.setEnabled(False)
+            self.delete_action.setEnabled(False)
+            self.clone_dataset_action.setEnabled(False)
+            self.merge_dataset_action.setEnabled(False)
 
     def _clone_dataset(self):
         """
@@ -394,6 +400,7 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
 
             is_dataset_item = isinstance(item, DatasetTreeItem)
             is_datatable_item = isinstance(item, DatatableTreeItem)
+            is_report_item = isinstance(item, ReportTreeItem)
 
             if is_dataset_item:
                 manager.set_selected_dataset(item.dataset)
@@ -403,11 +410,13 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                 manager.set_selected_dataset(item.datatable.dataset)
                 manager.set_selected_datatable(item.datatable)
                 self.toolbox_button.set_enabled_actions(item.datatable.dataset, item.datatable)
+            elif is_report_item:
+                manager.set_selected_dataset(item.report.dataset)
 
             if CSV_IMPORT_ENABLED:
                 self.import_button.setEnabled(is_dataset_item)
             self.adjust_dataset_action.setEnabled(is_dataset_item)
-            self.remove_action.setEnabled(is_dataset_item or is_datatable_item)
+            self.delete_action.setEnabled(is_dataset_item or is_datatable_item or is_report_item)
             self.clone_dataset_action.setEnabled(is_dataset_item)
 
             self.toolbox_button.set_state(is_datatable_item)
@@ -434,6 +443,12 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                 # TODO: check other cases!!
                 dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
                 dialog.show()
+            elif isinstance(item, ReportTreeItem):
+                manager.set_selected_dataset(item.report.dataset)
+                widget = ReportWidget(item.report)
+                LayoutManager.add_widget_to_central_area(
+                    item.report.dataset, widget, f"Report - {item.report.name}", QIcon(":/icons/table.png")
+                )
             elif isinstance(item, ActimotTreeItem):
                 dialog = ActimotDialog(item.actimot_data, self)
                 # TODO: check other cases!!

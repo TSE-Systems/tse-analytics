@@ -1,10 +1,16 @@
 TSE Analytics Change Log
 ====================================================================================================
 
+# 1.7.0 (2025-12-03)
+
+- New: Persistent reports repository (per dataset). Multiple reports are supported.
+
+
+----------------------------------------------------------------------------------------------------
 # 1.6.1 (2025-11-25)
 
 - New: TraffiCage overlapping records detection.
-- Fix: fast plots Timestamp conversion to POSIX format.
+- Fix: Fast plots Timestamp conversion to POSIX format.
 - Change: Refactoring of the DrinkFeed interval bar plot.
 
 

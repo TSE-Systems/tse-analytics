@@ -7,8 +7,9 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QComboBox, QLabel, QSpinBox, QToolBar, QVBoxLayout, QWidget
 from statsmodels.tsa.seasonal import STL, seasonal_decompose
 
-from tse_analytics.core import messaging
+from tse_analytics.core import manager
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.report import Report
 from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure
 from tse_analytics.views.misc.animal_selector import AnimalSelector
 from tse_analytics.views.misc.MplCanvas import MplCanvas
@@ -185,5 +186,10 @@ class TimeseriesDecompositionWidget(QWidget):
         self.canvas.draw()
 
     def _add_report(self):
-        self.datatable.dataset.report += get_html_image_from_figure(self.canvas.figure)
-        messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))
+        manager.add_report(
+            Report(
+                self.datatable.dataset,
+                self.title,
+                get_html_image_from_figure(self.canvas.figure),
+            )
+        )

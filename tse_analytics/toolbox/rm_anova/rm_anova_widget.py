@@ -8,9 +8,10 @@ from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QLabel, QMessageBox, QTextEdit, QToolBar, QVBoxLayout, QWidget
 
-from tse_analytics.core import color_manager, messaging
+from tse_analytics.core import color_manager, manager
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import (
@@ -260,5 +261,10 @@ class RMAnovaWidget(QWidget):
         self.textEdit.document().setHtml(html)
 
     def _add_report(self):
-        self.datatable.dataset.report += self.textEdit.toHtml()
-        messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))
+        manager.add_report(
+            Report(
+                self.datatable.dataset,
+                self.title,
+                self.textEdit.toHtml(),
+            )
+        )

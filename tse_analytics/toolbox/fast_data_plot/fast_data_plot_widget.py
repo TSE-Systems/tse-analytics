@@ -6,12 +6,13 @@ from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtWidgets import QCheckBox, QLabel, QToolBar, QVBoxLayout, QWidget
 
-from tse_analytics.core import messaging
+from tse_analytics.core import messaging, manager
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import process_time_cycles_binning
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import process_time_phases_binning
+from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_h_spacer_widget
@@ -44,6 +45,8 @@ class FastDataPlotWidget(QWidget, messaging.MessengerListener):
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
+
+        self.title = "Fast Plot"
 
         self.datatable = datatable
 
@@ -301,13 +304,6 @@ class FastDataPlotWidget(QWidget, messaging.MessengerListener):
         )
 
     def _add_report(self):
-        """Add the current plot to the dataset report.
-
-        This method gets the HTML representation of the current plot
-        (timeline or bar) and adds it to the dataset's report. It also
-        broadcasts a message to notify the application that content
-        has been added to the report.
-        """
         if not self.datatable.dataset.binning_settings.apply:
             html = self.timelinePlotView.get_report()
         else:
@@ -315,5 +311,11 @@ class FastDataPlotWidget(QWidget, messaging.MessengerListener):
                 html = self.timelinePlotView.get_report()
             else:
                 html = self.barPlotView.get_report()
-        self.datatable.dataset.report += html
-        messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))
+
+        manager.add_report(
+            Report(
+                self.datatable.dataset,
+                self.title,
+                html,
+            )
+        )

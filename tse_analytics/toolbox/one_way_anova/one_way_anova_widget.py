@@ -7,10 +7,11 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QComboBox, QLabel, QTextEdit, QToolBar, QVBoxLayout, QWidget
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
-from tse_analytics.core import messaging
+from tse_analytics.core import manager
 from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
+from tse_analytics.core.data.report import Report
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure, get_html_table
 from tse_analytics.styles.css import style_descriptive_table
@@ -212,5 +213,10 @@ class OneWayAnovaWidget(QWidget):
         self.textEdit.document().setHtml(html)
 
     def _add_report(self):
-        self.datatable.dataset.report += self.textEdit.toHtml()
-        messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))
+        manager.add_report(
+            Report(
+                self.datatable.dataset,
+                self.title,
+                self.textEdit.toHtml(),
+            )
+        )

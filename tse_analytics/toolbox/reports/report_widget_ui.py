@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'reports_widget.ui'
+## Form generated from reading UI file 'report_widget.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.10.0
 ##
@@ -20,25 +20,24 @@ from PySide6.QtWidgets import (QApplication, QSizePolicy, QVBoxLayout, QWidget)
 from tse_analytics.views.misc.custom_text_edit import CustomTextEdit
 import resources_rc
 
-class Ui_ReportsWidget(object):
-    def setupUi(self, ReportsWidget):
-        if not ReportsWidget.objectName():
-            ReportsWidget.setObjectName(u"ReportsWidget")
-        ReportsWidget.resize(274, 210)
-        self.verticalLayout = QVBoxLayout(ReportsWidget)
+class Ui_ReportWidget(object):
+    def setupUi(self, ReportWidget):
+        if not ReportWidget.objectName():
+            ReportWidget.setObjectName(u"ReportWidget")
+        self.verticalLayout = QVBoxLayout(ReportWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.editor = CustomTextEdit(ReportsWidget)
+        self.editor = CustomTextEdit(ReportWidget)
         self.editor.setObjectName(u"editor")
 
         self.verticalLayout.addWidget(self.editor)
 
 
-        self.retranslateUi(ReportsWidget)
+        self.retranslateUi(ReportWidget)
 
-        QMetaObject.connectSlotsByName(ReportsWidget)
+        QMetaObject.connectSlotsByName(ReportWidget)
     # setupUi
 
-    def retranslateUi(self, ReportsWidget):
+    def retranslateUi(self, ReportWidget):
         pass
     # retranslateUi
 

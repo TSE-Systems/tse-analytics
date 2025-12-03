@@ -29,7 +29,6 @@ from tse_analytics.toolbox.one_way_anova.one_way_anova_widget import OneWayAnova
 from tse_analytics.toolbox.pca.pca_widget import PcaWidget
 from tse_analytics.toolbox.periodogram.periodogram_widget import PeriodogramWidget
 from tse_analytics.toolbox.regression.regression_widget import RegressionWidget
-from tse_analytics.toolbox.reports.reports_widget import ReportsWidget
 from tse_analytics.toolbox.rm_anova.rm_anova_widget import RMAnovaWidget
 from tse_analytics.toolbox.timeseries_autocorrelation.timeseries_autocorrelation_widget import (
     TimeseriesAutocorrelationWidget,
@@ -102,11 +101,11 @@ class ToolboxButton(QToolButton):
             self._add_mds_widget
         )
 
-        utils_menu = self.menu.addMenu("Time Series")
-        utils_menu.addAction(QIcon(":/icons/timeseries.png"), "Decomposition").triggered.connect(
+        time_series_menu = self.menu.addMenu("Time Series")
+        time_series_menu.addAction(QIcon(":/icons/timeseries.png"), "Decomposition").triggered.connect(
             self._add_timeseries_decomposition_widget
         )
-        utils_menu.addAction(QIcon(":/icons/timeseries.png"), "Autocorrelation").triggered.connect(
+        time_series_menu.addAction(QIcon(":/icons/timeseries.png"), "Autocorrelation").triggered.connect(
             self._add_timeseries_autocorrelation_widget
         )
 
@@ -117,9 +116,6 @@ class ToolboxButton(QToolButton):
         circadian_menu.addAction(
             QIcon(":/icons/icons8-normal-distribution-histogram-16.png"), "Periodogram"
         ).triggered.connect(self._add_periodogram_widget)
-
-        utils_menu = self.menu.addMenu("Utils")
-        utils_menu.addAction(QIcon(":/icons/report.png"), "Report").triggered.connect(self._add_report_widget)
 
         self.intellicage_menu = self.menu.addMenu("IntelliCage")
         self.intellicage_transitions_action = self.intellicage_menu.addAction(
@@ -183,7 +179,7 @@ class ToolboxButton(QToolButton):
             return
         widget = FastDataPlotWidget(datatable)
         LayoutManager.add_widget_to_central_area(
-            datatable.dataset, widget, f"Fast Plot - {datatable.dataset.name}", QIcon(":/icons/plot.png")
+            datatable.dataset, widget, f"{widget.title} - {datatable.dataset.name}", QIcon(":/icons/plot.png")
         )
 
     def _add_data_plot_widget(self):
@@ -192,7 +188,7 @@ class ToolboxButton(QToolButton):
             return
         widget = DataPlotWidget(datatable)
         LayoutManager.add_widget_to_central_area(
-            datatable.dataset, widget, f"Plot - {datatable.dataset.name}", QIcon(":/icons/plot.png")
+            datatable.dataset, widget, f"{widget.title} - {datatable.dataset.name}", QIcon(":/icons/plot.png")
         )
 
     def _add_histogram_widget(self):
@@ -482,18 +478,4 @@ class ToolboxButton(QToolButton):
             widget,
             f"{widget.title} - {datatable.dataset.name}",
             QIcon(":/icons/icons8-corner-16.png"),
-        )
-
-    def _add_report_widget(self) -> None:
-        """Add a reports widget to the central area.
-
-        Gets the currently selected dataset and creates a ReportsWidget
-        to generate and display reports summarizing the dataset.
-        """
-        dataset = manager.get_selected_dataset()
-        if dataset is None:
-            return
-        widget = ReportsWidget(dataset)
-        LayoutManager.add_widget_to_central_area(
-            dataset, widget, f"Report - {dataset.name}", QIcon(":/icons/report.png")
         )
