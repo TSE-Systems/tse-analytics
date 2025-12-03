@@ -1,16 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <author>Anton Rau</author>
- <class>ReportsWidget</class>
- <widget class="QWidget" name="ReportsWidget">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>274</width>
-    <height>210</height>
-   </rect>
-  </property>
+ <class>ReportWidget</class>
+ <widget class="QWidget" name="ReportWidget">
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="CustomTextEdit" name="editor"/>
@@ -25,7 +17,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../../../resources/resources.qrc"/>
+  <include location="../../../resources/resources.qrc"/>
  </resources>
  <connections/>
 </ui>

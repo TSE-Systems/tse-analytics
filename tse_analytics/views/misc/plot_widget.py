@@ -2,8 +2,9 @@ from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import QToolBar, QVBoxLayout, QWidget
 
-from tse_analytics.core import messaging
+from tse_analytics.core import manager
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.report import Report
 from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 
@@ -33,11 +34,13 @@ class PlotWidget(QWidget):
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
 
+        self.title = "Plot"
+
         self.canvas = MplCanvas(self)
 
         # Setup toolbar
         toolbar = QToolBar(
-            "Plot Widget Toolbar",
+            "Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
@@ -65,12 +68,10 @@ class PlotWidget(QWidget):
         self.canvas.clear(redraw)
 
     def _add_report(self):
-        """
-        Add the current plot to the dataset's report.
-
-        This method converts the matplotlib figure to an HTML image and appends it
-        to the dataset's report, then broadcasts a message to notify other components
-        that content has been added to the report.
-        """
-        self.datatable.dataset.report += get_html_image_from_figure(self.canvas.figure)
-        messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))
+        manager.add_report(
+            Report(
+                self.datatable.dataset,
+                self.title,
+                get_html_image_from_figure(self.canvas.figure),
+            )
+        )

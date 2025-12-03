@@ -4,9 +4,9 @@ from PySide6.QtPrintSupport import QPrintDialog
 from PySide6.QtWidgets import QComboBox, QFileDialog, QFontComboBox, QToolBar, QWidget
 
 from tse_analytics.core import messaging
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.report import Report
 from tse_analytics.styles.css import style_descriptive_table
-from tse_analytics.toolbox.reports.reports_widget_ui import Ui_ReportsWidget
+from tse_analytics.toolbox.reports.report_widget_ui import Ui_ReportWidget
 
 FONT_SIZES = [
     7,
@@ -29,15 +29,13 @@ FONT_SIZES = [
 ]
 
 
-class ReportsWidget(QWidget, messaging.MessengerListener):
-    def __init__(self, dataset: Dataset, parent: QWidget | None = None):
+class ReportWidget(QWidget, messaging.MessengerListener):
+    def __init__(self, report: Report, parent: QWidget | None = None):
         super().__init__(parent)
-        self.ui = Ui_ReportsWidget()
+        self.ui = Ui_ReportWidget()
         self.ui.setupUi(self)
 
-        self.dataset = dataset
-
-        messaging.subscribe(self, messaging.AddToReportMessage, self._add_to_report)
+        self.report = report
 
         self.ui.editor.textChanged.connect(self._report_changed)
         self.ui.editor.selectionChanged.connect(self._update_format)
@@ -222,18 +220,14 @@ class ReportsWidget(QWidget, messaging.MessengerListener):
         # Initialize.
         self._update_format()
 
-        self.ui.editor.document().setHtml(self.dataset.report)
-
-    def _add_to_report(self, message: messaging.AddToReportMessage):
-        if message.dataset == self.dataset:
-            self.ui.editor.setHtml(self.dataset.report)
+        self.ui.editor.document().setHtml(self.report.content)
 
     def _new_report(self):
         self.ui.editor.document().clear()
 
     def _report_changed(self):
-        if self.dataset is not None:
-            self.dataset.report = self.ui.editor.toHtml()
+        if self.report is not None:
+            self.report.content = self.ui.editor.toHtml()
 
     def _print(self):
         dlg = QPrintDialog()

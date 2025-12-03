@@ -1,6 +1,7 @@
 from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.workspace import Workspace
 from tse_analytics.core.models.tree_item import TreeItem
 
@@ -94,6 +95,12 @@ class DatatableChangedMessage(Message):
         """
         super().__init__(sender)
         self.datatable = datatable
+
+
+class ReportsChangedMessage(Message):
+    def __init__(self, sender, report: Report | None):
+        super().__init__(sender)
+        self.report = report
 
 
 class BinningMessage(Message):

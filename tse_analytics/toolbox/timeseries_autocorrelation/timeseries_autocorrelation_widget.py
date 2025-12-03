@@ -8,8 +8,9 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QLabel, QToolBar, QVBoxLayout, QWidget
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
-from tse_analytics.core import messaging
+from tse_analytics.core import manager
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import Aggregation
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure
@@ -131,5 +132,10 @@ class TimeseriesAutocorrelationWidget(QWidget):
         self.canvas.draw()
 
     def _add_report(self):
-        self.datatable.dataset.report += get_html_image_from_figure(self.canvas.figure)
-        messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))
+        manager.add_report(
+            Report(
+                self.datatable.dataset,
+                self.title,
+                get_html_image_from_figure(self.canvas.figure),
+            )
+        )

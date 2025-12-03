@@ -38,7 +38,7 @@ tasks:
       - pyside6-uic tse_analytics/toolbox/rm_anova/rm_anova_settings_widget.ui -o tse_analytics/toolbox/rm_anova/rm_anova_settings_widget_ui.py
       - pyside6-uic tse_analytics/toolbox/mixed_anova/mixed_anova_settings_widget.ui -o tse_analytics/toolbox/mixed_anova/mixed_anova_settings_widget_ui.py
       - pyside6-uic tse_analytics/toolbox/ancova/ancova_settings_widget.ui -o tse_analytics/toolbox/ancova/ancova_settings_widget_ui.py
-      - pyside6-uic tse_analytics/toolbox/reports/reports_widget.ui -o tse_analytics/toolbox/reports/reports_widget_ui.py
+      - pyside6-uic tse_analytics/toolbox/reports/report_widget.ui -o tse_analytics/toolbox/reports/report_widget_ui.py
 
   build-ui:phenomaster:
     cmds:

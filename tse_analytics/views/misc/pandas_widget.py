@@ -3,8 +3,9 @@ from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QFileDialog, QMenu, QToolBar, QToolButton, QVBoxLayout, QWidget
 
-from tse_analytics.core import messaging
+from tse_analytics.core import manager
 from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.report import Report
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.views.misc.pandas_table_view import PandasTableView
@@ -120,15 +121,14 @@ class PandasWidget(QWidget):
         TaskManager.start_task(worker)
 
     def _add_report(self):
-        """
-        Add the current DataFrame to the dataset's report.
-
-        This method converts the DataFrame to HTML and appends it to the dataset's
-        report, then broadcasts a message to notify other components that content
-        has been added to the report.
-        """
         if self.df is None:
             return
         # self.df.style.set_caption(self.title)
-        self.dataset.report += self.df.to_html()
-        messaging.broadcast(messaging.AddToReportMessage(self, self.dataset))
+
+        manager.add_report(
+            Report(
+                self.dataset,
+                self.title,
+                self.df.to_html(),
+            )
+        )

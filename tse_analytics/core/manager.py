@@ -18,6 +18,7 @@ from PySide6.QtCore import QTimer
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.workspace import Workspace
 from tse_analytics.core.settings_manager import get_csv_import_settings
 from tse_analytics.modules.intellicage.data import intellicage_dataset_merger
@@ -308,6 +309,15 @@ class Manager:
         if new_dataset is not None:
             self.add_dataset(new_dataset)
 
+    def add_report(self, report: Report) -> None:
+        # TODO: careful here!
+        report.dataset.add_report(report)
+        messaging.broadcast(messaging.ReportsChangedMessage(self, report))
+
+    def delete_report(self, report: Report) -> None:
+        report.dataset.delete_report(report.id)
+        messaging.broadcast(messaging.ReportsChangedMessage(self, report))
+
 
 _instance = Manager()
 
@@ -331,3 +341,5 @@ add_datatable = _instance.add_datatable
 remove_datatable = _instance.remove_datatable
 merge_datasets = _instance.merge_datasets
 clone_dataset = _instance.clone_dataset
+add_report = _instance.add_report
+delete_report = _instance.delete_report

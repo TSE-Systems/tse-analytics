@@ -7,9 +7,10 @@ from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QLabel, QSpinBox, QToolBar, QVBoxLayout, QWidget, QWidgetAction
 
-from tse_analytics.core import color_manager, messaging
+from tse_analytics.core import color_manager, manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.helper import normalize_nd_array
+from tse_analytics.core.data.report import Report
 from tse_analytics.core.plotting.actogram_utils import dataframe_to_actogram, plot_enhanced_actogram
 from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure, time_to_float
 from tse_analytics.views.misc.variable_selector import VariableSelector
@@ -184,11 +185,10 @@ class ActogramWidget(QWidget):
         self._add_plot_toolbar()
 
     def _add_report(self):
-        """Add the current actogram to the dataset report.
-
-        Converts the current actogram figure to HTML and adds it to the
-        dataset's report. Also broadcasts a message to notify the application
-        that content has been added to the report.
-        """
-        self.datatable.dataset.report += get_html_image_from_figure(self.canvas.figure)
-        messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))
+        manager.add_report(
+            Report(
+                self.datatable.dataset,
+                self.title,
+                get_html_image_from_figure(self.canvas.figure),
+            )
+        )

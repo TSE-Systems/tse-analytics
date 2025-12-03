@@ -19,9 +19,10 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from tse_analytics.core import messaging
+from tse_analytics.core import messaging, manager
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.models.pandas_model import PandasModel
 from tse_analytics.core.toaster import make_toast
@@ -265,5 +266,10 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.table_view.setModel(PandasModel(df, self.datatable, calculate=True))
 
     def _add_report(self):
-        self.datatable.dataset.report += self.descriptive_stats_widget.document().toHtml()
-        messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))
+        manager.add_report(
+            Report(
+                self.datatable.dataset,
+                "Descriptive Statistics",
+                self.descriptive_stats_widget.document().toHtml(),
+            )
+        )

@@ -16,9 +16,10 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from tse_analytics.core import color_manager, messaging
+from tse_analytics.core import color_manager, manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
+from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.utils import (
     get_h_spacer_widget,
@@ -61,6 +62,8 @@ class DataPlotWidget(QWidget):
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
+
+        self.title = "Plot"
 
         self.datatable = datatable
 
@@ -218,5 +221,10 @@ class DataPlotWidget(QWidget):
         return result
 
     def _add_report(self) -> None:
-        self.datatable.dataset.report += get_html_image_from_figure(self.canvas.figure)
-        messaging.broadcast(messaging.AddToReportMessage(self, self.datatable.dataset))
+        manager.add_report(
+            Report(
+                self.datatable.dataset,
+                self.title,
+                get_html_image_from_figure(self.canvas.figure),
+            )
+        )

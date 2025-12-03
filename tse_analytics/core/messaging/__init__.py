@@ -14,6 +14,9 @@ from tse_analytics.core.messaging.messages import (
     DatatableChangedMessage as DatatableChangedMessage,
 )
 from tse_analytics.core.messaging.messages import (
+    ReportsChangedMessage as ReportsChangedMessage,
+)
+from tse_analytics.core.messaging.messages import (
     SelectedTreeItemChangedMessage as SelectedTreeItemChangedMessage,
 )
 from tse_analytics.core.messaging.messages import (

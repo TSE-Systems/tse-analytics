@@ -1,8 +1,17 @@
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt, Signal
 
+from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.workspace import Workspace
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
+from tse_analytics.core.models.report_tree_item import ReportTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
+
+
+def _find_reports_node(item: DatasetTreeItem) -> TreeItem | None:
+    for child in item.child_items:
+        if child.name == "Reports":
+            return child
+    return None
 
 
 class WorkspaceModel(QAbstractItemModel):
@@ -21,6 +30,21 @@ class WorkspaceModel(QAbstractItemModel):
             dataset_tree_item = DatasetTreeItem(dataset)
             dataset.add_children_tree_items(dataset_tree_item)
             self.root_item.add_child(dataset_tree_item)
+        self.endResetModel()
+
+    def update_reports(self, report: Report):
+        self.beginResetModel()
+        for item in self.root_item.child_items:
+            if isinstance(item, DatasetTreeItem):
+                if item.dataset == report.dataset:
+                    reports_node = _find_reports_node(item)
+                    if reports_node is None:
+                        reports_node = TreeItem("Reports")
+                        item.add_child(reports_node)
+                    else:
+                        reports_node.clear()
+                    for report in report.dataset.reports.values():
+                        reports_node.add_child(ReportTreeItem(report))
         self.endResetModel()
 
     def getItem(self, index: QModelIndex):
