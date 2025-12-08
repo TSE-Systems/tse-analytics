@@ -24,11 +24,15 @@ class DatatableInputNode(BaseNode):
         self.initialize()
 
     def initialize(self):
-        datatable_names = (
-            [datatable.name for datatable in manager.get_selected_dataset().datatables.values()]
-            if len(manager.get_selected_dataset().datatables) > 0
-            else (["No datatables"])
-        )
+        dataset = manager.get_selected_dataset()
+        if dataset is None:
+            datatable_names = ["No datatables"]
+        else:
+            datatable_names = (
+                [datatable.name for datatable in dataset.datatables.values()]
+                if len(dataset.datatables) > 0
+                else (["No datatables"])
+            )
         widget: NodeComboBox = self.get_widget("datatable_name")
         widget.clear()
         widget.add_items(datatable_names)
