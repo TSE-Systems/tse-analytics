@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QWidgetAction,
+    QInputDialog,
 )
 
 from tse_analytics.core import color_manager, manager
@@ -109,7 +110,7 @@ class MatrixPlotWidget(QWidget):
         self.spacer_action.setDefaultWidget(get_h_spacer_widget(self.toolbar))
         self.toolbar.addAction(self.spacer_action)
 
-        self.toolbar.addAction("Add to Report").triggered.connect(self._add_report)
+        self.toolbar.addAction("Add Report").triggered.connect(self._add_report)
         self._add_plot_toolbar()
 
     def _destroyed(self):
@@ -201,10 +202,17 @@ class MatrixPlotWidget(QWidget):
         QTimer.singleShot(0, canvas.figure.tight_layout)
 
     def _add_report(self):
-        manager.add_report(
-            Report(
-                self.datatable.dataset,
-                self.title,
-                get_html_image_from_figure(self.canvas.figure),
-            )
+        name, ok = QInputDialog.getText(
+            self,
+            "Report",
+            "Please enter report name:",
+            text=self.title,
         )
+        if ok and name:
+            manager.add_report(
+                Report(
+                    self.datatable.dataset,
+                    name,
+                    get_html_image_from_figure(self.canvas.figure),
+                )
+            )

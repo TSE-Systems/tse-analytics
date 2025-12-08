@@ -6,7 +6,7 @@ from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QLabel, QSplitter, QTextEdit, QToolBar, QVBoxLayout, QWidget, QWidgetAction
+from PySide6.QtWidgets import QLabel, QSplitter, QTextEdit, QToolBar, QVBoxLayout, QWidget, QWidgetAction, QInputDialog
 
 from tse_analytics.core import color_manager, manager
 from tse_analytics.core.data.datatable import Datatable
@@ -95,7 +95,7 @@ class CorrelationWidget(QWidget):
         self.spacer_action.setDefaultWidget(get_h_spacer_widget(self.toolbar))
         self.toolbar.addAction(self.spacer_action)
 
-        self.toolbar.addAction("Add to Report").triggered.connect(self._add_report)
+        self.toolbar.addAction("Add Report").triggered.connect(self._add_report)
         self._add_plot_toolbar()
 
     def _destroyed(self):
@@ -181,13 +181,19 @@ class CorrelationWidget(QWidget):
         self.textEdit.document().setHtml(html)
 
     def _add_report(self):
-        html = get_html_image_from_figure(self.canvas.figure)
-        html += self.textEdit.toHtml()
-
-        manager.add_report(
-            Report(
-                self.datatable.dataset,
-                self.title,
-                html,
-            )
+        name, ok = QInputDialog.getText(
+            self,
+            "Report",
+            "Please enter report name:",
+            text=self.title,
         )
+        if ok and name:
+            html = get_html_image_from_figure(self.canvas.figure)
+            html += self.textEdit.toHtml()
+            manager.add_report(
+                Report(
+                    self.datatable.dataset,
+                    name,
+                    html,
+                )
+            )

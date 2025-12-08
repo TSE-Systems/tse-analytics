@@ -12,7 +12,7 @@ from matplotlib.figure import Figure
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QLabel, QToolBar, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QLabel, QToolBar, QVBoxLayout, QWidget, QInputDialog
 from scipy.stats import chi2
 
 from tse_analytics.core import manager
@@ -76,7 +76,7 @@ class TransitionsWidget(QWidget):
         toolbar.addWidget(plot_toolbar)
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
-        toolbar.addAction("Add to Report").triggered.connect(self._add_report)
+        toolbar.addAction("Add Report").triggered.connect(self._add_report)
         toolbar.addAction("Generate PDF").triggered.connect(self._generate_pdf)
 
         self.pdf_widget: PdfWidget | None = None
@@ -236,13 +236,20 @@ class TransitionsWidget(QWidget):
         fig.tight_layout()
 
     def _add_report(self):
-        manager.add_report(
-            Report(
-                self.datatable.dataset,
-                self.title,
-                get_html_image_from_figure(self.canvas.figure),
-            )
+        name, ok = QInputDialog.getText(
+            self,
+            "Report",
+            "Please enter report name:",
+            text=self.title,
         )
+        if ok and name:
+            manager.add_report(
+                Report(
+                    self.datatable.dataset,
+                    name,
+                    get_html_image_from_figure(self.canvas.figure),
+                )
+            )
 
     def _generate_pdf(self):
         columns = ["Timedelta", "Animal", "Corner"]

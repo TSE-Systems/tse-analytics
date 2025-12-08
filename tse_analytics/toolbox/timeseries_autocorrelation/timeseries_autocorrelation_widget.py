@@ -5,7 +5,7 @@ from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QLabel, QToolBar, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QLabel, QToolBar, QVBoxLayout, QWidget, QInputDialog
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
 from tse_analytics.core import manager
@@ -79,7 +79,7 @@ class TimeseriesAutocorrelationWidget(QWidget):
         toolbar.addWidget(plot_toolbar)
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
-        toolbar.addAction("Add to Report").triggered.connect(self._add_report)
+        toolbar.addAction("Add Report").triggered.connect(self._add_report)
 
     def _destroyed(self):
         settings = QSettings()
@@ -132,10 +132,17 @@ class TimeseriesAutocorrelationWidget(QWidget):
         self.canvas.draw()
 
     def _add_report(self):
-        manager.add_report(
-            Report(
-                self.datatable.dataset,
-                self.title,
-                get_html_image_from_figure(self.canvas.figure),
-            )
+        name, ok = QInputDialog.getText(
+            self,
+            "Report",
+            "Please enter report name:",
+            text=self.title,
         )
+        if ok and name:
+            manager.add_report(
+                Report(
+                    self.datatable.dataset,
+                    name,
+                    get_html_image_from_figure(self.canvas.figure),
+                )
+            )

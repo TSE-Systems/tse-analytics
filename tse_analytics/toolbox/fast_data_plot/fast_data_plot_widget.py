@@ -4,7 +4,7 @@ import pandas as pd
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
-from PySide6.QtWidgets import QCheckBox, QLabel, QToolBar, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QCheckBox, QLabel, QToolBar, QVBoxLayout, QWidget, QInputDialog
 
 from tse_analytics.core import manager, messaging
 from tse_analytics.core.data.binning import BinningMode
@@ -94,7 +94,7 @@ class FastDataPlotWidget(QWidget, messaging.MessengerListener):
         self.plot_toolbar_action.setVisible(False)
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
-        self.add_report_action = toolbar.addAction("Add to Report")
+        self.add_report_action = toolbar.addAction("Add Report")
         self.add_report_action.triggered.connect(self._add_report)
 
         self._refresh_data()
@@ -312,10 +312,17 @@ class FastDataPlotWidget(QWidget, messaging.MessengerListener):
             else:
                 html = self.barPlotView.get_report()
 
-        manager.add_report(
-            Report(
-                self.datatable.dataset,
-                self.title,
-                html,
-            )
+        name, ok = QInputDialog.getText(
+            self,
+            "Report",
+            "Please enter report name:",
+            text=self.title,
         )
+        if ok and name:
+            manager.add_report(
+                Report(
+                    self.datatable.dataset,
+                    name,
+                    html,
+                )
+            )

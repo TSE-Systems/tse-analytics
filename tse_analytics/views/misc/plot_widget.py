@@ -1,6 +1,6 @@
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from PySide6.QtCore import QSize, Qt
-from PySide6.QtWidgets import QToolBar, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QToolBar, QVBoxLayout, QWidget, QInputDialog
 
 from tse_analytics.core import manager
 from tse_analytics.core.data.datatable import Datatable
@@ -50,7 +50,7 @@ class PlotWidget(QWidget):
         toolbar.addWidget(plot_toolbar)
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
-        toolbar.addAction("Add to Report").triggered.connect(self._add_report)
+        toolbar.addAction("Add Report").triggered.connect(self._add_report)
 
         self._layout.addWidget(toolbar)
         self._layout.addWidget(self.canvas)
@@ -68,10 +68,17 @@ class PlotWidget(QWidget):
         self.canvas.clear(redraw)
 
     def _add_report(self):
-        manager.add_report(
-            Report(
-                self.datatable.dataset,
-                self.title,
-                get_html_image_from_figure(self.canvas.figure),
-            )
+        name, ok = QInputDialog.getText(
+            self,
+            "Report",
+            "Please enter report name:",
+            text=self.title,
         )
+        if ok and name:
+            manager.add_report(
+                Report(
+                    self.datatable.dataset,
+                    name,
+                    get_html_image_from_figure(self.canvas.figure),
+                )
+            )
