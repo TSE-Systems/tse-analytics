@@ -28,7 +28,7 @@ from tse_analytics.pipeline.nodes import (
     ViewerNode,
     ResampleNode,
     ReportNode,
-    DescriptiveStatsNode,
+    DescriptiveStatsNode, NormalityTestNode,
 )
 
 
@@ -132,6 +132,7 @@ class PipelineEditorWidget(QWidget):
             ResampleNode,
             ReportNode,
             DescriptiveStatsNode,
+            NormalityTestNode,
         ])
 
         # Get the graph widget and add it to the layout

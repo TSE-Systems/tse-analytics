@@ -14,6 +14,7 @@ from tse_analytics.pipeline.nodes.dataset_input_node import DatasetInputNode
 from tse_analytics.pipeline.nodes.datatable_input_node import DatatableInputNode
 from tse_analytics.pipeline.nodes.descriptive_stats_node import DescriptiveStatsNode
 from tse_analytics.pipeline.nodes.group_node import MyGroupNode
+from tse_analytics.pipeline.nodes.normality_test_node import NormalityTestNode
 from tse_analytics.pipeline.nodes.report_node import ReportNode
 from tse_analytics.pipeline.nodes.resample_node import ResampleNode
 from tse_analytics.pipeline.nodes.start_node import StartNode
@@ -46,4 +47,5 @@ __all__ = [
     ResampleNode,
     ReportNode,
     DescriptiveStatsNode,
+    NormalityTestNode,
 ]
