@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
     QToolBar,
     QVBoxLayout,
     QWidget,
+    QInputDialog,
 )
 from sklearn.manifold import MDS
 from sklearn.preprocessing import StandardScaler
@@ -110,7 +111,7 @@ class MdsWidget(QWidget):
         toolbar.addWidget(plot_toolbar)
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
-        self.add_report_action = toolbar.addAction("Add to Report")
+        self.add_report_action = toolbar.addAction("Add Report")
         self.add_report_action.triggered.connect(self._add_report)
 
     def _destroyed(self):
@@ -233,10 +234,17 @@ class MdsWidget(QWidget):
         self.add_report_action.setEnabled(True)
 
     def _add_report(self):
-        manager.add_report(
-            Report(
-                self.datatable.dataset,
-                self.title,
-                get_html_image_from_figure(self.canvas.figure),
-            )
+        name, ok = QInputDialog.getText(
+            self,
+            "Report",
+            "Please enter report name:",
+            text=self.title,
         )
+        if ok and name:
+            manager.add_report(
+                Report(
+                    self.datatable.dataset,
+                    name,
+                    get_html_image_from_figure(self.canvas.figure),
+                )
+            )

@@ -8,7 +8,7 @@ and applying binning and outlier detection.
 
 from copy import deepcopy
 from datetime import datetime
-from uuid import uuid4, UUID
+from uuid import uuid4
 
 import pandas as pd
 
@@ -59,7 +59,7 @@ class Dataset:
         self.outliers_settings = OutliersSettings(OutliersMode.OFF, 1.5)
         self.binning_settings = BinningSettings()
 
-        self.reports: dict[UUID, Report] = {}
+        self.reports: dict[str, Report] = {}
 
     @property
     def name(self) -> str:
@@ -409,10 +409,13 @@ class Dataset:
                 reports_node.add_child(ReportTreeItem(report))
 
     def add_report(self, report: Report) -> None:
-        self.reports[report.id] = report
+        if report.name in self.reports:
+            self.reports[report.name].content += report.content
+        else:
+            self.reports[report.name] = report
 
-    def delete_report(self, id: UUID) -> None:
-        self.reports.pop(id)
+    def delete_report(self, name: str) -> None:
+        self.reports.pop(name)
 
     def __setstate__(self, state):
         """

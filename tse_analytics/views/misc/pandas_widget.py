@@ -1,7 +1,7 @@
 import pandas as pd
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QFileDialog, QMenu, QToolBar, QToolButton, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QFileDialog, QMenu, QToolBar, QToolButton, QVBoxLayout, QWidget, QInputDialog
 
 from tse_analytics.core import manager
 from tse_analytics.core.data.dataset import Dataset
@@ -64,7 +64,7 @@ class PandasWidget(QWidget):
             self._resize_columns_width
         )
         # toolbar.addWidget(get_h_spacer_widget(toolbar))
-        # toolbar.addAction("Add to Report").triggered.connect(self._add_report)
+        # toolbar.addAction("Add Report").triggered.connect(self._add_report)
 
         self._layout.addWidget(toolbar)
 
@@ -125,10 +125,17 @@ class PandasWidget(QWidget):
             return
         # self.df.style.set_caption(self.title)
 
-        manager.add_report(
-            Report(
-                self.dataset,
-                self.title,
-                self.df.to_html(),
-            )
+        name, ok = QInputDialog.getText(
+            self,
+            "Report",
+            "Please enter report name:",
+            text=self.title,
         )
+        if ok and name:
+            manager.add_report(
+                Report(
+                    self.dataset,
+                    name,
+                    self.df.to_html(),
+                )
+            )

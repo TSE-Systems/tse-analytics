@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
     QToolBar,
     QVBoxLayout,
     QWidget,
+    QInputDialog,
 )
 
 from tse_analytics.core import color_manager, manager
@@ -124,7 +125,7 @@ class DataPlotWidget(QWidget):
         toolbar.addWidget(plot_toolbar)
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
-        toolbar.addAction("Add to Report").triggered.connect(self._add_report)
+        toolbar.addAction("Add Report").triggered.connect(self._add_report)
 
     def _destroyed(self):
         settings = QSettings()
@@ -221,10 +222,17 @@ class DataPlotWidget(QWidget):
         return result
 
     def _add_report(self) -> None:
-        manager.add_report(
-            Report(
-                self.datatable.dataset,
-                self.title,
-                get_html_image_from_figure(self.canvas.figure),
-            )
+        name, ok = QInputDialog.getText(
+            self,
+            "Report",
+            "Please enter report name:",
+            text=self.title,
         )
+        if ok and name:
+            manager.add_report(
+                Report(
+                    self.datatable.dataset,
+                    name,
+                    get_html_image_from_figure(self.canvas.figure),
+                )
+            )

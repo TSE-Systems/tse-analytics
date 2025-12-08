@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QToolButton,
     QVBoxLayout,
     QWidget,
+    QInputDialog,
 )
 
 from tse_analytics.core import messaging, manager
@@ -131,7 +132,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.show_stats_button.setEnabled(False)
         toolbar.addWidget(self.show_stats_button)
 
-        self.add_report_action = toolbar.addAction("Add to Report")
+        self.add_report_action = toolbar.addAction("Add Report")
         self.add_report_action.triggered.connect(self._add_report)
         self.add_report_action.setEnabled(False)
 
@@ -266,10 +267,17 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.table_view.setModel(PandasModel(df, self.datatable, calculate=True))
 
     def _add_report(self):
-        manager.add_report(
-            Report(
-                self.datatable.dataset,
-                "Descriptive Statistics",
-                self.descriptive_stats_widget.document().toHtml(),
-            )
+        name, ok = QInputDialog.getText(
+            self,
+            "Report",
+            "Please enter report name:",
+            text="Descriptive Statistics",
         )
+        if ok and name:
+            manager.add_report(
+                Report(
+                    self.datatable.dataset,
+                    name,
+                    self.descriptive_stats_widget.document().toHtml(),
+                )
+            )

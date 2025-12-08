@@ -315,7 +315,7 @@ class Manager:
         messaging.broadcast(messaging.ReportsChangedMessage(self, report))
 
     def delete_report(self, report: Report) -> None:
-        report.dataset.delete_report(report.id)
+        report.dataset.delete_report(report.name)
         messaging.broadcast(messaging.ReportsChangedMessage(self, report))
 
 

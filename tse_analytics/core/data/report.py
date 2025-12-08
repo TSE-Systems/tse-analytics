@@ -1,5 +1,4 @@
 from datetime import datetime
-from uuid import uuid4
 
 
 class Report:
@@ -9,7 +8,6 @@ class Report:
         name: str,
         content: str,
     ):
-        self.id = uuid4()
         self.timestamp = datetime.now()
 
         self.dataset = dataset

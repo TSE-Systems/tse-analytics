@@ -4,7 +4,16 @@ import pingouin as pg
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QAbstractItemView, QAbstractScrollArea, QLabel, QTextEdit, QToolBar, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (
+    QAbstractItemView,
+    QAbstractScrollArea,
+    QLabel,
+    QTextEdit,
+    QToolBar,
+    QVBoxLayout,
+    QWidget,
+    QInputDialog,
+)
 
 from tse_analytics.core import manager
 from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
@@ -125,7 +134,7 @@ class NWayAnovaWidget(QWidget):
         self._layout.addWidget(self.textEdit)
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
-        toolbar.addAction("Add to Report").triggered.connect(self._add_report)
+        toolbar.addAction("Add Report").triggered.connect(self._add_report)
 
     def _destroyed(self):
         settings = QSettings()
@@ -237,10 +246,17 @@ class NWayAnovaWidget(QWidget):
         self.textEdit.document().setHtml(html)
 
     def _add_report(self):
-        manager.add_report(
-            Report(
-                self.datatable.dataset,
-                self.title,
-                self.textEdit.toHtml(),
-            )
+        name, ok = QInputDialog.getText(
+            self,
+            "Report",
+            "Please enter report name:",
+            text=self.title,
         )
+        if ok and name:
+            manager.add_report(
+                Report(
+                    self.datatable.dataset,
+                    name,
+                    self.textEdit.toHtml(),
+                )
+            )

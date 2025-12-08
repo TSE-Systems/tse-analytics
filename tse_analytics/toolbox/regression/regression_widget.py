@@ -5,7 +5,7 @@ import seaborn.objects as so
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QLabel, QSplitter, QTextEdit, QToolBar, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QLabel, QSplitter, QTextEdit, QToolBar, QVBoxLayout, QWidget, QInputDialog
 
 from tse_analytics.core import color_manager, manager
 from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
@@ -97,7 +97,7 @@ class RegressionWidget(QWidget):
         toolbar.addWidget(plot_toolbar)
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
-        toolbar.addAction("Add to Report").triggered.connect(self._add_report)
+        toolbar.addAction("Add Report").triggered.connect(self._add_report)
 
     def _destroyed(self):
         settings = QSettings()
@@ -204,13 +204,19 @@ class RegressionWidget(QWidget):
         self.textEdit.document().setHtml(html)
 
     def _add_report(self):
-        html = get_html_image_from_figure(self.canvas.figure)
-        html += self.textEdit.toHtml()
-
-        manager.add_report(
-            Report(
-                self.datatable.dataset,
-                self.title,
-                html,
-            )
+        name, ok = QInputDialog.getText(
+            self,
+            "Report",
+            "Please enter report name:",
+            text=self.title,
         )
+        if ok and name:
+            html = get_html_image_from_figure(self.canvas.figure)
+            html += self.textEdit.toHtml()
+            manager.add_report(
+                Report(
+                    self.datatable.dataset,
+                    name,
+                    html,
+                )
+            )
