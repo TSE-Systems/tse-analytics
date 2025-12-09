@@ -1,6 +1,6 @@
 from NodeGraphQt import BaseNode
 from NodeGraphQt.widgets.node_widgets import NodeComboBox
-from scipy.stats import shapiro, kstest, normaltest
+from scipy.stats import kstest, normaltest, shapiro
 
 from tse_analytics.core import manager
 from tse_analytics.core.data.datatable import Datatable
@@ -42,8 +42,12 @@ class NormalityTestNode(BaseNode):
         widget.add_items(variable_names)
 
     def process(self, datatable: Datatable):
+        """
+        Test for normality and route data through appropriate output.
+        Returns tuple of (yes_output, no_output) based on test result.
+        """
         if datatable is None or not isinstance(datatable, Datatable):
-            return None
+            return None, None
 
         method = str(self.get_property("method"))
         variable = str(self.get_property("variable"))
@@ -54,12 +58,15 @@ class NormalityTestNode(BaseNode):
             stat, pvalue = shapiro(data)
         elif method == "Kolmogorov-Smirnov":
             stat, pvalue = kstest(data, "norm")
-        elif method == "D’Agostino":
+        elif method == "D'Agostino":
             stat, pvalue = normaltest(data)
 
-        result = pvalue > 0.05
+        # pyrefly: ignore [unbound-name]
+        is_normal = pvalue > 0.05
 
-        tooltip = f"<b>Result</b><br/>Statistic: {stat:.5f}<br/>P-value: {pvalue:.5f}<br/>Normal: {result}"
+        # pyrefly: ignore [unbound-name]
+        tooltip = f"<b>Result</b><br/>Statistic: {stat:.5f}<br/>P-value: {pvalue:.5f}<br/>Normal: {is_normal}"
         self.view.setToolTip(tooltip)
 
-        return result
+        # Return data through appropriate port
+        return (datatable, None) if is_normal else (None, datatable)

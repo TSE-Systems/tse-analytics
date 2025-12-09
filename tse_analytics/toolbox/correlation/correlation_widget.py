@@ -6,7 +6,7 @@ from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QLabel, QSplitter, QTextEdit, QToolBar, QVBoxLayout, QWidget, QWidgetAction, QInputDialog
+from PySide6.QtWidgets import QInputDialog, QLabel, QSplitter, QTextEdit, QToolBar, QVBoxLayout, QWidget, QWidgetAction
 
 from tse_analytics.core import color_manager, manager
 from tse_analytics.core.data.datatable import Datatable

@@ -17,18 +17,19 @@ from tse_analytics.pipeline.nodes import (
     DatasetInputNode,
     DatasetOutputNode,
     DatatableInputNode,
+    DescriptiveStatsNode,
     DropdownMenuNode,
     FilterNode,
     MergeNode,
     MyGroupNode,
+    NormalityTestNode,
+    ReportNode,
+    ResampleNode,
     StartNode,
     StatisticsNode,
     TextInputNode,
     TTestNode,
     ViewerNode,
-    ResampleNode,
-    ReportNode,
-    DescriptiveStatsNode, NormalityTestNode,
 )
 
 

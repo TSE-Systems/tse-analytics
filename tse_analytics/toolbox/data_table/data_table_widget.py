@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QAbstractScrollArea,
     QFileDialog,
+    QInputDialog,
     QLabel,
     QMenu,
     QTableView,
@@ -17,7 +18,6 @@ from PySide6.QtWidgets import (
     QToolButton,
     QVBoxLayout,
     QWidget,
-    QInputDialog,
 )
 
 from tse_analytics.core import manager, messaging

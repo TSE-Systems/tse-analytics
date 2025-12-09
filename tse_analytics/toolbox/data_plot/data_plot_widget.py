@@ -10,11 +10,11 @@ from PySide6.QtWidgets import (
     QAbstractScrollArea,
     QComboBox,
     QDoubleSpinBox,
+    QInputDialog,
     QLabel,
     QToolBar,
     QVBoxLayout,
     QWidget,
-    QInputDialog,
 )
 
 from tse_analytics.core import color_manager, manager

@@ -10,6 +10,7 @@ class PipelineNodeGraph(NodeGraph):
 
         # Properties bin widget.
         self._properties_bin = PropertiesBinWidget(node_graph=self)
+        # pyrefly: ignore [bad-argument-type]
         self._properties_bin.setWindowFlags(Qt.WindowType.Tool | Qt.WindowType.WindowStaysOnTopHint)
 
         # wire signal.
@@ -64,23 +65,33 @@ class PipelineNodeGraph(NodeGraph):
         return result
 
     def execute_pipeline(self) -> dict:
-        # Get all nodes in topological order
+        """
+        Execute pipeline with support for conditional branching.
+        Handles if/else nodes by routing data through appropriate branches.
+        """
         nodes = self.get_execution_order()
-
-        # Execute nodes in order
         node_outputs = {}
+        port_outputs = {}  # Store outputs per port for branching
+
         for node in nodes:
-            # Get inputs from connected nodes
+            # Get inputs from connected nodes via specific ports
             inputs = []
             for input_port in node.input_ports():
                 connected_ports = input_port.connected_ports()
                 if connected_ports:
-                    # Get the output from the connected node
-                    connected_node = connected_ports[0].node()
-                    if connected_node.id in node_outputs:
-                        inputs.append(node_outputs[connected_node.id])
+                    # Get output from connected port
+                    connected_port = connected_ports[0]
+                    port_key = (connected_port.node().id, connected_port.name())
+
+                    if port_key in port_outputs:
+                        inputs.append(port_outputs[port_key])
                     else:
-                        inputs.append(None)
+                        # Fallback to node output
+                        connected_node = connected_port.node()
+                        if connected_node.id in node_outputs:
+                            inputs.append(node_outputs[connected_node.id])
+                        else:
+                            inputs.append(None)
                 else:
                     inputs.append(None)
 
@@ -92,7 +103,20 @@ class PipelineNodeGraph(NodeGraph):
             else:
                 result = None
 
-            # Store the output
+            # Store outputs
             node_outputs[node.id] = result
+
+            # For nodes with multiple outputs (like if/else), map results to ports
+            output_ports = node.output_ports()
+            if isinstance(result, (tuple, list)) and len(output_ports) == len(result):
+                # Map each output to its corresponding port
+                for port, value in zip(output_ports, result):
+                    port_key = (node.id, port.name())
+                    port_outputs[port_key] = value
+            elif len(output_ports) > 0:
+                # Single output: assign to all ports
+                for port in output_ports:
+                    port_key = (node.id, port.name())
+                    port_outputs[port_key] = result
 
         return node_outputs

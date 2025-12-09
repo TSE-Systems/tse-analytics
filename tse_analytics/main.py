@@ -14,6 +14,7 @@ from multiprocessing import freeze_support
 import matplotlib
 import pandas as pd
 import seaborn as sns
+import seaborn.objects as so
 from loguru import logger
 from pyqtgraph import setConfigOptions
 from PySide6.QtCore import QSettings
@@ -46,7 +47,7 @@ pd.set_option("colheader_justify", "center")  # FOR TABLE <th>
 
 # Global Seaborn settings
 # sns.objects.Plot.config.display["format"] = "svg"
-sns.objects.Plot.config.theme.update(sns.axes_style("whitegrid"))
+so.Plot.config.theme.update(sns.axes_style("whitegrid"))
 sns.set_theme(style="whitegrid")
 sns.set_color_codes("pastel")
 

@@ -7,12 +7,12 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QAbstractScrollArea,
+    QInputDialog,
     QLabel,
     QTextEdit,
     QToolBar,
     QVBoxLayout,
     QWidget,
-    QInputDialog,
 )
 
 from tse_analytics.core import manager

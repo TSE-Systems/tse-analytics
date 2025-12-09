@@ -40,10 +40,12 @@ from tse_analytics.views.main_window_ui import Ui_MainWindow
 MAX_RECENT_FILES = 10
 
 
-class MainWindow(QMainWindow, Ui_MainWindow):
+class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setupUi(self)
+
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
 
         self.settings = QSettings()
 
@@ -55,22 +57,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.ui_timer.start(1000)
 
         self.memory_usage_label = QLabel()
-        self.statusBar.addPermanentWidget(self.memory_usage_label)
+        self.ui.statusBar.addPermanentWidget(self.memory_usage_label)
 
-        self.menuOpenRecent.aboutToShow.connect(self._populate_open_recent)
+        self.ui.menuOpenRecent.aboutToShow.connect(self._populate_open_recent)
 
         self.toolbox_button = ToolboxButton(self)
 
-        self.toolBar.addSeparator()
-        self.toolBar.addWidget(self.toolbox_button)
+        self.ui.toolBar.addSeparator()
+        self.ui.toolBar.addWidget(self.toolbox_button)
 
         # Initialize dock manager. Because the parent parameter is a QMainWindow
         # the dock manager registers itself as the central widget.
-        LayoutManager(self, self.menuView)
+        LayoutManager(self, self.ui.menuView)
 
-        self.menuStyle.addAction("Default").triggered.connect(lambda: self._set_style("default"))
-        self.menuStyle.addAction("TSE Light").triggered.connect(lambda: self._set_style("tse-light"))
-        # self.menuStyle.addAction("TSE Dark").triggered.connect(lambda: self.set_style("tse-dark"))
+        self.ui.menuStyle.addAction("Default").triggered.connect(lambda: self._set_style("default"))
+        self.ui.menuStyle.addAction("TSE Light").triggered.connect(lambda: self._set_style("tse-light"))
+        # self.ui.menuStyle.addAction("TSE Dark").triggered.connect(lambda: self.set_style("tse-dark"))
 
         LayoutManager.set_central_widget()
 
@@ -113,21 +115,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area
         )
 
-        self.actionImportDataset.triggered.connect(self._import_dataset_dialog)
-        self.actionNewWorkspace.triggered.connect(self._new_workspace)
-        self.actionOpenWorkspace.triggered.connect(self._load_workspace_dialog)
-        self.actionSaveWorkspace.triggered.connect(self._save_workspace_dialog)
-        self.actionPipelineEditor.triggered.connect(self._show_pipeline_editor)
-        self.actionSaveLayout.triggered.connect(self._save_layout)
-        self.actionRestoreLayout.triggered.connect(self._restore_layout)
-        self.actionResetLayout.triggered.connect(self._reset_layout)
-        self.actionExit.triggered.connect(lambda: QApplication.exit())
-        self.actionHelp.triggered.connect(self._show_help)
-        self.actionAbout.triggered.connect(self._show_about_dialog)
-        self.actionSettings.triggered.connect(self._show_settings_dialog)
-        self.actionExportMergedCsv.triggered.connect(self._show_export_merged_csv_dialog)
+        self.ui.actionImportDataset.triggered.connect(self._import_dataset_dialog)
+        self.ui.actionNewWorkspace.triggered.connect(self._new_workspace)
+        self.ui.actionOpenWorkspace.triggered.connect(self._load_workspace_dialog)
+        self.ui.actionSaveWorkspace.triggered.connect(self._save_workspace_dialog)
+        self.ui.actionPipelineEditor.triggered.connect(self._show_pipeline_editor)
+        self.ui.actionSaveLayout.triggered.connect(self._save_layout)
+        self.ui.actionRestoreLayout.triggered.connect(self._restore_layout)
+        self.ui.actionResetLayout.triggered.connect(self._reset_layout)
+        self.ui.actionExit.triggered.connect(lambda: QApplication.exit())
+        self.ui.actionHelp.triggered.connect(self._show_help)
+        self.ui.actionAbout.triggered.connect(self._show_about_dialog)
+        self.ui.actionSettings.triggered.connect(self._show_settings_dialog)
+        self.ui.actionExportMergedCsv.triggered.connect(self._show_export_merged_csv_dialog)
 
-        self.menuFile.aboutToShow.connect(self._menu_file_about_to_show)
+        self.ui.menuFile.aboutToShow.connect(self._menu_file_about_to_show)
 
         # Store default dock layout
         LayoutManager.add_perspective("Default")
@@ -147,11 +149,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def _menu_file_about_to_show(self):
         dataset = manager.get_selected_dataset()
-        self.actionExportMergedCsv.setVisible(dataset is not None and isinstance(dataset, IntelliMazeDataset))
+        self.ui.actionExportMergedCsv.setVisible(dataset is not None and isinstance(dataset, IntelliMazeDataset))
 
     def _populate_open_recent(self):
         # Step 1. Remove the old options from the menu
-        self.menuOpenRecent.clear()
+        self.ui.menuOpenRecent.clear()
         # Step 2. Dynamically create the actions
         actions = []
         filenames = list(self.settings.value("recentFilesList", []))
@@ -160,7 +162,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             action.triggered.connect(partial(self._load_workspace, filename))
             actions.append(action)
         # Step 3. Add the actions to the menu
-        self.menuOpenRecent.addActions(actions)
+        self.ui.menuOpenRecent.addActions(actions)
 
     def _load_workspace(self, filename: str):
         filenames = list(self.settings.value("recentFilesList", []))
