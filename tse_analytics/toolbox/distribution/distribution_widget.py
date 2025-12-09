@@ -4,7 +4,7 @@ import seaborn as sns
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QCheckBox, QComboBox, QLabel, QToolBar, QVBoxLayout, QWidget, QInputDialog
+from PySide6.QtWidgets import QCheckBox, QComboBox, QInputDialog, QLabel, QToolBar, QVBoxLayout, QWidget
 
 from tse_analytics.core import color_manager, manager
 from tse_analytics.core.data.datatable import Datatable

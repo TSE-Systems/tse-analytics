@@ -5,7 +5,6 @@ from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import QToolBar, QVBoxLayout, QWidget
 
 from tse_analytics.core import color_manager
-from tse_analytics.core.data.shared import Variable
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_bin_data import DrinkFeedBinData
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_raw_data import DrinkFeedRawData
 from tse_analytics.views.misc.MplCanvas import MplCanvas

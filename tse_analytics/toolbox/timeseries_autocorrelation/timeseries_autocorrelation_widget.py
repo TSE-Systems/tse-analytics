@@ -5,7 +5,7 @@ from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QLabel, QToolBar, QVBoxLayout, QWidget, QInputDialog
+from PySide6.QtWidgets import QInputDialog, QLabel, QToolBar, QVBoxLayout, QWidget
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
 from tse_analytics.core import manager

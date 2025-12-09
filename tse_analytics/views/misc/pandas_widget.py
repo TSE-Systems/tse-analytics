@@ -1,7 +1,7 @@
 import pandas as pd
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QFileDialog, QMenu, QToolBar, QToolButton, QVBoxLayout, QWidget, QInputDialog
+from PySide6.QtWidgets import QFileDialog, QInputDialog, QMenu, QToolBar, QToolButton, QVBoxLayout, QWidget
 
 from tse_analytics.core import manager
 from tse_analytics.core.data.dataset import Dataset

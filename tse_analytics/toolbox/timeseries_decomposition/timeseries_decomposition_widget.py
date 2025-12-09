@@ -4,7 +4,7 @@ import pandas as pd
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QComboBox, QLabel, QSpinBox, QToolBar, QVBoxLayout, QWidget, QInputDialog
+from PySide6.QtWidgets import QComboBox, QInputDialog, QLabel, QSpinBox, QToolBar, QVBoxLayout, QWidget
 from statsmodels.tsa.seasonal import STL, seasonal_decompose
 
 from tse_analytics.core import manager

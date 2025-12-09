@@ -6,7 +6,7 @@ import seaborn.objects as so
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QLabel, QMessageBox, QTextEdit, QToolBar, QVBoxLayout, QWidget, QInputDialog
+from PySide6.QtWidgets import QInputDialog, QLabel, QMessageBox, QTextEdit, QToolBar, QVBoxLayout, QWidget
 
 from tse_analytics.core import color_manager, manager
 from tse_analytics.core.data.binning import BinningMode

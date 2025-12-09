@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QAbstractScrollArea,
     QFileDialog,
+    QInputDialog,
     QLabel,
     QMenu,
     QTableView,
@@ -17,10 +18,9 @@ from PySide6.QtWidgets import (
     QToolButton,
     QVBoxLayout,
     QWidget,
-    QInputDialog,
 )
 
-from tse_analytics.core import messaging, manager
+from tse_analytics.core import manager, messaging
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report

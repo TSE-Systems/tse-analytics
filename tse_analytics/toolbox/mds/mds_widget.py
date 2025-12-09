@@ -9,12 +9,12 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QAbstractScrollArea,
+    QInputDialog,
     QLabel,
     QSpinBox,
     QToolBar,
     QVBoxLayout,
     QWidget,
-    QInputDialog,
 )
 from sklearn.manifold import MDS
 from sklearn.preprocessing import StandardScaler

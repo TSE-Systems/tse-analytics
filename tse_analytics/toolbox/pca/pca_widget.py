@@ -9,11 +9,11 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QAbstractScrollArea,
+    QInputDialog,
     QLabel,
     QToolBar,
     QVBoxLayout,
     QWidget,
-    QInputDialog,
 )
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler

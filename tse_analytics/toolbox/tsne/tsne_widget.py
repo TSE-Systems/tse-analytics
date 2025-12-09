@@ -10,12 +10,12 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QAbstractScrollArea,
     QDoubleSpinBox,
+    QInputDialog,
     QLabel,
     QSpinBox,
     QToolBar,
     QVBoxLayout,
     QWidget,
-    QInputDialog,
 )
 from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler

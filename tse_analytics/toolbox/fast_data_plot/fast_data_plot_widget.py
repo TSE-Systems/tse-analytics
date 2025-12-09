@@ -4,9 +4,9 @@ import pandas as pd
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
-from PySide6.QtWidgets import QCheckBox, QLabel, QToolBar, QVBoxLayout, QWidget, QInputDialog
+from PySide6.QtWidgets import QCheckBox, QInputDialog, QLabel, QToolBar, QVBoxLayout, QWidget
 
-from tse_analytics.core import messaging, manager
+from tse_analytics.core import manager, messaging
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import process_time_cycles_binning

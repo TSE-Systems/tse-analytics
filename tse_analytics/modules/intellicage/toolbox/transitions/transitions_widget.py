@@ -12,7 +12,7 @@ from matplotlib.figure import Figure
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QLabel, QToolBar, QVBoxLayout, QWidget, QInputDialog
+from PySide6.QtWidgets import QInputDialog, QLabel, QToolBar, QVBoxLayout, QWidget
 from scipy.stats import chi2
 
 from tse_analytics.core import manager

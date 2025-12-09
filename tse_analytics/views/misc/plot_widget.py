@@ -1,6 +1,6 @@
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from PySide6.QtCore import QSize, Qt
-from PySide6.QtWidgets import QToolBar, QVBoxLayout, QWidget, QInputDialog
+from PySide6.QtWidgets import QInputDialog, QToolBar, QVBoxLayout, QWidget
 
 from tse_analytics.core import manager
 from tse_analytics.core.data.datatable import Datatable

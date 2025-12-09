@@ -9,7 +9,7 @@ authors = [
 ]
 homepage = "https://github.com/TSE-Systems/tse-analytics"
 repository = "https://github.com/TSE-Systems/tse-analytics"
-requires-python = "==3.13.10"
+requires-python = "==3.13.11"
 dependencies = [
     "astropy==7.2.0",
     "connectorx==0.4.4",
@@ -34,11 +34,10 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "mypy==1.19.0",
     "pyinstaller==6.17.0",
     "qtsass==0.4.0",
-    "ruff==0.14.7",
-    "ty==0.0.1a23",
+    "ruff==0.14.8",
+    "ty==0.0.1a32",
 ]
 
 [project.scripts]
