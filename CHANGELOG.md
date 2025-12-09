@@ -4,6 +4,7 @@ TSE Analytics Change Log
 # 1.7.0 (2025-12-03)
 
 - New: Persistent reports repository (per dataset). Multiple reports are supported.
+- Change: support for the new drinkfeed_bin table format (group-housing systems).
 
 
 ----------------------------------------------------------------------------------------------------

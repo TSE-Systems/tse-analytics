@@ -15,7 +15,7 @@ def read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedBinD
     metadata = dataset.metadata["tables"][tse_import_settings.DRINKFEED_BIN_TABLE]
 
     # Read variables list
-    skipped_variables = ["DateTime", "Box"]
+    skipped_variables = ["DateTime", "Box", "Animal"]
     variables: dict[str, Variable] = {}
     dtypes = {}
     for item in metadata["columns"].values():
@@ -49,11 +49,14 @@ def read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedBinD
     for animal in dataset.animals.values():
         box_to_animal_map[animal.properties["Box"]] = animal.id
 
-    df.insert(
-        df.columns.get_loc("Box") + 1,
-        "Animal",
-        df["Box"].replace(box_to_animal_map),
-    )
+    if "Animal" not in df.columns:
+        df.insert(
+            df.columns.get_loc("Box") + 1,
+            "Animal",
+            df["Box"].replace(box_to_animal_map),
+        )
+    else:
+        df["Animal"] = df["Animal"].astype(str)
 
     df = df.astype({
         "Animal": "category",
