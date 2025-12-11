@@ -62,6 +62,10 @@ def read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedBinD
         "Animal": "category",
     })
 
+    # Sort by DateTime column
+    df.sort_values(by=["DateTime", "Animal"], inplace=True)
+    df.reset_index(drop=True, inplace=True)
+
     data = DrinkFeedBinData(
         dataset,
         tse_import_settings.DRINKFEED_BIN_TABLE,
@@ -94,6 +98,10 @@ def read_drinkfeed_raw(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedRawD
 
     # Convert DateTime from POSIX format
     df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
+
+    # Sort by DateTime column
+    df.sort_values(by=["DateTime"], inplace=True)
+    df.reset_index(drop=True, inplace=True)
 
     # Convert dict keys type from str to int
     param_to_sensor_mapping = {int(k): v for k, v in hardware_metadata["params"].items()}

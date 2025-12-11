@@ -1,6 +1,12 @@
 TSE Analytics Change Log
 ====================================================================================================
 
+# 1.7.1 (2025-12-11)
+
+- Fix: drinkfeed_bin table data analysis.
+
+
+----------------------------------------------------------------------------------------------------
 # 1.7.0 (2025-12-03)
 
 - New: Persistent reports repository (per dataset). Multiple reports are supported.
