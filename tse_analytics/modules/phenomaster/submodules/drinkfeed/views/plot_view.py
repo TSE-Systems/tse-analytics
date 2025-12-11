@@ -75,6 +75,9 @@ class PlotView(pg.GraphicsLayoutWidget):
             return
 
         variable_df = self._df[self._df["Sensor"] == self._variable]
+        if variable_df.empty:
+            return
+
         animal_ids = variable_df["Animal"].unique().tolist()
         for i, animal_id in enumerate(animal_ids):
             filtered_data = variable_df[variable_df["Animal"] == animal_id]
