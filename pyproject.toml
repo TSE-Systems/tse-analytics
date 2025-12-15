@@ -23,8 +23,8 @@ dependencies = [
     "psutil==7.1.3",
     "pyqt-toast-notification==1.3.3",
     "pyqtgraph==0.14.0",
-    "pyside6==6.10.0",
-    "pyside6-qtads==4.4.1.1",
+    "pyside6==6.10.1",
+    "pyside6-qtads==4.4.1.2",
     "scikit-learn==1.8.0",
     "scipy==1.16.3",
     "seaborn==0.13.2",
@@ -37,8 +37,8 @@ dev = [
     "pyinstaller==6.17.0",
     "pyrefly==0.45.2",
     "qtsass==0.4.0",
-    "ruff==0.14.8",
-    "ty==0.0.1a32",
+    "ruff==0.14.9",
+    "ty==0.0.1a34",
 ]
 
 [project.scripts]
