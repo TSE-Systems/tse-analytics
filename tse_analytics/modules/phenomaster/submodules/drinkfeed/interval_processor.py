@@ -13,10 +13,7 @@ def process_drinkfeed_intervals(
     diets_dict: dict[int, float],
 ):
     # TODO: drop unnecessary rows
-    long_df = long_df.loc[~(long_df["Value"] == 0)]
-
-    long_df.sort_values(by=["DateTime"], inplace=True)
-    long_df.reset_index(drop=True, inplace=True)
+    # long_df = long_df.loc[~(long_df["Value"] == 0)]
 
     group_by = ["Animal", "Sensor"]
     grouped = long_df.groupby(group_by, dropna=False, observed=False)
@@ -27,7 +24,11 @@ def process_drinkfeed_intervals(
         seconds=settings.fixed_interval.second,
     )
 
-    intervals_df = grouped.resample(timedelta, on="DateTime", origin="start").aggregate({
+    intervals_df = grouped.resample(
+        timedelta,
+        on="DateTime",
+        origin=drinkfeed_data.dataset.experiment_started,
+    ).aggregate({
         "Value": "sum",
     })
 
@@ -58,6 +59,10 @@ def process_drinkfeed_intervals(
     for sensor in sensors:
         if "Feed" in sensor:
             _add_caloric_column(intervals_df, sensor, diets_dict)
+
+    # Sort by DateTime column
+    intervals_df.sort_values(by=["DateTime", "Animal"], inplace=True)
+    intervals_df.reset_index(drop=True, inplace=True)
 
     return intervals_df
 

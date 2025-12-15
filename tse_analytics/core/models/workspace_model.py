@@ -32,18 +32,18 @@ class WorkspaceModel(QAbstractItemModel):
             self.root_item.add_child(dataset_tree_item)
         self.endResetModel()
 
-    def update_reports(self, report: Report):
+    def update_reports(self, report_to_update: Report):
         self.beginResetModel()
         for item in self.root_item.child_items:
             if isinstance(item, DatasetTreeItem):
-                if item.dataset == report.dataset:
+                if item.dataset == report_to_update.dataset:
                     reports_node = _find_reports_node(item)
                     if reports_node is None:
                         reports_node = TreeItem("Reports")
                         item.add_child(reports_node)
                     else:
                         reports_node.clear()
-                    for report in report.dataset.reports.values():
+                    for report in report_to_update.dataset.reports.values():
                         reports_node.add_child(ReportTreeItem(report))
         self.endResetModel()
 
