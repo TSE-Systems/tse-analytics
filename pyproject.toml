@@ -1,6 +1,6 @@
 [project]
 name = "tse-analytics"
-version = "2.0.0beta0"
+version = "2.0.0dev0"
 description = "TSE Analytics data analysys"
 license = "GPL-3.0-or-later"
 readme = "README.md"
@@ -16,17 +16,17 @@ dependencies = [
     "jinja2==3.1.6",
     "lmfit==1.3.4",
     "loguru==0.7.3",
-    "matplotlib==3.10.7",
-    "nodegraphqt>=0.6.43",
+    "matplotlib==3.10.8",
+    "nodegraphqt==0.6.43",
     "openpyxl==3.1.5",
     "pandas==2.3.3",
     "pingouin==0.5.5",
     "psutil==7.1.3",
     "pyqt-toast-notification==1.3.3",
     "pyqtgraph==0.14.0",
-    "pyside6==6.10.0",
-    "pyside6-qtads==4.4.1.1",
-    "scikit-learn==1.7.2",
+    "pyside6==6.10.1",
+    "pyside6-qtads==4.4.1.2",
+    "scikit-learn==1.8.0",
     "scipy==1.16.3",
     "seaborn==0.13.2",
     "traja==25.0.1",
@@ -36,10 +36,10 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pyinstaller==6.17.0",
-    "pyrefly==0.45.0",
+    "pyrefly==0.46.0",
     "qtsass==0.4.0",
-    "ruff==0.14.8",
-    "ty==0.0.1a32",
+    "ruff==0.14.9",
+    "ty==0.0.2",
 ]
 
 [project.scripts]

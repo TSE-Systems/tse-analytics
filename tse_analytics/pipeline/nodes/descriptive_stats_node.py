@@ -17,6 +17,18 @@ class DescriptiveStatsNode(BaseNode):
         if datatable is None or not isinstance(datatable, Datatable):
             return None
 
-        descriptive = np.round(datatable.active_df.describe(), 3).T[["count", "mean", "std", "min", "max"]].to_html()
+        descriptive = (
+            np.round(datatable.active_df.describe(), 3)
+            .T[
+                [
+                    "count",
+                    "mean",
+                    "std",
+                    "min",
+                    "max",
+                ]
+            ]
+            .to_html()
+        )
 
         return descriptive

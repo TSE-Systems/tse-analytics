@@ -9,28 +9,13 @@ from PySide6.QtWidgets import QFileDialog, QMessageBox, QToolBar, QVBoxLayout, Q
 from tse_analytics.core import manager
 from tse_analytics.pipeline import PipelineNodeGraph
 from tse_analytics.pipeline.nodes import (
-    AggregateNode,
-    ANOVANode,
-    BinningNode,
-    CheckboxNode,
-    CorrelationNode,
-    DatasetInputNode,
-    DatasetOutputNode,
     DatatableInputNode,
     DescriptiveStatsNode,
-    DropdownMenuNode,
-    FilterNode,
-    MergeNode,
-    MyGroupNode,
     NormalityTestNode,
     ReportNode,
     ResampleNode,
-    StartNode,
-    StatisticsNode,
-    TextInputNode,
-    TTestNode,
-    ViewerNode,
 )
+from tse_analytics.views.general.pipeline.hotkeys import hotkeys
 
 
 class PipelineEditorWidget(QWidget):
@@ -106,30 +91,11 @@ class PipelineEditorWidget(QWidget):
         # Create the node graph
         self.graph = PipelineNodeGraph(self)
 
-        self._init_menu()
+        self.graph.set_context_menu("graph", hotkeys, str(Path(__file__).parent.resolve()))
 
         # Register all custom nodes
         self.graph.register_nodes([
-            # Base nodes
-            DatasetInputNode,
             DatatableInputNode,
-            DatasetOutputNode,
-            ViewerNode,
-            # Transform nodes
-            FilterNode,
-            AggregateNode,
-            MergeNode,
-            BinningNode,
-            # Analysis nodes
-            StatisticsNode,
-            CorrelationNode,
-            TTestNode,
-            ANOVANode,
-            MyGroupNode,
-            DropdownMenuNode,
-            TextInputNode,
-            CheckboxNode,
-            StartNode,
             ResampleNode,
             ReportNode,
             DescriptiveStatsNode,
@@ -141,11 +107,6 @@ class PipelineEditorWidget(QWidget):
 
         # Configure graph appearance
         # self.graph.widget.setMinimumSize(400, 300)
-
-    def _init_menu(self):
-        BASE_PATH = Path(__file__).parent.resolve()
-        hotkey_path = Path(BASE_PATH, "hotkeys.json")
-        self.graph.set_context_menu_from_file(hotkey_path, "graph")
 
     def _new_pipeline(self):
         """Create a new pipeline."""
@@ -221,7 +182,8 @@ class PipelineEditorWidget(QWidget):
             return
 
         dataset = manager.get_selected_dataset()
-        self.graph.initialize_pipeline(dataset)
+        if dataset is not None:
+            self.graph.initialize_pipeline(dataset)
 
     def _execute_pipeline(self):
         """Execute the current pipeline."""
@@ -235,7 +197,10 @@ class PipelineEditorWidget(QWidget):
         logger.info("\r".join([node.name() for node in nodes]))
 
         # Execute nodes in order
-        node_outputs = self.graph.execute_pipeline()
+        dataset = manager.get_selected_dataset()
+        if dataset is None:
+            return
+        node_outputs = self.graph.execute_pipeline(dataset)
 
         # Emit signal with results
         self.pipeline_executed.emit(node_outputs)

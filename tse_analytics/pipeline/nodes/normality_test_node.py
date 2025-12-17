@@ -3,6 +3,7 @@ from NodeGraphQt.widgets.node_widgets import NodeComboBox
 from scipy.stats import kstest, normaltest, shapiro
 
 from tse_analytics.core import manager
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 
 
@@ -19,7 +20,11 @@ class NormalityTestNode(BaseNode):
         self.add_combo_menu(
             "method",
             "Method",
-            items=["Shapiro-Wilk", "Kolmogorov-Smirnov", "D’Agostino",],
+            items=[
+                "Shapiro-Wilk",
+                "Kolmogorov-Smirnov",
+                "D’Agostino",
+            ],
             tooltip="Test method",
         )
 
@@ -29,9 +34,8 @@ class NormalityTestNode(BaseNode):
             items=[],
             tooltip="Please select a variable to test",
         )
-        self.initialize()
 
-    def initialize(self):
+    def initialize(self, dataset: Dataset):
         datatable = manager.get_selected_datatable()
         if datatable is None:
             variable_names = ["No variables"]

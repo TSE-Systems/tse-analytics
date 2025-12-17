@@ -85,6 +85,7 @@ class Ui_MainWindow(object):
         self.actionExportMergedCsv.setMenuRole(QAction.MenuRole.NoRole)
         self.actionPipelineEditor = QAction(MainWindow)
         self.actionPipelineEditor.setObjectName(u"actionPipelineEditor")
+        self.actionPipelineEditor.setEnabled(False)
         icon9 = QIcon()
         icon9.addFile(u":/icons/icons8-genealogy-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.actionPipelineEditor.setIcon(icon9)

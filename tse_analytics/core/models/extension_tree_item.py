@@ -36,6 +36,10 @@ class ExtensionTreeItem(TreeItem):
         return self._extension_data()
 
     @property
+    def dataset(self):
+        return self.extension_data.dataset
+
+    @property
     def icon(self):
         """
         Get the icon to display for this extension in the tree view.

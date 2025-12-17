@@ -4,9 +4,6 @@
     <option name="sdkName" value="Python 3.13 (tse-analytics)" />
   </component>
   <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.13 (tse-analytics)" project-jdk-type="Python SDK" />
-  <component name="PyreflyConfiguration">
-    <option name="enabled" value="true" />
-  </component>
   <component name="PythonCompatibilityInspectionAdvertiser">
     <option name="version" value="3" />
   </component>

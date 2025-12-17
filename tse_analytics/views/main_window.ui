@@ -219,6 +219,9 @@
    </property>
   </action>
   <action name="actionPipelineEditor">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="icon">
     <iconset resource="../../resources/resources.qrc">
      <normaloff>:/icons/icons8-genealogy-16.png</normaloff>:/icons/icons8-genealogy-16.png</iconset>

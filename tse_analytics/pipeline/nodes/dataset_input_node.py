@@ -2,6 +2,7 @@ from NodeGraphQt import BaseNode
 from NodeGraphQt.widgets.node_widgets import NodeComboBox
 
 from tse_analytics.core import manager
+from tse_analytics.core.data.dataset import Dataset
 
 
 class DatasetInputNode(BaseNode):
@@ -21,9 +22,8 @@ class DatasetInputNode(BaseNode):
             items=[],
             tooltip="Please select a dataset",
         )
-        self.initialize()
 
-    def initialize(self):
+    def initialize(self, dataset: Dataset):
         dataset_names = (
             [dataset.name for dataset in manager.get_workspace().datasets.values()]
             if len(manager.get_workspace().datasets) > 0
@@ -33,11 +33,8 @@ class DatasetInputNode(BaseNode):
         widget.clear()
         widget.add_items(dataset_names)
 
-        print(f"'{self.NODE_NAME}' node initialized")
-
     def process(self, context=None):
         dataset = self.get_dataset()
-        print(f"'{self.NODE_NAME}' node processed")
 
     def get_dataset(self):
         """Get the selected dataset."""

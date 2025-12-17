@@ -27,7 +27,7 @@ class PipelineNodeGraph(NodeGraph):
         all_nodes = self.all_nodes()
         for node in all_nodes:
             if hasattr(node, "initialize"):
-                node.initialize()
+                node.initialize(dataset)
 
     def get_execution_order(self) -> list[BaseNode]:
         """
@@ -64,7 +64,7 @@ class PipelineNodeGraph(NodeGraph):
 
         return result
 
-    def execute_pipeline(self) -> dict:
+    def execute_pipeline(self, dataset: Dataset) -> dict:
         """
         Execute pipeline with support for conditional branching.
         Handles if/else nodes by routing data through appropriate branches.
@@ -98,8 +98,6 @@ class PipelineNodeGraph(NodeGraph):
             # Execute the node
             if hasattr(node, "process"):
                 result = node.process(*inputs) if inputs else node.process(None)
-            elif hasattr(node, "get_dataset"):
-                result = node.get_dataset()
             else:
                 result = None
 

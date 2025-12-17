@@ -1,5 +1,5 @@
 from PySide6.QtCore import QModelIndex, QSize, Qt
-from PySide6.QtGui import QIcon, QPalette
+from PySide6.QtGui import QAction, QIcon, QPalette
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QDialog,
@@ -41,14 +41,6 @@ from tse_analytics.views.general.datasets.adjust_dataset_dialog import AdjustDat
 from tse_analytics.views.general.datasets.datasets_merge_dialog import DatasetsMergeDialog
 from tse_analytics.views.misc.raw_data_widget.raw_data_widget import RawDataWidget
 
-"""
-Datasets widget module for TSE Analytics.
-
-This module provides a widget for displaying and managing datasets in the application,
-including functionality for importing, merging, adjusting, and removing datasets.
-The widget displays datasets in a tree view and allows users to interact with them.
-"""
-
 
 class DatasetsWidget(QWidget, messaging.MessengerListener):
     """
@@ -59,14 +51,7 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
     changes and updates the tree view accordingly.
     """
 
-    def __init__(self, parent, toolbox_button: ToolboxButton):
-        """
-        Initialize the DatasetsWidget with parent widget and toolbox button.
-
-        Args:
-            parent: Parent widget
-            toolbox_button (ToolboxButton): Toolbox button associated with this widget
-        """
+    def __init__(self, parent, toolbox_button: ToolboxButton, pipeline_editor_action: QAction):
         super().__init__(parent)
 
         self._layout = QVBoxLayout(self)
@@ -74,9 +59,10 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
         self._layout.setContentsMargins(0, 0, 0, 0)
 
         self.toolbox_button = toolbox_button
+        self.pipeline_editor_action = pipeline_editor_action
 
         toolbar = QToolBar(
-            "Datasets Toolbar",
+            "Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
@@ -356,6 +342,7 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                 ):
                     manager.delete_report(tree_item.report)
             self.toolbox_button.set_state(False)
+            self.pipeline_editor_action.setEnabled(False)
             if CSV_IMPORT_ENABLED:
                 self.import_button.setEnabled(False)
             self.adjust_dataset_action.setEnabled(False)
@@ -410,8 +397,10 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                 manager.set_selected_dataset(item.datatable.dataset)
                 manager.set_selected_datatable(item.datatable)
                 self.toolbox_button.set_enabled_actions(item.datatable.dataset, item.datatable)
-            elif is_report_item:
-                manager.set_selected_dataset(item.report.dataset)
+            else:
+                if hasattr(item, "dataset"):
+                    if item.dataset is not None:
+                        manager.set_selected_dataset(item.dataset)
 
             if CSV_IMPORT_ENABLED:
                 self.import_button.setEnabled(is_dataset_item)
@@ -420,6 +409,7 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
             self.clone_dataset_action.setEnabled(is_dataset_item)
 
             self.toolbox_button.set_state(is_datatable_item)
+            self.pipeline_editor_action.setEnabled(manager.get_selected_dataset() is not None)
 
     def _treeview_double_clicked(self, index: QModelIndex) -> None:
         """

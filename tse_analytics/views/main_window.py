@@ -77,7 +77,13 @@ class MainWindow(QMainWindow):
         LayoutManager.set_central_widget()
 
         datasets_dock_widget = LayoutManager.register_dock_widget(
-            DatasetsWidget(self, self.toolbox_button), "Datasets", QIcon(":/icons/datasets.png")
+            DatasetsWidget(
+                self,
+                self.toolbox_button,
+                self.ui.actionPipelineEditor,
+            ),
+            "Datasets",
+            QIcon(":/icons/datasets.png"),
         )
         datasets_dock_area = LayoutManager.add_dock_widget(PySide6QtAds.LeftDockWidgetArea, datasets_dock_widget)
 
@@ -232,10 +238,9 @@ class MainWindow(QMainWindow):
         LayoutManager.open_perspective("Default")
 
     def _show_pipeline_editor(self):
-        # Add pipeline editor
         widget = PipelineEditorWidget()
         LayoutManager.add_widget_to_central_area(
-            None, widget, "Pipeline Editor", QIcon(":/icons/icons8-genealogy-16.png")
+            manager.get_selected_dataset(), widget, "Pipeline Editor", QIcon(":/icons/icons8-genealogy-16.png")
         )
 
     def _show_about_dialog(self) -> None:

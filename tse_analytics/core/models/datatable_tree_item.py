@@ -37,6 +37,10 @@ class DatatableTreeItem(TreeItem):
         return self._datatable()
 
     @property
+    def dataset(self):
+        return self.datatable.dataset
+
+    @property
     def icon(self):
         """
         Get the icon to display for this datatable in the tree view.

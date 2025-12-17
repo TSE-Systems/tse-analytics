@@ -18,6 +18,10 @@ class ReportTreeItem(TreeItem):
         return self._report()
 
     @property
+    def dataset(self):
+        return self.report.dataset
+
+    @property
     def icon(self):
         return QIcon(":/icons/icons8-report-16.png")
 
