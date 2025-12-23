@@ -2,7 +2,7 @@ import pandas as pd
 from NodeGraphQt import constants
 
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.pipeline.pipeline_node import PipelineNode
+from tse_analytics.pipeline import PipelineNode
 
 
 class ResampleNode(PipelineNode):

@@ -1,6 +1,6 @@
 from tse_analytics.core import manager
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.pipeline.pipeline_node import PipelineNode
+from tse_analytics.pipeline import PipelineNode
 
 
 class DatatableInputNode(PipelineNode):

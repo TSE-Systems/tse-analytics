@@ -1,4 +1,4 @@
-from tse_analytics.pipeline.pipeline_node import PipelineNode
+from tse_analytics.pipeline import PipelineNode
 
 
 class IfElseNode(PipelineNode):
