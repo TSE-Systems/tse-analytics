@@ -167,7 +167,8 @@ class DataPlotWidget(QWidget):
         df = self._get_timeline_plot_df(selected_variables_dict)
 
         (
-            so.Plot(
+            so
+            .Plot(
                 df,
                 x="Hours",
                 color=by,

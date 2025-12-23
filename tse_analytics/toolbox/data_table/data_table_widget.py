@@ -243,7 +243,8 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
         if len(selected_variables_names) > 0:
             descriptive = (
-                np.round(self.df[selected_variables_names].describe(), 3)
+                np
+                .round(self.df[selected_variables_names].describe(), 3)
                 .T[["count", "mean", "std", "min", "max"]]
                 .to_html()
             )

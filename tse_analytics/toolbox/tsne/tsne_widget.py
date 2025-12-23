@@ -226,7 +226,8 @@ class TsneWidget(QWidget):
                 palette = color_manager.colormap_name
 
         (
-            so.Plot(
+            so
+            .Plot(
                 df,
                 x="tSNE1",
                 y="tSNE2",

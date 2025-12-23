@@ -1,14 +1,14 @@
-from NodeGraphQt import BaseNode
 from NodeGraphQt.widgets.node_widgets import NodeComboBox
 from scipy.stats import kstest, normaltest, shapiro
 
 from tse_analytics.core import manager
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.pipeline.pipeline_node import PipelineNode
 
 
-class NormalityTestNode(BaseNode):
-    __identifier__ = "pipeline.test"
+class NormalityTestNode(PipelineNode):
+    __identifier__ = "stats"
     NODE_NAME = "Normality"
 
     def __init__(self):
@@ -65,10 +65,8 @@ class NormalityTestNode(BaseNode):
         elif method == "D'Agostino":
             stat, pvalue = normaltest(data)
 
-        # pyrefly: ignore [unbound-name]
         is_normal = pvalue > 0.05
 
-        # pyrefly: ignore [unbound-name]
         tooltip = f"<b>Result</b><br/>Statistic: {stat:.5f}<br/>P-value: {pvalue:.5f}<br/>Normal: {is_normal}"
         self.view.setToolTip(tooltip)
 

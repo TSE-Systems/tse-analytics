@@ -1,11 +1,11 @@
 import numpy as np
-from NodeGraphQt import BaseNode
 
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.pipeline.pipeline_node import PipelineNode
 
 
-class DescriptiveStatsNode(BaseNode):
-    __identifier__ = "pipeline.table"
+class DescriptiveStatsNode(PipelineNode):
+    __identifier__ = "stats"
     NODE_NAME = "Descriptive Statistics"
 
     def __init__(self):
@@ -18,7 +18,8 @@ class DescriptiveStatsNode(BaseNode):
             return None
 
         descriptive = (
-            np.round(datatable.active_df.describe(), 3)
+            np
+            .round(datatable.active_df.describe(), 3)
             .T[
                 [
                     "count",

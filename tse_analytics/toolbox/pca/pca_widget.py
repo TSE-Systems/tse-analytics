@@ -195,7 +195,8 @@ class PcaWidget(QWidget):
                 palette = color_manager.colormap_name
 
         (
-            so.Plot(
+            so
+            .Plot(
                 df,
                 x="PC1",
                 y="PC2",

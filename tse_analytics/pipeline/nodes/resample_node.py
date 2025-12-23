@@ -1,11 +1,12 @@
 import pandas as pd
-from NodeGraphQt import BaseNode, constants
+from NodeGraphQt import constants
 
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.pipeline.pipeline_node import PipelineNode
 
 
-class ResampleNode(BaseNode):
-    __identifier__ = "pipeline.table"
+class ResampleNode(PipelineNode):
+    __identifier__ = "transformation"
     NODE_NAME = "Resample"
 
     def __init__(self):

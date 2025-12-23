@@ -208,7 +208,8 @@ class MixedAnovaWidget(QWidget):
         )
 
         plot = (
-            so.Plot(
+            so
+            .Plot(
                 df,
                 x="Bin",
                 y=variable.name,

@@ -149,7 +149,8 @@ class RegressionWidget(QWidget):
                 palette = color_manager.colormap_name
 
         (
-            so.Plot(
+            so
+            .Plot(
                 df,
                 x=covariate.name,
                 y=response.name,

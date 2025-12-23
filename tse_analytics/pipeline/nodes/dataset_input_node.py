@@ -1,15 +1,15 @@
-from NodeGraphQt import BaseNode
 from NodeGraphQt.widgets.node_widgets import NodeComboBox
 
 from tse_analytics.core import manager
 from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.pipeline.pipeline_node import PipelineNode
 
 
-class DatasetInputNode(BaseNode):
+class DatasetInputNode(PipelineNode):
     """Node for selecting a dataset."""
 
-    __identifier__ = "pipeline.input"
-    NODE_NAME = "Dataset Input"
+    __identifier__ = "input"
+    NODE_NAME = "Dataset"
 
     def __init__(self):
         super().__init__()

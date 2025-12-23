@@ -111,7 +111,8 @@ class HistogramWidget(QWidget):
                 palette = color_manager.colormap_name
 
         (
-            so.Plot(
+            so
+            .Plot(
                 df,
                 x=variable.name,
                 color=by,

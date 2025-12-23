@@ -212,7 +212,8 @@ class MdsWidget(QWidget):
                 palette = color_manager.colormap_name
 
         (
-            so.Plot(
+            so
+            .Plot(
                 df,
                 x="MDS1",
                 y="MDS2",

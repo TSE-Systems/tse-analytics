@@ -8,13 +8,19 @@ class PipelineNodeGraph(NodeGraph):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        # self.set_background_color(255, 255, 255)
+        # self.set_grid_color(223, 227, 239)
+
         # Properties bin widget.
         self._properties_bin = PropertiesBinWidget(node_graph=self)
-        # pyrefly: ignore [bad-argument-type]
+        self._properties_bin.set_limit(1)
         self._properties_bin.setWindowFlags(Qt.WindowType.Tool | Qt.WindowType.WindowStaysOnTopHint)
 
-        # wire signal.
         self.node_double_clicked.connect(self.display_prop_bin)
+
+    def _register_builtin_nodes(self):
+        # See https://github.com/jchanvfx/NodeGraphQt/issues/481
+        pass
 
     def display_prop_bin(self, node: BaseNode):
         """

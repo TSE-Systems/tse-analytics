@@ -1,12 +1,11 @@
-from NodeGraphQt import BaseNode
-
 from tse_analytics.core import manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
+from tse_analytics.pipeline.pipeline_node import PipelineNode
 
 
-class ReportNode(BaseNode):
-    __identifier__ = "pipeline"
+class ReportNode(PipelineNode):
+    __identifier__ = "output"
     NODE_NAME = "Report"
 
     def __init__(self):

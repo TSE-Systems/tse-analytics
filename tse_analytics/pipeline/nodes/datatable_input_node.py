@@ -1,14 +1,13 @@
-from NodeGraphQt import BaseNode
-
 from tse_analytics.core import manager
 from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.pipeline.pipeline_node import PipelineNode
 
 
-class DatatableInputNode(BaseNode):
+class DatatableInputNode(PipelineNode):
     """Node for selecting a datatable."""
 
-    __identifier__ = "pipeline.input"
-    NODE_NAME = "Datatable Input"
+    __identifier__ = "input"
+    NODE_NAME = "Datatable"
 
     def __init__(self):
         super().__init__()

@@ -63,7 +63,8 @@ class IntervalsPlotWidget(QWidget):
 
         self.canvas.clear(False)
         (
-            so.Plot(df, x="Bin", y=selected_variable, color="Animal")
+            so
+            .Plot(df, x="Bin", y=selected_variable, color="Animal")
             .add(so.Bars())
             .scale(color=color_manager.get_animal_to_color_dict(self.drinkfeed_data.dataset.animals))
             .label(

@@ -1,8 +1,8 @@
-from NodeGraphQt import BaseNode
+from tse_analytics.pipeline.pipeline_node import PipelineNode
 
 
-class StartNode(BaseNode):
-    __identifier__ = "pipeline"
+class StartNode(PipelineNode):
+    __identifier__ = "input"
 
     NODE_NAME = "Start"
 
