@@ -23,7 +23,7 @@ class DatatableInputNode(PipelineNode):
 
         self.add_combo_menu(
             "datatable_name",
-            "Datatable",
+            "",
             items=datatable_names,
             tooltip="Please select a datatable",
         )

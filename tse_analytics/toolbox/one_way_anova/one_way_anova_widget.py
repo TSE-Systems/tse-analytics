@@ -15,6 +15,7 @@ from tse_analytics.core.data.report import Report
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure, get_html_table
 from tse_analytics.styles.css import style_descriptive_table
+from tse_analytics.toolbox.shared import EFFECT_SIZE
 from tse_analytics.views.misc.factor_selector import FactorSelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
@@ -26,17 +27,6 @@ class OneWayAnovaWidgetSettings:
 
 
 class OneWayAnovaWidget(QWidget):
-    eff_size = {
-        "No effect size": "none",
-        "Unbiased Cohen d": "cohen",
-        "Hedges g": "hedges",
-        # "Pearson correlation coefficient": "r",
-        "Eta-square": "eta-square",
-        "Odds ratio": "odds-ratio",
-        "Area Under the Curve": "AUC",
-        "Common Language Effect Size": "CLES",
-    }
-
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
@@ -77,7 +67,7 @@ class OneWayAnovaWidget(QWidget):
 
         toolbar.addWidget(QLabel("Effect size type:"))
         self.comboBoxEffectSizeType = QComboBox(toolbar)
-        self.comboBoxEffectSizeType.addItems(list(self.eff_size))
+        self.comboBoxEffectSizeType.addItems(list(EFFECT_SIZE))
         self.comboBoxEffectSizeType.setCurrentText("Hedges g")
         toolbar.addWidget(self.comboBoxEffectSizeType)
 
@@ -151,7 +141,7 @@ class OneWayAnovaWidget(QWidget):
         # TODO: should or should not?
         df.dropna(inplace=True)
 
-        effsize = self.eff_size[self.comboBoxEffectSizeType.currentText()]
+        effsize = EFFECT_SIZE[self.comboBoxEffectSizeType.currentText()]
 
         normality = pg.normality(df, group=factor_name, dv=dependent_variable_name)
         homoscedasticity = pg.homoscedasticity(df, group=factor_name, dv=dependent_variable_name)

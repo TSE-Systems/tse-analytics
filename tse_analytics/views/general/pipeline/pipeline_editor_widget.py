@@ -17,6 +17,7 @@ from tse_analytics.pipeline.nodes import (
     NormalityTestNode,
     ReportNode,
     ResampleNode,
+    OneWayAnovaNode,
 )
 from tse_analytics.views.general.pipeline.hotkeys import hotkeys
 
@@ -104,6 +105,7 @@ class PipelineEditorWidget(QWidget):
             DescriptiveStatsNode,
             IfElseNode,
             NormalityTestNode,
+            OneWayAnovaNode,
             ReportNode,
             ResampleNode,
         ])

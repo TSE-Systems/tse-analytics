@@ -24,6 +24,7 @@ from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_h_spacer_widget, get_html_table, get_widget_tool_button
 from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.toolbox.n_way_anova.n_way_anova_settings_widget_ui import Ui_NWayAnovaSettingsWidget
+from tse_analytics.toolbox.shared import EFFECT_SIZE, P_ADJUSTMENT
 from tse_analytics.views.misc.factors_table_widget import FactorsTableWidget
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
@@ -35,26 +36,6 @@ class NWayAnovaWidgetSettings:
 
 
 class NWayAnovaWidget(QWidget):
-    p_adjustment = {
-        "No correction": "none",
-        "One-step Bonferroni": "bonf",
-        "One-step Sidak": "sidak",
-        "Step-down Bonferroni": "holm",
-        "Benjamini/Hochberg FDR": "fdr_bh",
-        "Benjamini/Yekutieli FDR": "fdr_by",
-    }
-
-    eff_size = {
-        "No effect size": "none",
-        "Unbiased Cohen d": "cohen",
-        "Hedges g": "hedges",
-        # "Pearson correlation coefficient": "r",
-        "Eta-square": "eta-square",
-        "Odds ratio": "odds-ratio",
-        "Area Under the Curve": "AUC",
-        "Common Language Effect Size": "CLES",
-    }
-
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
@@ -115,10 +96,10 @@ class NWayAnovaWidget(QWidget):
         )
         toolbar.addWidget(settings_button)
 
-        self.settings_widget_ui.comboBoxPAdjustment.addItems(self.p_adjustment.keys())
+        self.settings_widget_ui.comboBoxPAdjustment.addItems(P_ADJUSTMENT.keys())
         self.settings_widget_ui.comboBoxPAdjustment.setCurrentText("No correction")
 
-        self.settings_widget_ui.comboBoxEffectSizeType.addItems(self.eff_size.keys())
+        self.settings_widget_ui.comboBoxEffectSizeType.addItems(EFFECT_SIZE.keys())
         self.settings_widget_ui.comboBoxEffectSizeType.setCurrentText("Hedges g")
 
         # Insert toolbar to the widget
@@ -212,8 +193,8 @@ class NWayAnovaWidget(QWidget):
             detailed=True,
         )
 
-        effsize = self.eff_size[self.settings_widget_ui.comboBoxEffectSizeType.currentText()]
-        padjust = self.p_adjustment[self.settings_widget_ui.comboBoxPAdjustment.currentText()]
+        effsize = EFFECT_SIZE[self.settings_widget_ui.comboBoxEffectSizeType.currentText()]
+        padjust = P_ADJUSTMENT[self.settings_widget_ui.comboBoxPAdjustment.currentText()]
 
         html_template = """
                         {anova}

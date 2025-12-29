@@ -1,18 +1,17 @@
 from dataclasses import dataclass
 
-import pingouin as pg
-from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QInputDialog, QLabel, QToolBar, QVBoxLayout, QWidget
+from matplotlib.backends.backend_qt import NavigationToolbar2QT
 
 from tse_analytics.core import manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
-from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure
-from tse_analytics.views.misc.group_by_selector import GroupBySelector
+from tse_analytics.toolbox.normality.processor import test_normality
 from tse_analytics.views.misc.MplCanvas import MplCanvas
+from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
@@ -90,88 +89,27 @@ class NormalityWidget(QWidget):
         split_mode, selected_factor_name = self.group_by_selector.get_group_by()
         variable = self.variableSelector.get_selected_variable()
 
-        match split_mode:
-            case SplitMode.ANIMAL:
-                by = "Animal"
-            case SplitMode.RUN:
-                by = "Run"
-            case SplitMode.FACTOR:
-                by = selected_factor_name
-            case _:
-                by = None
-
         df = self.datatable.get_df(
             [variable.name],
             split_mode,
             selected_factor_name,
         )
-        # df.dropna(inplace=True)
 
-        if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:
-            df[by] = df[by].cat.remove_unused_categories()
+        test_normality(
+            df,
+            variable.name,
+            split_mode,
+            selected_factor_name,
+            self.canvas.figure,
+        )
 
-        match split_mode:
-            case SplitMode.ANIMAL:
-                animals = df["Animal"].unique()
-                nrows, ncols = self._get_plot_layout(len(animals))
-                for index, animal in enumerate(animals):
-                    ax = self.canvas.figure.add_subplot(nrows, ncols, index + 1)
-                    pg.qqplot(
-                        df[df["Animal"] == animal][variable.name],
-                        dist="norm",
-                        marker=".",
-                        ax=ax,
-                    )
-                    ax.set_title(f"Animal: {animal}")
-            case SplitMode.FACTOR:
-                levels = df[selected_factor_name].unique()
-                nrows, ncols = self._get_plot_layout(len(levels))
-                for index, level in enumerate(levels):
-                    # TODO: NaN check
-                    if level != level:
-                        continue
-                    ax = self.canvas.figure.add_subplot(nrows, ncols, index + 1)
-                    pg.qqplot(
-                        df[df[selected_factor_name] == level][variable.name],
-                        dist="norm",
-                        marker=".",
-                        ax=ax,
-                    )
-                    ax.set_title(level)
-            case SplitMode.RUN:
-                runs = df["Run"].unique()
-                nrows, ncols = self._get_plot_layout(len(runs))
-                for index, run in enumerate(runs):
-                    ax = self.canvas.figure.add_subplot(nrows, ncols, index + 1)
-                    pg.qqplot(
-                        df[df["Run"] == run][variable.name],
-                        dist="norm",
-                        marker=".",
-                        ax=ax,
-                    )
-                    ax.set_title(f"Run: {run}")
-            case SplitMode.TOTAL:
-                ax = self.canvas.figure.add_subplot(1, 1, 1)
-                pg.qqplot(
-                    df[variable.name],
-                    dist="norm",
-                    marker=".",
-                    ax=ax,
-                )
-                ax.set_title("Total")
+        # print(pg.normality(df))
+
+        # transformed_data, best_lambda = boxcox(df[variable.name])
+        # print(pg.normality(transformed_data))
 
         self.canvas.figure.tight_layout()
         self.canvas.draw()
-
-    def _get_plot_layout(self, number_of_elements: int):
-        if number_of_elements == 1:
-            return 1, 1
-        elif number_of_elements == 2:
-            return 1, 2
-        elif number_of_elements <= 4:
-            return 2, 2
-        else:
-            return round(number_of_elements / 3) + 1, 3
 
     def _add_report(self):
         name, ok = QInputDialog.getText(

@@ -12,7 +12,7 @@ class ResampleNode(PipelineNode):
     def __init__(self):
         super().__init__()
         self.add_input("datatable")
-        self.add_output("resampled")
+        self.add_output("datatable")
 
         self.create_property(
             "unit",

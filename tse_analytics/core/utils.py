@@ -37,7 +37,7 @@ def get_html_image_from_figure(figure: Figure) -> str:
         A string containing an HTML img tag with the figure embedded as base64 data.
     """
     io = BytesIO()
-    figure.savefig(io, format="png")
+    figure.savefig(io, format="png", bbox_inches="tight")
     encoded = b64encode(io.getvalue()).decode("utf-8")
     return f"<img src='data:image/png;base64,{encoded}'><br/>"
 

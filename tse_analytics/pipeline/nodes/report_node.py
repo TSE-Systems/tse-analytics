@@ -14,7 +14,7 @@ class ReportNode(PipelineNode):
 
         self.add_text_input(
             "report_name",
-            "Name",
+            "",
             "Report",
             "Report name",
             "Report name",
