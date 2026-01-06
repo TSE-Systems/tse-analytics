@@ -3,6 +3,7 @@ from NodeGraphQt import constants
 
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.pipeline import PipelineNode
+from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 
 
 class ResampleNode(PipelineNode):
@@ -28,9 +29,10 @@ class ResampleNode(PipelineNode):
             widget_tooltip="Timedelta value",
         )
 
-    def process(self, datatable: Datatable):
+    def process(self, packet: PipelinePacket) -> PipelinePacket:
+        datatable = packet.value
         if datatable is None or not isinstance(datatable, Datatable):
-            return None
+            return PipelinePacket.inactive(reason="Invalid input datatable")
 
         unit = str(self.get_property("unit"))
         delta = int(self.get_property("delta"))
@@ -40,4 +42,4 @@ class ResampleNode(PipelineNode):
         result = datatable.clone()
         result.resample(resampling_interval)
 
-        return result
+        return PipelinePacket(result)

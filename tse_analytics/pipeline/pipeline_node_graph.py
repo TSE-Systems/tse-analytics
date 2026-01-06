@@ -2,6 +2,7 @@ from NodeGraphQt import BaseNode, NodeGraph, PropertiesBinWidget
 from PySide6.QtCore import Qt
 
 from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 
 
 class PipelineNodeGraph(NodeGraph):
@@ -76,51 +77,59 @@ class PipelineNodeGraph(NodeGraph):
         Handles if/else nodes by routing data through appropriate branches.
         """
         nodes = self.get_execution_order()
-        node_outputs = {}
-        port_outputs = {}  # Store outputs per port for branching
+        port_outputs: dict[tuple[str, str], PipelinePacket] = {}  # Store outputs per port for branching
 
         for node in nodes:
+            # Ignore nodes without a process method
+            if not hasattr(node, "process"):
+                continue
+
             # Get inputs from connected nodes via specific ports
-            inputs = []
+            input_packets: list[PipelinePacket] = []
             for input_port in node.input_ports():
                 connected_ports = input_port.connected_ports()
-                if connected_ports:
-                    # Get output from connected port
-                    connected_port = connected_ports[0]
-                    port_key = (connected_port.node().id, connected_port.name())
 
-                    if port_key in port_outputs:
-                        inputs.append(port_outputs[port_key])
-                    else:
-                        # Fallback to node output
-                        connected_node = connected_port.node()
-                        if connected_node.id in node_outputs:
-                            inputs.append(node_outputs[connected_node.id])
-                        else:
-                            inputs.append(None)
-                else:
-                    inputs.append(None)
+                if not connected_ports:
+                    input_packets.append(
+                        PipelinePacket.inactive(
+                            reason="Missing connection",
+                            node_id=node.id,
+                            input_port=input_port.name(),
+                        )
+                    )
+                    continue
+
+                # Get output from connected port
+                connected_port = connected_ports[0]
+                port_key = (connected_port.node().id, connected_port.name())
+                packet = port_outputs.get(
+                    port_key,
+                    PipelinePacket.inactive(
+                        reason="Missing upstream output",
+                        upstream_node_id=connected_port.node().id,
+                        upstream_port=connected_port.name(),
+                    ),
+                )
+                input_packets.append(packet)
+
+            should_run = all(p.active for p in input_packets)
+            if not should_run:
+                continue
 
             # Execute the node
-            if hasattr(node, "process"):
-                result = node.process(*inputs) if inputs else node.process(None)
-            else:
-                result = None
-
-            # Store outputs
-            node_outputs[node.id] = result
+            result = node.process(*input_packets) if input_packets else node.process(None)
 
             # For nodes with multiple outputs (like if/else), map results to ports
             output_ports = node.output_ports()
-            if isinstance(result, (tuple, list)) and len(output_ports) == len(result):
+            if isinstance(result, dict) and len(output_ports) == len(result):
                 # Map each output to its corresponding port
-                for port, value in zip(output_ports, result):
+                for port in output_ports:
                     port_key = (node.id, port.name())
-                    port_outputs[port_key] = value
+                    port_outputs[port_key] = result[port.name()]
             elif len(output_ports) > 0:
                 # Single output: assign to all ports
                 for port in output_ports:
                     port_key = (node.id, port.name())
                     port_outputs[port_key] = result
 
-        return node_outputs
+        return port_outputs

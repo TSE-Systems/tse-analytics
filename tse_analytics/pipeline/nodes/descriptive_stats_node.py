@@ -2,6 +2,7 @@ import numpy as np
 
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.pipeline import PipelineNode
+from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 
 
 class DescriptiveStatsNode(PipelineNode):
@@ -13,9 +14,10 @@ class DescriptiveStatsNode(PipelineNode):
         self.add_input("datatable")
         self.add_output("result")
 
-    def process(self, datatable: Datatable):
+    def process(self, packet: PipelinePacket) -> PipelinePacket:
+        datatable = packet.value
         if datatable is None or not isinstance(datatable, Datatable):
-            return None
+            return PipelinePacket.inactive(reason="Invalid input datatable")
 
         descriptive = (
             np
@@ -32,4 +34,4 @@ class DescriptiveStatsNode(PipelineNode):
             .to_html()
         )
 
-        return descriptive
+        return PipelinePacket(descriptive)

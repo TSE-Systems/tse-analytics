@@ -1,3 +1,4 @@
+from tse_analytics.pipeline.nodes.boxcox_node import BoxCoxNode
 from tse_analytics.pipeline.nodes.checkbox_node import CheckboxNode
 from tse_analytics.pipeline.nodes.condition_node import ConditionNode
 from tse_analytics.pipeline.nodes.dataset_input_node import DatasetInputNode
@@ -8,9 +9,9 @@ from tse_analytics.pipeline.nodes.normality_test_node import NormalityTestNode
 from tse_analytics.pipeline.nodes.one_way_anova_node import OneWayAnovaNode
 from tse_analytics.pipeline.nodes.report_node import ReportNode
 from tse_analytics.pipeline.nodes.resample_node import ResampleNode
-from tse_analytics.pipeline.nodes.start_node import StartNode
 
 __all__ = [
+    BoxCoxNode,
     CheckboxNode,
     ConditionNode,
     DatasetInputNode,
@@ -21,5 +22,4 @@ __all__ = [
     OneWayAnovaNode,
     ReportNode,
     ResampleNode,
-    StartNode,
 ]

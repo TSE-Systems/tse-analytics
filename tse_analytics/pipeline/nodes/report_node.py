@@ -2,6 +2,7 @@ from tse_analytics.core import manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
 from tse_analytics.pipeline import PipelineNode
+from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 
 
 class ReportNode(PipelineNode):
@@ -20,15 +21,16 @@ class ReportNode(PipelineNode):
             "Report name",
         )
 
-    def process(self, input):
-        if input is None:
-            return None
+    def process(self, packet: PipelinePacket) -> PipelinePacket:
+        value = packet.value
+        if value is None:
+            return PipelinePacket.inactive(reason="Invalid input")
 
         report_content = None
-        if isinstance(input, Datatable):
-            report_content = input.active_df.to_html()
-        elif isinstance(input, str):
-            report_content = input
+        if isinstance(value, Datatable):
+            report_content = value.active_df.to_html()
+        elif isinstance(value, str):
+            report_content = value
 
         if report_content is not None:
             name = str(self.get_property("report_name"))
@@ -39,3 +41,5 @@ class ReportNode(PipelineNode):
                     report_content,
                 )
             )
+
+        return packet

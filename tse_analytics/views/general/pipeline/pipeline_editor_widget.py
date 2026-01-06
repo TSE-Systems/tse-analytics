@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from loguru import logger
 from NodeGraphQt import NodesPaletteWidget, NodesTreeWidget
 from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtGui import QIcon
@@ -17,7 +16,7 @@ from tse_analytics.pipeline.nodes import (
     NormalityTestNode,
     ReportNode,
     ResampleNode,
-    OneWayAnovaNode,
+    OneWayAnovaNode, BoxCoxNode,
 )
 from tse_analytics.views.general.pipeline.hotkeys import hotkeys
 
@@ -99,6 +98,7 @@ class PipelineEditorWidget(QWidget):
 
         # Register all custom nodes
         self.graph.register_nodes([
+            BoxCoxNode,
             CheckboxNode,
             ConditionNode,
             DatatableInputNode,
@@ -201,8 +201,6 @@ class PipelineEditorWidget(QWidget):
         if not nodes:
             QMessageBox.information(self, "Pipeline", "Pipeline is empty. Add nodes to execute.")
             return
-
-        logger.info("\r".join([node.name() for node in nodes]))
 
         # Execute nodes in order
         dataset = manager.get_selected_dataset()

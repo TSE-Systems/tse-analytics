@@ -5,6 +5,7 @@ from tse_analytics.core import manager
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.pipeline import PipelineNode
+from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 
 
 class NormalityTestNode(PipelineNode):
@@ -45,13 +46,13 @@ class NormalityTestNode(PipelineNode):
         widget.clear()
         widget.add_items(variable_names)
 
-    def process(self, datatable: Datatable):
-        """
-        Test for normality and route data through appropriate output.
-        Returns tuple of (yes_output, no_output) based on test result.
-        """
+    def process(self, packet: PipelinePacket) -> dict[str, PipelinePacket]:
+        datatable = packet.value
         if datatable is None or not isinstance(datatable, Datatable):
-            return None, None
+            return {
+                "yes": PipelinePacket.inactive(reason="Invalid input datatable"),
+                "no": PipelinePacket.inactive(reason="Invalid input datatable"),
+            }
 
         method = str(self.get_property("method"))
         variable = str(self.get_property("variable"))
@@ -70,5 +71,19 @@ class NormalityTestNode(PipelineNode):
         tooltip = f"<b>Result</b><br/>Statistic: {stat:.5f}<br/>P-value: {pvalue:.5f}<br/>Normal: {is_normal}"
         self.view.setToolTip(tooltip)
 
-        # Return data through appropriate port
-        return (datatable, None) if is_normal else (None, datatable)
+        if is_normal:
+            return {
+                "yes": PipelinePacket(datatable, meta={
+                    "normal": True,
+                    "selected_variable": variable,
+                }),
+                "no": PipelinePacket.inactive(normal=False, selected_variable=variable),
+            }
+        else:
+            return {
+                "yes": PipelinePacket.inactive(normal=True, selected_variable=variable),
+                "no": PipelinePacket(datatable, meta={
+                    "normal": False,
+                    "selected_variable": variable,
+                }),
+            }
