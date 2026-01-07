@@ -8,6 +8,7 @@ for the TSE Analytics application.
 
 import ctypes
 import os
+import platform
 import sys
 from multiprocessing import freeze_support
 
@@ -67,11 +68,16 @@ class App(QApplication):
         Args:
             args: Command line arguments passed to the application.
         """
-        # Force the light mode
-        args += ["-platform", "windows:darkmode=1"]
 
-        app_id = "tse-systems.tse-analytics"  # arbitrary string
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
+        # Check platform
+        if platform.system() == "Windows":
+            # Force the light mode
+            args += ["-platform", "windows:darkmode=1"]
+
+            app_id = "tse-systems.tse-analytics"  # arbitrary string
+            # Specifies a unique application-defined Application User Model ID (AppUserModelID) that identifies the current process to the taskbar.
+            # This identifier allows an application to group its associated processes and windows under a single taskbar button.
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
 
         QApplication.__init__(self, args)
         self.setStyle("fusion")
@@ -80,7 +86,7 @@ class App(QApplication):
         self.setApplicationName("TSE Analytics")
         self.setWindowIcon(QIcon(":/icons/app.ico"))
 
-        # Set selected stylesheet
+        # Set the selected stylesheet
         settings = QSettings()
         appStyle = settings.value("appStyle", "tse-light")
         style_file = f"_internal/styles/qss/{appStyle}.css" if IS_RELEASE else f"styles/qss/{appStyle}.css"
