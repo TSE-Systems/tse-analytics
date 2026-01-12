@@ -5,7 +5,7 @@ import seaborn.objects as so
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QInputDialog, QLabel, QSplitter, QTextEdit, QToolBar, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QInputDialog, QLabel, QSplitter, QToolBar, QVBoxLayout, QWidget
 
 from tse_analytics.core import color_manager, manager
 from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
@@ -14,9 +14,9 @@ from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator impor
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure
-from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.MplCanvas import MplCanvas
+from tse_analytics.views.misc.report_edit import ReportEdit
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
@@ -84,13 +84,8 @@ class RegressionWidget(QWidget):
         self.canvas = MplCanvas(self.splitter)
         self.splitter.addWidget(self.canvas)
 
-        self.textEdit = QTextEdit(
-            self.splitter,
-            undoRedoEnabled=False,
-            readOnly=True,
-        )
-        self.textEdit.document().setDefaultStyleSheet(style_descriptive_table)
-        self.splitter.addWidget(self.textEdit)
+        self.report_edit = ReportEdit(self.splitter)
+        self.splitter.addWidget(self.report_edit)
 
         plot_toolbar = NavigationToolbar2QT(self.canvas, self)
         plot_toolbar.setIconSize(QSize(16, 16))
@@ -202,7 +197,7 @@ class RegressionWidget(QWidget):
         html = html_template.format(
             output=output,
         )
-        self.textEdit.document().setHtml(html)
+        self.report_edit.set_content(html)
 
     def _add_report(self):
         name, ok = QInputDialog.getText(
@@ -213,7 +208,7 @@ class RegressionWidget(QWidget):
         )
         if ok and name:
             html = get_html_image_from_figure(self.canvas.figure)
-            html += self.textEdit.toHtml()
+            html += self.report_edit.toHtml()
             manager.add_report(
                 Report(
                     self.datatable.dataset,

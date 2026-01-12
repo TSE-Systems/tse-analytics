@@ -8,15 +8,16 @@ from PySide6.QtWidgets import QFileDialog, QMessageBox, QToolBar, QVBoxLayout, Q
 from tse_analytics.core import manager
 from tse_analytics.pipeline import PipelineNodeGraph
 from tse_analytics.pipeline.nodes import (
+    BoxCoxNode,
     CheckboxNode,
     ConditionNode,
     DatatableInputNode,
     DescriptiveStatsNode,
     IfElseNode,
     NormalityTestNode,
+    OneWayAnovaNode,
     ReportNode,
     ResampleNode,
-    OneWayAnovaNode, BoxCoxNode,
 )
 from tse_analytics.views.general.pipeline.hotkeys import hotkeys
 

@@ -4,7 +4,7 @@ import pingouin as pg
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QInputDialog, QLabel, QTextEdit, QToolBar, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QInputDialog, QLabel, QToolBar, QVBoxLayout, QWidget
 
 from tse_analytics.core import manager
 from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
@@ -13,10 +13,10 @@ from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator impor
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_h_spacer_widget, get_html_table, get_widget_tool_button
-from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.toolbox.ancova.ancova_settings_widget_ui import Ui_AncovaSettingsWidget
 from tse_analytics.toolbox.shared import EFFECT_SIZE, P_ADJUSTMENT
 from tse_analytics.views.misc.factor_selector import FactorSelector
+from tse_analytics.views.misc.report_edit import ReportEdit
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
@@ -91,14 +91,8 @@ class AncovaWidget(QWidget):
         # Insert toolbar to the widget
         self._layout.addWidget(toolbar)
 
-        self.textEdit = QTextEdit(
-            toolbar,
-            undoRedoEnabled=False,
-            readOnly=True,
-            lineWrapMode=QTextEdit.LineWrapMode.NoWrap,
-        )
-        self.textEdit.document().setDefaultStyleSheet(style_descriptive_table)
-        self._layout.addWidget(self.textEdit)
+        self.report_edit = ReportEdit(self)
+        self._layout.addWidget(self.report_edit)
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add Report").triggered.connect(self._add_report)
@@ -188,7 +182,7 @@ class AncovaWidget(QWidget):
             ancova=get_html_table(ancova, "ANCOVA", index=False),
             pairwise_tests=get_html_table(pairwise_tests, "Pairwise post-hoc tests", index=False),
         )
-        self.textEdit.document().setHtml(html)
+        self.report_edit.set_content(html)
 
     def _add_report(self):
         name, ok = QInputDialog.getText(
@@ -202,6 +196,6 @@ class AncovaWidget(QWidget):
                 Report(
                     self.datatable.dataset,
                     name,
-                    self.textEdit.toHtml(),
+                    self.report_edit.toHtml(),
                 )
             )

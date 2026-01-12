@@ -22,7 +22,6 @@ class BoxCoxNode(PipelineNode):
         if selected_variable is None:
             return PipelinePacket.inactive(reason="No variable selected")
 
-
         datatable = datatable.clone()
         data = datatable.active_df[selected_variable].to_numpy()
         transformed_data, lambda_opt = boxcox(data)

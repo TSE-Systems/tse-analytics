@@ -6,7 +6,7 @@ import seaborn.objects as so
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QInputDialog, QLabel, QMessageBox, QTextEdit, QToolBar, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QInputDialog, QLabel, QMessageBox, QToolBar, QVBoxLayout, QWidget
 
 from tse_analytics.core import color_manager, manager
 from tse_analytics.core.data.binning import BinningMode
@@ -20,10 +20,10 @@ from tse_analytics.core.utils import (
     get_html_table,
     get_widget_tool_button,
 )
-from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.toolbox.rm_anova.rm_anova_settings_widget_ui import Ui_RMAnovaSettingsWidget
 from tse_analytics.toolbox.shared import EFFECT_SIZE, P_ADJUSTMENT
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
+from tse_analytics.views.misc.report_edit import ReportEdit
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
@@ -97,14 +97,8 @@ class RMAnovaWidget(QWidget):
         # Insert toolbar to the widget
         self._layout.addWidget(toolbar)
 
-        self.textEdit = QTextEdit(
-            toolbar,
-            undoRedoEnabled=False,
-            readOnly=True,
-            lineWrapMode=QTextEdit.LineWrapMode.NoWrap,
-        )
-        self.textEdit.document().setDefaultStyleSheet(style_descriptive_table)
-        self._layout.addWidget(self.textEdit)
+        self.report_edit = ReportEdit(self)
+        self._layout.addWidget(self.report_edit)
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add Report").triggered.connect(self._add_report)
@@ -240,7 +234,7 @@ class RMAnovaWidget(QWidget):
                 anova=get_html_table(anova, "Repeated measures one-way ANOVA", index=False),
             )
 
-        self.textEdit.document().setHtml(html)
+        self.report_edit.set_content(html)
 
     def _add_report(self):
         name, ok = QInputDialog.getText(
@@ -254,6 +248,6 @@ class RMAnovaWidget(QWidget):
                 Report(
                     self.datatable.dataset,
                     name,
-                    self.textEdit.toHtml(),
+                    self.report_edit.toHtml(),
                 )
             )

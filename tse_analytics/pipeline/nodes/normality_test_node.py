@@ -73,17 +73,23 @@ class NormalityTestNode(PipelineNode):
 
         if is_normal:
             return {
-                "yes": PipelinePacket(datatable, meta={
-                    "normal": True,
-                    "selected_variable": variable,
-                }),
+                "yes": PipelinePacket(
+                    datatable,
+                    meta={
+                        "normal": True,
+                        "selected_variable": variable,
+                    },
+                ),
                 "no": PipelinePacket.inactive(normal=False, selected_variable=variable),
             }
         else:
             return {
                 "yes": PipelinePacket.inactive(normal=True, selected_variable=variable),
-                "no": PipelinePacket(datatable, meta={
-                    "normal": False,
-                    "selected_variable": variable,
-                }),
+                "no": PipelinePacket(
+                    datatable,
+                    meta={
+                        "normal": False,
+                        "selected_variable": variable,
+                    },
+                ),
             }

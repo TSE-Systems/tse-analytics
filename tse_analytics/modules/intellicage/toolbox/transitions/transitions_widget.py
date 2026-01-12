@@ -260,7 +260,7 @@ class TransitionsWidget(QWidget):
         with PdfPages(pdf_bytes) as pdf_pages:
             for animal in self.datatable.dataset.animals.values():
                 if animal.enabled:
-                    fig, axs = plt.subplots(2, 2, figsize=(9, 8))
+                    fig, axs = plt.subplots(2, 2)
 
                     self._process_animal(
                         df,

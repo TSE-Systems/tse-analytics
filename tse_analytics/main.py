@@ -28,7 +28,11 @@ from tse_analytics.views.main_window import MainWindow
 
 # Global configuration
 
-matplotlib.use("QtAgg")
+settings = QSettings()
+
+dpi = settings.value("DPI", 100)
+figure_width = settings.value("FigureWidth", 6.4)
+figure_height = settings.value("FigureHeight", 4.8)
 
 # Global PyQtGraph settings
 setConfigOptions(
@@ -46,10 +50,17 @@ pd.options.mode.copy_on_write = "warn"
 pd.set_option("colheader_justify", "center")  # FOR TABLE <th>
 # pd.set_option("display.precision", 3)
 
+# Global Matplotlib settings
+matplotlib.use("QtAgg")
+matplotlib.rcParams["figure.dpi"] = dpi
+matplotlib.rcParams["figure.figsize"] = figure_width, figure_height
+
 # Global Seaborn settings
 # sns.objects.Plot.config.display["format"] = "svg"
 so.Plot.config.theme.update(sns.axes_style("whitegrid"))
-sns.set_theme(style="whitegrid")
+sns.set_theme(
+    style="whitegrid",
+)
 sns.set_color_codes("pastel")
 
 

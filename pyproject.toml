@@ -27,7 +27,7 @@ dependencies = [
     "pyside6==6.10.1",
     "pyside6-qtads==4.4.1.2",
     "scikit-learn==1.8.0",
-    "scipy==1.16.3",
+    "scipy==1.17.0",
     "seaborn==0.13.2",
     "traja==25.0.1",
     "xmltodict==1.0.2",
@@ -38,8 +38,8 @@ dev = [
     "pyinstaller==6.17.0",
     "pyrefly==0.47.0",
     "qtsass==0.4.0",
-    "ruff==0.14.10",
-    "ty==0.0.9",
+    "ruff==0.14.11",
+    "ty==0.0.11",
 ]
 
 [project.scripts]
