@@ -1,18 +1,16 @@
 from dataclasses import dataclass
 
-import seaborn.objects as so
-from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QInputDialog, QLabel, QToolBar, QVBoxLayout, QWidget
 
-from tse_analytics.core import color_manager, manager
+from tse_analytics.core import manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
-from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure
+from tse_analytics.core.utils import get_figsize_from_widget, get_h_spacer_widget
+from tse_analytics.toolbox.histogram.processor import get_histogram_result
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
-from tse_analytics.views.misc.MplCanvas import MplCanvas
+from tse_analytics.views.misc.report_edit import ReportEdit
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
@@ -63,12 +61,8 @@ class HistogramWidget(QWidget):
         # Insert the toolbar to the widget
         self._layout.addWidget(toolbar)
 
-        self.canvas = MplCanvas(self)
-        self._layout.addWidget(self.canvas)
-
-        plot_toolbar = NavigationToolbar2QT(self.canvas, self)
-        plot_toolbar.setIconSize(QSize(16, 16))
-        toolbar.addWidget(plot_toolbar)
+        self.report_view = ReportEdit(self)
+        self._layout.addWidget(self.report_view)
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add Report").triggered.connect(self._add_report)
@@ -84,8 +78,7 @@ class HistogramWidget(QWidget):
         )
 
     def _update(self):
-        # Clear the plot
-        self.canvas.clear(False)
+        self.report_view.clear()
 
         split_mode, selected_factor_name = self.group_by_selector.get_group_by()
         variable = self.variableSelector.get_selected_variable()
@@ -96,36 +89,16 @@ class HistogramWidget(QWidget):
             selected_factor_name,
         )
 
-        match split_mode:
-            case SplitMode.ANIMAL:
-                by = "Animal"
-                palette = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
-            case SplitMode.RUN:
-                by = "Run"
-                palette = color_manager.colormap_name
-            case SplitMode.FACTOR:
-                by = selected_factor_name
-                palette = color_manager.get_level_to_color_dict(self.datatable.dataset.factors[selected_factor_name])
-            case _:
-                by = None
-                palette = color_manager.colormap_name
-
-        (
-            so
-            .Plot(
-                df,
-                x=variable.name,
-                color=by,
-            )
-            .facet(col=by, wrap=3)
-            .add(so.Bars(), so.Hist())
-            .scale(color=palette)
-            .on(self.canvas.figure)
-            .plot(True)
+        result = get_histogram_result(
+            self.datatable.dataset,
+            df,
+            variable.name,
+            split_mode,
+            selected_factor_name,
+            get_figsize_from_widget(self.report_view),
         )
 
-        self.canvas.figure.tight_layout()
-        self.canvas.draw()
+        self.report_view.set_content(result.report)
 
     def _add_report(self) -> None:
         name, ok = QInputDialog.getText(
@@ -139,6 +112,6 @@ class HistogramWidget(QWidget):
                 Report(
                     self.datatable.dataset,
                     name,
-                    get_html_image_from_figure(self.canvas.figure),
+                    self.report_view.toHtml(),
                 )
             )

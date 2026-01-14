@@ -1,18 +1,17 @@
 from dataclasses import dataclass
 
 import pandas as pd
-from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QComboBox, QInputDialog, QLabel, QSpinBox, QToolBar, QVBoxLayout, QWidget
-from statsmodels.tsa.seasonal import STL, seasonal_decompose
 
 from tse_analytics.core import manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
-from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure
+from tse_analytics.core.utils import get_figsize_from_widget, get_h_spacer_widget
+from tse_analytics.toolbox.timeseries_decomposition.processor import get_timeseries_decomposition_result
 from tse_analytics.views.misc.animal_selector import AnimalSelector
-from tse_analytics.views.misc.MplCanvas import MplCanvas
+from tse_analytics.views.misc.report_edit import ReportEdit
 from tse_analytics.views.misc.tooltip_widget import TooltipWidget
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
@@ -96,12 +95,8 @@ class TimeseriesDecompositionWidget(QWidget):
 
         self._layout.addWidget(toolbar)
 
-        self.canvas = MplCanvas(self)
-        self._layout.addWidget(self.canvas)
-
-        plot_toolbar = NavigationToolbar2QT(self.canvas, self)
-        plot_toolbar.setIconSize(QSize(16, 16))
-        toolbar.addWidget(plot_toolbar)
+        self.report_view = ReportEdit(self)
+        self._layout.addWidget(self.report_view)
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add Report").triggered.connect(self._add_report)
@@ -122,8 +117,7 @@ class TimeseriesDecompositionWidget(QWidget):
         )
 
     def _update(self):
-        # Clear the plot
-        self.canvas.clear(False)
+        self.report_view.clear()
 
         variable = self.variableSelector.get_selected_variable()
         animal = self.animalSelector.get_selected_animal()
@@ -133,57 +127,17 @@ class TimeseriesDecompositionWidget(QWidget):
         df = df[df["Animal"] == animal.id]
         df.reset_index(drop=True, inplace=True)
 
-        index = pd.TimedeltaIndex(df["Timedelta"])
-        df.set_index(index, inplace=True)
+        result = get_timeseries_decomposition_result(
+            df,
+            animal.id,
+            variable.name,
+            self.period_spin_box.value(),
+            self.method_combo_box.currentText(),
+            self.model_combo_box.currentText(),
+            get_figsize_from_widget(self.report_view),
+        )
 
-        var_name = variable.name
-        # TODO: not sure interpolation should be used...
-        df[var_name] = df[var_name].interpolate(limit_direction="both")
-        period = self.period_spin_box.value()
-
-        match self.method_combo_box.currentText():
-            case "STL (smoothing)":
-                result = STL(
-                    endog=df[var_name],
-                    period=period,
-                ).fit()
-            case _:
-                model = self.model_combo_box.currentText().lower()
-                result = seasonal_decompose(
-                    df[var_name],
-                    period=period,
-                    model=model,
-                    extrapolate_trend="freq",
-                )
-
-        # df = pd.concat({
-        #     "Observed": result.observed,
-        #     "Trend": result.trend,
-        #     "Seasonal": result.seasonal,
-        #     "Residual": result.resid,
-        # }, axis=1).reset_index()
-        #
-        # (
-        #     so.Plot(
-        #         df,
-        #         x="Timedelta",
-        #     )
-        #     .pair(y=("Observed", "Trend", "Seasonal", "Residual"))
-        #     .add(so.Line(), so.Est())  # Line with mean estimate
-        #     .on(self.canvas.figure)
-        #     .plot(True)
-        # )
-
-        axs = self.canvas.figure.subplots(4, 1, sharex=True)
-        self.canvas.figure.suptitle(f"Variable: {var_name}. Animal: {animal.id}. Period: {period}")
-
-        result.observed.plot(ax=axs[0], ylabel="Observed", lw=1)
-        result.trend.plot(ax=axs[1], ylabel="Trend", lw=1)
-        result.seasonal.plot(ax=axs[2], ylabel="Seasonal", lw=1)
-        result.resid.plot(ax=axs[3], ylabel="Residual", lw=1, marker=".", markersize=2, linestyle="none")
-
-        self.canvas.figure.tight_layout()
-        self.canvas.draw()
+        self.report_view.set_content(result.report)
 
     def _add_report(self):
         name, ok = QInputDialog.getText(
@@ -197,6 +151,6 @@ class TimeseriesDecompositionWidget(QWidget):
                 Report(
                     self.datatable.dataset,
                     name,
-                    get_html_image_from_figure(self.canvas.figure),
+                    self.report_view.toHtml(),
                 )
             )

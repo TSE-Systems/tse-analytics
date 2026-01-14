@@ -30,7 +30,7 @@ from tse_analytics.views.main_window import MainWindow
 
 settings = QSettings()
 
-dpi = settings.value("DPI", 100)
+dpi = settings.value("DPI", 96)
 figure_width = settings.value("FigureWidth", 6.4)
 figure_height = settings.value("FigureHeight", 4.8)
 

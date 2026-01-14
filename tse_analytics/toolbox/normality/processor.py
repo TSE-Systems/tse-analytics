@@ -1,11 +1,17 @@
+from dataclasses import dataclass
+
 import pandas as pd
 import pingouin as pg
 from matplotlib import pyplot as plt
-from matplotlib.figure import FigureBase
 
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.utils import get_html_image_from_figure
 from tse_analytics.toolbox.shared import get_plot_layout
+
+
+@dataclass
+class NormalityTestResult:
+    report: str
 
 
 def test_normality(
@@ -13,9 +19,10 @@ def test_normality(
     variable_name: str,
     split_mode: SplitMode,
     factor_name: str | None,
-    existing_figure: FigureBase | None = None,
-) -> str | None:
-    figure = plt.Figure() if existing_figure is None else existing_figure
+    figsize: tuple[float, float] | None = None,
+) -> NormalityTestResult:
+    # Create a figure with a tight layout
+    figure = plt.Figure(figsize=figsize, layout="tight")
 
     match split_mode:
         case SplitMode.ANIMAL:
@@ -26,8 +33,6 @@ def test_normality(
             by = factor_name
         case _:
             by = None
-
-    # df.dropna(inplace=True)
 
     if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:
         df[by] = df[by].cat.remove_unused_categories()
@@ -82,4 +87,8 @@ def test_normality(
             )
             ax.set_title("Total")
 
-    return get_html_image_from_figure(figure) if not existing_figure else None
+    report = get_html_image_from_figure(figure)
+
+    return NormalityTestResult(
+        report=report,
+    )

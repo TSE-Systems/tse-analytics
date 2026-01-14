@@ -1,25 +1,22 @@
 from dataclasses import dataclass
 
-import pandas as pd
-import pingouin as pg
-import seaborn.objects as so
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QInputDialog, QLabel, QMessageBox, QToolBar, QVBoxLayout, QWidget
 
-from tse_analytics.core import color_manager, manager
+from tse_analytics.core import manager
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import (
+    get_figsize_from_widget,
     get_h_spacer_widget,
-    get_html_image_from_plot,
-    get_html_table,
     get_widget_tool_button,
 )
+from tse_analytics.toolbox.rm_anova.processor import get_rm_anova_result
 from tse_analytics.toolbox.rm_anova.rm_anova_settings_widget_ui import Ui_RMAnovaSettingsWidget
 from tse_analytics.toolbox.shared import EFFECT_SIZE, P_ADJUSTMENT
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
@@ -97,8 +94,8 @@ class RMAnovaWidget(QWidget):
         # Insert toolbar to the widget
         self._layout.addWidget(toolbar)
 
-        self.report_edit = ReportEdit(self)
-        self._layout.addWidget(self.report_edit)
+        self.report_view = ReportEdit(self)
+        self._layout.addWidget(self.report_view)
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add Report").triggered.connect(self._add_report)
@@ -114,6 +111,8 @@ class RMAnovaWidget(QWidget):
         )
 
     def _update(self):
+        self.report_view.clear()
+
         split_mode, selected_factor_name = self.group_by_selector.get_group_by()
         variable = self.variable_selector.get_selected_variable()
 
@@ -146,95 +145,19 @@ class RMAnovaWidget(QWidget):
             dropna=True,
         )
 
-        match split_mode:
-            case SplitMode.ANIMAL:
-                subject = "Animal"
-                palette = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
-            case SplitMode.RUN:
-                subject = "Run"
-                palette = color_manager.colormap_name
-            case SplitMode.FACTOR:
-                subject = selected_factor_name
-                palette = color_manager.get_level_to_color_dict(self.datatable.dataset.factors[selected_factor_name])
-            case _:
-                # Disabled for Total grouping mode
-                subject = None
-
-        spher, W, chisq, dof, pval = pg.sphericity(
-            data=df,
-            dv=variable.name,
-            within="Bin",
-            subject=subject,
-            method="mauchly",
-        )
-        sphericity = pd.DataFrame(
-            [[spher, W, chisq, dof, pval]],
-            columns=["Sphericity", "W", "Chi-square", "DOF", "p-value"],
+        result = get_rm_anova_result(
+            self.datatable.dataset,
+            df,
+            variable,
+            split_mode,
+            selected_factor_name,
+            do_pairwise_tests,
+            EFFECT_SIZE[self.settings_widget_ui.comboBoxEffectSizeType.currentText()],
+            P_ADJUSTMENT[self.settings_widget_ui.comboBoxPAdjustment.currentText()],
+            get_figsize_from_widget(self.report_view),
         )
 
-        anova = pg.rm_anova(
-            data=df,
-            dv=variable.name,
-            within="Bin",
-            subject=subject,
-            detailed=True,
-        )
-
-        plot = (
-            so
-            .Plot(
-                df,
-                x="Bin",
-                y=variable.name,
-                color=subject if not split_mode == SplitMode.ANIMAL else None,
-            )
-            .add(so.Range(), so.Est(errorbar="se"))
-            .add(so.Dot(), so.Agg())
-            .add(so.Line(), so.Agg())
-            .scale(color=palette)
-            .label(title=f"{variable.name} over time")
-            .layout(size=(10, 5))
-        )
-        img_html = get_html_image_from_plot(plot)
-
-        html_template = """
-                        {img_html}
-                        {sphericity}
-                        {anova}
-                        """
-
-        if do_pairwise_tests:
-            effsize = EFFECT_SIZE[self.settings_widget_ui.comboBoxEffectSizeType.currentText()]
-            padjust = P_ADJUSTMENT[self.settings_widget_ui.comboBoxPAdjustment.currentText()]
-
-            pairwise_tests = pg.pairwise_tests(
-                data=df,
-                dv=variable.name,
-                within="Bin",
-                subject=subject,
-                return_desc=True,
-                effsize=effsize,
-                padjust=padjust,
-            )
-
-            html_template += """
-                            {pairwise_tests}
-                            """
-
-            html = html_template.format(
-                img_html=img_html,
-                sphericity=get_html_table(sphericity, "Sphericity Test", index=False),
-                anova=get_html_table(anova, "Repeated measures one-way ANOVA", index=False),
-                pairwise_tests=get_html_table(pairwise_tests, "Pairwise post-hoc tests", index=False),
-            )
-        else:
-            html = html_template.format(
-                img_html=img_html,
-                sphericity=get_html_table(sphericity, "Sphericity Test", index=False),
-                anova=get_html_table(anova, "Repeated measures one-way ANOVA", index=False),
-            )
-
-        self.report_edit.set_content(html)
+        self.report_view.set_content(result.report)
 
     def _add_report(self):
         name, ok = QInputDialog.getText(
@@ -248,6 +171,6 @@ class RMAnovaWidget(QWidget):
                 Report(
                     self.datatable.dataset,
                     name,
-                    self.report_edit.toHtml(),
+                    self.report_view.toHtml(),
                 )
             )

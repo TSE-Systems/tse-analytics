@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QInputDialog, QLabel, QToolBar, QVBoxLayout, QWidget
@@ -8,10 +7,10 @@ from PySide6.QtWidgets import QInputDialog, QLabel, QToolBar, QVBoxLayout, QWidg
 from tse_analytics.core import manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
-from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure
+from tse_analytics.core.utils import get_figsize_from_widget, get_h_spacer_widget
 from tse_analytics.toolbox.normality.processor import test_normality
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
-from tse_analytics.views.misc.MplCanvas import MplCanvas
+from tse_analytics.views.misc.report_edit import ReportEdit
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
@@ -42,7 +41,7 @@ class NormalityWidget(QWidget):
 
         # Setup toolbar
         toolbar = QToolBar(
-            "Data Plot Toolbar",
+            "Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
@@ -62,12 +61,8 @@ class NormalityWidget(QWidget):
         # Insert the toolbar to the widget
         self._layout.addWidget(toolbar)
 
-        self.canvas = MplCanvas(self)
-        self._layout.addWidget(self.canvas)
-
-        plot_toolbar = NavigationToolbar2QT(self.canvas, self)
-        plot_toolbar.setIconSize(QSize(16, 16))
-        toolbar.addWidget(plot_toolbar)
+        self.report_view = ReportEdit(self)
+        self._layout.addWidget(self.report_view)
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add Report").triggered.connect(self._add_report)
@@ -83,8 +78,7 @@ class NormalityWidget(QWidget):
         )
 
     def _update(self):
-        # Clear the plot
-        self.canvas.clear(False)
+        self.report_view.clear()
 
         split_mode, selected_factor_name = self.group_by_selector.get_group_by()
         variable = self.variableSelector.get_selected_variable()
@@ -95,16 +89,15 @@ class NormalityWidget(QWidget):
             selected_factor_name,
         )
 
-        test_normality(
+        result = test_normality(
             df,
             variable.name,
             split_mode,
             selected_factor_name,
-            self.canvas.figure,
+            get_figsize_from_widget(self.report_view),
         )
 
-        self.canvas.figure.tight_layout()
-        self.canvas.draw()
+        self.report_view.set_content(result.report)
 
     def _add_report(self):
         name, ok = QInputDialog.getText(
@@ -118,6 +111,6 @@ class NormalityWidget(QWidget):
                 Report(
                     self.datatable.dataset,
                     name,
-                    get_html_image_from_figure(self.canvas.figure),
+                    self.report_view.toHtml(),
                 )
             )

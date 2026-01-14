@@ -142,3 +142,18 @@ def time_to_float(value: time) -> float:
         A float representing the time in hours.
     """
     return value.hour + value.minute / 60.0
+
+
+def get_figsize_from_widget(widget: QWidget) -> tuple[float, float]:
+    # Get the widget size in pixels
+    widget_width = widget.width()
+    widget_height = widget.height()
+
+    # Get the DPI (dots per inch) of the screen
+    dpi = widget.logicalDpiX()  # or logicalDpiY(), usually the same
+
+    # Convert pixels to inches
+    fig_width = widget_width / dpi
+    fig_height = widget_height / dpi
+
+    return fig_width, fig_height

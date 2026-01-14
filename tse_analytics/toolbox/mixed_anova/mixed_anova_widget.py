@@ -1,26 +1,23 @@
 from dataclasses import dataclass
 
-import pandas as pd
-import pingouin as pg
-import seaborn.objects as so
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QInputDialog, QLabel, QMessageBox, QToolBar, QVBoxLayout, QWidget
 
-from tse_analytics.core import color_manager, manager
+from tse_analytics.core import manager
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import (
+    get_figsize_from_widget,
     get_h_spacer_widget,
-    get_html_image_from_plot,
-    get_html_table,
     get_widget_tool_button,
 )
 from tse_analytics.toolbox.mixed_anova.mixed_anova_settings_widget_ui import Ui_MixedAnovaSettingsWidget
+from tse_analytics.toolbox.mixed_anova.processor import get_mixed_anova_result
 from tse_analytics.toolbox.shared import EFFECT_SIZE, P_ADJUSTMENT
 from tse_analytics.views.misc.factor_selector import FactorSelector
 from tse_analytics.views.misc.report_edit import ReportEdit
@@ -92,8 +89,8 @@ class MixedAnovaWidget(QWidget):
         # Insert toolbar to the widget
         self._layout.addWidget(toolbar)
 
-        self.report_edit = ReportEdit(self)
-        self._layout.addWidget(self.report_edit)
+        self.report_view = ReportEdit(self)
+        self._layout.addWidget(self.report_view)
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add Report").triggered.connect(self._add_report)
@@ -109,6 +106,8 @@ class MixedAnovaWidget(QWidget):
         )
 
     def _update(self):
+        self.report_view.clear()
+
         variable = self.variable_selector.get_selected_variable()
         if variable is None:
             make_toast(
@@ -162,82 +161,18 @@ class MixedAnovaWidget(QWidget):
             dropna=True,
         )
 
-        anova = pg.mixed_anova(
-            data=df,
-            dv=variable.name,
-            between=factor_name,
-            within="Bin",
-            subject="Animal",
+        result = get_mixed_anova_result(
+            self.datatable.dataset,
+            df,
+            variable,
+            factor_name,
+            do_pairwise_tests,
+            EFFECT_SIZE[self.settings_widget_ui.comboBoxEffectSizeType.currentText()],
+            P_ADJUSTMENT[self.settings_widget_ui.comboBoxPAdjustment.currentText()],
+            get_figsize_from_widget(self.report_view),
         )
 
-        spher, W, chisq, dof, pval = pg.sphericity(
-            data=df,
-            dv=variable.name,
-            within="Bin",
-            subject="Animal",
-            method="mauchly",
-        )
-        sphericity = pd.DataFrame(
-            [[spher, W, chisq, dof, pval]],
-            columns=["Sphericity", "W", "Chi-square", "DOF", "p-value"],
-        )
-
-        plot = (
-            so
-            .Plot(
-                df,
-                x="Bin",
-                y=variable.name,
-                color=factor_name,
-            )
-            .add(so.Range(), so.Est(errorbar="se"))
-            .add(so.Dot(), so.Agg())
-            .add(so.Line(), so.Agg())
-            .scale(color=color_manager.get_level_to_color_dict(self.datatable.dataset.factors[factor_name]))
-            .label(title=f"{variable.name} over time")
-            .layout(size=(10, 5))
-        )
-        img_html = get_html_image_from_plot(plot)
-
-        html_template = """
-                        {img_html}
-                        {sphericity}
-                        {anova}
-                        """
-
-        if do_pairwise_tests:
-            effsize = EFFECT_SIZE[self.settings_widget_ui.comboBoxEffectSizeType.currentText()]
-            padjust = P_ADJUSTMENT[self.settings_widget_ui.comboBoxPAdjustment.currentText()]
-
-            pairwise_tests = pg.pairwise_tests(
-                data=df,
-                dv=variable.name,
-                within="Bin",
-                between=factor_name,
-                subject="Animal",
-                return_desc=True,
-                effsize=effsize,
-                padjust=padjust,
-            )
-
-            html_template += """
-                                        {pairwise_tests}
-                                        """
-
-            html = html_template.format(
-                img_html=img_html,
-                sphericity=get_html_table(sphericity, "Sphericity Test", index=False),
-                anova=get_html_table(anova, "Mixed-design ANOVA", index=False),
-                pairwise_tests=get_html_table(pairwise_tests, "Pairwise post-hoc tests", index=False),
-            )
-        else:
-            html = html_template.format(
-                img_html=img_html,
-                sphericity=get_html_table(sphericity, "Sphericity Test", index=False),
-                anova=get_html_table(anova, "Mixed-design ANOVA", index=False),
-            )
-
-        self.report_edit.set_content(html)
+        self.report_view.set_content(result.report)
 
     def _add_report(self):
         name, ok = QInputDialog.getText(
@@ -251,6 +186,6 @@ class MixedAnovaWidget(QWidget):
                 Report(
                     self.datatable.dataset,
                     name,
-                    self.report_edit.toHtml(),
+                    self.report_view.toHtml(),
                 )
             )

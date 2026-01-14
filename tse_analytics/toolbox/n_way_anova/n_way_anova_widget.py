@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 
-import pingouin as pg
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
@@ -15,13 +14,12 @@ from PySide6.QtWidgets import (
 )
 
 from tse_analytics.core import manager
-from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.core.utils import get_h_spacer_widget, get_html_table, get_widget_tool_button
+from tse_analytics.core.utils import get_h_spacer_widget, get_widget_tool_button
 from tse_analytics.toolbox.n_way_anova.n_way_anova_settings_widget_ui import Ui_NWayAnovaSettingsWidget
+from tse_analytics.toolbox.n_way_anova.processor import get_n_way_anova_result
 from tse_analytics.toolbox.shared import EFFECT_SIZE, P_ADJUSTMENT
 from tse_analytics.views.misc.factors_table_widget import FactorsTableWidget
 from tse_analytics.views.misc.report_edit import ReportEdit
@@ -104,8 +102,8 @@ class NWayAnovaWidget(QWidget):
         # Insert toolbar to the widget
         self._layout.addWidget(toolbar)
 
-        self.report_edit = ReportEdit(self)
-        self._layout.addWidget(self.report_edit)
+        self.report_view = ReportEdit(self)
+        self._layout.addWidget(self.report_view)
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
         toolbar.addAction("Add Report").triggered.connect(self._add_report)
@@ -121,8 +119,10 @@ class NWayAnovaWidget(QWidget):
         )
 
     def _update(self):
-        selected_dependent_variable = self.variable_selector.get_selected_variable()
-        if selected_dependent_variable is None:
+        self.report_view.clear()
+
+        dependent_variable = self.variable_selector.get_selected_variable()
+        if dependent_variable is None:
             make_toast(
                 self,
                 self.title,
@@ -133,21 +133,12 @@ class NWayAnovaWidget(QWidget):
             ).show()
             return
 
-        dependent_variable = selected_dependent_variable.name
         factor_names = self.factors_table_widget.get_selected_factor_names()
-
-        match len(factor_names):
-            case 2:
-                anova_header = "Two-way ANOVA"
-            case 3:
-                anova_header = "Three-way ANOVA"
-            case _:
-                anova_header = "Multi-way ANOVA"
 
         if len(factor_names) < 2:
             make_toast(
                 self,
-                anova_header,
+                "N-way ANOVA",
                 "Please select several factors.",
                 duration=2000,
                 preset=ToastPreset.WARNING,
@@ -155,69 +146,21 @@ class NWayAnovaWidget(QWidget):
             ).show()
             return
 
-        variables = {
-            dependent_variable: selected_dependent_variable,
-        }
-
-        columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + list(variables)
+        columns = (
+            self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + [dependent_variable.name]
+        )
         df = self.datatable.get_filtered_df(columns)
 
-        # Binning
-        df = process_time_interval_binning(
+        result = get_n_way_anova_result(
+            self.datatable.dataset,
             df,
-            TimeIntervalsBinningSettings("day", 365),
-            variables,
-            origin=self.datatable.dataset.experiment_started,
+            dependent_variable,
+            factor_names,
+            EFFECT_SIZE[self.settings_widget_ui.comboBoxEffectSizeType.currentText()],
+            P_ADJUSTMENT[self.settings_widget_ui.comboBoxPAdjustment.currentText()],
         )
 
-        # TODO: should or should not?
-        df.dropna(inplace=True)
-
-        # Sanitize variable name: comma, bracket, and colon are not allowed in column names
-        sanitized_dependent_variable = dependent_variable.replace("(", "_").replace(")", "").replace(",", "_")
-        if sanitized_dependent_variable != dependent_variable:
-            df.rename(columns={dependent_variable: sanitized_dependent_variable}, inplace=True)
-            dependent_variable = sanitized_dependent_variable
-
-        anova = pg.anova(
-            data=df,
-            dv=dependent_variable,
-            between=factor_names,
-            detailed=True,
-        )
-
-        effsize = EFFECT_SIZE[self.settings_widget_ui.comboBoxEffectSizeType.currentText()]
-        padjust = P_ADJUSTMENT[self.settings_widget_ui.comboBoxPAdjustment.currentText()]
-
-        html_template = """
-                        {anova}
-                        """
-
-        if len(factor_names) > 2:
-            html = html_template.format(
-                anova=get_html_table(anova, anova_header, index=False),
-            )
-        else:
-            post_hoc_test = pg.pairwise_tests(
-                data=df,
-                dv=dependent_variable,
-                between=factor_names,
-                return_desc=True,
-                effsize=effsize,
-                padjust=padjust,
-                nan_policy="listwise",
-            )
-
-            html_template += """
-                            {post_hoc_test}
-                            """
-
-            html = html_template.format(
-                anova=get_html_table(anova, anova_header, index=False),
-                post_hoc_test=get_html_table(post_hoc_test, "Pairwise post-hoc tests", index=False),
-            )
-
-        self.report_edit.set_content(html)
+        self.report_view.set_content(result.report)
 
     def _add_report(self):
         name, ok = QInputDialog.getText(
@@ -231,6 +174,6 @@ class NWayAnovaWidget(QWidget):
                 Report(
                     self.datatable.dataset,
                     name,
-                    self.report_edit.toHtml(),
+                    self.report_view.toHtml(),
                 )
             )

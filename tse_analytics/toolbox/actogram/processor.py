@@ -1,8 +1,14 @@
+from dataclasses import dataclass
+
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
+from tse_analytics.core import color_manager
+from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.helper import normalize_nd_array
 from tse_analytics.core.data.shared import Variable
+from tse_analytics.core.utils import get_html_image_from_figure, time_to_float
 
 
 def dataframe_to_actogram(
@@ -46,9 +52,9 @@ def dataframe_to_actogram(
     return activity_array, unique_days
 
 
-# Enhanced version with customization
 def plot_enhanced_actogram(
     activity_data,
+    figsize: tuple[float, float],
     days=None,
     binsize=None,
     title="Actogram",
@@ -101,7 +107,8 @@ def plot_enhanced_actogram(
         xticks = np.linspace(0, bins_per_day, len(time_labels))
 
     # Create the figure
-    fig, ax = plt.subplots(figsize=(14, 10))
+    figure = plt.Figure(figsize=figsize, layout="tight")
+    ax = figure.subplots()
 
     # Add highlight periods if specified
     if highlight_periods:
@@ -171,5 +178,70 @@ def plot_enhanced_actogram(
     # Add grid for better readability
     ax.grid(True, axis="x", alpha=0.3)
 
-    plt.tight_layout()
-    return fig, ax
+    return figure, ax
+
+
+@dataclass
+class ActogramResult:
+    report: str
+
+
+def get_actogram_result(
+    dataset: Dataset,
+    df: pd.DataFrame,
+    variable: Variable,
+    bins_per_hour: int,
+    figsize: tuple[float, float] | None = None,
+) -> ActogramResult:
+    settings = dataset.binning_settings.time_cycles_settings
+
+    # Convert DataFrame to actogram format
+    activity_array, unique_days = dataframe_to_actogram(df, variable, 24 * bins_per_hour)
+
+    # Normalize data
+    activity_array = normalize_nd_array(activity_array)
+
+    # Create day labels
+    day_labels = [d.strftime("%Y-%m-%d") for d in unique_days]
+
+    if settings.dark_cycle_start < settings.light_cycle_start:
+        periods = [
+            {
+                "start": time_to_float(settings.dark_cycle_start),
+                "end": time_to_float(settings.light_cycle_start),
+                "color": "gray",
+                "alpha": 0.2,
+            }
+        ]
+    else:
+        periods = [
+            {
+                "start": 0,
+                "end": time_to_float(settings.light_cycle_start),
+                "color": "gray",
+                "alpha": 0.2,
+            },
+            {
+                "start": time_to_float(settings.dark_cycle_start),
+                "end": 24,
+                "color": "gray",
+                "alpha": 0.2,
+            },
+        ]
+
+    # Plot double actogram
+    figure, ax = plot_enhanced_actogram(
+        activity_array,
+        figsize,
+        day_labels,
+        binsize=1 / bins_per_hour,
+        highlight_periods=periods,
+        bar_color=color_manager.get_color_hex(0),
+        title=f"Actogram - {variable.name}",
+    )
+
+    report = get_html_image_from_figure(figure)
+
+    return ActogramResult(
+        report=report,
+    )
