@@ -8,16 +8,14 @@ from PySide6.QtWidgets import QFileDialog, QMessageBox, QToolBar, QVBoxLayout, Q
 from tse_analytics.core import manager
 from tse_analytics.pipeline import PipelineNodeGraph
 from tse_analytics.pipeline.nodes import (
-    BoxCoxNode,
     CheckboxNode,
-    ConditionNode,
     DatatableInputNode,
     DescriptiveStatsNode,
-    IfElseNode,
     NormalityTestNode,
     OneWayAnovaNode,
     ReportNode,
     ResampleNode,
+    TransformationNode,
 )
 from tse_analytics.views.general.pipeline.hotkeys import hotkeys
 
@@ -99,16 +97,14 @@ class PipelineEditorWidget(QWidget):
 
         # Register all custom nodes
         self.graph.register_nodes([
-            BoxCoxNode,
             CheckboxNode,
-            ConditionNode,
             DatatableInputNode,
             DescriptiveStatsNode,
-            IfElseNode,
             NormalityTestNode,
             OneWayAnovaNode,
             ReportNode,
             ResampleNode,
+            TransformationNode,
         ])
 
         # Get the graph widget and add it to the layout

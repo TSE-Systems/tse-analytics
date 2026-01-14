@@ -103,11 +103,6 @@ class NormalityWidget(QWidget):
             self.canvas.figure,
         )
 
-        # print(pg.normality(df))
-
-        # transformed_data, best_lambda = boxcox(df[variable.name])
-        # print(pg.normality(transformed_data))
-
         self.canvas.figure.tight_layout()
         self.canvas.draw()
 

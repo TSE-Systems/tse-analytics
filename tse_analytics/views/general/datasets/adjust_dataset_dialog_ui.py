@@ -15,11 +15,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QDateTimeEdit,
-    QDialog, QDialogButtonBox, QGroupBox, QHBoxLayout,
-    QHeaderView, QLabel, QLineEdit, QSizePolicy,
-    QSpacerItem, QTableWidget, QTableWidgetItem, QTimeEdit,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QComboBox,
+    QDateTimeEdit, QDialog, QDialogButtonBox, QGroupBox,
+    QHBoxLayout, QHeaderView, QLabel, QLineEdit,
+    QSizePolicy, QSpacerItem, QSpinBox, QTableWidget,
+    QTableWidgetItem, QVBoxLayout, QWidget)
 import resources_rc
 
 class Ui_AdjustDatasetDialog(object):
@@ -61,12 +61,19 @@ class Ui_AdjustDatasetDialog(object):
         self.groupBoxResampling.setObjectName(u"groupBoxResampling")
         self.groupBoxResampling.setCheckable(True)
         self.groupBoxResampling.setChecked(False)
-        self.verticalLayout_2 = QVBoxLayout(self.groupBoxResampling)
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.timeEditResamplingInterval = QTimeEdit(self.groupBoxResampling)
-        self.timeEditResamplingInterval.setObjectName(u"timeEditResamplingInterval")
+        self.horizontalLayout = QHBoxLayout(self.groupBoxResampling)
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.comboBoxResamplingUnit = QComboBox(self.groupBoxResampling)
+        self.comboBoxResamplingUnit.setObjectName(u"comboBoxResamplingUnit")
 
-        self.verticalLayout_2.addWidget(self.timeEditResamplingInterval)
+        self.horizontalLayout.addWidget(self.comboBoxResamplingUnit)
+
+        self.spinBoxResamplingValue = QSpinBox(self.groupBoxResampling)
+        self.spinBoxResamplingValue.setObjectName(u"spinBoxResamplingValue")
+        self.spinBoxResamplingValue.setMinimum(1)
+        self.spinBoxResamplingValue.setMaximum(1000)
+
+        self.horizontalLayout.addWidget(self.spinBoxResamplingValue)
 
 
         self.verticalLayout_4.addWidget(self.groupBoxResampling)
@@ -181,7 +188,6 @@ class Ui_AdjustDatasetDialog(object):
         AdjustDatasetDialog.setWindowTitle(QCoreApplication.translate("AdjustDatasetDialog", u"Adjust Dataset", None))
         self.groupBoxRename.setTitle(QCoreApplication.translate("AdjustDatasetDialog", u"Rename", None))
         self.groupBoxResampling.setTitle(QCoreApplication.translate("AdjustDatasetDialog", u"Apply resampling", None))
-        self.timeEditResamplingInterval.setDisplayFormat(QCoreApplication.translate("AdjustDatasetDialog", u"HH:mm:ss", None))
         self.groupBoxTrimTime.setTitle(QCoreApplication.translate("AdjustDatasetDialog", u"Trim time", None))
         self.labelTrimTimeStart.setText(QCoreApplication.translate("AdjustDatasetDialog", u"Start:", None))
         self.dateTimeEditTrimStart.setDisplayFormat(QCoreApplication.translate("AdjustDatasetDialog", u"yyyy-MM-dd HH:mm:ss", None))

@@ -1,4 +1,6 @@
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.pipeline import PipelineNode
+from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 
 
 class CheckboxNode(PipelineNode):
@@ -16,6 +18,23 @@ class CheckboxNode(PipelineNode):
         # create the checkboxes.
         self.add_checkbox("state", "", "State", False)
 
-    def process(self, input):
+    def process(self, packet: PipelinePacket) -> dict[str, PipelinePacket]:
+        datatable = packet.value
+        if datatable is None or not isinstance(datatable, Datatable):
+            return {
+                "true": PipelinePacket.inactive(reason="Invalid input datatable"),
+                "false": PipelinePacket.inactive(reason="Invalid input datatable"),
+            }
+
         state = self.get_property("state")
-        return (input, None) if state else (None, input)
+
+        if state:
+            return {
+                "true": PipelinePacket(datatable),
+                "false": PipelinePacket.inactive(),
+            }
+        else:
+            return {
+                "true": PipelinePacket.inactive(),
+                "false": PipelinePacket(datatable),
+            }

@@ -68,11 +68,17 @@
            <property name="checked">
             <bool>false</bool>
            </property>
-           <layout class="QVBoxLayout" name="verticalLayout_2">
+           <layout class="QHBoxLayout" name="horizontalLayout">
             <item>
-             <widget class="QTimeEdit" name="timeEditResamplingInterval">
-              <property name="displayFormat">
-               <string>HH:mm:ss</string>
+             <widget class="QComboBox" name="comboBoxResamplingUnit"/>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="spinBoxResamplingValue">
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>1000</number>
               </property>
              </widget>
             </item>

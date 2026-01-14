@@ -1,5 +1,5 @@
 from NodeGraphQt.widgets.node_widgets import NodeComboBox
-from scipy.stats import kstest, normaltest, shapiro
+from scipy.stats import anderson, kstest, shapiro
 
 from tse_analytics.core import manager
 from tse_analytics.core.data.dataset import Dataset
@@ -18,22 +18,23 @@ class NormalityTestNode(PipelineNode):
         self.add_output("yes")
         self.add_output("no")
 
+        self.add_text_input(
+            "variable",
+            "",
+            "",
+            "Variable to test",
+            "Variable to test",
+        )
+
         self.add_combo_menu(
             "method",
             "Method",
             items=[
                 "Shapiro-Wilk",
                 "Kolmogorov-Smirnov",
-                "D’Agostino",
+                "Anderson-Darling",
             ],
             tooltip="Test method",
-        )
-
-        self.add_combo_menu(
-            "variable",
-            "Variable",
-            items=[],
-            tooltip="Please select a variable to test",
         )
 
     def initialize(self, dataset: Dataset):
@@ -54,21 +55,22 @@ class NormalityTestNode(PipelineNode):
                 "no": PipelinePacket.inactive(reason="Invalid input datatable"),
             }
 
-        method = str(self.get_property("method"))
         variable = str(self.get_property("variable"))
+        method = str(self.get_property("method"))
 
         data = datatable.active_df[variable]
 
-        if method == "Shapiro-Wilk":
-            stat, pvalue = shapiro(data)
-        elif method == "Kolmogorov-Smirnov":
-            stat, pvalue = kstest(data, "norm")
-        elif method == "D'Agostino":
-            stat, pvalue = normaltest(data)
+        match method:
+            case "Shapiro-Wilk":
+                statistic, pvalue = shapiro(data)
+            case "Kolmogorov-Smirnov":
+                statistic, pvalue = kstest(data, "norm")
+            case "Anderson-Darling":
+                statistic, pvalue = anderson(data, dist="norm", method="interpolate")
 
         is_normal = pvalue > 0.05
 
-        tooltip = f"<b>Result</b><br/>Statistic: {stat:.5f}<br/>P-value: {pvalue:.5f}<br/>Normal: {is_normal}"
+        tooltip = f"<b>Result</b><br/>Statistic: {statistic:.5f}<br/>P-value: {pvalue:.5f}<br/>Normal: {is_normal}"
         self.view.setToolTip(tooltip)
 
         if is_normal:

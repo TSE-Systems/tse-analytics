@@ -1,5 +1,4 @@
 import pandas as pd
-from PySide6.QtCore import QTime
 from PySide6.QtWidgets import QDialog, QTableWidgetItem, QWidget
 
 from tse_analytics.core.data.dataset import Dataset
@@ -43,15 +42,8 @@ class AdjustDatasetDialog(QDialog):
 
         self.ui.lineEditName.setText(dataset.name)
 
-        if "Main" in dataset.datatables and dataset.datatables["Main"].sampling_interval is not None:
-            resampling_interval = dataset.datatables["Main"].sampling_interval
-        else:
-            resampling_interval = pd.to_timedelta("0 days 01:00:00")
-        resampling_qtime = QTime.fromMSecsSinceStartOfDay(int(resampling_interval.total_seconds() * 1000))
-        self.ui.timeEditResamplingInterval.setTime(resampling_qtime)
-
-        if "Main" in dataset.datatables and dataset.datatables["Main"].sampling_interval is not None:
-            self.ui.timeEditResamplingInterval.setMinimumTime(resampling_qtime)
+        self.ui.comboBoxResamplingUnit.addItems(["day", "hour", "minute"])
+        self.ui.comboBoxResamplingUnit.setCurrentIndex(1)
 
         self.ui.dateTimeEditTrimStart.setMinimumDateTime(dataset.experiment_started)
         self.ui.dateTimeEditTrimStart.setMaximumDateTime(dataset.experiment_stopped)
@@ -87,12 +79,9 @@ class AdjustDatasetDialog(QDialog):
         self.dataset.rename(name)
 
     def _resample(self) -> None:
-        """
-        Resample the dataset with the interval specified in the time edit.
-        """
-        resampling_interval = pd.to_timedelta(
-            self.ui.timeEditResamplingInterval.time().msecsSinceStartOfDay(), unit="ms"
-        )
+        value = self.ui.spinBoxResamplingValue.value()
+        unit = self.ui.comboBoxResamplingUnit.currentText()
+        resampling_interval = pd.Timedelta(f"{value}{unit}")
         self.dataset.resample(resampling_interval)
 
     def _trim_time(self) -> None:
