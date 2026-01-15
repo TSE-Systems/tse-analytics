@@ -1,7 +1,7 @@
 import os
 import uuid
 
-from PySide6.QtGui import QFont, QImage, QTextDocument
+from PySide6.QtGui import QImage, QTextDocument
 from PySide6.QtWidgets import QTextEdit
 
 IMAGE_EXTENSIONS = [".jpg", ".png", ".bmp"]
@@ -27,11 +27,12 @@ class CustomTextEdit(QTextEdit):
         """
         super().__init__(parent)
         self.setAutoFormatting(QTextEdit.AutoFormattingFlag.AutoAll)
+
         # Initialize default font size.
-        font = QFont("Times", 12)
-        self.setFont(font)
+        # font = QFont("Segoe UI", 12)
+        # self.setFont(font)
         # We need to repeat the size to init the current format.
-        self.setFontPointSize(12)
+        # self.setFontPointSize(12)
 
     def canInsertFromMimeData(self, source):
         """

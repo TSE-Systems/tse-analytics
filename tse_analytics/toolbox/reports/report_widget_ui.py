@@ -26,7 +26,9 @@ class Ui_ReportWidget(object):
         if not ReportWidget.objectName():
             ReportWidget.setObjectName(u"ReportWidget")
         self.verticalLayout = QVBoxLayout(ReportWidget)
+        self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.editor = CustomTextEdit(ReportWidget)
         self.editor.setObjectName(u"editor")
         self.editor.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)

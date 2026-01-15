@@ -26,6 +26,11 @@ html_template = """
     td {{
         padding: 5px;
     }}
+    .horizontal-container {{
+        display: flex;
+        justify-content: space-between;
+        margin: 20px;
+    }}
 </style>
 </head>
 <body>

@@ -39,7 +39,7 @@ dev = [
     "pyrefly==0.48.0",
     "qtsass==0.4.0",
     "ruff==0.14.11",
-    "ty==0.0.11",
+    "ty==0.0.12",
 ]
 
 [project.scripts]
