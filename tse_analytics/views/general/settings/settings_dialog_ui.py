@@ -24,7 +24,7 @@ class Ui_SettingsDialog(object):
     def setupUi(self, SettingsDialog):
         if not SettingsDialog.objectName():
             SettingsDialog.setObjectName(u"SettingsDialog")
-        SettingsDialog.resize(271, 275)
+        SettingsDialog.resize(271, 281)
         self.verticalLayout = QVBoxLayout(SettingsDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.groupBoxHelpMode = QGroupBox(SettingsDialog)
@@ -90,7 +90,7 @@ class Ui_SettingsDialog(object):
         self.buttonBox = QDialogButtonBox(SettingsDialog)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setOrientation(Qt.Orientation.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Close)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Ok)
 
         self.verticalLayout.addWidget(self.buttonBox)
 
