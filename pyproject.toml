@@ -36,9 +36,10 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pyinstaller==6.18.0",
-    "pyrefly==0.48.0",
+    "pyrefly==0.48.1",
+    "pytest==9.0.2",
     "qtsass==0.4.0",
-    "ruff==0.14.11",
+    "ruff==0.14.13",
     "ty==0.0.12",
 ]
 

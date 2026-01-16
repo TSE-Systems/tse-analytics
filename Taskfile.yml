@@ -131,7 +131,7 @@ tasks:
 
   test:
     cmds:
-      - pytest
+      - pytest tests/
 
   qss:
     cmds:
