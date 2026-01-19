@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 import pandas as pd
 import pingouin as pg
+from matplotlib import rcParams
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
@@ -24,6 +25,9 @@ def get_one_way_anova_result(
     effsize: str,
     figsize: tuple[float, float] | None = None,
 ) -> OneWayAnovaResult:
+    if figsize is None:
+        figsize = rcParams["figure.figsize"]
+
     # Binning
     df = process_time_interval_binning(
         df,

@@ -2,6 +2,7 @@ from NodeGraphQt import BaseNode, NodeGraph, PropertiesBinWidget
 from PySide6.QtCore import Qt
 
 from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 
 
@@ -30,11 +31,11 @@ class PipelineNodeGraph(NodeGraph):
         if not self._properties_bin.isVisible():
             self._properties_bin.show()
 
-    def initialize_pipeline(self, dataset: Dataset):
+    def initialize_pipeline(self, dataset: Dataset, datatable: Datatable):
         all_nodes = self.all_nodes()
         for node in all_nodes:
             if hasattr(node, "initialize"):
-                node.initialize(dataset)
+                node.initialize(dataset, datatable)
 
     def get_execution_order(self) -> list[BaseNode]:
         """

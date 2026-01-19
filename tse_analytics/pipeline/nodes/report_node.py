@@ -21,25 +21,23 @@ class ReportNode(PipelineNode):
             "Report name",
         )
 
-    def process(self, packet: PipelinePacket) -> PipelinePacket:
-        value = packet.value
-        if value is None:
-            return PipelinePacket.inactive(reason="Invalid input")
+    def process(self, packet: PipelinePacket) -> None:
+        report = None
+        if packet.report is not None:
+            report = packet.report
+        else:
+            value = packet.value
+            if isinstance(value, Datatable):
+                report = value.active_df.to_html()
+            elif isinstance(value, str):
+                report = value
 
-        report_content = None
-        if isinstance(value, Datatable):
-            report_content = value.active_df.to_html()
-        elif isinstance(value, str):
-            report_content = value
-
-        if report_content is not None:
-            name = str(self.get_property("report_name"))
+        if report is not None:
+            report_name = str(self.get_property("report_name"))
             manager.add_report(
                 Report(
                     manager.get_selected_dataset(),
-                    name,
-                    report_content,
+                    report_name,
+                    report,
                 )
             )
-
-        return packet

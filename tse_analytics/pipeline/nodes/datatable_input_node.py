@@ -1,5 +1,6 @@
 from tse_analytics.core import manager
 from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.pipeline import PipelineNode
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 
@@ -29,7 +30,7 @@ class DatatableInputNode(PipelineNode):
             tooltip="Please select a datatable",
         )
 
-    def initialize(self, dataset: Dataset):
+    def initialize(self, dataset: Dataset, datatable: Datatable):
         pass
 
     def process(self, packet: PipelinePacket) -> PipelinePacket:

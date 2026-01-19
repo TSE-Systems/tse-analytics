@@ -69,7 +69,7 @@ class TransformationNode(PipelineNode):
 
         result_datatable.active_df[transformed_variable] = transformed_data
 
-        tooltip = f"<b>Result</b><br/>Lambda: {lambda_opt:.5f}"
+        tooltip = f"<h3>Transformation</h3>Method: {method}<br>Lambda: {lambda_opt:.5f}"
         self.view.setToolTip(tooltip)
 
-        return PipelinePacket(result_datatable, meta={"lambda": lambda_opt})
+        return PipelinePacket(result_datatable, report=tooltip, meta={"lambda": lambda_opt})

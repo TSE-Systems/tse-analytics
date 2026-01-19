@@ -19,7 +19,7 @@ class DescriptiveStatsNode(PipelineNode):
         if datatable is None or not isinstance(datatable, Datatable):
             return PipelinePacket.inactive(reason="Invalid input datatable")
 
-        descriptive = (
+        report = (
             np
             .round(datatable.active_df.describe(), 3)
             .T[
@@ -34,4 +34,4 @@ class DescriptiveStatsNode(PipelineNode):
             .to_html()
         )
 
-        return PipelinePacket(descriptive)
+        return PipelinePacket(packet.value, report=report)

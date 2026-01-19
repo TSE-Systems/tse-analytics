@@ -1,8 +1,5 @@
-from NodeGraphQt.widgets.node_widgets import NodeComboBox
 from scipy.stats import anderson, kstest, shapiro
 
-from tse_analytics.core import manager
-from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.pipeline import PipelineNode
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
@@ -37,16 +34,6 @@ class NormalityTestNode(PipelineNode):
             tooltip="Test method",
         )
 
-    def initialize(self, dataset: Dataset):
-        datatable = manager.get_selected_datatable()
-        if datatable is None:
-            variable_names = ["No variables"]
-        else:
-            variable_names = datatable.variables.keys()
-        widget: NodeComboBox = self.get_widget("variable")
-        widget.clear()
-        widget.add_items(variable_names)
-
     def process(self, packet: PipelinePacket) -> dict[str, PipelinePacket]:
         datatable = packet.value
         if datatable is None or not isinstance(datatable, Datatable):
@@ -70,13 +57,14 @@ class NormalityTestNode(PipelineNode):
 
         is_normal = pvalue > 0.05
 
-        tooltip = f"<b>Result</b><br/>Statistic: {statistic:.5f}<br/>P-value: {pvalue:.5f}<br/>Normal: {is_normal}"
+        tooltip = f"<h3>Normality Test</h3>Statistic: {statistic:.5f}<br>P-value: {pvalue:.5f}<br>Normal: {is_normal}"
         self.view.setToolTip(tooltip)
 
         if is_normal:
             return {
                 "yes": PipelinePacket(
-                    datatable,
+                    packet.value,
+                    report=tooltip,
                     meta={
                         "normal": True,
                         "selected_variable": variable,
@@ -88,7 +76,8 @@ class NormalityTestNode(PipelineNode):
             return {
                 "yes": PipelinePacket.inactive(normal=True, selected_variable=variable),
                 "no": PipelinePacket(
-                    datatable,
+                    packet.value,
+                    report=tooltip,
                     meta={
                         "normal": False,
                         "selected_variable": variable,

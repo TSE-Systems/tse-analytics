@@ -11,6 +11,7 @@ from tse_analytics.pipeline.nodes import (
     CheckboxNode,
     DatatableInputNode,
     DescriptiveStatsNode,
+    HistogramNode,
     NormalityTestNode,
     OneWayAnovaNode,
     ReportNode,
@@ -100,6 +101,7 @@ class PipelineEditorWidget(QWidget):
             CheckboxNode,
             DatatableInputNode,
             DescriptiveStatsNode,
+            HistogramNode,
             NormalityTestNode,
             OneWayAnovaNode,
             ReportNode,
@@ -187,8 +189,9 @@ class PipelineEditorWidget(QWidget):
             return
 
         dataset = manager.get_selected_dataset()
+        datatable = manager.get_selected_datatable()
         if dataset is not None:
-            self.graph.initialize_pipeline(dataset)
+            self.graph.initialize_pipeline(dataset, datatable)
 
     def _execute_pipeline(self):
         """Execute the current pipeline."""
