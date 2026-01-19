@@ -9,8 +9,10 @@ from tse_analytics.core import manager
 from tse_analytics.pipeline import PipelineNodeGraph
 from tse_analytics.pipeline.nodes import (
     CheckboxNode,
+    CorrelationNode,
     DatatableInputNode,
     DescriptiveStatsNode,
+    DistributionNode,
     HistogramNode,
     NormalityTestNode,
     OneWayAnovaNode,
@@ -99,8 +101,10 @@ class PipelineEditorWidget(QWidget):
         # Register all custom nodes
         self.graph.register_nodes([
             CheckboxNode,
+            CorrelationNode,
             DatatableInputNode,
             DescriptiveStatsNode,
+            DistributionNode,
             HistogramNode,
             NormalityTestNode,
             OneWayAnovaNode,

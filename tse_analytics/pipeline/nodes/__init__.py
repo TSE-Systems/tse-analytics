@@ -1,6 +1,8 @@
 from tse_analytics.pipeline.nodes.checkbox_node import CheckboxNode
+from tse_analytics.pipeline.nodes.correlation_node import CorrelationNode
 from tse_analytics.pipeline.nodes.datatable_input_node import DatatableInputNode
 from tse_analytics.pipeline.nodes.descriptive_stats_node import DescriptiveStatsNode
+from tse_analytics.pipeline.nodes.distribution_node import DistributionNode
 from tse_analytics.pipeline.nodes.histogram_node import HistogramNode
 from tse_analytics.pipeline.nodes.normality_test_node import NormalityTestNode
 from tse_analytics.pipeline.nodes.one_way_anova_node import OneWayAnovaNode
@@ -10,8 +12,10 @@ from tse_analytics.pipeline.nodes.transformation_node import TransformationNode
 
 __all__ = [
     CheckboxNode,
+    CorrelationNode,
     DatatableInputNode,
     DescriptiveStatsNode,
+    DistributionNode,
     HistogramNode,
     NormalityTestNode,
     OneWayAnovaNode,

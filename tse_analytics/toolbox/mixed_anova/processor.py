@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import pandas as pd
 import pingouin as pg
 import seaborn.objects as so
+from matplotlib import rcParams
 
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.dataset import Dataset
@@ -25,6 +26,9 @@ def get_mixed_anova_result(
     padjust: str,
     figsize: tuple[float, float] | None = None,
 ) -> MixedAnovaResult:
+    if figsize is None:
+        figsize = rcParams["figure.figsize"]
+
     anova = pg.mixed_anova(
         data=df,
         dv=variable.name,

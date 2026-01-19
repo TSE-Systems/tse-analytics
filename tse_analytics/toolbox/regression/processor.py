@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import pandas as pd
 import pingouin as pg
 import seaborn.objects as so
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt, rcParams
 
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
@@ -27,6 +27,9 @@ def get_regression_result(
     factor_name: str | None,
     figsize: tuple[float, float] | None = None,
 ) -> RegressionResult:
+    if figsize is None:
+        figsize = rcParams["figure.figsize"]
+
     # Create a figure with a tight layout
     figure = plt.Figure(figsize=(figsize[0], figsize[0] / 2), layout="tight")
 
