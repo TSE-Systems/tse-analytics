@@ -34,4 +34,4 @@ class DescriptiveStatsNode(PipelineNode):
             .to_html()
         )
 
-        return PipelinePacket(packet.value, report=report)
+        return PipelinePacket(datatable, report=report)

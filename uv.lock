@@ -594,15 +594,15 @@ wheels = [
 
 [[package]]
 name = "pyinstaller-hooks-contrib"
-version = "2025.11"
+version = "2026.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "packaging" },
     { name = "setuptools" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/45/2f/2c68b6722d233dae3e5243751aafc932940b836919cfaca22dd0c60d417c/pyinstaller_hooks_contrib-2025.11.tar.gz", hash = "sha256:dfe18632e06655fa88d218e0d768fd753e1886465c12a6d4bce04f1aaeec917d", size = 169183, upload-time = "2025-12-23T12:59:37.361Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/31/8f/8052ff65067697ee80fde45b9731842e160751c41ac5690ba232c22030e8/pyinstaller_hooks_contrib-2026.0.tar.gz", hash = "sha256:0120893de491a000845470ca9c0b39284731ac6bace26f6849dea9627aaed48e", size = 170311, upload-time = "2026-01-20T00:15:23.922Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a7/c4/3a096c6e701832443b957b9dac18a163103360d0c7f5842ca41695371148/pyinstaller_hooks_contrib-2025.11-py3-none-any.whl", hash = "sha256:777e163e2942474aa41a8e6d31ac1635292d63422c3646c176d584d04d971c34", size = 449478, upload-time = "2025-12-23T12:59:35.987Z" },
+    { url = "https://files.pythonhosted.org/packages/d5/b1/9da6ec3e88696018ee7bb9dc4a7310c2cfaebf32923a19598cd342767c10/pyinstaller_hooks_contrib-2026.0-py3-none-any.whl", hash = "sha256:0590db8edeba3e6c30c8474937021f5cd39c0602b4d10f74a064c73911efaca5", size = 452318, upload-time = "2026-01-20T00:15:21.88Z" },
 ]
 
 [[package]]
@@ -704,20 +704,20 @@ wheels = [
 
 [[package]]
 name = "pyside6-qtads"
-version = "4.4.1.2"
+version = "4.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pyside6-essentials" },
     { name = "shiboken6" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/5c/a2/a09fec62bc110ffd7288ca74c2b298730453a3b264e5906235fa60ad8dbd/pyside6_qtads-4.4.1.2.tar.gz", hash = "sha256:b37b61007eb111f0b373b957d87fa99b17f1985a7f58f3643391303d76c9ddf4", size = 22069262, upload-time = "2025-12-12T22:16:35.306Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/53/81/08fef3854dfb3277988192e72f662fa84c9b285865e70f9e9e46b0521588/pyside6_qtads-4.5.0.tar.gz", hash = "sha256:0052104a33fd21e50c8c6a46228de3e9b4edec1b25537983691a54870f9c4ac5", size = 22329182, upload-time = "2026-01-19T23:17:34.3Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8e/73/b06b169288cd7e1f18155d1850e6fd1f0063852e2e2c4436dca79f156df4/pyside6_qtads-4.4.1.2-cp39-abi3-macosx_13_0_arm64.whl", hash = "sha256:105c0151b6ab2914c60e463c55e662e936b0bb6cf1461dbf9377dec92e1822d2", size = 511860, upload-time = "2025-12-12T22:16:28.459Z" },
-    { url = "https://files.pythonhosted.org/packages/ee/12/6c82f6b25adadc4be9f5aab6610247b7c7c6310e92d2e8b40cd41af9ffac/pyside6_qtads-4.4.1.2-cp39-abi3-macosx_13_0_x86_64.whl", hash = "sha256:e8017115fe490bbe42783a38389d13c05f377d576ac264adf18b9bf3cb4aa508", size = 532775, upload-time = "2025-12-12T22:16:29.744Z" },
-    { url = "https://files.pythonhosted.org/packages/82/02/8d6d798b91032c87e7cc2301c09134a8990ad80422cbb628073beb8c1d4c/pyside6_qtads-4.4.1.2-cp39-abi3-manylinux_2_34_x86_64.whl", hash = "sha256:2d69a63ad92ac86fba4fddc4c23c093ed8d15a31f85427cdff4f95c9eb74026c", size = 863883, upload-time = "2025-12-12T22:16:30.788Z" },
-    { url = "https://files.pythonhosted.org/packages/50/ff/ffda16d63fd1cbe74cc1f862dbc2409979495b2c125739737e649312f46b/pyside6_qtads-4.4.1.2-cp39-abi3-manylinux_2_39_aarch64.whl", hash = "sha256:7cffb311e9dfa8368854dfcfed6249a936dcb46ef5d0b34d7a5da9498cb4fbee", size = 753320, upload-time = "2025-12-12T22:16:31.78Z" },
-    { url = "https://files.pythonhosted.org/packages/61/ab/75f4eaaa48de1122c89e697b57cfc692a0e53fd0e63cf8c8aa9fe552012b/pyside6_qtads-4.4.1.2-cp39-abi3-win_amd64.whl", hash = "sha256:97f5604bf7f62e2945e3691ecbafc7b5af2740f5d18400fe422afaa4aa4792c7", size = 398321, upload-time = "2025-12-12T22:16:32.717Z" },
-    { url = "https://files.pythonhosted.org/packages/f5/29/0c04d77659f8bcae15a4f911517043fb18e6cadf4508042d70567ef49ecc/pyside6_qtads-4.4.1.2-cp39-abi3-win_arm64.whl", hash = "sha256:c935e776d762ce1c48905e98be63fedfc1cd1b3dab2b5e5d1968ce7c476084e6", size = 371333, upload-time = "2025-12-12T22:16:33.994Z" },
+    { url = "https://files.pythonhosted.org/packages/4d/46/6dc5b49ec2a1b0e8f38603bf8ae6c4a9dd657a57f73b376118cdc71a8b60/pyside6_qtads-4.5.0-cp39-abi3-macosx_13_0_arm64.whl", hash = "sha256:b0bf5c338a458e4827753dd74736d1ff331e54aeebbf17d5b0947e4f84b5ba13", size = 512150, upload-time = "2026-01-19T23:17:26.019Z" },
+    { url = "https://files.pythonhosted.org/packages/e7/ba/b055c434575da3abf0dd1360b4a8ef54bf5bb852f1c42719edc685d5f4c2/pyside6_qtads-4.5.0-cp39-abi3-macosx_13_0_x86_64.whl", hash = "sha256:38664c02c2d7e32cdded1988d36f5384c76ff424c94e725925a790b53545c1a6", size = 532930, upload-time = "2026-01-19T23:17:27.366Z" },
+    { url = "https://files.pythonhosted.org/packages/b2/5d/8d88f20e5049e5f3cb2c9d51f267453b5f3a1be1f248a4e4fcbb4d2e33df/pyside6_qtads-4.5.0-cp39-abi3-manylinux_2_34_x86_64.whl", hash = "sha256:9bdd99e2f05280dc4ecf6ffc3a6e67072c4eee8bccf605e2c0d8c582f5b3510d", size = 864261, upload-time = "2026-01-19T23:17:28.505Z" },
+    { url = "https://files.pythonhosted.org/packages/cb/45/bdf8b6b7e07e1f8d84923d0831e3742ec579dd65ccb4590471bf35998b31/pyside6_qtads-4.5.0-cp39-abi3-manylinux_2_39_aarch64.whl", hash = "sha256:d3116a1060a5cad98069ba118ee4760afdba9cc2b361720120755ff5f7c855c0", size = 754267, upload-time = "2026-01-19T23:17:30.193Z" },
+    { url = "https://files.pythonhosted.org/packages/8f/7d/0087aab6b1ab142948e8f21075909214deed973e593fb5ba224db7f02434/pyside6_qtads-4.5.0-cp39-abi3-win_amd64.whl", hash = "sha256:92d739e0954f64307feda2520fa0bddfa9c5a0c53ce3b69ca96f4f703bfbd17f", size = 398659, upload-time = "2026-01-19T23:17:31.503Z" },
+    { url = "https://files.pythonhosted.org/packages/e4/31/3d753771707aec92b9453f7166cd04a12d511b5ace9df9f0052dcf872e1e/pyside6_qtads-4.5.0-cp39-abi3-win_arm64.whl", hash = "sha256:e2a399baafe1a332d3b8dafb790aae72b5d4bf0f2d599eff5336b77a80bd6f5f", size = 371524, upload-time = "2026-01-19T23:17:32.584Z" },
 ]
 
 [[package]]
@@ -1083,7 +1083,7 @@ requires-dist = [
     { name = "pyqt-toast-notification", specifier = "==1.3.3" },
     { name = "pyqtgraph", specifier = "==0.14.0" },
     { name = "pyside6", specifier = "==6.10.1" },
-    { name = "pyside6-qtads", specifier = "==4.4.1.2" },
+    { name = "pyside6-qtads", specifier = "==4.5.0" },
     { name = "scikit-learn", specifier = "==1.8.0" },
     { name = "scipy", specifier = "==1.17.0" },
     { name = "seaborn", specifier = "==0.13.2" },
