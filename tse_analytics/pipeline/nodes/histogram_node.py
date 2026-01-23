@@ -2,7 +2,7 @@ from NodeGraphQt.widgets.node_widgets import NodeComboBox
 
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import SplitMode
+from tse_analytics.core.utils import get_group_by_params
 from tse_analytics.pipeline import PipelineNode
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 from tse_analytics.toolbox.histogram.processor import get_histogram_result
@@ -60,26 +60,7 @@ class HistogramNode(PipelineNode):
         if variable_name == "No variables" or not variable_name:
             return PipelinePacket.inactive(reason="No variable selected")
 
-        # Convert group_by string to SplitMode and factor_name
-        match group_by_str:
-            case "Animal":
-                split_mode = SplitMode.ANIMAL
-                factor_name = None
-            case "Run":
-                split_mode = SplitMode.RUN
-                factor_name = None
-            case "Total":
-                split_mode = SplitMode.TOTAL
-                factor_name = None
-            case _:
-                # Check if it's a factor name
-                if group_by_str in datatable.dataset.factors.keys():
-                    split_mode = SplitMode.FACTOR
-                    factor_name = group_by_str
-                else:
-                    # Default to Animal if unknown
-                    split_mode = SplitMode.ANIMAL
-                    factor_name = None
+        split_mode, factor_name = get_group_by_params(group_by_str)
 
         # Get dataframe with grouping
         df = datatable.get_df([variable_name], split_mode, factor_name if factor_name else "")

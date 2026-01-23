@@ -28,8 +28,8 @@ class NormalityTestNode(PipelineNode):
             "Method",
             items=[
                 "Shapiro-Wilk",
-                "Kolmogorov-Smirnov",
                 "Anderson-Darling",
+                "Kolmogorov-Smirnov",
             ],
             tooltip="Test method",
         )
@@ -50,10 +50,10 @@ class NormalityTestNode(PipelineNode):
         match method:
             case "Shapiro-Wilk":
                 statistic, pvalue = shapiro(data)
-            case "Kolmogorov-Smirnov":
-                statistic, pvalue = kstest(data, "norm")
             case "Anderson-Darling":
                 statistic, pvalue = anderson(data, dist="norm", method="interpolate")
+            case "Kolmogorov-Smirnov":
+                statistic, pvalue = kstest(data, "norm")
 
         is_normal = pvalue > 0.05
 

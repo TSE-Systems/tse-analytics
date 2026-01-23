@@ -18,6 +18,8 @@ from matplotlib.figure import Figure
 from PySide6.QtGui import QIcon, Qt
 from PySide6.QtWidgets import QSizePolicy, QToolButton, QWidget, QWidgetAction
 
+from tse_analytics.core.data.shared import SplitMode
+
 IS_RELEASE = Path("_internal").exists()
 
 CSV_IMPORT_ENABLED = True
@@ -39,14 +41,14 @@ def get_html_image_from_figure(figure: Figure) -> str:
     io = BytesIO()
     figure.savefig(io, format="png", bbox_inches="tight")
     encoded = b64encode(io.getvalue()).decode("utf-8")
-    return f"<img src='data:image/png;base64,{encoded}'><br/>"
+    return f"<img src='data:image/png;base64,{encoded}'><br>"
 
 
 def get_html_image_from_plot(plot: so.Plot) -> str:
     io = BytesIO()
     plot.save(io, format="png", bbox_inches="tight")
     encoded = b64encode(io.getvalue()).decode("utf-8")
-    return f"<img src='data:image/png;base64,{encoded}'><br/>"
+    return f"<img src='data:image/png;base64,{encoded}'><br>"
 
 
 def get_html_table(df: pd.DataFrame, caption: str, precision=5, index=True) -> str:
@@ -157,3 +159,16 @@ def get_figsize_from_widget(widget: QWidget) -> tuple[float, float]:
     fig_height = widget_height / dpi
 
     return fig_width, fig_height
+
+
+def get_group_by_params(group_by_str: str) -> tuple[SplitMode, str]:
+    # Convert group_by string to SplitMode and factor_name
+    match group_by_str:
+        case SplitMode.ANIMAL.value:
+            return SplitMode.ANIMAL, ""
+        case SplitMode.RUN.value:
+            return SplitMode.RUN, ""
+        case SplitMode.TOTAL.value:
+            return SplitMode.TOTAL, ""
+        case _:
+            return SplitMode.FACTOR, group_by_str
