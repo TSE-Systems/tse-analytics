@@ -47,8 +47,6 @@ This project uses **Ruff** for both linting and formatting:
 The project uses multiple tools for code quality:
 
 - **Ruff**: Primary linter and formatter
-- **mypy**: Static type checking
-- **pylint**: Additional code quality checks
 - **ty**: Type analysis
 - **pyrefly**: Project-specific type checking
 
@@ -65,11 +63,8 @@ task ruff-check
 task ruff-fix
 
 # Run type checking
-task mypy
+task pyrefly
 task ty
-
-# Run pylint
-task pylint
 
 # Run all tests
 task test

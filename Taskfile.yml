@@ -100,18 +100,14 @@ tasks:
       - uv sync
       - pyside6-deploy -c pysidedeploy.spec
 
-  mypy:
+  pyrefly:
     cmds:
-      - mypy tse_analytics
+      - pyrefly check --summarize-errors
+    ignore_error: true
 
   ty:
     cmds:
       - ty check
-    ignore_error: true
-
-  pylint:
-    cmds:
-      - pylint -j 8 tse_analytics
     ignore_error: true
 
   ruff-check:
