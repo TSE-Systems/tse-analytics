@@ -2,12 +2,11 @@
 Unit tests for tse_analytics.core.toaster module.
 """
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from pyqttoast import Toast, ToastPosition, ToastPreset
 from PySide6.QtWidgets import QApplication, QWidget
-
 from tse_analytics.core.toaster import make_toast
 
 
@@ -55,155 +54,89 @@ class TestMakeToast:
     def test_information_preset(self, qapp):
         """Test make_toast with INFORMATION preset."""
         parent = QWidget()
-        toast = make_toast(
-            parent,
-            "Info",
-            "Information message",
-            preset=ToastPreset.INFORMATION
-        )
+        toast = make_toast(parent, "Info", "Information message", preset=ToastPreset.INFORMATION)
 
         assert isinstance(toast, Toast)
 
     def test_warning_preset(self, qapp):
         """Test make_toast with WARNING preset."""
         parent = QWidget()
-        toast = make_toast(
-            parent,
-            "Warning",
-            "Warning message",
-            preset=ToastPreset.WARNING
-        )
+        toast = make_toast(parent, "Warning", "Warning message", preset=ToastPreset.WARNING)
 
         assert isinstance(toast, Toast)
 
     def test_error_preset(self, qapp):
         """Test make_toast with ERROR preset."""
         parent = QWidget()
-        toast = make_toast(
-            parent,
-            "Error",
-            "Error message",
-            preset=ToastPreset.ERROR
-        )
+        toast = make_toast(parent, "Error", "Error message", preset=ToastPreset.ERROR)
 
         assert isinstance(toast, Toast)
 
     def test_success_preset(self, qapp):
         """Test make_toast with SUCCESS preset."""
         parent = QWidget()
-        toast = make_toast(
-            parent,
-            "Success",
-            "Success message",
-            preset=ToastPreset.SUCCESS
-        )
+        toast = make_toast(parent, "Success", "Success message", preset=ToastPreset.SUCCESS)
 
         assert isinstance(toast, Toast)
 
     def test_custom_position(self, qapp):
         """Test make_toast with custom position."""
         parent = QWidget()
-        toast = make_toast(
-            parent,
-            "Title",
-            "Text",
-            position=ToastPosition.TOP_RIGHT
-        )
+        toast = make_toast(parent, "Title", "Text", position=ToastPosition.TOP_RIGHT)
 
         assert isinstance(toast, Toast)
 
     def test_show_duration_bar_true(self, qapp):
         """Test make_toast with show_duration_bar=True."""
         parent = QWidget()
-        toast = make_toast(
-            parent,
-            "Title",
-            "Text",
-            duration=3000,
-            show_duration_bar=True
-        )
+        toast = make_toast(parent, "Title", "Text", duration=3000, show_duration_bar=True)
 
         assert isinstance(toast, Toast)
 
     def test_show_duration_bar_false(self, qapp):
         """Test make_toast with show_duration_bar=False."""
         parent = QWidget()
-        toast = make_toast(
-            parent,
-            "Title",
-            "Text",
-            show_duration_bar=False
-        )
+        toast = make_toast(parent, "Title", "Text", show_duration_bar=False)
 
         assert isinstance(toast, Toast)
 
-    @patch('tse_analytics.core.toaster.logger')
+    @patch("tse_analytics.core.toaster.logger")
     def test_echo_to_logger_information(self, mock_logger, qapp):
         """Test that information messages are logged when echo_to_logger=True."""
         parent = QWidget()
-        toast = make_toast(
-            parent,
-            "Info",
-            "Test info message",
-            preset=ToastPreset.INFORMATION,
-            echo_to_logger=True
-        )
+        toast = make_toast(parent, "Info", "Test info message", preset=ToastPreset.INFORMATION, echo_to_logger=True)
 
         mock_logger.info.assert_called_once_with("Test info message")
 
-    @patch('tse_analytics.core.toaster.logger')
+    @patch("tse_analytics.core.toaster.logger")
     def test_echo_to_logger_warning(self, mock_logger, qapp):
         """Test that warning messages are logged when echo_to_logger=True."""
         parent = QWidget()
-        toast = make_toast(
-            parent,
-            "Warning",
-            "Test warning message",
-            preset=ToastPreset.WARNING,
-            echo_to_logger=True
-        )
+        toast = make_toast(parent, "Warning", "Test warning message", preset=ToastPreset.WARNING, echo_to_logger=True)
 
         mock_logger.warning.assert_called_once_with("Test warning message")
 
-    @patch('tse_analytics.core.toaster.logger')
+    @patch("tse_analytics.core.toaster.logger")
     def test_echo_to_logger_error(self, mock_logger, qapp):
         """Test that error messages are logged when echo_to_logger=True."""
         parent = QWidget()
-        toast = make_toast(
-            parent,
-            "Error",
-            "Test error message",
-            preset=ToastPreset.ERROR,
-            echo_to_logger=True
-        )
+        toast = make_toast(parent, "Error", "Test error message", preset=ToastPreset.ERROR, echo_to_logger=True)
 
         mock_logger.error.assert_called_once_with("Test error message")
 
-    @patch('tse_analytics.core.toaster.logger')
+    @patch("tse_analytics.core.toaster.logger")
     def test_echo_to_logger_success(self, mock_logger, qapp):
         """Test that success messages are logged when echo_to_logger=True."""
         parent = QWidget()
-        toast = make_toast(
-            parent,
-            "Success",
-            "Test success message",
-            preset=ToastPreset.SUCCESS,
-            echo_to_logger=True
-        )
+        toast = make_toast(parent, "Success", "Test success message", preset=ToastPreset.SUCCESS, echo_to_logger=True)
 
         mock_logger.success.assert_called_once_with("Test success message")
 
-    @patch('tse_analytics.core.toaster.logger')
+    @patch("tse_analytics.core.toaster.logger")
     def test_no_logging_when_echo_false(self, mock_logger, qapp):
         """Test that messages are not logged when echo_to_logger=False."""
         parent = QWidget()
-        toast = make_toast(
-            parent,
-            "Title",
-            "Test message",
-            preset=ToastPreset.INFORMATION,
-            echo_to_logger=False
-        )
+        toast = make_toast(parent, "Title", "Test message", preset=ToastPreset.INFORMATION, echo_to_logger=False)
 
         mock_logger.info.assert_not_called()
         mock_logger.warning.assert_not_called()
@@ -227,7 +160,7 @@ class TestMakeToast:
             preset=ToastPreset.WARNING,
             position=ToastPosition.BOTTOM_RIGHT,
             show_duration_bar=True,
-            echo_to_logger=False
+            echo_to_logger=False,
         )
 
         assert isinstance(toast, Toast)

@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QFileDialog, QMessageBox, QToolBar, QVBoxLayout, Q
 from tse_analytics.core import manager
 from tse_analytics.pipeline import PipelineNodeGraph
 from tse_analytics.pipeline.nodes import (
+    ActogramNode,
     AncovaNode,
     CheckboxNode,
     CorrelationNode,
@@ -15,11 +16,14 @@ from tse_analytics.pipeline.nodes import (
     DescriptiveStatsNode,
     DistributionNode,
     HistogramNode,
+    MatrixPlotNode,
     NormalityTestNode,
     OneWayAnovaNode,
+    PcaNode,
+    RegressionNode,
     ReportNode,
     ResampleNode,
-    TransformationNode, RegressionNode,
+    TransformationNode,
 )
 from tse_analytics.views.general.pipeline.hotkeys import hotkeys
 
@@ -101,6 +105,7 @@ class PipelineEditorWidget(QWidget):
 
         # Register all custom nodes
         self.graph.register_nodes([
+            ActogramNode,
             AncovaNode,
             CheckboxNode,
             CorrelationNode,
@@ -108,8 +113,10 @@ class PipelineEditorWidget(QWidget):
             DescriptiveStatsNode,
             DistributionNode,
             HistogramNode,
+            MatrixPlotNode,
             NormalityTestNode,
             OneWayAnovaNode,
+            PcaNode,
             RegressionNode,
             ReportNode,
             ResampleNode,

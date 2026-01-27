@@ -3,7 +3,6 @@ Unit tests for tse_analytics.core.exceptions module.
 """
 
 import pytest
-
 from tse_analytics.core.exceptions import InvalidMessage, InvalidSubscriber
 
 

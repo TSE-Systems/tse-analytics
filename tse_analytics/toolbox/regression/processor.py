@@ -3,7 +3,8 @@ from dataclasses import dataclass
 import pandas as pd
 import pingouin as pg
 import seaborn.objects as so
-from matplotlib import pyplot as plt, rcParams
+from matplotlib import pyplot as plt
+from matplotlib import rcParams
 
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.binning import TimeIntervalsBinningSettings

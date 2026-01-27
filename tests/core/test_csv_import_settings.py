@@ -2,8 +2,6 @@
 Unit tests for tse_analytics.core.csv_import_settings module.
 """
 
-import pytest
-
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 
 

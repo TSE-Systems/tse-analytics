@@ -3,11 +3,19 @@ from typing import Literal
 
 import pandas as pd
 import seaborn as sns
+from matplotlib import rcParams
 
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.utils import get_html_image_from_figure
+
+MATRIXPLOT_KIND: dict[str, Literal["scatter", "kde", "hist", "reg"]] = {
+    "Scatter Plot": "scatter",
+    "Histogram": "hist",
+    "Kernel Density Estimate": "kde",
+    "Regression": "reg",
+}
 
 
 @dataclass
@@ -24,6 +32,9 @@ def get_matrixplot_result(
     plot_kind: Literal["scatter", "kde", "hist", "reg"],
     figsize: tuple[float, float] | None = None,
 ) -> MatrixPlotResult:
+    if figsize is None:
+        figsize = rcParams["figure.figsize"]
+
     match split_mode:
         case SplitMode.ANIMAL:
             hue = "Animal"

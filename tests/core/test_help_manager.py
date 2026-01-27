@@ -2,32 +2,26 @@
 Unit tests for tse_analytics.core.help_manager module.
 """
 
-import subprocess
-from pathlib import Path
-from unittest.mock import MagicMock, patch, call
-
-import pytest
+from unittest.mock import MagicMock, patch
 
 from tse_analytics.core.help_manager import (
-    show_online_help,
-    show_offline_help,
     close_help_server,
+    show_offline_help,
+    show_online_help,
 )
 
 
 class TestShowOnlineHelp:
     """Tests for show_online_help function."""
 
-    @patch('tse_analytics.core.help_manager.QDesktopServices.openUrl')
+    @patch("tse_analytics.core.help_manager.QDesktopServices.openUrl")
     def test_opens_online_documentation_url(self, mock_open_url):
         """Test that show_online_help opens the online documentation URL."""
         show_online_help()
 
-        mock_open_url.assert_called_once_with(
-            "https://tse-systems.github.io/tse-analytics-docs"
-        )
+        mock_open_url.assert_called_once_with("https://tse-systems.github.io/tse-analytics-docs")
 
-    @patch('tse_analytics.core.help_manager.QDesktopServices.openUrl')
+    @patch("tse_analytics.core.help_manager.QDesktopServices.openUrl")
     def test_calls_open_url_once(self, mock_open_url):
         """Test that show_online_help calls openUrl exactly once."""
         show_online_help()
@@ -38,10 +32,10 @@ class TestShowOnlineHelp:
 class TestShowOfflineHelp:
     """Tests for show_offline_help function."""
 
-    @patch('tse_analytics.core.help_manager.QDesktopServices.openUrl')
-    @patch('tse_analytics.core.help_manager.subprocess.Popen')
-    @patch('tse_analytics.core.help_manager.IS_RELEASE', False)
-    @patch('tse_analytics.core.help_manager.sys.executable', '/usr/bin/python')
+    @patch("tse_analytics.core.help_manager.QDesktopServices.openUrl")
+    @patch("tse_analytics.core.help_manager.subprocess.Popen")
+    @patch("tse_analytics.core.help_manager.IS_RELEASE", False)
+    @patch("tse_analytics.core.help_manager.sys.executable", "/usr/bin/python")
     def test_starts_http_server_when_not_running(
         self,
         mock_popen,
@@ -50,6 +44,7 @@ class TestShowOfflineHelp:
         """Test that show_offline_help starts HTTP server if not already running."""
         # Reset the global variable
         import tse_analytics.core.help_manager as hm
+
         hm._help_server_process = None
 
         mock_process = MagicMock()
@@ -59,12 +54,13 @@ class TestShowOfflineHelp:
 
         assert mock_popen.called
 
-    @patch('tse_analytics.core.help_manager.QDesktopServices.openUrl')
-    @patch('tse_analytics.core.help_manager.subprocess.Popen')
-    @patch('tse_analytics.core.help_manager.IS_RELEASE', False)
+    @patch("tse_analytics.core.help_manager.QDesktopServices.openUrl")
+    @patch("tse_analytics.core.help_manager.subprocess.Popen")
+    @patch("tse_analytics.core.help_manager.IS_RELEASE", False)
     def test_opens_localhost_url(self, mock_popen, mock_open_url):
         """Test that show_offline_help opens localhost URL."""
         import tse_analytics.core.help_manager as hm
+
         hm._help_server_process = None
 
         mock_process = MagicMock()
@@ -74,9 +70,9 @@ class TestShowOfflineHelp:
 
         mock_open_url.assert_called_with("http://localhost:8000")
 
-    @patch('tse_analytics.core.help_manager.QDesktopServices.openUrl')
-    @patch('tse_analytics.core.help_manager.subprocess.Popen')
-    @patch('tse_analytics.core.help_manager.IS_RELEASE', False)
+    @patch("tse_analytics.core.help_manager.QDesktopServices.openUrl")
+    @patch("tse_analytics.core.help_manager.subprocess.Popen")
+    @patch("tse_analytics.core.help_manager.IS_RELEASE", False)
     def test_does_not_restart_server_if_already_running(
         self,
         mock_popen,
@@ -96,10 +92,10 @@ class TestShowOfflineHelp:
         # But URL should still be opened
         mock_open_url.assert_called_once()
 
-    @patch('tse_analytics.core.help_manager.QDesktopServices.openUrl')
-    @patch('tse_analytics.core.help_manager.subprocess.Popen')
-    @patch('tse_analytics.core.help_manager.IS_RELEASE', False)
-    @patch('tse_analytics.core.help_manager.sys.executable', '/usr/bin/python3')
+    @patch("tse_analytics.core.help_manager.QDesktopServices.openUrl")
+    @patch("tse_analytics.core.help_manager.subprocess.Popen")
+    @patch("tse_analytics.core.help_manager.IS_RELEASE", False)
+    @patch("tse_analytics.core.help_manager.sys.executable", "/usr/bin/python3")
     def test_uses_correct_python_executable_in_dev(
         self,
         mock_popen,
@@ -107,6 +103,7 @@ class TestShowOfflineHelp:
     ):
         """Test that show_offline_help uses sys.executable in development mode."""
         import tse_analytics.core.help_manager as hm
+
         hm._help_server_process = None
 
         mock_process = MagicMock()
@@ -116,14 +113,15 @@ class TestShowOfflineHelp:
 
         # Check that the command includes sys.executable
         call_args = mock_popen.call_args[0][0]
-        assert call_args[0] == '/usr/bin/python3'
+        assert call_args[0] == "/usr/bin/python3"
 
-    @patch('tse_analytics.core.help_manager.QDesktopServices.openUrl')
-    @patch('tse_analytics.core.help_manager.subprocess.Popen')
-    @patch('tse_analytics.core.help_manager.IS_RELEASE', True)
+    @patch("tse_analytics.core.help_manager.QDesktopServices.openUrl")
+    @patch("tse_analytics.core.help_manager.subprocess.Popen")
+    @patch("tse_analytics.core.help_manager.IS_RELEASE", True)
     def test_uses_python_command_in_release(self, mock_popen, mock_open_url):
         """Test that show_offline_help uses 'python' command in release mode."""
         import tse_analytics.core.help_manager as hm
+
         hm._help_server_process = None
 
         mock_process = MagicMock()
@@ -133,14 +131,15 @@ class TestShowOfflineHelp:
 
         # Check that the command uses 'python'
         call_args = mock_popen.call_args[0][0]
-        assert call_args[0] == 'python'
+        assert call_args[0] == "python"
 
-    @patch('tse_analytics.core.help_manager.QDesktopServices.openUrl')
-    @patch('tse_analytics.core.help_manager.subprocess.Popen')
-    @patch('tse_analytics.core.help_manager.IS_RELEASE', False)
+    @patch("tse_analytics.core.help_manager.QDesktopServices.openUrl")
+    @patch("tse_analytics.core.help_manager.subprocess.Popen")
+    @patch("tse_analytics.core.help_manager.IS_RELEASE", False)
     def test_http_server_command_arguments(self, mock_popen, mock_open_url):
         """Test that show_offline_help passes correct arguments to http.server."""
         import tse_analytics.core.help_manager as hm
+
         hm._help_server_process = None
 
         mock_process = MagicMock()

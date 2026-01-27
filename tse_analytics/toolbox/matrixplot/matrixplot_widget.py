@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import Literal
 
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
@@ -21,7 +20,7 @@ from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_figsize_from_widget, get_h_spacer_widget, get_widget_tool_button
-from tse_analytics.toolbox.matrixplot.processor import get_matrixplot_result
+from tse_analytics.toolbox.matrixplot.processor import MATRIXPLOT_KIND, get_matrixplot_result
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.report_edit import ReportEdit
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
@@ -35,13 +34,6 @@ class MatrixPlotWidgetSettings:
 
 
 class MatrixPlotWidget(QWidget):
-    plot_kind: dict[str, Literal["scatter", "kde", "hist", "reg"]] = {
-        "Scatter Plot": "scatter",
-        "Histogram": "hist",
-        "Kernel Density Estimate": "kde",
-        "Regression": "reg",
-    }
-
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
@@ -93,7 +85,7 @@ class MatrixPlotWidget(QWidget):
 
         toolbar.addWidget(QLabel("Plot Type:"))
         self.comboBoxPlotType = QComboBox(toolbar)
-        self.comboBoxPlotType.addItems(MatrixPlotWidget.plot_kind.keys())
+        self.comboBoxPlotType.addItems(MATRIXPLOT_KIND.keys())
         self.comboBoxPlotType.setCurrentText(self._settings.plot_type)
         toolbar.addWidget(self.comboBoxPlotType)
 
@@ -157,7 +149,7 @@ class MatrixPlotWidget(QWidget):
             list(selected_variables),
             split_mode,
             selected_factor_name,
-            MatrixPlotWidget.plot_kind[self.comboBoxPlotType.currentText()],
+            MATRIXPLOT_KIND[self.comboBoxPlotType.currentText()],
             get_figsize_from_widget(self.report_view),
         )
 

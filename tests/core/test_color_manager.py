@@ -2,11 +2,8 @@
 Unit tests for tse_analytics.core.color_manager module.
 """
 
-from unittest.mock import MagicMock, patch
-
 import pytest
 from matplotlib.colors import rgb2hex
-
 from tse_analytics.core.color_manager import (
     cmap,
     get_animal_to_color_dict,
@@ -192,9 +189,7 @@ class TestGetAnimalToColorDict:
 
     def test_single_animal(self):
         """Test with a single animal."""
-        animals = {
-            "solo": Animal(enabled=True, id="solo", color="#0000FF", properties={})
-        }
+        animals = {"solo": Animal(enabled=True, id="solo", color="#0000FF", properties={})}
 
         result = get_animal_to_color_dict(animals)
 
@@ -205,10 +200,7 @@ class TestGetAnimalToColorDict:
         """Test with multiple animals."""
         animals = {
             f"animal{i}": Animal(
-                enabled=True,
-                id=f"animal{i}",
-                color=f"#{'00' * i}{i}{i}{'00' * (2-i)}",
-                properties={}
+                enabled=True, id=f"animal{i}", color=f"#{'00' * i}{i}{i}{'00' * (2 - i)}", properties={}
             )
             for i in range(5)
         }
@@ -241,7 +233,7 @@ class TestGetLevelToColorDict:
             levels=[
                 FactorLevel(name="Control", color="#FF0000", animal_ids=["a1"]),
                 FactorLevel(name="Drug", color="#00FF00", animal_ids=["a2"]),
-            ]
+            ],
         )
 
         result = get_level_to_color_dict(factor)
@@ -255,7 +247,7 @@ class TestGetLevelToColorDict:
             levels=[
                 FactorLevel(name="Control", color="#FF0000", animal_ids=["a1"]),
                 FactorLevel(name="Drug", color="#00FF00", animal_ids=["a2"]),
-            ]
+            ],
         )
 
         result = get_level_to_color_dict(factor)
@@ -273,10 +265,7 @@ class TestGetLevelToColorDict:
 
     def test_single_level(self):
         """Test with a factor having a single level."""
-        factor = Factor(
-            name="Simple",
-            levels=[FactorLevel(name="Only", color="#0000FF", animal_ids=[])]
-        )
+        factor = Factor(name="Simple", levels=[FactorLevel(name="Only", color="#0000FF", animal_ids=[])])
 
         result = get_level_to_color_dict(factor)
 
@@ -291,7 +280,7 @@ class TestGetLevelToColorDict:
                 FactorLevel(name="Low", color="#111111", animal_ids=["a1"]),
                 FactorLevel(name="Medium", color="#222222", animal_ids=["a2"]),
                 FactorLevel(name="High", color="#333333", animal_ids=["a3"]),
-            ]
+            ],
         )
 
         result = get_level_to_color_dict(factor)
@@ -308,7 +297,7 @@ class TestGetLevelToColorDict:
             levels=[
                 FactorLevel(name="Alpha", color="#ABCDEF", animal_ids=["x"]),
                 FactorLevel(name="Beta", color="#FEDCBA", animal_ids=["y"]),
-            ]
+            ],
         )
 
         result = get_level_to_color_dict(factor)
@@ -318,14 +307,8 @@ class TestGetLevelToColorDict:
 
     def test_different_factor_names_dont_affect_result(self):
         """Test that factor name doesn't affect the level-to-color mapping."""
-        factor1 = Factor(
-            name="FactorA",
-            levels=[FactorLevel(name="Level1", color="#111111", animal_ids=[])]
-        )
-        factor2 = Factor(
-            name="FactorB",
-            levels=[FactorLevel(name="Level1", color="#111111", animal_ids=[])]
-        )
+        factor1 = Factor(name="FactorA", levels=[FactorLevel(name="Level1", color="#111111", animal_ids=[])])
+        factor2 = Factor(name="FactorB", levels=[FactorLevel(name="Level1", color="#111111", animal_ids=[])])
 
         result1 = get_level_to_color_dict(factor1)
         result2 = get_level_to_color_dict(factor2)
