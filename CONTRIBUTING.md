@@ -79,7 +79,6 @@ tse-analytics/
 │   ├── modules/           # Feature modules (phenomaster, intellicage, intellimaze)
 │   ├── toolbox/           # Analysis tools (ANOVA, PCA, etc.)
 │   ├── views/             # UI components
-│   ├── pipeline/          # Data processing pipeline
 │   └── styles/            # UI styles (SCSS/QSS)
 ├── tests/                 # Test suite
 ├── docs/                  # Documentation

@@ -24,13 +24,13 @@ tasks:
     cmds:
       - pyside6-uic tse_analytics/views/main_window.ui -o tse_analytics/views/main_window_ui.py
       - pyside6-uic tse_analytics/views/misc/raw_data_widget/raw_data_widget.ui -o tse_analytics/views/misc/raw_data_widget/raw_data_widget_ui.py
-      - pyside6-uic tse_analytics/views/general/factors/factors_dialog.ui -o tse_analytics/views/general/factors/factors_dialog_ui.py
-      - pyside6-uic tse_analytics/views/general/variables/add_variable_dialog.ui -o tse_analytics/views/general/variables/add_variable_dialog_ui.py
-      - pyside6-uic tse_analytics/views/general/datasets/datasets_merge_dialog.ui -o tse_analytics/views/general/datasets/datasets_merge_dialog_ui.py
-      - pyside6-uic tse_analytics/views/general/datasets/adjust_dataset_dialog.ui -o tse_analytics/views/general/datasets/adjust_dataset_dialog_ui.py
-      - pyside6-uic tse_analytics/views/general/settings/binning_settings_widget.ui -o tse_analytics/views/general/settings/binning_settings_widget_ui.py
-      - pyside6-uic tse_analytics/views/general/about/about_dialog.ui -o tse_analytics/views/general/about/about_dialog_ui.py
-      - pyside6-uic tse_analytics/views/general/settings/settings_dialog.ui -o tse_analytics/views/general/settings/settings_dialog_ui.py
+      - pyside6-uic tse_analytics/views/factors/factors_dialog.ui -o tse_analytics/views/factors/factors_dialog_ui.py
+      - pyside6-uic tse_analytics/views/variables/add_variable_dialog.ui -o tse_analytics/views/variables/add_variable_dialog_ui.py
+      - pyside6-uic tse_analytics/views/datasets/datasets_merge_dialog.ui -o tse_analytics/views/datasets/datasets_merge_dialog_ui.py
+      - pyside6-uic tse_analytics/views/datasets/adjust_dataset_dialog.ui -o tse_analytics/views/datasets/adjust_dataset_dialog_ui.py
+      - pyside6-uic tse_analytics/views/settings/binning_settings_widget.ui -o tse_analytics/views/settings/binning_settings_widget_ui.py
+      - pyside6-uic tse_analytics/views/about/about_dialog.ui -o tse_analytics/views/about/about_dialog_ui.py
+      - pyside6-uic tse_analytics/views/settings/settings_dialog.ui -o tse_analytics/views/settings/settings_dialog_ui.py
 
   build-ui:toolbox:
     cmds:
@@ -38,7 +38,6 @@ tasks:
       - pyside6-uic tse_analytics/toolbox/rm_anova/rm_anova_settings_widget.ui -o tse_analytics/toolbox/rm_anova/rm_anova_settings_widget_ui.py
       - pyside6-uic tse_analytics/toolbox/mixed_anova/mixed_anova_settings_widget.ui -o tse_analytics/toolbox/mixed_anova/mixed_anova_settings_widget_ui.py
       - pyside6-uic tse_analytics/toolbox/ancova/ancova_settings_widget.ui -o tse_analytics/toolbox/ancova/ancova_settings_widget_ui.py
-      - pyside6-uic tse_analytics/toolbox/reports/report_widget.ui -o tse_analytics/toolbox/reports/report_widget_ui.py
 
   build-ui:phenomaster:
     cmds:

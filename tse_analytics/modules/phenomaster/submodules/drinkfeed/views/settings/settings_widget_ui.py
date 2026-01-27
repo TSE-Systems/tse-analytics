@@ -26,6 +26,7 @@ class Ui_SettingsWidget(object):
     def setupUi(self, SettingsWidget):
         if not SettingsWidget.objectName():
             SettingsWidget.setObjectName(u"SettingsWidget")
+        SettingsWidget.resize(292, 392)
         self.verticalLayout = QVBoxLayout(SettingsWidget)
         self.verticalLayout.setSpacing(4)
         self.verticalLayout.setObjectName(u"verticalLayout")
