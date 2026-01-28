@@ -365,7 +365,6 @@ class MainWindow(QMainWindow):
             LayoutManager.clear_dock_manager()
             self._save_settings()
             LayoutManager.delete_dock_manager()
-            help_manager.close_help_server()
             QApplication.closeAllWindows()
             super().closeEvent(event)
         else:
