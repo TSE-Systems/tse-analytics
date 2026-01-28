@@ -41,7 +41,7 @@ class TestGetHtmlImageFromFigure:
         result = get_html_image_from_figure(figure)
 
         assert result.startswith("<img src='data:image/png;base64,")
-        assert result.endswith("'><br/>")
+        assert result.endswith("'><br>")
 
     def test_contains_base64_encoded_data(self):
         """Test that result contains base64 encoded image data."""
