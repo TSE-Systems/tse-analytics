@@ -3,6 +3,7 @@ Help documentation manager module for TSE Analytics.
 
 This module provides functions for displaying online and offline help documentation.
 """
+
 from pathlib import Path
 
 from PySide6.QtCore import QUrl

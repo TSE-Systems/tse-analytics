@@ -6,6 +6,7 @@ application, including functions for working with images, SQLite databases,
 Qt widgets, and time conversions.
 """
 
+import sys
 from base64 import b64encode
 from datetime import time
 from io import BytesIO
@@ -20,7 +21,7 @@ from PySide6.QtWidgets import QSizePolicy, QToolButton, QWidget, QWidgetAction
 
 from tse_analytics.core.data.shared import SplitMode
 
-IS_RELEASE = Path("_internal").exists()
+IS_RELEASE = getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS")
 
 CSV_IMPORT_ENABLED = True
 
