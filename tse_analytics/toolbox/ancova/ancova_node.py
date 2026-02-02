@@ -1,8 +1,8 @@
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.pipeline import PipelineNode
-from tse_analytics.core.pipeline.pipeline_packet import PipelinePacket
+from tse_analytics.pipeline import PipelineNode
+from tse_analytics.pipeline.enums import EFFECT_SIZE, P_ADJUSTMENT
+from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 from tse_analytics.toolbox.ancova.processor import get_ancova_result
-from tse_analytics.toolbox.shared import EFFECT_SIZE, P_ADJUSTMENT
 
 
 class AncovaNode(PipelineNode):

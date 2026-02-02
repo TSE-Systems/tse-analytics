@@ -16,9 +16,9 @@ from tse_analytics.core.utils import (
     get_h_spacer_widget,
     get_widget_tool_button,
 )
+from tse_analytics.pipeline.enums import EFFECT_SIZE, P_ADJUSTMENT
 from tse_analytics.toolbox.mixed_anova.mixed_anova_settings_widget_ui import Ui_MixedAnovaSettingsWidget
 from tse_analytics.toolbox.mixed_anova.processor import get_mixed_anova_result
-from tse_analytics.toolbox.shared import EFFECT_SIZE, P_ADJUSTMENT
 from tse_analytics.views.misc.factor_selector import FactorSelector
 from tse_analytics.views.misc.report_edit import ReportEdit
 from tse_analytics.views.misc.variable_selector import VariableSelector

@@ -1,8 +1,8 @@
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.pipeline import PipelineNode
-from tse_analytics.core.pipeline.pipeline_packet import PipelinePacket
+from tse_analytics.pipeline import PipelineNode
+from tse_analytics.pipeline.enums import EFFECT_SIZE
+from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 from tse_analytics.toolbox.one_way_anova.processor import get_one_way_anova_result
-from tse_analytics.toolbox.shared import EFFECT_SIZE
 
 
 class OneWayAnovaNode(PipelineNode):

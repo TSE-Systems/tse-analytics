@@ -4,8 +4,9 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QToolBar, QVBoxLayout, QWidget
 
 from tse_analytics.core import manager
-from tse_analytics.core.pipeline import PipelineNodeGraph
-from tse_analytics.core.pipeline.nodes import (
+from tse_analytics.core.utils import IS_RELEASE
+from tse_analytics.pipeline import PipelineNodeGraph
+from tse_analytics.pipeline.nodes import (
     CheckboxNode,
     DatatableInputNode,
     DescriptiveStatsNode,
@@ -13,7 +14,6 @@ from tse_analytics.core.pipeline.nodes import (
     ResampleNode,
     TransformationNode,
 )
-from tse_analytics.core.utils import IS_RELEASE
 from tse_analytics.toolbox.actogram.actogram_node import ActogramNode
 from tse_analytics.toolbox.ancova.ancova_node import AncovaNode
 from tse_analytics.toolbox.correlation.correlation_node import CorrelationNode

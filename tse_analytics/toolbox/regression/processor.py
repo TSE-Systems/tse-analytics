@@ -9,7 +9,7 @@ from matplotlib import rcParams
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
+from tse_analytics.core.data.operators.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.utils import get_html_image_from_figure
 

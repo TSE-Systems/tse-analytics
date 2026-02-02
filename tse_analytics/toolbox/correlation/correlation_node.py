@@ -2,9 +2,9 @@ from NodeGraphQt.widgets.node_widgets import NodeComboBox
 
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.pipeline import PipelineNode
-from tse_analytics.core.pipeline.pipeline_packet import PipelinePacket
 from tse_analytics.core.utils import get_group_by_params
+from tse_analytics.pipeline import PipelineNode
+from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 from tse_analytics.toolbox.correlation.processor import get_correlation_result
 
 

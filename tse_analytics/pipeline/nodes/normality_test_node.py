@@ -1,8 +1,8 @@
 from scipy.stats import anderson, kstest, shapiro
 
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.pipeline import PipelineNode
-from tse_analytics.core.pipeline.pipeline_packet import PipelinePacket
+from tse_analytics.pipeline import PipelineNode
+from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 
 
 class NormalityTestNode(PipelineNode):

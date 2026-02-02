@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
 
 from tse_analytics.core import color_manager, manager
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
+from tse_analytics.core.data.operators.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.utils import (

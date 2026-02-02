@@ -10,8 +10,8 @@ from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_figsize_from_widget, get_h_spacer_widget
+from tse_analytics.pipeline.enums import EFFECT_SIZE
 from tse_analytics.toolbox.one_way_anova.processor import get_one_way_anova_result
-from tse_analytics.toolbox.shared import EFFECT_SIZE
 from tse_analytics.views.misc.factor_selector import FactorSelector
 from tse_analytics.views.misc.report_edit import ReportEdit
 from tse_analytics.views.misc.variable_selector import VariableSelector

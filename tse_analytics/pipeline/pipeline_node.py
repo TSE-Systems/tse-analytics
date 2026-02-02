@@ -1,6 +1,6 @@
 from NodeGraphQt import BaseNode
 
-from tse_analytics.core.pipeline.pipeline_packet import PipelinePacket
+from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 
 
 class PipelineNode(BaseNode):

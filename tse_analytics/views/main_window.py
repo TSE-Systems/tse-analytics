@@ -24,7 +24,6 @@ from tse_analytics.modules.intellimaze.views.export_merged_csv.export_merged_csv
 from tse_analytics.modules.phenomaster.io.tse_dataset_loader import load_tse_dataset
 from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvDialog
 from tse_analytics.modules.phenomaster.views.import_tse_dialog import ImportTseDialog
-from tse_analytics.toolbox.toolbox_button import ToolboxButton
 from tse_analytics.views.about.about_dialog import AboutDialog
 from tse_analytics.views.animals.animals_widget import AnimalsWidget
 from tse_analytics.views.datasets.datasets_widget import DatasetsWidget
@@ -32,6 +31,7 @@ from tse_analytics.views.factors.factors_widget import FactorsWidget
 from tse_analytics.views.info.info_widget import InfoWidget
 from tse_analytics.views.logs.log_widget import LogWidget
 from tse_analytics.views.main_window_ui import Ui_MainWindow
+from tse_analytics.views.misc.toolbox_button import ToolboxButton
 from tse_analytics.views.pipeline.pipeline_editor_widget import PipelineEditorWidget
 from tse_analytics.views.settings.binning_settings_widget import BinningSettingsWidget
 from tse_analytics.views.settings.settings_dialog import SettingsDialog

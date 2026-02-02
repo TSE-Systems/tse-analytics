@@ -5,8 +5,7 @@ import pingouin as pg
 from matplotlib import pyplot as plt
 
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.utils import get_html_image_from_figure
-from tse_analytics.toolbox.shared import get_plot_layout
+from tse_analytics.core.utils import get_html_image_from_figure, get_plot_layout
 
 
 @dataclass

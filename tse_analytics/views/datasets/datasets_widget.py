@@ -36,10 +36,10 @@ from tse_analytics.modules.phenomaster.submodules.grouphousing.views.grouphousin
 from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvDialog
 from tse_analytics.toolbox.data_table.data_table_widget import DataTableWidget
 from tse_analytics.toolbox.report.report_widget import ReportWidget
-from tse_analytics.toolbox.toolbox_button import ToolboxButton
 from tse_analytics.views.datasets.adjust_dataset_dialog import AdjustDatasetDialog
 from tse_analytics.views.datasets.datasets_merge_dialog import DatasetsMergeDialog
 from tse_analytics.views.misc.raw_data_widget.raw_data_widget import RawDataWidget
+from tse_analytics.views.misc.toolbox_button import ToolboxButton
 
 
 class DatasetsWidget(QWidget, messaging.MessengerListener):

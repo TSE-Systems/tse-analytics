@@ -3,7 +3,7 @@ from PySide6.QtCore import Qt
 
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.pipeline.pipeline_packet import PipelinePacket
+from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 
 
 class PipelineNodeGraph(NodeGraph):

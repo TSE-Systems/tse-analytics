@@ -9,9 +9,9 @@ functions based on the binning mode (intervals, cycles, or phases).
 import pandas as pd
 
 from tse_analytics.core.data.binning import BinningMode, BinningSettings
-from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import process_time_cycles_binning
-from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
-from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import process_time_phases_binning
+from tse_analytics.core.data.operators.time_cycles_binning_pipe_operator import process_time_cycles_binning
+from tse_analytics.core.data.operators.time_intervals_binning_pipe_operator import process_time_interval_binning
+from tse_analytics.core.data.operators.time_phases_binning_pipe_operator import process_time_phases_binning
 from tse_analytics.core.data.shared import Variable
 
 
