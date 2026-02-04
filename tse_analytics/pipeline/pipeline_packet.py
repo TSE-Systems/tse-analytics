@@ -4,6 +4,8 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any
 
+from loguru import logger
+
 
 @dataclass(frozen=True)
 class PipelinePacket:
@@ -14,6 +16,8 @@ class PipelinePacket:
 
     @staticmethod
     def inactive(**meta: Any) -> PipelinePacket:
+        if "reason" in meta:
+            logger.warning(str(meta["reason"]))
         return PipelinePacket(value=None, report=None, active=False, meta=meta)
 
     def with_meta(self, **updates: Any) -> PipelinePacket:

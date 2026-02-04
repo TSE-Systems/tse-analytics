@@ -10,5 +10,3 @@ description: General tech stack rules for the project
 - My type checker is ruff
 - UI is built with PySide6
 - Data analysis pipeline editor is based on NodeGraphQt library
-- Data analysis toolbox widgets reside in `tse_analytics.toolbox` module
-- Data analysis pipeline nodes reside in `tse_analytics.pipeline.nodes` module

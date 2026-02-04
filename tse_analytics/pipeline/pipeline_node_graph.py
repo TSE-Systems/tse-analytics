@@ -105,13 +105,15 @@ class PipelineNodeGraph(NodeGraph):
                 port_key = (connected_port.node().id, connected_port.name())
                 packet = port_outputs.get(
                     port_key,
-                    PipelinePacket.inactive(
-                        reason="Missing upstream output",
-                        upstream_node_id=connected_port.node().id,
-                        upstream_port=connected_port.name(),
-                    ),
+                    # PipelinePacket.inactive(
+                    #     reason=f"Missing upstream output. Node: {node.name()}, Port: {input_port.name()}",
+                    #     upstream_node_id=connected_port.node().id,
+                    #     upstream_port=connected_port.name(),
+                    # ),
+                    None,
                 )
-                input_packets.append(packet)
+                if packet:
+                    input_packets.append(packet)
 
             should_run = all(p.active for p in input_packets)
             if not should_run:

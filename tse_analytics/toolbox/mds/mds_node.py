@@ -6,12 +6,12 @@ from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.utils import get_group_by_params
 from tse_analytics.pipeline import PipelineNode
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
-from tse_analytics.toolbox.pca.processor import get_pca_result
+from tse_analytics.toolbox.mds.processor import get_mds_result
 
 
-class PcaNode(PipelineNode):
+class MdsNode(PipelineNode):
     __identifier__ = "stats"
-    NODE_NAME = "PCA"
+    NODE_NAME = "MDS"
 
     def __init__(self):
         super().__init__()
@@ -33,6 +33,14 @@ class PcaNode(PipelineNode):
             tooltip="Grouping mode",
         )
 
+        self.add_text_input(
+            "max_iterations",
+            "Max Iterations",
+            "300",
+            "Max Iterations",
+            "Maximum iterations (100-1000)",
+        )
+
     def initialize(self, dataset: Dataset, datatable: Datatable):
         if datatable is None:
             group_by_options = ["Animal"]
@@ -48,6 +56,7 @@ class PcaNode(PipelineNode):
         if datatable is None or not isinstance(datatable, Datatable):
             return PipelinePacket.inactive(reason="Invalid input datatable")
 
+        # Parse variables
         variables_raw = str(self.get_property("variables")).strip()
         if not variables_raw:
             return PipelinePacket.inactive(reason="No variables selected")
@@ -62,6 +71,7 @@ class PcaNode(PipelineNode):
             invalid = ", ".join(invalid_variables)
             return PipelinePacket.inactive(reason=f"Invalid variable(s): {invalid}")
 
+        # Parse group_by
         group_by_str = str(self.get_property("group_by"))
         split_mode, factor_name = get_group_by_params(group_by_str)
         if split_mode == SplitMode.FACTOR:
@@ -70,6 +80,15 @@ class PcaNode(PipelineNode):
             if factor_name not in datatable.dataset.factors:
                 return PipelinePacket.inactive(reason="Invalid factor selected")
 
+        # Parse max_iterations
+        try:
+            max_iterations = int(self.get_property("max_iterations"))
+            if max_iterations < 100 or max_iterations > 1000:
+                return PipelinePacket.inactive(reason="Max iterations must be between 100 and 1000")
+        except (ValueError, TypeError):
+            return PipelinePacket.inactive(reason="Invalid max iterations value")
+
+        # Get data
         df = datatable.get_df(
             variable_names,
             split_mode,
@@ -77,12 +96,14 @@ class PcaNode(PipelineNode):
         )
         df.dropna(inplace=True)
 
-        result = get_pca_result(
+        # Perform MDS analysis
+        result = get_mds_result(
             datatable.dataset,
             df,
             variable_names,
             split_mode,
             factor_name,
+            max_iterations,
         )
 
         return PipelinePacket(datatable, report=result.report)

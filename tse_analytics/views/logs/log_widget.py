@@ -48,7 +48,7 @@ class TextEditLogger(logging.Handler):
             case logging.CRITICAL:
                 color = "red"
             case logging.WARNING:
-                color = "blue"
+                color = "darkorange"
             case _:
                 color = "black"
         self.text_edit.setTextColor(color)

@@ -20,10 +20,15 @@ from tse_analytics.toolbox.correlation.correlation_node import CorrelationNode
 from tse_analytics.toolbox.distribution.distribution_node import DistributionNode
 from tse_analytics.toolbox.histogram.histogram_node import HistogramNode
 from tse_analytics.toolbox.matrixplot.matrixplot_node import MatrixPlotNode
+from tse_analytics.toolbox.mds.mds_node import MdsNode
+from tse_analytics.toolbox.mixed_anova.mixed_anova_node import MixedAnovaNode
+from tse_analytics.toolbox.n_way_anova.n_way_anova_node import NWayAnovaNode
 from tse_analytics.toolbox.one_way_anova.one_way_anova_node import OneWayAnovaNode
 from tse_analytics.toolbox.pca.pca_node import PcaNode
 from tse_analytics.toolbox.regression.regression_node import RegressionNode
 from tse_analytics.toolbox.report.report_node import ReportNode
+from tse_analytics.toolbox.rm_anova.rm_anova_node import RmAnovaNode
+from tse_analytics.toolbox.tsne.tsne_node import TsneNode
 from tse_analytics.views.pipeline.hotkeys import hotkeys
 
 
@@ -115,13 +120,18 @@ class PipelineEditorWidget(QWidget):
             DistributionNode,
             HistogramNode,
             MatrixPlotNode,
+            MdsNode,
+            MixedAnovaNode,
+            NWayAnovaNode,
             NormalityTestNode,
             OneWayAnovaNode,
             PcaNode,
             RegressionNode,
             ReportNode,
             ResampleNode,
+            RmAnovaNode,
             TransformationNode,
+            TsneNode,
         ])
 
         # Get the graph widget and add it to the layout
