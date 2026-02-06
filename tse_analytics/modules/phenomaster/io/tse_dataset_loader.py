@@ -157,6 +157,10 @@ def _get_animals(data: dict) -> dict[str, Animal]:
             properties=properties,
         )
         animals[animal.id] = animal
+
+    # Sort animals by ID
+    animals = dict(sorted(animals.items()))
+
     return animals
 
 

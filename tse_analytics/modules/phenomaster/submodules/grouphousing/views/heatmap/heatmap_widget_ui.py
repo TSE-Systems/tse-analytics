@@ -28,15 +28,21 @@ class Ui_HeatmapWidget(object):
             HeatmapWidget.setObjectName(u"HeatmapWidget")
         self.horizontalLayout = QHBoxLayout(HeatmapWidget)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.verticalLayout = QVBoxLayout()
+        self.verticalLayout.setSpacing(0)
+        self.verticalLayout.setObjectName(u"verticalLayout")
         self.canvas = MplCanvas(HeatmapWidget)
         self.canvas.setObjectName(u"canvas")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        sizePolicy.setHorizontalStretch(1)
+        sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.canvas.sizePolicy().hasHeightForWidth())
         self.canvas.setSizePolicy(sizePolicy)
 
-        self.horizontalLayout.addWidget(self.canvas)
+        self.verticalLayout.addWidget(self.canvas)
+
+
+        self.horizontalLayout.addLayout(self.verticalLayout)
 
         self.groupBoxAnimals = QGroupBox(HeatmapWidget)
         self.groupBoxAnimals.setObjectName(u"groupBoxAnimals")
@@ -44,6 +50,11 @@ class Ui_HeatmapWidget(object):
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.listWidgetAnimals = QListWidget(self.groupBoxAnimals)
         self.listWidgetAnimals.setObjectName(u"listWidgetAnimals")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.listWidgetAnimals.sizePolicy().hasHeightForWidth())
+        self.listWidgetAnimals.setSizePolicy(sizePolicy1)
         self.listWidgetAnimals.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
 
         self.verticalLayout_2.addWidget(self.listWidgetAnimals)

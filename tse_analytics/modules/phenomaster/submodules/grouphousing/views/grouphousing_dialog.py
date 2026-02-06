@@ -2,8 +2,10 @@ import pandas as pd
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QCloseEvent, QIcon
 from PySide6.QtWidgets import QCheckBox, QLabel, QSpinBox, QToolBar, QWidget
+from pyqttoast import ToastPreset
 
 from tse_analytics.core import manager
+from tse_analytics.core.toaster import make_toast
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.submodules.grouphousing.data.processor import preprocess_trafficage_datatable
 from tse_analytics.modules.phenomaster.submodules.grouphousing.views.activity_widget import ActivityWidget
@@ -12,9 +14,7 @@ from tse_analytics.modules.phenomaster.submodules.grouphousing.views.heatmap.hea
 from tse_analytics.modules.phenomaster.submodules.grouphousing.views.preprocessed_data.preprocessed_data_widget import (
     PreprocessedDataWidget,
 )
-from tse_analytics.modules.phenomaster.submodules.grouphousing.views.raw_data.raw_data_widget import (
-    RawDataWidget,
-)
+from tse_analytics.modules.phenomaster.submodules.grouphousing.views.raw_data.raw_data_widget import RawDataWidget
 
 
 class GroupHousingDialog(QWidget):
@@ -112,6 +112,15 @@ class GroupHousingDialog(QWidget):
 
         datatable = preprocess_trafficage_datatable(self.dataset, self.preprocessed_df["TraffiCage"])
         manager.add_datatable(datatable)
+
+        make_toast(
+            self,
+            "Group Housing",
+            "TraffiCage table added.",
+            duration=2000,
+            preset=ToastPreset.INFORMATION,
+            show_duration_bar=True,
+        ).show()
 
     def closeEvent(self, event: QCloseEvent) -> None:
         settings = QSettings()

@@ -112,6 +112,9 @@ def _import_animals(path: Path) -> dict | None:
         animals[animal.id] = animal
         index += 1
 
+    # Sort animals by ID
+    animals = dict(sorted(animals.items()))
+
     return animals
 
 
