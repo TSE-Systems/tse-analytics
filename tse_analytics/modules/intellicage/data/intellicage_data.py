@@ -5,11 +5,16 @@ This module provides the IntelliCageData class for processing raw IntelliCage da
 into structured datatables for analysis.
 """
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pandas as pd
 
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
+
+if TYPE_CHECKING:
+    from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
 
 
 class IntelliCageData:
@@ -23,7 +28,7 @@ class IntelliCageData:
 
     def __init__(
         self,
-        dataset: "IntelliCageDataset",
+        dataset: IntelliCageDataset,
         name: str,
         raw_data: dict[str, pd.DataFrame],
     ):

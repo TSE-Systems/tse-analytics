@@ -7,7 +7,7 @@ excluding time ranges, resampling, and applying factors.
 """
 
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 import pandas as pd
@@ -19,6 +19,9 @@ from tse_analytics.core.data.operators.outliers_pipe_operator import process_out
 from tse_analytics.core.data.operators.time_binning_pipe_operator import process_time_binning
 from tse_analytics.core.data.outliers import OutliersMode
 from tse_analytics.core.data.shared import Animal, Factor, SplitMode, Variable
+
+if TYPE_CHECKING:
+    from tse_analytics.core.data.dataset import Dataset
 
 
 class Datatable:
@@ -36,7 +39,7 @@ class Datatable:
 
     def __init__(
         self,
-        dataset: "Dataset",
+        dataset: Dataset,
         name: str,
         description: str,
         variables: dict[str, Variable],

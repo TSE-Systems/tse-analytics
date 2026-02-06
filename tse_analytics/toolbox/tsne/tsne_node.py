@@ -93,7 +93,7 @@ class TsneNode(PipelineNode):
             perplexity = float(self.get_property("perplexity"))
             if perplexity < 5 or perplexity > 50:
                 return PipelinePacket.inactive(reason="Perplexity must be between 5 and 50")
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return PipelinePacket.inactive(reason="Invalid perplexity value")
 
         # Parse max_iterations
@@ -101,7 +101,7 @@ class TsneNode(PipelineNode):
             max_iterations = int(self.get_property("max_iterations"))
             if max_iterations < 250 or max_iterations > 10000:
                 return PipelinePacket.inactive(reason="Max iterations must be between 250 and 10000")
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return PipelinePacket.inactive(reason="Invalid max iterations value")
 
         # Get data

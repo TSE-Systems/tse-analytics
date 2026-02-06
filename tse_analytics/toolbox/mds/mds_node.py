@@ -85,7 +85,7 @@ class MdsNode(PipelineNode):
             max_iterations = int(self.get_property("max_iterations"))
             if max_iterations < 100 or max_iterations > 1000:
                 return PipelinePacket.inactive(reason="Max iterations must be between 100 and 1000")
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             return PipelinePacket.inactive(reason="Invalid max iterations value")
 
         # Get data

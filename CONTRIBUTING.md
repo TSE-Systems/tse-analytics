@@ -6,7 +6,7 @@ Thank you for your interest in contributing to TSE Analytics! This document prov
 
 ### Prerequisites
 
-- **Python 3.13.11** (exact version required)
+- **Python 3.14.03** (exact version required)
 - **uv** package manager ([installation guide](https://github.com/astral-sh/uv))
 - **Task** task runner ([installation guide](https://taskfile.dev/installation/))
 - Git for version control
@@ -36,7 +36,7 @@ Thank you for your interest in contributing to TSE Analytics! This document prov
 This project uses **Ruff** for both linting and formatting:
 
 - **Line length**: 120 characters
-- **Target version**: Python 3.13
+- **Target version**: Python 3.14
 - **Docstring convention**: Google style
 - **Indentation**: 4 spaces (configured in `.editorconfig`)
 - **Line endings**: LF (Unix-style)
@@ -184,7 +184,7 @@ pytest tests/test_specific.py
 
 4. **Type Hints**:
    - Use type hints for function parameters and return values
-   - Use modern Python 3.13 type syntax (e.g., `list[str]` instead of `List[str]`)
+   - Use modern Python 3.14 type syntax (e.g., `list[str]` instead of `List[str]`)
 
 5. **Logging**:
    - Use `loguru` for logging (not standard `logging`)

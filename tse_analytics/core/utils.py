@@ -149,8 +149,8 @@ def time_to_float(value: time) -> float:
 
 def get_figsize_from_widget(widget: QWidget) -> tuple[float, float]:
     # Get the widget size in pixels
-    widget_width = widget.width()
-    widget_height = widget.height()
+    widget_width = widget.width() - 12
+    widget_height = widget.height() - 12
 
     # Get the DPI (dots per inch) of the screen
     dpi = widget.logicalDpiX()  # or logicalDpiY(), usually the same

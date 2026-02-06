@@ -5,7 +5,7 @@ PhenoMaster, IntelliCage, and IntelliMaze datasets. Use the guidance below when 
 changes or running tooling.
 
 ## Quick Start
-- Python version must be 3.13.
+- Python version must be 3.14.
 - Use `uv` for environment and dependencies: `uv sync`.
 - Task runner is `task` (see `Taskfile.yml`).
 
@@ -26,7 +26,7 @@ changes or running tooling.
 ## Code Style
 - Ruff is the formatter and linter; line length is 120.
 - Docstrings follow Google style.
-- Use type hints for public APIs (Python 3.13 syntax).
+- Use type hints for public APIs (Python 3.14 syntax).
 - Use `loguru` (`from loguru import logger`) instead of stdlib logging.
 
 ## Project Layout (Top Level)
