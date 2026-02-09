@@ -20,6 +20,7 @@
         <file>icons/icons8-analyze-16.png</file>
         <file>icons/icons8-barcode-16.png</file>
         <file>icons/icons8-bold-16.png</file>
+        <file>icons/icons8-bottle-of-water-16.png</file>
         <file>icons/icons8-copy-16.png</file>
         <file>icons/icons8-corner-16.png</file>
         <file>icons/icons8-csv-16.png</file>
@@ -33,7 +34,9 @@
         <file>icons/icons8-extension-16.png</file>
         <file>icons/icons8-file-16.png</file>
         <file>icons/icons8-folder-tree-16.png</file>
+        <file>icons/icons8-gauge-16.png</file>
         <file>icons/icons8-genealogy-16.png</file>
+        <file>icons/icons8-grid-16.png</file>
         <file>icons/icons8-help-16.png</file>
         <file>icons/icons8-histogram-16.png</file>
         <file>icons/icons8-import-16.png</file>
@@ -59,6 +62,7 @@
         <file>icons/icons8-sheets-16.png</file>
         <file>icons/icons8-sorting-16.png</file>
         <file>icons/icons8-stats-16.png</file>
+        <file>icons/icons8-structural-16.png</file>
         <file>icons/icons8-themes-16.png</file>
         <file>icons/icons8-toolbox-16.png</file>
         <file>icons/icons8-transition-both-directions-16.png</file>

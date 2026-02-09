@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'calo_dialog.ui'
+## Form generated from reading UI file 'calo_widget.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.10.2
 ##
@@ -19,17 +19,17 @@ from PySide6.QtWidgets import (QApplication, QSizePolicy, QSplitter, QTabWidget,
     QToolBox, QVBoxLayout, QWidget)
 import resources_rc
 
-class Ui_CaloDialog(object):
-    def setupUi(self, CaloDialog):
-        if not CaloDialog.objectName():
-            CaloDialog.setObjectName(u"CaloDialog")
-        CaloDialog.resize(1020, 705)
-        CaloDialog.setProperty(u"sizeGripEnabled", True)
-        self.verticalLayout = QVBoxLayout(CaloDialog)
+class Ui_CaloWidget(object):
+    def setupUi(self, CaloWidget):
+        if not CaloWidget.objectName():
+            CaloWidget.setObjectName(u"CaloWidget")
+        CaloWidget.resize(1020, 705)
+        CaloWidget.setProperty(u"sizeGripEnabled", True)
+        self.verticalLayout = QVBoxLayout(CaloWidget)
         self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(5, 5, 5, 5)
-        self.splitter = QSplitter(CaloDialog)
+        self.splitter = QSplitter(CaloWidget)
         self.splitter.setObjectName(u"splitter")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -51,17 +51,17 @@ class Ui_CaloDialog(object):
         self.verticalLayout.addWidget(self.splitter)
 
 
-        self.retranslateUi(CaloDialog)
+        self.retranslateUi(CaloWidget)
 
         self.tabWidget.setCurrentIndex(-1)
         self.toolBox.setCurrentIndex(0)
 
 
-        QMetaObject.connectSlotsByName(CaloDialog)
+        QMetaObject.connectSlotsByName(CaloWidget)
     # setupUi
 
-    def retranslateUi(self, CaloDialog):
-        CaloDialog.setWindowTitle(QCoreApplication.translate("CaloDialog", u"Calo", None))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("CaloDialog", u"Page 1", None))
+    def retranslateUi(self, CaloWidget):
+        CaloWidget.setWindowTitle(QCoreApplication.translate("CaloWidget", u"Calo", None))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("CaloWidget", u"Page 1", None))
     # retranslateUi
 

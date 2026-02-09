@@ -8,7 +8,7 @@ import PySide6QtAds
 from loguru import logger
 from pyqttoast import Toast, ToastPreset
 from PySide6.QtCore import QSettings, Qt, QTimer
-from PySide6.QtGui import QAction, QCloseEvent, QIcon, QShortcut, QKeySequence
+from PySide6.QtGui import QAction, QCloseEvent, QIcon, QKeySequence, QShortcut
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QMessageBox
 
 from tse_analytics.core import help_manager, manager, utils
@@ -85,10 +85,10 @@ class MainWindow(QMainWindow):
         LayoutManager.set_central_widget()
 
         self.dataset_widget = DatasetsWidget(
-                self,
-                self.toolbox_button,
-                self.ui.actionPipelineEditor,
-            )
+            self,
+            self.toolbox_button,
+            self.ui.actionPipelineEditor,
+        )
         datasets_dock_widget = LayoutManager.register_dock_widget(
             self.dataset_widget,
             "Datasets",

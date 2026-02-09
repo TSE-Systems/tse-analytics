@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <author>Anton Rau</author>
- <class>GroupHousingDialog</class>
- <widget class="QWidget" name="GroupHousingDialog">
+ <class>GroupHousingWidget</class>
+ <widget class="QWidget" name="GroupHousingWidget">
   <property name="geometry">
    <rect>
     <x>0</x>

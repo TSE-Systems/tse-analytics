@@ -1,15 +1,15 @@
 import pandas as pd
+from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QCloseEvent, QIcon
 from PySide6.QtWidgets import QCheckBox, QLabel, QSpinBox, QToolBar, QWidget
-from pyqttoast import ToastPreset
 
 from tse_analytics.core import manager
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.submodules.grouphousing.data.processor import preprocess_trafficage_datatable
 from tse_analytics.modules.phenomaster.submodules.grouphousing.views.activity_widget import ActivityWidget
-from tse_analytics.modules.phenomaster.submodules.grouphousing.views.grouphousing_dialog_ui import Ui_GroupHousingDialog
+from tse_analytics.modules.phenomaster.submodules.grouphousing.views.grouphousing_widget_ui import Ui_GroupHousingWidget
 from tse_analytics.modules.phenomaster.submodules.grouphousing.views.heatmap.heatmap_widget import HeatmapWidget
 from tse_analytics.modules.phenomaster.submodules.grouphousing.views.preprocessed_data.preprocessed_data_widget import (
     PreprocessedDataWidget,
@@ -17,11 +17,11 @@ from tse_analytics.modules.phenomaster.submodules.grouphousing.views.preprocesse
 from tse_analytics.modules.phenomaster.submodules.grouphousing.views.raw_data.raw_data_widget import RawDataWidget
 
 
-class GroupHousingDialog(QWidget):
+class GroupHousingWidget(QWidget):
     def __init__(self, dataset: PhenoMasterDataset, parent: QWidget):
         super().__init__(parent)
 
-        self.ui = Ui_GroupHousingDialog()
+        self.ui = Ui_GroupHousingWidget()
         self.ui.setupUi(self)
 
         self.setWindowFlags(
@@ -32,7 +32,7 @@ class GroupHousingDialog(QWidget):
         )
 
         settings = QSettings()
-        self.restoreGeometry(settings.value("GroupHousingDialog/Geometry"))
+        # self.restoreGeometry(settings.value("GroupHousingDialog/Geometry"))
 
         self.dataset = dataset
 

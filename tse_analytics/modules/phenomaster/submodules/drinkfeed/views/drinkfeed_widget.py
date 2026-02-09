@@ -21,7 +21,7 @@ from tse_analytics.modules.phenomaster.submodules.drinkfeed.sequential_processor
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.animal_selector import (
     AnimalSelector,
 )
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_dialog_ui import Ui_DrinkFeedDialog
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_widget_ui import Ui_DrinkFeedWidget
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.episodes_gap_plot_widget import (
     EpisodesGapPlotWidget,
 )
@@ -41,11 +41,11 @@ from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.settings.setti
 from tse_analytics.views.misc.pandas_widget import PandasWidget
 
 
-class DrinkFeedDialog(QWidget):
+class DrinkFeedWidget(QWidget):
     def __init__(self, drinkfeed_data: DrinkFeedBinData | DrinkFeedRawData, parent: QWidget):
         super().__init__(parent)
 
-        self.ui = Ui_DrinkFeedDialog()
+        self.ui = Ui_DrinkFeedWidget()
         self.ui.setupUi(self)
 
         self.setWindowFlags(
@@ -56,7 +56,7 @@ class DrinkFeedDialog(QWidget):
         )
 
         settings = QSettings()
-        self.restoreGeometry(settings.value("DrinkFeedDialog/Geometry"))
+        # self.restoreGeometry(settings.value("DrinkFeedDialog/Geometry"))
 
         self.drinkfeed_data = drinkfeed_data
         self.selected_animals: list[DrinkFeedAnimalItem] = []

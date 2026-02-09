@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <author>Anton Rau</author>
- <class>CaloDialog</class>
- <widget class="QWidget" name="CaloDialog">
+ <class>CaloWidget</class>
+ <widget class="QWidget" name="CaloWidget">
   <property name="geometry">
    <rect>
     <x>0</x>

@@ -3,7 +3,7 @@ import traja
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QCloseEvent, QIcon
-from PySide6.QtWidgets import QDialog, QToolBar, QWidget
+from PySide6.QtWidgets import QToolBar, QWidget
 
 from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.core.toaster import make_toast
@@ -13,7 +13,7 @@ from tse_analytics.modules.phenomaster.submodules.actimot.actimot_settings impor
 from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_animal_item import ActimotAnimalItem
 from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_data import ActimotData
 from tse_analytics.modules.phenomaster.submodules.actimot.processor import calculate_trj
-from tse_analytics.modules.phenomaster.submodules.actimot.views.actimot_dialog_ui import Ui_ActimotDialog
+from tse_analytics.modules.phenomaster.submodules.actimot.views.actimot_widget_ui import Ui_ActimotWidget
 from tse_analytics.modules.phenomaster.submodules.actimot.views.box_selector import BoxSelector
 from tse_analytics.modules.phenomaster.submodules.actimot.views.frames.frames_widget import FramesWidget
 from tse_analytics.modules.phenomaster.submodules.actimot.views.heatmap.heatmap_widget import HeatmapWidget
@@ -26,11 +26,11 @@ from tse_analytics.modules.phenomaster.submodules.actimot.views.trajectory.traje
 from tse_analytics.views.misc.pandas_widget import PandasWidget
 
 
-class ActimotDialog(QDialog):
+class ActimotWidget(QWidget):
     def __init__(self, actimot_data: ActimotData, parent: QWidget):
         super().__init__(parent)
 
-        self.ui = Ui_ActimotDialog()
+        self.ui = Ui_ActimotWidget()
         self.ui.setupUi(self)
 
         self.setWindowFlags(
@@ -41,7 +41,7 @@ class ActimotDialog(QDialog):
         )
 
         settings = QSettings()
-        self.restoreGeometry(settings.value("ActimotDialog/Geometry"))
+        # self.restoreGeometry(settings.value("ActimotDialog/Geometry"))
 
         self.actimot_data = actimot_data
         self.df: pd.DataFrame | None = None

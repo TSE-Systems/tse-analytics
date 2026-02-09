@@ -1,3 +1,3 @@
-(c) 2025, TSE Systems
+(c) 2026, TSE Systems
 
 <https://github.com/TSE-Systems/tse-analytics>

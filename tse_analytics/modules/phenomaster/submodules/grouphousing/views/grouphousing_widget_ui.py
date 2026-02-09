@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'grouphousing_dialog.ui'
+## Form generated from reading UI file 'grouphousing_widget.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.10.2
 ##
@@ -19,30 +19,30 @@ from PySide6.QtWidgets import (QApplication, QSizePolicy, QTabWidget, QVBoxLayou
     QWidget)
 import resources_rc
 
-class Ui_GroupHousingDialog(object):
-    def setupUi(self, GroupHousingDialog):
-        if not GroupHousingDialog.objectName():
-            GroupHousingDialog.setObjectName(u"GroupHousingDialog")
-        GroupHousingDialog.resize(1139, 869)
-        self.verticalLayout = QVBoxLayout(GroupHousingDialog)
+class Ui_GroupHousingWidget(object):
+    def setupUi(self, GroupHousingWidget):
+        if not GroupHousingWidget.objectName():
+            GroupHousingWidget.setObjectName(u"GroupHousingWidget")
+        GroupHousingWidget.resize(1139, 869)
+        self.verticalLayout = QVBoxLayout(GroupHousingWidget)
         self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(5, 5, 5, 5)
-        self.tabWidget = QTabWidget(GroupHousingDialog)
+        self.tabWidget = QTabWidget(GroupHousingWidget)
         self.tabWidget.setObjectName(u"tabWidget")
 
         self.verticalLayout.addWidget(self.tabWidget)
 
 
-        self.retranslateUi(GroupHousingDialog)
+        self.retranslateUi(GroupHousingWidget)
 
         self.tabWidget.setCurrentIndex(-1)
 
 
-        QMetaObject.connectSlotsByName(GroupHousingDialog)
+        QMetaObject.connectSlotsByName(GroupHousingWidget)
     # setupUi
 
-    def retranslateUi(self, GroupHousingDialog):
-        GroupHousingDialog.setWindowTitle(QCoreApplication.translate("GroupHousingDialog", u"Group Housing", None))
+    def retranslateUi(self, GroupHousingWidget):
+        GroupHousingWidget.setWindowTitle(QCoreApplication.translate("GroupHousingWidget", u"Group Housing", None))
     # retranslateUi
 

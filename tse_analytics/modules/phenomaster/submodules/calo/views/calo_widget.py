@@ -6,7 +6,7 @@ import pandas as pd
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QCloseEvent, QIcon
-from PySide6.QtWidgets import QDialog, QMessageBox, QToolBar, QWidget
+from PySide6.QtWidgets import QMessageBox, QToolBar, QWidget
 
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.modules.phenomaster.submodules.calo.calo_settings import CaloSettings
@@ -17,7 +17,7 @@ from tse_analytics.modules.phenomaster.submodules.calo.fitting_result import Fit
 from tse_analytics.modules.phenomaster.submodules.calo.processor import process_box
 from tse_analytics.modules.phenomaster.submodules.calo.views.bin_selector import BinSelector
 from tse_analytics.modules.phenomaster.submodules.calo.views.box_selector import BoxSelector
-from tse_analytics.modules.phenomaster.submodules.calo.views.calo_dialog_ui import Ui_CaloDialog
+from tse_analytics.modules.phenomaster.submodules.calo.views.calo_widget_ui import Ui_CaloWidget
 from tse_analytics.modules.phenomaster.submodules.calo.views.plot.plot_widget import PlotWidget
 from tse_analytics.modules.phenomaster.submodules.calo.views.rer.rer_widget import RerWidget
 from tse_analytics.modules.phenomaster.submodules.calo.views.settings.settings_widget import (
@@ -29,11 +29,11 @@ from tse_analytics.modules.phenomaster.submodules.calo.views.test_fit.test_fit_w
 from tse_analytics.views.misc.pandas_widget import PandasWidget
 
 
-class CaloDialog(QDialog):
+class CaloWidget(QWidget):
     def __init__(self, calo_data: CaloData, parent: QWidget):
         super().__init__(parent)
 
-        self.ui = Ui_CaloDialog()
+        self.ui = Ui_CaloWidget()
         self.ui.setupUi(self)
 
         self.setWindowFlags(
@@ -44,7 +44,7 @@ class CaloDialog(QDialog):
         )
 
         settings = QSettings()
-        self.restoreGeometry(settings.value("CaloDialog/Geometry"))
+        # self.restoreGeometry(settings.value("CaloDialog/Geometry"))
 
         self.calo_data = calo_data
 

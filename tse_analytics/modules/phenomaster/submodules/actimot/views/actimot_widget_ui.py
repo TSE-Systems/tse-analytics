@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'drinkfeed_dialog.ui'
+## Form generated from reading UI file 'actimot_widget.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.10.2
 ##
@@ -19,16 +19,16 @@ from PySide6.QtWidgets import (QApplication, QSizePolicy, QSplitter, QTabWidget,
     QToolBox, QVBoxLayout, QWidget)
 import resources_rc
 
-class Ui_DrinkFeedDialog(object):
-    def setupUi(self, DrinkFeedDialog):
-        if not DrinkFeedDialog.objectName():
-            DrinkFeedDialog.setObjectName(u"DrinkFeedDialog")
-        DrinkFeedDialog.resize(1020, 854)
-        self.verticalLayout = QVBoxLayout(DrinkFeedDialog)
+class Ui_ActimotWidget(object):
+    def setupUi(self, ActimotWidget):
+        if not ActimotWidget.objectName():
+            ActimotWidget.setObjectName(u"ActimotWidget")
+        ActimotWidget.resize(986, 750)
+        self.verticalLayout = QVBoxLayout(ActimotWidget)
         self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(5, 5, 5, 5)
-        self.splitter = QSplitter(DrinkFeedDialog)
+        self.splitter = QSplitter(ActimotWidget)
         self.splitter.setObjectName(u"splitter")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -44,23 +44,23 @@ class Ui_DrinkFeedDialog(object):
         self.toolBox.setMaximumSize(QSize(300, 16777215))
         self.page = QWidget()
         self.page.setObjectName(u"page")
-        self.page.setGeometry(QRect(0, 0, 300, 814))
+        self.page.setGeometry(QRect(0, 0, 300, 710))
         self.toolBox.addItem(self.page, u"Page 1")
         self.splitter.addWidget(self.toolBox)
 
         self.verticalLayout.addWidget(self.splitter)
 
 
-        self.retranslateUi(DrinkFeedDialog)
+        self.retranslateUi(ActimotWidget)
 
         self.tabWidget.setCurrentIndex(-1)
 
 
-        QMetaObject.connectSlotsByName(DrinkFeedDialog)
+        QMetaObject.connectSlotsByName(ActimotWidget)
     # setupUi
 
-    def retranslateUi(self, DrinkFeedDialog):
-        DrinkFeedDialog.setWindowTitle(QCoreApplication.translate("DrinkFeedDialog", u"DrinkFeed", None))
-        self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("DrinkFeedDialog", u"Page 1", None))
+    def retranslateUi(self, ActimotWidget):
+        ActimotWidget.setWindowTitle(QCoreApplication.translate("ActimotWidget", u"ActiMot", None))
+        self.toolBox.setItemText(self.toolBox.indexOf(self.page), QCoreApplication.translate("ActimotWidget", u"Page 1", None))
     # retranslateUi
 

@@ -1,8 +1,8 @@
 import pandas as pd
 import seaborn as sns
+from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
-from matplotlib.backends.backend_qt import NavigationToolbar2QT
 
 from tse_analytics.modules.phenomaster.submodules.grouphousing.data.grouphousing_data import GroupHousingData
 from tse_analytics.modules.phenomaster.submodules.grouphousing.views.heatmap.heatmap_widget_ui import (

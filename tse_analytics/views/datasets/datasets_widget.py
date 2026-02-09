@@ -25,13 +25,13 @@ from tse_analytics.core.models.report_tree_item import ReportTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
 from tse_analytics.core.models.workspace_model import WorkspaceModel
 from tse_analytics.modules.phenomaster.submodules.actimot.models.actimot_tree_item import ActimotTreeItem
-from tse_analytics.modules.phenomaster.submodules.actimot.views.actimot_dialog import ActimotDialog
+from tse_analytics.modules.phenomaster.submodules.actimot.views.actimot_widget import ActimotWidget
 from tse_analytics.modules.phenomaster.submodules.calo.models.calo_tree_item import CaloDataTreeItem
-from tse_analytics.modules.phenomaster.submodules.calo.views.calo_dialog import CaloDialog
+from tse_analytics.modules.phenomaster.submodules.calo.views.calo_widget import CaloWidget
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.models.drinkfeed_tree_item import DrinkFeedTreeItem
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_dialog import DrinkFeedDialog
+from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_widget import DrinkFeedWidget
 from tse_analytics.modules.phenomaster.submodules.grouphousing.models.grouphousing_tree_item import GroupHousingTreeItem
-from tse_analytics.modules.phenomaster.submodules.grouphousing.views.grouphousing_dialog import GroupHousingDialog
+from tse_analytics.modules.phenomaster.submodules.grouphousing.views.grouphousing_widget import GroupHousingWidget
 from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvDialog
 from tse_analytics.toolbox.data_table.data_table_widget import DataTableWidget
 from tse_analytics.toolbox.report.report_widget import ReportWidget
@@ -421,15 +421,21 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
         if index.isValid():
             item = index.model().getItem(index)
             if isinstance(item, CaloDataTreeItem):
-                dialog = CaloDialog(item.calo_data, self)
-                # TODO: check other cases!!
-                dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-                dialog.show()
+                widget = CaloWidget(item.calo_data, self)
+                LayoutManager.add_widget_to_central_area(
+                    manager.get_selected_dataset(),
+                    widget,
+                    "Calo",
+                    QIcon(":/icons/icons8-gauge-16.png"),
+                )
             elif isinstance(item, DrinkFeedTreeItem):
-                dialog = DrinkFeedDialog(item.drinkfeed_data, self)
-                # TODO: check other cases!!
-                dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-                dialog.show()
+                widget = DrinkFeedWidget(item.drinkfeed_data, self)
+                LayoutManager.add_widget_to_central_area(
+                    manager.get_selected_dataset(),
+                    widget,
+                    "Drink/Feed",
+                    QIcon(":/icons/icons8-bottle-of-water-16.png"),
+                )
             elif isinstance(item, ReportTreeItem):
                 manager.set_selected_dataset(item.report.dataset)
                 widget = ReportWidget(item.report)
@@ -437,15 +443,21 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                     item.report.dataset, widget, f"Report - {item.report.name}", QIcon(":/icons/table.png")
                 )
             elif isinstance(item, ActimotTreeItem):
-                dialog = ActimotDialog(item.actimot_data, self)
-                # TODO: check other cases!!
-                dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-                dialog.show()
+                widget = ActimotWidget(item.actimot_data, self)
+                LayoutManager.add_widget_to_central_area(
+                    manager.get_selected_dataset(),
+                    widget,
+                    "ActiMot",
+                    QIcon(":/icons/icons8-grid-16.png"),
+                )
             elif isinstance(item, GroupHousingTreeItem):
-                dialog = GroupHousingDialog(item.grouphousing_data.dataset, self)
-                # TODO: check other cases!!
-                dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-                dialog.show()
+                widget = GroupHousingWidget(item.grouphousing_data.dataset, self)
+                LayoutManager.add_widget_to_central_area(
+                    manager.get_selected_dataset(),
+                    widget,
+                    "Group Housing",
+                    QIcon(":/icons/icons8-structural-16.png"),
+                )
             elif isinstance(item, ExtensionTreeItem):
                 match item.name:
                     case "IntelliCage raw data":
@@ -466,9 +478,12 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                             False,
                             self,
                         )
-                # TODO: check other cases!!
-                widget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-                widget.show()
+                LayoutManager.add_widget_to_central_area(
+                    manager.get_selected_dataset(),
+                    widget,
+                    item.extension_data.name,
+                    QIcon(":/icons/icons8-extension-16.png"),
+                )
             elif isinstance(item, DatatableTreeItem):
                 manager.set_selected_dataset(item.datatable.dataset)
                 manager.set_selected_datatable(item.datatable)
@@ -497,10 +512,4 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
             self.merge_dataset_action.setDisabled(checked_datasets_number < 2)
 
     def minimumSizeHint(self) -> QSize:
-        """
-        Return the minimum size hint for the widget.
-
-        Returns:
-            QSize: The minimum size hint
-        """
-        return QSize(300, 100)
+        return QSize(200, 100)
