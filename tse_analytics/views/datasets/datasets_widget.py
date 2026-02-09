@@ -24,7 +24,6 @@ from tse_analytics.core.models.extension_tree_item import ExtensionTreeItem
 from tse_analytics.core.models.report_tree_item import ReportTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
 from tse_analytics.core.models.workspace_model import WorkspaceModel
-from tse_analytics.core.utils import CSV_IMPORT_ENABLED
 from tse_analytics.modules.phenomaster.submodules.actimot.models.actimot_tree_item import ActimotTreeItem
 from tse_analytics.modules.phenomaster.submodules.actimot.views.actimot_dialog import ActimotDialog
 from tse_analytics.modules.phenomaster.submodules.calo.models.calo_tree_item import CaloDataTreeItem
@@ -67,23 +66,23 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
 
-        if CSV_IMPORT_ENABLED:
-            self.import_button = QToolButton(
-                popupMode=QToolButton.ToolButtonPopupMode.InstantPopup,
-                toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
-            )
-            self.import_button.setText("Import")
-            self.import_button.setIcon(QIcon(":/icons/icons8-database-import-16.png"))
-            self.import_button.setEnabled(False)
+        self.import_button = QToolButton(
+            popupMode=QToolButton.ToolButtonPopupMode.InstantPopup,
+            toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
+        )
+        self.import_button.setText("Import")
+        self.import_button.setIcon(QIcon(":/icons/icons8-database-import-16.png"))
 
-            import_menu = QMenu("Import", self.import_button)
-            import_menu.addAction("Import calo data...").triggered.connect(self._import_calo_data)
-            import_menu.addAction("Import drink/feed data...").triggered.connect(self._import_drinkfeed_data)
-            import_menu.addAction("Import ActiMot data...").triggered.connect(self._import_actimot_data)
-            import_menu.addAction("Import group housing data...").triggered.connect(self._import_grouphousing_data)
-            self.import_button.setMenu(import_menu)
+        import_menu = QMenu("Import", self.import_button)
+        import_menu.addAction("Import calo data...").triggered.connect(self._import_calo_data)
+        import_menu.addAction("Import drink/feed data...").triggered.connect(self._import_drinkfeed_data)
+        import_menu.addAction("Import ActiMot data...").triggered.connect(self._import_actimot_data)
+        import_menu.addAction("Import group housing data...").triggered.connect(self._import_grouphousing_data)
+        self.import_button.setMenu(import_menu)
 
-            toolbar.addWidget(self.import_button)
+        self.import_action = toolbar.addWidget(self.import_button)
+        self.import_action.setVisible(False)
+        self.import_action.setEnabled(False)
 
         self.adjust_dataset_action = toolbar.addAction(QIcon(":/icons/icons8-adjust-16.png"), "Adjust")
         self.adjust_dataset_action.setToolTip("Adjust selected dataset")
@@ -343,8 +342,7 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                     manager.delete_report(tree_item.report)
             self.toolbox_button.set_state(False)
             self.pipeline_editor_action.setEnabled(False)
-            if CSV_IMPORT_ENABLED:
-                self.import_button.setEnabled(False)
+            self.import_action.setEnabled(False)
             self.adjust_dataset_action.setEnabled(False)
             self.delete_action.setEnabled(False)
             self.clone_dataset_action.setEnabled(False)
@@ -402,8 +400,7 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                     if item.dataset is not None:
                         manager.set_selected_dataset(item.dataset)
 
-            if CSV_IMPORT_ENABLED:
-                self.import_button.setEnabled(is_dataset_item)
+            self.import_action.setEnabled(is_dataset_item)
             self.adjust_dataset_action.setEnabled(is_dataset_item)
             self.delete_action.setEnabled(is_dataset_item or is_datatable_item or is_report_item)
             self.clone_dataset_action.setEnabled(is_dataset_item)

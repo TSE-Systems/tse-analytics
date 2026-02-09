@@ -23,7 +23,8 @@ from tse_analytics.core.data.shared import SplitMode
 
 IS_RELEASE = getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS")
 
-CSV_IMPORT_ENABLED = True
+CSV_IMPORT_ENABLED = False
+PIPELINE_ENABLED = False
 
 
 def get_html_image_from_figure(figure: Figure) -> str:

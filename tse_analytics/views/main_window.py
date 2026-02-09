@@ -5,16 +5,17 @@ from pathlib import Path
 
 import psutil
 import PySide6QtAds
+from loguru import logger
 from pyqttoast import Toast, ToastPreset
 from PySide6.QtCore import QSettings, Qt, QTimer
-from PySide6.QtGui import QAction, QCloseEvent, QIcon
+from PySide6.QtGui import QAction, QCloseEvent, QIcon, QShortcut, QKeySequence
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QMessageBox
 
-from tse_analytics.core import help_manager, manager
+from tse_analytics.core import help_manager, manager, utils
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.core.utils import CSV_IMPORT_ENABLED, IS_RELEASE
+from tse_analytics.core.utils import IS_RELEASE
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.intellicage.io.dataset_loader import import_intellicage_dataset
@@ -56,6 +57,13 @@ class MainWindow(QMainWindow):
         self.ui_timer.timeout.connect(self._update_memory_usage)
         self.ui_timer.start(1000)
 
+        # Internal features shortcut
+        self.internal_shortcut = QShortcut(QKeySequence("Ctrl+T, Ctrl+S, Ctrl+E"), self)
+        self.internal_shortcut.activated.connect(self._enable_internal_features)
+
+        # TODO: hide pipeline editor button for the time being
+        self.ui.actionPipelineEditor.setVisible(False)
+
         self.memory_usage_label = QLabel()
         self.ui.statusBar.addPermanentWidget(self.memory_usage_label)
 
@@ -76,12 +84,13 @@ class MainWindow(QMainWindow):
 
         LayoutManager.set_central_widget()
 
-        datasets_dock_widget = LayoutManager.register_dock_widget(
-            DatasetsWidget(
+        self.dataset_widget = DatasetsWidget(
                 self,
                 self.toolbox_button,
                 self.ui.actionPipelineEditor,
-            ),
+            )
+        datasets_dock_widget = LayoutManager.register_dock_widget(
+            self.dataset_widget,
             "Datasets",
             QIcon(":/icons/datasets.png"),
         )
@@ -266,7 +275,7 @@ class MainWindow(QMainWindow):
     def _import_dataset_dialog(self) -> None:
         filter = (
             "Data Files (*.tse *.csv *.zip);;TSE Datasets (*.tse);;CSV Files (*.csv);;IntelliMaze Datasets (*.zip)"
-            if CSV_IMPORT_ENABLED
+            if utils.CSV_IMPORT_ENABLED
             else "Data Files (*.tse *.zip);;TSE Datasets (*.tse);;IntelliMaze Datasets (*.zip)"
         )
         filename, _ = QFileDialog.getOpenFileName(
@@ -350,6 +359,13 @@ class MainWindow(QMainWindow):
 
     def _restore_layout(self) -> None:
         LayoutManager.open_perspective("Temporary")
+
+    def _enable_internal_features(self):
+        utils.CSV_IMPORT_ENABLED = True
+        utils.PIPELINE_ENABLED = True
+        self.dataset_widget.import_action.setVisible(True)
+        self.ui.actionPipelineEditor.setVisible(True)
+        logger.info("Internal features enabled")
 
     def closeEvent(self, event: QCloseEvent) -> None:
         if (
