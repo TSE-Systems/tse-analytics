@@ -51,4 +51,6 @@ def preprocess_trafficage_datatable(dataset: PhenoMasterDataset, df: pd.DataFram
         None,
     )
 
+    datatable.set_factors(dataset.factors)
+
     return datatable

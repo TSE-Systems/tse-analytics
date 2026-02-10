@@ -42,6 +42,9 @@ def process_time_interval_binning(
     # result.sort_values(by="Timedelta", inplace=True)
     result.reset_index(inplace=True, drop=False)
 
+    # TODO: check if done properly: align timedelta to the resampling resolution
+    result["Timedelta"] = result["Timedelta"].dt.round(timedelta)
+
     # Reassign bins numbers
     result.insert(loc=0, column="Bin", value=(result["Timedelta"] / timedelta).round().astype(int))
 
