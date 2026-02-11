@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from matplotlib import pyplot as plt
 from scipy.stats import chi2
 
 from tse_analytics.core.data.dataset import Dataset

@@ -28,6 +28,7 @@ from tse_analytics.core.utils import (
     get_widget_tool_button,
     time_to_float,
 )
+from tse_analytics.toolbox.data_plot.processor import ERROR_BAR_TYPE
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
@@ -42,14 +43,6 @@ class DataPlotWidgetSettings:
 
 
 class DataPlotWidget(QWidget):
-    error_bar = {
-        "None": None,
-        "Confidence Interval": "ci",
-        "Percentile Interval": "pi",
-        "Standard Error": "se",
-        "Standard Deviation": "sd",
-    }
-
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
@@ -99,7 +92,7 @@ class DataPlotWidget(QWidget):
 
         toolbar.addWidget(QLabel("Error Bar:"))
         self.comboBoxErrorBar = QComboBox(toolbar)
-        self.comboBoxErrorBar.addItems(DataPlotWidget.error_bar.keys())
+        self.comboBoxErrorBar.addItems(ERROR_BAR_TYPE.keys())
         self.comboBoxErrorBar.setCurrentText(self._settings.error_bar)
         toolbar.addWidget(self.comboBoxErrorBar)
 
@@ -148,7 +141,7 @@ class DataPlotWidget(QWidget):
             return
 
         split_mode, selected_factor_name = self.group_by_selector.get_group_by()
-        error_bar = DataPlotWidget.error_bar[self.comboBoxErrorBar.currentText()]
+        error_bar = ERROR_BAR_TYPE[self.comboBoxErrorBar.currentText()]
 
         match split_mode:
             case SplitMode.ANIMAL:
@@ -182,21 +175,20 @@ class DataPlotWidget(QWidget):
         )
 
         # Draw light/dark bands
-        if True:
-            settings = self.datatable.dataset.binning_settings.time_cycles_settings
+        settings = self.datatable.dataset.binning_settings.time_cycles_settings
 
-            dark_start = time_to_float(settings.dark_cycle_start)
-            dark_end = time_to_float(settings.light_cycle_start)
-            dark_duration = abs(dark_end - dark_start)
-            max_hours = df["Hours"].max()
+        dark_start = time_to_float(settings.dark_cycle_start)
+        dark_end = time_to_float(settings.light_cycle_start)
+        dark_duration = abs(dark_end - dark_start)
+        max_hours = df["Hours"].max()
 
-            experiment_started_time = time_to_float(self.datatable.dataset.experiment_started.time())
-            time_shift = abs(experiment_started_time - dark_start)
-            start = time_shift
-            while start < max_hours:
-                for ax in self.canvas.figure.axes:
-                    ax.axvspan(start, start + dark_duration, color="gray", alpha=0.15)
-                start = 24 + start
+        experiment_started_time = time_to_float(self.datatable.dataset.experiment_started.time())
+        time_shift = abs(experiment_started_time - dark_start)
+        start = time_shift
+        while start < max_hours:
+            for ax in self.canvas.figure.axes:
+                ax.axvspan(start, start + dark_duration, color="gray", alpha=0.15)
+            start = 24 + start
 
         self.canvas.figure.tight_layout()
         self.canvas.draw()

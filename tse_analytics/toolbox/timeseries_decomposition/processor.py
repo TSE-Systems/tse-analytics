@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
+import matplotlib.pyplot as plt
 import pandas as pd
-from matplotlib import pyplot as plt
 from statsmodels.tsa.seasonal import STL, seasonal_decompose
 
 from tse_analytics.core.utils import get_html_image_from_figure

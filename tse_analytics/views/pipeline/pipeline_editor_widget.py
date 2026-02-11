@@ -9,6 +9,7 @@ from tse_analytics.pipeline import PipelineNodeGraph
 from tse_analytics.pipeline.nodes import (
     CheckboxNode,
     DatatableInputNode,
+    DatatableOutputNode,
     DescriptiveStatsNode,
     NormalityTestNode,
     ResampleNode,
@@ -17,6 +18,7 @@ from tse_analytics.pipeline.nodes import (
 from tse_analytics.toolbox.actogram.actogram_node import ActogramNode
 from tse_analytics.toolbox.ancova.ancova_node import AncovaNode
 from tse_analytics.toolbox.correlation.correlation_node import CorrelationNode
+from tse_analytics.toolbox.data_plot.data_plot_node import DataPlotNode
 from tse_analytics.toolbox.distribution.distribution_node import DistributionNode
 from tse_analytics.toolbox.histogram.histogram_node import HistogramNode
 from tse_analytics.toolbox.matrixplot.matrixplot_node import MatrixPlotNode
@@ -115,7 +117,9 @@ class PipelineEditorWidget(QWidget):
             AncovaNode,
             CheckboxNode,
             CorrelationNode,
+            DataPlotNode,
             DatatableInputNode,
+            DatatableOutputNode,
             DescriptiveStatsNode,
             DistributionNode,
             HistogramNode,

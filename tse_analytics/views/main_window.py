@@ -70,8 +70,6 @@ class MainWindow(QMainWindow):
         self.ui.menuOpenRecent.aboutToShow.connect(self._populate_open_recent)
 
         self.toolbox_button = ToolboxButton(self)
-
-        self.ui.toolBar.addSeparator()
         self.ui.toolBar.addWidget(self.toolbox_button)
 
         # Initialize dock manager. Because the parent parameter is a QMainWindow

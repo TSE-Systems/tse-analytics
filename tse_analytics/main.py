@@ -12,7 +12,7 @@ import platform
 import sys
 from multiprocessing import freeze_support
 
-import matplotlib
+import matplotlib as mpl
 import pandas as pd
 import seaborn as sns
 import seaborn.objects as so
@@ -44,6 +44,7 @@ setConfigOptions(
     useOpenGL=False,
 )
 
+# Global Pandas settings
 pd.options.mode.copy_on_write = "warn"
 # pd.options.mode.copy_on_write = True
 # pd.options.future.infer_string = True
@@ -51,16 +52,14 @@ pd.set_option("colheader_justify", "center")  # FOR TABLE <th>
 # pd.set_option("display.precision", 3)
 
 # Global Matplotlib settings
-matplotlib.use("QtAgg")
-matplotlib.rcParams["figure.dpi"] = dpi
-matplotlib.rcParams["figure.figsize"] = figure_width, figure_height
+mpl.use("QtAgg")
+mpl.rcParams["figure.dpi"] = dpi
+mpl.rcParams["figure.figsize"] = figure_width, figure_height
 
 # Global Seaborn settings
 # sns.objects.Plot.config.display["format"] = "svg"
 so.Plot.config.theme.update(sns.axes_style("whitegrid"))
-sns.set_theme(
-    style="whitegrid",
-)
+sns.set_theme(style="whitegrid")
 sns.set_color_codes("pastel")
 
 

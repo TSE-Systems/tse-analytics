@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
+import matplotlib.pyplot as plt
 import pandas as pd
-from matplotlib import pyplot as plt
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
 from tse_analytics.core.utils import get_html_image_from_figure

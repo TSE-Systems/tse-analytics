@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
+import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn.objects as so
-from matplotlib import pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 

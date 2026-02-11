@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
+import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from matplotlib import pyplot as plt
 from scipy.stats import chisquare, kruskal
 
 from tse_analytics.core.data.dataset import Dataset

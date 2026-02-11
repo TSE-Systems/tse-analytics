@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from astropy.timeseries import LombScargle
-from matplotlib import pyplot as plt
 
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.utils import get_html_image_from_figure

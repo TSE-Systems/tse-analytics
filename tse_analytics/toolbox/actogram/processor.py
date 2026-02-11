@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
 
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.dataset import Dataset
