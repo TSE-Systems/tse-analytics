@@ -4,7 +4,7 @@ TSE Analytics is a data analysis application designed specifically to work with 
 [TSE PhenoMaster](https://www.tse-systems.com/service/phenotype/) software. It allows a simplified management of
 multiple datasets, data sharing and reproducibility of experimental results in a flexible and user-friendly way.
 
-![TSE Analytics Screenshot](docs/tse-analytics-docs/main.png)
+![TSE Analytics Screenshot](docs/images/main.png)
 
 ## Features
 
