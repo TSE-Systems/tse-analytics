@@ -1,18 +1,15 @@
 from dataclasses import dataclass
 
-from matplotlib import pyplot as plt
-from matplotlib.backends.backend_qt import NavigationToolbar2QT
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QInputDialog, QLabel, QSpinBox, QToolBar, QVBoxLayout, QWidget, QWidgetAction
+from PySide6.QtWidgets import QInputDialog, QLabel, QSpinBox, QToolBar, QVBoxLayout, QWidget
 
-from tse_analytics.core import color_manager, manager
+from tse_analytics.core import manager
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.helper import normalize_nd_array
 from tse_analytics.core.data.report import Report
-from tse_analytics.core.plotting.actogram_utils import dataframe_to_actogram, plot_enhanced_actogram
-from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure, time_to_float
+from tse_analytics.core.utils import get_figsize_from_widget, get_h_spacer_widget
+from tse_analytics.toolbox.actogram.processor import get_actogram_result
+from tse_analytics.views.misc.report_edit import ReportEdit
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
@@ -50,41 +47,37 @@ class ActogramWidget(QWidget):
         self.datatable = datatable
 
         # Setup toolbar
-        self.toolbar = QToolBar(
+        toolbar = QToolBar(
             "Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
 
-        self.toolbar.addAction(QIcon(":/icons/icons8-refresh-16.png"), "Update").triggered.connect(self._update)
-        self.toolbar.addSeparator()
+        toolbar.addAction(QIcon(":/icons/icons8-refresh-16.png"), "Update").triggered.connect(self._update)
+        toolbar.addSeparator()
 
-        self.variableSelector = VariableSelector(self.toolbar)
+        self.variableSelector = VariableSelector(toolbar)
         self.variableSelector.set_data(self.datatable.variables, selected_variable=self._settings.selected_variable)
-        self.toolbar.addWidget(self.variableSelector)
+        toolbar.addWidget(self.variableSelector)
 
-        self.toolbar.addWidget(QLabel("Bins per hour:"))
+        toolbar.addWidget(QLabel("Bins per hour:"))
         self.bins_spin_box = QSpinBox(
-            self.toolbar,
+            toolbar,
             minimum=1,
             maximum=60,
             singleStep=1,
             value=self._settings.bins_per_hour,
         )
-        self.toolbar.addWidget(self.bins_spin_box)
+        toolbar.addWidget(self.bins_spin_box)
 
-        # Insert toolbar to the widget
-        self._layout.addWidget(self.toolbar)
+        # Insert the toolbar to the widget
+        self._layout.addWidget(toolbar)
 
-        self.canvas = FigureCanvasQTAgg(None)
-        self._layout.addWidget(self.canvas)
+        self.report_view = ReportEdit(self)
+        self._layout.addWidget(self.report_view)
 
-        self.spacer_action = QWidgetAction(self.toolbar)
-        self.spacer_action.setDefaultWidget(get_h_spacer_widget(self.toolbar))
-        self.toolbar.addAction(self.spacer_action)
-
-        self.toolbar.addAction("Add Report").triggered.connect(self._add_report)
-        self._add_plot_toolbar()
+        toolbar.addWidget(get_h_spacer_widget(toolbar))
+        toolbar.addAction("Add Report").triggered.connect(self._add_report)
 
     def _destroyed(self):
         settings = QSettings()
@@ -96,93 +89,23 @@ class ActogramWidget(QWidget):
             ),
         )
 
-    def _add_plot_toolbar(self):
-        """Add a matplotlib navigation toolbar to the widget.
-
-        Creates and adds a matplotlib navigation toolbar that provides
-        functionality like zooming, panning, and saving the plot.
-        """
-        self.plot_toolbar_action = QWidgetAction(self.toolbar)
-        plot_toolbar = NavigationToolbar2QT(self.canvas, self)
-        plot_toolbar.setIconSize(QSize(16, 16))
-        self.plot_toolbar_action.setDefaultWidget(plot_toolbar)
-        self.toolbar.insertAction(self.spacer_action, self.plot_toolbar_action)
-
     def _update(self):
-        """Update the actogram visualization.
+        self.report_view.clear()
 
-        Gets the selected variable and temporal resolution, processes the data,
-        and creates a new actogram visualization. This method is called when
-        the user changes settings or clicks the Update button.
-        """
         variable = self.variableSelector.get_selected_variable()
 
         columns = ["Animal", "DateTime", variable.name]
         df = self.datatable.get_filtered_df(columns)
 
-        settings = self.datatable.dataset.binning_settings.time_cycles_settings
-
-        bins_per_hour = self.bins_spin_box.value()
-
-        # Convert DataFrame to actogram format
-        activity_array, unique_days = dataframe_to_actogram(df, variable, 24 * bins_per_hour)
-
-        # Normalize data
-        activity_array = normalize_nd_array(activity_array)
-
-        # Create day labels
-        day_labels = [d.strftime("%Y-%m-%d") for d in unique_days]
-
-        if settings.dark_cycle_start < settings.light_cycle_start:
-            periods = [
-                {
-                    "start": time_to_float(settings.dark_cycle_start),
-                    "end": time_to_float(settings.light_cycle_start),
-                    "color": "gray",
-                    "alpha": 0.2,
-                }
-            ]
-        else:
-            periods = [
-                {
-                    "start": 0,
-                    "end": time_to_float(settings.light_cycle_start),
-                    "color": "gray",
-                    "alpha": 0.2,
-                },
-                {
-                    "start": time_to_float(settings.dark_cycle_start),
-                    "end": 24,
-                    "color": "gray",
-                    "alpha": 0.2,
-                },
-            ]
-
-        # Plot double actogram
-        fig, ax = plot_enhanced_actogram(
-            activity_array,
-            day_labels,
-            binsize=1 / bins_per_hour,
-            highlight_periods=periods,
-            bar_color=color_manager.get_color_hex(0),
-            title=f"Actogram - {variable.name}",
+        result = get_actogram_result(
+            self.datatable.dataset,
+            df,
+            variable,
+            self.bins_spin_box.value(),
+            get_figsize_from_widget(self.report_view),
         )
 
-        canvas = FigureCanvasQTAgg(fig)
-        # canvas.updateGeometry()
-        canvas.draw()
-        self._layout.replaceWidget(self.canvas, canvas)
-
-        # Cleanup
-        self.canvas.figure.clear()
-        plt.close(self.canvas.figure)
-        # gc.collect()
-
-        self.canvas = canvas
-
-        # Assign canvas to PlotToolbar
-        self.toolbar.removeAction(self.plot_toolbar_action)
-        self._add_plot_toolbar()
+        self.report_view.set_content(result.report)
 
     def _add_report(self):
         name, ok = QInputDialog.getText(
@@ -196,6 +119,6 @@ class ActogramWidget(QWidget):
                 Report(
                     self.datatable.dataset,
                     name,
-                    get_html_image_from_figure(self.canvas.figure),
+                    self.report_view.toHtml(),
                 )
             )

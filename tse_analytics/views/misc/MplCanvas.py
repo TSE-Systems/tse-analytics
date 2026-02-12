@@ -11,17 +11,8 @@ class MplCanvas(FigureCanvasQTAgg):
     integration between matplotlib and Qt.
     """
 
-    def __init__(self, parent=None, width=6.4, height=4.8, dpi=100):
-        """
-        Initialize the MplCanvas widget.
-
-        Args:
-            parent: The parent widget. Default is None.
-            width: Width of the figure in inches. Default is 6.4.
-            height: Height of the figure in inches. Default is 4.8.
-            dpi: Dots per inch (resolution) of the figure. Default is 100.
-        """
-        fig = Figure(figsize=(width, height), dpi=dpi)
+    def __init__(self, parent=None):
+        fig = Figure()
         super().__init__(fig)
         self.setParent(parent)
 

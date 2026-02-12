@@ -18,6 +18,10 @@ class ActimotTreeItem(TreeItem):
         return self._actimot_data()
 
     @property
+    def dataset(self):
+        return self.actimot_data.dataset
+
+    @property
     def icon(self):
         return QIcon(":/icons/icons8-extension-16.png")
 

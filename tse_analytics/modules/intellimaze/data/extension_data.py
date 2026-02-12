@@ -1,4 +1,9 @@
+from typing import TYPE_CHECKING
+
 import pandas as pd
+
+if TYPE_CHECKING:
+    from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 
 
 class ExtensionData:
@@ -17,7 +22,7 @@ class ExtensionData:
 
     def __init__(
         self,
-        dataset: "IntelliMazeDataset",
+        dataset: IntelliMazeDataset,
         name: str,
         raw_data: dict[str, pd.DataFrame],
         device_ids: list[str],

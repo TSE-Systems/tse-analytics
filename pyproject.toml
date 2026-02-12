@@ -1,32 +1,33 @@
 [project]
 name = "tse-analytics"
-version = "1.7.1"
+version = "1.8.0"
 description = "TSE Analytics data analysys"
-license = "MIT"
+license = "GPL-3.0-or-later"
 readme = "README.md"
 authors = [
     { name = "Anton Rau", email = "anton.rau@gmail.com" }
 ]
 homepage = "https://github.com/TSE-Systems/tse-analytics"
 repository = "https://github.com/TSE-Systems/tse-analytics"
-requires-python = "==3.13.11"
+requires-python = "==3.14.03"
 dependencies = [
     "astropy==7.2.0",
-    "connectorx==0.4.4",
+    "connectorx==0.4.5",
     "jinja2==3.1.6",
     "lmfit==1.3.4",
     "loguru==0.7.3",
     "matplotlib==3.10.8",
+    "nodegraphqt==0.6.44",
     "openpyxl==3.1.5",
     "pandas==2.3.3",
     "pingouin==0.5.5",
-    "psutil==7.1.3",
+    "psutil==7.2.2",
     "pyqt-toast-notification==1.3.3",
     "pyqtgraph==0.14.0",
-    "pyside6==6.10.1",
-    "pyside6-qtads==4.4.1.2",
+    "pyside6==6.10.2",
+    "pyside6-qtads==4.5.0.2",
     "scikit-learn==1.8.0",
-    "scipy==1.16.3",
+    "scipy==1.17.0",
     "seaborn==0.13.2",
     "traja==25.0.1",
     "xmltodict==1.0.2",
@@ -34,11 +35,12 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "pyinstaller==6.17.0",
-    "pyrefly==0.45.2",
+    "pyinstaller==6.18.0",
+    "pyrefly==0.52.0",
+    "pytest==9.0.2",
     "qtsass==0.4.0",
-    "ruff==0.14.9",
-    "ty==0.0.1a34",
+    "ruff==0.15.0",
+    "ty==0.0.16",
 ]
 
 [project.scripts]
@@ -55,7 +57,7 @@ ignore-patterns = ['.*ui\.py']
 max-line-length = 120
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.14"
 exclude = ['.*ui\.py']
 strict = false
 ignore_missing_imports = true
@@ -65,7 +67,7 @@ disable_error_code="union-attr,override"
 preview = true
 unsafe-fixes = false
 line-length = 120
-target-version = "py313"
+target-version = "py314"
 src = ["tse_analytics"]
 exclude = [
     "*_ui.py",
@@ -93,4 +95,16 @@ ignore = [
 convention = "google"
 
 [tool.ty.environment]
+python-version = "3.14"
+python-platform = "win32"
 root = ["./tse_analytics"]
+
+[tool.pyrefly]
+project-includes = ["tse_analytics"]
+search-path = ["tse_analytics"]
+project-excludes = ["**/*ui.py"]
+python-version = "3.14"
+python-platform = "win32"
+
+[tool.pyrefly.errors]
+missing-attribute = false

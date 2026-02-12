@@ -8,12 +8,14 @@ for the TSE Analytics application.
 
 import ctypes
 import os
+import platform
 import sys
 from multiprocessing import freeze_support
 
-import matplotlib
+import matplotlib as mpl
 import pandas as pd
 import seaborn as sns
+import seaborn.objects as so
 from loguru import logger
 from pyqtgraph import setConfigOptions
 from PySide6.QtCore import QSettings
@@ -26,7 +28,11 @@ from tse_analytics.views.main_window import MainWindow
 
 # Global configuration
 
-matplotlib.use("QtAgg")
+settings = QSettings()
+
+dpi = settings.value("DPI", 96)
+figure_width = settings.value("FigureWidth", 13.0)
+figure_height = settings.value("FigureHeight", 9.5)
 
 # Global PyQtGraph settings
 setConfigOptions(
@@ -38,15 +44,21 @@ setConfigOptions(
     useOpenGL=False,
 )
 
+# Global Pandas settings
 pd.options.mode.copy_on_write = "warn"
 # pd.options.mode.copy_on_write = True
 # pd.options.future.infer_string = True
 pd.set_option("colheader_justify", "center")  # FOR TABLE <th>
 # pd.set_option("display.precision", 3)
 
+# Global Matplotlib settings
+mpl.use("QtAgg")
+mpl.rcParams["figure.dpi"] = dpi
+mpl.rcParams["figure.figsize"] = figure_width, figure_height
+
 # Global Seaborn settings
 # sns.objects.Plot.config.display["format"] = "svg"
-sns.objects.Plot.config.theme.update(sns.axes_style("whitegrid"))
+so.Plot.config.theme.update(sns.axes_style("whitegrid"))
 sns.set_theme(style="whitegrid")
 sns.set_color_codes("pastel")
 
@@ -66,11 +78,16 @@ class App(QApplication):
         Args:
             args: Command line arguments passed to the application.
         """
-        # Force the light mode
-        args += ["-platform", "windows:darkmode=1"]
 
-        app_id = "tse-systems.tse-analytics"  # arbitrary string
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
+        # Check platform
+        if platform.system() == "Windows":
+            # Force the light mode
+            args += ["-platform", "windows:darkmode=1"]
+
+            app_id = "tse-systems.tse-analytics"  # arbitrary string
+            # Specifies a unique application-defined Application User Model ID (AppUserModelID) that identifies the current process to the taskbar.
+            # This identifier allows an application to group its associated processes and windows under a single taskbar button.
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
 
         QApplication.__init__(self, args)
         self.setStyle("fusion")
@@ -79,7 +96,7 @@ class App(QApplication):
         self.setApplicationName("TSE Analytics")
         self.setWindowIcon(QIcon(":/icons/app.ico"))
 
-        # Set selected stylesheet
+        # Set the selected stylesheet
         settings = QSettings()
         appStyle = settings.value("appStyle", "tse-light")
         style_file = f"_internal/styles/qss/{appStyle}.css" if IS_RELEASE else f"styles/qss/{appStyle}.css"

@@ -49,6 +49,7 @@ def make_toast(
     toast.setShowCloseButton(False)
     toast.setShowDurationBar(show_duration_bar)
     toast.setStayOnTop(False)
+    toast.setShowIconSeparator(False)
     if echo_to_logger:
         match preset:
             case ToastPreset.INFORMATION:

@@ -1,6 +1,6 @@
+import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtWidgets import QVBoxLayout, QWidget
 

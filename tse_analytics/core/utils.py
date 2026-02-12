@@ -6,6 +6,7 @@ application, including functions for working with images, SQLite databases,
 Qt widgets, and time conversions.
 """
 
+import sys
 from base64 import b64encode
 from datetime import time
 from io import BytesIO
@@ -18,9 +19,12 @@ from matplotlib.figure import Figure
 from PySide6.QtGui import QIcon, Qt
 from PySide6.QtWidgets import QSizePolicy, QToolButton, QWidget, QWidgetAction
 
-IS_RELEASE = Path("_internal").exists()
+from tse_analytics.core.data.shared import SplitMode
+
+IS_RELEASE = getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS")
 
 CSV_IMPORT_ENABLED = False
+PIPELINE_ENABLED = False
 
 
 def get_html_image_from_figure(figure: Figure) -> str:
@@ -37,16 +41,16 @@ def get_html_image_from_figure(figure: Figure) -> str:
         A string containing an HTML img tag with the figure embedded as base64 data.
     """
     io = BytesIO()
-    figure.savefig(io, format="png")
+    figure.savefig(io, format="png", bbox_inches="tight")
     encoded = b64encode(io.getvalue()).decode("utf-8")
-    return f"<img src='data:image/png;base64,{encoded}'><br/>"
+    return f"<img src='data:image/png;base64,{encoded}'><br>"
 
 
 def get_html_image_from_plot(plot: so.Plot) -> str:
     io = BytesIO()
     plot.save(io, format="png", bbox_inches="tight")
     encoded = b64encode(io.getvalue()).decode("utf-8")
-    return f"<img src='data:image/png;base64,{encoded}'><br/>"
+    return f"<img src='data:image/png;base64,{encoded}'><br>"
 
 
 def get_html_table(df: pd.DataFrame, caption: str, precision=5, index=True) -> str:
@@ -142,3 +146,42 @@ def time_to_float(value: time) -> float:
         A float representing the time in hours.
     """
     return value.hour + value.minute / 60.0
+
+
+def get_figsize_from_widget(widget: QWidget) -> tuple[float, float]:
+    # Get the widget size in pixels
+    widget_width = widget.width() - 12
+    widget_height = widget.height() - 12
+
+    # Get the DPI (dots per inch) of the screen
+    dpi = widget.logicalDpiX()  # or logicalDpiY(), usually the same
+
+    # Convert pixels to inches
+    fig_width = widget_width / dpi
+    fig_height = widget_height / dpi
+
+    return fig_width, fig_height
+
+
+def get_group_by_params(group_by_str: str) -> tuple[SplitMode, str]:
+    # Convert group_by string to SplitMode and factor_name
+    match group_by_str:
+        case SplitMode.ANIMAL.value:
+            return SplitMode.ANIMAL, ""
+        case SplitMode.RUN.value:
+            return SplitMode.RUN, ""
+        case SplitMode.TOTAL.value:
+            return SplitMode.TOTAL, ""
+        case _:
+            return SplitMode.FACTOR, group_by_str
+
+
+def get_plot_layout(number_of_elements: int) -> tuple[int, int]:
+    if number_of_elements == 1:
+        return 1, 1
+    elif number_of_elements == 2:
+        return 1, 2
+    elif number_of_elements <= 4:
+        return 2, 2
+    else:
+        return round(number_of_elements / 3) + 1, 3

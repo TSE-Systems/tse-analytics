@@ -5,16 +5,17 @@ from pathlib import Path
 
 import psutil
 import PySide6QtAds
+from loguru import logger
 from pyqttoast import Toast, ToastPreset
 from PySide6.QtCore import QSettings, Qt, QTimer
-from PySide6.QtGui import QAction, QCloseEvent, QIcon
+from PySide6.QtGui import QAction, QCloseEvent, QIcon, QKeySequence, QShortcut
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QMessageBox
 
-from tse_analytics.core import help_manager, manager
+from tse_analytics.core import help_manager, manager, utils
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.core.utils import CSV_IMPORT_ENABLED, IS_RELEASE
+from tse_analytics.core.utils import IS_RELEASE
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.intellicage.io.dataset_loader import import_intellicage_dataset
@@ -24,25 +25,28 @@ from tse_analytics.modules.intellimaze.views.export_merged_csv.export_merged_csv
 from tse_analytics.modules.phenomaster.io.tse_dataset_loader import load_tse_dataset
 from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvDialog
 from tse_analytics.modules.phenomaster.views.import_tse_dialog import ImportTseDialog
-from tse_analytics.toolbox.toolbox_button import ToolboxButton
-from tse_analytics.views.general.about.about_dialog import AboutDialog
-from tse_analytics.views.general.animals.animals_widget import AnimalsWidget
-from tse_analytics.views.general.datasets.datasets_widget import DatasetsWidget
-from tse_analytics.views.general.factors.factors_widget import FactorsWidget
-from tse_analytics.views.general.info.info_widget import InfoWidget
-from tse_analytics.views.general.logs.log_widget import LogWidget
-from tse_analytics.views.general.settings.binning_settings_widget import BinningSettingsWidget
-from tse_analytics.views.general.settings.settings_dialog import SettingsDialog
-from tse_analytics.views.general.variables.variables_widget import VariablesWidget
+from tse_analytics.views.about.about_dialog import AboutDialog
+from tse_analytics.views.animals.animals_widget import AnimalsWidget
+from tse_analytics.views.datasets.datasets_widget import DatasetsWidget
+from tse_analytics.views.factors.factors_widget import FactorsWidget
+from tse_analytics.views.info.info_widget import InfoWidget
+from tse_analytics.views.logs.log_widget import LogWidget
 from tse_analytics.views.main_window_ui import Ui_MainWindow
+from tse_analytics.views.misc.toolbox_button import ToolboxButton
+from tse_analytics.views.pipeline.pipeline_editor_widget import PipelineEditorWidget
+from tse_analytics.views.settings.binning_settings_widget import BinningSettingsWidget
+from tse_analytics.views.settings.settings_dialog import SettingsDialog
+from tse_analytics.views.variables.variables_widget import VariablesWidget
 
 MAX_RECENT_FILES = 10
 
 
-class MainWindow(QMainWindow, Ui_MainWindow):
+class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setupUi(self)
+
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
 
         self.settings = QSettings()
 
@@ -53,28 +57,40 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.ui_timer.timeout.connect(self._update_memory_usage)
         self.ui_timer.start(1000)
 
-        self.memory_usage_label = QLabel()
-        self.statusBar.addPermanentWidget(self.memory_usage_label)
+        # Internal features shortcut
+        self.internal_shortcut = QShortcut(QKeySequence("Ctrl+T, Ctrl+S, Ctrl+E"), self)
+        self.internal_shortcut.activated.connect(self._enable_internal_features)
 
-        self.menuOpenRecent.aboutToShow.connect(self._populate_open_recent)
+        # TODO: hide pipeline editor button for the time being
+        self.ui.actionPipelineEditor.setVisible(False)
+
+        self.memory_usage_label = QLabel()
+        self.ui.statusBar.addPermanentWidget(self.memory_usage_label)
+
+        self.ui.menuOpenRecent.aboutToShow.connect(self._populate_open_recent)
 
         self.toolbox_button = ToolboxButton(self)
-
-        self.toolBar.addSeparator()
-        self.toolBar.addWidget(self.toolbox_button)
+        self.ui.toolBar.addWidget(self.toolbox_button)
 
         # Initialize dock manager. Because the parent parameter is a QMainWindow
         # the dock manager registers itself as the central widget.
-        LayoutManager(self, self.menuView)
+        LayoutManager(self, self.ui.menuView)
 
-        self.menuStyle.addAction("Default").triggered.connect(lambda: self._set_style("default"))
-        self.menuStyle.addAction("TSE Light").triggered.connect(lambda: self._set_style("tse-light"))
-        # self.menuStyle.addAction("TSE Dark").triggered.connect(lambda: self.set_style("tse-dark"))
+        self.ui.menuStyle.addAction("Default").triggered.connect(lambda: self._set_style("default"))
+        self.ui.menuStyle.addAction("TSE Light").triggered.connect(lambda: self._set_style("tse-light"))
+        # self.ui.menuStyle.addAction("TSE Dark").triggered.connect(lambda: self.set_style("tse-dark"))
 
         LayoutManager.set_central_widget()
 
+        self.dataset_widget = DatasetsWidget(
+            self,
+            self.toolbox_button,
+            self.ui.actionPipelineEditor,
+        )
         datasets_dock_widget = LayoutManager.register_dock_widget(
-            DatasetsWidget(self, self.toolbox_button), "Datasets", QIcon(":/icons/datasets.png")
+            self.dataset_widget,
+            "Datasets",
+            QIcon(":/icons/datasets.png"),
         )
         datasets_dock_area = LayoutManager.add_dock_widget(PySide6QtAds.LeftDockWidgetArea, datasets_dock_widget)
 
@@ -112,20 +128,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area
         )
 
-        self.actionImportDataset.triggered.connect(self._import_dataset_dialog)
-        self.actionNewWorkspace.triggered.connect(self._new_workspace)
-        self.actionOpenWorkspace.triggered.connect(self._load_workspace_dialog)
-        self.actionSaveWorkspace.triggered.connect(self._save_workspace_dialog)
-        self.actionSaveLayout.triggered.connect(self._save_layout)
-        self.actionRestoreLayout.triggered.connect(self._restore_layout)
-        self.actionResetLayout.triggered.connect(self._reset_layout)
-        self.actionExit.triggered.connect(lambda: QApplication.exit())
-        self.actionHelp.triggered.connect(self._show_help)
-        self.actionAbout.triggered.connect(self._show_about_dialog)
-        self.actionSettings.triggered.connect(self._show_settings_dialog)
-        self.actionExportMergedCsv.triggered.connect(self._show_export_merged_csv_dialog)
+        self.ui.actionImportDataset.triggered.connect(self._import_dataset_dialog)
+        self.ui.actionNewWorkspace.triggered.connect(self._new_workspace)
+        self.ui.actionOpenWorkspace.triggered.connect(self._load_workspace_dialog)
+        self.ui.actionSaveWorkspace.triggered.connect(self._save_workspace_dialog)
+        self.ui.actionPipelineEditor.triggered.connect(self._show_pipeline_editor)
+        self.ui.actionSaveLayout.triggered.connect(self._save_layout)
+        self.ui.actionRestoreLayout.triggered.connect(self._restore_layout)
+        self.ui.actionResetLayout.triggered.connect(self._reset_layout)
+        self.ui.actionExit.triggered.connect(lambda: QApplication.exit())
+        self.ui.actionHelp.triggered.connect(self._show_help)
+        self.ui.actionAbout.triggered.connect(self._show_about_dialog)
+        self.ui.actionSettings.triggered.connect(self._show_settings_dialog)
+        self.ui.actionExportMergedCsv.triggered.connect(self._show_export_merged_csv_dialog)
 
-        self.menuFile.aboutToShow.connect(self._menu_file_about_to_show)
+        self.ui.menuFile.aboutToShow.connect(self._menu_file_about_to_show)
 
         # Store default dock layout
         LayoutManager.add_perspective("Default")
@@ -145,11 +162,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def _menu_file_about_to_show(self):
         dataset = manager.get_selected_dataset()
-        self.actionExportMergedCsv.setVisible(dataset is not None and isinstance(dataset, IntelliMazeDataset))
+        self.ui.actionExportMergedCsv.setVisible(dataset is not None and isinstance(dataset, IntelliMazeDataset))
 
     def _populate_open_recent(self):
         # Step 1. Remove the old options from the menu
-        self.menuOpenRecent.clear()
+        self.ui.menuOpenRecent.clear()
         # Step 2. Dynamically create the actions
         actions = []
         filenames = list(self.settings.value("recentFilesList", []))
@@ -158,7 +175,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             action.triggered.connect(partial(self._load_workspace, filename))
             actions.append(action)
         # Step 3. Add the actions to the menu
-        self.menuOpenRecent.addActions(actions)
+        self.ui.menuOpenRecent.addActions(actions)
 
     def _load_workspace(self, filename: str):
         filenames = list(self.settings.value("recentFilesList", []))
@@ -227,6 +244,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def _reset_layout(self) -> None:
         LayoutManager.open_perspective("Default")
 
+    def _show_pipeline_editor(self):
+        widget = PipelineEditorWidget()
+        LayoutManager.add_widget_to_central_area(
+            manager.get_selected_dataset(), widget, "Pipeline Editor", QIcon(":/icons/icons8-genealogy-16.png")
+        )
+
     def _show_about_dialog(self) -> None:
         dialog = AboutDialog(self)
         dialog.show()
@@ -250,7 +273,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def _import_dataset_dialog(self) -> None:
         filter = (
             "Data Files (*.tse *.csv *.zip);;TSE Datasets (*.tse);;CSV Files (*.csv);;IntelliMaze Datasets (*.zip)"
-            if CSV_IMPORT_ENABLED
+            if utils.CSV_IMPORT_ENABLED
             else "Data Files (*.tse *.zip);;TSE Datasets (*.tse);;IntelliMaze Datasets (*.zip)"
         )
         filename, _ = QFileDialog.getOpenFileName(
@@ -335,6 +358,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def _restore_layout(self) -> None:
         LayoutManager.open_perspective("Temporary")
 
+    def _enable_internal_features(self):
+        utils.CSV_IMPORT_ENABLED = True
+        utils.PIPELINE_ENABLED = True
+        self.dataset_widget.import_action.setVisible(True)
+        self.ui.actionPipelineEditor.setVisible(True)
+        logger.info("Internal features enabled")
+
     def closeEvent(self, event: QCloseEvent) -> None:
         if (
             QMessageBox.question(
@@ -349,7 +379,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             LayoutManager.clear_dock_manager()
             self._save_settings()
             LayoutManager.delete_dock_manager()
-            help_manager.close_help_server()
             QApplication.closeAllWindows()
             super().closeEvent(event)
         else:

@@ -7,18 +7,21 @@ excluding time ranges, resampling, and applying factors.
 """
 
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 import pandas as pd
 
 from tse_analytics.core.data.helper import reassign_df_timedelta_and_bin, rename_animal_df
+from tse_analytics.core.data.operators.animal_filter_pipe_operator import filter_animals
+from tse_analytics.core.data.operators.group_by_pipe_operator import group_by_columns
+from tse_analytics.core.data.operators.outliers_pipe_operator import process_outliers
+from tse_analytics.core.data.operators.time_binning_pipe_operator import process_time_binning
 from tse_analytics.core.data.outliers import OutliersMode
-from tse_analytics.core.data.pipeline.animal_filter_pipe_operator import filter_animals
-from tse_analytics.core.data.pipeline.group_by_pipe_operator import group_by_columns
-from tse_analytics.core.data.pipeline.outliers_pipe_operator import process_outliers
-from tse_analytics.core.data.pipeline.time_binning_pipe_operator import process_time_binning
 from tse_analytics.core.data.shared import Animal, Factor, SplitMode, Variable
+
+if TYPE_CHECKING:
+    from tse_analytics.core.data.dataset import Dataset
 
 
 class Datatable:
@@ -36,7 +39,7 @@ class Datatable:
 
     def __init__(
         self,
-        dataset: "Dataset",
+        dataset: Dataset,
         name: str,
         description: str,
         variables: dict[str, Variable],
@@ -533,6 +536,11 @@ class Datatable:
 
         self.original_df.rename(columns=variable_name_map, inplace=True, errors="ignore")
         self.active_df.rename(columns=variable_name_map, inplace=True, errors="ignore")
+
+    def clone(self):
+        return Datatable(
+            self.dataset, self.name, self.description, self.variables, self.original_df.copy(), self.sampling_interval
+        )
 
     def __getstate__(self):
         """

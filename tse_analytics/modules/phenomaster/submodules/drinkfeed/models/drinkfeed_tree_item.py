@@ -19,6 +19,10 @@ class DrinkFeedTreeItem(TreeItem):
         return self._drinkfeed_data()
 
     @property
+    def dataset(self):
+        return self.drinkfeed_data.dataset
+
+    @property
     def icon(self):
         return QIcon(":/icons/icons8-extension-16.png")
 

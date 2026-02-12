@@ -73,9 +73,6 @@
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="toolBar">
-   <property name="windowTitle">
-    <string>ToolBar</string>
-   </property>
    <property name="toolButtonStyle">
     <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
    </property>
@@ -89,6 +86,8 @@
    <addaction name="actionSaveWorkspace"/>
    <addaction name="separator"/>
    <addaction name="actionImportDataset"/>
+   <addaction name="separator"/>
+   <addaction name="actionPipelineEditor"/>
   </widget>
   <action name="actionExit">
    <property name="icon">
@@ -214,6 +213,24 @@
    </property>
    <property name="visible">
     <bool>false</bool>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionPipelineEditor">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../../resources/resources.qrc">
+     <normaloff>:/icons/icons8-genealogy-16.png</normaloff>:/icons/icons8-genealogy-16.png</iconset>
+   </property>
+   <property name="text">
+    <string>Pipeline Editor</string>
+   </property>
+   <property name="toolTip">
+    <string>Open data analysis pipeline editor</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

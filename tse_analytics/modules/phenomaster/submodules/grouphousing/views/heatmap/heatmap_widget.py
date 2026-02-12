@@ -1,5 +1,7 @@
 import pandas as pd
 import seaborn as sns
+from matplotlib.backends.backend_qt import NavigationToolbar2QT
+from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.modules.phenomaster.submodules.grouphousing.data.grouphousing_data import GroupHousingData
@@ -13,6 +15,10 @@ class HeatmapWidget(QWidget):
         super().__init__(parent)
         self.ui = Ui_HeatmapWidget()
         self.ui.setupUi(self)
+
+        plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
+        plot_toolbar.setIconSize(QSize(16, 16))
+        self.ui.verticalLayout.insertWidget(0, plot_toolbar)
 
         self.data = data
         self.preprocessed_data: dict[str, pd.DataFrame] | None = None

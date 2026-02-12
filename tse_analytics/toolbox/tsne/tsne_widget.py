@@ -1,8 +1,5 @@
 from dataclasses import dataclass, field
 
-import pandas as pd
-import seaborn.objects as so
-from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
@@ -17,19 +14,17 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from sklearn.manifold import TSNE
-from sklearn.preprocessing import StandardScaler
 
-from tse_analytics.core import color_manager, manager
+from tse_analytics.core import manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
-from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure, get_widget_tool_button
+from tse_analytics.core.utils import get_figsize_from_widget, get_h_spacer_widget, get_widget_tool_button
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
+from tse_analytics.toolbox.tsne.processor import TsneResult, get_tsne_result
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
-from tse_analytics.views.misc.MplCanvas import MplCanvas
+from tse_analytics.views.misc.report_edit import ReportEdit
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 
 
@@ -115,16 +110,11 @@ class TsneWidget(QWidget):
         # Insert toolbar to the widget
         self._layout.addWidget(toolbar)
 
-        self.canvas = MplCanvas(self)
-        self._layout.addWidget(self.canvas)
-
-        plot_toolbar = NavigationToolbar2QT(self.canvas, self)
-        plot_toolbar.setIconSize(QSize(16, 16))
-        toolbar.addWidget(plot_toolbar)
+        self.report_view = ReportEdit(self)
+        self._layout.addWidget(self.report_view)
 
         toolbar.addWidget(get_h_spacer_widget(toolbar))
-        self.add_report_action = toolbar.addAction("Add Report")
-        self.add_report_action.triggered.connect(self._add_report)
+        toolbar.addAction("Add Report").triggered.connect(self._add_report)
 
     def _destroyed(self):
         settings = QSettings()
@@ -139,10 +129,11 @@ class TsneWidget(QWidget):
         )
 
     def _update(self):
-        self.update_action.setEnabled(False)
-        self.add_report_action.setEnabled(False)
+        self.report_view.clear()
 
-        selected_variables = self.variables_table_widget.get_selected_variables_dict()
+        self.update_action.setEnabled(False)
+
+        selected_variables = self.variables_table_widget.get_selected_variable_names()
         if len(selected_variables) < 3:
             make_toast(
                 self,
@@ -156,96 +147,37 @@ class TsneWidget(QWidget):
 
         split_mode, selected_factor_name = self.group_by_selector.get_group_by()
 
-        match split_mode:
-            case SplitMode.ANIMAL:
-                by = "Animal"
-            case SplitMode.RUN:
-                by = "Run"
-            case SplitMode.FACTOR:
-                by = selected_factor_name
-            case _:
-                by = None
-
         self._toast = make_toast(self, self.title, "Processing...")
         self._toast.show()
 
-        worker = Worker(self._calculate, selected_variables, split_mode, selected_factor_name, by)
-        worker.signals.result.connect(self._result)
-        worker.signals.finished.connect(self._finished)
-        TaskManager.start_task(worker)
-
-    def _calculate(
-        self,
-        selected_variables: dict[str, Variable],
-        split_mode: SplitMode,
-        selected_factor_name: str,
-        by: str,
-    ) -> tuple[pd.DataFrame, str, str, SplitMode, str]:
-        selected_variable_names = list(selected_variables)
-
         df = self.datatable.get_df(
-            selected_variable_names,
+            selected_variables,
             split_mode,
             selected_factor_name,
         )
         df.dropna(inplace=True)
 
-        # Standardize the data
-        scaler = StandardScaler()
-        scaled_data = scaler.fit_transform(df[selected_variable_names])
-
-        tsne = TSNE(
-            n_components=2,
-            perplexity=self.perplexity_spin_box.value(),
-            max_iter=self.maximum_iterations_spin_box.value(),
-            random_state=0,
+        worker = Worker(
+            get_tsne_result,
+            self.datatable.dataset,
+            df,
+            selected_variables,
+            split_mode,
+            selected_factor_name,
+            self.perplexity_spin_box.value(),
+            self.maximum_iterations_spin_box.value(),
+            get_figsize_from_widget(self.report_view),
         )
-        data = tsne.fit_transform(scaled_data)
-        title = "t-SNE"
+        worker.signals.result.connect(self._result)
+        worker.signals.finished.connect(self._finished)
+        TaskManager.start_task(worker)
 
-        result_df = pd.DataFrame(data=data, columns=["tSNE1", "tSNE2"])
-        if by is not None:
-            result_df = pd.concat([result_df, df[[by]]], axis=1)
-
-        return result_df, title, by, split_mode, selected_factor_name
-
-    def _result(self, result: tuple[pd.DataFrame, str, str, SplitMode, str]):
-        # Clear the plot
-        self.canvas.clear(False)
-
-        df, title, by, split_mode, selected_factor_name = result
-
-        match split_mode:
-            case SplitMode.ANIMAL:
-                palette = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
-            case SplitMode.RUN:
-                palette = color_manager.colormap_name
-            case SplitMode.FACTOR:
-                palette = color_manager.get_level_to_color_dict(self.datatable.dataset.factors[selected_factor_name])
-            case _:
-                palette = color_manager.colormap_name
-
-        (
-            so.Plot(
-                df,
-                x="tSNE1",
-                y="tSNE2",
-                color=by,
-            )
-            .add(so.Dot(pointsize=3))
-            .scale(color=palette)
-            .label(title=title)
-            .on(self.canvas.figure)
-            .plot(True)
-        )
-
-        self.canvas.figure.tight_layout()
-        self.canvas.draw()
+    def _result(self, result: TsneResult):
+        self.report_view.set_content(result.report)
 
     def _finished(self):
         self._toast.hide()
         self.update_action.setEnabled(True)
-        self.add_report_action.setEnabled(True)
 
     def _add_report(self):
         name, ok = QInputDialog.getText(
@@ -259,6 +191,6 @@ class TsneWidget(QWidget):
                 Report(
                     self.datatable.dataset,
                     name,
-                    get_html_image_from_figure(self.canvas.figure),
+                    self.report_view.toHtml(),
                 )
             )

@@ -24,13 +24,13 @@ tasks:
     cmds:
       - pyside6-uic tse_analytics/views/main_window.ui -o tse_analytics/views/main_window_ui.py
       - pyside6-uic tse_analytics/views/misc/raw_data_widget/raw_data_widget.ui -o tse_analytics/views/misc/raw_data_widget/raw_data_widget_ui.py
-      - pyside6-uic tse_analytics/views/general/factors/factors_dialog.ui -o tse_analytics/views/general/factors/factors_dialog_ui.py
-      - pyside6-uic tse_analytics/views/general/variables/add_variable_dialog.ui -o tse_analytics/views/general/variables/add_variable_dialog_ui.py
-      - pyside6-uic tse_analytics/views/general/datasets/datasets_merge_dialog.ui -o tse_analytics/views/general/datasets/datasets_merge_dialog_ui.py
-      - pyside6-uic tse_analytics/views/general/datasets/adjust_dataset_dialog.ui -o tse_analytics/views/general/datasets/adjust_dataset_dialog_ui.py
-      - pyside6-uic tse_analytics/views/general/settings/binning_settings_widget.ui -o tse_analytics/views/general/settings/binning_settings_widget_ui.py
-      - pyside6-uic tse_analytics/views/general/about/about_dialog.ui -o tse_analytics/views/general/about/about_dialog_ui.py
-      - pyside6-uic tse_analytics/views/general/settings/settings_dialog.ui -o tse_analytics/views/general/settings/settings_dialog_ui.py
+      - pyside6-uic tse_analytics/views/factors/factors_dialog.ui -o tse_analytics/views/factors/factors_dialog_ui.py
+      - pyside6-uic tse_analytics/views/variables/add_variable_dialog.ui -o tse_analytics/views/variables/add_variable_dialog_ui.py
+      - pyside6-uic tse_analytics/views/datasets/datasets_merge_dialog.ui -o tse_analytics/views/datasets/datasets_merge_dialog_ui.py
+      - pyside6-uic tse_analytics/views/datasets/adjust_dataset_dialog.ui -o tse_analytics/views/datasets/adjust_dataset_dialog_ui.py
+      - pyside6-uic tse_analytics/views/settings/binning_settings_widget.ui -o tse_analytics/views/settings/binning_settings_widget_ui.py
+      - pyside6-uic tse_analytics/views/about/about_dialog.ui -o tse_analytics/views/about/about_dialog_ui.py
+      - pyside6-uic tse_analytics/views/settings/settings_dialog.ui -o tse_analytics/views/settings/settings_dialog_ui.py
 
   build-ui:toolbox:
     cmds:
@@ -38,28 +38,27 @@ tasks:
       - pyside6-uic tse_analytics/toolbox/rm_anova/rm_anova_settings_widget.ui -o tse_analytics/toolbox/rm_anova/rm_anova_settings_widget_ui.py
       - pyside6-uic tse_analytics/toolbox/mixed_anova/mixed_anova_settings_widget.ui -o tse_analytics/toolbox/mixed_anova/mixed_anova_settings_widget_ui.py
       - pyside6-uic tse_analytics/toolbox/ancova/ancova_settings_widget.ui -o tse_analytics/toolbox/ancova/ancova_settings_widget_ui.py
-      - pyside6-uic tse_analytics/toolbox/reports/report_widget.ui -o tse_analytics/toolbox/reports/report_widget_ui.py
 
   build-ui:phenomaster:
     cmds:
       - pyside6-uic tse_analytics/modules/phenomaster/views/import_csv_dialog.ui -o tse_analytics/modules/phenomaster/views/import_csv_dialog_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/views/import_tse_dialog.ui -o tse_analytics/modules/phenomaster/views/import_tse_dialog_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_dialog.ui -o tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_dialog_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_widget.ui -o tse_analytics/modules/phenomaster/submodules/drinkfeed/views/drinkfeed_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/drinkfeed/views/settings/settings_widget.ui -o tse_analytics/modules/phenomaster/submodules/drinkfeed/views/settings/settings_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/calo_dialog.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/calo_dialog_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/calo_widget.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/calo_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/plot/plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/plot/plot_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/settings/settings_widget.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/settings/settings_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/settings/gas_settings/gas_settings_widget.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/settings/gas_settings/gas_settings_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/test_fit/test_fit_widget.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/test_fit/test_fit_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/calo/views/rer/rer_widget.ui -o tse_analytics/modules/phenomaster/submodules/calo/views/rer/rer_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_dialog.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_dialog_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/actimot_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/plot/plot_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/plot/plot_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/settings/settings_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/settings/settings_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/stream/stream_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/stream/stream_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/heatmap/heatmap_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/heatmap/heatmap_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/trajectory/trajectory_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/trajectory/trajectory_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/actimot/views/frames/frames_widget.ui -o tse_analytics/modules/phenomaster/submodules/actimot/views/frames/frames_widget_ui.py
-      - pyside6-uic tse_analytics/modules/phenomaster/submodules/grouphousing/views/grouphousing_dialog.ui -o tse_analytics/modules/phenomaster/submodules/grouphousing/views/grouphousing_dialog_ui.py
+      - pyside6-uic tse_analytics/modules/phenomaster/submodules/grouphousing/views/grouphousing_widget.ui -o tse_analytics/modules/phenomaster/submodules/grouphousing/views/grouphousing_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/grouphousing/views/heatmap/heatmap_widget.ui -o tse_analytics/modules/phenomaster/submodules/grouphousing/views/heatmap/heatmap_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/grouphousing/views/raw_data/raw_data_widget.ui -o tse_analytics/modules/phenomaster/submodules/grouphousing/views/raw_data/raw_data_widget_ui.py
       - pyside6-uic tse_analytics/modules/phenomaster/submodules/grouphousing/views/preprocessed_data/preprocessed_data_widget.ui -o tse_analytics/modules/phenomaster/submodules/grouphousing/views/preprocessed_data/preprocessed_data_widget_ui.py
@@ -100,18 +99,14 @@ tasks:
       - uv sync
       - pyside6-deploy -c pysidedeploy.spec
 
-  mypy:
+  pyrefly:
     cmds:
-      - mypy tse_analytics
+      - pyrefly check --summarize-errors
+    ignore_error: true
 
   ty:
     cmds:
       - ty check
-    ignore_error: true
-
-  pylint:
-    cmds:
-      - pylint -j 8 tse_analytics
     ignore_error: true
 
   ruff-check:
@@ -131,7 +126,7 @@ tasks:
 
   test:
     cmds:
-      - pytest
+      - pytest tests/
 
   qss:
     cmds:

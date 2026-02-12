@@ -1,6 +1,3 @@
-from __future__ import annotations
-
-
 class TreeItem:
     """
     A tree item representing a node in a JSON data structure.

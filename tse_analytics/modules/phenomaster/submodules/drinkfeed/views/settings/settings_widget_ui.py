@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'settings_widget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.10.1
+## Created by: Qt User Interface Compiler version 6.10.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -26,6 +26,7 @@ class Ui_SettingsWidget(object):
     def setupUi(self, SettingsWidget):
         if not SettingsWidget.objectName():
             SettingsWidget.setObjectName(u"SettingsWidget")
+        SettingsWidget.resize(292, 392)
         self.verticalLayout = QVBoxLayout(SettingsWidget)
         self.verticalLayout.setSpacing(4)
         self.verticalLayout.setObjectName(u"verticalLayout")

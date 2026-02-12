@@ -9,9 +9,9 @@ from PySide6.QtWidgets import QCheckBox, QInputDialog, QLabel, QToolBar, QVBoxLa
 from tse_analytics.core import manager, messaging
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.pipeline.time_cycles_binning_pipe_operator import process_time_cycles_binning
-from tse_analytics.core.data.pipeline.time_intervals_binning_pipe_operator import process_time_interval_binning
-from tse_analytics.core.data.pipeline.time_phases_binning_pipe_operator import process_time_phases_binning
+from tse_analytics.core.data.operators.time_cycles_binning_pipe_operator import process_time_cycles_binning
+from tse_analytics.core.data.operators.time_intervals_binning_pipe_operator import process_time_interval_binning
+from tse_analytics.core.data.operators.time_phases_binning_pipe_operator import process_time_phases_binning
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.toaster import make_toast

@@ -18,6 +18,10 @@ class GroupHousingTreeItem(TreeItem):
         return self._grouphousing_data()
 
     @property
+    def dataset(self):
+        return self.grouphousing_data.dataset
+
+    @property
     def icon(self):
         return QIcon(":/icons/icons8-extension-16.png")
 

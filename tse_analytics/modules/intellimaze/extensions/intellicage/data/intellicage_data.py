@@ -4,6 +4,7 @@ import pandas as pd
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.modules.intellimaze.data.extension_data import ExtensionData
+from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 
 EXTENSION_NAME = "IntelliCage"
 
@@ -11,7 +12,7 @@ EXTENSION_NAME = "IntelliCage"
 class IntelliCageData(ExtensionData):
     def __init__(
         self,
-        dataset: "IntelliMazeDataset",
+        dataset: IntelliMazeDataset,
         name: str,
         raw_data: dict[str, pd.DataFrame],
     ):

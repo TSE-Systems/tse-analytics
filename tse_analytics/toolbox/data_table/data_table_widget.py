@@ -13,7 +13,6 @@ from PySide6.QtWidgets import (
     QLabel,
     QMenu,
     QTableView,
-    QTextEdit,
     QToolBar,
     QToolButton,
     QVBoxLayout,
@@ -30,8 +29,8 @@ from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_h_spacer_widget, get_widget_tool_button
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
-from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
+from tse_analytics.views.misc.report_edit import ReportEdit
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 
 
@@ -116,12 +115,8 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         # Horizontal spacer
         toolbar.addWidget(get_h_spacer_widget(toolbar))
 
-        self.descriptive_stats_widget = QTextEdit(toolbar)
-        self.descriptive_stats_widget.setUndoRedoEnabled(False)
-        self.descriptive_stats_widget.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
-        self.descriptive_stats_widget.setReadOnly(True)
+        self.descriptive_stats_widget = ReportEdit(toolbar)
         self.descriptive_stats_widget.setMinimumWidth(410)
-        self.descriptive_stats_widget.document().setDefaultStyleSheet(style_descriptive_table)
 
         self.show_stats_button = get_widget_tool_button(
             toolbar,
@@ -243,15 +238,16 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
         if len(selected_variables_names) > 0:
             descriptive = (
-                np.round(self.df[selected_variables_names].describe(), 3)
+                np
+                .round(self.df[selected_variables_names].describe(), 3)
                 .T[["count", "mean", "std", "min", "max"]]
                 .to_html()
             )
-            self.descriptive_stats_widget.document().setHtml(descriptive)
+            self.descriptive_stats_widget.set_content(descriptive)
             self.add_report_action.setEnabled(True)
             self.show_stats_button.setEnabled(True)
         else:
-            self.descriptive_stats_widget.document().clear()
+            self.descriptive_stats_widget.clear()
             self.add_report_action.setEnabled(False)
             self.show_stats_button.setEnabled(False)
 
@@ -278,6 +274,6 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
                 Report(
                     self.datatable.dataset,
                     name,
-                    self.descriptive_stats_widget.document().toHtml(),
+                    self.descriptive_stats_widget.toHtml(),
                 )
             )

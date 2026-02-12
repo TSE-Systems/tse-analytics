@@ -217,6 +217,10 @@ def _import_animals_v5(animals_file_path: Path) -> dict | None:
             properties=properties,
         )
         animals[animal.id] = animal
+
+    # Sort animals by ID
+    animals = dict(sorted(animals.items()))
+
     return animals
 
 
@@ -292,6 +296,10 @@ def _import_animals_v6(animals_file_path: Path, groups_file_path: Path) -> dict 
             properties=properties,
         )
         animals[animal.id] = animal
+
+    # Sort animals by ID
+    animals = dict(sorted(animals.items()))
+
     return animals
 
 

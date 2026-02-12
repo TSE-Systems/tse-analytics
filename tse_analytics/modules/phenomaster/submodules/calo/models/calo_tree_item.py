@@ -18,6 +18,10 @@ class CaloDataTreeItem(TreeItem):
         return self._calo_data()
 
     @property
+    def dataset(self):
+        return self.calo_data.dataset
+
+    @property
     def icon(self):
         return QIcon(":/icons/icons8-extension-16.png")
 
