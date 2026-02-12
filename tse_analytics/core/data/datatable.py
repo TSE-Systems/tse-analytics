@@ -6,6 +6,8 @@ preprocessing, and analysis operations. It supports operations like renaming ani
 excluding time ranges, resampling, and applying factors.
 """
 
+from __future__ import annotations
+
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 from uuid import uuid4
