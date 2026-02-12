@@ -1,17 +1,13 @@
 from dataclasses import dataclass
 
 import pandas as pd
-from PySide6.QtCore import QSettings, QSize, Qt
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QComboBox, QInputDialog, QLabel, QSpinBox, QToolBar, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QComboBox, QLabel, QSpinBox, QToolBar, QWidget
 
-from tse_analytics.core import manager
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.report import Report
-from tse_analytics.core.utils import get_figsize_from_widget, get_h_spacer_widget
+from tse_analytics.core.utils import get_figsize_from_widget
 from tse_analytics.toolbox.timeseries_decomposition.processor import get_timeseries_decomposition_result
+from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
 from tse_analytics.views.misc.animal_selector import AnimalSelector
-from tse_analytics.views.misc.report_edit import ReportEdit
 from tse_analytics.views.misc.tooltip_widget import TooltipWidget
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
@@ -25,42 +21,18 @@ class TimeseriesDecompositionWidgetSettings:
     model: str = "Additive"
 
 
-class TimeseriesDecompositionWidget(QWidget):
+class TimeseriesDecompositionWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
-        super().__init__(parent)
-
-        # Connect destructor to unsubscribe and save settings
-        self.destroyed.connect(lambda: self._destroyed())
-
-        # Settings management
-        settings = QSettings()
-        self._settings: TimeseriesDecompositionWidgetSettings = settings.value(
-            self.__class__.__name__, TimeseriesDecompositionWidgetSettings()
+        super().__init__(
+            datatable,
+            TimeseriesDecompositionWidgetSettings,
+            title="Decomposition",
+            parent=parent,
         )
 
-        self._layout = QVBoxLayout(self)
-        self._layout.setSpacing(0)
-        self._layout.setContentsMargins(0, 0, 0, 0)
-
-        self.title = "Decomposition"
-
-        self.datatable = datatable
-
-        # Setup toolbar
-        toolbar = QToolBar(
-            "Toolbar",
-            iconSize=QSize(16, 16),
-            toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
-        )
-
-        toolbar.addAction(QIcon(":/icons/icons8-refresh-16.png"), "Update").triggered.connect(self._update)
-        toolbar.addSeparator()
-
+    def _create_toolbar_items(self, toolbar: QToolBar) -> None:
         self.variableSelector = VariableSelector(toolbar)
-        # variables = {
-        #     key: value for (key, value) in datatable.variables.items() if value.aggregation == Aggregation.MEAN
-        # }
-        self.variableSelector.set_data(datatable.variables, selected_variable=self._settings.selected_variable)
+        self.variableSelector.set_data(self.datatable.variables, selected_variable=self._settings.selected_variable)
         toolbar.addWidget(self.variableSelector)
 
         toolbar.addWidget(QLabel("Animal:"))
@@ -93,27 +65,15 @@ class TimeseriesDecompositionWidget(QWidget):
         self.model_combo_box.setCurrentText(self._settings.model)
         toolbar.addWidget(self.model_combo_box)
 
-        self._layout.addWidget(toolbar)
-
-        self.report_view = ReportEdit(self)
-        self._layout.addWidget(self.report_view)
-
-        toolbar.addWidget(get_h_spacer_widget(toolbar))
-        toolbar.addAction("Add Report").triggered.connect(self._add_report)
-
         toolbar.addWidget(TooltipWidget("<b>Period:</b> number of observations per cycle"))
 
-    def _destroyed(self):
-        settings = QSettings()
-        settings.setValue(
-            self.__class__.__name__,
-            TimeseriesDecompositionWidgetSettings(
-                self.variableSelector.currentText(),
-                self.animalSelector.currentText(),
-                self.period_spin_box.value(),
-                self.method_combo_box.currentText(),
-                self.model_combo_box.currentText(),
-            ),
+    def _get_settings_value(self):
+        return TimeseriesDecompositionWidgetSettings(
+            self.variableSelector.currentText(),
+            self.animalSelector.currentText(),
+            self.period_spin_box.value(),
+            self.method_combo_box.currentText(),
+            self.model_combo_box.currentText(),
         )
 
     def _update(self):
@@ -138,19 +98,3 @@ class TimeseriesDecompositionWidget(QWidget):
         )
 
         self.report_view.set_content(result.report)
-
-    def _add_report(self):
-        name, ok = QInputDialog.getText(
-            self,
-            "Report",
-            "Please enter report name:",
-            text=self.title,
-        )
-        if ok and name:
-            manager.add_report(
-                Report(
-                    self.datatable.dataset,
-                    name,
-                    self.report_view.toHtml(),
-                )
-            )

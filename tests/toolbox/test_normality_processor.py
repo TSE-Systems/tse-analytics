@@ -6,15 +6,14 @@ matplotlib.use("Agg")
 
 
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.toolbox.normality.processor import NormalityTestResult
-from tse_analytics.toolbox.normality.processor import test_normality as _test_normality
+from tse_analytics.toolbox.normality.processor import NormalityTestResult, get_normality_result
 
 
 class TestNormality:
     """Tests for test_normality processor function."""
 
     def test_total_mode_returns_result(self, analysis_df):
-        result = _test_normality(
+        result = get_normality_result(
             df=analysis_df.copy(),
             variable_name="Metabolism",
             split_mode=SplitMode.TOTAL,
@@ -26,7 +25,7 @@ class TestNormality:
         assert "<img" in result.report
 
     def test_animal_mode(self, analysis_df):
-        result = _test_normality(
+        result = get_normality_result(
             df=analysis_df.copy(),
             variable_name="Metabolism",
             split_mode=SplitMode.ANIMAL,
@@ -37,7 +36,7 @@ class TestNormality:
         assert "<img" in result.report
 
     def test_factor_mode(self, analysis_df):
-        result = _test_normality(
+        result = get_normality_result(
             df=analysis_df.copy(),
             variable_name="Metabolism",
             split_mode=SplitMode.FACTOR,
@@ -48,7 +47,7 @@ class TestNormality:
         assert "<img" in result.report
 
     def test_run_mode(self, analysis_df):
-        result = _test_normality(
+        result = get_normality_result(
             df=analysis_df.copy(),
             variable_name="Metabolism",
             split_mode=SplitMode.RUN,

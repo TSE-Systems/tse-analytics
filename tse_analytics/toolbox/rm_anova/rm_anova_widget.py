@@ -1,26 +1,22 @@
 from dataclasses import dataclass
 
 from pyqttoast import ToastPreset
-from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QInputDialog, QLabel, QMessageBox, QToolBar, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QLabel, QMessageBox, QToolBar, QWidget
 
-from tse_analytics.core import manager
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import (
     get_figsize_from_widget,
-    get_h_spacer_widget,
     get_widget_tool_button,
 )
 from tse_analytics.pipeline.enums import EFFECT_SIZE, P_ADJUSTMENT
 from tse_analytics.toolbox.rm_anova.processor import get_rm_anova_result
 from tse_analytics.toolbox.rm_anova.rm_anova_settings_widget_ui import Ui_RMAnovaSettingsWidget
+from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
-from tse_analytics.views.misc.report_edit import ReportEdit
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
@@ -30,35 +26,16 @@ class RMAnovaWidgetSettings:
     selected_variable: str = None
 
 
-class RMAnovaWidget(QWidget):
+class RMAnovaWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
-        super().__init__(parent)
-
-        # Connect destructor to unsubscribe and save settings
-        self.destroyed.connect(lambda: self._destroyed())
-
-        # Settings management
-        settings = QSettings()
-        self._settings: RMAnovaWidgetSettings = settings.value(self.__class__.__name__, RMAnovaWidgetSettings())
-
-        self._layout = QVBoxLayout(self)
-        self._layout.setSpacing(0)
-        self._layout.setContentsMargins(0, 0, 0, 0)
-
-        self.title = "Repeated Measures ANOVA"
-
-        self.datatable = datatable
-
-        # Setup toolbar
-        toolbar = QToolBar(
-            "Toolbar",
-            iconSize=QSize(16, 16),
-            toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
+        super().__init__(
+            datatable,
+            RMAnovaWidgetSettings,
+            title="Repeated Measures ANOVA",
+            parent=parent,
         )
 
-        toolbar.addAction(QIcon(":/icons/icons8-refresh-16.png"), "Update").triggered.connect(self._update)
-        toolbar.addSeparator()
-
+    def _create_toolbar_items(self, toolbar: QToolBar) -> None:
         toolbar.addWidget(QLabel("Dependent variable:"))
         self.variable_selector = VariableSelector(toolbar)
         self.variable_selector.set_data(self.datatable.variables, selected_variable=self._settings.selected_variable)
@@ -91,23 +68,10 @@ class RMAnovaWidget(QWidget):
         self.settings_widget_ui.comboBoxEffectSizeType.addItems(EFFECT_SIZE.keys())
         self.settings_widget_ui.comboBoxEffectSizeType.setCurrentText("Hedges g")
 
-        # Insert toolbar to the widget
-        self._layout.addWidget(toolbar)
-
-        self.report_view = ReportEdit(self)
-        self._layout.addWidget(self.report_view)
-
-        toolbar.addWidget(get_h_spacer_widget(toolbar))
-        toolbar.addAction("Add Report").triggered.connect(self._add_report)
-
-    def _destroyed(self):
-        settings = QSettings()
-        settings.setValue(
-            self.__class__.__name__,
-            RMAnovaWidgetSettings(
-                self.group_by_selector.currentText(),
-                self.variable_selector.currentText(),
-            ),
+    def _get_settings_value(self):
+        return RMAnovaWidgetSettings(
+            self.group_by_selector.currentText(),
+            self.variable_selector.currentText(),
         )
 
     def _update(self):
@@ -158,19 +122,3 @@ class RMAnovaWidget(QWidget):
         )
 
         self.report_view.set_content(result.report)
-
-    def _add_report(self):
-        name, ok = QInputDialog.getText(
-            self,
-            "Report",
-            "Please enter report name:",
-            text=self.title,
-        )
-        if ok and name:
-            manager.add_report(
-                Report(
-                    self.datatable.dataset,
-                    name,
-                    self.report_view.toHtml(),
-                )
-            )

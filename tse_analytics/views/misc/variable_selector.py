@@ -26,7 +26,7 @@ class VariableSelector(QComboBox):
 
         self.variables: dict[str, Variable] = {}
 
-    def set_data(self, variables: dict[str, Variable], selected_variable: str = None) -> None:
+    def set_data(self, variables: dict[str, Variable], selected_variable: str | None = None) -> None:
         self.variables = variables
         model = VariablesSimpleModel(list(variables.values()))
         self.setModel(model)

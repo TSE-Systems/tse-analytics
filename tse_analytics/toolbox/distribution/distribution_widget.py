@@ -1,58 +1,33 @@
 from dataclasses import dataclass
 
-from PySide6.QtCore import QSettings, QSize, Qt
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QCheckBox, QComboBox, QInputDialog, QLabel, QToolBar, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QCheckBox, QComboBox, QLabel, QToolBar, QWidget
 
-from tse_analytics.core import manager
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.report import Report
-from tse_analytics.core.utils import get_figsize_from_widget, get_h_spacer_widget
+from tse_analytics.core.utils import get_figsize_from_widget
 from tse_analytics.toolbox.distribution.processor import get_distribution_result
+from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
-from tse_analytics.views.misc.report_edit import ReportEdit
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
 @dataclass
 class DistributionWidgetSettings:
     group_by: str = "Animal"
-    selected_variable: str = None
+    selected_variable: str | None = None
     show_points: bool = False
     plot_type: str = "Violin plot"
 
 
-class DistributionWidget(QWidget):
+class DistributionWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
-        super().__init__(parent)
-
-        # Connect destructor to unsubscribe and save settings
-        self.destroyed.connect(lambda: self._destroyed())
-
-        # Settings management
-        settings = QSettings()
-        self._settings: DistributionWidgetSettings = settings.value(
-            self.__class__.__name__, DistributionWidgetSettings()
+        super().__init__(
+            datatable,
+            DistributionWidgetSettings,
+            title="Distribution",
+            parent=parent,
         )
 
-        self._layout = QVBoxLayout(self)
-        self._layout.setSpacing(0)
-        self._layout.setContentsMargins(0, 0, 0, 0)
-
-        self.title = "Distribution"
-
-        self.datatable = datatable
-
-        # Setup toolbar
-        toolbar = QToolBar(
-            "Toolbar",
-            iconSize=QSize(16, 16),
-            toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
-        )
-
-        toolbar.addAction(QIcon(":/icons/icons8-refresh-16.png"), "Update").triggered.connect(self._update)
-        toolbar.addSeparator()
-
+    def _create_toolbar_items(self, toolbar: QToolBar) -> None:
         self.variableSelector = VariableSelector(toolbar)
         self.variableSelector.set_data(self.datatable.variables, selected_variable=self._settings.selected_variable)
         toolbar.addWidget(self.variableSelector)
@@ -71,25 +46,12 @@ class DistributionWidget(QWidget):
         self.checkBoxShowPoints.setChecked(self._settings.show_points)
         toolbar.addWidget(self.checkBoxShowPoints)
 
-        # Insert toolbar to the widget
-        self._layout.addWidget(toolbar)
-
-        self.report_view = ReportEdit(self)
-        self._layout.addWidget(self.report_view)
-
-        toolbar.addWidget(get_h_spacer_widget(toolbar))
-        toolbar.addAction("Add Report").triggered.connect(self._add_report)
-
-    def _destroyed(self):
-        settings = QSettings()
-        settings.setValue(
-            self.__class__.__name__,
-            DistributionWidgetSettings(
-                self.group_by_selector.currentText(),
-                self.variableSelector.currentText(),
-                self.checkBoxShowPoints.isChecked(),
-                self.plot_type_combobox.currentText(),
-            ),
+    def _get_settings_value(self):
+        return DistributionWidgetSettings(
+            self.group_by_selector.currentText(),
+            self.variableSelector.currentText(),
+            self.checkBoxShowPoints.isChecked(),
+            self.plot_type_combobox.currentText(),
         )
 
     def _update(self):
@@ -116,19 +78,3 @@ class DistributionWidget(QWidget):
         )
 
         self.report_view.set_content(result.report)
-
-    def _add_report(self):
-        name, ok = QInputDialog.getText(
-            self,
-            "Report",
-            "Please enter report name:",
-            text=self.title,
-        )
-        if ok and name:
-            manager.add_report(
-                Report(
-                    self.datatable.dataset,
-                    name,
-                    self.report_view.toHtml(),
-                )
-            )
