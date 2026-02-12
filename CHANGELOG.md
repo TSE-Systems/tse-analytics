@@ -1,7 +1,7 @@
 TSE Analytics Change Log
 ====================================================================================================
 
-# 1.8.0 (2026-02-10)
+# 1.8.0 (2026-02-12)
 
 - Intermediate release before pipeline introduction.
 - New: Migration to a unified HTML-based reporting system.
@@ -11,6 +11,8 @@ TSE Analytics Change Log
 - Change: Adjust Dataset dialog tunings.
 - Fix: Settings dialog now saves changes properly.
 - Fix: resources path in .ui files.
+- Fix: assign factors to generated group-housing TraffiCage datatable.
+- Fix: align timedelta to the resampling resolution.
 - [SW-456] Notification when a datatable is added in the GroupHousing dialog.
 - [SW-465] Uniform animal sorting by AnimalId.
 - [SW-466] GroupHousing heatmap plot exporting.
