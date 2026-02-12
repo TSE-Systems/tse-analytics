@@ -138,7 +138,7 @@ class TestNewWorkspace:
     def test_creates_new_workspace(self, manager):
         """Test that new_workspace creates a new workspace."""
         with patch.object(messaging, "broadcast"):
-            with patch("tse_analytics.core.manager.QTimer"):
+            with patch("tse_analytics.core.services.workspace_service.QTimer"):
                 manager.new_workspace()
 
         workspace = manager.get_workspace()
@@ -152,7 +152,7 @@ class TestNewWorkspace:
             manager.set_selected_datatable(mock_datatable)
 
         with patch.object(messaging, "broadcast"):
-            with patch("tse_analytics.core.manager.QTimer"):
+            with patch("tse_analytics.core.services.workspace_service.QTimer"):
                 manager.new_workspace()
 
         assert manager.get_selected_dataset() is None
@@ -168,7 +168,7 @@ class TestLoadWorkspace:
 
         with patch("builtins.open", mock_open(read_data=pickle.dumps(mock_workspace))):
             with patch.object(messaging, "broadcast"):
-                with patch("tse_analytics.core.manager.QTimer"):
+                with patch("tse_analytics.core.services.workspace_service.QTimer"):
                     manager.load_workspace("test_path.pkl")
 
         loaded_workspace = manager.get_workspace()
@@ -182,7 +182,7 @@ class TestLoadWorkspace:
         mock_workspace = Workspace("New Workspace")
         with patch("builtins.open", mock_open(read_data=pickle.dumps(mock_workspace))):
             with patch.object(messaging, "broadcast"):
-                with patch("tse_analytics.core.manager.QTimer"):
+                with patch("tse_analytics.core.services.workspace_service.QTimer"):
                     manager.load_workspace("test_path.pkl")
 
         assert manager.get_selected_dataset() is None
@@ -233,7 +233,7 @@ class TestRemoveDataset:
             manager.add_dataset(mock_dataset)
 
         with patch.object(messaging, "broadcast"):
-            with patch("tse_analytics.core.manager.QTimer"):
+            with patch("tse_analytics.core.services.workspace_service.QTimer"):
                 manager.remove_dataset(mock_dataset)
 
         workspace = manager.get_workspace()
@@ -246,7 +246,7 @@ class TestRemoveDataset:
             manager.set_selected_dataset(mock_dataset)
 
         with patch.object(messaging, "broadcast"):
-            with patch("tse_analytics.core.manager.QTimer"):
+            with patch("tse_analytics.core.services.workspace_service.QTimer"):
                 manager.remove_dataset(mock_dataset)
 
         assert manager.get_selected_dataset() is None
@@ -303,8 +303,8 @@ class TestRemoveDatatable:
 class TestCloneDataset:
     """Tests for clone_dataset method."""
 
-    @patch("tse_analytics.core.manager.copy.deepcopy")
-    @patch("tse_analytics.core.manager.uuid4")
+    @patch("tse_analytics.core.services.dataset_service.copy.deepcopy")
+    @patch("tse_analytics.core.services.dataset_service.uuid4")
     def test_creates_deep_copy_of_dataset(self, mock_uuid4, mock_deepcopy, manager, mock_dataset):
         """Test that clone_dataset creates a deep copy of the dataset."""
         mock_uuid4.return_value = UUID("12345678-1234-5678-1234-567812345678")
@@ -318,8 +318,8 @@ class TestCloneDataset:
 
         mock_deepcopy.assert_called_once_with(mock_dataset)
 
-    @patch("tse_analytics.core.manager.copy.deepcopy")
-    @patch("tse_analytics.core.manager.uuid4")
+    @patch("tse_analytics.core.services.dataset_service.copy.deepcopy")
+    @patch("tse_analytics.core.services.dataset_service.uuid4")
     def test_assigns_new_id_to_clone(self, mock_uuid4, mock_deepcopy, manager, mock_dataset):
         """Test that clone_dataset assigns a new UUID to the cloned dataset."""
         new_uuid = UUID("12345678-1234-5678-1234-567812345678")
@@ -335,8 +335,8 @@ class TestCloneDataset:
 
         assert mock_cloned.id == new_uuid
 
-    @patch("tse_analytics.core.manager.copy.deepcopy")
-    @patch("tse_analytics.core.manager.uuid4")
+    @patch("tse_analytics.core.services.dataset_service.copy.deepcopy")
+    @patch("tse_analytics.core.services.dataset_service.uuid4")
     def test_sets_new_name_on_clone(self, mock_uuid4, mock_deepcopy, manager, mock_dataset):
         """Test that clone_dataset sets a new name on the cloned dataset."""
         mock_cloned = MagicMock(spec=Dataset)
