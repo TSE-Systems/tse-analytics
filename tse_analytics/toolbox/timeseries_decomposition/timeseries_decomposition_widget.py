@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QComboBox, QLabel, QSpinBox, QToolBar, QWidget
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.utils import get_figsize_from_widget
 from tse_analytics.toolbox.timeseries_decomposition.processor import get_timeseries_decomposition_result
+from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
 from tse_analytics.views.misc.animal_selector import AnimalSelector
 from tse_analytics.views.misc.tooltip_widget import TooltipWidget
@@ -21,6 +22,7 @@ class TimeseriesDecompositionWidgetSettings:
     model: str = "Additive"
 
 
+@toolbox_plugin(category="Time Series", label="Decomposition", icon=":/icons/timeseries.png", order=0)
 class TimeseriesDecompositionWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(

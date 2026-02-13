@@ -16,6 +16,7 @@ from tse_analytics.core.utils import get_figsize_from_widget, get_widget_tool_bu
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.toolbox.pca.processor import PcaResult, get_pca_result
+from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
@@ -27,6 +28,7 @@ class PcaWidgetSettings:
     selected_variables: list[str] = field(default_factory=list)
 
 
+@toolbox_plugin(category="Dimensionality", label="PCA", icon=":/icons/dimensionality.png", order=1)
 class PcaWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         self._toast = None

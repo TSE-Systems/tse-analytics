@@ -1,6 +1,6 @@
 [project]
 name = "tse-analytics"
-version = "1.8.0"
+version = "1.8.1"
 description = "TSE Analytics data analysys"
 license = "GPL-3.0-or-later"
 readme = "README.md"
@@ -39,8 +39,8 @@ dev = [
     "pyrefly==0.52.0",
     "pytest==9.0.2",
     "qtsass==0.4.0",
-    "ruff==0.15.0",
-    "ty==0.0.16",
+    "ruff==0.15.1",
+    "ty==0.0.17",
 ]
 
 [project.scripts]

@@ -15,6 +15,7 @@ from tse_analytics.core.utils import (
 from tse_analytics.pipeline.enums import EFFECT_SIZE, P_ADJUSTMENT
 from tse_analytics.toolbox.mixed_anova.mixed_anova_settings_widget_ui import Ui_MixedAnovaSettingsWidget
 from tse_analytics.toolbox.mixed_anova.processor import get_mixed_anova_result
+from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
 from tse_analytics.views.misc.factor_selector import FactorSelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
@@ -26,6 +27,7 @@ class MixedAnovaWidgetSettings:
     selected_factor: str | None = None
 
 
+@toolbox_plugin(category="ANOVA", label="Mixed-design ANOVA", icon=":/icons/anova.png", order=3)
 class MixedAnovaWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(

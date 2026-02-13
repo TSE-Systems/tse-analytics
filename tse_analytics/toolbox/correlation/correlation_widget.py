@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QLabel, QToolBar, QWidget
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.utils import get_figsize_from_widget
 from tse_analytics.toolbox.correlation.processor import get_correlation_result
+from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
@@ -17,6 +18,7 @@ class CorrelationWidgetSettings:
     y_variable: str = None
 
 
+@toolbox_plugin(category="Bivariate", label="Correlation", icon=":/icons/bivariate.png", order=0)
 class CorrelationWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(

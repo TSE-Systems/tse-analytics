@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QCheckBox, QComboBox, QLabel, QToolBar, QWidget
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.utils import get_figsize_from_widget
 from tse_analytics.toolbox.distribution.processor import get_distribution_result
+from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
@@ -18,6 +19,7 @@ class DistributionWidgetSettings:
     plot_type: str = "Violin plot"
 
 
+@toolbox_plugin(category="Exploration", label="Distribution", icon=":/icons/exploration.png", order=1)
 class DistributionWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(

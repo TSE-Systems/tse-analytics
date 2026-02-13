@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QLabel, QSpinBox, QToolBar, QWidget
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.utils import get_figsize_from_widget
 from tse_analytics.toolbox.actogram.processor import get_actogram_result
+from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
@@ -15,6 +16,7 @@ class ActogramWidgetSettings:
     bins_per_hour: int = 6
 
 
+@toolbox_plugin(category="Circadian Analysis", label="Actogram", icon=":/icons/icons8-barcode-16.png", order=0)
 class ActogramWidget(ToolboxWidgetBase):
     """Widget for visualizing activity patterns over time in a double-plotted actogram format.
 

@@ -15,6 +15,7 @@ from tse_analytics.core.utils import (
 from tse_analytics.pipeline.enums import EFFECT_SIZE, P_ADJUSTMENT
 from tse_analytics.toolbox.rm_anova.processor import get_rm_anova_result
 from tse_analytics.toolbox.rm_anova.rm_anova_settings_widget_ui import Ui_RMAnovaSettingsWidget
+from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
@@ -26,6 +27,7 @@ class RMAnovaWidgetSettings:
     selected_variable: str = None
 
 
+@toolbox_plugin(category="ANOVA", label="Repeated Measures ANOVA", icon=":/icons/anova.png", order=2)
 class RMAnovaWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(

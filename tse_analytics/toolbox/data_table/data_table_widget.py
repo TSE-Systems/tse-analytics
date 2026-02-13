@@ -29,6 +29,7 @@ from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_h_spacer_widget, get_widget_tool_button
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
+from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.report_edit import ReportEdit
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
@@ -40,6 +41,7 @@ class DataTableWidgetSettings:
     selected_variables: list[str] = field(default_factory=list)
 
 
+@toolbox_plugin(category="Data", label="Table", icon=":/icons/table.png", order=0)
 class DataTableWidget(QWidget, messaging.MessengerListener):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)

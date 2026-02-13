@@ -17,6 +17,7 @@ from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_figsize_from_widget, get_widget_tool_button
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
+from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
 from tse_analytics.toolbox.tsne.processor import TsneResult, get_tsne_result
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
@@ -31,6 +32,7 @@ class TsneWidgetSettings:
     maximum_iterations: int = 1000
 
 
+@toolbox_plugin(category="Dimensionality", label="tSNE", icon=":/icons/dimensionality.png", order=2)
 class TsneWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         self._toast = None

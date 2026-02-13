@@ -8,6 +8,7 @@ from tse_analytics.core.data.shared import Aggregation
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_figsize_from_widget
 from tse_analytics.toolbox.timeseries_autocorrelation.processor import get_timeseries_autocorrelation_result
+from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
 from tse_analytics.views.misc.animal_selector import AnimalSelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
@@ -19,6 +20,7 @@ class TimeseriesAutocorrelationWidgetSettings:
     selected_animal: str = None
 
 
+@toolbox_plugin(category="Time Series", label="Autocorrelation", icon=":/icons/timeseries.png", order=1)
 class TimeseriesAutocorrelationWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(

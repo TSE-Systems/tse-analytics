@@ -16,6 +16,7 @@ from tse_analytics.core.utils import get_widget_tool_button
 from tse_analytics.pipeline.enums import EFFECT_SIZE, P_ADJUSTMENT
 from tse_analytics.toolbox.n_way_anova.n_way_anova_settings_widget_ui import Ui_NWayAnovaSettingsWidget
 from tse_analytics.toolbox.n_way_anova.processor import get_n_way_anova_result
+from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
 from tse_analytics.views.misc.factors_table_widget import FactorsTableWidget
 from tse_analytics.views.misc.variable_selector import VariableSelector
@@ -27,6 +28,7 @@ class NWayAnovaWidgetSettings:
     selected_factors: list[str] = field(default_factory=list)
 
 
+@toolbox_plugin(category="ANOVA", label="N-way ANOVA", icon=":/icons/anova.png", order=1)
 class NWayAnovaWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(

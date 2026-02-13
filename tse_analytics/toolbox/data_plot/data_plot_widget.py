@@ -29,6 +29,7 @@ from tse_analytics.core.utils import (
     time_to_float,
 )
 from tse_analytics.toolbox.data_plot.processor import ERROR_BAR_TYPE
+from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
@@ -42,6 +43,7 @@ class DataPlotWidgetSettings:
     line_width: float = 1.0
 
 
+@toolbox_plugin(category="Data", label="Plot", icon=":/icons/plot.png", order=2)
 class DataPlotWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)

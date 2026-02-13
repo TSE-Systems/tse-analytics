@@ -17,6 +17,7 @@ from tse_analytics.core.utils import get_figsize_from_widget, get_widget_tool_bu
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.toolbox.mds.processor import MdsResult, get_mds_result
+from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
@@ -29,6 +30,7 @@ class MdsWidgetSettings:
     maximum_iterations: int = 300
 
 
+@toolbox_plugin(category="Dimensionality", label="MDS", icon=":/icons/dimensionality.png", order=3)
 class MdsWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         self._toast = None

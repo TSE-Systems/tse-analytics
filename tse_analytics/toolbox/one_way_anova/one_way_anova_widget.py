@@ -8,6 +8,7 @@ from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_figsize_from_widget
 from tse_analytics.pipeline.enums import EFFECT_SIZE
 from tse_analytics.toolbox.one_way_anova.processor import get_one_way_anova_result
+from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
 from tse_analytics.views.misc.factor_selector import FactorSelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
@@ -19,6 +20,7 @@ class OneWayAnovaWidgetSettings:
     selected_factor: str = None
 
 
+@toolbox_plugin(category="ANOVA", label="One-way ANOVA", icon=":/icons/anova.png", order=0)
 class OneWayAnovaWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(

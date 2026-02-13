@@ -10,6 +10,7 @@ from tse_analytics.core.utils import get_widget_tool_button
 from tse_analytics.pipeline.enums import EFFECT_SIZE, P_ADJUSTMENT
 from tse_analytics.toolbox.ancova.ancova_settings_widget_ui import Ui_AncovaSettingsWidget
 from tse_analytics.toolbox.ancova.processor import get_ancova_result
+from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
 from tse_analytics.views.misc.factor_selector import FactorSelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
@@ -22,6 +23,7 @@ class AncovaWidgetSettings:
     selected_factor: str | None = None
 
 
+@toolbox_plugin(category="ANOVA", label="ANCOVA", icon=":/icons/anova.png", order=4)
 class AncovaWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(

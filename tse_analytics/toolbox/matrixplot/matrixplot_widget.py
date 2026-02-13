@@ -16,6 +16,7 @@ from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_figsize_from_widget, get_widget_tool_button
 from tse_analytics.toolbox.matrixplot.processor import MATRIXPLOT_KIND, get_matrixplot_result
+from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
@@ -28,6 +29,7 @@ class MatrixPlotWidgetSettings:
     plot_type: str = "Scatter Plot"
 
 
+@toolbox_plugin(category="Dimensionality", label="Matrix Plot", icon=":/icons/dimensionality.png", order=0)
 class MatrixPlotWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         self.toast = None

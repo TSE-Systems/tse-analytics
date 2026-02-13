@@ -18,6 +18,7 @@ from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_h_spacer_widget
 from tse_analytics.toolbox.fast_data_plot.bar_plot_view import BarPlotView
 from tse_analytics.toolbox.fast_data_plot.timeline_plot_view import TimelinePlotView
+from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
@@ -29,6 +30,7 @@ class FastDataPlotWidgetSettings:
     scatter_plot: bool = False
 
 
+@toolbox_plugin(category="Data", label="Fast Plot", icon=":/icons/plot.png", order=1)
 class FastDataPlotWidget(QWidget, messaging.MessengerListener):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
