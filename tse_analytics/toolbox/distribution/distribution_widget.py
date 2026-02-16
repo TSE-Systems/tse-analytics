@@ -40,7 +40,7 @@ class DistributionWidget(ToolboxWidgetBase):
         toolbar.addWidget(self.group_by_selector)
 
         self.plot_type_combobox = QComboBox(toolbar)
-        self.plot_type_combobox.addItems(["Violin plot", "Box plot"])
+        self.plot_type_combobox.addItems(["Violin plot", "Box plot", "Raincloud plot"])
         self.plot_type_combobox.setCurrentText(self._settings.plot_type)
         toolbar.addWidget(self.plot_type_combobox)
 

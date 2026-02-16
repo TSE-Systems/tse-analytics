@@ -36,7 +36,7 @@ class DistributionNode(PipelineNode):
         self.create_property(
             "plot_type",
             "Violin plot",
-            items=["Violin plot", "Box plot"],
+            items=["Violin plot", "Box plot", "Raincloud plot"],
             widget_type=constants.NodePropWidgetEnum.QCOMBO_BOX.value,
             widget_tooltip="Plot type",
         )

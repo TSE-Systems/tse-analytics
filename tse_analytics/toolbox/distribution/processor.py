@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from ptitprince import RainCloud
 
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.dataset import Dataset
@@ -48,34 +49,44 @@ def get_distribution_result(
     ax = figure.add_subplot(1, 1, 1)
     ax.tick_params(axis="x", rotation=90)
 
-    if plot_type == "Violin plot":
-        sns.violinplot(
-            data=df,
-            x=x,
-            y=variable_name,
-            hue=x,
-            palette=palette,
-            inner="quartile" if show_points else "box",
-            saturation=1,
-            fill=not show_points,
-            legend=False,
-            ax=ax,
-        )
-    else:
-        sns.boxplot(
-            data=df,
-            x=x,
-            y=variable_name,
-            hue=x,
-            palette=palette,
-            saturation=1,
-            fill=not show_points,
-            legend=False,
-            gap=0.1,
-            ax=ax,
-        )
+    match plot_type:
+        case "Raincloud plot":
+            RainCloud(
+                data=df,
+                x=x,
+                y=variable_name,
+                hue=x,
+                ax=ax,
+                width_viol=0.5,
+            )
+        case "Violin plot":
+            sns.violinplot(
+                data=df,
+                x=x,
+                y=variable_name,
+                hue=x,
+                palette=palette,
+                inner="quartile" if show_points else "box",
+                saturation=1,
+                fill=not show_points,
+                legend=False,
+                ax=ax,
+            )
+        case "Box plot":
+            sns.boxplot(
+                data=df,
+                x=x,
+                y=variable_name,
+                hue=x,
+                palette=palette,
+                saturation=1,
+                fill=not show_points,
+                legend=False,
+                gap=0.1,
+                ax=ax,
+            )
 
-    if show_points:
+    if show_points and plot_type != "Raincloud plot":
         sns.stripplot(
             data=df,
             x=x,
