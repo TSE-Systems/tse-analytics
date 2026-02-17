@@ -10,10 +10,6 @@ TSE Analytics — PySide6 desktop app for analyzing TSE PhenoMaster, IntelliCage
 - Data analysis pipeline editor is based on NodeGraphQt library.
 - UI is built with PySide6.
 
-## User Preferences
-
-- Always use plan mode by default for non-trivial tasks
-
 ## Generated Files — Do Not Edit or Commit
 
 - `*_ui.py` — generated from `.ui` files via `pyside6-uic`

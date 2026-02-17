@@ -118,7 +118,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         toolbar.addWidget(get_h_spacer_widget(toolbar))
 
         self.descriptive_stats_widget = ReportEdit(toolbar)
-        self.descriptive_stats_widget.setMinimumWidth(410)
+        self.descriptive_stats_widget.setMinimumWidth(450)
 
         self.show_stats_button = get_widget_tool_button(
             toolbar,
@@ -242,7 +242,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             descriptive = (
                 np
                 .round(self.df[selected_variables_names].describe(), 3)
-                .T[["count", "mean", "std", "min", "max"]]
+                .T
                 .to_html()
             )
             self.descriptive_stats_widget.set_content(descriptive)
