@@ -1,4 +1,5 @@
 ---
+name: convert-toolbox-widget
 description: Extract toolbox widget by inheriting from ToolboxWidgetBase
 ---
 

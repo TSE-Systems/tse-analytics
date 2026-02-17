@@ -20,8 +20,12 @@ def mock_dependencies():
         "tse_analytics.toolbox.fast_data_plot.fast_data_plot_widget": MagicMock(),
     }
 
-    # We also need a mock for toolbox_registry but we want to control it
-    # We'll let the user mock it separately or include it here
+    # Remove cached view modules so each test reimports with fresh mocks.
+    # Without this, the toolbox_button module retains stale mock bindings
+    # (e.g. manager) from a previous test's patch.dict context.
+    for key in list(sys.modules.keys()):
+        if key.startswith("tse_analytics.views.misc"):
+            del sys.modules[key]
 
     with patch.dict("sys.modules", mocks):
         yield
@@ -117,34 +121,32 @@ def test_add_widget_trigger(qapp, mock_registry, capsys):
     from tse_analytics.views.misc import toolbox_button as toolbox_button_module
     from tse_analytics.views.misc.toolbox_button import ToolboxButton
 
-    # Configure mock on the module directly to be sure
     mock_datatable = MagicMock()
     mock_datatable.dataset.name = "TestDataset"
 
-    # toolbox_button.manager is the object we need to configure
-    toolbox_button_module.manager.get_selected_datatable.return_value = mock_datatable
+    mock_manager = MagicMock()
+    mock_manager.get_selected_datatable.return_value = mock_datatable
 
-    parent = QWidget()
-    button = ToolboxButton(parent)
+    with patch.object(toolbox_button_module, "manager", mock_manager):
+        parent = QWidget()
+        button = ToolboxButton(parent)
 
-    # Trigger action
-    action = button._actions["TestCat.Widget"]
-    action.trigger()
+        # Trigger action
+        action = button._actions["TestCat.Widget"]
+        action.trigger()
 
-    # Check for exceptions/prints
-    captured = capsys.readouterr()
-    if captured.out:
-        print(f"Stdout: {captured.out}")
-    if captured.err:
-        print(f"Stderr: {captured.err}")
+        # Check for exceptions/prints
+        captured = capsys.readouterr()
+        if captured.out:
+            print(f"Stdout: {captured.out}")
+        if captured.err:
+            print(f"Stderr: {captured.err}")
 
-    # Verify widget instantiation
-    mock_widget_class.assert_called_once_with(mock_datatable)
+        # Verify widget instantiation
+        mock_widget_class.assert_called_once_with(mock_datatable)
 
-    # Verify LayoutManager call
-    toolbox_button_module.LayoutManager.add_widget_to_central_area.assert_called_once()
-    args = toolbox_button_module.LayoutManager.add_widget_to_central_area.call_args
-    # args: (dataset, widget, title, icon)
-    assert args[0][1] == mock_widget_instance
-    # Check title formation: "{widget.title} - {dataset.name}"
-    assert args[0][2] == "Widget Title - TestDataset"
+        # Verify LayoutManager call
+        toolbox_button_module.LayoutManager.add_widget_to_central_area.assert_called_once()
+        args = toolbox_button_module.LayoutManager.add_widget_to_central_area.call_args
+        assert args[0][1] == mock_widget_instance
+        assert args[0][2] == "Widget Title - TestDataset"
