@@ -1,6 +1,5 @@
-import numpy as np
-
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.utils import get_great_table
 from tse_analytics.pipeline import PipelineNode
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 
@@ -19,19 +18,12 @@ class DescriptiveStatsNode(PipelineNode):
         if datatable is None or not isinstance(datatable, Datatable):
             return PipelinePacket.inactive(reason="Invalid input datatable")
 
-        report = (
-            np
-            .round(datatable.active_df.describe(), 3)
-            .T[
-                [
-                    "count",
-                    "mean",
-                    "std",
-                    "min",
-                    "max",
-                ]
-            ]
-            .to_html()
-        )
+        descriptive_df = datatable.active_df.describe().T.reset_index()
+        report = get_great_table(
+            descriptive_df,
+            "Descriptive Statistics",
+            decimals=3,
+            rowname_col="index",
+        ).as_raw_html(inline_css=True)
 
         return PipelinePacket(datatable, report=report)

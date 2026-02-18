@@ -11,7 +11,7 @@ from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.operators.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.shared import SplitMode, Variable
-from tse_analytics.core.utils import get_html_image_from_figure
+from tse_analytics.core.utils import get_great_table, get_html_image_from_figure
 
 
 @dataclass
@@ -86,10 +86,11 @@ def get_regression_result(
                 data = df[df[factor_name] == level]
                 output = (
                     output
-                    + f"<h3>Level: {level}</h3>"
-                    + pg.linear_regression(data[covariate.name], data[response.name], remove_na=True).to_html(
-                        index=False
-                    )
+                    + get_great_table(
+                        pg.linear_regression(data[covariate.name], data[response.name], remove_na=True),
+                        f"Level: {level}",
+                    ).as_raw_html(inline_css=True)
+                    + "<p>"
                 )
         case SplitMode.RUN:
             output = ""
@@ -97,28 +98,24 @@ def get_regression_result(
                 data = df[df["Run"] == run]
                 output = (
                     output
-                    + f"<h3>Run: {run}</h3>"
-                    + pg.linear_regression(data[covariate.name], data[response.name], remove_na=True).to_html(
-                        index=False
-                    )
+                    + get_great_table(
+                        pg.linear_regression(data[covariate.name], data[response.name], remove_na=True),
+                        f"Run: {run}",
+                    ).as_raw_html(inline_css=True)
+                    + "<p>"
                 )
         case _:
             data = df
-            output = pg.linear_regression(data[covariate.name], data[response.name], remove_na=True).to_html(
-                index=False
-            )
+            output = get_great_table(
+                pg.linear_regression(data[covariate.name], data[response.name], remove_na=True),
+                "Total",
+            ).as_raw_html(inline_css=True)
 
-    html_template = """
-                    <h2>Linear Regression</h2>
-                    {output}
-                    """
-
-    html = html_template.format(
-        output=output,
-    )
-
-    report = get_html_image_from_figure(figure)
-    report += html
+    report = f"""
+    {get_html_image_from_figure(figure)}
+    <p>
+    {output}
+    """
 
     return RegressionResult(
         report=report,
