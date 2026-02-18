@@ -9,7 +9,7 @@ from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.operators.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.shared import Variable
-from tse_analytics.core.utils import get_html_image_from_figure, get_html_table
+from tse_analytics.core.utils import get_great_table, get_html_image_from_figure
 
 
 @dataclass
@@ -86,18 +86,28 @@ def get_one_way_anova_result(
     html_template = """
                     <h2>Factor: {factor_name}</h2>
                     {normality}
+                    <p>
                     {homoscedasticity}
+                    <p>
                     {anova}
+                    <p>
                     {post_hoc_test}
+                    <p>
                     {image}
                     """
 
     report = html_template.format(
         factor_name=factor_name,
-        anova=get_html_table(anova, anova_header, index=False),
-        normality=get_html_table(normality, "Univariate normality test"),
-        homoscedasticity=get_html_table(homoscedasticity, "Homoscedasticity (equality of variances)"),
-        post_hoc_test=get_html_table(post_hoc_test, post_hoc_test_header, index=False),
+        anova=get_great_table(anova, anova_header).as_raw_html(inline_css=True),
+        normality=get_great_table(
+            normality.reset_index(), "Univariate normality test", rowname_col=normality.index.name
+        ).as_raw_html(inline_css=True),
+        homoscedasticity=get_great_table(
+            homoscedasticity.reset_index(),
+            "Homoscedasticity (equality of variances)",
+            rowname_col=homoscedasticity.index.name,
+        ).as_raw_html(inline_css=True),
+        post_hoc_test=get_great_table(post_hoc_test, post_hoc_test_header).as_raw_html(inline_css=True),
         image=get_html_image_from_figure(figure),
     )
 

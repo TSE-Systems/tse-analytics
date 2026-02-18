@@ -7,7 +7,7 @@ from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.operators.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.shared import Variable
-from tse_analytics.core.utils import get_html_table
+from tse_analytics.core.utils import get_great_table
 
 
 @dataclass
@@ -62,7 +62,7 @@ def get_n_way_anova_result(
 
     if len(factor_names) > 2:
         report = html_template.format(
-            anova=get_html_table(anova, anova_header, index=False),
+            anova=get_great_table(anova, anova_header).as_raw_html(inline_css=True),
         )
     else:
         post_hoc_test = pg.pairwise_tests(
@@ -76,12 +76,15 @@ def get_n_way_anova_result(
         )
 
         html_template += """
+                        <p>
                         {post_hoc_test}
                         """
 
         report = html_template.format(
-            anova=get_html_table(anova, anova_header, index=False),
-            post_hoc_test=get_html_table(post_hoc_test, "Pairwise post-hoc tests", index=False),
+            anova=get_great_table(anova, anova_header)
+            .data_color(columns=["p-unc"], palette=["white", "red"], domain=[0, 1], na_color="white")
+            .as_raw_html(inline_css=True),
+            post_hoc_test=get_great_table(post_hoc_test, "Pairwise post-hoc tests").as_raw_html(inline_css=True),
         )
 
     return NWayAnovaResult(

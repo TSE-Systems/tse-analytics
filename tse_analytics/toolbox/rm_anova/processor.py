@@ -8,7 +8,7 @@ from matplotlib import rcParams
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import SplitMode, Variable
-from tse_analytics.core.utils import get_html_image_from_plot, get_html_table
+from tse_analytics.core.utils import get_great_table, get_html_image_from_plot
 
 
 @dataclass
@@ -104,15 +104,15 @@ def get_rm_anova_result(
 
         report = html_template.format(
             img_html=img_html,
-            sphericity=get_html_table(sphericity, "Sphericity Test", index=False),
-            anova=get_html_table(anova, "Repeated measures one-way ANOVA", index=False),
-            pairwise_tests=get_html_table(pairwise_tests, "Pairwise post-hoc tests", index=False),
+            sphericity=get_great_table(sphericity, "Sphericity Test").as_raw_html(inline_css=True),
+            anova=get_great_table(anova, "Repeated measures one-way ANOVA").as_raw_html(inline_css=True),
+            pairwise_tests=get_great_table(pairwise_tests, "Pairwise post-hoc tests").as_raw_html(inline_css=True),
         )
     else:
         report = html_template.format(
             img_html=img_html,
-            sphericity=get_html_table(sphericity, "Sphericity Test", index=False),
-            anova=get_html_table(anova, "Repeated measures one-way ANOVA", index=False),
+            sphericity=get_great_table(sphericity, "Sphericity Test").as_raw_html(inline_css=True),
+            anova=get_great_table(anova, "Repeated measures one-way ANOVA").as_raw_html(inline_css=True),
         )
 
     return RMAnovaResult(

@@ -6,7 +6,7 @@ Thank you for your interest in contributing to TSE Analytics! This document prov
 
 ### Prerequisites
 
-- **Python 3.14.03** (exact version required)
+- **Python 3.14.3** (exact version required)
 - **uv** package manager ([installation guide](https://github.com/astral-sh/uv))
 - **Task** task runner ([installation guide](https://taskfile.dev/installation/))
 - Git for version control

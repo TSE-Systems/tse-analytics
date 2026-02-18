@@ -13,7 +13,7 @@ class NormalityTestResult:
     report: str
 
 
-def test_normality(
+def get_normality_result(
     df: pd.DataFrame,
     variable_name: str,
     split_mode: SplitMode,

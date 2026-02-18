@@ -29,6 +29,7 @@ from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_h_spacer_widget, get_widget_tool_button
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
+from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.report_edit import ReportEdit
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
@@ -40,6 +41,7 @@ class DataTableWidgetSettings:
     selected_variables: list[str] = field(default_factory=list)
 
 
+@toolbox_plugin(category="Data", label="Table", icon=":/icons/table.png", order=0)
 class DataTableWidget(QWidget, messaging.MessengerListener):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
@@ -116,7 +118,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         toolbar.addWidget(get_h_spacer_widget(toolbar))
 
         self.descriptive_stats_widget = ReportEdit(toolbar)
-        self.descriptive_stats_widget.setMinimumWidth(410)
+        self.descriptive_stats_widget.setMinimumWidth(450)
 
         self.show_stats_button = get_widget_tool_button(
             toolbar,
@@ -237,12 +239,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.df = self.datatable.get_preprocessed_df_columns(columns, split_mode, selected_factor_name)
 
         if len(selected_variables_names) > 0:
-            descriptive = (
-                np
-                .round(self.df[selected_variables_names].describe(), 3)
-                .T[["count", "mean", "std", "min", "max"]]
-                .to_html()
-            )
+            descriptive = np.round(self.df[selected_variables_names].describe(), 3).T.to_html()
             self.descriptive_stats_widget.set_content(descriptive)
             self.add_report_action.setEnabled(True)
             self.show_stats_button.setEnabled(True)

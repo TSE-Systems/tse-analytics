@@ -14,6 +14,7 @@ from tse_analytics.modules.intellicage.toolbox.transitions.processor import (
     IntelliCageTransitionsResult,
     get_intellicage_transitions_result,
 )
+from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.views.misc.report_edit import ReportEdit
 
 
@@ -22,6 +23,9 @@ class TransitionsWidgetSettings:
     alpha = 0.05
 
 
+@toolbox_plugin(
+    category="IntelliCage", label="Transitions", icon=":/icons/icons8-transition-both-directions-16.png", order=0
+)
 class TransitionsWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)

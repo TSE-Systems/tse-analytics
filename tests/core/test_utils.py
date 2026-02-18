@@ -120,7 +120,7 @@ class TestGetHtmlTable:
 class TestGetAvailableSqliteTables:
     """Tests for get_available_sqlite_tables function."""
 
-    @patch("tse_analytics.core.utils.cx.read_sql")
+    @patch("tse_analytics.core.utils.database.cx.read_sql")
     def test_returns_table_list(self, mock_read_sql):
         """Test that function returns a list of table names."""
         mock_df = pd.DataFrame({"name": ["table1", "table2", "table3"]})
@@ -131,7 +131,7 @@ class TestGetAvailableSqliteTables:
         assert result == ["table1", "table2", "table3"]
         mock_read_sql.assert_called_once()
 
-    @patch("tse_analytics.core.utils.cx.read_sql")
+    @patch("tse_analytics.core.utils.database.cx.read_sql")
     def test_correct_query_format(self, mock_read_sql):
         """Test that correct SQL query is used."""
         mock_df = pd.DataFrame({"name": []})
@@ -144,7 +144,7 @@ class TestGetAvailableSqliteTables:
         assert call_args[0][0] == f"sqlite:///{test_path}"
         assert "SELECT name FROM sqlite_master WHERE type='table'" in call_args[0][1]
 
-    @patch("tse_analytics.core.utils.cx.read_sql")
+    @patch("tse_analytics.core.utils.database.cx.read_sql")
     def test_empty_database(self, mock_read_sql):
         """Test handling of database with no tables."""
         mock_df = pd.DataFrame({"name": []})

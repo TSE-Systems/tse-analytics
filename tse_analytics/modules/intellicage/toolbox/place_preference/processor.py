@@ -6,7 +6,7 @@ import seaborn as sns
 from scipy.stats import chisquare, kruskal
 
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.utils import get_html_image_from_figure, get_html_table
+from tse_analytics.core.utils import get_great_table, get_html_image_from_figure
 
 
 @dataclass
@@ -77,8 +77,8 @@ def get_intellicage_place_preference_result(
     report = html_template.format(
         visit_counts=get_html_image_from_figure(visit_counts_figure),
         visit_duration=get_html_image_from_figure(visit_duration_figure),
-        visit_results=get_html_table(visit_results, "Visit Results", index=False),
-        duration_results=get_html_table(duration_results, "Visit Duration Results", index=False),
+        visit_results=get_great_table(visit_results, "Visit Results").as_raw_html(inline_css=True),
+        duration_results=get_great_table(duration_results, "Visit Duration Results").as_raw_html(inline_css=True),
     )
 
     return IntelliCagePlacePreferenceResult(

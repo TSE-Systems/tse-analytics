@@ -5,13 +5,22 @@ from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 
+# Light theme colors.
+# _BACKGROUND_COLOR = (235, 240, 240)
+# _GRID_COLOR = (210, 220, 219)
+
+# Monkey-patch ViewerEnum so embedded node widgets
+# (NodeLineEdit, NodeSpinBox, etc.) compute correct text colors.
+# ViewerEnum.BACKGROUND_COLOR._value_ = _BACKGROUND_COLOR
+# ViewerEnum.GRID_COLOR._value_ = _GRID_COLOR
+
 
 class PipelineNodeGraph(NodeGraph):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        # self.set_background_color(255, 255, 255)
-        # self.set_grid_color(223, 227, 239)
+        # self.set_background_color(*_BACKGROUND_COLOR)
+        # self.set_grid_color(*_GRID_COLOR)
 
         # Properties bin widget.
         self._properties_bin = PropertiesBinWidget(node_graph=self)

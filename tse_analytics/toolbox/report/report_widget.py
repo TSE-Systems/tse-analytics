@@ -1,11 +1,9 @@
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QAction, QActionGroup, QFont, QIcon, QKeySequence, Qt
 from PySide6.QtPrintSupport import QPrintDialog
-from PySide6.QtWidgets import QComboBox, QFileDialog, QFontComboBox, QTextEdit, QToolBar, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QComboBox, QFileDialog, QFontComboBox, QToolBar, QVBoxLayout, QWidget
 
-from tse_analytics.core import messaging
 from tse_analytics.core.data.report import Report
-from tse_analytics.styles.css import style_descriptive_table
 from tse_analytics.views.misc.custom_text_edit import CustomTextEdit
 
 FONT_SIZES = [
@@ -29,7 +27,7 @@ FONT_SIZES = [
 ]
 
 
-class ReportWidget(QWidget, messaging.MessengerListener):
+class ReportWidget(QWidget):
     def __init__(self, report: Report, parent: QWidget | None = None):
         super().__init__(parent)
 
@@ -40,10 +38,8 @@ class ReportWidget(QWidget, messaging.MessengerListener):
         self.report = report
 
         self.editor = CustomTextEdit(self)
-        self.editor.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
         self.editor.textChanged.connect(self._report_changed)
         self.editor.selectionChanged.connect(self._update_format)
-        self.editor.document().setDefaultStyleSheet(style_descriptive_table)
 
         toolbar = QToolBar("Editor Toolbar")
         toolbar.setIconSize(QSize(16, 16))
@@ -120,6 +116,7 @@ class ReportWidget(QWidget, messaging.MessengerListener):
 
         self.fontsize = QComboBox()
         self.fontsize.addItems([str(s) for s in FONT_SIZES])
+        self.fontsize.setCurrentIndex(FONT_SIZES.index(10))
 
         # Connect to the signal producing the text of the current selection. Convert the string to float
         # and set as the pointsize. We could also use the index + retrieve from FONT_SIZES.

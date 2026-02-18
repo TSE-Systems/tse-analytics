@@ -1,9 +1,15 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from tse_analytics.core.data.binning import BinningSettings
-from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.workspace import Workspace
 from tse_analytics.core.models.tree_item import TreeItem
+
+if TYPE_CHECKING:
+    from tse_analytics.core.data.dataset import Dataset
+    from tse_analytics.core.data.datatable import Datatable
+    from tse_analytics.core.data.report import Report
 
 
 class Message:

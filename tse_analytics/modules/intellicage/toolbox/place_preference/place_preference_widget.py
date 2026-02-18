@@ -17,9 +17,11 @@ from tse_analytics.modules.intellicage.toolbox.place_preference.processor import
     IntelliCagePlacePreferenceResult,
     get_intellicage_place_preference_result,
 )
+from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.views.misc.report_edit import ReportEdit
 
 
+@toolbox_plugin(category="IntelliCage", label="Place Preference", icon=":/icons/icons8-corner-16.png", order=1)
 class PlacePreferenceWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
