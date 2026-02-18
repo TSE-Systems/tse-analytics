@@ -28,7 +28,7 @@ class PcaWidgetSettings:
     selected_variables: list[str] = field(default_factory=list)
 
 
-@toolbox_plugin(category="Dimensionality", label="PCA", icon=":/icons/dimensionality.png", order=1)
+@toolbox_plugin(category="Factor Analysis", label="PCA", icon=":/icons/dimensionality.png", order=2)
 class PcaWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         self._toast = None

@@ -30,7 +30,7 @@ class MdsWidgetSettings:
     maximum_iterations: int = 300
 
 
-@toolbox_plugin(category="Dimensionality", label="MDS", icon=":/icons/dimensionality.png", order=3)
+@toolbox_plugin(category="Factor Analysis", label="MDS", icon=":/icons/dimensionality.png", order=4)
 class MdsWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         self._toast = None

@@ -29,7 +29,7 @@ class MatrixPlotWidgetSettings:
     plot_type: str = "Scatter Plot"
 
 
-@toolbox_plugin(category="Dimensionality", label="Matrix Plot", icon=":/icons/dimensionality.png", order=0)
+@toolbox_plugin(category="Factor Analysis", label="Matrix Plot", icon=":/icons/dimensionality.png", order=1)
 class MatrixPlotWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         self.toast = None

@@ -30,9 +30,9 @@ class ToolboxRegistry:
         "Exploration",
         "Bivariate",
         "ANOVA",
-        "Dimensionality",
-        "Time Series",
+        "Factor Analysis",
         "Circadian Analysis",
+        "Time Series",
         "IntelliCage",
     ]
 
