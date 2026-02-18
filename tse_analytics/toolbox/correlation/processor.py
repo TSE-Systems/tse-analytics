@@ -8,7 +8,7 @@ from matplotlib import rcParams
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.utils import get_html_image_from_figure
+from tse_analytics.core.utils import get_great_table, get_html_image_from_figure
 
 
 @dataclass
@@ -60,20 +60,13 @@ def get_correlation_result(
     t_test = pg.ttest(df[x_var_name], df[y_var_name])
     corr = pg.pairwise_corr(data=df, columns=[x_var_name, y_var_name], method="pearson")
 
-    html_template = """
-                <h2>t-test</h2>
-                {t_test}
-                <h2>Pearson correlation</h2>
-                {corr}
-                """
-
-    html = html_template.format(
-        t_test=t_test.to_html(),
-        corr=corr.to_html(),
-    )
-
-    report = get_html_image_from_figure(joint_grid.figure)
-    report += html
+    report = f"""
+    {get_html_image_from_figure(joint_grid.figure)}
+    <p>
+    {get_great_table(t_test, "t-test").as_raw_html(inline_css=True)}
+    <p>
+    {get_great_table(corr, "Pearson correlation").as_raw_html(inline_css=True)}
+    """
 
     return CorrelationResult(
         report=report,

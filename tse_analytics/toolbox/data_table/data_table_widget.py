@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 
-import numpy as np
 import pandas as pd
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
@@ -26,7 +25,7 @@ from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.models.pandas_model import PandasModel
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.core.utils import get_h_spacer_widget, get_widget_tool_button
+from tse_analytics.core.utils import get_great_table, get_h_spacer_widget, get_widget_tool_button
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
@@ -239,7 +238,13 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.df = self.datatable.get_preprocessed_df_columns(columns, split_mode, selected_factor_name)
 
         if len(selected_variables_names) > 0:
-            descriptive = np.round(self.df[selected_variables_names].describe(), 3).T.to_html()
+            descriptive_df = self.df[selected_variables_names].describe().T.reset_index()
+            descriptive = get_great_table(
+                descriptive_df,
+                "Descriptive Statistics",
+                decimals=3,
+                rowname_col="index",
+            ).as_raw_html(inline_css=True)
             self.descriptive_stats_widget.set_content(descriptive)
             self.add_report_action.setEnabled(True)
             self.show_stats_button.setEnabled(True)

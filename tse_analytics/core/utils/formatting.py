@@ -61,6 +61,7 @@ def get_great_table(
             columns=numeric_columns,
             compact=False,
             decimals=decimals,
+            drop_trailing_zeros=True,
         )
         # Add theme using gt.pipe()
         .pipe(gt_theme_tse)

@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QFileDialog, QInputDialog, QMenu, QToolBar, QToolB
 from tse_analytics.core import manager
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.report import Report
+from tse_analytics.core.utils import get_great_table
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.views.misc.pandas_table_view import PandasTableView
@@ -136,6 +137,9 @@ class PandasWidget(QWidget):
                 Report(
                     self.dataset,
                     name,
-                    self.df.to_html(),
+                    get_great_table(
+                        self.df,
+                        name,
+                    ).as_raw_html(inline_css=True),
                 )
             )

@@ -1,6 +1,7 @@
 from tse_analytics.core import manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
+from tse_analytics.core.utils import get_great_table
 from tse_analytics.pipeline import PipelineNode
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 
@@ -28,7 +29,10 @@ class ReportNode(PipelineNode):
         else:
             value = packet.value
             if isinstance(value, Datatable):
-                report = value.active_df.to_html()
+                report = get_great_table(
+                    value.active_df,
+                    value.name,
+                ).as_raw_html(inline_css=True)
             elif isinstance(value, str):
                 report = value
 
