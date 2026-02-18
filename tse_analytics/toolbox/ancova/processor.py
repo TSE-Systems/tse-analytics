@@ -7,7 +7,7 @@ from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.operators.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.shared import Variable
-from tse_analytics.core.utils import get_html_table
+from tse_analytics.core.utils import get_great_table
 
 
 @dataclass
@@ -60,8 +60,8 @@ def get_ancova_result(
                     """
 
     report = html_template.format(
-        ancova=get_html_table(ancova, "ANCOVA", index=False),
-        pairwise_tests=get_html_table(pairwise_tests, "Pairwise post-hoc tests", index=False),
+        ancova=get_great_table(ancova, "ANCOVA").as_raw_html(inline_css=True),
+        pairwise_tests=get_great_table(pairwise_tests, "Pairwise post-hoc tests").as_raw_html(inline_css=True),
     )
 
     return AncovaResult(

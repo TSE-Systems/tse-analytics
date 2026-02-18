@@ -7,7 +7,7 @@ html_template = """
 <style type="text/css">
     body {{
         font-family: Segoe UI;
-        font-size: 9pt;
+        font-size: 10pt;
     }}
     table {{
         font-size: 10pt;

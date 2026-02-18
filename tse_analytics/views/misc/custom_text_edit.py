@@ -1,7 +1,7 @@
 import os
 import uuid
 
-from PySide6.QtGui import QImage, QTextDocument
+from PySide6.QtGui import QFont, QImage, QTextDocument
 from PySide6.QtWidgets import QTextEdit
 
 IMAGE_EXTENSIONS = [".jpg", ".png", ".bmp"]
@@ -17,22 +17,16 @@ class CustomTextEdit(QTextEdit):
     """
 
     def __init__(self, parent=None):
-        """
-        Initialize the CustomTextEdit widget.
+        super().__init__(
+            parent,
+            undoRedoEnabled=True,
+            readOnly=False,
+            lineWrapMode=QTextEdit.LineWrapMode.NoWrap,
+            autoFormatting=QTextEdit.AutoFormattingFlag.AutoAll,
+        )
 
-        Sets up auto-formatting and default font settings.
-
-        Args:
-            parent: The parent widget. Default is None.
-        """
-        super().__init__(parent)
-        self.setAutoFormatting(QTextEdit.AutoFormattingFlag.AutoAll)
-
-        # Initialize default font size.
-        # font = QFont("Segoe UI", 12)
-        # self.setFont(font)
-        # We need to repeat the size to init the current format.
-        # self.setFontPointSize(12)
+        self.document().setDefaultFont(QFont("Segoe UI", 10))
+        # self.document().setDefaultStyleSheet(style_descriptive_table)
 
     def canInsertFromMimeData(self, source):
         """

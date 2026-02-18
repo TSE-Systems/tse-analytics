@@ -1,5 +1,4 @@
 from NodeGraphQt import BaseNode, NodeGraph, PropertiesBinWidget
-from NodeGraphQt.constants import ViewerEnum
 from PySide6.QtCore import Qt
 
 from tse_analytics.core.data.dataset import Dataset

@@ -10,6 +10,7 @@ import sys
 from tse_analytics.core.utils.data import get_group_by_params, time_to_float
 from tse_analytics.core.utils.database import get_available_sqlite_tables
 from tse_analytics.core.utils.formatting import (
+    get_great_table,
     get_html_image_from_figure,
     get_html_image_from_plot,
     get_html_table,
@@ -33,6 +34,7 @@ __all__ = [
     "get_html_image_from_figure",
     "get_html_image_from_plot",
     "get_html_table",
+    "get_great_table",
     "get_plot_layout",
     "get_widget_tool_button",
     "time_to_float",

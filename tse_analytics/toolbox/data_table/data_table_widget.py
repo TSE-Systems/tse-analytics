@@ -239,12 +239,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.df = self.datatable.get_preprocessed_df_columns(columns, split_mode, selected_factor_name)
 
         if len(selected_variables_names) > 0:
-            descriptive = (
-                np
-                .round(self.df[selected_variables_names].describe(), 3)
-                .T
-                .to_html()
-            )
+            descriptive = np.round(self.df[selected_variables_names].describe(), 3).T.to_html()
             self.descriptive_stats_widget.set_content(descriptive)
             self.add_report_action.setEnabled(True)
             self.show_stats_button.setEnabled(True)
