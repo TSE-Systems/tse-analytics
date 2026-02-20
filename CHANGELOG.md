@@ -3,19 +3,15 @@ TSE Analytics Change Log
 
 # 1.8.1 (2026-02-20)
 
-- Intermediate release before pipeline introduction.
-- New: Migration to a unified HTML-based reporting system.
-- New: Toolbox data analysis pipeline integration.
-- Change: New docs based on Zensical toolchain with offline search functionality (no server needed in offline mode).
-- Change: Migration of module dialog views to dockable widgets.
-- Change: Adjust Dataset dialog tunings.
-- Fix: Settings dialog now saves changes properly.
-- Fix: resources path in .ui files.
-- Fix: assign factors to generated group-housing TraffiCage datatable.
-- Fix: align timedelta to the resampling resolution.
-- [SW-456] Notification when a datatable is added in the GroupHousing dialog.
-- [SW-465] Uniform animal sorting by AnimalId.
-- [SW-466] GroupHousing heatmap plot exporting.
+- Complete overhaul of the Principal Component Analysis tool (Scree plot, etc.)
+- Factor analysis improvements (t-SNE, MDS).
+- New: CorrelationMatrixWidget in the Factor Analysis toolbox.
+- New: UMAP dimensionality reduction visualization.
+- New: Integration of APA style table formatting across the board.
+- New: Raincloud plot is added to distribution analysis.
+- Change: Alphabetical sorting of extracted factor levels by default.
+- Fix: PyInstaller deployment of hidden (lazy) imports.
+- [SW-121] Adding Median to Descriptives statistics.
 
 
 ----------------------------------------------------------------------------------------------------
