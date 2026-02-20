@@ -1,6 +1,20 @@
 TSE Analytics Change Log
 ====================================================================================================
 
+# 1.8.1 (2026-02-20)
+
+- Complete overhaul of the Principal Component Analysis tool (Scree plot, etc.)
+- Factor analysis improvements (t-SNE, MDS).
+- New: CorrelationMatrixWidget in the Factor Analysis toolbox.
+- New: UMAP dimensionality reduction visualization.
+- New: Integration of APA style table formatting across the board.
+- New: Raincloud plot is added to distribution analysis.
+- Change: Alphabetical sorting of extracted factor levels by default.
+- Fix: PyInstaller deployment of hidden (lazy) imports.
+- [SW-121] Adding Median to Descriptives statistics.
+
+
+----------------------------------------------------------------------------------------------------
 # 1.8.0 (2026-02-12)
 
 - Intermediate release before pipeline introduction.

@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QAbstractScrollArea,
     QComboBox,
+    QDoubleSpinBox,
     QLabel,
     QSpinBox,
     QToolBar,
@@ -19,34 +20,34 @@ from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
-from tse_analytics.toolbox.tsne.processor import TsneResult, get_tsne_result
+from tse_analytics.toolbox.umap.processor import UmapResult, get_umap_result
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 
 
 @dataclass
-class TsneWidgetSettings:
+class UmapWidgetSettings:
     group_by: str = "Animal"
     selected_variables: list[str] = field(default_factory=list)
+    n_neighbors: int = 15
     n_components: int = 2
-    perplexity: float = 30.0
-    maximum_iterations: int = 1000
     metric: str = "euclidean"
+    min_dist: float = 0.1
 
 
 @toolbox_plugin(
     category="Factor Analysis",
-    label="t-Distributed Stochastic Neighbor Embedding (t-SNE)",
+    label="Uniform Manifold Approximation and Projection (UMAP)",
     icon=":/icons/dimensionality.png",
-    order=3,
+    order=5,
 )
-class TsneWidget(ToolboxWidgetBase):
+class UmapWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         self._toast = None
         super().__init__(
             datatable,
-            TsneWidgetSettings,
-            title="t-SNE",
+            UmapWidgetSettings,
+            title="UMAP",
             parent=parent,
         )
 
@@ -71,6 +72,16 @@ class TsneWidget(ToolboxWidgetBase):
         toolbar.addWidget(self.group_by_selector)
 
         toolbar.addSeparator()
+        toolbar.addWidget(QLabel("n_neighbors:"))
+        self.n_neighbors_spin_box = QSpinBox(
+            toolbar,
+            minimum=1,
+            maximum=100,
+            singleStep=1,
+            value=self._settings.n_neighbors,
+        )
+        toolbar.addWidget(self.n_neighbors_spin_box)
+
         toolbar.addWidget(QLabel("n_components:"))
         self.n_components_spin_box = QSpinBox(
             toolbar,
@@ -81,66 +92,43 @@ class TsneWidget(ToolboxWidgetBase):
         )
         toolbar.addWidget(self.n_components_spin_box)
 
-        toolbar.addWidget(QLabel("Perplexity:"))
-        self.perplexity_spin_box = QSpinBox(
+        toolbar.addWidget(QLabel("min_dist:"))
+        self.min_dist_spin_box = QDoubleSpinBox(
             toolbar,
-            minimum=5,
-            maximum=50,
-            singleStep=1,
-            value=self._settings.perplexity,
+            minimum=0.001,
+            maximum=0.5,
+            singleStep=0.1,
+            value=self._settings.min_dist,
         )
-        toolbar.addWidget(self.perplexity_spin_box)
-
-        toolbar.addWidget(QLabel("Maximum Iterations:"))
-        self.maximum_iterations_spin_box = QSpinBox(
-            toolbar,
-            minimum=250,
-            maximum=10000,
-            singleStep=250,
-            value=self._settings.maximum_iterations,
-        )
-        toolbar.addWidget(self.maximum_iterations_spin_box)
+        toolbar.addWidget(self.min_dist_spin_box)
 
         toolbar.addWidget(QLabel("Metric:"))
         self.comboBoxMetric = QComboBox(toolbar)
         self.comboBoxMetric.addItems([
             "euclidean",
-            "l2",
-            "l1",
             "manhattan",
-            "cityblock",
-            "braycurtis",
-            "canberra",
             "chebyshev",
-            "correlation",
-            "cosine",
-            "dice",
-            "hamming",
-            "jaccard",
-            "mahalanobis",
-            "matching",
             "minkowski",
-            "rogerstanimoto",
-            "russellrao",
-            "seuclidean",
-            "sokalsneath",
-            "sqeuclidean",
-            "yule",
-            "wminkowski",
-            "nan_euclidean",
+            "canberra",
+            "braycurtis",
             "haversine",
+            "mahalanobis",
+            "wminkowski",
+            "seuclidean",
+            "cosine",
+            "correlation",
         ])
         self.comboBoxMetric.setCurrentText(self._settings.metric)
         toolbar.addWidget(self.comboBoxMetric)
 
     def _get_settings_value(self):
-        return TsneWidgetSettings(
+        return UmapWidgetSettings(
             self.group_by_selector.currentText(),
             self.variables_table_widget.get_selected_variable_names(),
+            self.n_neighbors_spin_box.value(),
             self.n_components_spin_box.value(),
-            self.perplexity_spin_box.value(),
-            self.maximum_iterations_spin_box.value(),
             self.comboBoxMetric.currentText(),
+            self.min_dist_spin_box.value(),
         )
 
     def _update(self):
@@ -173,23 +161,23 @@ class TsneWidget(ToolboxWidgetBase):
         df.dropna(inplace=True)
 
         worker = Worker(
-            get_tsne_result,
+            get_umap_result,
             self.datatable.dataset,
             df,
             selected_variables,
             split_mode,
             selected_factor_name,
+            self.n_neighbors_spin_box.value(),
             self.n_components_spin_box.value(),
-            self.perplexity_spin_box.value(),
-            self.maximum_iterations_spin_box.value(),
             self.comboBoxMetric.currentText(),
+            self.min_dist_spin_box.value(),
             get_figsize_from_widget(self.report_view),
         )
         worker.signals.result.connect(self._result)
         worker.signals.finished.connect(self._finished)
         TaskManager.start_task(worker)
 
-    def _result(self, result: TsneResult):
+    def _result(self, result: UmapResult):
         self.report_view.set_content(result.report)
 
     def _finished(self):

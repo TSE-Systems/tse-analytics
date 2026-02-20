@@ -6,7 +6,7 @@ from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.utils import get_group_by_params
 from tse_analytics.pipeline import PipelineNode
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
-from tse_analytics.toolbox.matrixplot.processor import MATRIXPLOT_KIND, get_matrixplot_result
+from tse_analytics.toolbox.matrix_plot.processor import MATRIXPLOT_KIND, get_matrix_plot_result
 
 
 class MatrixPlotNode(PipelineNode):
@@ -88,7 +88,7 @@ class MatrixPlotNode(PipelineNode):
             factor_name,
         )
 
-        result = get_matrixplot_result(
+        result = get_matrix_plot_result(
             datatable.dataset,
             df,
             variable_names,

@@ -23,7 +23,9 @@ def get_mds_result(
     variables: list[str],
     split_mode: SplitMode,
     factor_name: str | None,
+    n_components: int,
     max_iterations: int,
+    metric: str,
     figsize: tuple[float, float] | None = None,
 ) -> MdsResult:
     match split_mode:
@@ -45,33 +47,98 @@ def get_mds_result(
     scaled_data = scaler.fit_transform(df[variables])
 
     tsne = MDS(
-        n_components=2,
+        n_components=n_components,
         max_iter=max_iterations,
-        random_state=0,
+        metric=metric,
     )
     data = tsne.fit_transform(scaled_data)
-    title = "Multidimensional Scaling (MDS)"
 
-    result_df = pd.DataFrame(data=data, columns=["MDS1", "MDS2"])
-    if by is not None:
-        result_df = pd.concat([result_df, df[[by]]], axis=1)
+    match n_components:
+        case 1:
+            title = "Multidimensional Scaling (1D)"
+            result_df = pd.DataFrame(data=data, columns=["MDS1"])
+            result_df = pd.concat([result_df, pd.Series(range(len(result_df)), name="N")], axis=1)
+            if by is not None:
+                result_df = pd.concat([result_df, df[[by]]], axis=1)
 
-    # Create a figure with a tight layout
-    figure = plt.Figure(figsize=figsize, layout="tight")
-    (
-        so
-        .Plot(
-            result_df,
-            x="MDS1",
-            y="MDS2",
-            color=by,
-        )
-        .add(so.Dot(pointsize=3))
-        .scale(color=palette)
-        .label(title=title)
-        .on(figure)
-        .plot(True)
-    )
+            # Create a figure with a tight layout
+            figure = plt.Figure(figsize=figsize, layout="tight")
+            (
+                so
+                .Plot(
+                    result_df,
+                    x="MDS1",
+                    y="N",
+                    color=by,
+                )
+                .add(so.Dot(pointsize=3))
+                .scale(color=palette)
+                .label(title=title)
+                .on(figure)
+                .plot(True)
+            )
+        case 2:
+            title = "Multidimensional Scaling (2D)"
+            result_df = pd.DataFrame(data=data, columns=["MDS1", "MDS2"])
+            if by is not None:
+                result_df = pd.concat([result_df, df[[by]]], axis=1)
+
+            # Create a figure with a tight layout
+            figure = plt.Figure(figsize=figsize, layout="tight")
+            (
+                so
+                .Plot(
+                    result_df,
+                    x="MDS1",
+                    y="MDS2",
+                    color=by,
+                )
+                .add(so.Dot(pointsize=3))
+                .scale(color=palette)
+                .label(title=title)
+                .on(figure)
+                .plot(True)
+            )
+        case 3:
+            title = "Multidimensional Scaling (3D)"
+
+            result_df = pd.DataFrame(data=data, columns=["MDS1", "MDS2", "MDS3"])
+            if by is not None:
+                result_df = pd.concat([result_df, df[[by]]], axis=1)
+
+            figure, ax = plt.subplots(
+                1,
+                1,
+                figsize=(figsize[0], figsize[0]),
+                layout="tight",
+                subplot_kw={"projection": "3d"},
+            )
+
+            if by is not None:
+                for group, c in palette.items():
+                    mask = df[by] == group
+                    ax.scatter(
+                        result_df.loc[mask, "MDS1"],
+                        result_df.loc[mask, "MDS2"],
+                        result_df.loc[mask, "MDS3"],
+                        c=c,
+                        label=group,
+                    )
+                ax.legend(title=by)
+            else:
+                ax.scatter(
+                    data=result_df,
+                    xs="MDS1",
+                    ys="MDS2",
+                    zs="MDS3",
+                )
+
+            ax.set(
+                xlabel="MDS1",
+                ylabel="MDS2",
+                zlabel="MDS3",
+                title=title,
+            )
 
     report = get_html_image_from_figure(figure)
 

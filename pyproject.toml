@@ -34,6 +34,7 @@ dependencies = [
     "scipy==1.17.0",
     "seaborn==0.13.2",
     "traja==25.0.1",
+    "umap-learn==0.5.11",
     "xmltodict==1.0.3",
 ]
 
@@ -43,7 +44,7 @@ dev = [
     "pyrefly==0.53.0",
     "pytest==9.0.2",
     "qtsass==0.4.0",
-    "ruff==0.15.1",
+    "ruff==0.15.2",
     "ty==0.0.17",
 ]
 

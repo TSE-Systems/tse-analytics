@@ -48,7 +48,10 @@ class ToolboxWidgetBase(QWidget):
 
         # Settings management
         settings = QSettings()
-        self._settings = settings.value(self.__class__.__name__, settings_type())
+        try:
+            self._settings = settings.value(self.__class__.__name__, settings_type())
+        except:
+            self._settings = settings_type()
 
         # Layout
         self._layout = QVBoxLayout(self)

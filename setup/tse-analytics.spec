@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 import os
-from PyInstaller.utils.hooks import copy_metadata
+from PyInstaller.utils.hooks import collect_data_files, collect_submodules, copy_metadata
 
 pathex = os.path.abspath(os.path.join(SPECPATH, '..'))
 
@@ -15,14 +15,17 @@ datas = [
 
 datas += copy_metadata('numpy')
 datas += copy_metadata('connectorx')
+datas += copy_metadata('great-tables')
+datas += collect_data_files('faicons')
 
+hiddenimports = ["umap"]
 
 a = Analysis(
     ['../tse_analytics/main.py'],
     pathex=[pathex],
     binaries=[('../.venv/Scripts/python.exe', '.'),],
     datas=datas,
-    hiddenimports=[],
+    hiddenimports=hiddenimports,
     hookspath=['setup/hooks'],
     hooksconfig={
         'matplotlib': {

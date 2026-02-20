@@ -188,7 +188,7 @@ class Dataset:
         for animal in self.animals.values():
             if property_name not in animal.properties:
                 return levels
-            level_name = animal.properties[property_name]
+            level_name = str(animal.properties[property_name])
             if level_name not in levels_dict:
                 levels_dict[level_name] = []
             levels_dict[level_name].append(animal.id)
@@ -202,6 +202,9 @@ class Dataset:
             )
             levels[level.name] = level
             index += 1
+
+        # Sort levels by name
+        levels = dict(sorted(levels.items(), key=lambda x: x[0].lower()))
         return levels
 
     def rename_animal(self, old_id: str, animal: Animal) -> None:
