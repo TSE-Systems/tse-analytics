@@ -325,6 +325,10 @@ class Datatable:
             df.replace({factor.name: animal_factor_map}, inplace=True)
             df[factor.name] = df[factor.name].astype("category")
 
+            # Sort levels alphabetically
+            order = sorted(df[factor.name].cat.categories.tolist(), key=str.lower)
+            df[factor.name] = df[factor.name].cat.reorder_categories(order)
+
         self.active_df = df
 
     def get_df(

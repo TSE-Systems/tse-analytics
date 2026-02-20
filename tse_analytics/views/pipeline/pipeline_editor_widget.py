@@ -21,7 +21,7 @@ from tse_analytics.toolbox.correlation.correlation_node import CorrelationNode
 from tse_analytics.toolbox.data_plot.data_plot_node import DataPlotNode
 from tse_analytics.toolbox.distribution.distribution_node import DistributionNode
 from tse_analytics.toolbox.histogram.histogram_node import HistogramNode
-from tse_analytics.toolbox.matrixplot.matrixplot_node import MatrixPlotNode
+from tse_analytics.toolbox.matrix_plot.matrix_plot_node import MatrixPlotNode
 from tse_analytics.toolbox.mds.mds_node import MdsNode
 from tse_analytics.toolbox.mixed_anova.mixed_anova_node import MixedAnovaNode
 from tse_analytics.toolbox.n_way_anova.n_way_anova_node import NWayAnovaNode

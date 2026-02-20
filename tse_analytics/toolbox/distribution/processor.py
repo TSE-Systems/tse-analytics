@@ -44,9 +44,7 @@ def get_distribution_result(
         df[x] = df[x].cat.remove_unused_categories()
 
     # Create a figure with a tight layout
-    figure = plt.Figure(figsize=figsize, layout="tight")
-
-    ax = figure.add_subplot(1, 1, 1)
+    figure, ax = plt.subplots(1, 1, figsize=figsize, layout="tight")
     ax.tick_params(axis="x", rotation=90)
 
     match plot_type:

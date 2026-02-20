@@ -1,12 +1,8 @@
-from NodeGraphQt.widgets.node_widgets import NodeComboBox
-
-from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.utils import get_group_by_params
 from tse_analytics.pipeline import PipelineNode
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
-from tse_analytics.toolbox.matrixplot.processor import MATRIXPLOT_KIND, get_matrixplot_result
+from tse_analytics.toolbox.correlation_matrix.processor import get_correlation_matrix_result
 
 
 class CorrelationMatrixNode(PipelineNode):
@@ -25,23 +21,6 @@ class CorrelationMatrixNode(PipelineNode):
             "Variables",
             "Comma-separated variable names",
         )
-
-        self.add_combo_menu(
-            "group_by",
-            "Group by",
-            items=[],
-            tooltip="Grouping mode",
-        )
-
-    def initialize(self, dataset: Dataset, datatable: Datatable):
-        if datatable is None:
-            group_by_options = ["Animal"]
-        else:
-            group_by_options = datatable.get_group_by_columns()
-
-        group_by_widget: NodeComboBox = self.get_widget("group_by")
-        group_by_widget.clear()
-        group_by_widget.add_items(group_by_options)
 
     def process(self, packet: PipelinePacket) -> PipelinePacket:
         datatable = packet.value
@@ -62,32 +41,16 @@ class CorrelationMatrixNode(PipelineNode):
             invalid = ", ".join(invalid_variables)
             return PipelinePacket.inactive(reason=f"Invalid variable(s): {invalid}")
 
-        group_by_str = str(self.get_property("group_by"))
-        split_mode, factor_name = get_group_by_params(group_by_str)
-        if split_mode == SplitMode.FACTOR:
-            if not factor_name:
-                return PipelinePacket.inactive(reason="No factor selected")
-            if factor_name not in datatable.dataset.factors:
-                return PipelinePacket.inactive(reason="Invalid factor selected")
-
-        plot_type = str(self.get_property("plot_type"))
-        plot_kind = MATRIXPLOT_KIND.get(plot_type)
-        if plot_kind is None:
-            return PipelinePacket.inactive(reason="Invalid plot type selected")
-
         df = datatable.get_df(
             variable_names,
-            split_mode,
-            factor_name,
+            SplitMode.ANIMAL,
+            "",
         )
 
-        result = get_matrixplot_result(
+        result = get_correlation_matrix_result(
             datatable.dataset,
             df,
             variable_names,
-            split_mode,
-            factor_name,
-            plot_kind,
             figsize=None,
         )
 

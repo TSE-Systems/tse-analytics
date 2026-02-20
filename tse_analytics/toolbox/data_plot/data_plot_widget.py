@@ -171,7 +171,9 @@ class DataPlotWidget(QWidget):
             .pair(y=list(selected_variables_dict))
             .add(so.Line(linewidth=self.linewidth_spin_box.value()), so.Agg(func="mean"))  # Line with mean estimate
             .add(so.Band(alpha=0.15), so.Est(errorbar=error_bar))  # Shaded CI band
-            .scale(color=palette)
+            .scale(
+                color=so.Nominal(palette, order=df[by].cat.categories.tolist()) if by else palette,
+            )
             .on(self.canvas.figure)
             .plot(True)
         )

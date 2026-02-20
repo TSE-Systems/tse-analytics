@@ -1,29 +1,24 @@
 from dataclasses import dataclass, field
 
-from pyqttoast import ToastPreset
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QAbstractScrollArea,
-    QLabel,
     QToolBar,
     QWidget,
 )
 
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_figsize_from_widget, get_widget_tool_button
 from tse_analytics.toolbox.correlation_matrix.processor import get_correlation_matrix_result
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
-from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 
 
 @dataclass
 class CorrelationMatrixWidgetSettings:
-    group_by: str = "Animal"
     selected_variables: list[str] = field(default_factory=list)
 
 
@@ -53,14 +48,8 @@ class CorrelationMatrixWidget(ToolboxWidgetBase):
         )
         toolbar.addWidget(variables_button)
 
-        toolbar.addSeparator()
-        toolbar.addWidget(QLabel("Group by:"))
-        self.group_by_selector = GroupBySelector(toolbar, self.datatable, selected_mode=self._settings.group_by)
-        toolbar.addWidget(self.group_by_selector)
-
     def _get_settings_value(self):
         return CorrelationMatrixWidgetSettings(
-            self.group_by_selector.currentText(),
             self.variables_table_widget.get_selected_variable_names(),
         )
 
@@ -68,31 +57,17 @@ class CorrelationMatrixWidget(ToolboxWidgetBase):
         self.report_view.clear()
 
         selected_variables = self.variables_table_widget.get_selected_variables_dict()
-        split_mode, selected_factor_name = self.group_by_selector.get_group_by()
-
-        if split_mode == SplitMode.FACTOR and selected_factor_name == "":
-            make_toast(
-                self,
-                self.title,
-                "Please select factor.",
-                duration=2000,
-                preset=ToastPreset.WARNING,
-                show_duration_bar=True,
-            ).show()
-            return
 
         df = self.datatable.get_df(
             list(selected_variables),
-            split_mode,
-            selected_factor_name,
+            SplitMode.ANIMAL,
+            "",
         )
 
         result = get_correlation_matrix_result(
             self.datatable.dataset,
             df,
             list(selected_variables),
-            split_mode,
-            selected_factor_name,
             get_figsize_from_widget(self.report_view),
         )
 

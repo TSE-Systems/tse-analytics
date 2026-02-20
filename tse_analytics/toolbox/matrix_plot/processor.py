@@ -23,7 +23,7 @@ class MatrixPlotResult:
     report: str
 
 
-def get_matrixplot_result(
+def get_matrix_plot_result(
     dataset: Dataset,
     df: pd.DataFrame,
     variables: list[str],

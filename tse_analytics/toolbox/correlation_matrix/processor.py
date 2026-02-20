@@ -3,12 +3,11 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from matplotlib import rcParams, pyplot as plt
+from matplotlib import pyplot as plt
+from matplotlib import rcParams
 
-from tse_analytics.core import color_manager
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.core.utils import get_html_image_from_figure, get_great_table
+from tse_analytics.core.utils import get_great_table, get_html_image_from_figure
 
 
 @dataclass
@@ -20,26 +19,10 @@ def get_correlation_matrix_result(
     dataset: Dataset,
     df: pd.DataFrame,
     variables: list[str],
-    split_mode: SplitMode,
-    factor_name: str | None,
     figsize: tuple[float, float] | None = None,
 ) -> CorrelationMatrixResult:
     if figsize is None:
         figsize = rcParams["figure.figsize"]
-
-    match split_mode:
-        case SplitMode.ANIMAL:
-            hue = "Animal"
-            palette = color_manager.get_animal_to_color_dict(dataset.animals)
-        case SplitMode.RUN:
-            hue = "Run"
-            palette = color_manager.colormap_name
-        case SplitMode.FACTOR:
-            hue = factor_name
-            palette = color_manager.get_level_to_color_dict(dataset.factors[factor_name])
-        case _:  # Total
-            hue = "None"
-            palette = color_manager.colormap_name
 
     # Compute the correlation matrix
     correlation_df = df[variables].corr()

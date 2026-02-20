@@ -15,7 +15,7 @@ from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_figsize_from_widget, get_widget_tool_button
-from tse_analytics.toolbox.matrixplot.processor import MATRIXPLOT_KIND, get_matrixplot_result
+from tse_analytics.toolbox.matrix_plot.processor import MATRIXPLOT_KIND, get_matrix_plot_result
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
@@ -107,7 +107,7 @@ class MatrixPlotWidget(ToolboxWidgetBase):
             selected_factor_name,
         )
 
-        result = get_matrixplot_result(
+        result = get_matrix_plot_result(
             self.datatable.dataset,
             df,
             list(selected_variables),

@@ -28,7 +28,9 @@ class PcaWidgetSettings:
     selected_variables: list[str] = field(default_factory=list)
 
 
-@toolbox_plugin(category="Factor Analysis", label="PCA", icon=":/icons/dimensionality.png", order=2)
+@toolbox_plugin(
+    category="Factor Analysis", label="Principal Component Analysis", icon=":/icons/dimensionality.png", order=2
+)
 class PcaWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         self._toast = None
@@ -54,8 +56,18 @@ class PcaWidget(ToolboxWidgetBase):
         )
         toolbar.addWidget(variables_button)
 
+        # toolbar.addWidget(QLabel("Components:"))
+        # self.components_spin_box = QSpinBox(
+        #     toolbar,
+        #     minimum=2,
+        #     maximum=50,
+        #     singleStep=1,
+        #     value=self._settings.n_components,
+        # )
+        # toolbar.addWidget(self.components_spin_box)
+
         toolbar.addSeparator()
-        toolbar.addWidget(QLabel("Group by:"))
+        toolbar.addWidget(QLabel("Color by:"))
         self.group_by_selector = GroupBySelector(toolbar, self.datatable, selected_mode=self._settings.group_by)
         toolbar.addWidget(self.group_by_selector)
 
@@ -68,8 +80,6 @@ class PcaWidget(ToolboxWidgetBase):
     def _update(self):
         self.report_view.clear()
 
-        self.update_action.setEnabled(False)
-
         selected_variables = self.variables_table_widget.get_selected_variable_names()
         if len(selected_variables) < 3:
             make_toast(
@@ -81,6 +91,8 @@ class PcaWidget(ToolboxWidgetBase):
                 show_duration_bar=True,
             ).show()
             return
+
+        self.update_action.setEnabled(False)
 
         split_mode, selected_factor_name = self.group_by_selector.get_group_by()
 
