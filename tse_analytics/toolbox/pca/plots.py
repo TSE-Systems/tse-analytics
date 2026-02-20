@@ -43,6 +43,8 @@ def pca_explained_variance_plot(pca: PCA, figsize: tuple[float, float]) -> Figur
     axes["D"].set(title="Scree plot", xlabel="Principal component", ylabel="Eigenvalue")
     axes["D"].xaxis.set_major_locator(MaxNLocator(integer=True))
     axes["D"].set_xlim(min(comp) - 0.25, max(comp) + 0.25)
+    axes["D"].axhline(y=1, color="red", linestyle="dashed", label="Kaiser criterion")
+    axes["D"].legend()
 
     return fig
 

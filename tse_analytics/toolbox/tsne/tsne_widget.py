@@ -32,14 +32,14 @@ class TsneWidgetSettings:
     maximum_iterations: int = 1000
 
 
-@toolbox_plugin(category="Factor Analysis", label="tSNE", icon=":/icons/dimensionality.png", order=3)
+@toolbox_plugin(category="Factor Analysis", label="t-Distributed Stochastic Neighbor Embedding (t-SNE)", icon=":/icons/dimensionality.png", order=3)
 class TsneWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         self._toast = None
         super().__init__(
             datatable,
             TsneWidgetSettings,
-            title="tSNE",
+            title="t-SNE",
             parent=parent,
         )
 
