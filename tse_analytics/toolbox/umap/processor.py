@@ -3,7 +3,6 @@ from dataclasses import dataclass
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn.objects as so
-from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler
 
 from tse_analytics.core import color_manager
@@ -13,22 +12,25 @@ from tse_analytics.core.utils import get_html_image_from_figure
 
 
 @dataclass
-class TsneResult:
+class UmapResult:
     report: str
 
 
-def get_tsne_result(
+def get_umap_result(
     dataset: Dataset,
     df: pd.DataFrame,
     variables: list[str],
     split_mode: SplitMode,
     factor_name: str | None,
+    n_neighbors: int,
     n_components: int,
-    perplexity: int,
-    max_iterations: int,
     metric: str,
+    min_dist: float,
     figsize: tuple[float, float] | None = None,
-) -> TsneResult:
+) -> UmapResult:
+    # Lazy module import
+    from umap import UMAP
+
     match split_mode:
         case SplitMode.ANIMAL:
             by = "Animal"
@@ -47,19 +49,18 @@ def get_tsne_result(
     scaler = StandardScaler()
     scaled_data = scaler.fit_transform(df[variables])
 
-    tsne = TSNE(
+    umap = UMAP(
+        n_neighbors=n_neighbors,
         n_components=n_components,
-        perplexity=perplexity,
-        max_iter=max_iterations,
         metric=metric,
-        init="pca",
+        min_dist=min_dist,
     )
-    data = tsne.fit_transform(scaled_data)
+    data = umap.fit_transform(scaled_data)
 
     match n_components:
         case 1:
-            title = "t-SNE (1D)"
-            result_df = pd.DataFrame(data=data, columns=["t-SNE1"])
+            title = "UMAP (1D)"
+            result_df = pd.DataFrame(data=data, columns=["UMAP1"])
             result_df = pd.concat([result_df, pd.Series(range(len(result_df)), name="N")], axis=1)
             if by is not None:
                 result_df = pd.concat([result_df, df[[by]]], axis=1)
@@ -70,7 +71,7 @@ def get_tsne_result(
                 so
                 .Plot(
                     result_df,
-                    x="t-SNE1",
+                    x="UMAP1",
                     y="N",
                     color=by,
                 )
@@ -81,8 +82,8 @@ def get_tsne_result(
                 .plot(True)
             )
         case 2:
-            title = "t-SNE (2D)"
-            result_df = pd.DataFrame(data=data, columns=["t-SNE1", "t-SNE2"])
+            title = "UMAP (2D)"
+            result_df = pd.DataFrame(data=data, columns=["UMAP1", "UMAP2"])
             if by is not None:
                 result_df = pd.concat([result_df, df[[by]]], axis=1)
 
@@ -92,8 +93,8 @@ def get_tsne_result(
                 so
                 .Plot(
                     result_df,
-                    x="t-SNE1",
-                    y="t-SNE2",
+                    x="UMAP1",
+                    y="UMAP2",
                     color=by,
                 )
                 .add(so.Dot(pointsize=3))
@@ -103,9 +104,9 @@ def get_tsne_result(
                 .plot(True)
             )
         case 3:
-            title = "t-SNE (3D)"
+            title = "UMAP (3D)"
 
-            result_df = pd.DataFrame(data=data, columns=["t-SNE1", "t-SNE2", "t-SNE3"])
+            result_df = pd.DataFrame(data=data, columns=["UMAP1", "UMAP2", "UMAP3"])
             if by is not None:
                 result_df = pd.concat([result_df, df[[by]]], axis=1)
 
@@ -121,9 +122,9 @@ def get_tsne_result(
                 for group, c in palette.items():
                     mask = df[by] == group
                     ax.scatter(
-                        result_df.loc[mask, "t-SNE1"],
-                        result_df.loc[mask, "t-SNE2"],
-                        result_df.loc[mask, "t-SNE3"],
+                        result_df.loc[mask, "UMAP1"],
+                        result_df.loc[mask, "UMAP2"],
+                        result_df.loc[mask, "UMAP3"],
                         c=c,
                         label=group,
                     )
@@ -131,20 +132,20 @@ def get_tsne_result(
             else:
                 ax.scatter(
                     data=result_df,
-                    xs="t-SNE1",
-                    ys="t-SNE2",
-                    zs="t-SNE3",
+                    xs="UMAP1",
+                    ys="UMAP2",
+                    zs="UMAP3",
                 )
 
             ax.set(
-                xlabel="t-SNE1",
-                ylabel="t-SNE2",
-                zlabel="t-SNE3",
+                xlabel="UMAP1",
+                ylabel="UMAP2",
+                zlabel="UMAP3",
                 title=title,
             )
 
     report = get_html_image_from_figure(figure)
 
-    return TsneResult(
+    return UmapResult(
         report=report,
     )

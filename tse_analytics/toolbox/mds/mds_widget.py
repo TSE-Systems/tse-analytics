@@ -5,6 +5,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QAbstractScrollArea,
+    QComboBox,
     QLabel,
     QSpinBox,
     QToolBar,
@@ -27,10 +28,14 @@ from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 class MdsWidgetSettings:
     group_by: str = "Animal"
     selected_variables: list[str] = field(default_factory=list)
+    n_components: int = 2
     maximum_iterations: int = 300
+    metric: str = "euclidean"
 
 
-@toolbox_plugin(category="Factor Analysis", label="Multidimensional Scaling (MDS)", icon=":/icons/dimensionality.png", order=4)
+@toolbox_plugin(
+    category="Factor Analysis", label="Multidimensional Scaling (MDS)", icon=":/icons/dimensionality.png", order=4
+)
 class MdsWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         self._toast = None
@@ -62,6 +67,16 @@ class MdsWidget(ToolboxWidgetBase):
         toolbar.addWidget(self.group_by_selector)
 
         toolbar.addSeparator()
+        toolbar.addWidget(QLabel("n_components:"))
+        self.n_components_spin_box = QSpinBox(
+            toolbar,
+            minimum=1,
+            maximum=3,
+            singleStep=1,
+            value=self._settings.n_components,
+        )
+        toolbar.addWidget(self.n_components_spin_box)
+
         toolbar.addWidget(QLabel("Maximum Iterations:"))
         self.maximum_iterations_spin_box = QSpinBox(
             toolbar,
@@ -72,11 +87,28 @@ class MdsWidget(ToolboxWidgetBase):
         )
         toolbar.addWidget(self.maximum_iterations_spin_box)
 
+        toolbar.addWidget(QLabel("Metric:"))
+        self.comboBoxMetric = QComboBox(toolbar)
+        self.comboBoxMetric.addItems([
+            "euclidean",
+            "cityblock",
+            "cosine",
+            "haversine",
+            "l1",
+            "l2",
+            "manhattan",
+            "nan_euclidean",
+        ])
+        self.comboBoxMetric.setCurrentText(self._settings.metric)
+        toolbar.addWidget(self.comboBoxMetric)
+
     def _get_settings_value(self):
         return MdsWidgetSettings(
             self.group_by_selector.currentText(),
             self.variables_table_widget.get_selected_variable_names(),
+            self.n_components_spin_box.value(),
             self.maximum_iterations_spin_box.value(),
+            self.comboBoxMetric.currentText(),
         )
 
     def _update(self):
@@ -115,7 +147,9 @@ class MdsWidget(ToolboxWidgetBase):
             selected_variables,
             split_mode,
             selected_factor_name,
+            self.n_components_spin_box.value(),
             self.maximum_iterations_spin_box.value(),
+            self.comboBoxMetric.currentText(),
             get_figsize_from_widget(self.report_view),
         )
         worker.signals.result.connect(self._result)

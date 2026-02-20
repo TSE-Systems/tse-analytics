@@ -1,6 +1,24 @@
 TSE Analytics Change Log
 ====================================================================================================
 
+# 1.8.1 (2026-02-20)
+
+- Intermediate release before pipeline introduction.
+- New: Migration to a unified HTML-based reporting system.
+- New: Toolbox data analysis pipeline integration.
+- Change: New docs based on Zensical toolchain with offline search functionality (no server needed in offline mode).
+- Change: Migration of module dialog views to dockable widgets.
+- Change: Adjust Dataset dialog tunings.
+- Fix: Settings dialog now saves changes properly.
+- Fix: resources path in .ui files.
+- Fix: assign factors to generated group-housing TraffiCage datatable.
+- Fix: align timedelta to the resampling resolution.
+- [SW-456] Notification when a datatable is added in the GroupHousing dialog.
+- [SW-465] Uniform animal sorting by AnimalId.
+- [SW-466] GroupHousing heatmap plot exporting.
+
+
+----------------------------------------------------------------------------------------------------
 # 1.8.0 (2026-02-12)
 
 - Intermediate release before pipeline introduction.
