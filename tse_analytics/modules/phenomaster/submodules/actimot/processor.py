@@ -90,10 +90,10 @@ def work(input):
     return input[0], input[1].apply(get_centroid_lookup, value_range=input[2])
 
 
-def calculate_trj(original_df: pd.DataFrame, actimot_settings: ActimotSettings) -> (pd.DataFrame, traja.TrajaDataFrame):
+def calculate_trj(source_df: pd.DataFrame, actimot_settings: ActimotSettings) -> (pd.DataFrame, traja.TrajaDataFrame):
     tic = timeit.default_timer()
 
-    df = original_df[["DateTime", "X", "Y"]].copy()
+    df = source_df[["DateTime", "X", "Y"]].copy()
     df.dropna(subset=["X", "Y"], inplace=True)
     df.reset_index(inplace=True, drop=True)
 

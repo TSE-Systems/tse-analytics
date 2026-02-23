@@ -51,7 +51,7 @@ def read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedBinD
 
     if "Animal" not in df.columns:
         df.insert(
-            df.columns.get_loc("Box") + 1,
+            df.columns.get_loc("Box"),
             "Animal",
             df["Box"].replace(box_to_animal_map),
         )

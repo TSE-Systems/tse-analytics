@@ -21,6 +21,7 @@ from tse_analytics.core.data.operators.outliers_pipe_operator import process_out
 from tse_analytics.core.data.operators.time_binning_pipe_operator import process_time_binning
 from tse_analytics.core.data.outliers import OutliersMode
 from tse_analytics.core.data.shared import Animal, Factor, SplitMode, Variable
+from tse_analytics.core.utils.data import exclude_animals_from_df
 
 if TYPE_CHECKING:
     from tse_analytics.core.data.dataset import Dataset
@@ -72,8 +73,7 @@ class Datatable:
         self.description = description
         self.variables = variables
 
-        self.original_df = df
-        self.active_df = self.original_df.copy()
+        self.df = df
 
         self.sampling_interval = sampling_interval
 
@@ -87,7 +87,7 @@ class Datatable:
         pd.Timestamp
             The timestamp of the first row in the datatable.
         """
-        first_value = self.original_df.at[0, "DateTime"]
+        first_value = self.df.at[0, "DateTime"]
         return first_value
 
     @property
@@ -100,7 +100,7 @@ class Datatable:
         pd.Timestamp
             The timestamp of the last row in the datatable.
         """
-        last_value = self.original_df.at[self.original_df.index[-1], "DateTime"]
+        last_value = self.df.at[self.df.index[-1], "DateTime"]
         return last_value
 
     @property
@@ -137,9 +137,9 @@ class Datatable:
             List of default column names, including "Bin" and "Run" if they exist.
         """
         columns = Datatable.default_columns
-        if "Bin" in self.original_df.columns:
+        if "Bin" in self.df.columns:
             columns = columns + ["Bin"]
-        if "Run" in self.original_df.columns:
+        if "Run" in self.df.columns:
             columns = columns + ["Run"]
         return columns
 
@@ -152,7 +152,7 @@ class Datatable:
         list[str]
             List of column names with categorical data type.
         """
-        columns = self.active_df.select_dtypes(include=["category"]).columns.tolist()
+        columns = self.df.select_dtypes(include=["category"]).columns.tolist()
         return columns
 
     def get_group_by_columns(self, check_binning=True, disable_total_mode=False) -> list[str]:
@@ -173,7 +173,7 @@ class Datatable:
         """
         modes = ["Animal"]
         if check_binning:
-            if not ("Bin" in self.active_df.columns or self.dataset.binning_settings.apply):
+            if not ("Bin" in self.df.columns or self.dataset.binning_settings.apply):
                 return modes
         if not disable_total_mode:
             modes.append("Total")
@@ -195,8 +195,7 @@ class Datatable:
         animal : Animal
             The animal object with the new ID.
         """
-        self.original_df = rename_animal_df(self.original_df, old_id, animal)
-        self.refresh_active_df()
+        self.df = rename_animal_df(self.df, old_id, animal)
 
     def exclude_animals(self, animal_ids: set[str]) -> None:
         """
@@ -207,10 +206,7 @@ class Datatable:
         animal_ids : set[str]
             Set of animal IDs to exclude from the datatable.
         """
-        self.original_df = self.original_df[~self.original_df["Animal"].isin(animal_ids)]
-        self.original_df["Animal"] = self.original_df["Animal"].cat.remove_unused_categories()
-        self.original_df.reset_index(inplace=True, drop=True)
-        self.refresh_active_df()
+        self.df = exclude_animals_from_df(self.df, animal_ids)
 
     def exclude_time(self, range_start: datetime, range_end: datetime) -> None:
         """
@@ -223,12 +219,9 @@ class Datatable:
         range_end : datetime
             End of the time range to exclude.
         """
-        self.original_df = self.original_df[
-            (self.original_df["DateTime"] < range_start) | (self.original_df["DateTime"] > range_end)
-        ]
+        self.df = self.df[(self.df["DateTime"] < range_start) | (self.df["DateTime"] > range_end)]
         merging_mode = self.get_merging_mode()
-        self.original_df = reassign_df_timedelta_and_bin(self.original_df, self.sampling_interval, merging_mode)
-        self.refresh_active_df()
+        self.df = reassign_df_timedelta_and_bin(self.df, self.sampling_interval, merging_mode)
 
     def trim_time(self, range_start: datetime, range_end: datetime) -> None:
         """
@@ -241,12 +234,9 @@ class Datatable:
         range_end : datetime
             New end time for the datatable.
         """
-        self.original_df = self.original_df[
-            (self.original_df["DateTime"] >= range_start) & (self.original_df["DateTime"] <= range_end)
-        ]
+        self.df = self.df[(self.df["DateTime"] >= range_start) & (self.df["DateTime"] <= range_end)]
         merging_mode = self.get_merging_mode()
-        self.original_df = reassign_df_timedelta_and_bin(self.original_df, self.sampling_interval, merging_mode)
-        self.refresh_active_df()
+        self.df = reassign_df_timedelta_and_bin(self.df, self.sampling_interval, merging_mode)
 
     def resample(self, resampling_interval: pd.Timedelta) -> None:
         """
@@ -264,15 +254,15 @@ class Datatable:
             "DateTime": "first",
         }
 
-        if "Run" in self.original_df.columns:
+        if "Run" in self.df.columns:
             agg["Run"] = "first"
 
-        for column in self.original_df.columns:
+        for column in self.df.columns:
             if column not in self.get_default_columns():
-                if self.original_df.dtypes[column].name != "category" and column in self.variables:
+                if self.df.dtypes[column].name != "category" and column in self.variables:
                     agg[column] = self.variables[column].aggregation
 
-        result = self.original_df.groupby(["Animal"], dropna=False, observed=False)
+        result = self.df.groupby(["Animal"], dropna=False, observed=False)
         result = result.resample(resampling_interval, on="Timedelta", origin=self.dataset.experiment_started).agg(agg)
         result.reset_index(inplace=True, drop=False)
 
@@ -291,11 +281,9 @@ class Datatable:
             })
 
         self.sampling_interval = resampling_interval
-        self.original_df = result
+        self.df = result
 
-        self.refresh_active_df()
-
-    def set_factors(self, factors: dict[str, Factor]) -> None:
+    def set_factors(self, factors: dict[str, Factor], old_factors: dict[str, Factor] | None = None) -> None:
         """
         Set the factors for the datatable.
 
@@ -308,7 +296,11 @@ class Datatable:
             Dictionary mapping factor names to Factor objects.
         """
         # TODO: should be copy?
-        df = self.original_df.copy()
+        df = self.df.copy()
+
+        # Drop old factors
+        if old_factors is not None:
+            df.drop(columns=old_factors.keys(), inplace=True)
 
         animal_ids = df["Animal"].unique()
 
@@ -329,7 +321,7 @@ class Datatable:
             order = sorted(df[factor.name].cat.categories.tolist(), key=str.lower)
             df[factor.name] = df[factor.name].cat.reorder_categories(order)
 
-        self.active_df = df
+        self.df = df
 
     def get_df(
         self,
@@ -401,7 +393,7 @@ class Datatable:
             A filtered dataframe containing the specified columns.
         """
         # TODO: Should use the copy?
-        df = self.active_df[columns]
+        df = self.df[columns]
 
         # Filter animals
         df = filter_animals(df, self.dataset.animals).copy()
@@ -511,14 +503,6 @@ class Datatable:
 
         return result
 
-    def refresh_active_df(self) -> None:
-        """
-        Refresh the active dataframe.
-
-        This method updates the active dataframe by applying the current factors.
-        """
-        self.set_factors(self.dataset.factors)
-
     def delete_variables(self, variable_names: list[str]) -> None:
         """
         Delete variables from the datatable.
@@ -531,8 +515,7 @@ class Datatable:
         for var_name in variable_names:
             self.variables.pop(var_name, None)
 
-        self.original_df.drop(columns=variable_names, inplace=True, errors="ignore")
-        self.active_df.drop(columns=variable_names, inplace=True, errors="ignore")
+        self.df.drop(columns=variable_names, inplace=True, errors="ignore")
 
     def rename_variables(self, variable_name_map: dict[str, str]) -> None:
         for old_name, new_name in variable_name_map.items():
@@ -540,27 +523,9 @@ class Datatable:
                 self.variables[new_name] = self.variables.pop(old_name, None)
                 self.variables[new_name].name = new_name
 
-        self.original_df.rename(columns=variable_name_map, inplace=True, errors="ignore")
-        self.active_df.rename(columns=variable_name_map, inplace=True, errors="ignore")
+        self.df.rename(columns=variable_name_map, inplace=True, errors="ignore")
 
     def clone(self):
         return Datatable(
-            self.dataset, self.name, self.description, self.variables, self.original_df.copy(), self.sampling_interval
+            self.dataset, self.name, self.description, self.variables, self.df.copy(), self.sampling_interval
         )
-
-    def __getstate__(self):
-        """
-        Prepare the object state for pickling.
-
-        This method is called when pickling a Datatable object. It removes the
-        active_df attribute from the state to avoid pickling large dataframes.
-
-        Returns
-        -------
-        dict
-            The state dictionary to pickle.
-        """
-        state = self.__dict__.copy()
-        # Don't pickle active_df
-        del state["active_df"]
-        return state

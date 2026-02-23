@@ -37,6 +37,21 @@ def read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> ActimotData:
     # Convert DateTime from POSIX format
     df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
 
+    box_to_animal_map = {}
+    for animal in dataset.animals.values():
+        box_to_animal_map[animal.properties["Box"]] = animal.id
+
+    df.insert(
+        df.columns.get_loc("Box"),
+        "Animal",
+        df["Box"].replace(box_to_animal_map),
+    )
+
+    # convert categorical types
+    df = df.astype({
+        "Animal": "category",
+    })
+
     actimot_data = ActimotData(
         dataset,
         tse_import_settings.ACTIMOT_RAW_TABLE,

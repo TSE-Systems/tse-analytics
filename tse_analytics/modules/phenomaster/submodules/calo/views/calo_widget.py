@@ -168,8 +168,8 @@ class CaloWidget(QWidget):
         # remove last bin
         bin_numbers = sorted(self.calo_data.raw_df["Bin"].unique().tolist())
         raw_df = self.calo_data.raw_df.loc[self.calo_data.raw_df["Bin"] != bin_numbers[-1]]
-        active_df = self.calo_data.dataset.datatables["Main"].active_df.loc[
-            self.calo_data.dataset.datatables["Main"].active_df["Bin"] != bin_numbers[-1]
+        df = self.calo_data.dataset.datatables["Main"].df.loc[
+            self.calo_data.dataset.datatables["Main"].df["Bin"] != bin_numbers[-1]
         ]
 
         fitting_params_list: list[FittingParams] = []
@@ -180,8 +180,8 @@ class CaloWidget(QWidget):
                 continue
 
             # TODO: check int -> str conversion for general table!
-            # general_df = active_df[active_df["Box"] == str(calo_box.box)].copy()
-            main_df = active_df[active_df["Box"] == calo_box.box].copy()
+            # general_df = df[df["Box"] == str(calo_box.box)].copy()
+            main_df = df[df["Box"] == calo_box.box].copy()
             box_df = raw_df[raw_df["Box"] == calo_box.box].copy()
             ref_df = raw_df[raw_df["Box"] == calo_box.ref_box].copy()
 

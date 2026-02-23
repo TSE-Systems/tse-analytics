@@ -61,12 +61,14 @@ class IntervalsPlotWidget(QWidget):
 
         unit = "g" if "Feed" in selected_variable else "ml"
 
+        color = color_manager.get_animal_to_color_dict(self.drinkfeed_data.dataset.animals)
+
         self.canvas.clear(False)
         (
             so
             .Plot(df, x="Bin", y=selected_variable, color="Animal")
             .add(so.Bars())
-            .scale(color=color_manager.get_animal_to_color_dict(self.drinkfeed_data.dataset.animals))
+            .scale(color=color)
             .label(
                 x="Time [bin]",
                 y=f"Meal size [{unit}]",

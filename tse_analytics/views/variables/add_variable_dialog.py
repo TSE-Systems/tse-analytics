@@ -63,7 +63,7 @@ class AddVariableDialog(QDialog):
             QMessageBox.warning(self, "Warning", "Variable name already exists.")
             return
 
-        df = self.datatable.original_df.copy()
+        df = self.datatable.df.copy()
 
         if self.ui.radioButtonOriginAnimalProperty.isChecked():
             animal_property = self.ui.comboBoxAnimalProperty.currentText()
@@ -111,5 +111,4 @@ class AddVariableDialog(QDialog):
         self.datatable.variables = dict(sorted(self.datatable.variables.items(), key=lambda x: x[0].lower()))
 
         # Update dataframes
-        self.datatable.original_df = df
-        self.datatable.refresh_active_df()
+        self.datatable.df = df

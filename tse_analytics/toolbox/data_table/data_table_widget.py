@@ -221,7 +221,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         # self.df = self.datatable.get_preprocessed_df(selected_variables, self.split_mode, self.selected_factor_name)
 
         if split_mode == SplitMode.ANIMAL:
-            all_columns = self.datatable.active_df.columns.tolist()
+            all_columns = self.datatable.df.columns.tolist()
             all_variable_columns = list(self.datatable.variables.keys())
             columns = [
                 var_column for var_column in all_columns if var_column not in all_variable_columns

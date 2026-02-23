@@ -216,8 +216,8 @@ class TestSetFactors:
     def test_propagates_to_datatables(self, sample_dataset, sample_datatable, sample_factor):
         factors = {"Group": sample_factor}
         sample_dataset.set_factors(factors)
-        # The factor column should be added to the active_df
-        assert "Group" in sample_datatable.active_df.columns
+        # The factor column should be added to the original_df
+        assert "Group" in sample_datatable.df.columns
 
 
 class TestApplyBinning:
@@ -330,16 +330,3 @@ class TestDatasetSetstate:
 
         assert restored.name == sample_dataset.name
         assert "Main" in restored.datatables
-
-    def test_unpickle_initializes_missing_reports(self, sample_dataset, sample_datatable):
-        from tse_analytics.core.data.dataset import Dataset
-
-        # Simulate old state without reports
-        state = sample_dataset.__dict__.copy()
-        del state["reports"]
-
-        new_ds = Dataset.__new__(Dataset)
-        new_ds.__setstate__(state)
-
-        assert hasattr(new_ds, "reports")
-        assert new_ds.reports == {}

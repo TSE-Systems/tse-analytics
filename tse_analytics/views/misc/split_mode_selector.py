@@ -76,12 +76,10 @@ class SplitModeSelector(QWidget, messaging.MessengerListener):
             binning_active: Whether binning is currently active for the dataset.
         """
         split_modes = ["By animal"]
-        if "Bin" in self.datatable.active_df.columns or binning_active:
+        if "Bin" in self.datatable.df.columns or binning_active:
             split_modes.append("Total")
             if self.datatable.get_merging_mode() is not None:
                 split_modes.append("By run")
-            # if "Run" in self.datatable.active_df.columns:
-            #     split_modes.append("By run")
             if len(self.datatable.dataset.factors) > 0:
                 split_modes.append("By factor")
 

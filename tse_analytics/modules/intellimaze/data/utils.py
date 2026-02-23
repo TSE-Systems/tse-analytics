@@ -132,7 +132,7 @@ def preprocess_main_table(dataset: IntelliMazeDataset) -> None:
     dataframes = []
     variables = {}
     for datatable in datatables:
-        dataframes.append(datatable.active_df)
+        dataframes.append(datatable.df)
         variables = variables | datatable.variables
 
     # Sort variables by name
@@ -209,8 +209,7 @@ def preprocess_main_table(dataset: IntelliMazeDataset) -> None:
     # df.sort_values(by=["DateTime", "Animal"], inplace=True)
     # df.reset_index(drop=True, inplace=True)
     #
-    # dataset.original_df = df
-    # dataset.active_df = dataset.original_df.copy()
+    # dataset.df = df
     # dataset.sampling_interval = sampling_interval
     #
     # dataset.variables = variables

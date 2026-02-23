@@ -53,7 +53,7 @@ class TransformationNode(PipelineNode):
         method = str(self.get_property("method"))
 
         result_datatable = datatable.clone()
-        data = result_datatable.active_df[variable].to_numpy()
+        data = result_datatable.df[variable].to_numpy()
 
         match method:
             case "Box-Cox":
@@ -67,7 +67,7 @@ class TransformationNode(PipelineNode):
                 transformed_data = np.log10(data)
                 lambda_opt = None
 
-        result_datatable.active_df[transformed_variable] = transformed_data
+        result_datatable.df[transformed_variable] = transformed_data
 
         tooltip = f"<h3>Transformation</h3>Method: {method}<br>Lambda: {lambda_opt:.5f}"
         self.view.setToolTip(tooltip)

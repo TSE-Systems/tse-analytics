@@ -45,7 +45,7 @@ class NormalityTestNode(PipelineNode):
         variable = str(self.get_property("variable"))
         method = str(self.get_property("method"))
 
-        data = datatable.active_df[variable]
+        data = datatable.df[variable]
 
         match method:
             case "Shapiro-Wilk":

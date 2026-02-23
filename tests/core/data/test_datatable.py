@@ -10,10 +10,6 @@ class TestDatatableInit:
     def test_assigns_uuid(self, sample_datatable):
         assert sample_datatable.id is not None
 
-    def test_copies_df_to_active_df(self, sample_datatable):
-        assert sample_datatable.active_df is not sample_datatable.original_df
-        pd.testing.assert_frame_equal(sample_datatable.active_df, sample_datatable.original_df)
-
     def test_stores_name(self, sample_datatable):
         assert sample_datatable.name == "Main"
 
@@ -75,29 +71,23 @@ class TestRenameAnimal:
         new_animal = Animal(enabled=True, id="NewA1", color="#FF0000", properties={})
         sample_datatable.rename_animal("A1", new_animal)
 
-        assert "NewA1" in sample_datatable.original_df["Animal"].values
-        assert "A1" not in sample_datatable.original_df["Animal"].values
-
-    def test_refreshes_active_df(self, sample_datatable):
-        new_animal = Animal(enabled=True, id="NewA1", color="#FF0000", properties={})
-        sample_datatable.rename_animal("A1", new_animal)
-
-        assert "NewA1" in sample_datatable.active_df["Animal"].values
+        assert "NewA1" in sample_datatable.df["Animal"].values
+        assert "A1" not in sample_datatable.df["Animal"].values
 
 
 class TestExcludeAnimals:
     """Tests for Datatable.exclude_animals."""
 
     def test_filters_rows(self, sample_datatable):
-        original_len = len(sample_datatable.original_df)
+        original_len = len(sample_datatable.df)
         sample_datatable.exclude_animals({"A3"})
 
-        assert len(sample_datatable.original_df) < original_len
-        assert "A3" not in sample_datatable.original_df["Animal"].values
+        assert len(sample_datatable.df) < original_len
+        assert "A3" not in sample_datatable.df["Animal"].values
 
     def test_removes_unused_categories(self, sample_datatable):
         sample_datatable.exclude_animals({"A3"})
-        categories = sample_datatable.original_df["Animal"].cat.categories.tolist()
+        categories = sample_datatable.df["Animal"].cat.categories.tolist()
         assert "A3" not in categories
 
 
@@ -105,7 +95,7 @@ class TestExcludeTime:
     """Tests for Datatable.exclude_time."""
 
     def test_filters_datetime_range(self, sample_datatable):
-        original_len = len(sample_datatable.original_df)
+        original_len = len(sample_datatable.df)
 
         # Exclude the first 2 hours
         sample_datatable.exclude_time(
@@ -113,7 +103,7 @@ class TestExcludeTime:
             pd.Timestamp("2024-01-01 01:30:00"),
         )
 
-        assert len(sample_datatable.original_df) < original_len
+        assert len(sample_datatable.df) < original_len
 
 
 class TestTrimTime:
@@ -125,8 +115,8 @@ class TestTrimTime:
             pd.Timestamp("2024-01-01 03:00:00"),
         )
 
-        min_dt = sample_datatable.original_df["DateTime"].min()
-        max_dt = sample_datatable.original_df["DateTime"].max()
+        min_dt = sample_datatable.df["DateTime"].min()
+        max_dt = sample_datatable.df["DateTime"].max()
 
         assert min_dt >= pd.Timestamp("2024-01-01 01:00:00")
         assert max_dt <= pd.Timestamp("2024-01-01 03:00:00")
@@ -137,15 +127,15 @@ class TestSetFactors:
 
     def test_adds_factor_column(self, sample_datatable, sample_factor):
         sample_datatable.set_factors({"Group": sample_factor})
-        assert "Group" in sample_datatable.active_df.columns
+        assert "Group" in sample_datatable.df.columns
 
     def test_factor_column_is_categorical(self, sample_datatable, sample_factor):
         sample_datatable.set_factors({"Group": sample_factor})
-        assert sample_datatable.active_df["Group"].dtype.name == "category"
+        assert sample_datatable.df["Group"].dtype.name == "category"
 
     def test_assigns_correct_levels(self, sample_datatable, sample_factor):
         sample_datatable.set_factors({"Group": sample_factor})
-        df = sample_datatable.active_df
+        df = sample_datatable.df
 
         # A1 should be Control
         a1_groups = df[df["Animal"] == "A1"]["Group"].unique()
@@ -180,11 +170,7 @@ class TestDeleteVariables:
 
     def test_drops_from_original_df(self, sample_datatable):
         sample_datatable.delete_variables(["Weight"])
-        assert "Weight" not in sample_datatable.original_df.columns
-
-    def test_drops_from_active_df(self, sample_datatable):
-        sample_datatable.delete_variables(["Weight"])
-        assert "Weight" not in sample_datatable.active_df.columns
+        assert "Weight" not in sample_datatable.df.columns
 
     def test_nonexistent_variable_is_ignored(self, sample_datatable):
         # Should not raise
@@ -201,8 +187,7 @@ class TestRenameVariables:
 
     def test_renames_in_dataframes(self, sample_datatable):
         sample_datatable.rename_variables({"Weight": "Mass"})
-        assert "Mass" in sample_datatable.original_df.columns
-        assert "Mass" in sample_datatable.active_df.columns
+        assert "Mass" in sample_datatable.df.columns
 
     def test_updates_variable_name_field(self, sample_datatable):
         sample_datatable.rename_variables({"Weight": "Mass"})
@@ -218,8 +203,8 @@ class TestDatatableClone:
 
     def test_has_independent_df(self, sample_datatable):
         clone = sample_datatable.clone()
-        clone.original_df.iloc[0, clone.original_df.columns.get_loc("Weight")] = 999.0
-        assert sample_datatable.original_df.iloc[0, sample_datatable.original_df.columns.get_loc("Weight")] != 999.0
+        clone.df.iloc[0, clone.df.columns.get_loc("Weight")] = 999.0
+        assert sample_datatable.df.iloc[0, sample_datatable.df.columns.get_loc("Weight")] != 999.0
 
 
 class TestDatatableGetstate:

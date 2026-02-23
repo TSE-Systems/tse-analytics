@@ -41,6 +41,7 @@ def process_drinkfeed_sequences(
         )
         events_df = pd.concat([events_df, animal_events_df], ignore_index=True)
         episodes_df = pd.concat([episodes_df, animal_episodes_df], ignore_index=True)
+        print(f"Animal {animal_id} processed.")
 
     # Add caloric value column
     episodes_df.insert(episodes_df.columns.get_loc("Quantity") + 1, "Quantity-kcal", episodes_df["Animal"])

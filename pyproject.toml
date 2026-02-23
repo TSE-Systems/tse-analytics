@@ -31,11 +31,11 @@ dependencies = [
     "pyside6==6.10.2",
     "pyside6-qtads==4.5.0.2",
     "scikit-learn==1.8.0",
-    "scipy==1.17.0",
+    "scipy==1.17.1",
     "seaborn==0.13.2",
     "traja==25.0.1",
     "umap-learn==0.5.11",
-    "xmltodict==1.0.3",
+    "xmltodict==1.0.4",
 ]
 
 [dependency-groups]
@@ -45,7 +45,7 @@ dev = [
     "pytest==9.0.2",
     "qtsass==0.4.0",
     "ruff==0.15.2",
-    "ty==0.0.17",
+    "ty==0.0.18",
 ]
 
 [project.scripts]
