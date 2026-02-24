@@ -4,7 +4,7 @@ from datetime import datetime
 import pandas as pd
 from loguru import logger
 from PySide6.QtCore import QSettings, QSize, Qt
-from PySide6.QtGui import QCloseEvent, QIcon
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QToolBar, QWidget
 
 from tse_analytics.core import manager
@@ -55,8 +55,10 @@ class DrinkFeedWidget(QWidget):
             # | Qt.WindowType.WindowCloseButtonHint
         )
 
+        # Connect destructor to save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
         settings = QSettings()
-        # self.restoreGeometry(settings.value("DrinkFeedDialog/Geometry"))
 
         self.drinkfeed_data = drinkfeed_data
         self.selected_animals: list[DrinkFeedAnimalItem] = []
@@ -358,9 +360,11 @@ class DrinkFeedWidget(QWidget):
         self.raw_table_view.set_data(self.raw_long_df)
         self.raw_plot_widget.set_data(self.raw_long_df)
 
-    def closeEvent(self, event: QCloseEvent) -> None:
+    def _destroyed(self) -> None:
+        """Save widget settings via QSettings on destruction."""
         settings = QSettings()
-        settings.setValue("DrinkFeedDialog/Geometry", self.saveGeometry())
-
-        drinkfeed_settings = self.drinkfeed_settings_widget.get_drinkfeed_settings()
-        settings.setValue("DrinkFeedSettings", drinkfeed_settings)
+        settings.setValue(
+            "DrinkFeedSettings",
+            self.drinkfeed_settings_widget.get_drinkfeed_settings(),
+        )
+        # settings.setValue("DrinkFeedDialog/Geometry", self.saveGeometry())

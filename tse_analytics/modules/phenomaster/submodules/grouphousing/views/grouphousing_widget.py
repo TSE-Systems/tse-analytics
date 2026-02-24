@@ -1,7 +1,7 @@
 import pandas as pd
 from pyqttoast import ToastPreset
-from PySide6.QtCore import QSettings, QSize, Qt
-from PySide6.QtGui import QCloseEvent, QIcon
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QCheckBox, QLabel, QSpinBox, QToolBar, QWidget
 
 from tse_analytics.core import manager
@@ -31,8 +31,7 @@ class GroupHousingWidget(QWidget):
             # | Qt.WindowType.WindowCloseButtonHint
         )
 
-        settings = QSettings()
-        # self.restoreGeometry(settings.value("GroupHousingDialog/Geometry"))
+        # settings = QSettings()
 
         self.dataset = dataset
 
@@ -121,7 +120,3 @@ class GroupHousingWidget(QWidget):
             preset=ToastPreset.INFORMATION,
             show_duration_bar=True,
         ).show()
-
-    def closeEvent(self, event: QCloseEvent) -> None:
-        settings = QSettings()
-        settings.setValue("GroupHousingDialog/Geometry", self.saveGeometry())
