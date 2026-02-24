@@ -18,41 +18,31 @@ def read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> ActimotData:
 
     df = cx.read_sql(
         f"sqlite:///{path}",
-        f"SELECT DateTime, Box, X1, X2, Y1 FROM {tse_import_settings.ACTIMOT_RAW_TABLE}",
+        f"SELECT DateTime, Box, X1, X2, Y1 AS Y FROM {tse_import_settings.ACTIMOT_RAW_TABLE}",
         return_type="pandas",
     )
 
     # Convert types
-    df = df.astype(
-        {
-            "Box": "int16",
-        },
-        errors="ignore",
-    )
+    df = df.astype({"Box": "int16"}, errors="ignore")
 
     df["X"] = np.left_shift(df["X2"].to_numpy(dtype=np.uint64), 32) + df["X1"].to_numpy(dtype=np.uint64)
-    df.drop(columns=["X1", "X2"], inplace=True)
-    df.rename(columns={"Y1": "Y"}, inplace=True)
+    df = df.drop(columns=["X1", "X2"])
 
     # Convert DateTime from POSIX format
     df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
 
-    box_to_animal_map = {}
-    for animal in dataset.animals.values():
-        box_to_animal_map[animal.properties["Box"]] = animal.id
+    box_to_animal_map = {animal.properties["Box"]: animal.id for animal in dataset.animals.values()}
 
     df.insert(
         df.columns.get_loc("Box"),
         "Animal",
-        df["Box"].replace(box_to_animal_map),
+        df["Box"].map(box_to_animal_map),
     )
 
-    # convert categorical types
-    df = df.astype({
-        "Animal": "category",
-    })
+    # Convert categorical types
+    df = df.astype({"Animal": "category", "Box": "category"})
 
-    actimot_data = ActimotData(
+    return ActimotData(
         dataset,
         tse_import_settings.ACTIMOT_RAW_TABLE,
         str(path),
@@ -60,8 +50,6 @@ def read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> ActimotData:
         df,
         sample_interval,
     )
-
-    return actimot_data
 
 
 def import_actimot_csv_data(

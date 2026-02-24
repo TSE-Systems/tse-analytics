@@ -1,6 +1,6 @@
 {
   "permissions": {
     "defaultMode": "plan",
-    "planDirectory": "./claude/plans"
+    "planDirectory": "./.claude/plans"
   }
 }
