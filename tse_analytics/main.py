@@ -13,7 +13,6 @@ import sys
 from multiprocessing import freeze_support
 
 import matplotlib as mpl
-import pandas as pd
 import seaborn as sns
 import seaborn.objects as so
 from loguru import logger
@@ -45,10 +44,7 @@ setConfigOptions(
 )
 
 # Global Pandas settings
-pd.options.mode.copy_on_write = "warn"
-# pd.options.mode.copy_on_write = True
-# pd.options.future.infer_string = True
-pd.set_option("colheader_justify", "center")  # FOR TABLE <th>
+# pd.set_option("display.colheader_justify", "center")  # FOR TABLE <th>
 # pd.set_option("display.precision", 3)
 
 # Global Matplotlib settings
