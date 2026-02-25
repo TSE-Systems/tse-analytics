@@ -4,6 +4,7 @@ from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
+from tse_analytics.core.utils.data import exclude_animals_from_df
 from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_data import ActimotData
 from tse_analytics.modules.phenomaster.submodules.actimot.models.actimot_tree_item import ActimotTreeItem
 from tse_analytics.modules.phenomaster.submodules.calo.data.calo_data import CaloData
@@ -85,13 +86,13 @@ class PhenoMasterDataset(Dataset):
         super().exclude_animals(animal_ids)
 
         if self.calo_data is not None:
-            self.calo_data.raw_df = self.calo_data.raw_df[~self.calo_data.raw_df["Animal"].isin(animal_ids)]
+            self.calo_data.raw_df = exclude_animals_from_df(self.calo_data.raw_df, animal_ids)
         if self.drinkfeed_bin_data is not None:
-            self.drinkfeed_bin_data.raw_df = self.drinkfeed_bin_data.raw_df[
-                ~self.drinkfeed_bin_data.raw_df["Animal"].isin(animal_ids)
-            ]
+            self.drinkfeed_bin_data.raw_df = exclude_animals_from_df(self.drinkfeed_bin_data.raw_df, animal_ids)
         if self.actimot_data is not None:
-            self.actimot_data.raw_df = self.actimot_data.raw_df[~self.actimot_data.raw_df["Animal"].isin(animal_ids)]
+            self.actimot_data.raw_df = exclude_animals_from_df(self.actimot_data.raw_df, animal_ids)
+        if self.grouphousing_data is not None:
+            self.grouphousing_data.raw_df = exclude_animals_from_df(self.grouphousing_data.raw_df, animal_ids)
 
     def append_fitting_results(
         self,
@@ -110,20 +111,20 @@ class PhenoMasterDataset(Dataset):
         """
         if len(fitting_results) > 0:
             main_datatable = self.datatables["Main"]
-            active_df = main_datatable.original_df
-            active_df["O2-p"] = np.nan
-            active_df["CO2-p"] = np.nan
-            active_df["VO2-p"] = np.nan
-            active_df["VCO2-p"] = np.nan
-            active_df["RER-p"] = np.nan
-            active_df["EE-p"] = np.nan
+            df = main_datatable.df
+            df["O2-p"] = np.nan
+            df["CO2-p"] = np.nan
+            df["VO2-p"] = np.nan
+            df["VCO2-p"] = np.nan
+            df["RER-p"] = np.nan
+            df["EE-p"] = np.nan
             for result in fitting_results.values():
                 for _index, row in result.df.iterrows():
                     bin_number = row["Bin"]
 
                     # TODO: TODO: check int -> str conversion for general table!
-                    active_df.loc[
-                        active_df[(active_df["Box"] == result.box_number) & (active_df["Bin"] == bin_number)].index[0],
+                    df.loc[
+                        df[(df["Box"] == result.box_number) & (df["Bin"] == bin_number)].index[0],
                         ["O2-p", "CO2-p", "VO2-p", "VCO2-p", "RER-p", "EE-p"],
                     ] = [row["O2-p"], row["CO2-p"], row["VO2-p"], row["VCO2-p"], row["RER-p"], row["EE-p"]]
 
@@ -151,7 +152,6 @@ class PhenoMasterDataset(Dataset):
                 main_datatable.variables["EE-p"] = Variable(
                     "EE-p", "[kcal/h]", "Predicted energy expenditure", "float64", Aggregation.MEAN, False
                 )
-            main_datatable.refresh_active_df()
             messaging.broadcast(messaging.DatasetChangedMessage(self, self))
 
     def add_children_tree_items(self, dataset_tree_item: DatasetTreeItem) -> None:

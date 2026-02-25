@@ -1,6 +1,6 @@
 import pandas as pd
-from PySide6.QtCore import QSettings, QSize, Qt
-from PySide6.QtGui import QCloseEvent, QIcon
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QFileDialog, QMenu, QToolBar, QToolButton, QWidget
 
 from tse_analytics.core.models.pandas_simple_model import PandasSimpleModel
@@ -35,9 +35,6 @@ class RawDataWidget(QWidget):
             # | Qt.WindowType.WindowTitleHint
             # | Qt.WindowType.WindowCloseButtonHint
         )
-
-        settings = QSettings()
-        self.restoreGeometry(settings.value("RawDataWidget/Geometry"))
 
         # Setup toolbar
         toolbar = QToolBar(
@@ -112,7 +109,3 @@ class RawDataWidget(QWidget):
             df = self._get_filtered_df()
             with pd.ExcelWriter(filename) as writer:
                 df.to_excel(writer, sheet_name=selected_table)
-
-    def closeEvent(self, event: QCloseEvent) -> None:
-        settings = QSettings()
-        settings.setValue("RawDataWidget/Geometry", self.saveGeometry())

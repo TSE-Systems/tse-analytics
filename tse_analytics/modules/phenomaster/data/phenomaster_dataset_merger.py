@@ -79,7 +79,7 @@ def _merge_continuous(
     for datatable_name in first_dataset.datatables.keys():
         dataframes = []
         for dataset in datasets:
-            dataframes.append(dataset.datatables[datatable_name].original_df)
+            dataframes.append(dataset.datatables[datatable_name].df)
 
         # reassign run number
         if not single_run:
@@ -164,9 +164,9 @@ def _merge_overlap(
             dataset.animals = new_animals
 
             for datatable in dataset.datatables.values():
-                datatable.original_df["Animal"] = datatable.original_df["Animal"].astype(str)
-                datatable.original_df["Animal"] = datatable.original_df["Animal"].replace(name_map)
-                datatable.original_df["Animal"] = datatable.original_df["Animal"].astype("category")
+                datatable.df["Animal"] = datatable.df["Animal"].astype(str)
+                datatable.df["Animal"] = datatable.df["Animal"].replace(name_map)
+                datatable.df["Animal"] = datatable.df["Animal"].astype("category")
 
     merged_animals = _merge_animals(datasets)
     merged_metadata = _merge_metadata(merged_dataset_name, "overlap", merged_animals, datasets)
@@ -179,7 +179,7 @@ def _merge_overlap(
     for datatable_name in first_dataset.datatables.keys():
         dataframes = []
         for dataset in datasets:
-            dataframes.append(dataset.datatables[datatable_name].original_df)
+            dataframes.append(dataset.datatables[datatable_name].df)
 
         # reassign run number
         if not single_run:

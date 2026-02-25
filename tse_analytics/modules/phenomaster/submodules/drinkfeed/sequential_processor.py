@@ -4,13 +4,11 @@ from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_bin_d
 from tse_analytics.modules.phenomaster.submodules.drinkfeed.drinkfeed_settings import DrinkFeedSettings
 
 
-def _find_invalid_episodes(events_df: pd.DataFrame, minimum_amount: float):
-    episodes_ids = events_df["EpisodeId"].unique().tolist()
-    for episode_id in episodes_ids:
-        episode_df = events_df[events_df["EpisodeId"] == episode_id]
-        if episode_df["Value"].sum() < minimum_amount:
-            events_df.loc[events_df["EpisodeId"] == episode_id, "EpisodeId"] = pd.NA
-
+def _find_invalid_episodes(events_df: pd.DataFrame, minimum_amount: float) -> pd.DataFrame:
+    valid = events_df["EpisodeId"].notna()
+    if valid.any():
+        episode_sum = events_df.loc[valid].groupby("EpisodeId")["Value"].transform("sum")
+        events_df.loc[valid, "EpisodeId"] = events_df.loc[valid, "EpisodeId"].where(episode_sum >= minimum_amount)
     return events_df
 
 
@@ -19,17 +17,16 @@ def process_drinkfeed_sequences(
     long_df: pd.DataFrame,
     settings: DrinkFeedSettings,
     diets_dict: dict[str, float],
-):
-    # TODO: drop unnecessary rows
-    long_df = long_df.loc[~(long_df["Value"] == 0)]
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    long_df = long_df.loc[long_df["Value"] != 0]
 
-    long_df.sort_values(by=["DateTime"], inplace=True)
-    long_df.reset_index(drop=True, inplace=True)
+    long_df = long_df.sort_values(by=["DateTime"])
+    long_df = long_df.reset_index(drop=True)
 
     sensors = long_df["Sensor"].unique().tolist()
 
-    events_df = pd.DataFrame()
-    episodes_df = pd.DataFrame()
+    events_parts: list[pd.DataFrame] = []
+    episodes_parts: list[pd.DataFrame] = []
     for animal_id in drinkfeed_data.dataset.animals.keys():
         animal_df = long_df[long_df["Animal"] == animal_id]
         animal_events_df, animal_episodes_df = _process_animal(
@@ -39,12 +36,16 @@ def process_drinkfeed_sequences(
             settings,
             drinkfeed_data.raw_df["DateTime"].iloc[0],
         )
-        events_df = pd.concat([events_df, animal_events_df], ignore_index=True)
-        episodes_df = pd.concat([episodes_df, animal_episodes_df], ignore_index=True)
+        events_parts.append(animal_events_df)
+        episodes_parts.append(animal_episodes_df)
+
+    events_df = pd.concat(events_parts, ignore_index=True) if events_parts else pd.DataFrame()
+    episodes_df = pd.concat(episodes_parts, ignore_index=True) if episodes_parts else pd.DataFrame()
 
     # Add caloric value column
-    episodes_df.insert(episodes_df.columns.get_loc("Quantity") + 1, "Quantity-kcal", episodes_df["Animal"])
-    episodes_df = episodes_df.replace({"Quantity-kcal": diets_dict})
+    episodes_df.insert(
+        episodes_df.columns.get_loc("Quantity") + 1, "Quantity-kcal", episodes_df["Animal"].map(diets_dict)
+    )
     episodes_df["Quantity-kcal"] = episodes_df["Quantity-kcal"] * episodes_df["Quantity"]
 
     # convert types
@@ -66,9 +67,9 @@ def _process_animal(
     sensors: list[str],
     settings: DrinkFeedSettings,
     start_timestamp: pd.Timestamp,
-):
-    animal_events_df = pd.DataFrame()
-    animal_episodes_df = pd.DataFrame()
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    events_parts: list[pd.DataFrame] = []
+    episodes_parts: list[pd.DataFrame] = []
     for sensor in sensors:
         # Ignore Weight sensor
         if sensor == "Weight":
@@ -80,7 +81,7 @@ def _process_animal(
             sensor,
             settings,
         )
-        animal_events_df = pd.concat([animal_events_df, sensor_events_df], ignore_index=True)
+        events_parts.append(sensor_events_df)
 
         sensor_episodes_df = _extract_sensor_episodes(
             animal_id,
@@ -88,8 +89,10 @@ def _process_animal(
             sensor_events_df,
             sensor,
         )
-        animal_episodes_df = pd.concat([animal_episodes_df, sensor_episodes_df], ignore_index=True)
+        episodes_parts.append(sensor_episodes_df)
 
+    animal_events_df = pd.concat(events_parts, ignore_index=True) if events_parts else pd.DataFrame()
+    animal_episodes_df = pd.concat(episodes_parts, ignore_index=True) if episodes_parts else pd.DataFrame()
     return animal_events_df, animal_episodes_df
 
 
@@ -100,51 +103,27 @@ def _extract_sensor_events(
 ) -> pd.DataFrame:
     events_df = df.copy()
 
+    if events_df.empty:
+        events_df.insert(1, "EpisodeId", pd.array([], dtype="Int64"))
+        events_df.insert(2, "Gap", pd.array([], dtype="timedelta64[ns]"))
+        return events_df
+
     timedelta = pd.Timedelta(
         hours=settings.intermeal_interval.hour,
         minutes=settings.intermeal_interval.minute,
         seconds=settings.intermeal_interval.second,
     )
 
-    events_df.insert(1, "EpisodeId", pd.NA)
-    events_df["EpisodeId"] = events_df["EpisodeId"].astype("Int64")
-    events_df.insert(2, "Gap", pd.NA)
+    gaps = events_df["DateTime"].diff()
+    new_episode = gaps > timedelta
+    episode_ids = new_episode.cumsum().astype("Int64")
 
-    episode_number = 0
-    episode_start = None
-    episode_last_timestamp = None
+    events_df.insert(1, "EpisodeId", episode_ids.values)
+    events_df.insert(2, "Gap", gaps.values)
 
-    for index, row in events_df.iterrows():
-        timestamp = row["DateTime"]
-
-        if episode_last_timestamp is None:
-            # First measurement
-            episode_start = timestamp
-            events_df.at[index, "EpisodeId"] = episode_number
-            episode_last_timestamp = timestamp
-        else:
-            if episode_start is None:
-                episode_start = timestamp
-                if timestamp - episode_last_timestamp <= timedelta:
-                    events_df.at[index, "EpisodeId"] = episode_number
-                else:
-                    episode_number = episode_number + 1
-                    events_df.at[index, "EpisodeId"] = episode_number
-                events_df.at[index, "Gap"] = timestamp - episode_last_timestamp
-                episode_last_timestamp = timestamp
-            else:
-                if timestamp - episode_last_timestamp <= timedelta:
-                    events_df.at[index, "EpisodeId"] = episode_number
-                    events_df.at[index, "Gap"] = timestamp - episode_last_timestamp
-                    episode_last_timestamp = timestamp
-                else:
-                    episode_number = episode_number + 1
-                    events_df.at[index, "EpisodeId"] = episode_number
-                    events_df.at[index, "Gap"] = timestamp - episode_last_timestamp
-                    episode_start = None
-                    episode_last_timestamp = timestamp
-
-    events_df = _find_invalid_episodes(events_df, settings.drinking_minimum_amount)
+    events_df = _find_invalid_episodes(
+        events_df, settings.drinking_minimum_amount if "Drink" in sensor else settings.feeding_minimum_amount
+    )
 
     return events_df
 
@@ -155,62 +134,63 @@ def _extract_sensor_episodes(
     events_df: pd.DataFrame,
     sensor: str,
 ) -> pd.DataFrame:
-    id_ = []
-    start_ = []
-    duration_ = []
-    duration_minutes_ = []
-    offset_ = []
-    offset_minutes_ = []
-    quantity_ = []
-    rate_ = []
+    valid_events = events_df[events_df["EpisodeId"].notna()]
 
-    episode_ids = events_df["EpisodeId"].dropna().unique().tolist()
-    for episode_id in episode_ids:
-        df = events_df[events_df["EpisodeId"] == episode_id]
-        id_.append(episode_id)
-        start_.append(df["DateTime"].iloc[0])
-        offset_delta = df["DateTime"].iloc[0] - start_timestamp
-        offset_.append(offset_delta)
-        offset_minutes_.append(round(offset_delta.total_seconds() / 60, 3))
+    if valid_events.empty:
+        return pd.DataFrame(
+            columns=[
+                "Sensor",
+                "Animal",
+                "Id",
+                "Start",
+                "Offset",
+                "Offset[minutes]",
+                "Duration",
+                "Duration[minutes]",
+                "Gap",
+                "Gap[minutes]",
+                "Quantity",
+                "Rate",
+            ],
+        )
 
-        quantity = df["Value"].sum()
-        quantity_.append(quantity)
+    grouped = valid_events.groupby("EpisodeId", sort=False).agg(
+        Start=("DateTime", "first"),
+        End=("DateTime", "last"),
+        Quantity=("Value", "sum"),
+        Count=("Value", "size"),
+    )
 
-        if len(df["DateTime"]) > 1:
-            duration = df["DateTime"].iloc[-1] - df["DateTime"].iloc[0]
-            duration_.append(duration)
-            duration_minutes = round(duration.total_seconds() / 60, 3)
-            duration_minutes_.append(duration_minutes)
-            rate_.append(quantity / duration_minutes)
-        else:
-            duration_.append(None)
-            duration_minutes_.append(None)
-            rate_.append(None)
-
-    sensor_episodes_df = pd.DataFrame.from_dict({
+    episodes = pd.DataFrame({
         "Sensor": sensor,
         "Animal": animal_id,
-        "Id": id_,
-        "Start": start_,
-        "Offset": offset_,
-        "Offset[minutes]": offset_minutes_,
-        "Duration": duration_,
-        "Duration[minutes]": duration_minutes_,
-        "Gap": pd.NA,
-        "Gap[minutes]": pd.NA,
-        "Quantity": quantity_,
-        "Rate": rate_,
+        "Id": grouped.index,
+        "Start": grouped["Start"].values,
     })
 
-    # Find gaps between episodes
-    for index, episode_id in enumerate(episode_ids):
-        if index < len(episode_ids) - 1:
-            current_episode = sensor_episodes_df[sensor_episodes_df["Id"] == episode_id]
-            next_episode = sensor_episodes_df[sensor_episodes_df["Id"] == episode_ids[index + 1]]
-            gap = next_episode["Start"].iloc[0] - current_episode["Start"].iloc[0] + current_episode["Duration"].iloc[0]
-            sensor_episodes_df.loc[sensor_episodes_df["Id"] == episode_id, "Gap"] = gap
-            sensor_episodes_df.loc[sensor_episodes_df["Id"] == episode_id, "Gap[minutes]"] = round(
-                gap.total_seconds() / 60, 3
-            )
+    offset = grouped["Start"] - start_timestamp
+    episodes["Offset"] = offset.values
+    episodes["Offset[minutes]"] = (offset.dt.total_seconds() / 60).round(3).values
 
-    return sensor_episodes_df
+    duration = grouped["End"] - grouped["Start"]
+    # Single-event episodes get NaT duration
+    duration = duration.where(grouped["Count"] > 1)
+    episodes["Duration"] = duration.values
+
+    duration_minutes = duration.dt.total_seconds() / 60
+    duration_minutes = duration_minutes.round(3)
+    episodes["Duration[minutes]"] = duration_minutes.values
+
+    # Gap = next_start - current_start + current_duration (NaT for single-event and last episode)
+    next_start = grouped["Start"].shift(-1)
+    gap = next_start - grouped["Start"] + duration
+    episodes["Gap"] = gap.values
+    episodes["Gap[minutes]"] = (gap.dt.total_seconds() / 60).round(3).values
+
+    episodes["Quantity"] = grouped["Quantity"].values
+
+    # Rate = quantity / duration_minutes (NaN where duration is NaT)
+    rate = grouped["Quantity"] / duration_minutes
+    episodes["Rate"] = rate.values
+
+    return episodes

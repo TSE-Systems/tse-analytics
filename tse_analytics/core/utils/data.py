@@ -2,6 +2,8 @@
 
 from datetime import time
 
+import pandas as pd
+
 from tse_analytics.core.data.shared import SplitMode
 
 
@@ -32,3 +34,10 @@ def time_to_float(value: time) -> float:
         A float representing the time in hours.
     """
     return value.hour + value.minute / 60.0
+
+
+def exclude_animals_from_df(df: pd.DataFrame, animal_ids: set[str]) -> pd.DataFrame:
+    df = df[~df["Animal"].isin(animal_ids)]
+    df["Animal"] = df["Animal"].cat.remove_unused_categories()
+    df.reset_index(inplace=True, drop=True)
+    return df

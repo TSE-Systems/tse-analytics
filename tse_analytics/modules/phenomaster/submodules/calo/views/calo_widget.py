@@ -5,7 +5,7 @@ from multiprocessing import Pool
 import pandas as pd
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
-from PySide6.QtGui import QCloseEvent, QIcon
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QMessageBox, QToolBar, QWidget
 
 from tse_analytics.core.toaster import make_toast
@@ -43,8 +43,10 @@ class CaloWidget(QWidget):
             # | Qt.WindowType.WindowCloseButtonHint
         )
 
+        # Connect destructor to save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
         settings = QSettings()
-        # self.restoreGeometry(settings.value("CaloDialog/Geometry"))
 
         self.calo_data = calo_data
 
@@ -168,8 +170,8 @@ class CaloWidget(QWidget):
         # remove last bin
         bin_numbers = sorted(self.calo_data.raw_df["Bin"].unique().tolist())
         raw_df = self.calo_data.raw_df.loc[self.calo_data.raw_df["Bin"] != bin_numbers[-1]]
-        active_df = self.calo_data.dataset.datatables["Main"].active_df.loc[
-            self.calo_data.dataset.datatables["Main"].active_df["Bin"] != bin_numbers[-1]
+        df = self.calo_data.dataset.datatables["Main"].df.loc[
+            self.calo_data.dataset.datatables["Main"].df["Bin"] != bin_numbers[-1]
         ]
 
         fitting_params_list: list[FittingParams] = []
@@ -180,8 +182,8 @@ class CaloWidget(QWidget):
                 continue
 
             # TODO: check int -> str conversion for general table!
-            # general_df = active_df[active_df["Box"] == str(calo_box.box)].copy()
-            main_df = active_df[active_df["Box"] == calo_box.box].copy()
+            # general_df = df[df["Box"] == str(calo_box.box)].copy()
+            main_df = df[df["Box"] == calo_box.box].copy()
             box_df = raw_df[raw_df["Box"] == calo_box.box].copy()
             ref_df = raw_df[raw_df["Box"] == calo_box.ref_box].copy()
 
@@ -210,9 +212,10 @@ class CaloWidget(QWidget):
 
         self.add_datatable_action.setEnabled(True)
 
-    def closeEvent(self, event: QCloseEvent) -> None:
+    def _destroyed(self) -> None:
+        """Save widget settings via QSettings on destruction."""
         settings = QSettings()
-        settings.setValue("CaloDialog/Geometry", self.saveGeometry())
-
-        calo_settings = self.calo_settings_widget.get_calo_settings()
-        settings.setValue("CaloSettings", calo_settings)
+        settings.setValue(
+            "CaloSettings",
+            self.calo_settings_widget.get_calo_settings(),
+        )

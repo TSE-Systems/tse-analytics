@@ -219,6 +219,7 @@ cython_debug/
 
 # Claude Code
 .claude/settings.local.json
+.claude/plans/
 
 # Inno Setup Output
 setup/Output

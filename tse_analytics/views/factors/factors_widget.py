@@ -60,5 +60,5 @@ class FactorsWidget(QWidget, messaging.MessengerListener):
             factors: dict[str, Factor] = {}
             for factor in dlg.factors:
                 factors[factor.name] = factor
-            self.dataset.set_factors(factors)
+            self.dataset.set_factors(factors, self.dataset.factors)
             messaging.broadcast(messaging.DatasetChangedMessage(self, self.dataset))

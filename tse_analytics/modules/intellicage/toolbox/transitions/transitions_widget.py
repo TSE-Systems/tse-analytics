@@ -82,7 +82,7 @@ class TransitionsWidget(QWidget):
         self._toast.show()
 
         columns = ["Timedelta", "Animal", "Corner"]
-        df = self.datatable.active_df[columns]
+        df = self.datatable.df[columns]
 
         animal_ids = [animal.id for animal in self.datatable.dataset.animals.values() if animal.enabled]
 

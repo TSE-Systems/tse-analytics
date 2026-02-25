@@ -30,7 +30,7 @@ class ReportNode(PipelineNode):
             value = packet.value
             if isinstance(value, Datatable):
                 report = get_great_table(
-                    value.active_df,
+                    value.df,
                     value.name,
                 ).as_raw_html(inline_css=True)
             elif isinstance(value, str):

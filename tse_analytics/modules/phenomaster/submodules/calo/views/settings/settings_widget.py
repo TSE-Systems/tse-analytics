@@ -30,8 +30,8 @@ class SettingsWidget(QWidget):
         self.dataset = dataset
         flow_value = 0.5
         main_datatable = dataset.datatables["Main"]
-        if "Flow" in main_datatable.original_df.columns:
-            flow_value = main_datatable.original_df.iloc[1].at["Flow"]
+        if "Flow" in main_datatable.df.columns:
+            flow_value = main_datatable.df.iloc[1].at["Flow"]
         self.ui.flowDoubleSpinBox.setValue(flow_value)
 
     def get_calo_settings(self) -> CaloSettings:

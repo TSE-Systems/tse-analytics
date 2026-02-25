@@ -2,7 +2,7 @@ import pandas as pd
 import traja
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
-from PySide6.QtGui import QCloseEvent, QIcon
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QToolBar, QWidget
 
 from tse_analytics.core.data.shared import Aggregation, Variable
@@ -40,8 +40,10 @@ class ActimotWidget(QWidget):
             # | Qt.WindowType.WindowCloseButtonHint
         )
 
+        # Connect destructor to save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
         settings = QSettings()
-        # self.restoreGeometry(settings.value("ActimotDialog/Geometry"))
 
         self.actimot_data = actimot_data
         self.df: pd.DataFrame | None = None
@@ -230,9 +232,10 @@ class ActimotWidget(QWidget):
         self.preprocess_action.setEnabled(True)
         self._update_tabs()
 
-    def closeEvent(self, event: QCloseEvent) -> None:
+    def _destroyed(self) -> None:
+        """Save widget settings via QSettings on destruction."""
         settings = QSettings()
-        settings.setValue("ActimotDialog/Geometry", self.saveGeometry())
-
-        actimot_settings = self.settings_widget.get_settings()
-        settings.setValue("ActimotSettings", actimot_settings)
+        settings.setValue(
+            "ActimotSettings",
+            self.settings_widget.get_settings(),
+        )

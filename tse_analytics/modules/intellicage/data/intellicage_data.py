@@ -287,7 +287,7 @@ class IntelliCageData:
             A structured datatable containing processed nosepoke data.
         """
         df = self.raw_data["Nosepokes"].copy()
-        visits_preprocessed_df = visits_datatable.original_df.copy()
+        visits_preprocessed_df = visits_datatable.df.copy()
 
         # Sanitize visits table before merging
         columns_to_drop = [
@@ -483,8 +483,7 @@ class IntelliCageData:
                 TimeErrors=("TimeError", "sum"),
                 ConditionErrors=("ConditionError", "sum"),
             )
-        visits_datatable.original_df = visits_datatable.original_df.join(grouped_by_visit, on="VisitID")
-        visits_datatable.refresh_active_df()
+        visits_datatable.df = visits_datatable.df.join(grouped_by_visit, on="VisitID")
 
         visits_datatable.variables = visits_datatable.variables | {
             "NosepokesNumber": Variable(

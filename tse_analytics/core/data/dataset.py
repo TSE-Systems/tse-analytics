@@ -331,7 +331,7 @@ class Dataset:
         for datatable in self.datatables.values():
             datatable.resample(resampling_interval)
 
-    def set_factors(self, factors: dict[str, Factor]) -> None:
+    def set_factors(self, factors: dict[str, Factor], old_factors: dict[str, Factor] | None = None) -> None:
         """
         Set the factors for the dataset.
 
@@ -345,7 +345,7 @@ class Dataset:
         self.factors = factors
 
         for datatable in self.datatables.values():
-            datatable.set_factors(factors)
+            datatable.set_factors(factors, old_factors)
 
     def apply_binning(self, binning_settings: BinningSettings) -> None:
         """
@@ -419,24 +419,3 @@ class Dataset:
 
     def delete_report(self, name: str) -> None:
         self.reports.pop(name)
-
-    def __setstate__(self, state):
-        """
-        Restore the state of the dataset during unpickling.
-
-        This method is called when unpickling a Dataset object. It updates the
-        object's state and refreshes the active dataframes in all datatables.
-
-        Parameters
-        ----------
-        state : dict
-            The state dictionary to restore from.
-        """
-        self.__dict__.update(state)
-        for datatable in self.datatables.values():
-            # Recalculate active_df dataframes
-            datatable.refresh_active_df()
-
-        # TODO: remove the check in the future
-        if "reports" not in self.__dict__:
-            self.reports = {}
