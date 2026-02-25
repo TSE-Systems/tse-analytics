@@ -63,7 +63,7 @@ class TestAncova:
         )
         assert "<table" in result.report
 
-    @pytest.mark.parametrize("effsize", ["none", "cohen", "eta-square", "hedges", "r"])
+    @pytest.mark.parametrize("effsize", ["none", "cohen", "eta_square", "hedges", "r"])
     def test_different_effsize(self, analysis_dataset, analysis_df, effsize):
         variables = analysis_dataset.datatables["Main"].variables
 

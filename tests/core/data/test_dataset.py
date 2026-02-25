@@ -216,7 +216,7 @@ class TestSetFactors:
     def test_propagates_to_datatables(self, sample_dataset, sample_datatable, sample_factor):
         factors = {"Group": sample_factor}
         sample_dataset.set_factors(factors)
-        # The factor column should be added to the original_df
+        # The factor column should be added to the df
         assert "Group" in sample_datatable.df.columns
 
 

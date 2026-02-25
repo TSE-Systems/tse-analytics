@@ -3,7 +3,7 @@ EFFECT_SIZE = {
     "Unbiased Cohen d": "cohen",
     "Hedges g": "hedges",
     # "Pearson correlation coefficient": "r",
-    "Eta-square": "eta-square",
+    "Eta-square": "eta_square",
     "Odds ratio": "odds-ratio",
     "Area Under the Curve": "AUC",
     "Common Language Effect Size": "CLES",

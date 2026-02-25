@@ -67,7 +67,7 @@ class TestGetCategoricalColumns:
 class TestRenameAnimal:
     """Tests for Datatable.rename_animal."""
 
-    def test_renames_in_original_df(self, sample_datatable):
+    def test_rename_animal(self, sample_datatable):
         new_animal = Animal(enabled=True, id="NewA1", color="#FF0000", properties={})
         sample_datatable.rename_animal("A1", new_animal)
 
@@ -168,7 +168,7 @@ class TestDeleteVariables:
         sample_datatable.delete_variables(["Weight"])
         assert "Weight" not in sample_datatable.variables
 
-    def test_drops_from_original_df(self, sample_datatable):
+    def test_drops_delete_variables(self, sample_datatable):
         sample_datatable.delete_variables(["Weight"])
         assert "Weight" not in sample_datatable.df.columns
 
@@ -205,12 +205,3 @@ class TestDatatableClone:
         clone = sample_datatable.clone()
         clone.df.iloc[0, clone.df.columns.get_loc("Weight")] = 999.0
         assert sample_datatable.df.iloc[0, sample_datatable.df.columns.get_loc("Weight")] != 999.0
-
-
-class TestDatatableGetstate:
-    """Tests for Datatable.__getstate__ (pickling)."""
-
-    def test_excludes_active_df(self, sample_datatable):
-        state = sample_datatable.__getstate__()
-        assert "active_df" not in state
-        assert "original_df" in state
