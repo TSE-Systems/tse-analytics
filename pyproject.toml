@@ -41,11 +41,11 @@ dependencies = [
 dev = [
     "pyinstaller==6.19.0",
     "pyinstrument==5.1.2",
-    "pyrefly==0.54.0",
+    "pyrefly==0.55.0",
     "pytest==9.0.2",
     "qtsass==0.4.0",
-    "ruff==0.15.2",
-    "ty==0.0.18",
+    "ruff==0.15.4",
+    "ty==0.0.20",
 ]
 
 [project.scripts]

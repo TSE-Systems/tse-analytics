@@ -1,7 +1,7 @@
 TSE Analytics Change Log
 ====================================================================================================
 
-# 1.8.1 (2026-02-20)
+# 1.8.1 (2026-03-03)
 
 - Complete overhaul of the Principal Component Analysis tool (Scree plot, etc.)
 - Factor analysis improvements (t-SNE, MDS).
