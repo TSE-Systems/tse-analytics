@@ -180,17 +180,19 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
         delimiter=csv_import_settings.delimiter,
         decimal=csv_import_settings.decimal_separator,
         skiprows=header_line_number,  # Skip header part
-        parse_dates={"DateTime": ["Date", "Time"]},
         encoding="ISO-8859-1",
-        dayfirst=csv_import_settings.day_first,
     )
 
-    # Convert DateTime column
-    raw_df["DateTime"] = pd.to_datetime(
-        raw_df["DateTime"],
-        format="mixed",
-        dayfirst=csv_import_settings.day_first,
+    raw_df.insert(
+        0,
+        "DateTime",
+        pd.to_datetime(
+            raw_df["Date"] + " " + raw_df["Time"],
+            format="mixed",
+            dayfirst=csv_import_settings.day_first,
+        ),
     )
+    raw_df.drop(columns=["Date", "Time"], inplace=True)
 
     # Find box numbers
     box_numbers = []
@@ -209,36 +211,27 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     feed_present = "Feed" in columns_line and (not feed1_present and not feed2_present)
 
     # Build new dataframe
-    new_columns = ["DateTime", "Animal", "Box"]
     variables: dict[str, Variable] = {}
     if drink1_present:
-        new_columns.append("Drink1")
         variables["Drink1"] = Variable("Drink1", "[ml]", "Drink1 sensor", "float64", Aggregation.MEAN, False)
     if feed1_present:
-        new_columns.append("Feed1")
         variables["Feed1"] = Variable("Feed1", "[g]", "Feed1 sensor", "float64", Aggregation.MEAN, False)
     if drink2_present:
-        new_columns.append("Drink2")
         variables["Drink2"] = Variable("Drink2", "[ml]", "Drink2 sensor", "float64", Aggregation.MEAN, False)
     if feed2_present:
-        new_columns.append("Feed2")
         variables["Feed2"] = Variable("Feed2", "[g]", "Feed2 sensor", "float64", Aggregation.MEAN, False)
     if weight_present:
-        new_columns.append("Weight")
         variables["Weight"] = Variable("Weight", "[g]", "Animal weight", "float64", Aggregation.MEAN, False)
     if drink_present:
-        new_columns.append("Drink")
         variables["Drink"] = Variable("Drink", "[ml]", "Drink sensor", "float64", Aggregation.MEAN, False)
     if feed_present:
-        new_columns.append("Feed")
         variables["Feed"] = Variable("Feed", "[g]", "Feed sensor", "float64", Aggregation.MEAN, False)
-
-    new_df = pd.DataFrame(columns=new_columns)
 
     box_to_animal_map = {}
     for animal in dataset.animals.values():
         box_to_animal_map[animal.properties["Box"]] = animal.id
 
+    new_df = None
     for box_number in box_numbers:
         box_df = pd.DataFrame.from_dict({
             "DateTime": raw_df["DateTime"],
@@ -260,7 +253,10 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
         if feed_present:
             box_df["Feed"] = raw_df[f"Box{box_number}: Feed"]
 
-        new_df = pd.concat([new_df, box_df], ignore_index=True)
+        if new_df is None:
+            new_df = box_df
+        else:
+            new_df = pd.concat([new_df, box_df], ignore_index=True)
 
     new_df = new_df.sort_values(["Box", "DateTime"])
     new_df.reset_index(drop=True, inplace=True)

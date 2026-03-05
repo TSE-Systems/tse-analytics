@@ -111,8 +111,6 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
     data = [line.rstrip(csv_import_settings.delimiter) for line in data]
     csv = "\n".join(data)
 
-    parse_dates = [["Date", "Time"]] if datetime_separate else False
-
     # noinspection PyTypeChecker
     df = pd.read_csv(
         StringIO(csv),
@@ -120,22 +118,32 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
         decimal=csv_import_settings.decimal_separator,
         na_values=["-"],
         names=columns,
-        parse_dates=parse_dates,
-        dayfirst=csv_import_settings.day_first,
     )
-
-    # TODO: Drop "Box" column?
-    # df.drop(columns=["Box"], inplace=True)
 
     # Rename table columns
     df.rename(columns={"Date_Time": "DateTime", "Date Time": "DateTime", "Animal No.": "Animal"}, inplace=True)
 
-    # Convert DateTime column
-    df["DateTime"] = pd.to_datetime(
-        df["DateTime"],
-        format="mixed",
-        dayfirst=csv_import_settings.day_first,
-    )
+    if datetime_separate:
+        df.insert(
+            0,
+            "DateTime",
+            pd.to_datetime(
+                df["Date"] + " " + df["Time"],
+                format="mixed",
+                dayfirst=csv_import_settings.day_first,
+            ),
+        )
+        df.drop(columns=["Date", "Time"], inplace=True)
+    else:
+        # Convert DateTime column
+        df["DateTime"] = pd.to_datetime(
+            df["DateTime"],
+            format="mixed",
+            dayfirst=csv_import_settings.day_first,
+        )
+
+    # TODO: Drop "Box" column?
+    # df.drop(columns=["Box"], inplace=True)
 
     # Apply categorical types
     df = df.astype({

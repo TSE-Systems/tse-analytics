@@ -1,6 +1,12 @@
 TSE Analytics Change Log
 ====================================================================================================
 
+# 1.8.2 (2026-03-05)
+
+- Fix: broken CSV files import after migration to pandas 3.x.
+
+
+----------------------------------------------------------------------------------------------------
 # 1.8.1 (2026-03-03)
 
 - Complete overhaul of the Principal Component Analysis tool (Scree plot, etc.)

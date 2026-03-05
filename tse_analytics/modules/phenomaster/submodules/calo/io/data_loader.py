@@ -144,18 +144,20 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
         delimiter=csv_import_settings.delimiter,
         decimal=csv_import_settings.decimal_separator,
         skiprows=header_line_number,  # Skip header part
-        parse_dates={"DateTime": ["Date", "Time"]},
         encoding="ISO-8859-1",
         na_values="-",
-        dayfirst=csv_import_settings.day_first,
     )
 
-    # Convert DateTime column
-    df["DateTime"] = pd.to_datetime(
-        df["DateTime"],
-        format="mixed",
-        dayfirst=csv_import_settings.day_first,
+    df.insert(
+        0,
+        "DateTime",
+        pd.to_datetime(
+            df["Date"] + " " + df["Time"],
+            format="mixed",
+            dayfirst=csv_import_settings.day_first,
+        ),
     )
+    df.drop(columns=["Date", "Time"], inplace=True)
 
     # Sanitize column names
     new_column_names = {}
