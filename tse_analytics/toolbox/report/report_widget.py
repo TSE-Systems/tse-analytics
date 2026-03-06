@@ -240,7 +240,7 @@ class ReportWidget(QWidget):
     def _save_report(self):
         filename, _ = QFileDialog.getSaveFileName(self, "Save Report", "", "HTML Files (*.html)")
         if filename:
-            with open(filename, "w") as file:
+            with open(filename, "w", encoding="utf-8") as file:
                 file.write(self.editor.document().toHtml())
 
             # printer = QPrinter(QPrinter.PrinterMode.HighResolution)
