@@ -52,7 +52,7 @@ def get_data_plot_result(
 
     # Create a figure with a tight layout
     figure = plt.Figure(figsize=figsize, layout="tight")
-    (
+    plot = (
         so
         .Plot(
             df,
@@ -60,9 +60,17 @@ def get_data_plot_result(
             color=by,
         )
         .pair(y=list(variables))
-        .add(so.Line(linewidth=1.0), so.Agg(func="mean"))  # Line with mean estimate
-        .add(so.Band(alpha=0.15), so.Est(errorbar=error_bar))  # Shaded CI band
-        .scale(color=palette)
+        .add(so.Line(linewidth=1.0), so.Agg(func="mean"))
+    )
+
+    if error_bar is not None:
+        plot = plot.add(so.Band(alpha=0.15), so.Est(errorbar=error_bar))
+
+    (
+        plot
+        .scale(
+            color=so.Nominal(palette, order=df[by].cat.categories.tolist()) if by else palette,
+        )
         .on(figure)
         .plot(True)
     )

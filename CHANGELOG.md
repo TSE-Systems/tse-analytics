@@ -4,6 +4,7 @@ TSE Analytics Change Log
 # 1.8.3 (2026-03-06)
 
 - Fix: wrong default encoding when exporting reports.
+- Fix: data sorting in the Distribution widget.
 
 
 ----------------------------------------------------------------------------------------------------

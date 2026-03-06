@@ -43,6 +43,7 @@ def get_distribution_result(
     if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:
         # df[x] = df[x].cat.remove_unused_categories()
         # TODO: temporary fix for issue with broken categories offset when using pandas 3.0
+        df.sort_values(x, inplace=True)
         df[x] = df[x].astype(str)
 
     # Create a figure with a tight layout
