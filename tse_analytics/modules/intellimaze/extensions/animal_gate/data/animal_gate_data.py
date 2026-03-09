@@ -10,13 +10,13 @@ import pandas as pd
 
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
-from tse_analytics.modules.intellimaze.data.extension_data import ExtensionData
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
+from tse_analytics.modules.intellimaze.data.intellimaze_extension_data import IntelliMazeExtensionData
 
 EXTENSION_NAME = "AnimalGate"
 
 
-class AnimalGateData(ExtensionData):
+class AnimalGateData(IntelliMazeExtensionData):
     """
     Class for handling AnimalGate extension data.
 

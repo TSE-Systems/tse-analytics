@@ -181,7 +181,7 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
             variable = Variable(var_name, var_unit, "", "float64", Aggregation.MEAN, False)
             variables[variable.name] = variable
 
-    # Calo sampling interval
+    # Calculate sampling interval
     sampling_interval = df.iloc[1].at["DateTime"] - df.iloc[0].at["DateTime"]
 
     df = df.sort_values(["Box", "DateTime"])

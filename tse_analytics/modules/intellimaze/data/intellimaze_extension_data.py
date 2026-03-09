@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 
 
-class ExtensionData:
+class IntelliMazeExtensionData:
     """
     Base class for IntelliMaze extension data.
 

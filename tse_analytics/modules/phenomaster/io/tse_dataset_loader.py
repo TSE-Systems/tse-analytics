@@ -68,30 +68,30 @@ def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportS
     if import_settings.import_actimot_raw:
         if tse_import_settings.ACTIMOT_RAW_TABLE in metadata["tables"]:
             actimot_data = read_actimot_raw(path, dataset)
-            dataset.actimot_data = actimot_data
+            dataset.extensions_data["actimot_data"] = actimot_data
 
     # Import drinkfeed bin data if present
     if import_settings.import_drinkfeed_bin:
         if tse_import_settings.DRINKFEED_BIN_TABLE in metadata["tables"]:
             drinkfeed_bin_data = read_drinkfeed_bin(path, dataset)
-            dataset.drinkfeed_bin_data = drinkfeed_bin_data
+            dataset.extensions_data["drinkfeed_bin_data"] = drinkfeed_bin_data
 
     if import_settings.import_drinkfeed_raw:
         if tse_import_settings.DRINKFEED_RAW_TABLE in metadata["tables"]:
             drinkfeed_raw_data = read_drinkfeed_raw(path, dataset)
-            dataset.drinkfeed_raw_data = drinkfeed_raw_data
+            dataset.extensions_data["drinkfeed_raw_data"] = drinkfeed_raw_data
 
     # Import calo bin data if present
     if import_settings.import_calo_bin:
         if tse_import_settings.CALO_BIN_TABLE in metadata["tables"]:
             calo_data = read_calo_bin(path, dataset)
-            dataset.calo_data = calo_data
+            dataset.extensions_data["calo_data"] = calo_data
 
     # Import group housing data if present
     if import_settings.import_grouphousing:
         if tse_import_settings.GROUP_HOUSING_TABLE in metadata["tables"]:
             grouphousing_data = read_grouphousing(path, dataset)
-            dataset.grouphousing_data = grouphousing_data
+            dataset.extensions_data["grouphousing_data"] = grouphousing_data
 
     logger.info(f"Import complete in {(timeit.default_timer() - tic):.3f} sec: {path}")
 

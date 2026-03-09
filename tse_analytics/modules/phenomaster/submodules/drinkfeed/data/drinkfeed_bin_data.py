@@ -1,23 +1,31 @@
+from typing import TYPE_CHECKING
+
 import pandas as pd
 
 from tse_analytics.core.data.shared import Variable
+from tse_analytics.modules.phenomaster.data.phenomaster_extension_data import PhenoMasterExtensionData
+
+if TYPE_CHECKING:
+    from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 
 
-class DrinkFeedBinData:
+class DrinkFeedBinData(PhenoMasterExtensionData):
     def __init__(
         self,
-        dataset,
+        dataset: PhenoMasterDataset,
         name: str,
         path: str,
         variables: dict[str, Variable],
-        df: pd.DataFrame,
+        raw_df: pd.DataFrame,
+        sampling_interval: pd.Timedelta,
     ):
-        self.dataset = dataset
-        self.name = name
-        self.path = path
-        self.variables = variables
-        self.raw_df = df
-
-    @property
-    def start_timestamp(self):
-        return self.raw_df.at[0, "DateTime"]
+        super().__init__(
+            dataset,
+            name,
+            raw_df,
+            variables,
+            meta={
+                "origin_path": path,
+                "sampling_interval": sampling_interval,
+            },
+        )

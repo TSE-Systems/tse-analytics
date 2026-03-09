@@ -1,11 +1,11 @@
 import pandas as pd
 
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.modules.intellimaze.data.extension_data import ExtensionData
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
+from tse_analytics.modules.intellimaze.data.intellimaze_extension_data import IntelliMazeExtensionData
 
 
-def get_combined_variables_table(extension_data: ExtensionData) -> pd.DataFrame:
+def get_combined_variables_table(extension_data: IntelliMazeExtensionData) -> pd.DataFrame:
     """
     Combine variable tables from different sources into a single DataFrame.
 
@@ -13,7 +13,7 @@ def get_combined_variables_table(extension_data: ExtensionData) -> pd.DataFrame:
     into a single DataFrame, sorted by datetime.
 
     Args:
-        extension_data (ExtensionData): The extension data containing variable tables.
+        extension_data (IntelliMazeExtensionData): The extension data containing variable tables.
 
     Returns:
         pd.DataFrame: A combined DataFrame containing all variables.
@@ -34,7 +34,7 @@ def get_combined_variables_table(extension_data: ExtensionData) -> pd.DataFrame:
     return result
 
 
-def _preprocess_variable_table(table_name: str, extension_data: ExtensionData) -> pd.DataFrame | None:
+def _preprocess_variable_table(table_name: str, extension_data: IntelliMazeExtensionData) -> pd.DataFrame | None:
     """
     Preprocess a variable table for use in analysis.
 
@@ -50,7 +50,7 @@ def _preprocess_variable_table(table_name: str, extension_data: ExtensionData) -
 
     Args:
         table_name (str): The name of the table to preprocess.
-        extension_data (ExtensionData): The extension data containing the table.
+        extension_data (IntelliMazeExtensionData): The extension data containing the table.
 
     Returns:
         pd.DataFrame | None: The preprocessed DataFrame, or None if the table doesn't exist.

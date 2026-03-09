@@ -186,7 +186,19 @@ class MainWindow(QMainWindow):
 
         try:
             LayoutManager.clear_dock_manager()
-            manager.load_workspace(filename)
+            try:
+                manager.load_workspace(filename)
+            except Exception as e:
+                logger.error(f"Failed to load workspace: {e}")
+                make_toast(
+                    self,
+                    "TSE Analytics",
+                    "Failed to load workspace. Please re-import original data.",
+                    duration=3000,
+                    preset=ToastPreset.ERROR,
+                    show_duration_bar=True,
+                ).show()
+                return
             filenames.insert(0, filename)
             del filenames[MAX_RECENT_FILES:]
         finally:

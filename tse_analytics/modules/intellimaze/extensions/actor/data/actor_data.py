@@ -2,13 +2,13 @@ import pandas as pd
 
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
-from tse_analytics.modules.intellimaze.data.extension_data import ExtensionData
+from tse_analytics.modules.intellimaze.data.intellimaze_extension_data import IntelliMazeExtensionData
 from tse_analytics.modules.intellimaze.data.utils import get_combined_variables_table
 
 EXTENSION_NAME = "Actor"
 
 
-class ActorData(ExtensionData):
+class ActorData(IntelliMazeExtensionData):
     """
     Class for handling Actor extension data.
 

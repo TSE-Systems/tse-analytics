@@ -5,6 +5,7 @@ from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.utils.data import exclude_animals_from_df
+from tse_analytics.modules.phenomaster.data.phenomaster_extension_data import PhenoMasterExtensionData
 from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_data import ActimotData
 from tse_analytics.modules.phenomaster.submodules.actimot.models.actimot_tree_item import ActimotTreeItem
 from tse_analytics.modules.phenomaster.submodules.calo.data.calo_data import CaloData
@@ -43,11 +44,27 @@ class PhenoMasterDataset(Dataset):
             animals,
         )
 
-        self.calo_data: CaloData | None = None
-        self.drinkfeed_bin_data: DrinkFeedBinData | None = None
-        self.drinkfeed_raw_data: DrinkFeedRawData | None = None
-        self.actimot_data: ActimotData | None = None
-        self.grouphousing_data: GroupHousingData | None = None
+        self.extensions_data: dict[str, PhenoMasterExtensionData] = {}
+
+    @property
+    def calo_data(self) -> CaloData | None:
+        return self.extensions_data.get("calo_data", None)
+
+    @property
+    def drinkfeed_bin_data(self) -> DrinkFeedBinData | None:
+        return self.extensions_data.get("drinkfeed_bin_data", None)
+
+    @property
+    def drinkfeed_raw_data(self) -> DrinkFeedRawData | None:
+        return self.extensions_data.get("drinkfeed_raw_data", None)
+
+    @property
+    def actimot_data(self) -> ActimotData | None:
+        return self.extensions_data.get("actimot_data", None)
+
+    @property
+    def grouphousing_data(self) -> GroupHousingData | None:
+        return self.extensions_data.get("grouphousing_data", None)
 
     def rename_animal(self, old_id: str, animal: Animal) -> None:
         """

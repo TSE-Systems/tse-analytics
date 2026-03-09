@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
-from tse_analytics.core.data.shared import Variable
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.io import tse_import_settings
 from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_data import ActimotData
@@ -142,13 +141,11 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     # Sampling interval
     sampling_interval = new_df.iloc[1].at["DateTime"] - new_df.iloc[0].at["DateTime"]
 
-    variables: dict[str, Variable] = {}
-
     actimot_data = ActimotData(
         dataset,
         "ActiMot",
         str(path),
-        variables,
+        {},
         new_df,
         sampling_interval,
     )

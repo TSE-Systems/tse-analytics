@@ -2,13 +2,13 @@ import pandas as pd
 
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
-from tse_analytics.modules.intellimaze.data.extension_data import ExtensionData
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
+from tse_analytics.modules.intellimaze.data.intellimaze_extension_data import IntelliMazeExtensionData
 
 EXTENSION_NAME = "OperantDevice"
 
 
-class OperantDeviceData(ExtensionData):
+class OperantDeviceData(IntelliMazeExtensionData):
     def __init__(
         self,
         dataset: IntelliMazeDataset,

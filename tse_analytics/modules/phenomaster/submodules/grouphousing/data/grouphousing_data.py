@@ -1,8 +1,13 @@
 import math
+from typing import TYPE_CHECKING
 
 import pandas as pd
 
+from tse_analytics.modules.phenomaster.data.phenomaster_extension_data import PhenoMasterExtensionData
 from tse_analytics.modules.phenomaster.submodules.grouphousing.trafficage_config import TRAFFICAGE_POSITIONS
+
+if TYPE_CHECKING:
+    from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 
 
 def _calculate_distance(row: pd.Series):
@@ -14,25 +19,26 @@ def _calculate_distance(row: pd.Series):
     return distance
 
 
-class GroupHousingData:
+class GroupHousingData(PhenoMasterExtensionData):
     def __init__(
         self,
-        dataset,
+        dataset: PhenoMasterDataset,
         name: str,
         path: str,
-        df: pd.DataFrame,
+        raw_df: pd.DataFrame,
     ):
-        self.dataset = dataset
-        self.name = name
-        self.path = path
-        self.raw_df = df
+        super().__init__(
+            dataset,
+            name,
+            raw_df,
+            {},
+            meta={
+                "origin_path": path,
+            },
+        )
 
-        self.animal_ids = df["Animal"].unique().tolist()
+        self.animal_ids = raw_df["Animal"].unique().tolist()
         self.animal_ids.sort()
-
-    @property
-    def start_timestamp(self):
-        return self.raw_df.at[0, "StartDateTime"]
 
     def get_preprocessed_data(
         self,
@@ -48,7 +54,7 @@ class GroupHousingData:
             "ChannelType": "category",
         })
 
-        # Split data by antenna type
+        # Split data by an antenna type
         all_df = self._preprocess_df(df, remove_repeating_records)
         trafficage_df = self._preprocess_df(df[df["Channel"] > 3], remove_repeating_records)
         drinkfeed_df = self._preprocess_df(df[df["Channel"] < 4], remove_repeating_records)

@@ -14,6 +14,8 @@ from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_raw_d
 def read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedBinData:
     metadata = dataset.metadata["tables"][tse_import_settings.DRINKFEED_BIN_TABLE]
 
+    sample_interval = pd.Timedelta(metadata["sample_interval"])
+
     # Read variables list
     skipped_variables = ["DateTime", "Box", "Animal"]
     variables: dict[str, Variable] = {}
@@ -72,6 +74,7 @@ def read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedBinD
         str(path),
         variables,
         df,
+        sample_interval,
     )
 
     return data
@@ -194,6 +197,9 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     )
     raw_df.drop(columns=["Date", "Time"], inplace=True)
 
+    # Calculate sampling interval
+    sampling_interval = raw_df.iloc[1].at["DateTime"] - raw_df.iloc[0].at["DateTime"]
+
     # Find box numbers
     box_numbers = []
     for column in raw_df.columns.values:
@@ -273,5 +279,6 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
         str(path),
         variables,
         new_df,
+        sampling_interval,
     )
     return data
