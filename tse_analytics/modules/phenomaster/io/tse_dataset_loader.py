@@ -11,11 +11,11 @@ from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
+from tse_analytics.modules.phenomaster.extensions.actimot.io.data_loader import read_actimot_raw
+from tse_analytics.modules.phenomaster.extensions.calo.io.data_loader import read_calo_bin
+from tse_analytics.modules.phenomaster.extensions.drinkfeed.io.data_loader import read_drinkfeed_bin, read_drinkfeed_raw
+from tse_analytics.modules.phenomaster.extensions.grouphousing.io.data_loader import read_grouphousing
 from tse_analytics.modules.phenomaster.io import tse_import_settings
-from tse_analytics.modules.phenomaster.submodules.actimot.io.data_loader import read_actimot_raw
-from tse_analytics.modules.phenomaster.submodules.calo.io.data_loader import read_calo_bin
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.io.data_loader import read_drinkfeed_bin, read_drinkfeed_raw
-from tse_analytics.modules.phenomaster.submodules.grouphousing.io.data_loader import read_grouphousing
 
 
 def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportSettings) -> PhenoMasterDataset | None:

@@ -13,11 +13,11 @@ from tse_analytics.core.services.selection_service import SelectionService
 from tse_analytics.core.services.workspace_service import WorkspaceService
 from tse_analytics.core.settings_manager import get_csv_import_settings
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
+from tse_analytics.modules.phenomaster.extensions.actimot.io.data_loader import import_actimot_csv_data
+from tse_analytics.modules.phenomaster.extensions.calo.io.data_loader import import_calo_csv_data
+from tse_analytics.modules.phenomaster.extensions.drinkfeed.io.data_loader import import_drinkfeed_bin_csv_data
+from tse_analytics.modules.phenomaster.extensions.grouphousing.io.data_loader import import_grouphousing_csv_data
 from tse_analytics.modules.phenomaster.io.csv_dataset_loader import load_csv_dataset
-from tse_analytics.modules.phenomaster.submodules.actimot.io.data_loader import import_actimot_csv_data
-from tse_analytics.modules.phenomaster.submodules.calo.io.data_loader import import_calo_csv_data
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.io.data_loader import import_drinkfeed_bin_csv_data
-from tse_analytics.modules.phenomaster.submodules.grouphousing.io.data_loader import import_grouphousing_csv_data
 
 
 class ImportService:

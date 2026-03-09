@@ -24,14 +24,7 @@ from tse_analytics.core.models.extension_tree_item import ExtensionTreeItem
 from tse_analytics.core.models.report_tree_item import ReportTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
 from tse_analytics.core.models.workspace_model import WorkspaceModel
-from tse_analytics.modules.phenomaster.submodules.actimot.models.actimot_tree_item import ActimotTreeItem
-from tse_analytics.modules.phenomaster.submodules.actimot.views.actimot_widget import ActimotWidget
-from tse_analytics.modules.phenomaster.submodules.calo.models.calo_tree_item import CaloDataTreeItem
-from tse_analytics.modules.phenomaster.submodules.calo.views.calo_widget import CaloWidget
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.models.drinkfeed_tree_item import DrinkFeedTreeItem
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.views.drinkfeed_widget import DrinkFeedWidget
-from tse_analytics.modules.phenomaster.submodules.grouphousing.models.grouphousing_tree_item import GroupHousingTreeItem
-from tse_analytics.modules.phenomaster.submodules.grouphousing.views.grouphousing_widget import GroupHousingWidget
+from tse_analytics.modules.phenomaster.extensions.phenomaster_extension_tree_item import PhenoMasterExtensionTreeItem
 from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvDialog
 from tse_analytics.toolbox.data_table.data_table_widget import DataTableWidget
 from tse_analytics.toolbox.report.report_widget import ReportWidget
@@ -420,43 +413,19 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
         """
         if index.isValid():
             item = index.model().getItem(index)
-            if isinstance(item, CaloDataTreeItem):
-                widget = CaloWidget(item.calo_data, self)
+            if isinstance(item, PhenoMasterExtensionTreeItem) and item.extension_widget_type is not None:
+                widget = item.extension_widget_type(item.extension_data, self)
                 LayoutManager.add_widget_to_central_area(
                     manager.get_selected_dataset(),
                     widget,
-                    "Calo",
-                    QIcon(":/icons/icons8-gauge-16.png"),
-                )
-            elif isinstance(item, DrinkFeedTreeItem):
-                widget = DrinkFeedWidget(item.drinkfeed_data, self)
-                LayoutManager.add_widget_to_central_area(
-                    manager.get_selected_dataset(),
-                    widget,
-                    "Drink/Feed",
-                    QIcon(":/icons/icons8-bottle-of-water-16.png"),
+                    item.name,
+                    item.icon,
                 )
             elif isinstance(item, ReportTreeItem):
                 manager.set_selected_dataset(item.report.dataset)
                 widget = ReportWidget(item.report)
                 LayoutManager.add_widget_to_central_area(
                     item.report.dataset, widget, f"Report - {item.report.name}", QIcon(":/icons/table.png")
-                )
-            elif isinstance(item, ActimotTreeItem):
-                widget = ActimotWidget(item.actimot_data, self)
-                LayoutManager.add_widget_to_central_area(
-                    manager.get_selected_dataset(),
-                    widget,
-                    "ActiMot",
-                    QIcon(":/icons/icons8-grid-16.png"),
-                )
-            elif isinstance(item, GroupHousingTreeItem):
-                widget = GroupHousingWidget(item.grouphousing_data.dataset, self)
-                LayoutManager.add_widget_to_central_area(
-                    manager.get_selected_dataset(),
-                    widget,
-                    "Group Housing",
-                    QIcon(":/icons/icons8-structural-16.png"),
                 )
             elif isinstance(item, ExtensionTreeItem):
                 match item.name:

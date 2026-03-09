@@ -6,16 +6,13 @@ from tse_analytics.core.data.shared import Aggregation, Animal, Variable
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.utils.data import exclude_animals_from_df
 from tse_analytics.modules.phenomaster.data.phenomaster_extension_data import PhenoMasterExtensionData
-from tse_analytics.modules.phenomaster.submodules.actimot.data.actimot_data import ActimotData
-from tse_analytics.modules.phenomaster.submodules.actimot.models.actimot_tree_item import ActimotTreeItem
-from tse_analytics.modules.phenomaster.submodules.calo.data.calo_data import CaloData
-from tse_analytics.modules.phenomaster.submodules.calo.fitting_result import FittingResult
-from tse_analytics.modules.phenomaster.submodules.calo.models.calo_tree_item import CaloDataTreeItem
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_bin_data import DrinkFeedBinData
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.data.drinkfeed_raw_data import DrinkFeedRawData
-from tse_analytics.modules.phenomaster.submodules.drinkfeed.models.drinkfeed_tree_item import DrinkFeedTreeItem
-from tse_analytics.modules.phenomaster.submodules.grouphousing.data.grouphousing_data import GroupHousingData
-from tse_analytics.modules.phenomaster.submodules.grouphousing.models.grouphousing_tree_item import GroupHousingTreeItem
+from tse_analytics.modules.phenomaster.extensions.actimot.data.actimot_data import ActimotData
+from tse_analytics.modules.phenomaster.extensions.calo.data.calo_data import CaloData
+from tse_analytics.modules.phenomaster.extensions.calo.fitting_result import FittingResult
+from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.drinkfeed_bin_data import DrinkFeedBinData
+from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.drinkfeed_raw_data import DrinkFeedRawData
+from tse_analytics.modules.phenomaster.extensions.grouphousing.data.grouphousing_data import GroupHousingData
+from tse_analytics.modules.phenomaster.extensions.phenomaster_extension_tree_item import PhenoMasterExtensionTreeItem
 
 
 class PhenoMasterDataset(Dataset):
@@ -102,14 +99,8 @@ class PhenoMasterDataset(Dataset):
         """
         super().exclude_animals(animal_ids)
 
-        if self.calo_data is not None:
-            self.calo_data.raw_df = exclude_animals_from_df(self.calo_data.raw_df, animal_ids)
-        if self.drinkfeed_bin_data is not None:
-            self.drinkfeed_bin_data.raw_df = exclude_animals_from_df(self.drinkfeed_bin_data.raw_df, animal_ids)
-        if self.actimot_data is not None:
-            self.actimot_data.raw_df = exclude_animals_from_df(self.actimot_data.raw_df, animal_ids)
-        if self.grouphousing_data is not None:
-            self.grouphousing_data.raw_df = exclude_animals_from_df(self.grouphousing_data.raw_df, animal_ids)
+        for key, extension in self.extensions_data.items():
+            extension.raw_df = exclude_animals_from_df(extension.raw_df, animal_ids)
 
     def append_fitting_results(
         self,
@@ -185,17 +176,13 @@ class PhenoMasterDataset(Dataset):
         """
         super().add_children_tree_items(dataset_tree_item)
 
-        if self.drinkfeed_bin_data is not None:
-            dataset_tree_item.add_child(DrinkFeedTreeItem(self.drinkfeed_bin_data))
+        from tse_analytics.modules.phenomaster.extensions.extensions_registry import EXTENSIONS_REGISTRY
 
-        if self.drinkfeed_raw_data is not None:
-            dataset_tree_item.add_child(DrinkFeedTreeItem(self.drinkfeed_raw_data))
-
-        if self.actimot_data is not None:
-            dataset_tree_item.add_child(ActimotTreeItem(self.actimot_data))
-
-        if self.calo_data is not None:
-            dataset_tree_item.add_child(CaloDataTreeItem(self.calo_data))
-
-        if self.grouphousing_data is not None:
-            dataset_tree_item.add_child(GroupHousingTreeItem(self.grouphousing_data))
+        for key, extension_data in self.extensions_data.items():
+            dataset_tree_item.add_child(
+                PhenoMasterExtensionTreeItem(
+                    extension_data,
+                    EXTENSIONS_REGISTRY[key]["icon"],
+                    EXTENSIONS_REGISTRY[key]["widget"],
+                )
+            )
