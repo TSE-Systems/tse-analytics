@@ -5,6 +5,7 @@ This module provides classes for configuring different types of time binning,
 including fixed time intervals, light/dark cycles, and custom time phases.
 """
 
+from dataclasses import dataclass, field
 from datetime import time
 from enum import StrEnum, unique
 
@@ -31,77 +32,82 @@ class BinningMode(StrEnum):
     PHASES = "Time Phases"
 
 
+@dataclass
 class BinningSettings:
     """
     Settings for time binning configuration.
 
     This class holds the configuration for time binning, including the mode
     and specific settings for each binning mode.
+
+    Attributes
+    ----------
+    apply : bool
+        Whether to apply binning.
+    mode : BinningMode
+        The binning mode to use.
+    time_intervals_settings : TimeIntervalsBinningSettings
+        Settings for time intervals binning.
+    time_cycles_settings : TimeCyclesBinningSettings
+        Settings for light/dark cycles binning.
+    time_phases_settings : TimePhasesBinningSettings
+        Settings for time phases binning.
     """
 
-    def __init__(self):
-        """
-        Initialize default binning settings.
-        """
-        self.apply = False
-        self.mode = BinningMode.INTERVALS
-        self.time_intervals_settings = TimeIntervalsBinningSettings("hour", 1)
-        self.time_cycles_settings = TimeCyclesBinningSettings(time(7, 0), time(19, 0))
-        self.time_phases_settings = TimePhasesBinningSettings([])
+    apply: bool = False
+    mode: BinningMode = BinningMode.INTERVALS
+    time_intervals_settings: TimeIntervalsBinningSettings = field(
+        default_factory=lambda: TimeIntervalsBinningSettings("hour", 1)
+    )
+    time_cycles_settings: TimeCyclesBinningSettings = field(
+        default_factory=lambda: TimeCyclesBinningSettings(time(7, 0), time(19, 0))
+    )
+    time_phases_settings: TimePhasesBinningSettings = field(default_factory=lambda: TimePhasesBinningSettings([]))
 
 
+@dataclass
 class TimeIntervalsBinningSettings:
     """
     Settings for binning data into fixed time intervals.
+
+    Attributes
+    ----------
+    unit : str
+        The time unit for intervals (e.g., "hour", "minute").
+    delta : int
+        The number of units per interval.
     """
 
-    def __init__(self, unit: str, delta: int):
-        """
-        Initialize time intervals binning settings.
-
-        Parameters
-        ----------
-        unit : str
-            The time unit for intervals (e.g., "hour", "minute").
-        delta : int
-            The number of units per interval.
-        """
-        self.unit = unit
-        self.delta = delta
+    unit: str
+    delta: int
 
 
+@dataclass
 class TimeCyclesBinningSettings:
     """
     Settings for binning data into light and dark cycles.
+
+    Attributes
+    ----------
+    light_cycle_start : time
+        The time when the light cycle starts.
+    dark_cycle_start : time
+        The time when the dark cycle starts.
     """
 
-    def __init__(self, light_cycle_start: time, dark_cycle_start: time):
-        """
-        Initialize light/dark cycles binning settings.
-
-        Parameters
-        ----------
-        light_cycle_start : time
-            The time when the light cycle starts.
-        dark_cycle_start : time
-            The time when the dark cycle starts.
-        """
-        self.light_cycle_start = light_cycle_start
-        self.dark_cycle_start = dark_cycle_start
+    light_cycle_start: time
+    dark_cycle_start: time
 
 
+@dataclass
 class TimePhasesBinningSettings:
     """
     Settings for binning data into custom time phases.
+
+    Attributes
+    ----------
+    time_phases : list[TimePhase]
+        List of time phases to bin data into.
     """
 
-    def __init__(self, time_phases: list[TimePhase]):
-        """
-        Initialize time phases binning settings.
-
-        Parameters
-        ----------
-        time_phases : list[TimePhase]
-            List of time phases to bin data into.
-        """
-        self.time_phases = time_phases
+    time_phases: list[TimePhase] = field(default_factory=list)

@@ -4,7 +4,7 @@ from tse_analytics.core.data.helper import rename_animal_df
 from tse_analytics.core.data.shared import Animal
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.extension_tree_item import ExtensionTreeItem
-from tse_analytics.modules.intellimaze.data.extension_data import ExtensionData
+from tse_analytics.modules.intellimaze.data.intellimaze_extension_data import IntelliMazeExtensionData
 
 
 class IntelliMazeDataset(Dataset):
@@ -16,7 +16,7 @@ class IntelliMazeDataset(Dataset):
 
     Attributes:
         devices (dict[str, list[str]]): Dictionary mapping extension names to lists of device IDs.
-        extensions_data (dict[str, ExtensionData]): Dictionary mapping extension names to their data.
+        extensions_data (dict[str, IntelliMazeExtensionData]): Dictionary mapping extension names to their data.
     """
 
     def __init__(
@@ -40,7 +40,7 @@ class IntelliMazeDataset(Dataset):
 
         self.devices = devices
 
-        self.extensions_data: dict[str, ExtensionData] = {}
+        self.extensions_data: dict[str, IntelliMazeExtensionData] = {}
 
     def get_tag_to_name_map(self) -> dict[str, str]:
         """

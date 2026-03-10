@@ -17,7 +17,7 @@ class PandasSimpleModel(QAbstractTableModel):
         Args:
             df (pd.DataFrame): The pandas DataFrame to display.
         """
-        QAbstractTableModel.__init__(self)
+        super().__init__()
 
         self._data = df
 

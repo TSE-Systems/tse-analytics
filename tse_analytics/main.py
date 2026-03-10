@@ -1,62 +1,21 @@
 """
 Entry point module for running the TSE Analytics package as a script.
-
-This module initializes the application, sets up global configurations for various
-libraries (matplotlib, PyQtGraph, pandas, seaborn), and provides the main entry point
-for the TSE Analytics application.
 """
 
-import ctypes
 import os
 import platform
 import sys
 from multiprocessing import freeze_support
 
-import matplotlib as mpl
-import seaborn as sns
-import seaborn.objects as so
 from loguru import logger
-from pyqtgraph import setConfigOptions
 from PySide6.QtCore import QSettings
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, Qt
 from PySide6.QtWidgets import QApplication
 
 from tse_analytics.core.utils import IS_RELEASE
 from tse_analytics.core.workers.task_manager import TaskManager
+from tse_analytics.globals import init_global_settings
 from tse_analytics.views.main_window import MainWindow
-
-# Global configuration
-
-settings = QSettings()
-
-dpi = settings.value("DPI", 96)
-figure_width = settings.value("FigureWidth", 13.0)
-figure_height = settings.value("FigureHeight", 9.5)
-
-# Global PyQtGraph settings
-setConfigOptions(
-    imageAxisOrder="row-major",
-    foreground="d",
-    background="w",
-    leftButtonPan=True,
-    antialias=False,
-    useOpenGL=False,
-)
-
-# Global Pandas settings
-# pd.set_option("display.colheader_justify", "center")  # FOR TABLE <th>
-# pd.set_option("display.precision", 3)
-
-# Global Matplotlib settings
-mpl.use("QtAgg")
-mpl.rcParams["figure.dpi"] = dpi
-mpl.rcParams["figure.figsize"] = figure_width, figure_height
-
-# Global Seaborn settings
-# sns.objects.Plot.config.display["format"] = "svg"
-so.Plot.config.theme.update(sns.axes_style("whitegrid"))
-sns.set_theme(style="whitegrid")
-sns.set_color_codes("pastel")
 
 
 class App(QApplication):
@@ -67,35 +26,40 @@ class App(QApplication):
     including application styling, organization information, and task management.
     """
 
-    def __init__(self, args):
+    def __init__(self):
         """
         Initialize the TSE Analytics application.
-
-        Args:
-            args: Command line arguments passed to the application.
         """
+
+        QApplication.__init__(self)
 
         # Check platform
         if platform.system() == "Windows":
-            # Force the light mode
-            args += ["-platform", "windows:darkmode=1"]
+            import ctypes
 
             app_id = "tse-systems.tse-analytics"  # arbitrary string
             # Specifies a unique application-defined Application User Model ID (AppUserModelID) that identifies the current process to the taskbar.
             # This identifier allows an application to group its associated processes and windows under a single taskbar button.
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
 
-        QApplication.__init__(self, args)
         self.setStyle("fusion")
         self.setOrganizationName("TSE Systems")
         self.setOrganizationDomain("https://www.tse-systems.com")
         self.setApplicationName("TSE Analytics")
         self.setWindowIcon(QIcon(":/icons/app.ico"))
 
+        # Force the light mode
+        self.styleHints().setColorScheme(Qt.ColorScheme.Light)
+
+        init_global_settings()
+
         # Set the selected stylesheet
         settings = QSettings()
         appStyle = settings.value("appStyle", "tse-light")
-        style_file = f"_internal/styles/qss/{appStyle}.css" if IS_RELEASE else f"styles/qss/{appStyle}.css"
+        if IS_RELEASE:
+            style_file = os.path.join(os.path.dirname(sys.executable), f"_internal/styles/qss/{appStyle}.css")
+        else:
+            style_file = os.path.join(os.path.dirname(__file__), f"styles/qss/{appStyle}.css")
         with open(style_file) as file:
             self.setStyleSheet(file.read())
 
@@ -137,9 +101,9 @@ if __name__ == "__main__":
 
     sys.excepthook = handle_exception
 
-    app = App(sys.argv)
+    app = App()
 
-    main_window = MainWindow()
+    main_window = MainWindow(sys.argv)
     main_window.show()
 
     sys.exit(app.exec())

@@ -5,6 +5,7 @@ This module provides classes for configuring outlier detection and handling,
 including different modes (off, highlight, remove) and settings.
 """
 
+from dataclasses import dataclass
 from enum import StrEnum, unique
 
 
@@ -28,24 +29,21 @@ class OutliersMode(StrEnum):
     REMOVE = "Remove outliers"
 
 
+@dataclass
 class OutliersSettings:
     """
     Settings for outlier detection and handling.
 
     This class holds the configuration for outlier detection, including the mode
     and coefficient for determining what constitutes an outlier.
+
+    Attributes
+    ----------
+    mode : OutliersMode
+        The mode for handling outliers (OFF, HIGHLIGHT, or REMOVE).
+    coefficient : float
+        The coefficient used to determine outliers (typically used with IQR method).
     """
 
-    def __init__(self, mode: OutliersMode, coefficient: float):
-        """
-        Initialize outlier detection settings.
-
-        Parameters
-        ----------
-        mode : OutliersMode
-            The mode for handling outliers (OFF, HIGHLIGHT, or REMOVE).
-        coefficient : float
-            The coefficient used to determine outliers (typically used with IQR method).
-        """
-        self.mode = mode
-        self.coefficient = coefficient
+    mode: OutliersMode
+    coefficient: float

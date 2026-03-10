@@ -42,13 +42,14 @@ MAX_RECENT_FILES = 10
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, parent=None):
+    def __init__(self, args: list[str], parent=None):
         super().__init__(parent)
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
         self.settings = QSettings()
+        self.toast = None
 
         self.process = psutil.Process(os.getpid())
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
@@ -101,6 +102,8 @@ class MainWindow(QMainWindow):
 
         log_dock_widget = LayoutManager.register_dock_widget(LogWidget(), "Log", QIcon(":/icons/log.png"))
         LayoutManager.add_dock_widget_tab_to_area(log_dock_widget, info_dock_area)
+        # Hide Log widget by default
+        log_dock_widget.toggleView(False)
         info_dock_area.setCurrentIndex(0)
 
         animals_dock_widget = LayoutManager.register_dock_widget(
@@ -151,7 +154,12 @@ class MainWindow(QMainWindow):
 
         Toast.setPositionRelativeToWidget(self)
         Toast.setMovePositionWithWidget(True)
-        self.toast = None
+
+        # Load the selected workspace file if provided as an argument
+        if len(args) > 1:
+            workspace_path = Path(args[1])
+            if workspace_path.suffix.lower() == ".workspace" and workspace_path.exists() and workspace_path.is_file():
+                self._load_workspace(str(workspace_path))
 
     def _set_style(self, name: str) -> None:
         style_file = f"_internal/styles/qss/{name}.css" if IS_RELEASE else f"styles/qss/{name}.css"
@@ -186,7 +194,19 @@ class MainWindow(QMainWindow):
 
         try:
             LayoutManager.clear_dock_manager()
-            manager.load_workspace(filename)
+            try:
+                manager.load_workspace(filename)
+            except Exception as e:
+                logger.error(f"Failed to load workspace: {e}")
+                make_toast(
+                    self,
+                    "TSE Analytics",
+                    "Failed to load workspace. Please re-import original data.",
+                    duration=3000,
+                    preset=ToastPreset.ERROR,
+                    show_duration_bar=True,
+                ).show()
+                return
             filenames.insert(0, filename)
             del filenames[MAX_RECENT_FILES:]
         finally:
