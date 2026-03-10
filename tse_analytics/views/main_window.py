@@ -101,6 +101,8 @@ class MainWindow(QMainWindow):
 
         log_dock_widget = LayoutManager.register_dock_widget(LogWidget(), "Log", QIcon(":/icons/log.png"))
         LayoutManager.add_dock_widget_tab_to_area(log_dock_widget, info_dock_area)
+        # Hide Log widget by default
+        log_dock_widget.toggleView(False)
         info_dock_area.setCurrentIndex(0)
 
         animals_dock_widget = LayoutManager.register_dock_widget(
