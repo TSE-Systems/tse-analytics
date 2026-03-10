@@ -69,7 +69,7 @@ def process_drinkfeed_intervals(
 
 def _add_caloric_column(df: pd.DataFrame, origin_column: str, diets_dict: dict[int, float]) -> pd.DataFrame:
     if origin_column in df.columns:
-        df.insert(df.columns.get_loc(origin_column) + 1, f"{origin_column}-kcal", df["Animal"])
+        df.insert(df.columns.get_loc(origin_column) + 1, f"{origin_column}-kcal", df["Animal"].astype(str))
         df.replace({f"{origin_column}-kcal": diets_dict}, inplace=True)
         df[f"{origin_column}-kcal"] = df[f"{origin_column}-kcal"].astype(float)
         df[f"{origin_column}-kcal"] = df[f"{origin_column}-kcal"] * df[origin_column]
