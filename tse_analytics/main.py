@@ -26,13 +26,12 @@ class App(QApplication):
     including application styling, organization information, and task management.
     """
 
-    def __init__(self, args):
+    def __init__(self):
         """
         Initialize the TSE Analytics application.
-
-        Args:
-            args: Command line arguments passed to the application.
         """
+
+        QApplication.__init__(self)
 
         # Check platform
         if platform.system() == "Windows":
@@ -42,8 +41,6 @@ class App(QApplication):
             # Specifies a unique application-defined Application User Model ID (AppUserModelID) that identifies the current process to the taskbar.
             # This identifier allows an application to group its associated processes and windows under a single taskbar button.
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
-
-        QApplication.__init__(self, args)
 
         self.setStyle("fusion")
         self.setOrganizationName("TSE Systems")
@@ -59,7 +56,10 @@ class App(QApplication):
         # Set the selected stylesheet
         settings = QSettings()
         appStyle = settings.value("appStyle", "tse-light")
-        style_file = f"_internal/styles/qss/{appStyle}.css" if IS_RELEASE else f"styles/qss/{appStyle}.css"
+        if IS_RELEASE:
+            style_file = os.path.join(os.path.dirname(sys.executable), f"_internal/styles/qss/{appStyle}.css")
+        else:
+            style_file = os.path.join(os.path.dirname(__file__), f"styles/qss/{appStyle}.css")
         with open(style_file) as file:
             self.setStyleSheet(file.read())
 
@@ -101,9 +101,9 @@ if __name__ == "__main__":
 
     sys.excepthook = handle_exception
 
-    app = App(sys.argv)
+    app = App()
 
-    main_window = MainWindow()
+    main_window = MainWindow(sys.argv)
     main_window.show()
 
     sys.exit(app.exec())

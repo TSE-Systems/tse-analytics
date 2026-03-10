@@ -50,7 +50,7 @@ class ToolboxWidgetBase(QWidget):
         settings = QSettings()
         try:
             self._settings = settings.value(self.__class__.__name__, settings_type())
-        except:
+        except Exception:
             self._settings = settings_type()
 
         # Layout
