@@ -108,8 +108,8 @@ class ActivityWidget(QWidget):
         return x_min, x_max
 
     def _plot_item(self, df: pd.DataFrame, name: str, pen):
-        x = df["StartDateTime"]
-        x = x.astype("int64") // 10**9
+        x = df["StartDateTime"].dt.as_unit("us")
+        x = x.astype("int64") // 10**6
         x = x.to_numpy()
         y = df["Activity"].to_numpy()
 

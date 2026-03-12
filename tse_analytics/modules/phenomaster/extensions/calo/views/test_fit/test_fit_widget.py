@@ -1,32 +1,59 @@
 import pandas as pd
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
-from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QFileDialog, QWidget
+from PySide6.QtCore import QSize
+from PySide6.QtGui import QAction, Qt
+from PySide6.QtWidgets import QFileDialog, QLabel, QToolBar, QToolButton, QVBoxLayout, QWidget
 
 from tse_analytics.modules.phenomaster.extensions.calo.processor import calculate_fit_v2, curve_fitting_func
 from tse_analytics.modules.phenomaster.extensions.calo.views.settings.settings_widget import SettingsWidget
-from tse_analytics.modules.phenomaster.extensions.calo.views.test_fit.test_fit_widget_ui import Ui_TestFitWidget
+from tse_analytics.views.misc.MplCanvas import MplCanvas
 
 
 class TestFitWidget(QWidget):
     def __init__(self, settings_widget: SettingsWidget, parent: QWidget | None = None):
         super().__init__(parent)
 
-        self.ui = Ui_TestFitWidget()
-        self.ui.setupUi(self)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
-        self.ui.toolButtonFit.clicked.connect(self._test_fit)
+        self.canvas = MplCanvas(self)
+
+        # Setup toolbar
+        toolbar = QToolBar(
+            "Toolbar",
+            iconSize=QSize(16, 16),
+            toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
+        )
+        self.toolButtonFit = QToolButton()
+        self.toolButtonFit.setText("Calculate Test Fit")
+        self.toolButtonFit.clicked.connect(self._test_fit)
+        toolbar.addWidget(self.toolButtonFit)
+
+        self.toolButtonExport = QToolButton()
+        self.toolButtonExport.setText("Export")
+        self.toolButtonExport.setPopupMode(QToolButton.ToolButtonPopupMode.MenuButtonPopup)
+        toolbar.addWidget(self.toolButtonExport)
 
         action = QAction("O2", self)
         action.triggered.connect(self._export_o2)
-        self.ui.toolButtonExport.addAction(action)
+        self.toolButtonExport.addAction(action)
         action = QAction("CO2", self)
         action.triggered.connect(self._export_co2)
-        self.ui.toolButtonExport.addAction(action)
+        self.toolButtonExport.addAction(action)
 
-        self.ui.horizontalLayout.insertWidget(
-            self.ui.horizontalLayout.count() - 1, NavigationToolbar2QT(self.ui.canvas, self)
-        )
+        plot_toolbar = NavigationToolbar2QT(self.canvas, self)
+        plot_toolbar.setIconSize(QSize(16, 16))
+        toolbar.addWidget(plot_toolbar)
+
+        # Add a label for T90
+        self.labelT90 = QLabel()
+        toolbar.addWidget(self.labelT90)
+
+        # Insert the toolbar to the widget
+        self._layout.addWidget(toolbar)
+
+        self._layout.addWidget(self.canvas)
 
         self.settings_widget = settings_widget
         self.df: pd.DataFrame | None = None
@@ -91,8 +118,8 @@ class TestFitWidget(QWidget):
             calo_settings.co2_settings.start_offset : calo_settings.prediction_offset
         ]
 
-        self.ui.canvas.clear(False)
-        ax = self.ui.canvas.figure.subplots(2)
+        self.canvas.clear(False)
+        ax = self.canvas.figure.subplots(2)
 
         self.df.plot(
             x="Offset",
@@ -186,7 +213,7 @@ class TestFitWidget(QWidget):
                     co2_t99 = row["Offset"]
                     break
 
-        self.ui.labelT90.setText(
+        self.labelT90.setText(
             f"T90 [O2: {o2_t90}, CO2: {co2_t90}]; T95 [O2: {o2_t95},"
             f" CO2: {co2_t95}]; T99 [O2: {o2_t99}, CO2: {co2_t99}]"
         )
@@ -201,5 +228,5 @@ class TestFitWidget(QWidget):
         )
         ax[1].plot(predicted_input_co2, predicted_output_co2, "r-", label="Predicted")
 
-        self.ui.canvas.figure.tight_layout()
-        self.ui.canvas.draw()
+        self.canvas.figure.tight_layout()
+        self.canvas.draw()

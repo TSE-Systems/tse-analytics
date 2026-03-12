@@ -52,7 +52,7 @@ class ImportService:
         if dataset is not None and isinstance(dataset, PhenoMasterDataset):
             data = import_drinkfeed_bin_csv_data(path, dataset, get_csv_import_settings())
             if data is not None:
-                dataset.drinkfeed_bin_data = data
+                dataset.extensions_data["drinkfeed_bin_data"] = data
                 ws = self._workspace.get_workspace()
                 messaging.broadcast(messaging.WorkspaceChangedMessage(self, ws))
 
@@ -66,7 +66,7 @@ class ImportService:
         if dataset is not None and isinstance(dataset, PhenoMasterDataset):
             data = import_actimot_csv_data(path, dataset, get_csv_import_settings())
             if data is not None:
-                dataset.actimot_data = data
+                dataset.extensions_data["actimot_data"] = data
                 ws = self._workspace.get_workspace()
                 messaging.broadcast(messaging.WorkspaceChangedMessage(self, ws))
 
@@ -80,7 +80,7 @@ class ImportService:
         if dataset is not None and isinstance(dataset, PhenoMasterDataset):
             data = import_calo_csv_data(path, dataset, get_csv_import_settings())
             if data is not None:
-                dataset.calo_data = data
+                dataset.extensions_data["calo_data"] = data
                 ws = self._workspace.get_workspace()
                 messaging.broadcast(messaging.WorkspaceChangedMessage(self, ws))
 
@@ -94,6 +94,6 @@ class ImportService:
         if dataset is not None and isinstance(dataset, PhenoMasterDataset):
             data = import_grouphousing_csv_data(path, dataset, get_csv_import_settings())
             if data is not None:
-                dataset.grouphousing_data = data
+                dataset.extensions_data["grouphousing_data"] = data
                 ws = self._workspace.get_workspace()
                 messaging.broadcast(messaging.WorkspaceChangedMessage(self, ws))

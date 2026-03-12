@@ -31,7 +31,6 @@ def read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> ActimotData:
     df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
 
     box_to_animal_map = {animal.properties["Box"]: animal.id for animal in dataset.animals.values()}
-
     df.insert(
         df.columns.get_loc("Box"),
         "Animal",

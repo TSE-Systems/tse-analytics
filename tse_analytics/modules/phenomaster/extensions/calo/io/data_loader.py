@@ -48,6 +48,17 @@ def read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
     # Convert DateTime from POSIX format
     df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
 
+    # Insert Animal column
+    box_to_animal_map = {animal.properties["Box"]: animal.id for animal in dataset.animals.values()}
+    df.insert(
+        df.columns.get_loc("Box"),
+        "Animal",
+        df["Box"].map(box_to_animal_map),
+    )
+
+    # Convert categorical types
+    df = df.astype({"Animal": "category"})
+
     # Sort dataframe
     df.sort_values(["Box", "DateTime"], inplace=True)
 
@@ -136,7 +147,7 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
         for idx, line in enumerate(lines):
             if header_template in line:
                 header_line_number = idx
-                columns_line = line
+                columns_line = line.replace("\n", "")
                 break
 
     df = pd.read_csv(
@@ -183,6 +194,17 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
 
     # Calculate sampling interval
     sampling_interval = df.iloc[1].at["DateTime"] - df.iloc[0].at["DateTime"]
+
+    # Insert Animal column
+    box_to_animal_map = {animal.properties["Box"]: animal.id for animal in dataset.animals.values()}
+    df.insert(
+        df.columns.get_loc("Box"),
+        "Animal",
+        df["Box"].map(box_to_animal_map),
+    )
+
+    # Convert categorical types
+    df = df.astype({"Animal": "category"})
 
     df = df.sort_values(["Box", "DateTime"])
 

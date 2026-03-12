@@ -3,7 +3,7 @@ from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QAbstractItemView, QTableView, QWidget
 
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
-from tse_analytics.modules.phenomaster.extensions.calo.data.calo_box import CaloBox, get_ref_box_number
+from tse_analytics.modules.phenomaster.extensions.calo.data.calo_box import CaloBox
 from tse_analytics.modules.phenomaster.extensions.calo.data.calo_boxes_model import CaloBoxesModel
 
 
@@ -41,8 +41,9 @@ class BoxSelector(QTableView):
         boxes: list[CaloBox] = []
 
         for box in all_box_numbers:
-            ref_box = get_ref_box_number(box, all_box_numbers)
-            boxes.append(CaloBox(box, ref_box))
+            ref_box = dataset.calo_data.ref_box_mapping.get(box, None)
+            if ref_box is not None:
+                boxes.append(CaloBox(box, ref_box))
         model = CaloBoxesModel(boxes)
         self.model().setSourceModel(model)
         # self.resizeColumnsToContents()

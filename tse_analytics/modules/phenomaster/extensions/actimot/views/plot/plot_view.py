@@ -58,8 +58,8 @@ class PlotView(pg.GraphicsLayoutWidget):
         if self._df is None or self._variable == "":
             return
 
-        x = self._df["DateTime"]
-        x = x.astype("int64") // 10**9
+        x = self._df["DateTime"].dt.as_unit("us")
+        x = x.astype("int64") // 10**6
         x = x.to_numpy()
         y = self._df[self._variable].to_numpy()
 
@@ -76,11 +76,3 @@ class PlotView(pg.GraphicsLayoutWidget):
         self.region.setRegion([x.min(), x.max()])
 
         self.update()
-
-    def clear_plot(self):
-        self.p1.clear()
-        self.p2.clearPlots()
-        self.legend.clear()
-
-        self._df = None
-        self._variable = None

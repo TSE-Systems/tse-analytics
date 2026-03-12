@@ -1,23 +1,40 @@
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
-from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtWidgets import QComboBox, QToolBar, QVBoxLayout, QWidget
 
 from tse_analytics.modules.phenomaster.extensions.calo.fitting_result import FittingResult
-from tse_analytics.modules.phenomaster.extensions.calo.views.rer.rer_widget_ui import Ui_RerWidget
+from tse_analytics.views.misc.MplCanvas import MplCanvas
 
 
 class RerWidget(QWidget):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
 
-        self.ui = Ui_RerWidget()
-        self.ui.setupUi(self)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
-        self.ui.comboBoxVariable.addItems(["RER", "O2", "Ref.O2", "CO2", "Ref.CO2", "VO2", "VCO2", "EE"])
-        self.ui.comboBoxVariable.currentTextChanged.connect(self._variable_changed)
+        self.canvas = MplCanvas(self)
 
-        self.ui.horizontalLayout.insertWidget(
-            self.ui.horizontalLayout.count(), NavigationToolbar2QT(self.ui.canvas, self)
+        # Setup toolbar
+        toolbar = QToolBar(
+            "Toolbar",
+            iconSize=QSize(16, 16),
+            toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
+        self.comboBoxVariable = QComboBox()
+        self.comboBoxVariable.addItems(["RER", "O2", "Ref.O2", "CO2", "Ref.CO2", "VO2", "VCO2", "EE"])
+        self.comboBoxVariable.currentTextChanged.connect(self._variable_changed)
+        toolbar.addWidget(self.comboBoxVariable)
+
+        plot_toolbar = NavigationToolbar2QT(self.canvas, self)
+        plot_toolbar.setIconSize(QSize(16, 16))
+        toolbar.addWidget(plot_toolbar)
+
+        # Insert the toolbar to the widget
+        self._layout.addWidget(toolbar)
+
+        self._layout.addWidget(self.canvas)
 
         self.fitting_result: FittingResult | None = None
 
@@ -25,7 +42,7 @@ class RerWidget(QWidget):
         self.set_data(self.fitting_result)
 
     def clear(self) -> None:
-        self.ui.canvas.clear(True)
+        self.canvas.clear(True)
 
     def set_data(self, fitting_result: FittingResult) -> None:
         self.fitting_result = fitting_result
@@ -33,10 +50,10 @@ class RerWidget(QWidget):
         if self.fitting_result is None:
             return
 
-        self.ui.canvas.clear(False)
-        ax = self.ui.canvas.figure.add_subplot(111)
+        self.canvas.clear(False)
+        ax = self.canvas.figure.add_subplot(111)
 
-        variable = self.ui.comboBoxVariable.currentText()
+        variable = self.comboBoxVariable.currentText()
 
         self.fitting_result.df.plot(
             x="Bin",
@@ -54,5 +71,5 @@ class RerWidget(QWidget):
             ax=ax,
         )
 
-        self.ui.canvas.figure.tight_layout()
-        self.ui.canvas.draw()
+        self.canvas.figure.tight_layout()
+        self.canvas.draw()

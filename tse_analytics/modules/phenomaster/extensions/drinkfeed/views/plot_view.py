@@ -1,5 +1,3 @@
-import datetime
-
 import pandas as pd
 import pyqtgraph as pg
 from pyqtgraph import mkPen
@@ -12,9 +10,6 @@ class PlotView(pg.GraphicsLayoutWidget):
 
         self._df: pd.DataFrame | None = None
         self._variable: str = ""
-
-        self._start_datetime = None
-        self._timedelta = None
 
         # Set layout proportions
         self.ci.layout.setRowStretchFactor(0, 2)
@@ -37,7 +32,6 @@ class PlotView(pg.GraphicsLayoutWidget):
         self.p2.showGrid(x=True, y=True)
 
         self.region = pg.LinearRegionItem()
-        self.region.setZValue(10)
         # Add the LinearRegionItem to the ViewBox, but tell the ViewBox to exclude this
         # item when doing auto-range calculations.
         self.p2.addItem(self.region, ignoreBounds=True)
@@ -49,7 +43,6 @@ class PlotView(pg.GraphicsLayoutWidget):
         self.p1.sigRangeChanged.connect(self.updateRegion)
 
     def update(self):
-        self.region.setZValue(10)
         minX, maxX = self.region.getRegion()
         self.p1.setXRange(minX, maxX, padding=0)
 
@@ -82,8 +75,8 @@ class PlotView(pg.GraphicsLayoutWidget):
         for i, animal_id in enumerate(animal_ids):
             filtered_data = variable_df[variable_df["Animal"] == animal_id]
 
-            x = filtered_data["DateTime"]
-            x = x.astype("int64") // 10**9
+            x = filtered_data["DateTime"].dt.as_unit("us")
+            x = x.astype("int64") // 10**6
             x = x.to_numpy()
             y = filtered_data["Value"].to_numpy()
 
@@ -100,20 +93,5 @@ class PlotView(pg.GraphicsLayoutWidget):
         self.region.setClipItem(p2d)
         if len(x) > 0:
             self.region.setRegion([x.min(), x.max()])
-            self._start_datetime = datetime.datetime.fromtimestamp(x[0])
-            self._timedelta = pd.Timedelta(
-                datetime.datetime.fromtimestamp(x[1]) - datetime.datetime.fromtimestamp(x[0])
-            )
 
         self.update()
-
-    def clear_plot(self):
-        self.plot_data_items.clear()
-        self.p1.clear()
-        self.p2.clearPlots()
-        self.legend.clear()
-
-        self._df = None
-        self._variable = None
-        self._start_datetime = None
-        self._timedelta = None

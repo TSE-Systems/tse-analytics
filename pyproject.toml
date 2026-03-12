@@ -41,7 +41,7 @@ dependencies = [
 dev = [
     "pyinstaller==6.19.0",
     "pyinstrument==5.1.2",
-    "pyrefly==0.55.0",
+    "pyrefly==0.56.0",
     "pytest==9.0.2",
     "qtsass==0.4.0",
     "ruff==0.15.5",
@@ -66,7 +66,7 @@ python_version = "3.14"
 exclude = ['.*ui\.py']
 strict = false
 ignore_missing_imports = true
-disable_error_code="union-attr,override"
+disable_error_code = "union-attr,override"
 
 [tool.ruff]
 preview = true
@@ -82,14 +82,14 @@ exclude = [
 
 [tool.ruff.lint]
 select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-    "I",  # isort
-    "B",  # flake8-bugbear
-    "C4",  # flake8-comprehensions
-    "UP",  # pyupgrade
-    "NPY201",  # numpy2-deprecation
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    "I", # isort
+    "B", # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+    "NPY201", # numpy2-deprecation
 ]
 ignore = [
     "F821", # Undefined name
