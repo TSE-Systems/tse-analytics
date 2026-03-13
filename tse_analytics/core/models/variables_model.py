@@ -26,7 +26,7 @@ class VariablesModel(QAbstractTableModel):
                 if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
                     return item.aggregation
             case 3:
-                if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.CheckStateRole:
+                if role == Qt.ItemDataRole.CheckStateRole:
                     return Qt.CheckState.Checked if item.remove_outliers else Qt.CheckState.Unchecked
             case 4:
                 if role == Qt.ItemDataRole.DisplayRole:

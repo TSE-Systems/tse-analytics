@@ -243,7 +243,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
                 descriptive_df,
                 "Descriptive Statistics",
                 decimals=3,
-                rowname_col="index",
+                rowname_col="index" if "index" in descriptive_df.columns else None,
             ).as_raw_html(inline_css=True)
             self.descriptive_stats_widget.set_content(descriptive)
             self.add_report_action.setEnabled(True)

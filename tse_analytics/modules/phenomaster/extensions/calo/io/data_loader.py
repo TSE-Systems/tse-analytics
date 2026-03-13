@@ -125,6 +125,11 @@ def read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
         sample_interval,
     )
 
+    # Assign reference calo boxes
+    for animal in dataset.animals.values():
+        if "RefBox" in animal.properties:
+            calo_data.ref_box_mapping[animal.properties["Box"]] = animal.properties["RefBox"]
+
     return calo_data
 
 
@@ -270,4 +275,37 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
         df,
         sampling_interval,
     )
+
+    # Assign reference calo boxes
+    all_box_numbers = df["Box"].unique().tolist()
+    for box in all_box_numbers:
+        calo_data.ref_box_mapping[box] = _get_ref_box_number(box, all_box_numbers)
+
     return calo_data
+
+
+def _get_ref_box_number(box: int, boxes: list[int]) -> int | None:
+    assert len(boxes) > 0
+    # find a gap between standard and reference boxes
+    prev = boxes[-1]
+    gap_index: int | None = None
+    for idx, this in reversed(list(enumerate(boxes))):
+        if this < prev - 1:
+            gap_index = idx
+            break
+        prev = this
+
+    if gap_index is None:
+        return None
+
+    ref_boxes = boxes[gap_index + 1 :]
+    if box in ref_boxes:
+        return None
+
+    standard_boxes = boxes[: gap_index + 1]
+
+    parts = len(standard_boxes) // len(ref_boxes)
+
+    box_index = standard_boxes.index(box)
+    ref_box_index = box_index // parts
+    return ref_boxes[ref_box_index]

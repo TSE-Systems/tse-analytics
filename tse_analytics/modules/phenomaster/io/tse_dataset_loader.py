@@ -147,8 +147,12 @@ def _get_animals(data: dict) -> dict[str, Animal]:
         }
 
         # Add Tag property if exists
-        if "Tag" in item:
-            properties["Tag"] = item["Tag"]
+        if "tag" in item:
+            properties["Tag"] = item["tag"]
+
+        # Add RefBox property if exists
+        if "ref_box" in item:
+            properties["RefBox"] = int(item["ref_box"])
 
         animal = Animal(
             enabled=bool(item["enabled"]),

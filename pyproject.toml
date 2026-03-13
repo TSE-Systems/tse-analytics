@@ -44,8 +44,8 @@ dev = [
     "pyrefly==0.56.0",
     "pytest==9.0.2",
     "qtsass==0.4.0",
-    "ruff==0.15.5",
-    "ty==0.0.21",
+    "ruff==0.15.6",
+    "ty==0.0.22",
 ]
 
 [project.scripts]
