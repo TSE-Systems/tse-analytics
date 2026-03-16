@@ -2,9 +2,7 @@ from PySide6.QtCore import QSize, QSortFilterProxyModel, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QAbstractItemView,
-    QComboBox,
     QDialog,
-    QDoubleSpinBox,
     QMessageBox,
     QTableView,
     QToolBar,
@@ -14,13 +12,15 @@ from PySide6.QtWidgets import (
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.outliers import OutliersMode
+from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings, OutliersType
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.models.aggregation_combo_box_delegate import AggregationComboBoxDelegate
 from tse_analytics.core.models.variables_model import VariablesModel
+from tse_analytics.core.utils import get_widget_tool_button
 from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
 from tse_analytics.modules.phenomaster.data.variables_helper import cleanup_variables
 from tse_analytics.views.variables.add_variable_dialog import AddVariableDialog
+from tse_analytics.views.variables.outliers_widget_ui import Ui_OutliersWidget
 
 
 class VariablesWidget(QWidget, messaging.MessengerListener):
@@ -41,14 +41,45 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
 
-        self.outliersModeComboBox = QComboBox()
-        self.outliersModeComboBox.addItems(list(OutliersMode))
-        self.outliersModeComboBox.currentTextChanged.connect(self._outliers_mode_changed)
-        toolbar.addWidget(self.outliersModeComboBox)
+        self.outliers_widget = QWidget()
+        self.outliers_widget_ui = Ui_OutliersWidget()
+        self.outliers_widget_ui.setupUi(self.outliers_widget)
+        outliers_button = get_widget_tool_button(
+            toolbar,
+            self.outliers_widget,
+            "Outliers",
+            QIcon(":/icons/icons8-electrical-threshold-16.png"),
+        )
+        toolbar.addWidget(outliers_button)
 
-        self.outliersCoefficientSpinBox = QDoubleSpinBox()
-        self.outliersCoefficientSpinBox.valueChanged.connect(self._outliers_coefficient_changed)
-        toolbar.addWidget(self.outliersCoefficientSpinBox)
+        self.outliers_widget_ui.radioButtonDetectionOff.toggled.connect(
+            lambda toggled: self._outliers_settings_changed() if toggled else None
+        )
+        self.outliers_widget_ui.radioButtonHighlightOutliers.toggled.connect(
+            lambda toggled: self._outliers_settings_changed() if toggled else None
+        )
+        self.outliers_widget_ui.radioButtonRemoveOutliers.toggled.connect(
+            lambda toggled: self._outliers_settings_changed() if toggled else None
+        )
+
+        self.outliers_widget_ui.radioButtonIqr.toggled.connect(
+            lambda toggled: self._outliers_settings_changed() if toggled else None
+        )
+        self.outliers_widget_ui.radioButtonZScore.toggled.connect(
+            lambda toggled: self._outliers_settings_changed() if toggled else None
+        )
+        self.outliers_widget_ui.radioButtonThresholds.toggled.connect(
+            lambda toggled: self._outliers_settings_changed() if toggled else None
+        )
+
+        self.outliers_widget_ui.groupBoxMinThreshold.toggled.connect(self._outliers_settings_changed)
+        self.outliers_widget_ui.groupBoxMaxThreshold.toggled.connect(self._outliers_settings_changed)
+        self.outliers_widget_ui.doubleSpinBoxMinThreshold.valueChanged.connect(self._outliers_settings_changed)
+        self.outliers_widget_ui.doubleSpinBoxMaxThreshold.valueChanged.connect(self._outliers_settings_changed)
+
+        self.outliers_widget_ui.doubleSpinBoxIqrMultiplier.valueChanged.connect(self._outliers_settings_changed)
+
+        self.outliers_widget_ui.pushButtonFreezeRemoval.clicked.connect(self._freeze_removal)
 
         toolbar.addAction("Reset").triggered.connect(self._reset_variables)
 
@@ -82,26 +113,61 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
         if message.datatable is None:
             self.datatable = None
             self.tableView.model().setSourceModel(None)
-            self.outliersCoefficientSpinBox.setValue(1.5)
-            self.outliersModeComboBox.setCurrentText(OutliersMode.OFF)
+            outliers_settings = OutliersSettings()
         else:
             self.datatable = message.datatable
             model = VariablesModel(self.datatable)
             self.tableView.model().setSourceModel(model)
             self.tableView.resizeColumnsToContents()
-            self.outliersCoefficientSpinBox.setValue(self.datatable.dataset.outliers_settings.coefficient)
-            self.outliersModeComboBox.setCurrentText(self.datatable.dataset.outliers_settings.mode)
-
-    def _outliers_mode_changed(self, value: str):
-        if self.datatable is not None:
             outliers_settings = self.datatable.dataset.outliers_settings
-            outliers_settings.mode = OutliersMode(self.outliersModeComboBox.currentText())
-            self.datatable.dataset.apply_outliers(outliers_settings)
 
-    def _outliers_coefficient_changed(self, value: float):
+        match outliers_settings.mode:
+            case OutliersMode.OFF:
+                self.outliers_widget_ui.radioButtonDetectionOff.setChecked(True)
+            case OutliersMode.HIGHLIGHT:
+                self.outliers_widget_ui.radioButtonHighlightOutliers.setChecked(True)
+            case OutliersMode.REMOVE:
+                self.outliers_widget_ui.radioButtonRemoveOutliers.setChecked(True)
+
+        match outliers_settings.type:
+            case OutliersType.IQR:
+                self.outliers_widget_ui.radioButtonIqr.setChecked(True)
+            case OutliersType.ZSCORE:
+                self.outliers_widget_ui.radioButtonZScore.setChecked(True)
+            case OutliersType.THRESHOLDS:
+                self.outliers_widget_ui.radioButtonThresholds.setChecked(True)
+
+        self.outliers_widget_ui.doubleSpinBoxIqrMultiplier.setValue(outliers_settings.iqr_multiplier)
+        self.outliers_widget_ui.groupBoxMinThreshold.setChecked(outliers_settings.min_threshold_enabled)
+        self.outliers_widget_ui.doubleSpinBoxMinThreshold.setValue(outliers_settings.min_threshold)
+        self.outliers_widget_ui.groupBoxMaxThreshold.setChecked(outliers_settings.max_threshold_enabled)
+        self.outliers_widget_ui.doubleSpinBoxMaxThreshold.setValue(outliers_settings.max_threshold)
+
+    def _outliers_settings_changed(self):
         if self.datatable is not None:
-            outliers_settings = self.datatable.dataset.outliers_settings
-            outliers_settings.coefficient = self.outliersCoefficientSpinBox.value()
+            if self.outliers_widget_ui.radioButtonHighlightOutliers.isChecked():
+                mode = OutliersMode.HIGHLIGHT
+            elif self.outliers_widget_ui.radioButtonRemoveOutliers.isChecked():
+                mode = OutliersMode.REMOVE
+            else:
+                mode = OutliersMode.OFF
+
+            if self.outliers_widget_ui.radioButtonIqr.isChecked():
+                type = OutliersType.IQR
+            elif self.outliers_widget_ui.radioButtonZScore.isChecked():
+                type = OutliersType.ZSCORE
+            else:
+                type = OutliersType.THRESHOLDS
+
+            outliers_settings = OutliersSettings(
+                mode=mode,
+                type=type,
+                iqr_multiplier=self.outliers_widget_ui.doubleSpinBoxIqrMultiplier.value(),
+                min_threshold_enabled=self.outliers_widget_ui.groupBoxMinThreshold.isChecked(),
+                min_threshold=self.outliers_widget_ui.doubleSpinBoxMinThreshold.value(),
+                max_threshold_enabled=self.outliers_widget_ui.groupBoxMaxThreshold.isChecked(),
+                max_threshold=self.outliers_widget_ui.doubleSpinBoxMaxThreshold.value(),
+            )
             self.datatable.dataset.apply_outliers(outliers_settings)
 
     def _reset_variables(self):
@@ -150,6 +216,20 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
                 model = VariablesModel(self.datatable)
                 self.tableView.model().setSourceModel(model)
                 self.tableView.resizeColumnsToContents()
+
+    def _freeze_removal(self) -> None:
+        if self.outliers_widget_ui.radioButtonRemoveOutliers.isChecked():
+            if (
+                QMessageBox.question(
+                    self,
+                    "TSE Analytics",
+                    "Do you want to freeze outliers removal? This step is irreversible!",
+                    QMessageBox.StandardButton.Yes,
+                    QMessageBox.StandardButton.No,
+                )
+                == QMessageBox.StandardButton.Yes
+            ):
+                self.datatable.freeze_outliers_removal()
 
     def minimumSizeHint(self):
         return QSize(200, 100)

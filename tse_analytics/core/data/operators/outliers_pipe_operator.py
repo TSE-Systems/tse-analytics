@@ -7,7 +7,7 @@ using the Interquartile Range (IQR) method.
 
 import pandas as pd
 
-from tse_analytics.core.data.outliers import OutliersSettings
+from tse_analytics.core.data.outliers import OutliersSettings, OutliersType
 from tse_analytics.core.data.shared import Variable
 
 
@@ -32,26 +32,43 @@ def process_outliers(df: pd.DataFrame, settings: OutliersSettings, variables: di
     pd.DataFrame
         A DataFrame with outliers removed.
     """
-    remove_outliers_for_vars = {key: value for (key, value) in variables.items() if value.remove_outliers}
+    remove_outliers_for_vars = {key: variable for (key, variable) in variables.items() if variable.remove_outliers}
 
     if len(remove_outliers_for_vars) == 0:
         return df
 
     vars = list(remove_outliers_for_vars)
 
-    # Calculate quantiles and IQR
-    q1 = df[vars].quantile(0.25, numeric_only=True)
-    q3 = df[vars].quantile(0.75, numeric_only=True)
-    iqr = q3 - q1
+    is_outlier = None
+    match settings.type:
+        case OutliersType.IQR:
+            # Calculate quantiles and IQR
+            q1 = df[vars].quantile(0.25, numeric_only=True)
+            q3 = df[vars].quantile(0.75, numeric_only=True)
+            iqr = q3 - q1
 
-    # Return a boolean array of the rows with (any) non-outlier column values
-    condition = ~((df[vars] < (q1 - settings.coefficient * iqr)) | (df[vars] > (q3 + settings.coefficient * iqr))).any(
-        axis=1
-    )
+            lower = q1 - 1.5 * iqr
+            upper = q3 + 1.5 * iqr
 
-    # Filter our dataframe based on condition
-    result = df[condition]
+            # Return a boolean array of the rows with (any) outlier column values
+            is_outlier = (df[vars] < lower) | (df[vars] > upper)
+        case OutliersType.ZSCORE:
+            z_score = (df[vars] - df[vars].mean()) / df[vars].std()
+            is_outlier = z_score.abs() > 3
+        case OutliersType.THRESHOLDS:
+            if settings.min_threshold_enabled and settings.max_threshold_enabled:
+                is_outlier = (df[vars] < settings.min_threshold) | (df[vars] > settings.max_threshold)
+            elif settings.min_threshold_enabled:
+                is_outlier = df[vars] < settings.min_threshold
+            elif settings.max_threshold_enabled:
+                is_outlier = df[vars] > settings.max_threshold
 
-    result.reset_index(drop=True, inplace=True)
+    if is_outlier is None:
+        return df
 
-    return result
+    # Filter our dataframe based on a condition
+    df[vars] = df[vars].mask(is_outlier)
+
+    df.reset_index(drop=True, inplace=True)
+
+    return df

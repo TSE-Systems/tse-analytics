@@ -37,7 +37,7 @@ class TestDatasetInit:
 
     def test_default_outliers_settings(self, sample_dataset):
         assert sample_dataset.outliers_settings.mode == OutliersMode.OFF
-        assert sample_dataset.outliers_settings.coefficient == 1.5
+        assert sample_dataset.outliers_settings.iqr_multiplier == 1.5
 
     def test_default_binning_settings(self, sample_dataset):
         assert sample_dataset.binning_settings.apply is False
