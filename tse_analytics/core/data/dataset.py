@@ -16,7 +16,7 @@ from tse_analytics.core import messaging
 from tse_analytics.core.color_manager import get_factor_level_color_hex
 from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings
+from tse_analytics.core.data.outliers import OutliersSettings
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import Animal, Factor, FactorLevel
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
@@ -56,7 +56,7 @@ class Dataset:
         self.factors: dict[str, Factor] = {}
         self.datatables: dict[str, Datatable] = {}
 
-        self.outliers_settings = OutliersSettings(OutliersMode.OFF, 1.5)
+        self.outliers_settings = OutliersSettings()
         self.binning_settings = BinningSettings()
 
         self.reports: dict[str, Report] = {}

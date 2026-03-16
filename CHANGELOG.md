@@ -1,8 +1,9 @@
 TSE Analytics Change Log
 ====================================================================================================
 
-# 1.9.0 (2026-03-11)
+# 1.9.0 (2026-03-16)
 
+- New: Advanced outliers detection options: IQR, Z-score, min/max thresholds.
 - New: Option to load a selected workspace file if provided as an argument.
 - Change: Hide the Log widget by default.
 - Change: Introduction of PhenoMasterExtensionData common class and related refactoring.

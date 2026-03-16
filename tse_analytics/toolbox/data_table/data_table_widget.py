@@ -253,7 +253,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             self.add_report_action.setEnabled(False)
             self.show_stats_button.setEnabled(False)
 
-        self.table_view.setModel(PandasModel(self.df, self.datatable, calculate=True))
+        self.table_view.setModel(PandasModel(self.df, self.datatable))
         self.table_view.horizontalHeader().setSortIndicatorShown(False)
 
     def _header_clicked(self, logical_index: int):
@@ -262,7 +262,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.table_view.horizontalHeader().setSortIndicatorShown(True)
         order = self.table_view.horizontalHeader().sortIndicatorOrder() == Qt.SortOrder.AscendingOrder
         df = self.df.sort_values(self.df.columns[logical_index], ascending=order, inplace=False)
-        self.table_view.setModel(PandasModel(df, self.datatable, calculate=True))
+        self.table_view.setModel(PandasModel(df, self.datatable))
 
     def _add_report(self):
         name, ok = QInputDialog.getText(

@@ -29,6 +29,13 @@ class OutliersMode(StrEnum):
     REMOVE = "Remove outliers"
 
 
+@unique
+class OutliersType(StrEnum):
+    IQR = "Interquartile Range (IQR)"
+    ZSCORE = "Z-Score"
+    THRESHOLDS = "Thresholds"
+
+
 @dataclass
 class OutliersSettings:
     """
@@ -36,14 +43,12 @@ class OutliersSettings:
 
     This class holds the configuration for outlier detection, including the mode
     and coefficient for determining what constitutes an outlier.
-
-    Attributes
-    ----------
-    mode : OutliersMode
-        The mode for handling outliers (OFF, HIGHLIGHT, or REMOVE).
-    coefficient : float
-        The coefficient used to determine outliers (typically used with IQR method).
     """
 
-    mode: OutliersMode
-    coefficient: float
+    mode: OutliersMode = OutliersMode.OFF
+    type: OutliersType = OutliersType.IQR
+    iqr_multiplier: float = 1.5
+    min_threshold_enabled: bool = False
+    min_threshold: float = 0.0
+    max_threshold_enabled: bool = False
+    max_threshold: float = 0.0

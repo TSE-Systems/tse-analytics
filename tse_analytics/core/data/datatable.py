@@ -525,6 +525,10 @@ class Datatable:
 
         self.df.rename(columns=variable_name_map, inplace=True, errors="ignore")
 
+    def freeze_outliers_removal(self):
+        df = process_outliers(self.df, self.dataset.outliers_settings, self.variables)
+        self.df = df
+
     def clone(self):
         return Datatable(
             self.dataset, self.name, self.description, self.variables, self.df.copy(), self.sampling_interval
