@@ -1,6 +1,6 @@
 [project]
 name = "tse-analytics"
-version = "1.8.3"
+version = "1.9.0"
 description = "TSE Analytics data analysys"
 license = "GPL-3.0-or-later"
 readme = "README.md"
@@ -41,7 +41,7 @@ dependencies = [
 dev = [
     "pyinstaller==6.19.0",
     "pyinstrument==5.1.2",
-    "pyrefly==0.56.0",
+    "pyrefly==0.57.0",
     "pytest==9.0.2",
     "qtsass==0.4.0",
     "ruff==0.15.6",

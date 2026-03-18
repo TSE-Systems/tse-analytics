@@ -1,13 +1,15 @@
 TSE Analytics Change Log
 ====================================================================================================
 
-# 1.9.0 (2026-03-16)
+# 1.9.0 (2026-03-18)
 
 - New: Advanced outliers detection options: IQR, Z-score, min/max thresholds.
 - New: Option to load a selected workspace file if provided as an argument.
 - Change: Hide the Log widget by default.
 - Change: Introduction of PhenoMasterExtensionData common class and related refactoring.
 - Fix: Diets assignment for DrinkFeed extension.
+- Fix: Proper value re-assignment to categorical columns.
+  See: https://pandas.pydata.org/docs/user_guide/categorical.html#setting.
 
 ----------------------------------------------------------------------------------------------------
 

@@ -67,7 +67,7 @@ class AddVariableDialog(QDialog):
 
         if self.ui.radioButtonOriginAnimalProperty.isChecked():
             animal_property = self.ui.comboBoxAnimalProperty.currentText()
-            df[variable_name] = df["Animal"]
+            df[variable_name] = df["Animal"].astype(str)
             values_map = {}
             for animal in self.datatable.dataset.animals.values():
                 values_map[animal.id] = animal.properties[animal_property]
