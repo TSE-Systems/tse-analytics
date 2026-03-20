@@ -36,8 +36,10 @@ def process_drinkfeed_sequences(
             settings,
             drinkfeed_data.raw_df["DateTime"].iloc[0],
         )
-        events_parts.append(animal_events_df)
-        episodes_parts.append(animal_episodes_df)
+        if not animal_events_df.empty:
+            events_parts.append(animal_events_df)
+        if not animal_episodes_df.empty:
+            episodes_parts.append(animal_episodes_df)
 
     events_df = pd.concat(events_parts, ignore_index=True) if events_parts else pd.DataFrame()
     episodes_df = pd.concat(episodes_parts, ignore_index=True) if episodes_parts else pd.DataFrame()
@@ -81,7 +83,8 @@ def _process_animal(
             sensor,
             settings,
         )
-        events_parts.append(sensor_events_df)
+        if not sensor_events_df.empty:
+            events_parts.append(sensor_events_df)
 
         sensor_episodes_df = _extract_sensor_episodes(
             animal_id,
@@ -89,7 +92,8 @@ def _process_animal(
             sensor_events_df,
             sensor,
         )
-        episodes_parts.append(sensor_episodes_df)
+        if not sensor_episodes_df.empty:
+            episodes_parts.append(sensor_episodes_df)
 
     animal_events_df = pd.concat(events_parts, ignore_index=True) if events_parts else pd.DataFrame()
     animal_episodes_df = pd.concat(episodes_parts, ignore_index=True) if episodes_parts else pd.DataFrame()
@@ -188,6 +192,7 @@ def _extract_sensor_episodes(
     episodes["Gap[minutes]"] = (gap.dt.total_seconds() / 60).round(3).values
 
     episodes["Quantity"] = grouped["Quantity"].values
+    episodes["Quantity"] = episodes["Quantity"].astype("float64")
 
     # Rate = quantity / duration_minutes (NaN where duration is NaT)
     rate = grouped["Quantity"] / duration_minutes
