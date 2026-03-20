@@ -79,7 +79,8 @@ def _merge_continuous(
     for datatable_name in first_dataset.datatables.keys():
         dataframes = []
         for dataset in datasets:
-            dataframes.append(dataset.datatables[datatable_name].df)
+            if datatable_name in dataset.datatables:
+                dataframes.append(dataset.datatables[datatable_name].df)
 
         # reassign run number
         if not single_run:
