@@ -104,10 +104,10 @@ class AdjustDatasetDialog(QDialog):
         """
         Exclude the selected animals from the dataset.
         """
-        selected_items = self.ui.tableWidgetAnimals.selectedItems()
+        selected_indices = self.ui.tableWidgetAnimals.selectionModel().selectedRows()
         selected_animal_ids = set()
-        for i in range(0, len(selected_items) // 6):
-            selected_animal_ids.add(selected_items[i * 6].text())
+        for index in selected_indices:
+            selected_animal_ids.add(self.ui.tableWidgetAnimals.item(index.row(), 0).text())
         self.dataset.exclude_animals(selected_animal_ids)
 
     def _accepted(self) -> None:
