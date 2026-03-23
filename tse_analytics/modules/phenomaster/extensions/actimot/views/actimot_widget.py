@@ -239,3 +239,6 @@ class ActimotWidget(QWidget):
             "ActimotSettings",
             self.settings_widget.get_settings(),
         )
+        # TODO: see [SW-514]
+        if self.toast is not None:
+            self.toast.setParent(None)

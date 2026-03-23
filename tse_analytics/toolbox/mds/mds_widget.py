@@ -38,7 +38,6 @@ class MdsWidgetSettings:
 )
 class MdsWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
-        self._toast = None
         super().__init__(
             datatable,
             MdsWidgetSettings,
@@ -130,8 +129,8 @@ class MdsWidget(ToolboxWidgetBase):
 
         split_mode, selected_factor_name = self.group_by_selector.get_group_by()
 
-        self._toast = make_toast(self, self.title, "Processing...")
-        self._toast.show()
+        self.toast = make_toast(self, self.title, "Processing...")
+        self.toast.show()
 
         df = self.datatable.get_df(
             selected_variables,
@@ -160,5 +159,5 @@ class MdsWidget(ToolboxWidgetBase):
         self.report_view.set_content(result.report)
 
     def _finished(self):
-        self._toast.hide()
+        self.toast.hide()
         self.update_action.setEnabled(True)

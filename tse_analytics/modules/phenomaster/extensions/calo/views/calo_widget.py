@@ -204,7 +204,7 @@ class CaloWidget(QWidget):
             self,
             "Calorimetry Analysis",
             f"Processing complete in {timeit.default_timer() - tic} sec.",
-            duration=4000,
+            duration=3000,
             preset=ToastPreset.SUCCESS,
             show_duration_bar=True,
             echo_to_logger=True,

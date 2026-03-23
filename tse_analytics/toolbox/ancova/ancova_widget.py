@@ -29,8 +29,8 @@ class AncovaWidget(ToolboxWidgetBase):
         super().__init__(
             datatable,
             AncovaWidgetSettings,
-            title="ANCOVA",
-            parent=parent,
+            "ANCOVA",
+            parent,
         )
 
     def _create_toolbar_items(self, toolbar: QToolBar) -> None:

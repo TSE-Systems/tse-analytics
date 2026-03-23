@@ -6,6 +6,7 @@ Update/Add Report buttons, and a ReportEdit view.
 
 from typing import Any
 
+from pyqttoast import Toast
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QInputDialog, QToolBar, QVBoxLayout, QWidget
@@ -42,6 +43,7 @@ class ToolboxWidgetBase(QWidget):
             self.title = title
 
         self.datatable = datatable
+        self.toast: Toast | None = None
 
         # Connect destructor to save settings
         self.destroyed.connect(lambda: self._destroyed())
@@ -132,3 +134,6 @@ class ToolboxWidgetBase(QWidget):
             self.__class__.__name__,
             self._get_settings_value(),
         )
+        # TODO: see [SW-514]
+        if self.toast is not None:
+            self.toast.setParent(None)

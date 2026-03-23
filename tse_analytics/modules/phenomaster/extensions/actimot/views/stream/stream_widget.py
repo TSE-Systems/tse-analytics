@@ -18,6 +18,9 @@ class StreamWidget(QWidget):
         self.ui = Ui_StreamWidget()
         self.ui.setupUi(self)
 
+        # Connect destructor to save settings
+        self.destroyed.connect(lambda: self._destroyed())
+
         self.ui.toolButtonCalculate.clicked.connect(self._update_plot)
 
         plot_toolbar = NavigationToolbar2QT(self.ui.canvas, self)
@@ -68,3 +71,8 @@ class StreamWidget(QWidget):
 
         self.ui.canvas.figure.tight_layout()
         self.ui.canvas.draw()
+
+    def _destroyed(self) -> None:
+        # TODO: see [SW-514]
+        if self.toast is not None:
+            self.toast.setParent(None)

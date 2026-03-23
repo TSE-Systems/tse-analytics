@@ -367,4 +367,6 @@ class DrinkFeedWidget(QWidget):
             "DrinkFeedSettings",
             self.drinkfeed_settings_widget.get_drinkfeed_settings(),
         )
-        # settings.setValue("DrinkFeedDialog/Geometry", self.saveGeometry())
+        # TODO: see [SW-514]
+        if self.toast is not None:
+            self.toast.setParent(None)

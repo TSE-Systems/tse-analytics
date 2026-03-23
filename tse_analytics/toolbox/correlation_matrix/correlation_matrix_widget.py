@@ -25,7 +25,6 @@ class CorrelationMatrixWidgetSettings:
 @toolbox_plugin(category="Factor Analysis", label="Correlation Matrix", icon=":/icons/dimensionality.png", order=0)
 class CorrelationMatrixWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
-        self.toast = None
         super().__init__(
             datatable,
             CorrelationMatrixWidgetSettings,

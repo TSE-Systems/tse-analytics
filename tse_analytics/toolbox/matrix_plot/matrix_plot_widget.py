@@ -32,7 +32,6 @@ class MatrixPlotWidgetSettings:
 @toolbox_plugin(category="Factor Analysis", label="Matrix Plot", icon=":/icons/dimensionality.png", order=1)
 class MatrixPlotWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
-        self.toast = None
         super().__init__(
             datatable,
             MatrixPlotWidgetSettings,
