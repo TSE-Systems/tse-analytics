@@ -270,7 +270,7 @@ def _preprocess_animal(
 
     # Add Timedelta and Bin columns
     result.insert(loc=1, column="Timedelta", value=result["DateTime"] - experiment_started)
-    result.insert(loc=2, column="Bin", value=(result["Timedelta"] / sampling_interval).round().astype(int))
+    result.insert(loc=2, column="Bin", value=(result["Timedelta"] / sampling_interval).round().astype("UInt64"))
 
     # Put back animal into dataframe
     result.insert(loc=3, column="Animal", value=animal_id)

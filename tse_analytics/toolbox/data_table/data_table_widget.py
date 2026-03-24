@@ -117,12 +117,12 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         toolbar.addWidget(get_h_spacer_widget(toolbar))
 
         self.descriptive_stats_widget = ReportEdit(toolbar)
-        self.descriptive_stats_widget.setMinimumWidth(450)
+        self.descriptive_stats_widget.setMinimumWidth(600)
 
         self.show_stats_button = get_widget_tool_button(
             toolbar,
             self.descriptive_stats_widget,
-            "Show Descriptive Statistics",
+            "Descriptive Statistics",
             QIcon(":/icons/icons8-stats-16.png"),
         )
         self.show_stats_button.setEnabled(False)
@@ -140,11 +140,13 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             sortingEnabled=True,
         )
         self.table_view.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self.table_view.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-        self.table_view.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table_view.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        self.table_view.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectItems)
         self.table_view.verticalHeader().setMinimumSectionSize(20)
         self.table_view.verticalHeader().setDefaultSectionSize(20)
         self.table_view.horizontalHeader().sectionClicked.connect(self._header_clicked)
+        self.table_view.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.table_view.customContextMenuRequested.connect(self._show_context_menu)
 
         self._layout.addWidget(self.table_view)
 
@@ -153,16 +155,25 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         messaging.subscribe(self, messaging.BinningMessage, self._on_binning_applied)
         messaging.subscribe(self, messaging.DataChangedMessage, self._on_data_changed)
 
-    def _destroyed(self):
-        messaging.unsubscribe_all(self)
-        settings = QSettings()
-        settings.setValue(
-            self.__class__.__name__,
-            DataTableWidgetSettings(
-                self.group_by_selector.currentText(),
-                self.variables_table_widget.get_selected_variable_names(),
-            ),
-        )
+    def _show_context_menu(self, pos) -> None:
+        index = self.table_view.indexAt(pos)
+        if not index.isValid():
+            return
+
+        selected = self.table_view.selectionModel().selectedIndexes()
+        if not selected:
+            return
+
+        menu = QMenu(self.table_view)
+        delete_values_action = menu.addAction("Delete Selected Values")
+        action = menu.exec(self.table_view.viewport().mapToGlobal(pos))
+
+        if action is None:
+            return
+        if action == delete_values_action:
+            model = self.table_view.model()
+            for idx in selected:
+                model.setData(idx, pd.NA, Qt.ItemDataRole.EditRole)
 
     def _resize_columns_width(self):
         worker = Worker(
@@ -218,8 +229,6 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             ).show()
             return
 
-        # self.df = self.datatable.get_preprocessed_df(selected_variables, self.split_mode, self.selected_factor_name)
-
         if split_mode == SplitMode.ANIMAL:
             all_columns = self.datatable.df.columns.tolist()
             all_variable_columns = list(self.datatable.variables.keys())
@@ -235,7 +244,8 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
                 )
             )
 
-        self.df = self.datatable.get_preprocessed_df_columns(columns, split_mode, selected_factor_name)
+        # self.df = self.datatable.get_preprocessed_df_columns(columns, split_mode, selected_factor_name)
+        self.df = self.datatable.df
 
         if len(selected_variables_names) > 0:
             descriptive_df = self.df[selected_variables_names].describe().T.reset_index()
@@ -279,3 +289,14 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
                     self.descriptive_stats_widget.toHtml(),
                 )
             )
+
+    def _destroyed(self):
+        messaging.unsubscribe_all(self)
+        settings = QSettings()
+        settings.setValue(
+            self.__class__.__name__,
+            DataTableWidgetSettings(
+                self.group_by_selector.currentText(),
+                self.variables_table_widget.get_selected_variable_names(),
+            ),
+        )

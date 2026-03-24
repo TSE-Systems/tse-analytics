@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 import xmltodict
 
@@ -70,11 +69,11 @@ def _import_animals(path: Path) -> dict | None:
         return None
 
     dtype = {
-        "AnimalName": str,
-        "AnimalTag": str,
-        "Sex": str,
-        "GroupName": str,
-        "AnimalNotes": str,
+        "AnimalName": "string",
+        "AnimalTag": "string",
+        "Sex": "string",
+        "GroupName": "string",
+        "AnimalNotes": "string",
     }
 
     # Skip broken header
@@ -121,23 +120,23 @@ def _import_visits_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "VisitID": np.int64,
-        "AnimalTag": str,
-        "Start": str,
-        "End": str,
-        "ModuleName": str,
-        "Cage": np.int8,
-        "Corner": np.int8,
-        "CornerCondition": np.int8,
-        "PlaceError": bool,
-        "AntennaNumber": np.int64,
-        "AntennaDuration": np.float64,
-        "PresenceNumber": np.int64,
-        "PresenceDuration": np.float64,
-        "VisitSolution": np.int8,
-        "LickNumber": np.int64,
-        "LickContactTime": np.float64,
-        "LickDuration": np.float64,
+        "VisitID": "UInt64",
+        "AnimalTag": "string",
+        "Start": "string",
+        "End": "string",
+        "ModuleName": "string",
+        "Cage": "UInt8",
+        "Corner": "UInt8",
+        "CornerCondition": "Int8",
+        "PlaceError": "boolean",
+        "AntennaNumber": "UInt64",
+        "AntennaDuration": "Float64",
+        "PresenceNumber": "UInt64",
+        "PresenceDuration": "Float64",
+        "VisitSolution": "UInt8",
+        "LickNumber": "UInt64",
+        "LickContactTime": "Float64",
+        "LickDuration": "Float64",
     }
 
     df = pd.read_csv(
@@ -185,8 +184,8 @@ def _import_visits_df(folder_path: Path) -> pd.DataFrame | None:
     df.reset_index(drop=True, inplace=True)
 
     # Set visit number column
-    df["VisitNumber"] = df.groupby("AnimalTag").cumcount().astype(np.int64)
-    # df["VisitNumber"] = df.groupby("AnimalTag")["VisitID"].rank(method="first").astype(np.int64)
+    df["VisitNumber"] = df.groupby("AnimalTag").cumcount().astype("UInt64")
+    # df["VisitNumber"] = df.groupby("AnimalTag")["VisitID"].rank(method="first").astype("UInt64")
 
     return df
 
@@ -201,22 +200,22 @@ def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame | None:
         lick_start_time_column = "LickStartTime" in first_line
 
     dtype = {
-        "VisitID": np.int64,
-        "Start": str,
-        "End": str,
-        "Side": np.int8,
-        "SideCondition": np.int8,
-        "SideError": bool,
-        "TimeError": bool,
-        "ConditionError": bool,
-        "LickNumber": np.int64,
-        "LickContactTime": np.float64,
-        "LickDuration": np.float64,
-        "AirState": bool,
-        "DoorState": bool,
-        "LED1State": np.int8,
-        "LED2State": np.int8,
-        "LED3State": np.int8,
+        "VisitID": "UInt64",
+        "Start": "string",
+        "End": "string",
+        "Side": "UInt8",
+        "SideCondition": "Int8",
+        "SideError": "boolean",
+        "TimeError": "boolean",
+        "ConditionError": "boolean",
+        "LickNumber": "UInt64",
+        "LickContactTime": "Float64",
+        "LickDuration": "Float64",
+        "AirState": "boolean",
+        "DoorState": "boolean",
+        "LED1State": "UInt8",
+        "LED2State": "UInt8",
+        "LED3State": "UInt8",
     }
 
     if lick_start_time_column:
@@ -269,10 +268,10 @@ def _import_environment_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "DateTime": str,
-        "Temperature": np.float64,
-        "Illumination": np.int64,
-        "Cage": np.int8,
+        "DateTime": "string",
+        "Temperature": "Float64",
+        "Illumination": "UInt64",
+        "Cage": "UInt8",
     }
 
     df = pd.read_csv(
@@ -301,12 +300,12 @@ def _import_hardware_events_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "DateTime": str,
-        "HardwareType": np.int8,
-        "Cage": np.int8,
-        "Corner": np.int8,
-        "Side": "Int64",
-        "State": np.int8,
+        "DateTime": "string",
+        "HardwareType": "UInt8",
+        "Cage": "UInt8",
+        "Corner": "UInt8",
+        "Side": "UInt8",
+        "State": "UInt8",
     }
 
     df = pd.read_csv(
@@ -343,13 +342,13 @@ def _import_log_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "DateTime": str,
-        "LogCategory": str,
-        "LogType": str,
-        "Cage": "Int64",
-        "Corner": "Int64",
-        "Side": "Int64",
-        "LogNotes": str,
+        "DateTime": "string",
+        "LogCategory": "string",
+        "LogType": "string",
+        "Cage": "UInt8",
+        "Corner": "UInt8",
+        "Side": "UInt8",
+        "LogNotes": "string",
     }
 
     df = pd.read_csv(

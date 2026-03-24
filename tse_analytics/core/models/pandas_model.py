@@ -125,6 +125,14 @@ class PandasModel(QAbstractTableModel):
                                     return PandasModel.outlier_color
         return None
 
+    def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
+        if role == Qt.ItemDataRole.EditRole:
+            self._data[index.row()][index.column()] = value
+            self.datatable.df.iloc[index.row(), index.column()] = value
+            self.dataChanged.emit(index, index, [role])
+            return True
+        return False
+
     def headerData(self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = ...):
         """
         Return the header data for the given role, section and orientation.

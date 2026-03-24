@@ -5,6 +5,7 @@ import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.shared import Aggregation, Variable
+from tse_analytics.core.utils.data import sanitize_dtypes
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.drinkfeed_bin_data import DrinkFeedBinData
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.drinkfeed_raw_data import DrinkFeedRawData
@@ -32,6 +33,7 @@ def read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedBinD
         if variable.name not in skipped_variables:
             variables[variable.name] = variable
         dtypes[variable.name] = item["type"]
+    dtypes = sanitize_dtypes(dtypes)
 
     # Read measurements data
     df = cx.read_sql(
@@ -49,16 +51,16 @@ def read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedBinD
     # Add Animal column
     box_to_animal_map = {}
     for animal in dataset.animals.values():
-        box_to_animal_map[animal.properties["Box"]] = animal.id
+        box_to_animal_map[str(animal.properties["Box"])] = animal.id
 
     if "Animal" not in df.columns:
         df.insert(
             df.columns.get_loc("Box"),
             "Animal",
-            df["Box"].replace(box_to_animal_map),
+            df["Box"].astype("string").replace(box_to_animal_map),
         )
     else:
-        df["Animal"] = df["Animal"].astype(str)
+        df["Animal"] = df["Animal"].astype("string")
 
     df = df.astype({
         "Animal": "category",
@@ -88,6 +90,7 @@ def read_drinkfeed_raw(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedRawD
     dtypes = {}
     for item in table_metadata["columns"].values():
         dtypes[item["id"]] = item["type"]
+    dtypes = sanitize_dtypes(dtypes)
 
     # Read measurements data
     df = cx.read_sql(
@@ -139,7 +142,7 @@ def read_drinkfeed_raw(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedRawD
             sensor,
             "",
             "Sensor value",
-            "float64",
+            "Float64",
             Aggregation.MEAN,
             False,
         )
@@ -270,7 +273,7 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     # convert categorical types
     new_df = new_df.astype({
         "Animal": "category",
-        "Box": int,
+        "Box": "UInt8",
     })
 
     data = DrinkFeedBinData(

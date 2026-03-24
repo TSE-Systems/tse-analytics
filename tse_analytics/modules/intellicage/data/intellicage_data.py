@@ -7,7 +7,6 @@ into structured datatables for analysis.
 
 from typing import TYPE_CHECKING
 
-import numpy as np
 import pandas as pd
 
 from tse_analytics.core.data.datatable import Datatable
@@ -249,7 +248,7 @@ class IntelliCageData:
         # Convert types
         df = df.astype({
             "Animal": "category",
-            "PlaceError": "int",
+            "PlaceError": "Int64",
         })
 
         datatable = Datatable(
@@ -560,11 +559,11 @@ class IntelliCageData:
         # Convert types
         df = df.astype({
             # "Animal": "category",
-            "SideError": np.int64,
-            "TimeError": np.int64,
-            "DoorState": np.int64,
-            "AirState": np.int64,
-            "ConditionError": np.int64,
+            "SideError": "Int64",
+            "TimeError": "Int64",
+            "DoorState": "Int64",
+            "AirState": "Int64",
+            "ConditionError": "Int64",
         })
 
         datatable = Datatable(

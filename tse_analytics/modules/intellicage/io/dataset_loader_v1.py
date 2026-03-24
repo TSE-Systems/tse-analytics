@@ -8,7 +8,6 @@ hardware events, and logs from the extracted dataset files.
 
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 import xmltodict
 
@@ -77,11 +76,11 @@ def _import_animals(path: Path) -> dict | None:
         return None
 
     dtype = {
-        "Name": str,
-        "Tag": str,
-        "Sex": str,
-        "Group": str,
-        "Notes": str,
+        "Name": "string",
+        "Tag": "string",
+        "Sex": "string",
+        "Group": "string",
+        "Notes": "string",
     }
 
     df = pd.read_csv(
@@ -124,19 +123,19 @@ def _import_visits_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "ID": np.int64,
-        "Animal": str,
-        "Start": str,
-        "End": str,
-        "Module": str,
-        "Cage": np.int8,
-        "Corner": np.int8,
-        "CornerCondition": np.int8,
-        "PlaceError": bool,
-        "AntennaNumber": np.int64,
-        "AntennaDuration": np.float64,
-        "PresenceNumber": np.int64,
-        "PresenceDuration": np.float64,
+        "ID": "UInt64",
+        "Animal": "string",
+        "Start": "string",
+        "End": "string",
+        "Module": "string",
+        "Cage": "UInt8",
+        "Corner": "UInt8",
+        "CornerCondition": "Int8",
+        "PlaceError": "boolean",
+        "AntennaNumber": "UInt64",
+        "AntennaDuration": "UInt64",
+        "PresenceNumber": "UInt64",
+        "PresenceDuration": "Float64",
     }
 
     df = pd.read_csv(
@@ -185,8 +184,8 @@ def _import_visits_df(folder_path: Path) -> pd.DataFrame | None:
     df.reset_index(drop=True, inplace=True)
 
     # Set visit number column
-    df["VisitNumber"] = df.groupby("AnimalTag").cumcount().astype(np.int64)
-    # df["VisitNumber"] = df.groupby("AnimalTag")["VisitID"].rank(method="first").astype(np.int64)
+    df["VisitNumber"] = df.groupby("AnimalTag").cumcount().astype("UInt64")
+    # df["VisitNumber"] = df.groupby("AnimalTag")["VisitID"].rank(method="first").astype("UInt64")
 
     return df
 
@@ -200,21 +199,21 @@ def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame | None:
     #     first_line = file.readline()
 
     dtype = {
-        "VisitID": np.int64,
-        "Start": str,
-        "End": str,
-        "Side": np.int8,
-        "SideCondition": np.int8,
-        "SideError": bool,
-        "TimeError": bool,
-        "ConditionError": bool,
-        "LicksNumber": np.int64,
-        "LicksDuration": np.float64,
-        "AirState": bool,
-        "DoorState": bool,
-        "LED1State": np.int8,
-        "LED2State": np.int8,
-        "LED3State": np.int8,
+        "VisitID": "UInt64",
+        "Start": "string",
+        "End": "string",
+        "Side": "UInt8",
+        "SideCondition": "Int8",
+        "SideError": "boolean",
+        "TimeError": "boolean",
+        "ConditionError": "boolean",
+        "LicksNumber": "UInt64",
+        "LicksDuration": "Float64",
+        "AirState": "boolean",
+        "DoorState": "boolean",
+        "LED1State": "UInt8",
+        "LED2State": "UInt8",
+        "LED3State": "UInt8",
     }
 
     df = pd.read_csv(
@@ -266,9 +265,9 @@ def _import_environment_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "DateTime": str,
-        "Temperature": np.float64,
-        "Illumination": np.int64,
+        "DateTime": "string",
+        "Temperature": "Float64",
+        "Illumination": "UInt64",
     }
 
     df = pd.read_csv(
@@ -297,12 +296,12 @@ def _import_hardware_events_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "DateTime": str,
-        "Type": np.int8,
-        "Cage": np.int8,
-        "Corner": np.int8,
-        "Side": "Int64",
-        "State": np.int8,
+        "DateTime": "string",
+        "Type": "UInt8",
+        "Cage": "UInt8",
+        "Corner": "UInt8",
+        "Side": "UInt8",
+        "State": "UInt8",
     }
 
     df = pd.read_csv(
@@ -347,13 +346,13 @@ def _import_log_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "DateTime": str,
-        "Category": str,
-        "Type": str,
-        "Cage": "Int64",
-        "Corner": "Int64",
-        "Side": "Int64",
-        "Notes": str,
+        "DateTime": "string",
+        "Category": "string",
+        "Type": "string",
+        "Cage": "UInt8",
+        "Corner": "UInt8",
+        "Side": "UInt8",
+        "Notes": "string",
     }
 
     df = pd.read_csv(

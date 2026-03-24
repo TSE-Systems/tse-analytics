@@ -69,11 +69,11 @@ def _import_state_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "Time": str,
-        "DeviceId": str,
-        "Mode": str,
-        "State": str,
-        "AnimalTag": str,
+        "Time": "string",
+        "DeviceId": "string",
+        "Mode": "string",
+        "State": "string",
+        "AnimalTag": "string",
     }
 
     df = pd.read_csv(
@@ -122,10 +122,10 @@ def _import_model_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "Time": str,
-        "DeviceId": str,
-        "SwitchMode": str,
-        "Model": str,
+        "Time": "string",
+        "DeviceId": "string",
+        "SwitchMode": "string",
+        "Model": "string",
     }
 
     df = pd.read_csv(

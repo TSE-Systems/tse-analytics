@@ -6,6 +6,22 @@ import pandas as pd
 
 from tse_analytics.core.data.shared import SplitMode
 
+_dtypes_name_mapping = {
+    "int8": "Int8",
+    "int16": "Int16",
+    "int32": "Int32",
+    "int64": "Int64",
+    "uint8": "UInt8",
+    "uint16": "UInt16",
+    "uint32": "UInt32",
+    "uint64": "UInt64",
+    "float16": "Float16",
+    "float32": "Float32",
+    "float64": "Float64",
+    "bool": "boolean",
+    "str": "string",
+}
+
 
 def get_group_by_params(group_by_str: str) -> tuple[SplitMode, str]:
     # Convert group_by string to SplitMode and factor_name
@@ -41,3 +57,10 @@ def exclude_animals_from_df(df: pd.DataFrame, animal_ids: set[str]) -> pd.DataFr
     df["Animal"] = df["Animal"].cat.remove_unused_categories()
     df.reset_index(inplace=True, drop=True)
     return df
+
+
+def sanitize_dtypes(dtypes: dict[str, str]) -> dict[str, str]:
+    for key, value in dtypes.items():
+        if value in _dtypes_name_mapping:
+            dtypes[key] = _dtypes_name_mapping[value]
+    return dtypes

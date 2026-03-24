@@ -6,6 +6,7 @@ import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.shared import Aggregation, Variable
+from tse_analytics.core.utils.data import sanitize_dtypes
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.extensions.calo.data.calo_data import CaloData
 from tse_analytics.modules.phenomaster.io import tse_import_settings
@@ -34,6 +35,8 @@ def read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
         dtypes[variable.name] = item["type"]
     # Ignore the time for "DateTime" column
     dtypes.pop("DateTime")
+
+    dtypes = sanitize_dtypes(dtypes)
 
     # Read measurements data
     df = cx.read_sql(

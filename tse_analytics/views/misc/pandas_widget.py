@@ -32,17 +32,17 @@ class PandasWidget(QWidget):
         """
         super().__init__(parent)
 
-        self.dataset = dataset
-        self.title = title
-        self.df: pd.DataFrame | None = None
-
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
 
+        self.dataset = dataset
+        self.title = title
+        self.df: pd.DataFrame | None = None
+
         # Setup toolbar
         toolbar = QToolBar(
-            "Pandas Widget Toolbar",
+            "Toolbar",
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
@@ -64,8 +64,6 @@ class PandasWidget(QWidget):
         toolbar.addAction(QIcon(":/icons/icons8-resize-horizontal-16.png"), "Resize Columns").triggered.connect(
             self._resize_columns_width
         )
-        # toolbar.addWidget(get_h_spacer_widget(toolbar))
-        # toolbar.addAction("Add Report").triggered.connect(self._add_report)
 
         self._layout.addWidget(toolbar)
 

@@ -27,7 +27,7 @@ def dataframe_to_actogram(
 
     # Determine bin for each timestamp
     minutes_per_bin = 24 * 60 / bins_per_day
-    df["Bin"] = (df["Time"] / minutes_per_bin).astype(int)
+    df["Bin"] = (df["Time"] / minutes_per_bin).astype("UInt64")
 
     df = df.groupby(["Date", "Bin"], dropna=False, observed=False).aggregate({
         variable.name: variable.aggregation,

@@ -1,4 +1,4 @@
-import numpy as np
+import pandas as pd
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
@@ -120,12 +120,12 @@ class PhenoMasterDataset(Dataset):
         if len(fitting_results) > 0:
             main_datatable = self.datatables["Main"]
             df = main_datatable.df
-            df["O2-p"] = np.nan
-            df["CO2-p"] = np.nan
-            df["VO2-p"] = np.nan
-            df["VCO2-p"] = np.nan
-            df["RER-p"] = np.nan
-            df["EE-p"] = np.nan
+            df["O2-p"] = pd.NA
+            df["CO2-p"] = pd.NA
+            df["VO2-p"] = pd.NA
+            df["VCO2-p"] = pd.NA
+            df["RER-p"] = pd.NA
+            df["EE-p"] = pd.NA
             for result in fitting_results.values():
                 for _index, row in result.df.iterrows():
                     bin_number = row["Bin"]

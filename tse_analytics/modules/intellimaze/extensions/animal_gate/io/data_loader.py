@@ -8,7 +8,6 @@ as well as variable data.
 
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
@@ -74,14 +73,14 @@ def _import_sessions_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "DeviceId": str,
-        "IdSectionVisited": np.int8,
-        "StandbySectionVisited": np.int8,
-        "Direction": str,
-        "Weight": np.float64,
-        "Tag": str,
-        "Start": str,
-        "End": str,
+        "DeviceId": "string",
+        "IdSectionVisited": "UInt8",
+        "StandbySectionVisited": "UInt8",
+        "Direction": "string",
+        "Weight": "Float64",
+        "Tag": "string",
+        "Start": "string",
+        "End": "string",
     }
 
     df = pd.read_csv(
@@ -92,7 +91,7 @@ def _import_sessions_df(folder_path: Path) -> pd.DataFrame | None:
     )
 
     # TODO: does -1 means no weight measurement?
-    df["Weight"] = df["Weight"].replace(-1, np.nan)
+    df["Weight"] = df["Weight"].replace(-1, pd.NA)
 
     # Convert DateTime columns
     df["Start"] = pd.to_datetime(
@@ -138,10 +137,10 @@ def _import_antenna_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "Time": str,
-        "DeviceId": str,
-        "Tag": str,
-        "AnimalName": str,
+        "Time": "string",
+        "DeviceId": "string",
+        "Tag": "string",
+        "AnimalName": "string",
     }
 
     df = pd.read_csv(
@@ -188,12 +187,12 @@ def _import_log_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "DateTime": str,
-        "DeviceId": str,
-        "Phase": str,
-        "Flag": str,
-        "Tag": str,
-        "Description": str,
+        "DateTime": "string",
+        "DeviceId": "string",
+        "Phase": "string",
+        "Flag": "string",
+        "Tag": "string",
+        "Description": "string",
     }
 
     df = pd.read_csv(

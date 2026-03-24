@@ -51,12 +51,12 @@ def _import_integer_variables_data(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "Time": str,
-        "DeviceId": str,
-        "Name": str,
-        "Data": int,
-        "ConditionValue": int,
-        "Tag": str,
+        "Time": "string",
+        "DeviceId": "string",
+        "Name": "string",
+        "Data": "Int64",
+        "ConditionValue": "Int64",
+        "Tag": "string",
     }
 
     df = pd.read_csv(
@@ -103,12 +103,12 @@ def _import_double_variables_data(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "Time": str,
-        "DeviceId": str,
-        "Name": str,
-        "Data": float,
-        "ConditionValue": float,
-        "Tag": str,
+        "Time": "string",
+        "DeviceId": "string",
+        "Name": "string",
+        "Data": "Float64",
+        "ConditionValue": "Float64",
+        "Tag": "string",
     }
 
     df = pd.read_csv(
@@ -155,11 +155,11 @@ def _import_boolean_variables_data(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "Time": str,
-        "DeviceId": str,
-        "Name": str,
-        "Data": bool,
-        "Tag": str,
+        "Time": "string",
+        "DeviceId": "string",
+        "Name": "string",
+        "Data": "boolean",
+        "Tag": "string",
     }
 
     df = pd.read_csv(

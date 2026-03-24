@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
@@ -38,12 +37,12 @@ def _import_registration_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "Time": str,
-        "DeviceId": str,
-        "Left": np.int64,
-        "Right": np.int64,
-        "Reset": np.bool,
-        "Tag": str,
+        "Time": "string",
+        "DeviceId": "string",
+        "Left": "Int64",
+        "Right": "Int64",
+        "Reset": "boolean",
+        "Tag": "string",
     }
 
     df = pd.read_csv(
@@ -77,10 +76,10 @@ def _import_model_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "Time": str,
-        "DeviceId": str,
-        "SwitchMode": str,
-        "Model": str,
+        "Time": "string",
+        "DeviceId": "string",
+        "SwitchMode": "string",
+        "Model": "string",
     }
 
     df = pd.read_csv(

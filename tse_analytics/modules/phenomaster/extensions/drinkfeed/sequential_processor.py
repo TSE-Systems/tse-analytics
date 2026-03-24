@@ -54,10 +54,10 @@ def process_drinkfeed_sequences(
     episodes_df = episodes_df.astype({
         "Sensor": "category",
         "Animal": "category",
-        "Id": int,
+        "Id": "UInt64",
         "Duration": "timedelta64[ns]",
         "Gap": "timedelta64[ns]",
-        "Rate": "float64",
+        "Rate": "Float64",
     })
 
     return events_df, episodes_df
@@ -108,7 +108,7 @@ def _extract_sensor_events(
     events_df = df.copy()
 
     if events_df.empty:
-        events_df.insert(1, "EpisodeId", pd.array([], dtype="Int64"))
+        events_df.insert(1, "EpisodeId", pd.array([], dtype="UInt64"))
         events_df.insert(2, "Gap", pd.array([], dtype="timedelta64[ns]"))
         return events_df
 
@@ -120,7 +120,7 @@ def _extract_sensor_events(
 
     gaps = events_df["DateTime"].diff()
     new_episode = gaps > timedelta
-    episode_ids = new_episode.cumsum().astype("Int64")
+    episode_ids = new_episode.cumsum().astype("UInt64")
 
     events_df.insert(1, "EpisodeId", episode_ids.values)
     events_df.insert(2, "Gap", gaps.values)
@@ -192,7 +192,7 @@ def _extract_sensor_episodes(
     episodes["Gap[minutes]"] = (gap.dt.total_seconds() / 60).round(3).values
 
     episodes["Quantity"] = grouped["Quantity"].values
-    episodes["Quantity"] = episodes["Quantity"].astype("float64")
+    episodes["Quantity"] = episodes["Quantity"].astype("Float64")
 
     # Rate = quantity / duration_minutes (NaN where duration is NaT)
     rate = grouped["Quantity"] / duration_minutes

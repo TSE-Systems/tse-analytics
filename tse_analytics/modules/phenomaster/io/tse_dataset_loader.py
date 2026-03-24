@@ -9,6 +9,7 @@ from loguru import logger
 from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
+from tse_analytics.core.utils.data import sanitize_dtypes
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
 from tse_analytics.modules.phenomaster.extensions.actimot.io.data_loader import read_actimot_raw
@@ -186,6 +187,8 @@ def _read_main_table(
     # Ignore the time for "DateTime" column
     dtypes.pop("DateTime")
 
+    dtypes = sanitize_dtypes(dtypes)
+
     # Drop core (default) variables from the list
     variables.pop("DateTime")
     variables.pop("Animal")
@@ -205,7 +208,7 @@ def _read_main_table(
     df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
 
     # Convert animal id to string first
-    df["Animal"] = df["Animal"].astype(str)
+    df["Animal"] = df["Animal"].astype("string")
 
     # Convert to categorical types
     df = df.astype({
@@ -219,7 +222,7 @@ def _read_main_table(
     # Add Timedelta and Bin columns
     start_date_time = dataset.experiment_started
     df.insert(loc=1, column="Timedelta", value=df["DateTime"] - start_date_time)
-    df.insert(loc=2, column="Bin", value=(df["Timedelta"] / sample_interval).round().astype(int))
+    df.insert(loc=2, column="Bin", value=(df["Timedelta"] / sample_interval).round().astype("UInt64"))
 
     # Sort variables by name
     variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))

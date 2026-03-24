@@ -1,11 +1,11 @@
 from pathlib import Path
 
 import connectorx as cx
-import numpy as np
 import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.shared import Aggregation, Variable
+from tse_analytics.core.utils.data import sanitize_dtypes
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.extensions.grouphousing.data.grouphousing_data import GroupHousingData
 from tse_analytics.modules.phenomaster.io import tse_import_settings
@@ -29,7 +29,9 @@ def read_grouphousing(path: Path, dataset: PhenoMasterDataset) -> GroupHousingDa
         dtypes[variable.name] = item["type"]
 
     dtypes["EndDateTime"] = "Int64"
-    dtypes["Animal"] = str
+    dtypes["Animal"] = "string"
+
+    dtypes = sanitize_dtypes(dtypes)
 
     # Read measurements data
     df = cx.read_sql(
@@ -52,11 +54,11 @@ def read_grouphousing(path: Path, dataset: PhenoMasterDataset) -> GroupHousingDa
     )
 
     # Convert dict keys type from str to int
-    channel_to_channel_type_mapping = {int(k): v for k, v in hardware_metadata["channels"].items()}
+    channel_to_channel_type_mapping = {str(k): v for k, v in hardware_metadata["channels"].items()}
     df.insert(
         df.columns.get_loc("Channel") + 1,
         "ChannelType",
-        df["Channel"].replace(channel_to_channel_type_mapping),
+        df["Channel"].astype("string").replace(channel_to_channel_type_mapping),
     )
 
     df = df.astype({
@@ -88,13 +90,13 @@ def import_grouphousing_csv_data(
 
 def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings) -> GroupHousingData:
     dtype = {
-        "Number": np.int64,
-        "Date": str,
-        "Time": str,
-        "BoxNo": np.int64,
-        "ChannelNo": np.int64,
-        "Channel type": str,
-        "Animal": str,
+        "Number": "UInt64",
+        "Date": "string",
+        "Time": "string",
+        "BoxNo": "UInt8",
+        "ChannelNo": "UInt8",
+        "Channel type": "string",
+        "Animal": "string",
     }
 
     df = pd.read_csv(

@@ -44,7 +44,7 @@ def get_distribution_result(
         # df[x] = df[x].cat.remove_unused_categories()
         # TODO: temporary fix for issue with broken categories offset when using pandas 3.0
         df.sort_values(x, inplace=True)
-        df[x] = df[x].astype(str)
+        df[x] = df[x].astype("string")
 
     # Create a figure with a tight layout
     figure, ax = plt.subplots(1, 1, figsize=figsize, layout="tight")

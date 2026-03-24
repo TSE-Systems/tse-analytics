@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
@@ -41,23 +40,23 @@ def _import_visits_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "VisitID": np.int64,
-        "AnimalTag": str,
-        "Start": str,
-        "End": str,
-        "ModuleName": str,
-        "DeviceId": str,
-        "Corner": np.int8,
-        "CornerCondition": np.int8,
-        "PlaceError": bool,
-        "AntennaNumber": np.int64,
-        "AntennaDuration": np.float64,
-        "PresenceNumber": np.int64,
-        "PresenceDuration": np.float64,
-        "VisitSolution": np.int8,
-        "LickNumber": np.int64,
-        "LickContactTime": np.float64,
-        "LickDuration": np.float64,
+        "VisitID": "UInt64",
+        "AnimalTag": "string",
+        "Start": "string",
+        "End": "string",
+        "ModuleName": "string",
+        "DeviceId": "string",
+        "Corner": "UInt8",
+        "CornerCondition": "Int8",
+        "PlaceError": "boolean",
+        "AntennaNumber": "UInt64",
+        "AntennaDuration": "Float64",
+        "PresenceNumber": "UInt64",
+        "PresenceDuration": "Float64",
+        "VisitSolution": "UInt8",
+        "LickNumber": "UInt64",
+        "LickContactTime": "Float64",
+        "LickDuration": "Float64",
     }
 
     df = pd.read_csv(
@@ -106,8 +105,8 @@ def _import_visits_df(folder_path: Path) -> pd.DataFrame | None:
     df.reset_index(drop=True, inplace=True)
 
     # Set visit number column
-    df["VisitNumber"] = df.groupby("AnimalTag").cumcount().astype(np.int64)
-    # df["VisitNumber"] = df.groupby("AnimalTag")["VisitID"].rank(method="first").astype(np.int64)
+    df["VisitNumber"] = df.groupby("AnimalTag").cumcount().astype("UInt64")
+    # df["VisitNumber"] = df.groupby("AnimalTag")["VisitID"].rank(method="first").astype("UInt64")
 
     return df
 
@@ -118,23 +117,23 @@ def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "VisitID": np.int64,
-        "Start": str,
-        "End": str,
-        "Side": np.int8,
-        "SideCondition": np.int8,
-        "SideError": bool,
-        "TimeError": bool,
-        "ConditionError": bool,
-        "LickNumber": np.int64,
-        "LickContactTime": np.float64,
-        "LickDuration": np.float64,
-        "AirState": bool,
-        "DoorState": bool,
-        "LED1State": np.int8,
-        "LED2State": np.int8,
-        "LED3State": np.int8,
-        "LickStartTime": str,
+        "VisitID": "UInt64",
+        "Start": "string",
+        "End": "string",
+        "Side": "UInt8",
+        "SideCondition": "Int8",
+        "SideError": "boolean",
+        "TimeError": "boolean",
+        "ConditionError": "boolean",
+        "LickNumber": "UInt64",
+        "LickContactTime": "Float64",
+        "LickDuration": "Float64",
+        "AirState": "boolean",
+        "DoorState": "boolean",
+        "LED1State": "UInt8",
+        "LED2State": "UInt8",
+        "LED3State": "UInt8",
+        "LickStartTime": "string",
     }
 
     df = pd.read_csv(
@@ -183,10 +182,10 @@ def _import_environment_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "DateTimeOffset": str,
-        "Temperature": np.float32,
-        "Illumination": np.uint32,
-        "DeviceId": str,
+        "DateTimeOffset": "string",
+        "Temperature": "Float32",
+        "Illumination": "UInt32",
+        "DeviceId": "string",
     }
 
     df = pd.read_csv(
@@ -228,12 +227,12 @@ def _import_hardware_events_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "DateTimeOffset": str,
-        "HardwareType": np.int8,
-        "DeviceId": str,
-        "Corner": np.int8,
-        "Side": "Int8",
-        "State": np.int32,
+        "DateTimeOffset": "string",
+        "HardwareType": "UInt8",
+        "DeviceId": "string",
+        "Corner": "UInt8",
+        "Side": "UInt8",
+        "State": "UInt32",
     }
 
     df = pd.read_csv(
@@ -281,13 +280,13 @@ def _import_log_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "DateTimeOffset": str,
-        "LogCategory": str,
-        "LogType": str,
-        "DeviceId": str,
-        "Corner": "Int8",
-        "Side": "Int8",
-        "LogNotes": str,
+        "DateTimeOffset": "string",
+        "LogCategory": "string",
+        "LogType": "string",
+        "DeviceId": "string",
+        "Corner": "UInt8",
+        "Side": "UInt8",
+        "LogNotes": "string",
     }
 
     df = pd.read_csv(

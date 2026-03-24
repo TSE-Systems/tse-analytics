@@ -31,7 +31,7 @@ def rename_animal_df(df: pd.DataFrame, old_id: str, animal: Animal) -> pd.DataFr
         The DataFrame with the animal renamed.
     """
     df = df.astype({
-        "Animal": str,
+        "Animal": "string",
     })
     df.loc[df["Animal"] == old_id, "Animal"] = animal.id
     df = df.astype({
@@ -80,7 +80,7 @@ def reassign_df_timedelta_and_bin(
 
     # Reassign bins numbers
     if sampling_interval is not None:
-        df["Bin"] = (df["Timedelta"] / sampling_interval).round().astype(int)
+        df["Bin"] = (df["Timedelta"] / sampling_interval).round().astype("UInt64")
     return df
 
 

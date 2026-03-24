@@ -147,7 +147,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
 
     # Apply categorical types
     df = df.astype({
-        "Animal": "str",
+        "Animal": "string",
     })
 
     df = df.astype({
@@ -167,7 +167,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
     start_date_time = df.at[0, "DateTime"]
     end_date_time = df["DateTime"].iat[-1]
     df.insert(loc=1, column="Timedelta", value=df["DateTime"] - start_date_time)
-    df.insert(loc=2, column="Bin", value=(df["Timedelta"] / timedelta).round().astype(int))
+    df.insert(loc=2, column="Bin", value=(df["Timedelta"] / timedelta).round().astype("UInt64"))
 
     # Sort variables by name
     variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))

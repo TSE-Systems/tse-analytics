@@ -22,7 +22,7 @@ def read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> ActimotData:
     )
 
     # Convert types
-    df = df.astype({"Box": "int16"}, errors="ignore")
+    df = df.astype({"Box": "UInt16"}, errors="ignore")
 
     df["X"] = np.left_shift(df["X2"].to_numpy(dtype=np.uint64), 32) + df["X1"].to_numpy(dtype=np.uint64)
     df = df.drop(columns=["X1", "X2"])
@@ -38,7 +38,10 @@ def read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> ActimotData:
     )
 
     # Convert categorical types
-    df = df.astype({"Animal": "category", "Box": "category"})
+    df = df.astype({
+        "Animal": "category",
+        "Box": "category",
+    })
 
     return ActimotData(
         dataset,
@@ -76,22 +79,22 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     usecols = [datetime_column_header, "Rel. [s]", "BoxNr", "X (cm)", "Y (cm)", "X", "Y"]
 
     dtype = {
-        datetime_column_header: str,
-        "Rel. [s]": np.float64,
-        "BoxNr": np.uint8,
-        "X (cm)": np.float64,
-        "Y (cm)": np.float64,
-        "X": str,
-        "Y": str,
+        datetime_column_header: "string",
+        "Rel. [s]": "Float64",
+        "BoxNr": "UInt8",
+        "X (cm)": "Float64",
+        "Y (cm)": "Float64",
+        "X": "string",
+        "Y": "string",
     }
 
     # for i in range(1, 65):
     #     usecols.append(f"X{i}")
-    #     dtype[f"X{i}"] = np.uint8
+    #     dtype[f"X{i}"] = "UInt8"
     #
     # for i in range(1, 33):
     #     usecols.append(f"Y{i}")
-    #     dtype[f"Y{i}"] = np.uint8
+    #     dtype[f"Y{i}"] = "UInt8"
 
     raw_df = pd.read_csv(
         path,
@@ -126,7 +129,7 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
         None,
     )
 
-    new_df["Animal"] = new_df["Box"].astype(int)
+    new_df["Animal"] = new_df["Box"].astype("Int64")
     new_df.replace({"Animal": box_to_animal_map}, inplace=True)
 
     new_df = new_df.sort_values(["Box", "DateTime"])

@@ -122,11 +122,11 @@ def _merge_continuous(
 
         # convert categorical types
         new_df = new_df.astype({
-            "Animal": str,
+            "Animal": "string",
         })
         new_df = new_df.astype({
             "Animal": "category",
-            "Run": int,
+            "Run": "UInt8",
         })
 
         # Sort dataframe
@@ -193,7 +193,7 @@ def _merge_overlap(
             dataset.animals = new_animals
 
             for datatable in dataset.datatables.values():
-                datatable.df["Animal"] = datatable.df["Animal"].astype(str)
+                datatable.df["Animal"] = datatable.df["Animal"].astype("string")
                 datatable.df["Animal"] = datatable.df["Animal"].replace(name_map)
                 datatable.df["Animal"] = datatable.df["Animal"].astype("category")
 
@@ -222,11 +222,11 @@ def _merge_overlap(
 
         # convert categorical types
         new_df = new_df.astype({
-            "Animal": str,
+            "Animal": "string",
         })
         new_df = new_df.astype({
             "Animal": "category",
-            "Run": int,
+            "Run": "UInt8",
         })
 
         # TODO: reassign bin and timedelta. HOW?
