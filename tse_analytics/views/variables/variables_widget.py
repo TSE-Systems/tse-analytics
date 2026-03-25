@@ -110,16 +110,19 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
         self._layout.addWidget(self.tableView)
 
     def _on_datatable_changed(self, message: messaging.DatatableChangedMessage):
-        if message.datatable is None:
+        self.set_datatable(message.datatable)
+
+    def set_datatable(self, datatable: Datatable) -> None:
+        if datatable is None:
             self.datatable = None
             self.tableView.model().setSourceModel(None)
             outliers_settings = OutliersSettings()
         else:
-            self.datatable = message.datatable
+            self.datatable = datatable
             model = VariablesModel(self.datatable)
             self.tableView.model().setSourceModel(model)
             self.tableView.resizeColumnsToContents()
-            outliers_settings = self.datatable.dataset.outliers_settings
+            outliers_settings = self.datatable.outliers_settings
 
         match outliers_settings.mode:
             case OutliersMode.OFF:
@@ -168,7 +171,7 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
                 max_threshold_enabled=self.outliers_widget_ui.groupBoxMaxThreshold.isChecked(),
                 max_threshold=self.outliers_widget_ui.doubleSpinBoxMaxThreshold.value(),
             )
-            self.datatable.dataset.apply_outliers(outliers_settings)
+            self.datatable.apply_outliers(outliers_settings)
 
     def _reset_variables(self):
         if self.datatable is not None:

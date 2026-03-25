@@ -3,12 +3,12 @@ Module containing the Dataset class for managing experimental data.
 
 This module provides functionality for handling datasets, including metadata, animals,
 factors, and datatables. It supports operations like renaming animals, excluding time ranges,
-and applying binning and outlier detection.
+and applying binning.
 """
 
 from copy import deepcopy
 from datetime import datetime
-from uuid import uuid4
+from uuid import uuid7
 
 import pandas as pd
 
@@ -16,7 +16,6 @@ from tse_analytics.core import messaging
 from tse_analytics.core.color_manager import get_factor_level_color_hex
 from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.outliers import OutliersSettings
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import Animal, Factor, FactorLevel
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
@@ -31,7 +30,7 @@ class Dataset:
 
     The Dataset class manages experimental data, including metadata, animals, factors,
     and datatables. It provides methods for manipulating the dataset, such as renaming
-    animals, excluding time ranges, and applying binning and outlier detection.
+    animals, excluding time ranges, and applying binning.
     """
 
     def __init__(
@@ -49,17 +48,15 @@ class Dataset:
         animals : dict[str, Animal]
             Dictionary mapping animal IDs to Animal objects.
         """
-        self.id = uuid4()
+        self.id = uuid7()
         self.metadata = metadata
-
         self.animals = animals
+
         self.factors: dict[str, Factor] = {}
         self.datatables: dict[str, Datatable] = {}
-
-        self.outliers_settings = OutliersSettings()
-        self.binning_settings = BinningSettings()
-
         self.reports: dict[str, Report] = {}
+
+        self.binning_settings = BinningSettings()
 
     @property
     def name(self) -> str:
@@ -361,21 +358,6 @@ class Dataset:
         """
         self.binning_settings = binning_settings
         messaging.broadcast(messaging.BinningMessage(self, self, binning_settings))
-
-    def apply_outliers(self, settings: OutliersSettings) -> None:
-        """
-        Apply outlier detection settings to the dataset.
-
-        This method updates the outlier detection settings for the dataset and
-        broadcasts a message to notify listeners of the change.
-
-        Parameters
-        ----------
-        settings : OutliersSettings
-            The outlier detection settings to apply to the dataset.
-        """
-        self.outliers_settings = settings
-        messaging.broadcast(messaging.DataChangedMessage(self, self))
 
     def clone(self):
         """

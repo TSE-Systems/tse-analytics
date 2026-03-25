@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
     QInputDialog,
     QLabel,
     QMenu,
+    QSplitter,
     QTableView,
     QToolBar,
     QToolButton,
@@ -28,20 +29,19 @@ from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_great_table, get_h_spacer_widget, get_widget_tool_button
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
-from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.report_edit import ReportEdit
 from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
+from tse_analytics.views.variables.variables_widget import VariablesWidget
 
 
 @dataclass
-class DataTableWidgetSettings:
+class DataWidgetSettings:
     group_by: str = "Animal"
     selected_variables: list[str] = field(default_factory=list)
 
 
-@toolbox_plugin(category="Data", label="Table", icon=":/icons/table.png", order=0)
-class DataTableWidget(QWidget, messaging.MessengerListener):
+class DataWidget(QWidget, messaging.MessengerListener):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
@@ -50,7 +50,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
         # Settings management
         settings = QSettings()
-        self._settings: DataTableWidgetSettings = settings.value(self.__class__.__name__, DataTableWidgetSettings())
+        self._settings: DataWidgetSettings = settings.value(self.__class__.__name__, DataWidgetSettings())
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -132,27 +132,60 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.add_report_action.triggered.connect(self._add_report)
         self.add_report_action.setEnabled(False)
 
-        # Insert toolbar to the widget
         self._layout.addWidget(toolbar)
+
+        self._splitter = QSplitter(
+            orientation=Qt.Orientation.Horizontal,
+            opaqueResize=False,
+            handleWidth=5,
+            childrenCollapsible=True,
+        )
+        self._layout.addWidget(self._splitter)
 
         self.table_view = QTableView(
             self,
             sortingEnabled=True,
         )
         self.table_view.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self.table_view.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-        self.table_view.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table_view.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        self.table_view.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectItems)
         self.table_view.verticalHeader().setMinimumSectionSize(20)
         self.table_view.verticalHeader().setDefaultSectionSize(20)
         self.table_view.horizontalHeader().sectionClicked.connect(self._header_clicked)
         self.table_view.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.table_view.customContextMenuRequested.connect(self._show_context_menu)
 
-        self._layout.addWidget(self.table_view)
+        self._splitter.addWidget(self.table_view)
+
+        self.variables_widget = VariablesWidget()
+        self.variables_widget.set_datatable(self.datatable)
+        self._splitter.addWidget(self.variables_widget)
+        # self._layout.addWidget(self.table_view)
 
         self._set_data()
 
         messaging.subscribe(self, messaging.BinningMessage, self._on_binning_applied)
         messaging.subscribe(self, messaging.DataChangedMessage, self._on_data_changed)
+
+    def _show_context_menu(self, pos) -> None:
+        index = self.table_view.indexAt(pos)
+        if not index.isValid():
+            return
+
+        selected = self.table_view.selectionModel().selectedIndexes()
+        if not selected:
+            return
+
+        menu = QMenu(self.table_view)
+        delete_values_action = menu.addAction("Delete Selected Values")
+        action = menu.exec(self.table_view.viewport().mapToGlobal(pos))
+
+        if action is None:
+            return
+        if action == delete_values_action:
+            model = self.table_view.model()
+            for idx in selected:
+                model.setData(idx, pd.NA, Qt.ItemDataRole.EditRole)
 
     def _resize_columns_width(self):
         worker = Worker(
@@ -224,6 +257,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             )
 
         self.df = self.datatable.get_preprocessed_df_columns(columns, split_mode, selected_factor_name)
+        # self.df = self.datatable.df
 
         if len(selected_variables_names) > 0:
             descriptive_df = self.df[selected_variables_names].describe().T.reset_index()
@@ -273,7 +307,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         settings = QSettings()
         settings.setValue(
             self.__class__.__name__,
-            DataTableWidgetSettings(
+            DataWidgetSettings(
                 self.group_by_selector.currentText(),
                 self.variables_table_widget.get_selected_variable_names(),
             ),

@@ -10,16 +10,17 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
-from uuid import uuid4
+from uuid import uuid7
 
 import pandas as pd
 
+from tse_analytics.core import messaging
 from tse_analytics.core.data.helper import reassign_df_timedelta_and_bin, rename_animal_df
 from tse_analytics.core.data.operators.animal_filter_pipe_operator import filter_animals
 from tse_analytics.core.data.operators.group_by_pipe_operator import group_by_columns
 from tse_analytics.core.data.operators.outliers_pipe_operator import process_outliers
 from tse_analytics.core.data.operators.time_binning_pipe_operator import process_time_binning
-from tse_analytics.core.data.outliers import OutliersMode
+from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings
 from tse_analytics.core.data.shared import Animal, Factor, SplitMode, Variable
 from tse_analytics.core.utils.data import exclude_animals_from_df
 
@@ -67,15 +68,19 @@ class Datatable:
         sampling_interval : pd.Timedelta or None
             The sampling interval of the data, or None if not applicable.
         """
-        self.id = uuid4()
+        self.id = uuid7()
         self.dataset = dataset
         self.name = name
         self.description = description
         self.variables = variables
-
         self.df = df
-
         self.sampling_interval = sampling_interval
+
+        self.outliers_settings = OutliersSettings()
+
+    @property
+    def is_regular_timeseries(self) -> bool:
+        return self.sampling_interval is not None
 
     @property
     def start_timestamp(self) -> pd.Timestamp:
@@ -183,6 +188,21 @@ class Datatable:
             for factor in self.dataset.factors.keys():
                 modes.append(factor)
         return modes
+
+    def apply_outliers(self, settings: OutliersSettings) -> None:
+        """
+        Apply outlier detection settings to the datatable.
+
+        This method updates the outlier detection settings for the datatable and
+        broadcasts a message to notify listeners of the change.
+
+        Parameters
+        ----------
+        settings : OutliersSettings
+            The outlier detection settings to apply to the datatable.
+        """
+        self.outliers_settings = settings
+        messaging.broadcast(messaging.DataChangedMessage(self, self.dataset))
 
     def rename_animal(self, old_id: str, animal: Animal) -> None:
         """
@@ -399,9 +419,9 @@ class Datatable:
         df = filter_animals(df, self.dataset.animals).copy()
 
         # Outliers removal
-        if self.dataset.outliers_settings.mode == OutliersMode.REMOVE:
+        if self.outliers_settings.mode == OutliersMode.REMOVE:
             variables = {k: v for k, v in self.variables.items() if k in columns}
-            df = process_outliers(df, self.dataset.outliers_settings, variables)
+            df = process_outliers(df, self.outliers_settings, variables)
 
         return df
 
@@ -526,7 +546,7 @@ class Datatable:
         self.df.rename(columns=variable_name_map, inplace=True, errors="ignore")
 
     def freeze_outliers_removal(self):
-        df = process_outliers(self.df, self.dataset.outliers_settings, self.variables)
+        df = process_outliers(self.df, self.outliers_settings, self.variables)
         self.df = df
 
     def clone(self):

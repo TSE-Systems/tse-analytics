@@ -44,7 +44,7 @@ class VariablesModel(QAbstractTableModel):
                 if role == Qt.ItemDataRole.CheckStateRole:
                     item = self.items[index.row()]
                     item.remove_outliers = value == Qt.CheckState.Checked.value
-                    self.datatable.dataset.apply_outliers(self.datatable.dataset.outliers_settings)
+                    self.datatable.apply_outliers(self.datatable.outliers_settings)
                     return True
 
     def flags(self, index: QModelIndex):

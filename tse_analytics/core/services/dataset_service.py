@@ -6,7 +6,7 @@ merging and cloning datasets.
 """
 
 import copy
-from uuid import uuid4
+from uuid import uuid7
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
@@ -124,7 +124,7 @@ class DatasetService:
             new_dataset_name: The name for the new cloned dataset.
         """
         new_dataset = copy.deepcopy(original_dataset)
-        new_dataset.id = uuid4()
+        new_dataset.id = uuid7()
         new_dataset.metadata["name"] = new_dataset_name
         if new_dataset is not None:
             self.add_dataset(new_dataset)
