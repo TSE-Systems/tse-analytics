@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QDialog, QMessageBox, QWidget
 
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
-from tse_analytics.views.variables.add_variable_dialog_ui import Ui_AddVariableDialog
+from tse_analytics.toolbox.data_table.variables.add_variable_dialog_ui import Ui_AddVariableDialog
 
 
 class AddVariableDialog(QDialog):

@@ -2,15 +2,16 @@ from dataclasses import dataclass, field
 
 import pandas as pd
 from pyqttoast import ToastPreset
-from PySide6.QtCore import QSettings, QSize, Qt
+from PySide6.QtCore import QByteArray, QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QAbstractItemView,
-    QAbstractScrollArea,
     QFileDialog,
     QInputDialog,
     QLabel,
     QMenu,
+    QMessageBox,
+    QSplitter,
     QTableView,
     QToolBar,
     QToolButton,
@@ -28,36 +29,38 @@ from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_great_table, get_h_spacer_widget, get_widget_tool_button
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
+from tse_analytics.toolbox.data_table.variables.variables_widget import VariablesWidget
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.report_edit import ReportEdit
-from tse_analytics.views.misc.variables_table_widget import VariablesTableWidget
 
 
 @dataclass
-class DataTableWidgetSettings:
+class DataWidgetSettings:
     group_by: str = "Animal"
     selected_variables: list[str] = field(default_factory=list)
+    splitter_state: QByteArray | None = None
 
 
 @toolbox_plugin(category="Data", label="Table", icon=":/icons/table.png", order=0)
 class DataTableWidget(QWidget, messaging.MessengerListener):
-    def __init__(self, datatable: Datatable, parent: QWidget | None = None):
+    def __init__(self, datatable: Datatable, name: str = "DataTableWidget", parent: QWidget | None = None):
         super().__init__(parent)
+
+        self.name = name
+        self.datatable = datatable
+        self.df: pd.DataFrame | None = None
 
         # Connect destructor to unsubscribe and save settings
         self.destroyed.connect(lambda: self._destroyed())
 
         # Settings management
         settings = QSettings()
-        self._settings: DataTableWidgetSettings = settings.value(self.__class__.__name__, DataTableWidgetSettings())
+        self._settings: DataWidgetSettings = settings.value(f"{self.name}Settings", DataWidgetSettings())
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
-
-        self.datatable = datatable
-        self.df: pd.DataFrame | None = None
 
         # Setup toolbar
         toolbar = QToolBar(
@@ -66,24 +69,6 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
 
-        self.variables_table_widget = VariablesTableWidget()
-        self.variables_table_widget.blockSignals(True)
-        self.variables_table_widget.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
-        self.variables_table_widget.itemSelectionChanged.connect(self._variables_selection_changed)
-        self.variables_table_widget.set_data(self.datatable.variables, self._settings.selected_variables)
-        self.variables_table_widget.setMaximumHeight(600)
-        self.variables_table_widget.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
-        self.variables_table_widget.blockSignals(False)
-
-        variables_button = get_widget_tool_button(
-            toolbar,
-            self.variables_table_widget,
-            "Variables",
-            QIcon(":/icons/variables.png"),
-        )
-        toolbar.addWidget(variables_button)
-
-        toolbar.addSeparator()
         toolbar.addWidget(QLabel("Group by:"))
         self.group_by_selector = GroupBySelector(
             toolbar,
@@ -91,7 +76,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             check_binning=True,
             selected_mode=self._settings.group_by,
         )
-        self.group_by_selector.currentTextChanged.connect(self._set_data)
+        self.group_by_selector.currentTextChanged.connect(self.refresh_data)
         toolbar.addWidget(self.group_by_selector)
 
         toolbar.addSeparator()
@@ -132,24 +117,42 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.add_report_action.triggered.connect(self._add_report)
         self.add_report_action.setEnabled(False)
 
-        # Insert toolbar to the widget
         self._layout.addWidget(toolbar)
+
+        self._splitter = QSplitter(
+            orientation=Qt.Orientation.Horizontal,
+            opaqueResize=False,
+            handleWidth=5,
+            childrenCollapsible=True,
+        )
+        self._layout.addWidget(self._splitter)
 
         self.table_view = QTableView(
             self,
             sortingEnabled=True,
         )
         self.table_view.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self.table_view.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-        self.table_view.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table_view.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        self.table_view.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectItems)
         self.table_view.verticalHeader().setMinimumSectionSize(20)
         self.table_view.verticalHeader().setDefaultSectionSize(20)
         self.table_view.horizontalHeader().sectionClicked.connect(self._header_clicked)
-        self.table_view.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.table_view.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.table_view.customContextMenuRequested.connect(self._show_context_menu)
 
-        self._layout.addWidget(self.table_view)
+        self._splitter.addWidget(self.table_view)
 
-        self._set_data()
+        self.variables_widget = VariablesWidget(self)
+        self.variables_widget.blockSignals(True)
+        self.variables_widget.set_data(self.datatable, self._settings.selected_variables)
+        self.variables_widget.tableView.selectionModel().selectionChanged.connect(self._variables_selection_changed)
+        self.variables_widget.blockSignals(False)
+
+        self._splitter.addWidget(self.variables_widget)
+
+        self._splitter.restoreState(self._settings.splitter_state)
+
+        self.refresh_data()
 
         messaging.subscribe(self, messaging.BinningMessage, self._on_binning_applied)
         messaging.subscribe(self, messaging.DataChangedMessage, self._on_data_changed)
@@ -177,20 +180,20 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
     def _on_binning_applied(self, message: messaging.BinningMessage):
         if message.dataset == self.datatable.dataset:
-            self._set_data()
+            self.refresh_data()
 
     def _on_data_changed(self, message: messaging.DataChangedMessage):
         if message.dataset == self.datatable.dataset:
-            self._set_data()
+            self.refresh_data()
 
     def _variables_selection_changed(self):
-        self._set_data()
+        self.refresh_data()
 
-    def _set_data(self):
+    def refresh_data(self):
         if self.datatable is None:
             return
 
-        selected_variables_names = self.variables_table_widget.get_selected_variable_names()
+        selected_variables_names = self.variables_widget.get_selected_variable_names()
         split_mode, selected_factor_name = self.group_by_selector.get_group_by()
 
         if (
@@ -252,6 +255,34 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         df = self.df.sort_values(self.df.columns[logical_index], ascending=order, inplace=False)
         self.table_view.setModel(PandasModel(df, self.datatable))
 
+    def _show_context_menu(self, pos) -> None:
+        index = self.table_view.indexAt(pos)
+        if not index.isValid():
+            return
+
+        selected = self.table_view.selectionModel().selectedIndexes()
+        if not selected:
+            return
+
+        menu = QMenu(self.table_view)
+        delete_values_action = menu.addAction("Delete Selected Values")
+        action = menu.exec(self.table_view.viewport().mapToGlobal(pos))
+
+        if action is None:
+            return
+        if action == delete_values_action:
+            if (
+                QMessageBox.question(
+                    self,
+                    "Delete Values",
+                    "Are you sure you want to delete selected values? This action cannot be undone.",
+                )
+                == QMessageBox.StandardButton.Yes
+            ):
+                model = self.table_view.model()
+                for idx in selected:
+                    model.setData(idx, pd.NA, Qt.ItemDataRole.EditRole)
+
     def _add_report(self):
         name, ok = QInputDialog.getText(
             self,
@@ -272,9 +303,10 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         messaging.unsubscribe_all(self)
         settings = QSettings()
         settings.setValue(
-            self.__class__.__name__,
-            DataTableWidgetSettings(
+            f"{self.name}Settings",
+            DataWidgetSettings(
                 self.group_by_selector.currentText(),
-                self.variables_table_widget.get_selected_variable_names(),
+                self.variables_widget.get_selected_variable_names(),
+                self._splitter.saveState(),
             ),
         )

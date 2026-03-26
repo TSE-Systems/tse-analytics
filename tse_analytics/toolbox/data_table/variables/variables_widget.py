@@ -1,3 +1,5 @@
+import typing
+
 from PySide6.QtCore import QSize, QSortFilterProxyModel, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
@@ -10,26 +12,29 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings, OutliersType
+from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.models.aggregation_combo_box_delegate import AggregationComboBoxDelegate
 from tse_analytics.core.models.variables_model import VariablesModel
 from tse_analytics.core.utils import get_widget_tool_button
+from tse_analytics.core.utils.ui import set_inactive_palette
 from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
 from tse_analytics.modules.phenomaster.data.variables_helper import cleanup_variables
-from tse_analytics.views.variables.add_variable_dialog import AddVariableDialog
-from tse_analytics.views.variables.outliers_widget_ui import Ui_OutliersWidget
+from tse_analytics.toolbox.data_table.variables.add_variable_dialog import AddVariableDialog
+from tse_analytics.toolbox.data_table.variables.outliers_widget_ui import Ui_OutliersWidget
+
+if typing.TYPE_CHECKING:
+    from tse_analytics.toolbox.data_table.data_table_widget import DataTableWidget
 
 
-class VariablesWidget(QWidget, messaging.MessengerListener):
-    def __init__(self, parent: QWidget | None = None):
+class VariablesWidget(QWidget):
+    def __init__(self, data_widget: DataTableWidget, parent: QWidget | None = None):
         super().__init__(parent)
 
+        self.data_widget = data_widget
         self.datatable: Datatable | None = None
-
-        messaging.subscribe(self, messaging.DatatableChangedMessage, self._on_datatable_changed)
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -95,10 +100,12 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
         )
         self.tableView.setEditTriggers(QAbstractItemView.EditTrigger.DoubleClicked)
         self.tableView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.tableView.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        self.tableView.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
         self.tableView.verticalHeader().setMinimumSectionSize(20)
         self.tableView.verticalHeader().setDefaultSectionSize(20)
         self.tableView.setHorizontalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
+
+        set_inactive_palette(self.tableView)
 
         proxy_model = QSortFilterProxyModel()
         proxy_model.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
@@ -109,10 +116,7 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
 
         self._layout.addWidget(self.tableView)
 
-    def _on_datatable_changed(self, message: messaging.DatatableChangedMessage):
-        self.set_datatable(message.datatable)
-
-    def set_datatable(self, datatable: Datatable) -> None:
+    def set_data(self, datatable: Datatable, selected_variables: list[str] = None) -> None:
         if datatable is None:
             self.datatable = None
             self.tableView.model().setSourceModel(None)
@@ -121,6 +125,10 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
             self.datatable = datatable
             model = VariablesModel(self.datatable)
             self.tableView.model().setSourceModel(model)
+            for i, variable in enumerate(self.datatable.variables.values()):
+                if selected_variables is not None:
+                    if variable.name in selected_variables:
+                        self.tableView.selectRow(i)
             self.tableView.resizeColumnsToContents()
             outliers_settings = self.datatable.outliers_settings
 
@@ -145,6 +153,18 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
         self.outliers_widget_ui.doubleSpinBoxMinThreshold.setValue(outliers_settings.min_threshold)
         self.outliers_widget_ui.groupBoxMaxThreshold.setChecked(outliers_settings.max_threshold_enabled)
         self.outliers_widget_ui.doubleSpinBoxMaxThreshold.setValue(outliers_settings.max_threshold)
+
+    def get_selected_variables_dict(self) -> dict[str, Variable]:
+        selected_rows = self.tableView.selectionModel().selectedRows(column=0)
+        result = {}
+        for index in selected_rows:
+            name = index.data()
+            result[name] = self.datatable.variables[name]
+        return result
+
+    def get_selected_variable_names(self) -> list[str]:
+        selected_rows = self.tableView.selectionModel().selectedRows(column=0)
+        return [index.data() for index in selected_rows]
 
     def _outliers_settings_changed(self):
         if self.datatable is not None:
@@ -219,6 +239,7 @@ class VariablesWidget(QWidget, messaging.MessengerListener):
                 model = VariablesModel(self.datatable)
                 self.tableView.model().setSourceModel(model)
                 self.tableView.resizeColumnsToContents()
+                self.data_widget.refresh_data()
 
     def _freeze_removal(self) -> None:
         if self.outliers_widget_ui.radioButtonRemoveOutliers.isChecked():

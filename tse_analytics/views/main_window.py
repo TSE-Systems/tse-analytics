@@ -36,7 +36,6 @@ from tse_analytics.views.misc.toolbox_button import ToolboxButton
 from tse_analytics.views.pipeline.pipeline_editor_widget import PipelineEditorWidget
 from tse_analytics.views.settings.binning_settings_widget import BinningSettingsWidget
 from tse_analytics.views.settings.settings_dialog import SettingsDialog
-from tse_analytics.views.variables.variables_widget import VariablesWidget
 
 MAX_RECENT_FILES = 10
 
@@ -117,12 +116,6 @@ class MainWindow(QMainWindow):
         selector_dock_area = LayoutManager.add_dock_widget_to_area(
             PySide6QtAds.BottomDockWidgetArea, factors_dock_widget, animals_dock_area
         )
-
-        variables_dock_widget = LayoutManager.register_dock_widget(
-            VariablesWidget(), "Variables", QIcon(":/icons/variables.png")
-        )
-        LayoutManager.add_dock_widget_tab_to_area(variables_dock_widget, selector_dock_area)
-        selector_dock_area.setCurrentIndex(0)
 
         binning_dock_widget = LayoutManager.register_dock_widget(
             BinningSettingsWidget(), "Binning", QIcon(":/icons/binning.png")
