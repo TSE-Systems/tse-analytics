@@ -32,5 +32,5 @@ def filter_animals(df: pd.DataFrame, animals: dict[str, Animal]) -> pd.DataFrame
 
     result = df[df["Animal"].isin(enabled_animal_ids)]
     result["Animal"] = result["Animal"].cat.remove_unused_categories()
-    result.reset_index(drop=True, inplace=True)
+    # result.reset_index(drop=True, inplace=True)
     return result

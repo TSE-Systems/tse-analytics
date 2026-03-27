@@ -33,7 +33,7 @@ class PandasModel(QAbstractTableModel):
         QAbstractTableModel.__init__(self, parent)
 
         self.datatable = datatable
-        self._df = df
+        self.df = df
         self.row_count, self.column_count = df.shape
 
         if self.datatable.outliers_settings.mode == OutliersMode.HIGHLIGHT:
@@ -44,10 +44,10 @@ class PandasModel(QAbstractTableModel):
             if len(remove_outliers_for_vars) > 0:
                 match self.datatable.outliers_settings.type:
                     case OutliersType.IQR:
-                        self.q1 = self._df[vars].quantile(0.25, numeric_only=True)
-                        self.q3 = self._df[vars].quantile(0.75, numeric_only=True)
+                        self.q1 = self.df[vars].quantile(0.25, numeric_only=True)
+                        self.q3 = self.df[vars].quantile(0.75, numeric_only=True)
                     case OutliersType.ZSCORE:
-                        self.z_score = ((self._df[vars] - self._df[vars].mean()) / self._df[vars].std()).abs()
+                        self.z_score = ((self.df[vars] - self.df[vars].mean()) / self.df[vars].std()).abs()
                     case OutliersType.THRESHOLDS:
                         pass
 
@@ -93,11 +93,11 @@ class PandasModel(QAbstractTableModel):
                 - None for unsupported roles
         """
         if role == Qt.ItemDataRole.DisplayRole:
-            return str(self._df.iat[index.row(), index.column()])
+            return str(self.df.iat[index.row(), index.column()])
         if self.datatable.outliers_settings.mode == OutliersMode.HIGHLIGHT and role == Qt.ItemDataRole.BackgroundRole:
-            value = self._df.iat[index.row(), index.column()]
+            value = self.df.iat[index.row(), index.column()]
             if isinstance(value, int | float):
-                var_name = str(self._df.columns[index.column()])
+                var_name = str(self.df.columns[index.column()])
                 if var_name in self.datatable.variables and self.datatable.variables[var_name].remove_outliers:
                     match self.datatable.outliers_settings.type:
                         case OutliersType.IQR:
@@ -122,8 +122,10 @@ class PandasModel(QAbstractTableModel):
 
     def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
         if role == Qt.ItemDataRole.EditRole:
-            self._df.iloc[index.row(), index.column()] = value
-            self.datatable.df.iloc[index.row(), index.column()] = value
+            self.df.iloc[index.row(), index.column()] = value
+            row_index = self.df.index[index.row()]
+            col_name = self.df.columns[index.column()]
+            self.datatable.df.at[row_index, col_name] = value
             self.dataChanged.emit(index, index, [role])
             return True
         return False
@@ -145,7 +147,7 @@ class PandasModel(QAbstractTableModel):
         """
         if role == Qt.ItemDataRole.DisplayRole:
             if orientation == Qt.Orientation.Horizontal:
-                return self._df.columns[section]
+                return self.df.columns[section]
             elif orientation == Qt.Orientation.Vertical:
                 return section
         return None

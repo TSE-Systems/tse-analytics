@@ -416,7 +416,7 @@ class Datatable:
         df = self.df[columns]
 
         # Filter animals
-        df = filter_animals(df, self.dataset.animals).copy()
+        df = filter_animals(df, self.dataset.animals)
 
         # Outliers removal
         if self.outliers_settings.mode == OutliersMode.REMOVE:

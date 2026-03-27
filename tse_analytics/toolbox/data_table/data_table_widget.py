@@ -226,7 +226,8 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
                 )
             )
 
-        self.df = self.datatable.get_preprocessed_df_columns(columns, split_mode, selected_factor_name)
+        # self.df = self.datatable.get_preprocessed_df_columns(columns, split_mode, selected_factor_name)
+        self.df = self.datatable.get_filtered_df(columns)
 
         if len(selected_variables_names) > 0:
             descriptive_df = self.df[selected_variables_names].describe().T.reset_index()
