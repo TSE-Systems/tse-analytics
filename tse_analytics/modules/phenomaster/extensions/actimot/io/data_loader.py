@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
+from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.extensions.actimot.data.actimot_data import ActimotData
 from tse_analytics.modules.phenomaster.io import tse_import_settings
@@ -28,7 +29,7 @@ def read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> ActimotData:
     df = df.drop(columns=["X1", "X2"])
 
     # Convert DateTime from POSIX format
-    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
+    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns").dt.as_unit(TIME_RESOLUTION_UNIT)
 
     box_to_animal_map = {animal.properties["Box"]: animal.id for animal in dataset.animals.values()}
     df.insert(

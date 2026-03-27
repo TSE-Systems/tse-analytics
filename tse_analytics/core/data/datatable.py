@@ -10,19 +10,18 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
-from uuid import uuid7
+from uuid import UUID, uuid7
 
 import pandas as pd
 
 from tse_analytics.core import messaging
-from tse_analytics.core.data.helper import reassign_df_timedelta_and_bin, rename_animal_df
 from tse_analytics.core.data.operators.animal_filter_pipe_operator import filter_animals
 from tse_analytics.core.data.operators.group_by_pipe_operator import group_by_columns
 from tse_analytics.core.data.operators.outliers_pipe_operator import process_outliers
 from tse_analytics.core.data.operators.time_binning_pipe_operator import process_time_binning
 from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings
 from tse_analytics.core.data.shared import Animal, Factor, SplitMode, Variable
-from tse_analytics.core.utils.data import exclude_animals_from_df
+from tse_analytics.core.utils.data import exclude_animals_from_df, reassign_df_timedelta_and_bin, rename_animal_df
 
 if TYPE_CHECKING:
     from tse_analytics.core.data.dataset import Dataset
@@ -48,7 +47,7 @@ class Datatable:
         description: str,
         variables: dict[str, Variable],
         df: pd.DataFrame,
-        sampling_interval: pd.Timedelta | None,
+        metadata: dict[str, Any],
     ):
         """
         Initialize a Datatable instance.
@@ -65,8 +64,8 @@ class Datatable:
             Dictionary mapping variable names to Variable objects.
         df : pd.DataFrame
             The pandas DataFrame containing the data.
-        sampling_interval : pd.Timedelta or None
-            The sampling interval of the data, or None if not applicable.
+        metadata : dict[str, Any]
+            Metadata associated with the datatable, such as sampling interval.
         """
         self.id = uuid7()
         self.dataset = dataset
@@ -74,9 +73,16 @@ class Datatable:
         self.description = description
         self.variables = variables
         self.df = df
-        self.sampling_interval = sampling_interval
+        self.metadata = metadata
 
         self.outliers_settings = OutliersSettings()
+
+        self.parent_table: Datatable | None = None
+        self.derived_tables: dict[UUID, Datatable] = {}
+
+    @property
+    def sampling_interval(self) -> pd.Timedelta | None:
+        return self.metadata.get("sampling_interval", None)
 
     @property
     def is_regular_timeseries(self) -> bool:
@@ -300,7 +306,7 @@ class Datatable:
                 "Run": "UInt8",
             })
 
-        self.sampling_interval = resampling_interval
+        self.metadata["sampling_interval"] = resampling_interval
         self.df = result
 
     def set_factors(self, factors: dict[str, Factor], old_factors: dict[str, Factor] | None = None) -> None:
@@ -551,5 +557,14 @@ class Datatable:
 
     def clone(self):
         return Datatable(
-            self.dataset, self.name, self.description, self.variables, self.df.copy(), self.sampling_interval
+            self.dataset,
+            self.name,
+            self.description,
+            self.variables,
+            self.df.copy(),
+            self.metadata.copy(),
         )
+
+    def add_derived_table(self, derived_table: Datatable) -> None:
+        derived_table.parent_table = self
+        self.derived_tables[derived_table.id] = derived_table

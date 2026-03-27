@@ -216,7 +216,9 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
         "Main table output from PhenoMaster experiment.",
         variables,
         df,
-        timedelta,
+        {
+            "samping_interval": timedelta,
+        },
     )
     dataset.add_datatable(datatable)
 

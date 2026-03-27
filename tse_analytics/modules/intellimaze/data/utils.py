@@ -157,7 +157,7 @@ def preprocess_main_table(dataset: IntelliMazeDataset) -> None:
         "Main table",
         variables,
         df,
-        None,
+        {},
     )
     dataset.add_datatable(main_datatable)
 

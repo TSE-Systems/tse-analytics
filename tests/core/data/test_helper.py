@@ -2,12 +2,8 @@
 
 import numpy as np
 import pandas as pd
-from tse_analytics.core.data.helper import (
-    normalize_nd_array,
-    reassign_df_timedelta_and_bin,
-    rename_animal_df,
-)
 from tse_analytics.core.data.shared import Animal
+from tse_analytics.core.utils.data import normalize_nd_array, reassign_df_timedelta_and_bin, rename_animal_df
 
 
 class TestRenameAnimalDf:

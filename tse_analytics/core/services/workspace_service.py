@@ -23,7 +23,7 @@ class WorkspaceService:
     """
 
     def __init__(self, selection: SelectionService):
-        self._workspace = Workspace("Default Workspace")
+        self._workspace = Workspace(name="Workspace")
         self._selection = selection
 
     def get_workspace(self) -> Workspace:
@@ -36,7 +36,7 @@ class WorkspaceService:
 
     def new_workspace(self) -> None:
         """Create a new empty workspace and clear selections."""
-        self._workspace = Workspace("Workspace")
+        self._workspace = Workspace(name="Workspace")
         self._cleanup_workspace()
 
     def load_workspace(self, path: str) -> None:

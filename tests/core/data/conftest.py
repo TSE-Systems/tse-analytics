@@ -128,7 +128,7 @@ def sample_datatable(sample_dataset, sample_variables, sample_df):
         description="Main datatable",
         variables=sample_variables,
         df=sample_df,
-        sampling_interval=pd.Timedelta("1h"),
+        metadata={},
     )
     sample_dataset.datatables["Main"] = datatable
     return datatable

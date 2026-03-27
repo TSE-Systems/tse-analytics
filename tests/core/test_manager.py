@@ -164,7 +164,7 @@ class TestLoadWorkspace:
 
     def test_loads_workspace_from_file(self, manager):
         """Test that load_workspace loads a workspace from file."""
-        mock_workspace = Workspace("Loaded Workspace")
+        mock_workspace = Workspace(name="Loaded Workspace")
 
         with patch("builtins.open", mock_open(read_data=pickle.dumps(mock_workspace))):
             with patch.object(messaging, "broadcast"):
@@ -179,7 +179,7 @@ class TestLoadWorkspace:
         with patch.object(messaging, "broadcast"):
             manager.set_selected_dataset(mock_dataset)
 
-        mock_workspace = Workspace("New Workspace")
+        mock_workspace = Workspace(name="New Workspace")
         with patch("builtins.open", mock_open(read_data=pickle.dumps(mock_workspace))):
             with patch.object(messaging, "broadcast"):
                 with patch("tse_analytics.core.services.workspace_service.QTimer"):

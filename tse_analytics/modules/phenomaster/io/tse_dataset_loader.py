@@ -10,6 +10,7 @@ from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
 from tse_analytics.core.utils.data import sanitize_dtypes
+from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
 from tse_analytics.modules.phenomaster.extensions.actimot.io.data_loader import read_actimot_raw
@@ -61,7 +62,9 @@ def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportS
         "Main table output from PhenoMaster experiment.",
         main_table_vars,
         main_table_df,
-        main_table_sampling_interval,
+        {
+            "samping_interval": main_table_sampling_interval,
+        },
     )
     dataset.add_datatable(datatable)
 
@@ -205,7 +208,7 @@ def _read_main_table(
     df = df.astype(dtypes, errors="ignore")
 
     # Convert DateTime from POSIX format
-    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
+    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns").dt.as_unit(TIME_RESOLUTION_UNIT)
 
     # Convert animal id to string first
     df["Animal"] = df["Animal"].astype("string")

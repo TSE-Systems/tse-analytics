@@ -304,7 +304,7 @@ class DrinkFeedWidget(QWidget):
                 "Drink/Feed episodes",
                 variables,
                 episodes_df,
-                None,
+                {},
             )
             datatable.set_factors(self.drinkfeed_data.dataset.factors)
             manager.add_datatable(datatable)
@@ -320,7 +320,9 @@ class DrinkFeedWidget(QWidget):
                 "Drink/Feed intervals",
                 variables,
                 self.intervals_df,
-                timedelta,
+                {
+                    "samping_interval": timedelta,
+                },
             )
             datatable.set_factors(self.drinkfeed_data.dataset.factors)
             manager.add_datatable(datatable)

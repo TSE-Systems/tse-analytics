@@ -6,6 +6,7 @@ import pandas as pd
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.core.utils.data import sanitize_dtypes
+from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.drinkfeed_bin_data import DrinkFeedBinData
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.drinkfeed_raw_data import DrinkFeedRawData
@@ -46,7 +47,7 @@ def read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedBinD
     df = df.astype(dtypes, errors="ignore")
 
     # Convert DateTime from POSIX format
-    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
+    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns").dt.as_unit("ms")
 
     # Add Animal column
     box_to_animal_map = {}
@@ -103,7 +104,7 @@ def read_drinkfeed_raw(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedRawD
     df = df.astype(dtypes, errors="ignore")
 
     # Convert DateTime from POSIX format
-    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
+    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns").dt.as_unit(TIME_RESOLUTION_UNIT)
 
     # Sort by DateTime column
     df.sort_values(by=["DateTime"], inplace=True)

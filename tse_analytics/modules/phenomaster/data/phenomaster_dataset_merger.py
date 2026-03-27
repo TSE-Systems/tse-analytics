@@ -120,7 +120,7 @@ def _merge_continuous(
             f"Merged {datatable_name} datatable",
             new_variables,
             new_df,
-            None,
+            {},
         )
         result.add_datatable(datatable)
 
@@ -220,7 +220,7 @@ def _merge_overlap(
             f"Merged {datatable_name} datatable",
             new_variables,
             new_df,
-            None,
+            {},
         )
         result.add_datatable(datatable)
 

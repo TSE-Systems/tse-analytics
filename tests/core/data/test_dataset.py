@@ -96,7 +96,7 @@ class TestDatasetDatatablesCRUD:
             description="Second",
             variables=sample_variables,
             df=sample_df.copy(),
-            sampling_interval=pd.Timedelta("1h"),
+            metadata={},
         )
         sample_dataset.add_datatable(dt2)
         assert len(sample_dataset.datatables) == 2

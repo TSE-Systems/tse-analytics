@@ -6,9 +6,9 @@ import pandas as pd
 
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.helper import normalize_nd_array
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.utils import get_html_image_from_figure, time_to_float
+from tse_analytics.core.utils.data import normalize_nd_array
 
 
 def dataframe_to_actogram(

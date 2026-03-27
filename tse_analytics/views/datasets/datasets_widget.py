@@ -1,5 +1,5 @@
 from PySide6.QtCore import QModelIndex, QSize, Qt
-from PySide6.QtGui import QAction, QIcon, QPalette
+from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QDialog,
@@ -24,6 +24,7 @@ from tse_analytics.core.models.extension_tree_item import ExtensionTreeItem
 from tse_analytics.core.models.report_tree_item import ReportTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
 from tse_analytics.core.models.workspace_model import WorkspaceModel
+from tse_analytics.core.utils.ui import set_inactive_palette
 from tse_analytics.modules.phenomaster.extensions.phenomaster_extension_tree_item import PhenoMasterExtensionTreeItem
 from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvDialog
 from tse_analytics.toolbox.data_table.data_table_widget import DataTableWidget
@@ -104,18 +105,7 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
             headerHidden=True,
         )
 
-        pal = self.treeView.palette()
-        pal.setColor(
-            QPalette.ColorGroup.Inactive,
-            QPalette.ColorRole.Highlight,
-            pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Highlight),
-        )
-        pal.setColor(
-            QPalette.ColorGroup.Inactive,
-            QPalette.ColorRole.HighlightedText,
-            pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.HighlightedText),
-        )
-        self.treeView.setPalette(pal)
+        set_inactive_palette(self.treeView)
 
         self.treeView.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.treeView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
@@ -126,6 +116,8 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
 
         self.treeView.selectionModel().currentChanged.connect(self._treeview_current_changed)
         self.treeView.doubleClicked.connect(self._treeview_double_clicked)
+        self.treeView.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.treeView.customContextMenuRequested.connect(self._show_context_menu)
 
         self._layout.addWidget(self.treeView)
 
@@ -480,6 +472,29 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                 if item.checked:
                     checked_datasets_number += 1
             self.merge_dataset_action.setDisabled(checked_datasets_number < 2)
+
+    def _show_context_menu(self, pos) -> None:
+        index = self.treeView.indexAt(pos)
+        if not index.isValid():
+            return
+
+        tree_item = index.model().getItem(index)
+        if tree_item is None:
+            return
+
+        if isinstance(tree_item, DatatableTreeItem):
+            menu = QMenu(self.treeView)
+            delete_datatable_action = menu.addAction("Delete Datatable")
+            action = menu.exec(self.treeView.viewport().mapToGlobal(pos))
+
+            if action is None:
+                return
+            if action == delete_datatable_action:
+                if (
+                    QMessageBox.question(self, "Delete Datatable", "Do you want to delete selected datatable?")
+                    == QMessageBox.StandardButton.Yes
+                ):
+                    manager.remove_datatable(tree_item.datatable)
 
     def minimumSizeHint(self) -> QSize:
         return QSize(200, 100)

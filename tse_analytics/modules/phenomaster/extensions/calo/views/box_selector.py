@@ -1,7 +1,7 @@
 from PySide6.QtCore import QItemSelection, QSortFilterProxyModel, Qt
-from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QAbstractItemView, QTableView, QWidget
 
+from tse_analytics.core.utils.ui import set_inactive_palette
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.extensions.calo.data.calo_box import CaloBox
 from tse_analytics.modules.phenomaster.extensions.calo.data.calo_boxes_model import CaloBoxesModel
@@ -17,18 +17,7 @@ class BoxSelector(QTableView):
 
         self.callback = callback
 
-        pal = self.palette()
-        pal.setColor(
-            QPalette.ColorGroup.Inactive,
-            QPalette.ColorRole.Highlight,
-            pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Highlight),
-        )
-        pal.setColor(
-            QPalette.ColorGroup.Inactive,
-            QPalette.ColorRole.HighlightedText,
-            pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.HighlightedText),
-        )
-        self.setPalette(pal)
+        set_inactive_palette(self)
 
         proxy_model = QSortFilterProxyModel()
         proxy_model.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)

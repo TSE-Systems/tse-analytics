@@ -8,6 +8,7 @@ and applying binning.
 
 from copy import deepcopy
 from datetime import datetime
+from typing import Any
 from uuid import uuid7
 
 import pandas as pd
@@ -35,7 +36,7 @@ class Dataset:
 
     def __init__(
         self,
-        metadata: dict | list[dict],
+        metadata: dict[str, Any] | list[dict],
         animals: dict[str, Animal],
     ):
         """

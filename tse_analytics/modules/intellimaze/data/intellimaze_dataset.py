@@ -1,9 +1,9 @@
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.helper import rename_animal_df
 from tse_analytics.core.data.shared import Animal
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.extension_tree_item import ExtensionTreeItem
+from tse_analytics.core.utils.data import rename_animal_df
 from tse_analytics.modules.intellimaze.data.intellimaze_extension_data import IntelliMazeExtensionData
 
 

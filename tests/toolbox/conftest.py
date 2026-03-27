@@ -126,7 +126,7 @@ def analysis_dataset(analysis_animals, analysis_factor, analysis_variables, anal
             description="Main datatable",
             variables=analysis_variables,
             df=analysis_df,
-            sampling_interval=pd.Timedelta("1h"),
+            metadata={},
         )
         dataset.datatables["Main"] = datatable
 

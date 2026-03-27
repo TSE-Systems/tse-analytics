@@ -110,7 +110,7 @@ class ActorData(IntelliMazeExtensionData):
             f"{EXTENSION_NAME} main table",
             variables,
             df,
-            None,
+            {},
         )
 
         self.dataset.add_datatable(datatable)

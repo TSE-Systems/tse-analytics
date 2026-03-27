@@ -11,11 +11,11 @@ from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QCloseEvent, QIcon, QKeySequence, QShortcut
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QLabel, QMainWindow, QMessageBox
 
-from tse_analytics.core import help_manager, manager, utils
+from tse_analytics import globals
+from tse_analytics.core import help_manager, manager
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.core.utils import IS_RELEASE
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.intellicage.io.dataset_loader import import_intellicage_dataset
@@ -36,8 +36,6 @@ from tse_analytics.views.misc.toolbox_button import ToolboxButton
 from tse_analytics.views.pipeline.pipeline_editor_widget import PipelineEditorWidget
 from tse_analytics.views.settings.binning_settings_widget import BinningSettingsWidget
 from tse_analytics.views.settings.settings_dialog import SettingsDialog
-
-MAX_RECENT_FILES = 10
 
 
 class MainWindow(QMainWindow):
@@ -155,7 +153,7 @@ class MainWindow(QMainWindow):
                 self._load_workspace(str(workspace_path))
 
     def _set_style(self, name: str) -> None:
-        style_file = f"_internal/styles/qss/{name}.css" if IS_RELEASE else f"styles/qss/{name}.css"
+        style_file = f"_internal/styles/qss/{name}.css" if globals.IS_RELEASE else f"styles/qss/{name}.css"
         with open(style_file) as file:
             # Set global stylesheet
             QApplication.instance().setStyleSheet(file.read())
@@ -201,7 +199,7 @@ class MainWindow(QMainWindow):
                 ).show()
                 return
             filenames.insert(0, filename)
-            del filenames[MAX_RECENT_FILES:]
+            del filenames[globals.MAX_RECENT_FILES :]
         finally:
             self.settings.setValue("recentFilesList", filenames)
 
@@ -286,7 +284,7 @@ class MainWindow(QMainWindow):
     def _import_dataset_dialog(self) -> None:
         filter = (
             "Data Files (*.tse *.csv *.zip);;TSE Datasets (*.tse);;CSV Files (*.csv);;IntelliMaze Datasets (*.zip)"
-            if utils.CSV_IMPORT_ENABLED
+            if globals.CSV_IMPORT_ENABLED
             else "Data Files (*.tse *.zip);;TSE Datasets (*.tse);;IntelliMaze Datasets (*.zip)"
         )
         filename, _ = QFileDialog.getOpenFileName(
@@ -372,8 +370,8 @@ class MainWindow(QMainWindow):
         LayoutManager.open_perspective("Temporary")
 
     def _enable_internal_features(self):
-        utils.CSV_IMPORT_ENABLED = True
-        utils.PIPELINE_ENABLED = True
+        globals.CSV_IMPORT_ENABLED = True
+        globals.PIPELINE_ENABLED = True
         self.dataset_widget.import_action.setVisible(True)
         self.ui.actionPipelineEditor.setVisible(True)
         logger.info("Internal features enabled")

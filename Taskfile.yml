@@ -33,6 +33,7 @@ tasks:
 
   build-ui:toolbox:
     cmds:
+      - pyside6-uic tse_analytics/toolbox/data_table/table_processor/table_processor_dialog.ui -o tse_analytics/toolbox/data_table/table_processor/table_processor_dialog_ui.py
       - pyside6-uic tse_analytics/toolbox/data_table/variables/add_variable_dialog.ui -o tse_analytics/toolbox/data_table/variables/add_variable_dialog_ui.py
       - pyside6-uic tse_analytics/toolbox/data_table/variables/outliers_widget.ui -o tse_analytics/toolbox/data_table/variables/outliers_widget_ui.py
       - pyside6-uic tse_analytics/toolbox/n_way_anova/n_way_anova_settings_widget.ui -o tse_analytics/toolbox/n_way_anova/n_way_anova_settings_widget_ui.py
