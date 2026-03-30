@@ -1,8 +1,19 @@
 import pandas as pd
-from PySide6.QtWidgets import QDialog, QMessageBox, QWidget
+from PySide6.QtCore import QTime
+from PySide6.QtWidgets import QDialog, QHeaderView, QInputDialog, QTableWidgetItem, QWidget
 
+from tse_analytics.core import manager, messaging
+from tse_analytics.core.data.binning import (
+    BinningMode,
+    BinningSettings,
+    TimeCyclesBinningSettings,
+    TimeIntervalsBinningSettings,
+)
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import Aggregation, Variable
+from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
+from tse_analytics.core.data.shared import TimePhase
+from tse_analytics.core.models.time_phases_model import TimePhasesModel
+from tse_analytics.toolbox.data_table.table_processor.processor import process_derived_table
 from tse_analytics.toolbox.data_table.table_processor.table_processor_dialog_ui import Ui_TableProcessorDialog
 
 
@@ -15,100 +26,150 @@ class TableProcessorDialog(QDialog):
 
         self.datatable = datatable
 
-        self.ui.aggregationComboBox.addItems(list(Aggregation))
-
-        if len(self.datatable.dataset.animals) > 0:
-            animal_properties = next(iter(self.datatable.dataset.animals.values())).properties
-            self.ui.comboBoxAnimalProperty.addItems(list(animal_properties.keys()))
-
-        self.ui.variableSelector.set_data(self.datatable.variables)
-
         self.ui.buttonBox.accepted.connect(self._accepted)
 
-        self.ui.radioButtonOriginAnimalProperty.toggled.connect(
-            lambda toggled: self._refresh_ui("AnimalProperty") if toggled else None
+        self.ui.nameLineEdit.setText(f"{self.datatable.name} (derived)")
+        self.ui.descriptionLineEdit.setText(self.datatable.description)
+
+        self.ui.widgetCycles.setVisible(False)
+        self.ui.widgetPhases.setVisible(False)
+
+        self.ui.binningModeComboBox.addItems(list(BinningMode))
+        self.ui.binningModeComboBox.currentTextChanged.connect(self._binning_mode_changed)
+
+        self.ui.unitComboBox.addItems(["day", "hour", "minute"])
+
+        self.ui.toolButtonAddPhase.clicked.connect(self._add_time_phase)
+        self.ui.toolButtonDeletePhase.clicked.connect(self._delete_time_phase)
+
+        self.ui.unitComboBox.setCurrentText(self.datatable.dataset.binning_settings.time_intervals_settings.unit)
+        self.ui.deltaSpinBox.setValue(self.datatable.dataset.binning_settings.time_intervals_settings.delta)
+
+        self.ui.timeEditLightCycleStart.setTime(
+            QTime(self.datatable.dataset.binning_settings.time_cycles_settings.light_cycle_start)
         )
-        self.ui.radioButtonOriginCumulative.toggled.connect(
-            lambda toggled: self._refresh_ui("Variable") if toggled else None
-        )
-        self.ui.radioButtonOriginDifferential.toggled.connect(
-            lambda toggled: self._refresh_ui("Variable") if toggled else None
-        )
-        self.ui.radioButtonOriginExpression.toggled.connect(
-            lambda toggled: self._refresh_ui("Expression") if toggled else None
+        self.ui.timeEditDarkCycleStart.setTime(
+            QTime(self.datatable.dataset.binning_settings.time_cycles_settings.dark_cycle_start)
         )
 
-    def _refresh_ui(self, origin: str):
-        match origin:
-            case "AnimalProperty":
-                self.ui.groupBoxAnimalProperty.setEnabled(True)
-                self.ui.groupBoxOriginVariable.setEnabled(False)
-                self.ui.groupBoxExpression.setEnabled(False)
-            case "Variable":
-                self.ui.groupBoxAnimalProperty.setEnabled(False)
-                self.ui.groupBoxOriginVariable.setEnabled(True)
-                self.ui.groupBoxExpression.setEnabled(False)
-            case "Expression":
-                self.ui.groupBoxAnimalProperty.setEnabled(False)
-                self.ui.groupBoxOriginVariable.setEnabled(False)
-                self.ui.groupBoxExpression.setEnabled(True)
+        self.time_phases_model = TimePhasesModel(self.datatable.dataset)
+        self.ui.tableViewTimePhases.setModel(self.time_phases_model)
+        header = self.ui.tableViewTimePhases.horizontalHeader()
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+
+        self.time_phases_model.items = self.datatable.dataset.binning_settings.time_phases_settings.time_phases
+        # Trigger refresh.
+        self.time_phases_model.layoutChanged.emit()
+
+        self.ui.binningModeComboBox.setCurrentText(self.datatable.dataset.binning_settings.mode)
+
+        # Exclude Animals
+        self.ui.tableWidgetAnimals.setHorizontalHeaderLabels(["Animal"])
+        self.ui.tableWidgetAnimals.setRowCount(len(self.datatable.dataset.animals))
+        for i, animal in enumerate(self.datatable.dataset.animals.values()):
+            if i == 0:
+                self.ui.tableWidgetAnimals.setColumnCount(len(animal.properties) + 1)
+                self.ui.tableWidgetAnimals.setHorizontalHeaderLabels(["Animal"] + list(animal.properties.keys()))
+            self.ui.tableWidgetAnimals.setItem(i, 0, QTableWidgetItem(animal.id))
+            for j, item in enumerate(animal.properties):
+                self.ui.tableWidgetAnimals.setItem(i, j + 1, QTableWidgetItem(str(animal.properties[item])))
+        self.ui.tableWidgetAnimals.resizeColumnsToContents()
+
+        # Grouping
+        modes = self.datatable.get_group_by_columns(True, False)
+        self.ui.comboBoxGrouping.addItems(modes)
+
+    def _binning_mode_changed(self, value: str):
+        match value:
+            case BinningMode.INTERVALS:
+                self.ui.widgetIntervals.setVisible(True)
+                self.ui.widgetCycles.setVisible(False)
+                self.ui.widgetPhases.setVisible(False)
+            case BinningMode.CYCLES:
+                self.ui.widgetIntervals.setVisible(False)
+                self.ui.widgetCycles.setVisible(True)
+                self.ui.widgetPhases.setVisible(False)
+            case BinningMode.PHASES:
+                self.ui.widgetIntervals.setVisible(False)
+                self.ui.widgetCycles.setVisible(False)
+                self.ui.widgetPhases.setVisible(True)
+
+    def _add_time_phase(self):
+        text, result = QInputDialog.getText(self, "Add Time Phase", "Please enter unique phase name:")
+        if result:
+            start_timestamp = pd.Timedelta("0 days 00:00:00")
+            if len(self.time_phases_model.items) > 0:
+                start_timestamp = self.time_phases_model.items[-1].start_timestamp
+                start_timestamp = start_timestamp + pd.to_timedelta(1, unit="hours")
+            time_phase = TimePhase(name=text, start_timestamp=start_timestamp)
+            self.time_phases_model.add_time_phase(time_phase)
+
+    def _delete_time_phase(self):
+        indexes = self.ui.tableViewTimePhases.selectedIndexes()
+        if indexes:
+            # Indexes is a single-item list in single-select mode.
+            index = indexes[0]
+            self.time_phases_model.delete_time_phase(index)
+            # Clear the selection (as it is no longer valid).
+            self.ui.tableViewTimePhases.clearSelection()
 
     def _accepted(self) -> None:
-        variable_name = self.ui.nameLineEdit.text()
-        if variable_name == "":
-            QMessageBox.warning(self, "Warning", "Variable name cannot be empty.")
-            return
-
-        if variable_name in self.datatable.variables:
-            QMessageBox.warning(self, "Warning", "Variable name already exists.")
-            return
-
-        df = self.datatable.df.copy()
-
-        if self.ui.radioButtonOriginAnimalProperty.isChecked():
-            animal_property = self.ui.comboBoxAnimalProperty.currentText()
-            df[variable_name] = df["Animal"].astype("string")
-            values_map = {}
-            for animal in self.datatable.dataset.animals.values():
-                values_map[animal.id] = animal.properties[animal_property]
-            df = df.replace({variable_name: values_map})
-
-        elif self.ui.radioButtonOriginCumulative.isChecked():
-            origin_variable = self.ui.variableSelector.get_selected_variable()
-            df[variable_name] = df.groupby("Animal", observed=False)[origin_variable.name].transform(pd.Series.cumsum)
-        elif self.ui.radioButtonOriginDifferential.isChecked():
-            origin_variable = self.ui.variableSelector.get_selected_variable()
-            df[variable_name] = df.groupby("Animal", observed=False)[origin_variable.name].transform(pd.Series.diff)
-            # Fill NA values from the original column
-            df[variable_name] = df[variable_name].fillna(df[origin_variable.name])
-        elif self.ui.radioButtonOriginExpression.isChecked():
-            expression = self.ui.lineEditExpression.text()
-            df[variable_name] = df.eval(expression)
-
-        try:
-            # Set variable type
-            df = df.astype({
-                variable_name: "Float64",
-            })
-        except ValueError:
-            QMessageBox.warning(self, "Warning", "Variable type cannot be converted to float64.")
-            return
-
-        # Add new variable
-        description = self.ui.descriptionLineEdit.text()
-        unit = self.ui.unitLineEdit.text()
-        aggregation = self.ui.aggregationComboBox.currentText()
-        variable = Variable(
-            name=variable_name,
-            unit=unit,
-            description=description,
-            type="float64",
-            aggregation=aggregation,
-            remove_outliers=False,
+        datatable = Datatable(
+            dataset=self.datatable.dataset,
+            name=self.ui.nameLineEdit.text(),
+            description=self.ui.descriptionLineEdit.text(),
+            variables=self.datatable.variables.copy(),
+            df=self.datatable.df.copy(),
+            metadata=self.datatable.metadata.copy(),
         )
-        self.datatable.variables[variable_name] = variable
-        # Sort variables by name
-        self.datatable.variables = dict(sorted(self.datatable.variables.items(), key=lambda x: x[0].lower()))
 
-        # Update dataframes
-        self.datatable.df = df
+        selected_indices = self.ui.tableWidgetAnimals.selectionModel().selectedRows()
+        excluded_animal_ids = set()
+        for index in selected_indices:
+            excluded_animal_ids.add(self.ui.tableWidgetAnimals.item(index.row(), 0).text())
+
+        binning_settings = BinningSettings(
+            apply=self.ui.groupBoxBinning.isChecked(),
+            mode=BinningMode(self.ui.binningModeComboBox.currentText()),
+            time_intervals_settings=TimeIntervalsBinningSettings(
+                unit=self.ui.unitComboBox.currentText(),
+                delta=self.ui.deltaSpinBox.value(),
+            ),
+            time_cycles_settings=TimeCyclesBinningSettings(
+                light_cycle_start=self.ui.timeEditLightCycleStart.time().toPython(),
+                dark_cycle_start=self.ui.timeEditDarkCycleStart.time().toPython(),
+            ),
+            time_phases_settings=self.datatable.dataset.binning_settings.time_phases_settings,
+        )
+        self.datatable.dataset.binning_settings = binning_settings
+
+        grouping_mode_text = self.ui.comboBoxGrouping.currentText()
+        factor_name = ""
+        match grouping_mode_text:
+            case "Animal":
+                grouping_mode = GroupingMode.ANIMAL
+            case "Total":
+                grouping_mode = GroupingMode.TOTAL
+            case "Run":
+                grouping_mode = GroupingMode.RUN
+            case _:
+                grouping_mode = GroupingMode.FACTOR
+                factor_name = grouping_mode_text
+
+        grouping_settings = GroupingSettings(
+            mode=grouping_mode,
+            factor_name=factor_name,
+        )
+
+        process_derived_table(
+            datatable,
+            excluded_animal_ids,
+            binning_settings,
+            grouping_settings,
+        )
+
+        self.datatable.derived_tables[datatable.id] = datatable
+
+        # Notify that a derived table has been added.
+        workspace = manager.get_workspace()
+        messaging.broadcast(messaging.WorkspaceChangedMessage(self, workspace))

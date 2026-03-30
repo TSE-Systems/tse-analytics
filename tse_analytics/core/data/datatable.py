@@ -560,7 +560,7 @@ class Datatable:
             self.dataset,
             self.name,
             self.description,
-            self.variables,
+            self.variables.copy(),
             self.df.copy(),
             self.metadata.copy(),
         )

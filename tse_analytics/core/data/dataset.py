@@ -385,7 +385,9 @@ class Dataset:
         """
         dataset_tree_item.clear()
         for datatable in self.datatables.values():
-            dataset_tree_item.add_child(DatatableTreeItem(datatable))
+            datatable_tree_item = DatatableTreeItem(datatable)
+            self._add_derived_tables(datatable_tree_item, datatable)
+            dataset_tree_item.add_child(datatable_tree_item)
 
         # Add reports nodes
         if len(self.reports) > 0:
@@ -393,6 +395,12 @@ class Dataset:
             dataset_tree_item.add_child(reports_node)
             for report in self.reports.values():
                 reports_node.add_child(ReportTreeItem(report))
+
+    def _add_derived_tables(self, parent_tree_item: DatatableTreeItem, datatable: Datatable) -> None:
+        for derived_table in datatable.derived_tables.values():
+            derived_table_tree_item = DatatableTreeItem(derived_table)
+            self._add_derived_tables(derived_table_tree_item, derived_table)
+            parent_tree_item.add_child(derived_table_tree_item)
 
     def add_report(self, report: Report) -> None:
         if report.name in self.reports:

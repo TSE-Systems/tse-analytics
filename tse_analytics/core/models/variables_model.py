@@ -5,7 +5,7 @@ from tse_analytics.core.data.datatable import Datatable
 
 
 class VariablesModel(QAbstractTableModel):
-    header = ("Name", "Unit", "Aggregation", "Outliers", "Description")
+    header = ("Name", "Unit", "Aggregation", "Description")
 
     def __init__(self, datatable: Datatable, parent=None):
         super().__init__(parent)
@@ -19,6 +19,8 @@ class VariablesModel(QAbstractTableModel):
             case 0:
                 if role == Qt.ItemDataRole.DisplayRole:
                     return item.name
+                elif role == Qt.ItemDataRole.CheckStateRole:
+                    return Qt.CheckState.Checked if item.remove_outliers else Qt.CheckState.Unchecked
             case 1:
                 if role == Qt.ItemDataRole.DisplayRole:
                     return item.unit
@@ -26,33 +28,30 @@ class VariablesModel(QAbstractTableModel):
                 if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
                     return item.aggregation
             case 3:
-                if role == Qt.ItemDataRole.CheckStateRole:
-                    return Qt.CheckState.Checked if item.remove_outliers else Qt.CheckState.Unchecked
-            case 4:
                 if role == Qt.ItemDataRole.DisplayRole:
                     return item.description
 
     def setData(self, index: QModelIndex, value, role: Qt.ItemDataRole = ...):
         match index.column():
+            case 0:
+                if role == Qt.ItemDataRole.CheckStateRole:
+                    item = self.items[index.row()]
+                    item.remove_outliers = value == Qt.CheckState.Checked.value
+                    self.datatable.apply_outliers(self.datatable.outliers_settings)
+                    return True
             case 2:
                 if role == Qt.ItemDataRole.EditRole:
                     item = self.items[index.row()]
                     item.aggregation = value
                     messaging.broadcast(messaging.DataChangedMessage(self, self.datatable.dataset))
                     return True
-            case 3:
-                if role == Qt.ItemDataRole.CheckStateRole:
-                    item = self.items[index.row()]
-                    item.remove_outliers = value == Qt.CheckState.Checked.value
-                    self.datatable.apply_outliers(self.datatable.outliers_settings)
-                    return True
 
     def flags(self, index: QModelIndex):
         match index.column():
+            case 0:
+                return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsUserCheckable
             case 2:
                 return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsEditable
-            case 3:
-                return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsUserCheckable
             case _:
                 return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
 

@@ -9,7 +9,6 @@ from PySide6.QtWidgets import (
     QDialog,
     QFileDialog,
     QInputDialog,
-    QLabel,
     QMenu,
     QMessageBox,
     QSplitter,
@@ -20,11 +19,10 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from tse_analytics.core import manager, messaging
+from tse_analytics.core import manager
 from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
-from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.models.pandas_model import PandasModel
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_great_table, get_h_spacer_widget, get_widget_tool_button
@@ -33,19 +31,17 @@ from tse_analytics.core.workers.worker import Worker
 from tse_analytics.toolbox.data_table.table_processor.table_processor_dialog import TableProcessorDialog
 from tse_analytics.toolbox.data_table.variables.variables_widget import VariablesWidget
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
-from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.report_edit import ReportEdit
 
 
 @dataclass
 class DataWidgetSettings:
-    group_by: str = "Animal"
     selected_variables: list[str] = field(default_factory=list)
     splitter_state: QByteArray | None = None
 
 
 @toolbox_plugin(category="Data", label="Table", icon=":/icons/table.png", order=0)
-class DataTableWidget(QWidget, messaging.MessengerListener):
+class DataTableWidget(QWidget):
     def __init__(self, datatable: Datatable, name: str = "DataTableWidget", parent: QWidget | None = None):
         super().__init__(parent)
 
@@ -71,17 +67,9 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
 
-        toolbar.addWidget(QLabel("Group by:"))
-        self.group_by_selector = GroupBySelector(
-            toolbar,
-            self.datatable,
-            check_binning=True,
-            selected_mode=self._settings.group_by,
-        )
-        self.group_by_selector.currentTextChanged.connect(self.refresh_data)
-        toolbar.addWidget(self.group_by_selector)
+        self.add_derived_table_action = toolbar.addAction("Add Derived Table")
+        self.add_derived_table_action.triggered.connect(self._add_derived_table)
 
-        toolbar.addSeparator()
         toolbar.addAction(QIcon(":/icons/icons8-resize-horizontal-16.png"), "Resize Columns").triggered.connect(
             self._resize_columns_width
         )
@@ -118,9 +106,6 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.add_report_action = toolbar.addAction("Add Report")
         self.add_report_action.triggered.connect(self._add_report)
         self.add_report_action.setEnabled(False)
-
-        self.add_derived_table_action = toolbar.addAction("Add Derived Table")
-        self.add_derived_table_action.triggered.connect(self._add_derived_table)
 
         self._layout.addWidget(toolbar)
 
@@ -159,9 +144,6 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
         self.refresh_data()
 
-        messaging.subscribe(self, messaging.BinningMessage, self._on_binning_applied)
-        messaging.subscribe(self, messaging.DataChangedMessage, self._on_data_changed)
-
     def _resize_columns_width(self):
         worker = Worker(
             self.table_view.resizeColumnsToContents
@@ -183,14 +165,6 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             with pd.ExcelWriter(filename) as writer:
                 self.df.to_excel(writer, sheet_name=self.datatable.name)
 
-    def _on_binning_applied(self, message: messaging.BinningMessage):
-        if message.dataset == self.datatable.dataset:
-            self.refresh_data()
-
-    def _on_data_changed(self, message: messaging.DataChangedMessage):
-        if message.dataset == self.datatable.dataset:
-            self.refresh_data()
-
     def _variables_selection_changed(self):
         self.refresh_data()
 
@@ -199,7 +173,6 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             return
 
         selected_variables_names = self.variables_widget.get_selected_variable_names()
-        split_mode, selected_factor_name = self.group_by_selector.get_group_by()
 
         if (
             self.datatable.dataset.binning_settings.apply
@@ -216,20 +189,11 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             ).show()
             return
 
-        if split_mode == SplitMode.ANIMAL:
-            all_columns = self.datatable.df.columns.tolist()
-            all_variable_columns = list(self.datatable.variables.keys())
-            columns = [
-                var_column for var_column in all_columns if var_column not in all_variable_columns
-            ] + selected_variables_names
-        else:
-            columns = list(
-                dict.fromkeys(
-                    self.datatable.get_default_columns()
-                    + self.datatable.get_categorical_columns()
-                    + selected_variables_names
-                )
-            )
+        all_columns = self.datatable.df.columns.tolist()
+        all_variable_columns = list(self.datatable.variables.keys())
+        columns = [
+            var_column for var_column in all_columns if var_column not in all_variable_columns
+        ] + selected_variables_names
 
         # self.df = self.datatable.get_preprocessed_df_columns(columns, split_mode, selected_factor_name)
         self.df = self.datatable.get_filtered_df(columns)
@@ -312,12 +276,10 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             )
 
     def _destroyed(self):
-        messaging.unsubscribe_all(self)
         settings = QSettings()
         settings.setValue(
             f"{self.name}Settings",
             DataWidgetSettings(
-                self.group_by_selector.currentText(),
                 self.variables_widget.get_selected_variable_names(),
                 self._splitter.saveState(),
             ),

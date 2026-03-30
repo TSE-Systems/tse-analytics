@@ -38,7 +38,9 @@ class PandasModel(QAbstractTableModel):
 
         if self.datatable.outliers_settings.mode == OutliersMode.HIGHLIGHT:
             remove_outliers_for_vars = {
-                key: variable for (key, variable) in datatable.variables.items() if variable.remove_outliers
+                key: variable
+                for (key, variable) in datatable.variables.items()
+                if (variable.remove_outliers and variable.name in df.columns)
             }
             vars = list(remove_outliers_for_vars)
             if len(remove_outliers_for_vars) > 0:

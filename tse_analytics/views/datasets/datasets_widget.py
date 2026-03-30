@@ -103,6 +103,7 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
         self.treeView = QTreeView(
             self,
             headerHidden=True,
+            expandsOnDoubleClick=False,
         )
 
         set_inactive_palette(self.treeView)
@@ -484,17 +485,24 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
 
         if isinstance(tree_item, DatatableTreeItem):
             menu = QMenu(self.treeView)
+            # rename_datatable_action = menu.addAction("Rename Datatable")
             delete_datatable_action = menu.addAction("Delete Datatable")
             action = menu.exec(self.treeView.viewport().mapToGlobal(pos))
 
             if action is None:
                 return
+
             if action == delete_datatable_action:
                 if (
                     QMessageBox.question(self, "Delete Datatable", "Do you want to delete selected datatable?")
                     == QMessageBox.StandardButton.Yes
                 ):
                     manager.remove_datatable(tree_item.datatable)
+            # elif action == rename_datatable_action:
+            #     text, result = QInputDialog.getText(self, "Rename Datatable", "Please enter unique table name:")
+            #     if result:
+            #         tree_item.datatable.name = text
+            #         self.treeView.model().dataChanged.emit(index, index)
 
     def minimumSizeHint(self) -> QSize:
         return QSize(200, 100)
