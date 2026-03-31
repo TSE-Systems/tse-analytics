@@ -1,6 +1,5 @@
-from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import SplitMode
+from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
 from tse_analytics.pipeline import PipelineNode
 from tse_analytics.pipeline.enums import EFFECT_SIZE, P_ADJUSTMENT
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
@@ -73,25 +72,21 @@ class RmAnovaNode(PipelineNode):
         if variable is None:
             return PipelinePacket.inactive(reason=f"Variable '{variable_name}' not found")
 
-        # Parse group_by to determine SplitMode and factor_name
+        # Parse group_by to determine GroupingSettings
         group_by_text = str(self.get_property("group_by")).strip()
         if not group_by_text:
             group_by_text = "Animal"
 
         match group_by_text:
             case "Animal":
-                split_mode = SplitMode.ANIMAL
-                factor_name = None
+                grouping_settings = GroupingSettings(mode=GroupingMode.ANIMAL)
             case "Run":
-                split_mode = SplitMode.RUN
-                factor_name = None
+                grouping_settings = GroupingSettings(mode=GroupingMode.RUN)
             case _:
                 if group_by_text in datatable.dataset.factors.keys():
-                    split_mode = SplitMode.FACTOR
-                    factor_name = group_by_text
+                    grouping_settings = GroupingSettings(mode=GroupingMode.FACTOR, factor_name=group_by_text)
                 else:
-                    split_mode = SplitMode.ANIMAL
-                    factor_name = None
+                    grouping_settings = GroupingSettings(mode=GroupingMode.ANIMAL)
 
         # Get other settings
         effect_size_label = str(self.get_property("effect_size"))
@@ -101,27 +96,18 @@ class RmAnovaNode(PipelineNode):
         effect_size = EFFECT_SIZE.get(effect_size_label, "none")
         p_adjustment = P_ADJUSTMENT.get(p_adjustment_label, "none")
 
-        # Disable pairwise tests for interval binning by default to avoid long computation
-        if datatable.dataset.binning_settings.mode == BinningMode.INTERVALS and do_pairwise_tests:
-            # Note: In the widget, this prompts the user. In the node, we just warn via tooltip.
-            tooltip = "Warning: Pairwise tests with interval binning may take a long time"
-            self.view.setToolTip(tooltip)
-
-        # Get preprocessed dataframe (always use ANIMAL split for RM-ANOVA)
-        df = datatable.get_preprocessed_df(
-            variables={variable.name: variable},
-            split_mode=SplitMode.ANIMAL,
-            selected_factor_name=None,
-            dropna=True,
-        )
+        columns = ["Animal", "Bin", variable.name]
+        if grouping_settings.mode == GroupingMode.FACTOR:
+            columns.append(grouping_settings.factor_name)
+        df = datatable.get_filtered_df(columns)
+        df.dropna(inplace=True)
 
         # Perform RM-ANOVA analysis
         result = get_rm_anova_result(
             datatable.dataset,
             df,
             variable,
-            split_mode,
-            factor_name,
+            grouping_settings,
             do_pairwise_tests,
             effect_size,
             p_adjustment,

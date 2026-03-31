@@ -1,20 +1,15 @@
 from dataclasses import dataclass
 
-import pandas as pd
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
-from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtWidgets import QCheckBox, QInputDialog, QLabel, QToolBar, QVBoxLayout, QWidget
 
-from tse_analytics.core import manager, messaging
-from tse_analytics.core.data.binning import BinningMode
+from tse_analytics.core import manager
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.operators.time_cycles_binning_pipe_operator import process_time_cycles_binning
-from tse_analytics.core.data.operators.time_intervals_binning_pipe_operator import process_time_interval_binning
-from tse_analytics.core.data.operators.time_phases_binning_pipe_operator import process_time_phases_binning
+from tse_analytics.core.data.grouping import GroupingSettings
+from tse_analytics.core.data.operators.group_by_pipe_operator import group_by_columns
 from tse_analytics.core.data.report import Report
-from tse_analytics.core.data.shared import SplitMode, Variable
-from tse_analytics.core.toaster import make_toast
+from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.utils import get_h_spacer_widget
 from tse_analytics.toolbox.fast_data_plot.bar_plot_view import BarPlotView
 from tse_analytics.toolbox.fast_data_plot.timeline_plot_view import TimelinePlotView
@@ -31,7 +26,7 @@ class FastDataPlotWidgetSettings:
 
 
 @toolbox_plugin(category="Data", label="Fast Plot", icon=":/icons/plot.png", order=1)
-class FastDataPlotWidget(QWidget, messaging.MessengerListener):
+class FastDataPlotWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
@@ -101,11 +96,7 @@ class FastDataPlotWidget(QWidget, messaging.MessengerListener):
 
         self._refresh_data()
 
-        messaging.subscribe(self, messaging.BinningMessage, self._on_binning_applied)
-        messaging.subscribe(self, messaging.DataChangedMessage, self._on_data_changed)
-
     def _destroyed(self):
-        messaging.unsubscribe_all(self)
         settings = QSettings()
         settings.setValue(
             self.__class__.__name__,
@@ -122,157 +113,49 @@ class FastDataPlotWidget(QWidget, messaging.MessengerListener):
     def _set_scatter_plot(self, state: Qt.CheckState):
         self._refresh_data()
 
-    def _on_binning_applied(self, message: messaging.BinningMessage):
-        if message.dataset == self.datatable.dataset:
-            self._refresh_data()
-
-    def _on_data_changed(self, message: messaging.DataChangedMessage):
-        if message.dataset == self.datatable.dataset:
-            self._refresh_data()
-
     def _refresh_data(self):
-        split_mode, selected_factor_name = self.group_by_selector.get_group_by()
-        if split_mode == SplitMode.FACTOR and selected_factor_name == "":
-            make_toast(
-                self,
-                "Data Plot",
-                "Please select factor.",
-                duration=2000,
-                preset=ToastPreset.WARNING,
-                show_duration_bar=True,
-            ).show()
-            return
-
+        grouping_settings = self.group_by_selector.get_grouping_settings()
         selected_variable = self.variableSelector.get_selected_variable()
 
-        if not self.datatable.dataset.binning_settings.apply:
+        if "Timedelta" in self.datatable.df.columns:
             self._display_timeline_plot(
                 selected_variable,
-                split_mode,
-                selected_factor_name,
+                grouping_settings,
             )
         else:
-            if self.datatable.dataset.binning_settings.mode == BinningMode.INTERVALS:
-                self._display_timeline_plot(
-                    selected_variable,
-                    split_mode,
-                    selected_factor_name,
-                )
-            else:
-                self._display_bar_plot(
-                    selected_variable,
-                    split_mode,
-                    selected_factor_name,
-                    True,
-                )
-
-    def _get_timeline_plot_df(
-        self,
-        variable: Variable,
-        split_mode: SplitMode,
-        selected_factor_name: str,
-    ) -> pd.DataFrame:
-        columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + [variable.name]
-        result = self.datatable.get_filtered_df(columns)
-
-        # Binning
-        settings = self.datatable.dataset.binning_settings
-        if settings.apply:
-            result = process_time_interval_binning(
-                result,
-                settings.time_intervals_settings,
-                {variable.name: variable},
-                origin=self.datatable.dataset.experiment_started,
+            self._display_bar_plot(
+                selected_variable,
+                grouping_settings,
+                True,
             )
-
-        # Splitting
-
-        # No processing!
-        if split_mode == SplitMode.ANIMAL:
-            return result
-
-        match split_mode:
-            case SplitMode.FACTOR:
-                by = ["Bin", selected_factor_name]
-            case SplitMode.RUN:
-                by = ["Bin", "Run"]
-            case _:  # Total split mode
-                by = ["Bin"]
-
-        # TODO: use means only when aggregating in split modes!
-        aggregation = {
-            "Timedelta": "first",
-            variable.name: "mean",
-        }
-
-        result = result.groupby(by, dropna=False, observed=False).aggregate(aggregation)
-        result.reset_index(inplace=True)
-
-        return result
 
     def _display_timeline_plot(
         self,
         selected_variable: Variable,
-        split_mode: SplitMode,
-        selected_factor_name: str,
+        grouping_settings: GroupingSettings,
     ):
         self.barPlotView.hide()
         self.plot_toolbar_action.setVisible(False)
         self.timelinePlotView.show()
         self.checkBoxScatterPlot.setVisible(True)
 
-        df = self._get_timeline_plot_df(
-            variable=selected_variable,
-            split_mode=split_mode,
-            selected_factor_name=selected_factor_name,
-        )
+        columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + [selected_variable.name]
+        df = self.datatable.get_filtered_df(columns)
 
-        selected_factor = (
-            self.datatable.dataset.factors[selected_factor_name]
-            if (selected_factor_name != "" and selected_factor_name in self.datatable.dataset.factors)
-            else None
-        )
+        df = group_by_columns(df, {selected_variable.name: selected_variable}, grouping_settings)
 
         self.timelinePlotView.refresh_data(
             self.datatable,
             df,
             selected_variable,
-            split_mode,
-            selected_factor,
+            grouping_settings,
             self.checkBoxScatterPlot.isChecked(),
         )
-
-    def _get_bar_plot_df(
-        self,
-        variable: Variable,
-    ) -> pd.DataFrame:
-        columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + [variable.name]
-        result = self.datatable.get_filtered_df(columns)
-
-        variables = {variable.name: variable}
-
-        settings = self.datatable.dataset.binning_settings
-        match settings.mode:
-            case BinningMode.CYCLES:
-                result = process_time_cycles_binning(
-                    result,
-                    settings.time_cycles_settings,
-                    variables,
-                )
-            case BinningMode.PHASES:
-                result = process_time_phases_binning(
-                    result,
-                    settings.time_phases_settings,
-                    variables,
-                )
-
-        return result
 
     def _display_bar_plot(
         self,
         selected_variable: Variable,
-        split_mode: SplitMode,
-        selected_factor_name: str,
+        grouping_settings: GroupingSettings,
         display_errors: bool,
     ):
         self.timelinePlotView.hide()
@@ -281,38 +164,27 @@ class FastDataPlotWidget(QWidget, messaging.MessengerListener):
         self.checkBoxScatterPlot.setVisible(False)
 
         if display_errors:
-            calculate_errors = "se"
+            error_type = "se"
         else:
-            calculate_errors = None
+            error_type = None
 
-        df = self._get_bar_plot_df(
-            variable=selected_variable,
-        )
-
-        selected_factor = (
-            self.datatable.dataset.factors[selected_factor_name]
-            if split_mode == SplitMode.FACTOR and selected_factor_name != ""
-            else None
-        )
+        columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + [selected_variable.name]
+        df = self.datatable.get_filtered_df(columns)
 
         self.barPlotView.refresh_data(
             self.datatable,
             df,
             selected_variable,
-            split_mode,
-            selected_factor,
+            grouping_settings,
             display_errors,
-            calculate_errors,
+            error_type,
         )
 
     def _add_report(self):
-        if not self.datatable.dataset.binning_settings.apply:
+        if "Timedelta" in self.datatable.df.columns:
             html = self.timelinePlotView.get_report()
         else:
-            if self.datatable.dataset.binning_settings.mode == BinningMode.INTERVALS:
-                html = self.timelinePlotView.get_report()
-            else:
-                html = self.barPlotView.get_report()
+            html = self.barPlotView.get_report()
 
         name, ok = QInputDialog.getText(
             self,

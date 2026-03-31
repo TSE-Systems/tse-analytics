@@ -7,7 +7,7 @@ from matplotlib import rcParams
 
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.shared import SplitMode
+from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
 from tse_analytics.core.utils import get_great_table, get_html_image_from_figure
 
 
@@ -21,28 +21,27 @@ def get_correlation_result(
     df: pd.DataFrame,
     x_var_name: str,
     y_var_name: str,
-    split_mode: SplitMode,
-    factor_name: str | None,
+    grouping_settings: GroupingSettings,
     figsize: tuple[float, float] | None = None,
 ) -> CorrelationResult:
     if figsize is None:
         figsize = rcParams["figure.figsize"]
 
-    match split_mode:
-        case SplitMode.ANIMAL:
+    match grouping_settings.mode:
+        case GroupingMode.ANIMAL:
             by = "Animal"
             palette = color_manager.get_animal_to_color_dict(dataset.animals)
-        case SplitMode.RUN:
+        case GroupingMode.RUN:
             by = "Run"
             palette = color_manager.colormap_name
-        case SplitMode.FACTOR:
-            by = factor_name
-            palette = color_manager.get_level_to_color_dict(dataset.factors[factor_name])
+        case GroupingMode.FACTOR:
+            by = grouping_settings.factor_name
+            palette = color_manager.get_level_to_color_dict(dataset.factors[by])
         case _:
             by = None
             palette = color_manager.colormap_name
 
-    if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:
+    if grouping_settings.mode != GroupingMode.TOTAL and grouping_settings.mode != GroupingMode.RUN:
         df[by] = df[by].cat.remove_unused_categories()
 
     joint_grid = sns.jointplot(

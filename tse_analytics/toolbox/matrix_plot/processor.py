@@ -7,7 +7,7 @@ from matplotlib import rcParams
 
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.shared import SplitMode
+from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
 from tse_analytics.core.utils import get_html_image_from_figure
 
 MATRIXPLOT_KIND: dict[str, Literal["scatter", "kde", "hist", "reg"]] = {
@@ -27,24 +27,23 @@ def get_matrix_plot_result(
     dataset: Dataset,
     df: pd.DataFrame,
     variables: list[str],
-    split_mode: SplitMode,
-    factor_name: str | None,
+    grouping_settings: GroupingSettings,
     plot_kind: Literal["scatter", "kde", "hist", "reg"],
     figsize: tuple[float, float] | None = None,
 ) -> MatrixPlotResult:
     if figsize is None:
         figsize = rcParams["figure.figsize"]
 
-    match split_mode:
-        case SplitMode.ANIMAL:
+    match grouping_settings.mode:
+        case GroupingMode.ANIMAL:
             hue = "Animal"
             palette = color_manager.get_animal_to_color_dict(dataset.animals)
-        case SplitMode.RUN:
+        case GroupingMode.RUN:
             hue = "Run"
             palette = color_manager.colormap_name
-        case SplitMode.FACTOR:
-            hue = factor_name
-            palette = color_manager.get_level_to_color_dict(dataset.factors[factor_name])
+        case GroupingMode.FACTOR:
+            hue = grouping_settings.factor_name
+            palette = color_manager.get_level_to_color_dict(dataset.factors[hue])
         case _:  # Total
             hue = "None"
             palette = color_manager.colormap_name

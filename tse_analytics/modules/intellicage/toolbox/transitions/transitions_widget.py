@@ -50,7 +50,7 @@ class TransitionsWidget(ToolboxWidgetBase):
         columns = ["Timedelta", "Animal", "Corner"]
         df = self.datatable.df[columns]
 
-        animal_ids = [animal.id for animal in self.datatable.dataset.animals.values() if animal.enabled]
+        animal_ids = [animal.id for animal in self.datatable.dataset.animals.values()]
 
         worker = Worker(
             get_intellicage_transitions_result,

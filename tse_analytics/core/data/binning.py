@@ -42,10 +42,6 @@ class BinningSettings:
 
     Attributes
     ----------
-    apply : bool
-        Whether to apply binning.
-    mode : BinningMode
-        The binning mode to use.
     time_intervals_settings : TimeIntervalsBinningSettings
         Settings for time intervals binning.
     time_cycles_settings : TimeCyclesBinningSettings
@@ -54,8 +50,6 @@ class BinningSettings:
         Settings for time phases binning.
     """
 
-    apply: bool = False
-    mode: BinningMode = BinningMode.INTERVALS
     time_intervals_settings: TimeIntervalsBinningSettings = field(
         default_factory=lambda: TimeIntervalsBinningSettings("hour", 1)
     )

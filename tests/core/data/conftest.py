@@ -25,9 +25,9 @@ from tse_analytics.core.data.shared import (
 def sample_animals():
     """3 animals: A1 and A2 enabled, A3 disabled."""
     return {
-        "A1": Animal(enabled=True, id="A1", color="#FF0000", properties={"group": "Control"}),
-        "A2": Animal(enabled=True, id="A2", color="#00FF00", properties={"group": "Treatment"}),
-        "A3": Animal(enabled=False, id="A3", color="#0000FF", properties={"group": "Treatment"}),
+        "A1": Animal(id="A1", color="#FF0000", properties={"group": "Control"}),
+        "A2": Animal(id="A2", color="#00FF00", properties={"group": "Treatment"}),
+        "A3": Animal(id="A3", color="#0000FF", properties={"group": "Treatment"}),
     }
 
 

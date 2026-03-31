@@ -22,12 +22,12 @@ def dataframe_to_actogram(
     df = df.copy()
 
     # Extract day information
-    df["Date"] = df["DateTime"].dt.date
-    df["Time"] = df["DateTime"].dt.hour * 60 + df["DateTime"].dt.minute
+    df["Date"] = df["DateTime"].dt.date.astype("datetime64[s]")
+    df["Time"] = df["DateTime"].dt.hour * 60 + df["DateTime"].dt.minute.astype("Int64")
 
     # Determine bin for each timestamp
     minutes_per_bin = 24 * 60 / bins_per_day
-    df["Bin"] = (df["Time"] / minutes_per_bin).astype("UInt64")
+    df["Bin"] = (df["Time"] / minutes_per_bin).astype("Int64")
 
     df = df.groupby(["Date", "Bin"], dropna=False, observed=False).aggregate({
         variable.name: variable.aggregation,

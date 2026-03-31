@@ -4,7 +4,6 @@ import pickle
 from unittest.mock import patch
 
 import pandas as pd
-from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings
 from tse_analytics.core.data.shared import Animal
 
@@ -38,9 +37,6 @@ class TestDatasetInit:
     def test_default_outliers_settings(self, sample_dataset):
         assert sample_dataset.outliers_settings.mode == OutliersMode.OFF
         assert sample_dataset.outliers_settings.iqr_multiplier == 1.5
-
-    def test_default_binning_settings(self, sample_dataset):
-        assert sample_dataset.binning_settings.apply is False
 
 
 class TestDatasetProperties:
@@ -136,7 +132,7 @@ class TestRenameAnimal:
 
     def test_renames_in_animals_dict(self, sample_dataset, sample_datatable):
         old_animal = sample_dataset.animals["A1"]
-        new_animal = Animal(enabled=True, id="NewA1", color=old_animal.color, properties=old_animal.properties)
+        new_animal = Animal(id="NewA1", color=old_animal.color, properties=old_animal.properties)
 
         sample_dataset.rename_animal("A1", new_animal)
 
@@ -145,7 +141,7 @@ class TestRenameAnimal:
 
     def test_renames_in_metadata(self, sample_dataset, sample_datatable):
         old_animal = sample_dataset.animals["A1"]
-        new_animal = Animal(enabled=True, id="NewA1", color=old_animal.color, properties=old_animal.properties)
+        new_animal = Animal(id="NewA1", color=old_animal.color, properties=old_animal.properties)
 
         sample_dataset.rename_animal("A1", new_animal)
 
@@ -155,7 +151,7 @@ class TestRenameAnimal:
         sample_dataset.factors = {"Group": sample_factor}
 
         old_animal = sample_dataset.animals["A1"]
-        new_animal = Animal(enabled=True, id="NewA1", color=old_animal.color, properties=old_animal.properties)
+        new_animal = Animal(id="NewA1", color=old_animal.color, properties=old_animal.properties)
 
         sample_dataset.rename_animal("A1", new_animal)
 
@@ -218,33 +214,6 @@ class TestSetFactors:
         sample_dataset.set_factors(factors)
         # The factor column should be added to the df
         assert "Group" in sample_datatable.df.columns
-
-
-class TestApplyBinning:
-    """Tests for Dataset.apply_binning."""
-
-    def test_stores_settings(self, sample_dataset):
-        from tse_analytics.core import messaging
-
-        settings = BinningSettings()
-        settings.apply = True
-
-        with patch.object(messaging, "broadcast"):
-            sample_dataset.apply_binning(settings)
-
-        assert sample_dataset.binning_settings.apply is True
-
-    def test_broadcasts_message(self, sample_dataset):
-        from tse_analytics.core import messaging
-
-        settings = BinningSettings()
-
-        with patch.object(messaging, "broadcast") as mock_broadcast:
-            sample_dataset.apply_binning(settings)
-
-        assert mock_broadcast.called
-        call_args = mock_broadcast.call_args[0][0]
-        assert isinstance(call_args, messaging.BinningMessage)
 
 
 class TestApplyOutliers:

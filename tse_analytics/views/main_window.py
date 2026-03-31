@@ -116,11 +116,10 @@ class MainWindow(QMainWindow):
         )
 
         binning_dock_widget = LayoutManager.register_dock_widget(
-            BinningSettingsWidget(), "Binning", QIcon(":/icons/binning.png")
+            BinningSettingsWidget(), "Time Binning", QIcon(":/icons/binning.png")
         )
-        LayoutManager.add_dock_widget_to_area(
-            PySide6QtAds.BottomDockWidgetArea, binning_dock_widget, selector_dock_area
-        )
+        LayoutManager.add_dock_widget_tab_to_area(binning_dock_widget, selector_dock_area)
+        selector_dock_area.setCurrentIndex(0)
 
         self.ui.actionImportDataset.triggered.connect(self._import_dataset_dialog)
         self.ui.actionNewWorkspace.triggered.connect(self._new_workspace)

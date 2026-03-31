@@ -9,7 +9,8 @@ from PySide6.QtWidgets import QWidget
 
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import Factor, SplitMode, Variable
+from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
+from tse_analytics.core.data.shared import Variable
 from tse_analytics.views.misc.TimedeltaAxisItem import TimedeltaAxisItem
 
 
@@ -49,8 +50,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         self.datatable: Datatable | None = None
         self._df: pd.DataFrame | None = None
         self._variable: Variable | None = None
-        self._split_mode = SplitMode.ANIMAL
-        self._selected_factor: Factor | None = None
+        self._grouping_settings: GroupingSettings | None = None
         self._scatter_plot = False
 
     def refresh_data(
@@ -58,33 +58,31 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         datatable: Datatable,
         df: pd.DataFrame,
         variable: Variable,
-        split_mode: SplitMode,
-        selected_factor: Factor | None,
+        grouping_settings: GroupingSettings,
         scatter_plot: bool,
     ) -> None:
         self.plot_item1.clear()
         self.plot_item2.clearPlots()
         self.legend.clear()
 
-        if df.empty or (split_mode == SplitMode.FACTOR and selected_factor is None):
+        if df.empty or (grouping_settings.mode == GroupingMode.FACTOR and grouping_settings.factor_name == ""):
             self._df = None
             self._variable = None
-            self._selected_factor = None
+            self._grouping_settings = None
             return
 
         self.datatable = datatable
         self._df = df
         self._variable = variable
-        self._split_mode = split_mode
-        self._selected_factor = selected_factor
+        self._grouping_settings = grouping_settings
         self._scatter_plot = scatter_plot
 
-        match self._split_mode:
-            case SplitMode.ANIMAL:
+        match self._grouping_settings.mode:
+            case GroupingMode.ANIMAL:
                 x_min, x_max = self._plot_animals()
-            case SplitMode.FACTOR:
+            case GroupingMode.FACTOR:
                 x_min, x_max = self._plot_factors()
-            case SplitMode.RUN:
+            case GroupingMode.RUN:
                 x_min, x_max = self._plot_runs()
             case _:
                 x_min, x_max = self._plot_total()
@@ -144,7 +142,7 @@ class TimelinePlotView(pg.GraphicsLayoutWidget):
         x_min = None
         x_max = None
 
-        animals = [animal for animal in self.datatable.dataset.animals.values() if animal.enabled]
+        animals = list(self.datatable.dataset.animals.values())
 
         for animal in animals:
             filtered_data = self._df[self._df["Animal"] == animal.id]

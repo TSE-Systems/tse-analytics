@@ -68,7 +68,6 @@ class Ui_TableProcessorDialog(object):
         self.groupBoxAnimals.setChecked(False)
         self.verticalLayout_2 = QVBoxLayout(self.groupBoxAnimals)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.tableWidgetAnimals = QTableWidget(self.groupBoxAnimals)
         self.tableWidgetAnimals.setObjectName(u"tableWidgetAnimals")
         self.tableWidgetAnimals.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -208,26 +207,12 @@ class Ui_TableProcessorDialog(object):
 
         self.verticalLayout_5.addWidget(self.widgetPhases)
 
-
-        self.verticalLayout_3.addWidget(self.groupBoxBinning)
-
-        self.groupBoxGrouping = QGroupBox(self.widgetLayoutV)
-        self.groupBoxGrouping.setObjectName(u"groupBoxGrouping")
-        self.groupBoxGrouping.setCheckable(True)
-        self.groupBoxGrouping.setChecked(False)
-        self.verticalLayout_6 = QVBoxLayout(self.groupBoxGrouping)
-        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
-        self.comboBoxGrouping = QComboBox(self.groupBoxGrouping)
-        self.comboBoxGrouping.setObjectName(u"comboBoxGrouping")
-
-        self.verticalLayout_6.addWidget(self.comboBoxGrouping)
-
-
-        self.verticalLayout_3.addWidget(self.groupBoxGrouping)
-
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.verticalLayout_3.addItem(self.verticalSpacer)
+        self.verticalLayout_5.addItem(self.verticalSpacer)
+
+
+        self.verticalLayout_3.addWidget(self.groupBoxBinning)
 
 
         self.horizontalLayout.addWidget(self.widgetLayoutV)
@@ -255,7 +240,7 @@ class Ui_TableProcessorDialog(object):
         self.nameLabel.setText(QCoreApplication.translate("TableProcessorDialog", u"Name:", None))
         self.descriptionLabel.setText(QCoreApplication.translate("TableProcessorDialog", u"Description:", None))
         self.groupBoxAnimals.setTitle(QCoreApplication.translate("TableProcessorDialog", u"Exclude Animals", None))
-        self.groupBoxBinning.setTitle(QCoreApplication.translate("TableProcessorDialog", u"Binning", None))
+        self.groupBoxBinning.setTitle(QCoreApplication.translate("TableProcessorDialog", u"Time Binning", None))
         self.binningModeLabel.setText(QCoreApplication.translate("TableProcessorDialog", u"Binning Mode", None))
         self.labelLightCycleStart.setText(QCoreApplication.translate("TableProcessorDialog", u"Light cycle start", None))
         self.labelDarkCycleStart.setText(QCoreApplication.translate("TableProcessorDialog", u"Dark cycle start", None))
@@ -265,6 +250,5 @@ class Ui_TableProcessorDialog(object):
 #if QT_CONFIG(tooltip)
         self.toolButtonDeletePhase.setToolTip(QCoreApplication.translate("TableProcessorDialog", u"Delete selected time phase", None))
 #endif // QT_CONFIG(tooltip)
-        self.groupBoxGrouping.setTitle(QCoreApplication.translate("TableProcessorDialog", u"Group By", None))
     # retranslateUi
 

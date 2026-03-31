@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
 
 import pandas as pd
-from pyqttoast import ToastPreset
 from PySide6.QtCore import QByteArray, QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
@@ -9,6 +8,7 @@ from PySide6.QtWidgets import (
     QDialog,
     QFileDialog,
     QInputDialog,
+    QLabel,
     QMenu,
     QMessageBox,
     QSplitter,
@@ -19,29 +19,31 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from tse_analytics.core import manager
-from tse_analytics.core.data.binning import BinningMode
+from tse_analytics.core import manager, messaging
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.grouping import GroupingMode
+from tse_analytics.core.data.operators.group_by_pipe_operator import group_by_columns
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.models.pandas_model import PandasModel
-from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_great_table, get_h_spacer_widget, get_widget_tool_button
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.toolbox.data_table.table_processor.table_processor_dialog import TableProcessorDialog
 from tse_analytics.toolbox.data_table.variables.variables_widget import VariablesWidget
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
+from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.report_edit import ReportEdit
 
 
 @dataclass
 class DataWidgetSettings:
+    group_by: str = "Animal"
     selected_variables: list[str] = field(default_factory=list)
     splitter_state: QByteArray | None = None
 
 
 @toolbox_plugin(category="Data", label="Table", icon=":/icons/table.png", order=0)
-class DataTableWidget(QWidget):
+class DataTableWidget(QWidget, messaging.MessengerListener):
     def __init__(self, datatable: Datatable, name: str = "DataTableWidget", parent: QWidget | None = None):
         super().__init__(parent)
 
@@ -67,7 +69,21 @@ class DataTableWidget(QWidget):
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
 
-        self.add_derived_table_action = toolbar.addAction("Add Derived Table")
+        toolbar.addWidget(QLabel("Group by:"))
+        self.group_by_selector = GroupBySelector(
+            toolbar,
+            self.datatable,
+            check_binning=True,
+            selected_mode=self._settings.group_by,
+        )
+        self.group_by_selector.currentTextChanged.connect(self.refresh_data)
+        toolbar.addWidget(self.group_by_selector)
+
+        toolbar.addSeparator()
+
+        self.add_derived_table_action = toolbar.addAction(
+            QIcon(":/icons/icons8-data-sheet-16.png"), "Add Derived Table"
+        )
         self.add_derived_table_action.triggered.connect(self._add_derived_table)
 
         toolbar.addAction(QIcon(":/icons/icons8-resize-horizontal-16.png"), "Resize Columns").triggered.connect(
@@ -144,6 +160,8 @@ class DataTableWidget(QWidget):
 
         self.refresh_data()
 
+        messaging.subscribe(self, messaging.OutliersChangedMessage, self._on_outliers_changed)
+
     def _resize_columns_width(self):
         worker = Worker(
             self.table_view.resizeColumnsToContents
@@ -151,15 +169,11 @@ class DataTableWidget(QWidget):
         TaskManager.start_task(worker)
 
     def _export_csv(self):
-        if self.datatable is None:
-            return
         filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "", "CSV Files (*.csv)")
         if filename:
             self.df.to_csv(filename, sep=";", index=False)
 
     def _export_excel(self):
-        if self.datatable is None:
-            return
         filename, _ = QFileDialog.getSaveFileName(self, "Export to Excel", "", "Excel Files (*.xlsx)")
         if filename:
             with pd.ExcelWriter(filename) as writer:
@@ -168,38 +182,40 @@ class DataTableWidget(QWidget):
     def _variables_selection_changed(self):
         self.refresh_data()
 
+    def _on_outliers_changed(self, message: messaging.OutliersChangedMessage) -> None:
+        if message.datatable == self.datatable:
+            self.refresh_data()
+
     def refresh_data(self):
-        if self.datatable is None:
-            return
+        selected_variables = self.variables_widget.get_selected_variables_dict()
+        selected_variable_names = list(selected_variables)
+        grouping_settings = self.group_by_selector.get_grouping_settings()
 
-        selected_variables_names = self.variables_widget.get_selected_variable_names()
-
-        if (
-            self.datatable.dataset.binning_settings.apply
-            and self.datatable.dataset.binning_settings.mode == BinningMode.PHASES
-            and len(selected_variables_names) == 0
-        ):
-            make_toast(
-                self,
-                "Data Table",
-                "Please select at least one variable.",
-                duration=2000,
-                preset=ToastPreset.WARNING,
-                show_duration_bar=False,
-            ).show()
-            return
-
-        all_columns = self.datatable.df.columns.tolist()
-        all_variable_columns = list(self.datatable.variables.keys())
-        columns = [
-            var_column for var_column in all_columns if var_column not in all_variable_columns
-        ] + selected_variables_names
+        if grouping_settings.mode == GroupingMode.ANIMAL:
+            all_columns = self.datatable.df.columns.tolist()
+            all_variable_columns = list(self.datatable.variables.keys())
+            columns = [
+                var_column for var_column in all_columns if var_column not in all_variable_columns
+            ] + selected_variable_names
+        else:
+            columns = list(
+                dict.fromkeys(
+                    self.datatable.get_default_columns()
+                    + self.datatable.get_categorical_columns()
+                    + selected_variable_names
+                )
+            )
 
         # self.df = self.datatable.get_preprocessed_df_columns(columns, split_mode, selected_factor_name)
         self.df = self.datatable.get_filtered_df(columns)
+        self.df = group_by_columns(
+            self.df,
+            selected_variables,
+            grouping_settings,
+        )
 
-        if len(selected_variables_names) > 0:
-            descriptive_df = self.df[selected_variables_names].describe().T.reset_index()
+        if len(selected_variables) > 0:
+            descriptive_df = self.df[selected_variable_names].describe().T.reset_index()
             descriptive = get_great_table(
                 descriptive_df,
                 "Descriptive Statistics",
@@ -276,10 +292,12 @@ class DataTableWidget(QWidget):
             )
 
     def _destroyed(self):
+        messaging.unsubscribe_all(self)
         settings = QSettings()
         settings.setValue(
             f"{self.name}Settings",
             DataWidgetSettings(
+                self.group_by_selector.currentText(),
                 self.variables_widget.get_selected_variable_names(),
                 self._splitter.saveState(),
             ),

@@ -4,9 +4,8 @@ from pyqttoast import ToastPreset
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QLabel, QMessageBox, QToolBar, QWidget
 
-from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import SplitMode
+from tse_analytics.core.data.grouping import GroupingMode
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import (
     get_figsize_from_widget,
@@ -79,11 +78,11 @@ class RMAnovaWidget(ToolboxWidgetBase):
     def _update(self):
         self.report_view.clear()
 
-        split_mode, selected_factor_name = self.group_by_selector.get_group_by()
+        grouping_settings = self.group_by_selector.get_grouping_settings()
         variable = self.variable_selector.get_selected_variable()
 
         do_pairwise_tests = True
-        if not self.datatable.dataset.binning_settings.apply:
+        if "Bin" not in self.datatable.df.columns:
             make_toast(
                 self,
                 self.title,
@@ -93,7 +92,7 @@ class RMAnovaWidget(ToolboxWidgetBase):
                 show_duration_bar=True,
             ).show()
             return
-        elif self.datatable.dataset.binning_settings.mode == BinningMode.INTERVALS:
+        elif "Timedelta" in self.datatable.df.columns:
             if (
                 QMessageBox.question(
                     self,
@@ -104,19 +103,17 @@ class RMAnovaWidget(ToolboxWidgetBase):
             ):
                 do_pairwise_tests = False
 
-        df = self.datatable.get_preprocessed_df(
-            variables={variable.name: variable},
-            split_mode=SplitMode.ANIMAL,
-            selected_factor_name=None,
-            dropna=True,
-        )
+        columns = ["Animal", "Bin", variable.name]
+        if grouping_settings.mode == GroupingMode.FACTOR:
+            columns.append(grouping_settings.factor_name)
+        df = self.datatable.get_filtered_df(columns)
+        df.dropna(inplace=True)
 
         result = get_rm_anova_result(
             self.datatable.dataset,
             df,
             variable,
-            split_mode,
-            selected_factor_name,
+            grouping_settings,
             do_pairwise_tests,
             EFFECT_SIZE[self.settings_widget_ui.comboBoxEffectSizeType.currentText()],
             P_ADJUSTMENT[self.settings_widget_ui.comboBoxPAdjustment.currentText()],

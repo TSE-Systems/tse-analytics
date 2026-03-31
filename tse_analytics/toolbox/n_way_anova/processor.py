@@ -3,11 +3,10 @@ from dataclasses import dataclass
 import pandas as pd
 import pingouin as pg
 
-from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.operators.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.utils import get_great_table
+from tse_analytics.core.utils.data import group_df_by_animal
 
 
 @dataclass
@@ -23,14 +22,11 @@ def get_n_way_anova_result(
     effsize: str,
     padjust: str,
 ) -> NWayAnovaResult:
-    # Binning
-    df = process_time_interval_binning(
+    df = group_df_by_animal(
         df,
-        TimeIntervalsBinningSettings("day", 365),
         {
             dependent_variable.name: dependent_variable,
         },
-        origin=dataset.experiment_started,
     )
 
     # TODO: should or should not?

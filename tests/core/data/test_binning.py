@@ -27,16 +27,8 @@ class TestBinningSettings:
 
     def test_defaults(self):
         settings = BinningSettings()
-        assert settings.apply is False
-        assert settings.mode == BinningMode.INTERVALS
-        assert isinstance(settings.time_intervals_settings, TimeIntervalsBinningSettings)
         assert isinstance(settings.time_cycles_settings, TimeCyclesBinningSettings)
         assert isinstance(settings.time_phases_settings, TimePhasesBinningSettings)
-
-    def test_default_interval_settings(self):
-        settings = BinningSettings()
-        assert settings.time_intervals_settings.unit == "hour"
-        assert settings.time_intervals_settings.delta == 1
 
     def test_default_cycle_settings(self):
         settings = BinningSettings()

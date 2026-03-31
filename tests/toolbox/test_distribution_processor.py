@@ -4,7 +4,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 
-from tse_analytics.core.data.shared import SplitMode
+from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
 from tse_analytics.toolbox.distribution.processor import DistributionResult, get_distribution_result
 
 
@@ -16,8 +16,7 @@ class TestDistribution:
             dataset=analysis_dataset,
             df=analysis_df.copy(),
             variable_name="Metabolism",
-            split_mode=SplitMode.TOTAL,
-            factor_name=None,
+            grouping_settings=GroupingSettings(mode=GroupingMode.TOTAL),
             plot_type="Box plot",
             show_points=False,
             figsize=(8, 6),
@@ -30,8 +29,7 @@ class TestDistribution:
             dataset=analysis_dataset,
             df=analysis_df.copy(),
             variable_name="Metabolism",
-            split_mode=SplitMode.TOTAL,
-            factor_name=None,
+            grouping_settings=GroupingSettings(mode=GroupingMode.TOTAL),
             plot_type="Violin plot",
             show_points=False,
             figsize=(8, 6),
@@ -44,8 +42,7 @@ class TestDistribution:
             dataset=analysis_dataset,
             df=analysis_df.copy(),
             variable_name="Metabolism",
-            split_mode=SplitMode.FACTOR,
-            factor_name="Group",
+            grouping_settings=GroupingSettings(mode=GroupingMode.FACTOR, factor_name="Group"),
             plot_type="Box plot",
             show_points=False,
             figsize=(8, 6),
@@ -57,8 +54,7 @@ class TestDistribution:
             dataset=analysis_dataset,
             df=analysis_df.copy(),
             variable_name="Metabolism",
-            split_mode=SplitMode.ANIMAL,
-            factor_name=None,
+            grouping_settings=GroupingSettings(mode=GroupingMode.ANIMAL),
             plot_type="Box plot",
             show_points=False,
             figsize=(8, 6),
@@ -70,8 +66,7 @@ class TestDistribution:
             dataset=analysis_dataset,
             df=analysis_df.copy(),
             variable_name="Metabolism",
-            split_mode=SplitMode.FACTOR,
-            factor_name="Group",
+            grouping_settings=GroupingSettings(mode=GroupingMode.FACTOR, factor_name="Group"),
             plot_type="Box plot",
             show_points=True,
             figsize=(8, 6),
@@ -84,8 +79,7 @@ class TestDistribution:
             dataset=analysis_dataset,
             df=analysis_df.copy(),
             variable_name="Metabolism",
-            split_mode=SplitMode.RUN,
-            factor_name=None,
+            grouping_settings=GroupingSettings(mode=GroupingMode.RUN),
             plot_type="Box plot",
             show_points=False,
             figsize=(8, 6),

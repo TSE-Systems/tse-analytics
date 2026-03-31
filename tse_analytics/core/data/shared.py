@@ -39,29 +39,6 @@ class Aggregation(StrEnum):
     MAX = "max"
 
 
-@unique
-class SplitMode(StrEnum):
-    """
-    Enumeration of available modes for splitting data.
-
-    Attributes
-    ----------
-    ANIMAL : str
-        Split data by animal.
-    FACTOR : str
-        Split data by factor.
-    RUN : str
-        Split data by run.
-    TOTAL : str
-        No splitting, use total data.
-    """
-
-    ANIMAL = "Animal"
-    FACTOR = "Factor"
-    RUN = "Run"
-    TOTAL = "Total"
-
-
 @dataclass
 class Animal:
     """
@@ -69,8 +46,6 @@ class Animal:
 
     Attributes
     ----------
-    enabled : bool
-        Whether the animal is enabled in the analysis.
     id : str
         The unique identifier for the animal.
     color : str
@@ -79,7 +54,6 @@ class Animal:
         Dictionary of animal properties.
     """
 
-    enabled: bool
     id: str
     color: str
     properties: dict[str, Any]

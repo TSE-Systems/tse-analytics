@@ -28,4 +28,4 @@ class GroupingMode(StrEnum):
 @dataclass
 class GroupingSettings:
     mode: GroupingMode = GroupingMode.ANIMAL
-    factor_name: str | None = None
+    factor_name: str = ""

@@ -28,7 +28,6 @@ def analysis_animals():
     for i in range(1, 7):
         group = "Control" if i <= 3 else "Treatment"
         animals[f"M{i}"] = Animal(
-            enabled=True,
             id=f"M{i}",
             color=f"#{'FF' if i <= 3 else '00'}0000",
             properties={"group": group},

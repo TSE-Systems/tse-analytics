@@ -9,7 +9,6 @@ from PySide6.QtWidgets import (
 )
 
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.utils import get_figsize_from_widget, get_widget_tool_button
 from tse_analytics.toolbox.correlation_matrix.processor import get_correlation_matrix_result
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
@@ -55,18 +54,14 @@ class CorrelationMatrixWidget(ToolboxWidgetBase):
     def _update(self):
         self.report_view.clear()
 
-        selected_variables = self.variables_table_widget.get_selected_variables_dict()
+        selected_variables = self.variables_table_widget.get_selected_variable_names()
 
-        df = self.datatable.get_df(
-            list(selected_variables),
-            SplitMode.ANIMAL,
-            "",
-        )
+        df = self.datatable.get_filtered_df(selected_variables)
 
         result = get_correlation_matrix_result(
             self.datatable.dataset,
             df,
-            list(selected_variables),
+            selected_variables,
             get_figsize_from_widget(self.report_view),
         )
 

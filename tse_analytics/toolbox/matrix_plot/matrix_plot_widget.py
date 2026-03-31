@@ -12,9 +12,9 @@ from PySide6.QtWidgets import (
 )
 
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_figsize_from_widget, get_widget_tool_button
+from tse_analytics.core.utils.data import get_columns_by_grouping_settings
 from tse_analytics.toolbox.matrix_plot.processor import MATRIXPLOT_KIND, get_matrix_plot_result
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
@@ -75,7 +75,7 @@ class MatrixPlotWidget(ToolboxWidgetBase):
     def _update(self):
         self.report_view.clear()
 
-        selected_variables = self.variables_table_widget.get_selected_variables_dict()
+        selected_variables = self.variables_table_widget.get_selected_variable_names()
         if len(selected_variables) < 2:
             make_toast(
                 self,
@@ -87,31 +87,16 @@ class MatrixPlotWidget(ToolboxWidgetBase):
             ).show()
             return
 
-        split_mode, selected_factor_name = self.group_by_selector.get_group_by()
+        grouping_settings = self.group_by_selector.get_grouping_settings()
 
-        if split_mode == SplitMode.FACTOR and selected_factor_name == "":
-            make_toast(
-                self,
-                self.title,
-                "Please select factor.",
-                duration=2000,
-                preset=ToastPreset.WARNING,
-                show_duration_bar=True,
-            ).show()
-            return
-
-        df = self.datatable.get_df(
-            list(selected_variables),
-            split_mode,
-            selected_factor_name,
-        )
+        columns = get_columns_by_grouping_settings(grouping_settings, selected_variables)
+        df = self.datatable.get_filtered_df(columns)
 
         result = get_matrix_plot_result(
             self.datatable.dataset,
             df,
             list(selected_variables),
-            split_mode,
-            selected_factor_name,
+            grouping_settings,
             MATRIXPLOT_KIND[self.comboBoxPlotType.currentText()],
             get_figsize_from_widget(self.report_view),
         )

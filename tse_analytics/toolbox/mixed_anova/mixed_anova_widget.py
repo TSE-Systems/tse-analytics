@@ -4,9 +4,7 @@ from pyqttoast import ToastPreset
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QLabel, QMessageBox, QToolBar, QWidget
 
-from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import (
     get_figsize_from_widget,
@@ -99,7 +97,7 @@ class MixedAnovaWidget(ToolboxWidgetBase):
             return
 
         do_pairwise_tests = True
-        if not self.datatable.dataset.binning_settings.apply:
+        if "Bin" not in self.datatable.df.columns:
             make_toast(
                 self,
                 self.title,
@@ -109,7 +107,7 @@ class MixedAnovaWidget(ToolboxWidgetBase):
                 show_duration_bar=True,
             ).show()
             return
-        elif self.datatable.dataset.binning_settings.mode == BinningMode.INTERVALS:
+        elif "Timedelta" in self.datatable.df.columns:
             if (
                 QMessageBox.question(
                     self,
@@ -120,12 +118,9 @@ class MixedAnovaWidget(ToolboxWidgetBase):
             ):
                 do_pairwise_tests = False
 
-        df = self.datatable.get_preprocessed_df(
-            variables={variable.name: variable},
-            split_mode=SplitMode.ANIMAL,
-            selected_factor_name=None,
-            dropna=True,
-        )
+        columns = ["Animal", "Bin", factor_name, variable.name]
+        df = self.datatable.get_filtered_df(columns)
+        df.dropna(inplace=True)
 
         result = get_mixed_anova_result(
             self.datatable.dataset,

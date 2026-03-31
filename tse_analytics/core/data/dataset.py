@@ -13,7 +13,6 @@ from uuid import uuid7
 
 import pandas as pd
 
-from tse_analytics.core import messaging
 from tse_analytics.core.color_manager import get_factor_level_color_hex
 from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.datatable import Datatable
@@ -144,14 +143,42 @@ class Dataset:
 
     def remove_datatable(self, datatable: Datatable) -> None:
         """
-        Remove a datatable from the dataset.
+        Recursively find and remove a datatable from the dataset.
+
+        Searches top-level datatables and all nested derived_tables.
 
         Parameters
         ----------
         datatable : Datatable
             The datatable to remove from the dataset.
         """
-        self.datatables.pop(datatable.name)
+        # Check top-level first
+        if datatable.name in self.datatables and self.datatables[datatable.name] is datatable:
+            self.datatables.pop(datatable.name)
+            return
+
+        # Search recursively in derived tables
+        self._remove_derived_datatable(datatable)
+
+    def _remove_derived_datatable(self, target: Datatable) -> bool:
+        """Recursively search and remove a derived datatable.
+
+        Returns True if found and removed.
+        """
+        for dt in self.datatables.values():
+            if self._remove_from_derived(dt, target):
+                return True
+        return False
+
+    def _remove_from_derived(self, parent: Datatable, target: Datatable) -> bool:
+        """Remove target from parent's derived_tables tree. Returns True if found."""
+        if target.id in parent.derived_tables:
+            parent.derived_tables.pop(target.id)
+            return True
+        for child in parent.derived_tables.values():
+            if self._remove_from_derived(child, target):
+                return True
+        return False
 
     def rename(self, name: str) -> None:
         """
@@ -344,21 +371,6 @@ class Dataset:
 
         for datatable in self.datatables.values():
             datatable.set_factors(factors, old_factors)
-
-    def apply_binning(self, binning_settings: BinningSettings) -> None:
-        """
-        Apply binning settings to the dataset.
-
-        This method updates the binning settings for the dataset and broadcasts
-        a message to notify listeners of the change.
-
-        Parameters
-        ----------
-        binning_settings : BinningSettings
-            The binning settings to apply to the dataset.
-        """
-        self.binning_settings = binning_settings
-        messaging.broadcast(messaging.BinningMessage(self, self, binning_settings))
 
     def clone(self):
         """

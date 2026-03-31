@@ -1,5 +1,4 @@
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.pipeline import PipelineNode
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 from tse_analytics.toolbox.correlation_matrix.processor import get_correlation_matrix_result
@@ -41,11 +40,7 @@ class CorrelationMatrixNode(PipelineNode):
             invalid = ", ".join(invalid_variables)
             return PipelinePacket.inactive(reason=f"Invalid variable(s): {invalid}")
 
-        df = datatable.get_df(
-            variable_names,
-            SplitMode.ANIMAL,
-            "",
-        )
+        df = datatable.get_filtered_df(variable_names)
 
         result = get_correlation_matrix_result(
             datatable.dataset,

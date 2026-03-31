@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QLabel, QToolBar, QWidget
 
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.utils import get_figsize_from_widget
+from tse_analytics.core.utils.data import get_columns_by_grouping_settings
 from tse_analytics.toolbox.normality.processor import get_normality_result
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
@@ -46,20 +47,16 @@ class NormalityWidget(ToolboxWidgetBase):
     def _update(self):
         self.report_view.clear()
 
-        split_mode, selected_factor_name = self.group_by_selector.get_group_by()
+        grouping_settings = self.group_by_selector.get_grouping_settings()
         variable = self.variableSelector.get_selected_variable()
 
-        df = self.datatable.get_df(
-            [variable.name],
-            split_mode,
-            selected_factor_name,
-        )
+        columns = get_columns_by_grouping_settings(grouping_settings, [variable.name])
+        df = self.datatable.get_filtered_df(columns)
 
         result = get_normality_result(
             df,
             variable.name,
-            split_mode,
-            selected_factor_name,
+            grouping_settings,
             get_figsize_from_widget(self.report_view),
         )
 

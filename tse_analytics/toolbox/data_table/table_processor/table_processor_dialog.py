@@ -10,10 +10,9 @@ from tse_analytics.core.data.binning import (
     TimeIntervalsBinningSettings,
 )
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
 from tse_analytics.core.data.shared import TimePhase
 from tse_analytics.core.models.time_phases_model import TimePhasesModel
-from tse_analytics.toolbox.data_table.table_processor.processor import process_derived_table
+from tse_analytics.toolbox.data_table.processor import process_derived_table
 from tse_analytics.toolbox.data_table.table_processor.table_processor_dialog_ui import Ui_TableProcessorDialog
 
 
@@ -61,8 +60,6 @@ class TableProcessorDialog(QDialog):
         # Trigger refresh.
         self.time_phases_model.layoutChanged.emit()
 
-        self.ui.binningModeComboBox.setCurrentText(self.datatable.dataset.binning_settings.mode)
-
         # Exclude Animals
         self.ui.tableWidgetAnimals.setHorizontalHeaderLabels(["Animal"])
         self.ui.tableWidgetAnimals.setRowCount(len(self.datatable.dataset.animals))
@@ -74,10 +71,6 @@ class TableProcessorDialog(QDialog):
             for j, item in enumerate(animal.properties):
                 self.ui.tableWidgetAnimals.setItem(i, j + 1, QTableWidgetItem(str(animal.properties[item])))
         self.ui.tableWidgetAnimals.resizeColumnsToContents()
-
-        # Grouping
-        modes = self.datatable.get_group_by_columns(True, False)
-        self.ui.comboBoxGrouping.addItems(modes)
 
     def _binning_mode_changed(self, value: str):
         match value:
@@ -128,44 +121,25 @@ class TableProcessorDialog(QDialog):
         for index in selected_indices:
             excluded_animal_ids.add(self.ui.tableWidgetAnimals.item(index.row(), 0).text())
 
-        binning_settings = BinningSettings(
-            apply=self.ui.groupBoxBinning.isChecked(),
-            mode=BinningMode(self.ui.binningModeComboBox.currentText()),
-            time_intervals_settings=TimeIntervalsBinningSettings(
-                unit=self.ui.unitComboBox.currentText(),
-                delta=self.ui.deltaSpinBox.value(),
-            ),
-            time_cycles_settings=TimeCyclesBinningSettings(
-                light_cycle_start=self.ui.timeEditLightCycleStart.time().toPython(),
-                dark_cycle_start=self.ui.timeEditDarkCycleStart.time().toPython(),
-            ),
-            time_phases_settings=self.datatable.dataset.binning_settings.time_phases_settings,
-        )
-        self.datatable.dataset.binning_settings = binning_settings
-
-        grouping_mode_text = self.ui.comboBoxGrouping.currentText()
-        factor_name = ""
-        match grouping_mode_text:
-            case "Animal":
-                grouping_mode = GroupingMode.ANIMAL
-            case "Total":
-                grouping_mode = GroupingMode.TOTAL
-            case "Run":
-                grouping_mode = GroupingMode.RUN
-            case _:
-                grouping_mode = GroupingMode.FACTOR
-                factor_name = grouping_mode_text
-
-        grouping_settings = GroupingSettings(
-            mode=grouping_mode,
-            factor_name=factor_name,
-        )
+        if self.ui.groupBoxBinning.isChecked():
+            binning_settings = BinningSettings(
+                time_intervals_settings=TimeIntervalsBinningSettings(
+                    unit=self.ui.unitComboBox.currentText(),
+                    delta=self.ui.deltaSpinBox.value(),
+                ),
+                time_cycles_settings=TimeCyclesBinningSettings(
+                    light_cycle_start=self.ui.timeEditLightCycleStart.time().toPython(),
+                    dark_cycle_start=self.ui.timeEditDarkCycleStart.time().toPython(),
+                ),
+                time_phases_settings=self.datatable.dataset.binning_settings.time_phases_settings,
+            )
+            self.datatable.dataset.binning_settings = binning_settings
 
         process_derived_table(
             datatable,
             excluded_animal_ids,
-            binning_settings,
-            grouping_settings,
+            BinningMode(self.ui.binningModeComboBox.currentText()),
+            binning_settings if self.ui.groupBoxBinning.isChecked() else None,
         )
 
         self.datatable.derived_tables[datatable.id] = datatable

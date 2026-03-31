@@ -19,9 +19,8 @@ from PySide6.QtWidgets import (
 
 from tse_analytics.core import color_manager, manager
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.operators.time_intervals_binning_pipe_operator import process_time_interval_binning
+from tse_analytics.core.data.grouping import GroupingMode
 from tse_analytics.core.data.report import Report
-from tse_analytics.core.data.shared import SplitMode, Variable
 from tse_analytics.core.utils import (
     get_h_spacer_widget,
     get_html_image_from_figure,
@@ -138,28 +137,33 @@ class DataPlotWidget(QWidget):
         # Clear the plot
         self.canvas.clear(False)
 
-        selected_variables_dict = self.variables_table_widget.get_selected_variables_dict()
-        if len(selected_variables_dict) == 0:
+        selected_variable_names = self.variables_table_widget.get_selected_variable_names()
+        if len(selected_variable_names) == 0:
             return
 
-        split_mode, selected_factor_name = self.group_by_selector.get_group_by()
+        grouping_settings = self.group_by_selector.get_grouping_settings()
         error_bar = ERROR_BAR_TYPE[self.comboBoxErrorBar.currentText()]
 
-        match split_mode:
-            case SplitMode.ANIMAL:
+        match grouping_settings.mode:
+            case GroupingMode.ANIMAL:
                 by = "Animal"
                 palette = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
-            case SplitMode.RUN:
+            case GroupingMode.RUN:
                 by = "Run"
                 palette = color_manager.colormap_name
-            case SplitMode.FACTOR:
-                by = selected_factor_name
-                palette = color_manager.get_level_to_color_dict(self.datatable.dataset.factors[selected_factor_name])
+            case GroupingMode.FACTOR:
+                by = grouping_settings.factor_name
+                palette = color_manager.get_level_to_color_dict(self.datatable.dataset.factors[by])
             case _:
                 by = None
                 palette = color_manager.colormap_name
 
-        df = self._get_timeline_plot_df(selected_variables_dict)
+        columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + selected_variable_names
+        df = self.datatable.get_filtered_df(columns)
+        df["Hours"] = df["Timedelta"] / pd.Timedelta(1, "h")
+
+        # TODO: workaround for issue with nullable Float64
+        df[selected_variable_names] = df[selected_variable_names].astype(float)
 
         plot = (
             so
@@ -168,7 +172,7 @@ class DataPlotWidget(QWidget):
                 x="Hours",
                 color=by,
             )
-            .pair(y=list(selected_variables_dict))
+            .pair(y=selected_variable_names)
             .add(so.Line(linewidth=self.linewidth_spin_box.value()), so.Agg(func="mean"))
         )
 
@@ -178,7 +182,9 @@ class DataPlotWidget(QWidget):
         (
             plot
             .scale(
-                color=so.Nominal(palette, order=df[by].cat.categories.tolist()) if by else palette,
+                color=so.Nominal(palette, order=df[by].cat.categories.tolist())
+                if (grouping_settings.mode == GroupingMode.ANIMAL or grouping_settings.mode == GroupingMode.FACTOR)
+                else palette,
             )
             .on(self.canvas.figure)
             .plot(True)
@@ -202,27 +208,6 @@ class DataPlotWidget(QWidget):
 
         self.canvas.figure.tight_layout()
         self.canvas.draw()
-
-    def _get_timeline_plot_df(
-        self,
-        variables: dict[str, Variable],
-    ) -> pd.DataFrame:
-        columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + list(variables)
-        result = self.datatable.get_filtered_df(columns)
-
-        # Binning
-        settings = self.datatable.dataset.binning_settings
-        if settings.apply:
-            result = process_time_interval_binning(
-                result,
-                settings.time_intervals_settings,
-                variables,
-                origin=self.datatable.dataset.experiment_started,
-            )
-
-        result["Hours"] = result["Timedelta"] / pd.Timedelta(1, "h")
-
-        return result
 
     def _add_report(self) -> None:
         name, ok = QInputDialog.getText(

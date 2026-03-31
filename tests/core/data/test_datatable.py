@@ -68,7 +68,7 @@ class TestRenameAnimal:
     """Tests for Datatable.rename_animal."""
 
     def test_rename_animal(self, sample_datatable):
-        new_animal = Animal(enabled=True, id="NewA1", color="#FF0000", properties={})
+        new_animal = Animal(id="NewA1", color="#FF0000", properties={})
         sample_datatable.rename_animal("A1", new_animal)
 
         assert "NewA1" in sample_datatable.df["Animal"].values

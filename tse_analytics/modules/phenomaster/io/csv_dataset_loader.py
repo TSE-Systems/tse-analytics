@@ -79,7 +79,6 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
             "Text3": elements[5] if len(elements) == 6 else "",
         }
         animal = Animal(
-            enabled=True,
             id=elements[1],
             color=get_color_hex(index),
             properties=properties,

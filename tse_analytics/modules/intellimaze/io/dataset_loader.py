@@ -211,7 +211,6 @@ def _import_animals_v5(animals_file_path: Path) -> dict | None:
             properties[field] = item[field] if field in item else ""
 
         animal = Animal(
-            enabled=True,
             id=str(item["Name"]),
             color=get_color_hex(index),
             properties=properties,
@@ -290,7 +289,6 @@ def _import_animals_v6(animals_file_path: Path, groups_file_path: Path) -> dict 
             properties[field] = item[field] if field in item else ""
 
         animal = Animal(
-            enabled=True,
             id=str(item["Name"]),
             color=get_color_hex(index),
             properties=properties,

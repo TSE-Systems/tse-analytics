@@ -28,7 +28,7 @@ DEFAULT_WIDGETS = {
     "Log",
     "Animals",
     "Factors",
-    "Binning",
+    "Time Binning",
 }
 
 

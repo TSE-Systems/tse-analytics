@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QComboBox, QWidget
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import SplitMode
+from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
 
 
 class GroupBySelector(QComboBox, messaging.MessengerListener):
@@ -32,19 +32,23 @@ class GroupBySelector(QComboBox, messaging.MessengerListener):
         if selected_mode is not None:
             self.setCurrentText(selected_mode)
 
-    def get_group_by(self) -> tuple[SplitMode, str]:
-        """
-        Get the current grouping selection.
-
-        Returns:
-            A tuple containing the selected SplitMode and the factor name (if applicable).
-            If the split mode is not FACTOR, the factor name will be an empty string.
-        """
-        split_mode = self._get_split_mode()
-        if split_mode == SplitMode.FACTOR:
-            return split_mode, self.currentText()
-        else:
-            return split_mode, ""
+    def get_grouping_settings(self) -> GroupingSettings:
+        mode_text = self.currentText()
+        factor_name = ""
+        match mode_text:
+            case "Animal":
+                grouping_mode = GroupingMode.ANIMAL
+            case "Total":
+                grouping_mode = GroupingMode.TOTAL
+            case "Run":
+                grouping_mode = GroupingMode.RUN
+            case _:
+                if mode_text in self.datatable.dataset.factors.keys():
+                    grouping_mode = GroupingMode.FACTOR
+                    factor_name = mode_text
+                else:
+                    grouping_mode = GroupingMode.ANIMAL
+        return GroupingSettings(mode=grouping_mode, factor_name=factor_name)
 
     def showPopup(self):
         """
@@ -83,24 +87,3 @@ class GroupBySelector(QComboBox, messaging.MessengerListener):
             self.blockSignals(False)
             self.addItems(modes)
             self.modes = modes
-
-    def _get_split_mode(self) -> SplitMode:
-        """
-        Determine the SplitMode enum value based on the current text selection.
-
-        Returns:
-            The appropriate SplitMode enum value for the current selection.
-        """
-        mode_text = self.currentText()
-        match mode_text:
-            case "Animal":
-                return SplitMode.ANIMAL
-            case "Total":
-                return SplitMode.TOTAL
-            case "Run":
-                return SplitMode.RUN
-            case _:
-                if mode_text in self.datatable.dataset.factors.keys():
-                    return SplitMode.FACTOR
-                else:
-                    return SplitMode.ANIMAL

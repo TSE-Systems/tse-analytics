@@ -5,7 +5,8 @@ from datetime import time
 import numpy as np
 import pandas as pd
 
-from tse_analytics.core.data.shared import Animal, SplitMode
+from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
+from tse_analytics.core.data.shared import Animal, Variable
 
 _dtypes_name_mapping = {
     "int8": "Int8",
@@ -24,17 +25,31 @@ _dtypes_name_mapping = {
 }
 
 
-def get_group_by_params(group_by_str: str) -> tuple[SplitMode, str]:
-    # Convert group_by string to SplitMode and factor_name
+def get_group_by_params(group_by_str: str) -> GroupingSettings:
+    # Convert group_by string to GroupingSettings
     match group_by_str:
-        case SplitMode.ANIMAL.value:
-            return SplitMode.ANIMAL, ""
-        case SplitMode.RUN.value:
-            return SplitMode.RUN, ""
-        case SplitMode.TOTAL.value:
-            return SplitMode.TOTAL, ""
+        case GroupingMode.ANIMAL.value:
+            return GroupingSettings(mode=GroupingMode.ANIMAL)
+        case GroupingMode.RUN.value:
+            return GroupingSettings(mode=GroupingMode.RUN)
+        case GroupingMode.TOTAL.value:
+            return GroupingSettings(mode=GroupingMode.TOTAL)
+        case GroupingMode.FACTOR.value:
+            return GroupingSettings(mode=GroupingMode.FACTOR, factor_name=group_by_str)
         case _:
-            return SplitMode.FACTOR, group_by_str
+            raise ValueError(f"Invalid group_by value: {group_by_str}")
+
+
+def get_columns_by_grouping_settings(grouping_settings: GroupingSettings, variable_names: list[str]) -> list[str]:
+    match grouping_settings.mode:
+        case GroupingMode.ANIMAL:
+            return variable_names + ["Animal"]
+        case GroupingMode.RUN:
+            return variable_names + ["Run"]
+        case GroupingMode.FACTOR:
+            return variable_names + [grouping_settings.factor_name]
+        case GroupingMode.TOTAL:
+            return variable_names
 
 
 def time_to_float(value: time) -> float:
@@ -156,3 +171,27 @@ def normalize_nd_array(input: np.ndarray):
     min_value = np.min(input)
     max_value = np.max(input)
     return (input - min_value) / (max_value - min_value)
+
+
+def group_df_by_animal(
+    df: pd.DataFrame,
+    variables: dict[str, Variable],
+) -> pd.DataFrame:
+    if df.empty:
+        return df
+
+    default_columns = ["Animal"]
+    agg = {}
+    for column in df.columns:
+        if column not in default_columns:
+            if df.dtypes[column].name != "category":
+                if column in variables:
+                    agg[column] = variables[column].aggregation
+            else:
+                # Include categorical data fields
+                agg[column] = "first"
+
+    result = df.groupby("Animal", dropna=False, observed=False).aggregate(agg)
+    result.reset_index(inplace=True, drop=False)
+
+    return result

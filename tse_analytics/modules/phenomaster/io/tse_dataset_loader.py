@@ -159,7 +159,6 @@ def _get_animals(data: dict) -> dict[str, Animal]:
             properties["RefBox"] = int(item["ref_box"])
 
         animal = Animal(
-            enabled=bool(item["enabled"]),
             id=str(item["id"]),
             color=get_color_hex(index),
             properties=properties,

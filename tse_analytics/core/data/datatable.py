@@ -15,12 +15,9 @@ from uuid import UUID, uuid7
 import pandas as pd
 
 from tse_analytics.core import messaging
-from tse_analytics.core.data.operators.animal_filter_pipe_operator import filter_animals
-from tse_analytics.core.data.operators.group_by_pipe_operator import group_by_columns
 from tse_analytics.core.data.operators.outliers_pipe_operator import process_outliers
-from tse_analytics.core.data.operators.time_binning_pipe_operator import process_time_binning
 from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings
-from tse_analytics.core.data.shared import Animal, Factor, SplitMode, Variable
+from tse_analytics.core.data.shared import Animal, Factor, Variable
 from tse_analytics.core.utils.data import exclude_animals_from_df, reassign_df_timedelta_and_bin, rename_animal_df
 
 if TYPE_CHECKING:
@@ -36,9 +33,6 @@ class Datatable:
     time ranges, resampling, and applying factors. It also has methods for retrieving
     processed data frames for analysis.
     """
-
-    """Default columns that are always present in a datatable."""
-    default_columns = ["Animal", "Timedelta", "DateTime"]
 
     def __init__(
         self,
@@ -147,11 +141,15 @@ class Datatable:
         list[str]
             List of default column names, including "Bin" and "Run" if they exist.
         """
-        columns = Datatable.default_columns
+        columns = ["Animal"]
+        if "DateTime" in self.df.columns:
+            columns.append("DateTime")
+        if "Timedelta" in self.df.columns:
+            columns.append("Timedelta")
         if "Bin" in self.df.columns:
-            columns = columns + ["Bin"]
+            columns.append("Bin")
         if "Run" in self.df.columns:
-            columns = columns + ["Run"]
+            columns.append("Run")
         return columns
 
     def get_categorical_columns(self) -> list[str]:
@@ -184,7 +182,7 @@ class Datatable:
         """
         modes = ["Animal"]
         if check_binning:
-            if not ("Bin" in self.df.columns or self.dataset.binning_settings.apply):
+            if "Bin" not in self.df.columns:
                 return modes
         if not disable_total_mode:
             modes.append("Total")
@@ -208,7 +206,7 @@ class Datatable:
             The outlier detection settings to apply to the datatable.
         """
         self.outliers_settings = settings
-        messaging.broadcast(messaging.DataChangedMessage(self, self.dataset))
+        messaging.broadcast(messaging.OutliersChangedMessage(self, self))
 
     def rename_animal(self, old_id: str, animal: Animal) -> None:
         """
@@ -349,55 +347,6 @@ class Datatable:
 
         self.df = df
 
-    def get_df(
-        self,
-        variable_columns: list[str],
-        split_mode: SplitMode,
-        factor_name: str,
-    ) -> pd.DataFrame:
-        """
-        Get a dataframe with the specified variables and split mode.
-
-        This method returns a dataframe containing the specified variables,
-        with appropriate grouping based on the split mode.
-
-        Parameters
-        ----------
-        variable_columns : list[str]
-            List of variable column names to include in the dataframe.
-        split_mode : SplitMode
-            The mode to use for splitting the data (by animal, factor, run, or total).
-        factor_name : str
-            The name of the factor to use when split_mode is FACTOR.
-
-        Returns
-        -------
-        pd.DataFrame
-            A dataframe containing the specified variables with appropriate grouping.
-        """
-        if self.dataset.binning_settings.apply:
-            # Binning is applied
-            variables = {col: self.variables[col] for col in variable_columns}
-            df = self.get_preprocessed_df(
-                variables,
-                split_mode,
-                factor_name,
-                False,
-            )
-        else:
-            match split_mode:
-                case SplitMode.ANIMAL:
-                    columns = variable_columns + ["Animal"]
-                case SplitMode.RUN:
-                    columns = variable_columns + ["Run"]
-                case SplitMode.FACTOR:
-                    columns = variable_columns + [factor_name]
-                case _:
-                    # Split by total
-                    columns = variable_columns
-            df = self.get_filtered_df(columns)
-        return df
-
     def get_filtered_df(
         self,
         columns: list[str],
@@ -421,113 +370,12 @@ class Datatable:
         # TODO: Should use the copy?
         df = self.df[columns]
 
-        # Filter animals
-        df = filter_animals(df, self.dataset.animals)
-
         # Outliers removal
         if self.outliers_settings.mode == OutliersMode.REMOVE:
             variables = {k: v for k, v in self.variables.items() if k in columns}
             df = process_outliers(df, self.outliers_settings, variables)
 
         return df
-
-    def get_preprocessed_df(
-        self,
-        variables: dict[str, Variable],
-        split_mode=SplitMode.ANIMAL,
-        selected_factor_name: str | None = None,
-        dropna=False,
-    ) -> pd.DataFrame:
-        """
-        Get a preprocessed dataframe with time binning and grouping applied.
-
-        Parameters
-        ----------
-        variables : dict[str, Variable]
-            Dictionary mapping variable names to Variable objects.
-        split_mode : SplitMode, default=SplitMode.ANIMAL
-            The mode to use for splitting the data.
-        selected_factor_name : str or None, default=None
-            The name of the factor to use when split_mode is FACTOR.
-        dropna : bool, default=False
-            Whether to drop rows with NaN values.
-
-        Returns
-        -------
-        pd.DataFrame
-            A preprocessed dataframe with time binning and grouping applied.
-        """
-        columns = self.get_default_columns() + list(self.dataset.factors) + list(variables)
-        result = self.get_filtered_df(columns)
-
-        # Time binning
-        result = process_time_binning(
-            result,
-            self.dataset.binning_settings,
-            variables,
-            self.dataset.experiment_started,
-        )
-
-        # Group by columns
-        result = group_by_columns(
-            result,
-            variables,
-            split_mode,
-            selected_factor_name,
-        )
-
-        # TODO: should or should not?
-        if dropna:
-            result.dropna(inplace=True)
-
-        return result
-
-    def get_preprocessed_df_columns(
-        self,
-        columns: list[str],
-        split_mode=SplitMode.ANIMAL,
-        selected_factor_name: str | None = None,
-    ) -> pd.DataFrame:
-        """
-        Get a preprocessed dataframe with specific columns.
-
-        Similar to get_preprocessed_df, but allows specifying exact columns to include.
-
-        Parameters
-        ----------
-        columns : list[str]
-            List of column names to include in the dataframe.
-        split_mode : SplitMode, default=SplitMode.ANIMAL
-            The mode to use for splitting the data.
-        selected_factor_name : str or None, default=None
-            The name of the factor to use when split_mode is FACTOR.
-
-        Returns
-        -------
-        pd.DataFrame
-            A preprocessed dataframe with the specified columns.
-        """
-        result = self.get_filtered_df(columns)
-
-        variables = {key: self.variables[key] for key in columns if key in self.variables}
-
-        # Time binning
-        result = process_time_binning(
-            result,
-            self.dataset.binning_settings,
-            variables,
-            self.dataset.experiment_started,
-        )
-
-        # Group by columns
-        result = group_by_columns(
-            result,
-            variables,
-            split_mode,
-            selected_factor_name,
-        )
-
-        return result
 
     def delete_variables(self, variable_names: list[str]) -> None:
         """

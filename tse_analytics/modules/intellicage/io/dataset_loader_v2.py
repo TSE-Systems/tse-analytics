@@ -100,7 +100,6 @@ def _import_animals(path: Path) -> dict | None:
             "Notes": row["AnimalNotes"],
         }
         animal = Animal(
-            enabled=True,
             id=str(row["AnimalName"]),
             color=get_color_hex(index),
             properties=properties,

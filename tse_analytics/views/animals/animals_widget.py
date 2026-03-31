@@ -1,5 +1,3 @@
-from functools import partial
-
 from PySide6.QtCore import QSize, QSortFilterProxyModel, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
@@ -55,14 +53,6 @@ class AnimalsWidget(QWidget, messaging.MessengerListener):
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
-
-        self.check_all_action = toolbar.addAction("Check All")
-        self.check_all_action.triggered.connect(partial(self._set_animals_state, True))
-
-        self.uncheck_all_action = toolbar.addAction("Uncheck All")
-        self.uncheck_all_action.triggered.connect(partial(self._set_animals_state, False))
-
-        toolbar.addSeparator()
         toolbar.addAction(QIcon(":/icons/icons8-add-16.png"), "Add property").triggered.connect(self._add_property)
 
         self._layout.addWidget(toolbar)
@@ -108,22 +98,6 @@ class AnimalsWidget(QWidget, messaging.MessengerListener):
         model = AnimalsModel(self.dataset)
         self.tableView.model().setSourceModel(model)
         self.tableView.resizeColumnsToContents()
-
-    def _set_animals_state(self, state: bool) -> None:
-        """
-        Set the enabled state for all animals in the dataset.
-
-        Args:
-            state (bool): The enabled state to set for all animals.
-        """
-        if self.dataset is None:
-            return
-
-        self.tableView.model().beginResetModel()
-        for animal in self.dataset.animals.values():
-            animal.enabled = state
-        self.tableView.model().endResetModel()
-        messaging.broadcast(messaging.DataChangedMessage(self, self.dataset))
 
     def _add_property(self) -> None:
         """

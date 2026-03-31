@@ -54,8 +54,6 @@ class AnimalsSimpleModel(QAbstractTableModel):
                     return item.id
                 elif role == Qt.ItemDataRole.DecorationRole:
                     return QColor(item.color)
-                elif role == Qt.ItemDataRole.CheckStateRole:
-                    return Qt.CheckState.Checked if item.enabled else Qt.CheckState.Unchecked
             case _:
                 if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
                     return item.properties[self.header[index.column()]]

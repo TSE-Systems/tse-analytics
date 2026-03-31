@@ -4,9 +4,9 @@ import seaborn as sns
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtWidgets import QVBoxLayout, QWidget
 
-from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import Factor, SplitMode, Variable
+from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
+from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.utils import get_html_image_from_figure
 
 
@@ -20,8 +20,7 @@ class BarPlotView(QWidget):
         self.datatable: Datatable | None = None
         self._df: pd.DataFrame | None = None
         self._variable: Variable | None = None
-        self._split_mode = SplitMode.ANIMAL
-        self._selected_factor: Factor | None = None
+        self._grouping_settings: GroupingSettings | None = None
         self._error_type = "se"
         self._display_errors = False
 
@@ -32,17 +31,15 @@ class BarPlotView(QWidget):
         datatable: Datatable,
         df: pd.DataFrame,
         variable: Variable,
-        split_mode: SplitMode,
-        selected_factor: Factor,
+        grouping_settings: GroupingSettings,
         display_errors: bool,
-        error_type: str,
+        error_type: str | None,
     ) -> None:
         self.datatable = datatable
         self._df = df
         self._variable = variable
-        self._split_mode = split_mode
+        self._grouping_settings = grouping_settings
         self._display_errors = display_errors
-        self._selected_factor = selected_factor
         self._error_type = error_type
 
         self._update_plot()
@@ -56,27 +53,22 @@ class BarPlotView(QWidget):
         if (
             self._df is None
             or self._variable is None
-            or (self._split_mode == SplitMode.FACTOR and self._selected_factor is None)
-            or not self.datatable.dataset.binning_settings.apply
-            or (
-                self.datatable.dataset.binning_settings.mode == BinningMode.PHASES
-                and len(self.datatable.dataset.binning_settings.time_phases_settings.time_phases) == 0
-            )
+            or (self._grouping_settings.mode == GroupingMode.FACTOR and self._grouping_settings.factor_name == "")
         ):
             return
 
         if not self._df.empty:
-            match self._split_mode:
-                case SplitMode.ANIMAL:
+            match self._grouping_settings.mode:
+                case GroupingMode.ANIMAL:
                     x_name = "Animal"
-                case SplitMode.FACTOR:
-                    x_name = self._selected_factor.name
-                case SplitMode.RUN:
+                case GroupingMode.FACTOR:
+                    x_name = self._grouping_settings.factor_name
+                case GroupingMode.RUN:
                     x_name = "Run"
                 case _:
                     x_name = None
 
-            if self._split_mode != SplitMode.TOTAL and self._split_mode != SplitMode.RUN:
+            if self._grouping_settings.mode != GroupingMode.TOTAL and self._grouping_settings.mode != GroupingMode.RUN:
                 self._df[x_name] = self._df[x_name].cat.remove_unused_categories()
 
             facet_grid = sns.catplot(
