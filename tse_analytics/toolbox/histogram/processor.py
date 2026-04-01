@@ -22,9 +22,14 @@ def get_histogram_result(
     grouping_settings: GroupingSettings,
     figsize: tuple[float, float] | None = None,
 ) -> HistogramResult:
+    # Cleaning
+    df.dropna(inplace=True)
+
     match grouping_settings.mode:
         case GroupingMode.ANIMAL:
             by = "Animal"
+            # Cleaning
+            df[by] = df[by].cat.remove_unused_categories()
             palette = color_manager.get_animal_to_color_dict(dataset.animals)
         case GroupingMode.RUN:
             by = "Run"

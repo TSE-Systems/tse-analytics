@@ -19,21 +19,10 @@ def get_normality_result(
     grouping_settings: GroupingSettings,
     figsize: tuple[float, float] | None = None,
 ) -> NormalityTestResult:
-    # Create a figure with a tight layout
-    figure = plt.Figure(figsize=figsize, layout="tight")
-
-    match grouping_settings.mode:
-        case GroupingMode.ANIMAL:
-            by = "Animal"
-        case GroupingMode.RUN:
-            by = "Run"
-        case GroupingMode.FACTOR:
-            by = grouping_settings.factor_name
-        case _:
-            by = None
-
-    if grouping_settings.mode != GroupingMode.TOTAL and grouping_settings.mode != GroupingMode.RUN:
-        df[by] = df[by].cat.remove_unused_categories()
+    if grouping_settings.mode == GroupingMode.ANIMAL:
+        figure = plt.Figure(figsize=(figsize[0], figsize[0] * df["Animal"].nunique() / 9), layout="tight")
+    else:
+        figure = plt.Figure(figsize=figsize, layout="tight")
 
     match grouping_settings.mode:
         case GroupingMode.ANIMAL:
@@ -52,9 +41,6 @@ def get_normality_result(
             levels = df[grouping_settings.factor_name].unique()
             nrows, ncols = get_plot_layout(len(levels))
             for index, level in enumerate(levels):
-                # TODO: NaN check
-                if level != level:
-                    continue
                 ax = figure.add_subplot(nrows, ncols, index + 1)
                 pg.qqplot(
                     df[df[grouping_settings.factor_name] == level][variable_name],

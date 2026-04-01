@@ -27,13 +27,16 @@ def get_mds_result(
     metric: str,
     figsize: tuple[float, float] | None = None,
 ) -> MdsResult:
+    # Cleaning
+    df.dropna(inplace=True)
+
     match grouping_settings.mode:
         case GroupingMode.ANIMAL:
             by = "Animal"
             palette = color_manager.get_animal_to_color_dict(dataset.animals)
         case GroupingMode.RUN:
             by = "Run"
-            palette = color_manager.colormap_name
+            palette = color_manager.get_run_to_color_dict(dataset.runs)
         case GroupingMode.FACTOR:
             by = grouping_settings.factor_name
             palette = color_manager.get_level_to_color_dict(dataset.factors[by])
@@ -58,7 +61,7 @@ def get_mds_result(
             result_df = pd.DataFrame(data=data, columns=["MDS1"])
             result_df = pd.concat([result_df, pd.Series(range(len(result_df)), name="N")], axis=1)
             if by is not None:
-                result_df = pd.concat([result_df, df[[by]]], axis=1)
+                result_df[by] = df[by].values
 
             # Create a figure with a tight layout
             figure = plt.Figure(figsize=figsize, layout="tight")
@@ -78,9 +81,13 @@ def get_mds_result(
             )
         case 2:
             title = "Multidimensional Scaling (2D)"
-            result_df = pd.DataFrame(data=data, columns=["MDS1", "MDS2"])
+
+            result_df = pd.DataFrame({
+                "MDS1": data[:, 0],
+                "MDS2": data[:, 1],
+            })
             if by is not None:
-                result_df = pd.concat([result_df, df[[by]]], axis=1)
+                result_df[by] = df[by].values
 
             # Create a figure with a tight layout
             figure = plt.Figure(figsize=figsize, layout="tight")
@@ -101,9 +108,13 @@ def get_mds_result(
         case 3:
             title = "Multidimensional Scaling (3D)"
 
-            result_df = pd.DataFrame(data=data, columns=["MDS1", "MDS2", "MDS3"])
+            result_df = pd.DataFrame({
+                "MDS1": data[:, 0],
+                "MDS2": data[:, 1],
+                "MDS3": data[:, 2],
+            })
             if by is not None:
-                result_df = pd.concat([result_df, df[[by]]], axis=1)
+                result_df[by] = df[by].values
 
             figure, ax = plt.subplots(
                 1,
@@ -115,11 +126,11 @@ def get_mds_result(
 
             if by is not None:
                 for group, c in palette.items():
-                    mask = df[by] == group
+                    group_df = result_df[result_df[by] == group]
                     ax.scatter(
-                        result_df.loc[mask, "MDS1"],
-                        result_df.loc[mask, "MDS2"],
-                        result_df.loc[mask, "MDS3"],
+                        group_df["MDS1"],
+                        group_df["MDS2"],
+                        group_df["MDS3"],
                         c=c,
                         label=group,
                     )

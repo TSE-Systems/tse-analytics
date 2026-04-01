@@ -63,6 +63,7 @@ def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportS
         main_table_vars,
         main_table_df,
         {
+            "origin": "Main",
             "samping_interval": main_table_sampling_interval,
         },
     )

@@ -119,7 +119,9 @@ class ConsumptionScaleData(IntelliMazeExtensionData):
             f"{EXTENSION_NAME} main table",
             variables,
             df,
-            {},
+            {
+                "origin": EXTENSION_NAME,
+            },
         )
 
         return datatable

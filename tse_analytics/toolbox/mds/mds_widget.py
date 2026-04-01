@@ -135,7 +135,6 @@ class MdsWidget(ToolboxWidgetBase):
 
         columns = get_columns_by_grouping_settings(grouping_settings, selected_variables)
         df = self.datatable.get_filtered_df(columns)
-        df.dropna(inplace=True)
 
         worker = Worker(
             get_mds_result,

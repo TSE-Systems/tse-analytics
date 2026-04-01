@@ -31,7 +31,7 @@ def get_regression_result(
         figsize = rcParams["figure.figsize"]
 
     # Create a figure with a tight layout
-    figure = plt.Figure(figsize=(figsize[0], figsize[0] / 2), layout="tight")
+    figure = plt.Figure(figsize=figsize, layout="tight")
 
     # Group by animal
     df = group_df_by_animal(
@@ -48,7 +48,7 @@ def get_regression_result(
             palette = color_manager.get_animal_to_color_dict(dataset.animals)
         case GroupingMode.RUN:
             by = "Run"
-            palette = color_manager.colormap_name
+            palette = color_manager.get_run_to_color_dict(dataset.runs)
         case GroupingMode.FACTOR:
             by = grouping_settings.factor_name
             palette = color_manager.get_level_to_color_dict(dataset.factors[by])
@@ -109,9 +109,9 @@ def get_regression_result(
             ).as_raw_html(inline_css=True)
 
     report = f"""
-    {get_html_image_from_figure(figure)}
-    <p>
     {output}
+    <p>
+    {get_html_image_from_figure(figure)}
     """
 
     return RegressionResult(

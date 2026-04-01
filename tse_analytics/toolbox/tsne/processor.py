@@ -28,13 +28,16 @@ def get_tsne_result(
     metric: str,
     figsize: tuple[float, float] | None = None,
 ) -> TsneResult:
+    # Cleaning
+    df.dropna(inplace=True)
+
     match grouping_settings.mode:
         case GroupingMode.ANIMAL:
             by = "Animal"
             palette = color_manager.get_animal_to_color_dict(dataset.animals)
         case GroupingMode.RUN:
             by = "Run"
-            palette = color_manager.get_run_to_color_dict(int(df["Run"].max()))
+            palette = color_manager.get_run_to_color_dict(dataset.runs)
         case GroupingMode.FACTOR:
             by = grouping_settings.factor_name
             palette = color_manager.get_level_to_color_dict(dataset.factors[by])
@@ -61,7 +64,7 @@ def get_tsne_result(
             result_df = pd.DataFrame(data=data, columns=["t-SNE1"])
             result_df = pd.concat([result_df, pd.Series(range(len(result_df)), name="N")], axis=1)
             if by is not None:
-                result_df = pd.concat([result_df, df[[by]]], axis=1)
+                result_df[by] = df[by].values
 
             # Create a figure with a tight layout
             figure = plt.Figure(figsize=figsize, layout="tight")
@@ -82,17 +85,12 @@ def get_tsne_result(
         case 2:
             title = "t-SNE (2D)"
 
+            result_df = pd.DataFrame({
+                "t-SNE1": data[:, 0],
+                "t-SNE2": data[:, 1],
+            })
             if by is not None:
-                result_df = pd.DataFrame({
-                    "t-SNE1": data[:, 0],
-                    "t-SNE2": data[:, 1],
-                    by: df[by],
-                })
-            else:
-                result_df = pd.DataFrame({
-                    "t-SNE1": data[:, 0],
-                    "t-SNE2": data[:, 1],
-                })
+                result_df[by] = df[by].values
 
             # Create a figure with a tight layout
             figure = plt.Figure(figsize=figsize, layout="tight")
@@ -113,19 +111,13 @@ def get_tsne_result(
         case 3:
             title = "t-SNE (3D)"
 
+            result_df = pd.DataFrame({
+                "t-SNE1": data[:, 0],
+                "t-SNE2": data[:, 1],
+                "t-SNE3": data[:, 2],
+            })
             if by is not None:
-                result_df = pd.DataFrame({
-                    "t-SNE1": data[:, 0],
-                    "t-SNE2": data[:, 1],
-                    "t-SNE3": data[:, 2],
-                    by: df[by],
-                })
-            else:
-                result_df = pd.DataFrame({
-                    "t-SNE1": data[:, 0],
-                    "t-SNE2": data[:, 1],
-                    "t-SNE3": data[:, 2],
-                })
+                result_df[by] = df[by].values
 
             figure, ax = plt.subplots(
                 1,
@@ -137,11 +129,11 @@ def get_tsne_result(
 
             if by is not None:
                 for group, c in palette.items():
-                    mask = df[by] == group
+                    group_df = result_df[result_df[by] == group]
                     ax.scatter(
-                        result_df.loc[mask, "t-SNE1"],
-                        result_df.loc[mask, "t-SNE2"],
-                        result_df.loc[mask, "t-SNE3"],
+                        group_df["t-SNE1"],
+                        group_df["t-SNE2"],
+                        group_df["t-SNE3"],
                         c=c,
                         label=group,
                     )

@@ -73,7 +73,6 @@ class PcaNode(PipelineNode):
 
         columns = get_columns_by_grouping_settings(grouping_settings, variable_names)
         df = datatable.get_filtered_df(columns)
-        df.dropna(inplace=True)
 
         result = get_pca_result(
             datatable.dataset,

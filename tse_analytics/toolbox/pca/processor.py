@@ -25,13 +25,16 @@ def get_pca_result(
     grouping_settings: GroupingSettings,
     figsize: tuple[float, float] | None = None,
 ) -> PcaResult:
+    # Cleaning
+    df.dropna(inplace=True)
+
     match grouping_settings.mode:
         case GroupingMode.ANIMAL:
             by = "Animal"
             palette = color_manager.get_animal_to_color_dict(dataset.animals)
         case GroupingMode.RUN:
             by = "Run"
-            palette = color_manager.get_run_to_color_dict(int(df["Run"].max()))
+            palette = color_manager.get_run_to_color_dict(dataset.runs)
         case GroupingMode.FACTOR:
             by = grouping_settings.factor_name
             palette = color_manager.get_level_to_color_dict(dataset.factors[by])
@@ -49,19 +52,13 @@ def get_pca_result(
     explained_variance_figure = pca_explained_variance_plot(pca, figsize)
     variable_contributions_figure = variable_contributions_plot(pca, variables, (figsize[0], figsize[1] / 2))
 
+    result_df = pd.DataFrame({
+        "Principal component 1": data[:, 0],
+        "Principal component 2": data[:, 1],
+        "Principal component 3": data[:, 2],
+    })
     if by is not None:
-        result_df = pd.DataFrame({
-            "Principal component 1": data[:, 0],
-            "Principal component 2": data[:, 1],
-            "Principal component 3": data[:, 2],
-            by: df[by],
-        })
-    else:
-        result_df = pd.DataFrame({
-            "Principal component 1": data[:, 0],
-            "Principal component 2": data[:, 1],
-            "Principal component 3": data[:, 2],
-        })
+        result_df[by] = df[by].values
 
     # Create a figure with a tight layout
     figure_2d_scores = plt.Figure(figsize=figsize, layout="tight")

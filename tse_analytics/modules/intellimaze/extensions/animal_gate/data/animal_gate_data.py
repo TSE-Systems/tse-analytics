@@ -115,7 +115,9 @@ class AnimalGateData(IntelliMazeExtensionData):
             f"{EXTENSION_NAME} main table",
             variables,
             df,
-            {},
+            {
+                "origin": EXTENSION_NAME,
+            },
         )
 
         self.dataset.add_datatable(datatable)

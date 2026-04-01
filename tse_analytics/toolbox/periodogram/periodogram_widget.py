@@ -41,7 +41,9 @@ class PeriodogramWidget(ToolboxWidgetBase):
         toolbar.addSeparator()
         toolbar.addWidget(QLabel("Group by:"))
         self.group_by_selector = GroupBySelector(
-            toolbar, self.datatable, check_binning=True, selected_mode=self._settings.group_by
+            toolbar,
+            self.datatable,
+            selected_mode=self._settings.group_by,
         )
         toolbar.addWidget(self.group_by_selector)
 

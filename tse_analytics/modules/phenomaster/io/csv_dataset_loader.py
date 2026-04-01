@@ -216,6 +216,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
         variables,
         df,
         {
+            "origin": "Main",
             "samping_interval": timedelta,
         },
     )

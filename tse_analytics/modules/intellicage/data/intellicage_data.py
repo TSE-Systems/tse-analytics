@@ -257,7 +257,9 @@ class IntelliCageData:
             "IntelliCage visits data",
             variables,
             df,
-            {},
+            {
+                "origin": "Visits",
+            },
         )
 
         return datatable
@@ -572,7 +574,9 @@ class IntelliCageData:
             "IntelliCage nosepokes data",
             variables,
             df,
-            {},
+            {
+                "origin": "Nosepokes",
+            },
         )
 
         return datatable

@@ -51,8 +51,8 @@ def get_correlation_result(
         hue=by,
         palette=palette,
         marker=".",
+        height=figsize[1],
     )
-    joint_grid.figure.set_figwidth(figsize[0])
     joint_grid.figure.set_layout_engine("tight")
     joint_grid.figure.suptitle(f"Correlation between {x_var_name} and {y_var_name}")
 
@@ -60,11 +60,11 @@ def get_correlation_result(
     corr = pg.pairwise_corr(data=df, columns=[x_var_name, y_var_name], method="pearson")
 
     report = f"""
-    {get_html_image_from_figure(joint_grid.figure)}
-    <p>
     {get_great_table(t_test, "t-test").as_raw_html(inline_css=True)}
     <p>
     {get_great_table(corr, "Pearson correlation").as_raw_html(inline_css=True)}
+    <p>
+    {get_html_image_from_figure(joint_grid.figure)}
     """
 
     return CorrelationResult(

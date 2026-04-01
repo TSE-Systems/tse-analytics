@@ -31,7 +31,7 @@ def get_distribution_result(
             palette = color_manager.get_animal_to_color_dict(dataset.animals)
         case GroupingMode.RUN:
             x = "Run"
-            palette = color_manager.colormap_name
+            palette = color_manager.get_run_to_color_dict(dataset.runs)
         case GroupingMode.FACTOR:
             x = grouping_settings.factor_name
             palette = color_manager.get_level_to_color_dict(dataset.factors[x])
@@ -39,8 +39,7 @@ def get_distribution_result(
             x = None
             palette = color_manager.colormap_name
 
-    if grouping_settings.mode != GroupingMode.TOTAL and grouping_settings.mode != GroupingMode.RUN:
-        # df[x] = df[x].cat.remove_unused_categories()
+    if grouping_settings.mode == GroupingMode.ANIMAL or grouping_settings.mode == GroupingMode.FACTOR:
         # TODO: temporary fix for issue with broken categories offset when using pandas 3.0
         df.sort_values(x, inplace=True)
         df[x] = df[x].astype("string")
@@ -56,6 +55,7 @@ def get_distribution_result(
                 x=x,
                 y=variable_name,
                 hue=x,
+                palette=palette,
                 ax=ax,
                 width_viol=0.5,
             )

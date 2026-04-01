@@ -68,7 +68,11 @@ class UmapWidget(ToolboxWidgetBase):
 
         toolbar.addSeparator()
         toolbar.addWidget(QLabel("Group by:"))
-        self.group_by_selector = GroupBySelector(toolbar, self.datatable, selected_mode=self._settings.group_by)
+        self.group_by_selector = GroupBySelector(
+            toolbar,
+            self.datatable,
+            selected_mode=self._settings.group_by,
+        )
         toolbar.addWidget(self.group_by_selector)
 
         toolbar.addSeparator()
@@ -155,7 +159,6 @@ class UmapWidget(ToolboxWidgetBase):
 
         columns = get_columns_by_grouping_settings(grouping_settings, selected_variables)
         df = self.datatable.get_filtered_df(columns)
-        df.dropna(inplace=True)
 
         worker = Worker(
             get_umap_result,

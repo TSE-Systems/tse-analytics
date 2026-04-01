@@ -14,7 +14,7 @@ from tse_analytics.views.misc.variable_selector import VariableSelector
 
 @dataclass
 class RegressionWidgetSettings:
-    group_by: str = "Animal"
+    group_by: str = "Total"
     covariate_variable: str | None = None
     response_variable: str | None = None
 
@@ -46,7 +46,13 @@ class RegressionWidget(ToolboxWidgetBase):
 
         toolbar.addSeparator()
         toolbar.addWidget(QLabel("Group by:"))
-        self.group_by_selector = GroupBySelector(toolbar, self.datatable, selected_mode=self._settings.group_by)
+        self.group_by_selector = GroupBySelector(
+            toolbar,
+            self.datatable,
+            selected_mode=self._settings.group_by,
+            disable_run_mode=True,
+            disable_animal_mode=True,
+        )
         toolbar.addWidget(self.group_by_selector)
 
     def _get_settings_value(self):

@@ -185,7 +185,9 @@ class IntelliCageData(IntelliMazeExtensionData):
             "IntelliCage visits data",
             variables,
             df,
-            {},
+            {
+                "origin": "Visits",
+            },
         )
 
         return datatable
@@ -477,7 +479,9 @@ class IntelliCageData(IntelliMazeExtensionData):
             "IntelliCage nosepokes data",
             variables,
             df,
-            {},
+            {
+                "origin": "Nosepokes",
+            },
         )
 
         return datatable

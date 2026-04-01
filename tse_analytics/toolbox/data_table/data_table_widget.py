@@ -73,7 +73,6 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.group_by_selector = GroupBySelector(
             toolbar,
             self.datatable,
-            check_binning=True,
             selected_mode=self._settings.group_by,
         )
         self.group_by_selector.currentTextChanged.connect(self.refresh_data)

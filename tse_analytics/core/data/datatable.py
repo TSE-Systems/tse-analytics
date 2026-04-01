@@ -164,29 +164,28 @@ class Datatable:
         columns = self.df.select_dtypes(include=["category"]).columns.tolist()
         return columns
 
-    def get_group_by_columns(self, check_binning=True, disable_total_mode=False) -> list[str]:
+    def get_group_by_columns(
+        self,
+        check_binning=True,
+        disable_total_mode=False,
+        disable_run_mode=False,
+        disable_animal_mode=False,
+    ) -> list[str]:
         """
         Get the columns that can be used for grouping data.
-
-        Parameters
-        ----------
-        check_binning : bool, default=True
-            Whether to check if binning is applied or available.
-        disable_total_mode : bool, default=False
-            Whether Total mode should be available.
 
         Returns
         -------
         list[str]
             List of column names that can be used for grouping data.
         """
-        modes = ["Animal"]
+        modes = ["Animal"] if not disable_animal_mode else []
         if check_binning:
             if "Bin" not in self.df.columns:
                 return modes
         if not disable_total_mode:
             modes.append("Total")
-        if self.get_merging_mode() is not None:
+        if not disable_run_mode and self.get_merging_mode() is not None:
             modes.append("Run")
         if len(self.dataset.factors) > 0:
             for factor in self.dataset.factors.keys():

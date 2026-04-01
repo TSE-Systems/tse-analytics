@@ -108,7 +108,6 @@ class TsneNode(PipelineNode):
         # Get data
         columns = get_columns_by_grouping_settings(grouping_settings, variable_names)
         df = datatable.get_filtered_df(columns)
-        df.dropna(inplace=True)
 
         # Perform t-SNE analysis
         result = get_tsne_result(

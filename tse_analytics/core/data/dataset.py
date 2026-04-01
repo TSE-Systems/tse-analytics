@@ -95,6 +95,13 @@ class Dataset:
         return self.metadata["source_path"] if "source_path" in self.metadata else ""
 
     @property
+    def runs(self) -> int:
+        """
+        Get the number of runs in the dataset.
+        """
+        return len(self.metadata["runs"]) if "runs" in self.metadata else 1
+
+    @property
     def experiment_started(self) -> pd.Timestamp:
         """
         Get the start time of the experiment.
