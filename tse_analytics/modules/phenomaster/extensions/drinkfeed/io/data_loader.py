@@ -4,6 +4,7 @@ import connectorx as cx
 import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.core.utils.data import sanitize_dtypes
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
@@ -71,13 +72,22 @@ def read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedBinD
     df.sort_values(by=["DateTime", "Animal"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
+    raw_datatable = Datatable(
+        dataset,
+        tse_import_settings.DRINKFEED_BIN_TABLE,
+        f"Raw {tse_import_settings.DRINKFEED_BIN_TABLE} datatable",
+        variables,
+        df,
+        {
+            "origin_path": str(path),
+            "sampling_interval": sample_interval,
+        },
+    )
+
     data = DrinkFeedBinData(
         dataset,
         tse_import_settings.DRINKFEED_BIN_TABLE,
-        str(path),
-        variables,
-        df,
-        sample_interval,
+        raw_datatable,
     )
 
     return data
@@ -148,12 +158,21 @@ def read_drinkfeed_raw(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedRawD
             False,
         )
 
+    raw_datatable = Datatable(
+        dataset,
+        tse_import_settings.DRINKFEED_RAW_TABLE,
+        f"Raw {tse_import_settings.DRINKFEED_RAW_TABLE} datatable",
+        variables,
+        df,
+        {
+            "origin_path": str(path),
+        },
+    )
+
     data = DrinkFeedRawData(
         dataset,
         tse_import_settings.DRINKFEED_RAW_TABLE,
-        str(path),
-        variables,
-        df,
+        raw_datatable,
     )
 
     return data
@@ -277,12 +296,21 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
         "Box": "UInt8",
     })
 
+    raw_datatable = Datatable(
+        dataset,
+        tse_import_settings.DRINKFEED_BIN_TABLE,
+        f"Raw {tse_import_settings.DRINKFEED_BIN_TABLE} datatable",
+        variables,
+        new_df,
+        {
+            "origin_path": str(path),
+            "sampling_interval": sampling_interval,
+        },
+    )
+
     data = DrinkFeedBinData(
         dataset,
         tse_import_settings.DRINKFEED_BIN_TABLE,
-        str(path),
-        variables,
-        new_df,
-        sampling_interval,
+        raw_datatable,
     )
     return data

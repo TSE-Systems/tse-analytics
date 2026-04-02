@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
-from uuid import UUID, uuid7
+from uuid import uuid7
 
 import pandas as pd
 
@@ -72,7 +72,7 @@ class Datatable:
         self.outliers_settings = OutliersSettings()
 
         self.parent_table: Datatable | None = None
-        self.derived_tables: dict[UUID, Datatable] = {}
+        self.derived_tables: dict[str, Datatable] = {}
 
     @property
     def sampling_interval(self) -> pd.Timedelta | None:
@@ -410,4 +410,4 @@ class Datatable:
 
     def add_derived_table(self, derived_table: Datatable) -> None:
         derived_table.parent_table = self
-        self.derived_tables[derived_table.id] = derived_table
+        self.derived_tables[derived_table.name] = derived_table

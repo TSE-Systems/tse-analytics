@@ -150,42 +150,21 @@ class Dataset:
 
     def remove_datatable(self, datatable: Datatable) -> None:
         """
-        Recursively find and remove a datatable from the dataset.
+        Remove a datatable and its derived subtree from the dataset.
 
-        Searches top-level datatables and all nested derived_tables.
+        Uses the datatable's parent_table reference to remove it directly
+        from either the top-level datatables or its parent's derived_tables,
+        then recursively cleans up the entire subtree.
 
         Parameters
         ----------
         datatable : Datatable
             The datatable to remove from the dataset.
         """
-        # Check top-level first
-        if datatable.name in self.datatables and self.datatables[datatable.name] is datatable:
+        if datatable.parent_table is None:
             self.datatables.pop(datatable.name)
-            return
-
-        # Search recursively in derived tables
-        self._remove_derived_datatable(datatable)
-
-    def _remove_derived_datatable(self, target: Datatable) -> bool:
-        """Recursively search and remove a derived datatable.
-
-        Returns True if found and removed.
-        """
-        for dt in self.datatables.values():
-            if self._remove_from_derived(dt, target):
-                return True
-        return False
-
-    def _remove_from_derived(self, parent: Datatable, target: Datatable) -> bool:
-        """Remove target from parent's derived_tables tree. Returns True if found."""
-        if target.id in parent.derived_tables:
-            parent.derived_tables.pop(target.id)
-            return True
-        for child in parent.derived_tables.values():
-            if self._remove_from_derived(child, target):
-                return True
-        return False
+        else:
+            datatable.parent_table.derived_tables.pop(datatable.name)
 
     def rename(self, name: str) -> None:
         """

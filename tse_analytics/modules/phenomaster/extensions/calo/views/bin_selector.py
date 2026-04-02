@@ -26,7 +26,7 @@ class BinSelector(QTableView):
         self.selectionModel().selectionChanged.connect(self._on_selection_changed)
 
     def set_data(self, dataset: PhenoMasterDataset):
-        bins = list(dataset.calo_data.raw_df["Bin"].unique())
+        bins = list(dataset.calo_data.raw_datatable.df["Bin"].unique())
         model = BinsModel(bins)
         self.model().setSourceModel(model)
         # self.resizeColumnsToContents()

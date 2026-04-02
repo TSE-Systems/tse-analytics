@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.extensions.actimot.data.actimot_data import ActimotData
@@ -44,13 +45,22 @@ def read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> ActimotData:
         "Box": "category",
     })
 
+    raw_datatable = Datatable(
+        dataset,
+        tse_import_settings.ACTIMOT_RAW_TABLE,
+        f"Raw {tse_import_settings.ACTIMOT_RAW_TABLE} datatable",
+        {},
+        df,
+        {
+            "origin_path": str(path),
+            "sampling_interval": sample_interval,
+        },
+    )
+
     return ActimotData(
         dataset,
         tse_import_settings.ACTIMOT_RAW_TABLE,
-        str(path),
-        {},
-        df,
-        sample_interval,
+        raw_datatable,
     )
 
 
@@ -144,12 +154,21 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     # Sampling interval
     sampling_interval = new_df.iloc[1].at["DateTime"] - new_df.iloc[0].at["DateTime"]
 
-    actimot_data = ActimotData(
+    raw_datatable = Datatable(
         dataset,
-        "ActiMot",
-        str(path),
+        tse_import_settings.ACTIMOT_RAW_TABLE,
+        f"Raw {tse_import_settings.ACTIMOT_RAW_TABLE} datatable",
         {},
         new_df,
-        sampling_interval,
+        {
+            "origin_path": str(path),
+            "sampling_interval": sampling_interval,
+        },
+    )
+
+    actimot_data = ActimotData(
+        dataset,
+        tse_import_settings.ACTIMOT_RAW_TABLE,
+        raw_datatable,
     )
     return actimot_data

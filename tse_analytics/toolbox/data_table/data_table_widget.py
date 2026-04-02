@@ -161,6 +161,10 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
         messaging.subscribe(self, messaging.OutliersChangedMessage, self._on_outliers_changed)
 
+    def set_datatable(self, datatable: Datatable):
+        self.datatable = datatable
+        self.refresh_data()
+
     def _resize_columns_width(self):
         worker = Worker(
             self.table_view.resizeColumnsToContents
@@ -205,7 +209,6 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
                 )
             )
 
-        # self.df = self.datatable.get_preprocessed_df_columns(columns, split_mode, selected_factor_name)
         self.df = self.datatable.get_filtered_df(columns)
         self.df = group_by_columns(
             self.df,

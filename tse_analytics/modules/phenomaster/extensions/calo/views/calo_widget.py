@@ -26,7 +26,7 @@ from tse_analytics.modules.phenomaster.extensions.calo.views.settings.settings_w
 from tse_analytics.modules.phenomaster.extensions.calo.views.test_fit.test_fit_widget import (
     TestFitWidget,
 )
-from tse_analytics.views.misc.pandas_widget import PandasWidget
+from tse_analytics.toolbox.data_table.data_table_widget import DataTableWidget
 
 
 class CaloWidget(QWidget):
@@ -74,12 +74,11 @@ class CaloWidget(QWidget):
 
         self.ui.verticalLayout.insertWidget(0, toolbar)
 
-        self.calo_table_view = PandasWidget(calo_data.dataset, "Calorimetry Data")
-        self.calo_table_view.set_data(calo_data.raw_df, False)
+        self.calo_table_view = DataTableWidget(calo_data.raw_datatable, "Calorimetry Data")
         self.ui.tabWidget.addTab(self.calo_table_view, "Data")
 
         self.calo_plot_widget = PlotWidget()
-        self.calo_plot_widget.set_variables(calo_data.variables)
+        self.calo_plot_widget.set_variables(calo_data.raw_datatable.variables)
         self.ui.tabWidget.addTab(self.calo_plot_widget, "Plot")
 
         self.ui.toolBox.removeItem(0)
@@ -127,7 +126,10 @@ class CaloWidget(QWidget):
     def _filter(self):
         df = self._get_selected_data()
 
-        self.calo_table_view.set_data(df)
+        new_datatable = self.calo_data.raw_datatable.clone()
+        new_datatable.df = df
+
+        self.calo_table_view.set_datatable(new_datatable)
         self.calo_plot_widget.set_data(df)
         self.calo_test_fit_widget.set_data(df)
 
@@ -150,7 +152,7 @@ class CaloWidget(QWidget):
             self.calo_data.dataset.append_fitting_results(self.fitting_results)
 
     def _get_selected_data(self) -> pd.DataFrame:
-        df = self.calo_data.raw_df
+        df = self.calo_data.raw_datatable.df
 
         if len(self.selected_boxes) > 0:
             box_numbers = [b.box for b in self.selected_boxes]
@@ -168,8 +170,8 @@ class CaloWidget(QWidget):
         calo_settings = self.calo_settings_widget.get_calo_settings()
 
         # remove last bin
-        bin_numbers = sorted(self.calo_data.raw_df["Bin"].unique().tolist())
-        raw_df = self.calo_data.raw_df.loc[self.calo_data.raw_df["Bin"] != bin_numbers[-1]]
+        bin_numbers = sorted(self.calo_data.raw_datatable.df["Bin"].unique().tolist())
+        raw_df = self.calo_data.raw_datatable.df.loc[self.calo_data.raw_datatable.df["Bin"] != bin_numbers[-1]]
         df = self.calo_data.dataset.datatables["Main"].df.loc[
             self.calo_data.dataset.datatables["Main"].df["Bin"] != bin_numbers[-1]
         ]

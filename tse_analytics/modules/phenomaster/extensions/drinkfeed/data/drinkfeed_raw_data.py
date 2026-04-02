@@ -1,8 +1,6 @@
 from typing import TYPE_CHECKING
 
-import pandas as pd
-
-from tse_analytics.core.data.shared import Variable
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.modules.phenomaster.data.phenomaster_extension_data import PhenoMasterExtensionData
 
 if TYPE_CHECKING:
@@ -14,16 +12,10 @@ class DrinkFeedRawData(PhenoMasterExtensionData):
         self,
         dataset: PhenoMasterDataset,
         name: str,
-        path: str,
-        variables: dict[str, Variable],
-        raw_df: pd.DataFrame,
+        raw_datatable: Datatable,
     ):
         super().__init__(
             dataset,
             name,
-            raw_df,
-            variables,
-            meta={
-                "origin_path": path,
-            },
+            raw_datatable,
         )

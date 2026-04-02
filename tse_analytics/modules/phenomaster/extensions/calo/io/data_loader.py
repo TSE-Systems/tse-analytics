@@ -5,6 +5,7 @@ import connectorx as cx
 import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.core.utils.data import sanitize_dtypes
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
@@ -120,13 +121,22 @@ def read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
     df.insert(2, "Bin", bins)
     df.insert(3, "Offset", offsets)
 
+    raw_datatable = Datatable(
+        dataset,
+        tse_import_settings.CALO_BIN_TABLE,
+        f"Raw {tse_import_settings.CALO_BIN_TABLE} datatable",
+        variables,
+        df,
+        {
+            "origin_path": str(path),
+            "sampling_interval": sample_interval,
+        },
+    )
+
     calo_data = CaloData(
         dataset,
         tse_import_settings.CALO_BIN_TABLE,
-        str(path),
-        variables,
-        df,
-        sample_interval,
+        raw_datatable,
     )
 
     # Assign reference calo boxes
@@ -271,13 +281,22 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     df.insert(2, "Bin", bins)
     df.insert(3, "Offset", offsets)
 
-    calo_data = CaloData(
+    raw_datatable = Datatable(
         dataset,
-        "calo_bin",
-        str(path),
+        tse_import_settings.CALO_BIN_TABLE,
+        f"Raw {tse_import_settings.CALO_BIN_TABLE} datatable",
         variables,
         df,
-        sampling_interval,
+        {
+            "origin_path": str(path),
+            "sampling_interval": sampling_interval,
+        },
+    )
+
+    calo_data = CaloData(
+        dataset,
+        tse_import_settings.CALO_BIN_TABLE,
+        raw_datatable,
     )
 
     # Assign reference calo boxes

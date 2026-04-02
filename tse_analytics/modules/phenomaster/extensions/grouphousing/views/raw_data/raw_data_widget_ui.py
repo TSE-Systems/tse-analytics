@@ -16,8 +16,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QAbstractScrollArea, QApplication, QGroupBox,
-    QHBoxLayout, QHeaderView, QListWidget, QListWidgetItem,
-    QSizePolicy, QTableView, QVBoxLayout, QWidget)
+    QHBoxLayout, QListWidget, QListWidgetItem, QSizePolicy,
+    QVBoxLayout, QWidget)
 import resources_rc
 
 class Ui_RawDataWidget(object):
@@ -26,20 +26,6 @@ class Ui_RawDataWidget(object):
             RawDataWidget.setObjectName(u"RawDataWidget")
         self.horizontalLayout = QHBoxLayout(RawDataWidget)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.groupBoxTables = QGroupBox(RawDataWidget)
-        self.groupBoxTables.setObjectName(u"groupBoxTables")
-        self.verticalLayout = QVBoxLayout(self.groupBoxTables)
-        self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.listWidgetTables = QListWidget(self.groupBoxTables)
-        self.listWidgetTables.setObjectName(u"listWidgetTables")
-        self.listWidgetTables.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
-
-        self.verticalLayout.addWidget(self.listWidgetTables)
-
-
-        self.horizontalLayout.addWidget(self.groupBoxTables)
-
         self.groupBoxData = QGroupBox(RawDataWidget)
         self.groupBoxData.setObjectName(u"groupBoxData")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
@@ -51,15 +37,6 @@ class Ui_RawDataWidget(object):
         self.tableLayout.setSpacing(0)
         self.tableLayout.setObjectName(u"tableLayout")
         self.tableLayout.setContentsMargins(0, 0, 0, 0)
-        self.tableView = QTableView(self.groupBoxData)
-        self.tableView.setObjectName(u"tableView")
-        self.tableView.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-        self.tableView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.tableView.verticalHeader().setMinimumSectionSize(20)
-        self.tableView.verticalHeader().setDefaultSectionSize(20)
-
-        self.tableLayout.addWidget(self.tableView)
-
 
         self.horizontalLayout.addWidget(self.groupBoxData)
 
@@ -85,7 +62,6 @@ class Ui_RawDataWidget(object):
     # setupUi
 
     def retranslateUi(self, RawDataWidget):
-        self.groupBoxTables.setTitle(QCoreApplication.translate("RawDataWidget", u"Data Tables", None))
         self.groupBoxData.setTitle(QCoreApplication.translate("RawDataWidget", u"Data", None))
         self.groupBoxAnimals.setTitle(QCoreApplication.translate("RawDataWidget", u"Animals", None))
         pass

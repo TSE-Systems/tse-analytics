@@ -1,14 +1,12 @@
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
-import pandas as pd
-
-from tse_analytics.core.data.shared import Variable
+from tse_analytics.core.data.datatable import Datatable
 
 if TYPE_CHECKING:
     from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 
 
-class PhenoMasterExtensionData:
+class PhenoMasterExtensionData:  # noqa: B903
     """
     Base class for PhenoMaster extension data.
 
@@ -20,34 +18,8 @@ class PhenoMasterExtensionData:
         self,
         dataset: PhenoMasterDataset,
         name: str,
-        raw_df: pd.DataFrame,
-        variables: dict[str, Variable],
-        meta: dict[str, Any],
+        raw_datatable: Datatable,
     ):
-        """
-        Initialize an ExtensionData object.
-
-        Args:
-            dataset (PhenoMasterDataset): The parent dataset.
-            name (str): The name of the extension.
-            raw_df (pd.DataFrame): Dictionary mapping data types to DataFrames.
-            variables (dict[str, Variable]): Available variables.
-            meta (dict[str, Any]): Additional metadata.
-        """
         self.dataset = dataset
         self.name = name
-        self.raw_df = raw_df
-        self.variables = variables
-        self.meta = meta
-
-    @property
-    def start_timestamp(self) -> pd.Timestamp:
-        return self.raw_df.at[0, "DateTime"]
-
-    @property
-    def origin_path(self) -> str | None:
-        return self.meta.get("origin_path", None)
-
-    @property
-    def sampling_interval(self) -> pd.Timedelta | None:
-        return self.meta.get("sampling_interval", None)
+        self.raw_datatable = raw_datatable

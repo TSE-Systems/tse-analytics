@@ -142,7 +142,7 @@ class TableProcessorDialog(QDialog):
             binning_settings if self.ui.groupBoxBinning.isChecked() else None,
         )
 
-        self.datatable.derived_tables[datatable.id] = datatable
+        self.datatable.add_derived_table(datatable)
 
         # Notify that a derived table has been added.
         workspace = manager.get_workspace()

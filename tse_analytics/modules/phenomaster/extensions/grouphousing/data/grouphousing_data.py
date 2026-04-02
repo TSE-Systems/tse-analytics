@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 import pandas as pd
 
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.modules.phenomaster.data.phenomaster_extension_data import PhenoMasterExtensionData
 from tse_analytics.modules.phenomaster.extensions.grouphousing.trafficage_config import TRAFFICAGE_POSITIONS
 
@@ -24,20 +25,15 @@ class GroupHousingData(PhenoMasterExtensionData):
         self,
         dataset: PhenoMasterDataset,
         name: str,
-        path: str,
-        raw_df: pd.DataFrame,
+        raw_datatable: Datatable,
     ):
         super().__init__(
             dataset,
             name,
-            raw_df,
-            {},
-            meta={
-                "origin_path": path,
-            },
+            raw_datatable,
         )
 
-        self.animal_ids = raw_df["Animal"].unique().tolist()
+        self.animal_ids = raw_datatable.df["Animal"].unique().tolist()
         self.animal_ids.sort()
 
     def get_preprocessed_data(
@@ -46,7 +42,7 @@ class GroupHousingData(PhenoMasterExtensionData):
         remove_overlapping: bool,
         overlapping_ms: int | None,
     ) -> dict[str, pd.DataFrame]:
-        df = self.raw_df.copy()
+        df = self.raw_datatable.df.copy()
 
         # convert categorical types
         df = df.astype({

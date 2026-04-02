@@ -23,7 +23,7 @@ from tse_analytics.modules.phenomaster.extensions.actimot.views.stream.stream_wi
     StreamWidget,
 )
 from tse_analytics.modules.phenomaster.extensions.actimot.views.trajectory.trajectory_widget import TrajectoryWidget
-from tse_analytics.views.misc.pandas_widget import PandasWidget
+from tse_analytics.toolbox.data_table.data_table_widget import DataTableWidget
 
 
 class ActimotWidget(QWidget):
@@ -62,7 +62,7 @@ class ActimotWidget(QWidget):
 
         self.ui.verticalLayout.insertWidget(0, toolbar)
 
-        self.table_view = PandasWidget(actimot_data.dataset, "ActiMot Events")
+        self.table_view = DataTableWidget(actimot_data.raw_datatable, "ActiMot Events")
         self.ui.tabWidget.addTab(self.table_view, "Events")
 
         self.frames_widget = FramesWidget(self)
@@ -106,11 +106,14 @@ class ActimotWidget(QWidget):
 
     def _select_box(self, selected_box: ActimotAnimalItem) -> None:
         self.trj_df = None
-        self.df = self.actimot_data.raw_df[self.actimot_data.raw_df["Box"] == selected_box.box]
+        self.df = self.actimot_data.raw_datatable.df[self.actimot_data.raw_datatable.df["Box"] == selected_box.box]
 
         self._update_tabs()
 
-        self.table_view.set_data(self.df, False)
+        new_datatable = self.actimot_data.raw_datatable.clone()
+        new_datatable.df = self.df
+
+        self.table_view.set_datatable(new_datatable)
         self.frames_widget.set_data(self.df)
 
         self.plot_widget.set_data(None)

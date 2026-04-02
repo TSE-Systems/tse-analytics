@@ -4,6 +4,7 @@ import connectorx as cx
 import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.core.utils.data import sanitize_dtypes
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
@@ -69,11 +70,21 @@ def read_grouphousing(path: Path, dataset: PhenoMasterDataset) -> GroupHousingDa
     df.sort_values(by=["StartDateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
+    raw_datatable = Datatable(
+        dataset,
+        tse_import_settings.GROUP_HOUSING_TABLE,
+        f"Raw {tse_import_settings.GROUP_HOUSING_TABLE} datatable",
+        {},
+        df,
+        {
+            "origin_path": str(path),
+        },
+    )
+
     data = GroupHousingData(
         dataset,
         tse_import_settings.GROUP_HOUSING_TABLE,
-        str(path),
-        df,
+        raw_datatable,
     )
 
     return data
@@ -147,10 +158,20 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     df.sort_values(by=["StartDateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
+    raw_datatable = Datatable(
+        dataset,
+        tse_import_settings.GROUP_HOUSING_TABLE,
+        f"Raw {tse_import_settings.GROUP_HOUSING_TABLE} datatable",
+        {},
+        df,
+        {
+            "origin_path": str(path),
+        },
+    )
+
     data = GroupHousingData(
         dataset,
         tse_import_settings.GROUP_HOUSING_TABLE,
-        str(path),
-        df,
+        raw_datatable,
     )
     return data

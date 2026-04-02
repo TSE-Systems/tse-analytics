@@ -35,14 +35,16 @@ def cleanup_variables(dataset: PhenoMasterDataset) -> None:
 
     # Process calo_bin data
     if isinstance(dataset, PhenoMasterDataset):
-        if hasattr(dataset, "calo_data") and dataset.calo_data is not None:
+        if dataset.calo_data is not None:
             for var_name in VARIABLES_TO_REMOVE:
-                dataset.calo_data.variables.pop(var_name, None)
+                dataset.calo_data.raw_datatable.variables.pop(var_name, None)
 
             for old_name, new_name in VARIABLES_TO_RENAME.items():
-                if old_name in dataset.calo_data.variables:
-                    dataset.calo_data.variables[new_name] = dataset.calo_data.variables.pop(old_name, None)
-                    dataset.calo_data.variables[new_name].name = new_name
+                if old_name in dataset.calo_data.raw_datatable.variables:
+                    dataset.calo_data.raw_datatable.variables[new_name] = dataset.calo_data.raw_datatable.variables.pop(
+                        old_name, None
+                    )
+                    dataset.calo_data.raw_datatable.variables[new_name].name = new_name
 
-            dataset.calo_data.raw_df.drop(columns=VARIABLES_TO_REMOVE, inplace=True, errors="ignore")
-            dataset.calo_data.raw_df.rename(columns=VARIABLES_TO_RENAME, inplace=True, errors="ignore")
+            dataset.calo_data.raw_datatable.df.drop(columns=VARIABLES_TO_REMOVE, inplace=True, errors="ignore")
+            dataset.calo_data.raw_datatable.df.rename(columns=VARIABLES_TO_RENAME, inplace=True, errors="ignore")

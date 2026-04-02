@@ -26,7 +26,7 @@ class BoxSelector(QTableView):
         self.selectionModel().selectionChanged.connect(self._on_selection_changed)
 
     def set_data(self, dataset: PhenoMasterDataset):
-        all_box_numbers = list(dataset.calo_data.raw_df["Box"].unique())
+        all_box_numbers = list(dataset.calo_data.raw_datatable.df["Box"].unique())
         boxes: list[CaloBox] = []
 
         for box in all_box_numbers:

@@ -34,7 +34,7 @@ def process_drinkfeed_sequences(
             animal_df,
             sensors,
             settings,
-            drinkfeed_data.raw_df["DateTime"].iloc[0],
+            drinkfeed_data.raw_datatable.df["DateTime"].iloc[0],
         )
         if not animal_events_df.empty:
             events_parts.append(animal_events_df)

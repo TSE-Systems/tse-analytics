@@ -38,6 +38,7 @@ from tse_analytics.modules.phenomaster.extensions.drinkfeed.views.plot_widget im
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.views.settings.settings_widget import (
     SettingsWidget,
 )
+from tse_analytics.toolbox.data_table.data_table_widget import DataTableWidget
 from tse_analytics.views.misc.pandas_widget import PandasWidget
 
 
@@ -63,7 +64,7 @@ class DrinkFeedWidget(QWidget):
         self.drinkfeed_data = drinkfeed_data
         self.selected_animals: list[DrinkFeedAnimalItem] = []
 
-        self.raw_df = self.drinkfeed_data.raw_df
+        self.raw_df = self.drinkfeed_data.raw_datatable.df
         # Check if dealing with DrinkFeedBin or DrinkFeedRaw data
         if isinstance(drinkfeed_data, DrinkFeedBinData):
             self.raw_long_df = pd.melt(
@@ -103,13 +104,12 @@ class DrinkFeedWidget(QWidget):
 
         self.ui.verticalLayout.insertWidget(0, toolbar)
 
-        self.raw_table_view = PandasWidget(self.drinkfeed_data.dataset, "Drink/Feed Raw Data")
-        self.raw_table_view.set_data(self.raw_df, False)
+        self.raw_table_view = DataTableWidget(self.drinkfeed_data.raw_datatable, "Drink/Feed Raw Data")
         self.ui.tabWidget.addTab(self.raw_table_view, "Raw Data")
 
         self.raw_plot_widget = PlotWidget()
         self.raw_plot_widget.set_data(self.raw_long_df)
-        self.raw_plot_widget.set_variables(drinkfeed_data.variables)
+        self.raw_plot_widget.set_variables(drinkfeed_data.raw_datatable.variables)
         self.ui.tabWidget.addTab(self.raw_plot_widget, "Raw Data Plot")
 
         self.intervals_table_view = PandasWidget(self.drinkfeed_data.dataset, "Drink/Feed Intervals")
@@ -167,7 +167,7 @@ class DrinkFeedWidget(QWidget):
     def _filter_animals(self, selected_animals: list[DrinkFeedAnimalItem]):
         self.selected_animals = selected_animals
 
-        # raw_df = self.raw_df
+        raw_df = self.raw_df
         raw_long_df = self.raw_long_df
         events_df = self.events_df
         episodes_df = self.episodes_df
@@ -176,7 +176,7 @@ class DrinkFeedWidget(QWidget):
         if len(self.selected_animals) > 0:
             animal_ids = [item.animal for item in self.selected_animals]
 
-            # raw_df = raw_df[raw_df["Animal"].isin(animal_ids)]
+            raw_df = raw_df[raw_df["Animal"].isin(animal_ids)]
             raw_long_df = raw_long_df[raw_long_df["Animal"].isin(animal_ids)]
 
             if events_df is not None:
@@ -186,7 +186,10 @@ class DrinkFeedWidget(QWidget):
             if intervals_df is not None:
                 intervals_df = intervals_df[intervals_df["Animal"].isin(animal_ids)]
 
-        self.raw_table_view.set_data(raw_long_df)
+        new_datatable = self.drinkfeed_data.raw_datatable.clone()
+        new_datatable.df = raw_df
+
+        self.raw_table_view.set_datatable(new_datatable)
         self.raw_plot_widget.set_data(raw_long_df)
 
         if events_df is not None:
@@ -241,9 +244,9 @@ class DrinkFeedWidget(QWidget):
         self.events_table_view.set_data(self.events_df, False)
         self.episodes_table_view.set_data(self.episodes_df)
 
-        self.episodes_offset_plot_widget.set_data(self.episodes_df, self.drinkfeed_data.variables)
-        self.episodes_gap_plot_widget.set_data(self.episodes_df, self.drinkfeed_data.variables)
-        self.episodes_intake_plot_widget.set_data(self.episodes_df, self.drinkfeed_data.variables)
+        self.episodes_offset_plot_widget.set_data(self.episodes_df, self.drinkfeed_data.raw_datatable.variables)
+        self.episodes_gap_plot_widget.set_data(self.episodes_df, self.drinkfeed_data.raw_datatable.variables)
+        self.episodes_intake_plot_widget.set_data(self.episodes_df, self.drinkfeed_data.raw_datatable.variables)
 
         self._update_tabs()
         self.add_datatable_action.setEnabled(True)
