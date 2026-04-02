@@ -20,7 +20,6 @@ class GroupBySelector(QComboBox):
         self.datatable = datatable
 
         modes = self.datatable.get_group_by_columns(
-            check_binning=False,
             disable_total_mode=disable_total_mode,
             disable_run_mode=disable_run_mode,
             disable_animal_mode=disable_animal_mode,

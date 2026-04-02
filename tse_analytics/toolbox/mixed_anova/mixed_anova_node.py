@@ -58,7 +58,7 @@ class MixedAnovaNode(PipelineNode):
             return PipelinePacket.inactive(reason="Invalid input datatable")
 
         # Check if binning is applied
-        if not datatable.dataset.binning_settings.apply:
+        if "Bin" not in datatable.df.columns:
             return PipelinePacket.inactive(reason="Please apply a proper binning first")
 
         # Get configuration properties

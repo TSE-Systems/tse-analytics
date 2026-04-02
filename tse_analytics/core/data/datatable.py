@@ -166,7 +166,6 @@ class Datatable:
 
     def get_group_by_columns(
         self,
-        check_binning=True,
         disable_total_mode=False,
         disable_run_mode=False,
         disable_animal_mode=False,
@@ -180,12 +179,9 @@ class Datatable:
             List of column names that can be used for grouping data.
         """
         modes = ["Animal"] if not disable_animal_mode else []
-        if check_binning:
-            if "Bin" not in self.df.columns:
-                return modes
         if not disable_total_mode:
             modes.append("Total")
-        if not disable_run_mode and self.get_merging_mode() is not None:
+        if not disable_run_mode and "Run" in self.df.columns:
             modes.append("Run")
         if len(self.dataset.factors) > 0:
             for factor in self.dataset.factors.keys():
