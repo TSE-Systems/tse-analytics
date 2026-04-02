@@ -1,4 +1,3 @@
-import pandas as pd
 from PySide6.QtWidgets import QWidget
 
 from tse_analytics.modules.phenomaster.extensions.grouphousing.data.grouphousing_data import GroupHousingData
@@ -27,23 +26,11 @@ class RawDataWidget(QWidget):
         self.ui.listWidgetAnimals.addItems(list(map(str, self.data.animal_ids)))
         self.ui.listWidgetAnimals.itemSelectionChanged.connect(self._animals_selection_changed)
 
-    def _table_selection_changed(self):
-        self._set_data()
-
     def _animals_selection_changed(self):
-        self._set_data()
-
-    def _get_filtered_df(self) -> pd.DataFrame:
-        df = self.data.raw_datatable.df
         selected_animals = [item.text() for item in self.ui.listWidgetAnimals.selectedItems()]
         if len(selected_animals) > 0:
-            df = df[df["Animal"].isin(selected_animals)]
-        return df
+            filter_mask = self.data.raw_datatable.df["Animal"].isin(selected_animals)
+        else:
+            filter_mask = None
 
-    def _set_data(self):
-        df = self._get_filtered_df()
-
-        new_datatable = self.data.raw_datatable.clone()
-        new_datatable.df = df
-
-        self.tableView.set_datatable(new_datatable)
+        self.tableView.set_filter_mask(filter_mask)

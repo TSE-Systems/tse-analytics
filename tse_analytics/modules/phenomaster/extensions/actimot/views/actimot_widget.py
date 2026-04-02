@@ -88,7 +88,7 @@ class ActimotWidget(QWidget):
             actimot_settings = ActimotSettings.get_default()
             self.settings_widget.set_data(self.actimot_data.dataset, actimot_settings)
 
-        self.box_selector = BoxSelector(self._select_box, self.settings_widget, self)
+        self.box_selector = BoxSelector(self._select_item, self.settings_widget, self)
         self.box_selector.set_data(actimot_data.dataset)
 
         self.ui.toolBox.removeItem(0)
@@ -104,16 +104,15 @@ class ActimotWidget(QWidget):
         self.ui.tabWidget.setTabVisible(self.stream_tab_index, is_preprocessed)
         self.ui.tabWidget.setTabVisible(self.heatmap_tab_index, is_preprocessed)
 
-    def _select_box(self, selected_box: ActimotAnimalItem) -> None:
+    def _select_item(self, selected_item: ActimotAnimalItem) -> None:
         self.trj_df = None
-        self.df = self.actimot_data.raw_datatable.df[self.actimot_data.raw_datatable.df["Box"] == selected_box.box]
+
+        filter_mask = self.actimot_data.raw_datatable.df["Box"] == selected_item.box
+        self.df = self.actimot_data.raw_datatable.df[filter_mask]
 
         self._update_tabs()
 
-        new_datatable = self.actimot_data.raw_datatable.clone()
-        new_datatable.df = self.df
-
-        self.table_view.set_datatable(new_datatable)
+        self.table_view.set_filter_mask(filter_mask)
         self.frames_widget.set_data(self.df)
 
         self.plot_widget.set_data(None)

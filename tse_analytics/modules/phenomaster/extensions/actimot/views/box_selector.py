@@ -52,13 +52,13 @@ class BoxSelector(QTableView):
     def _on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
         proxy_model = self.model()
         model = proxy_model.sourceModel()
-        selected_box: ActimotAnimalItem = None
+        selected_item: ActimotAnimalItem = None
         for index in self.selectedIndexes():
             if index.column() != 0:
                 continue
             if index.isValid():
                 source_index = proxy_model.mapToSource(index)
                 row = source_index.row()
-                box = model.items[row]
-                selected_box = box
-        self.callback(selected_box)
+                item = model.items[row]
+                selected_item = item
+        self.callback(selected_item)

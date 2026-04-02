@@ -2,7 +2,6 @@ import os
 import timeit
 from multiprocessing import Pool
 
-import pandas as pd
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
@@ -124,12 +123,32 @@ class CaloWidget(QWidget):
         self._filter()
 
     def _filter(self):
-        df = self._get_selected_data()
+        box_numbers = [b.box for b in self.selected_boxes]
+        if len(box_numbers) > 0:
+            box_filter_mask = self.calo_data.raw_datatable.df["Box"].isin(box_numbers)
+        else:
+            box_filter_mask = None
 
-        new_datatable = self.calo_data.raw_datatable.clone()
-        new_datatable.df = df
+        if len(self.selected_bins) > 0:
+            bin_filter_mask = self.calo_data.raw_datatable.df["Bin"].isin(self.selected_bins)
+        else:
+            bin_filter_mask = None
 
-        self.calo_table_view.set_datatable(new_datatable)
+        filter_mask = None
+        if box_filter_mask is not None and bin_filter_mask is not None:
+            filter_mask = box_filter_mask & bin_filter_mask
+        elif box_filter_mask is not None:
+            filter_mask = box_filter_mask
+        elif bin_filter_mask is not None:
+            filter_mask = bin_filter_mask
+
+        self.calo_table_view.set_filter_mask(filter_mask)
+
+        if box_filter_mask is not None:
+            df = self.calo_data.raw_datatable.df[filter_mask]
+        else:
+            df = self.calo_data.raw_datatable.df
+
         self.calo_plot_widget.set_data(df)
         self.calo_test_fit_widget.set_data(df)
 
@@ -150,18 +169,6 @@ class CaloWidget(QWidget):
             == QMessageBox.StandardButton.Yes
         ):
             self.calo_data.dataset.append_fitting_results(self.fitting_results)
-
-    def _get_selected_data(self) -> pd.DataFrame:
-        df = self.calo_data.raw_datatable.df
-
-        if len(self.selected_boxes) > 0:
-            box_numbers = [b.box for b in self.selected_boxes]
-            df = df[df["Box"].isin(box_numbers)]
-
-        if len(self.selected_bins) > 0:
-            df = df[df["Bin"].isin(self.selected_bins)]
-
-        return df
 
     def _calculate(self):
         if len(self.selected_boxes) == 0:

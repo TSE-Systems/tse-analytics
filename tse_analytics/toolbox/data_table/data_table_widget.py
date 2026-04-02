@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 
 import pandas as pd
+from loguru import logger
 from PySide6.QtCore import QByteArray, QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
@@ -9,6 +10,7 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QInputDialog,
     QLabel,
+    QLineEdit,
     QMenu,
     QMessageBox,
     QSplitter,
@@ -21,8 +23,6 @@ from PySide6.QtWidgets import (
 
 from tse_analytics.core import manager, messaging
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.grouping import GroupingMode
-from tse_analytics.core.data.operators.group_by_pipe_operator import group_by_columns
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.models.pandas_model import PandasModel
 from tse_analytics.core.utils import get_great_table, get_h_spacer_widget, get_widget_tool_button
@@ -31,13 +31,11 @@ from tse_analytics.core.workers.worker import Worker
 from tse_analytics.toolbox.data_table.table_processor.table_processor_dialog import TableProcessorDialog
 from tse_analytics.toolbox.data_table.variables.variables_widget import VariablesWidget
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
-from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.report_edit import ReportEdit
 
 
 @dataclass
 class DataWidgetSettings:
-    group_by: str = "Animal"
     selected_variables: list[str] = field(default_factory=list)
     splitter_state: QByteArray | None = None
 
@@ -49,6 +47,7 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
         self.name = name
         self.datatable = datatable
+        self.filter_mask: pd.Series | None = None
         self.df: pd.DataFrame | None = None
 
         # Connect destructor to unsubscribe and save settings
@@ -68,17 +67,6 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
-
-        toolbar.addWidget(QLabel("Group by:"))
-        self.group_by_selector = GroupBySelector(
-            toolbar,
-            self.datatable,
-            selected_mode=self._settings.group_by,
-        )
-        self.group_by_selector.currentTextChanged.connect(self.refresh_data)
-        toolbar.addWidget(self.group_by_selector)
-
-        toolbar.addSeparator()
 
         self.add_derived_table_action = toolbar.addAction(
             QIcon(":/icons/icons8-data-sheet-16.png"), "Add Derived Table"
@@ -102,6 +90,15 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.export_button.setMenu(export_menu)
 
         toolbar.addWidget(self.export_button)
+
+        toolbar.addSeparator()
+
+        toolbar.addWidget(QLabel("Filter: "))
+        self.filter_text_edit = QLineEdit(clearButtonEnabled=True)
+        self.filter_text_edit.editingFinished.connect(self.refresh_data)
+        toolbar.addWidget(self.filter_text_edit)
+        # apply_filter_action = toolbar.addAction("Apply Filter")
+        # apply_filter_action.triggered.connect(self.refresh_data)
 
         # Horizontal spacer
         toolbar.addWidget(get_h_spacer_widget(toolbar))
@@ -161,8 +158,8 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
         messaging.subscribe(self, messaging.OutliersChangedMessage, self._on_outliers_changed)
 
-    def set_datatable(self, datatable: Datatable):
-        self.datatable = datatable
+    def set_filter_mask(self, filter_mask: pd.Series | None) -> None:
+        self.filter_mask = filter_mask
         self.refresh_data()
 
     def _resize_columns_width(self):
@@ -192,29 +189,24 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
     def refresh_data(self):
         selected_variables = self.variables_widget.get_selected_variables_dict()
         selected_variable_names = list(selected_variables)
-        grouping_settings = self.group_by_selector.get_grouping_settings()
 
-        if grouping_settings.mode == GroupingMode.ANIMAL:
-            all_columns = self.datatable.df.columns.tolist()
-            all_variable_columns = list(self.datatable.variables.keys())
-            columns = [
-                var_column for var_column in all_columns if var_column not in all_variable_columns
-            ] + selected_variable_names
-        else:
-            columns = list(
-                dict.fromkeys(
-                    self.datatable.get_default_columns()
-                    + self.datatable.get_categorical_columns()
-                    + selected_variable_names
-                )
-            )
+        all_columns = self.datatable.df.columns.tolist()
+        all_variable_columns = list(self.datatable.variables.keys())
+        columns = [
+            var_column for var_column in all_columns if var_column not in all_variable_columns
+        ] + selected_variable_names
 
         self.df = self.datatable.get_filtered_df(columns)
-        self.df = group_by_columns(
-            self.df,
-            selected_variables,
-            grouping_settings,
-        )
+
+        if self.filter_mask is not None:
+            self.df = self.df[self.filter_mask]
+
+        filter_text = self.filter_text_edit.text()
+        if filter_text:
+            try:
+                self.df = self.df.query(filter_text)
+            except Exception as e:
+                logger.warning(f"Failed to filter data table: {e}")
 
         if len(selected_variables) > 0:
             descriptive_df = self.df[selected_variable_names].describe().T.reset_index()
@@ -236,8 +228,6 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         self.table_view.horizontalHeader().setSortIndicatorShown(False)
 
     def _header_clicked(self, logical_index: int):
-        if self.df is None:
-            return
         self.table_view.horizontalHeader().setSortIndicatorShown(True)
         order = self.table_view.horizontalHeader().sortIndicatorOrder() == Qt.SortOrder.AscendingOrder
         df = self.df.sort_values(self.df.columns[logical_index], ascending=order, inplace=False)
@@ -299,7 +289,6 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         settings.setValue(
             f"{self.name}Settings",
             DataWidgetSettings(
-                self.group_by_selector.currentText(),
                 self.variables_widget.get_selected_variable_names(),
                 self._splitter.saveState(),
             ),

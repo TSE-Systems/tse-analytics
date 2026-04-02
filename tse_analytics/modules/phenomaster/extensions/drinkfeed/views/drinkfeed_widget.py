@@ -167,16 +167,16 @@ class DrinkFeedWidget(QWidget):
     def _filter_animals(self, selected_animals: list[DrinkFeedAnimalItem]):
         self.selected_animals = selected_animals
 
-        raw_df = self.raw_df
         raw_long_df = self.raw_long_df
         events_df = self.events_df
         episodes_df = self.episodes_df
         intervals_df = self.intervals_df
 
+        filter_mask = None
         if len(self.selected_animals) > 0:
             animal_ids = [item.animal for item in self.selected_animals]
+            filter_mask = self.raw_df["Animal"].isin(animal_ids)
 
-            raw_df = raw_df[raw_df["Animal"].isin(animal_ids)]
             raw_long_df = raw_long_df[raw_long_df["Animal"].isin(animal_ids)]
 
             if events_df is not None:
@@ -186,10 +186,7 @@ class DrinkFeedWidget(QWidget):
             if intervals_df is not None:
                 intervals_df = intervals_df[intervals_df["Animal"].isin(animal_ids)]
 
-        new_datatable = self.drinkfeed_data.raw_datatable.clone()
-        new_datatable.df = raw_df
-
-        self.raw_table_view.set_datatable(new_datatable)
+        self.raw_table_view.set_filter_mask(filter_mask)
         self.raw_plot_widget.set_data(raw_long_df)
 
         if events_df is not None:
