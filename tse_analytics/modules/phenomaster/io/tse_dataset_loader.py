@@ -4,6 +4,7 @@ from pathlib import Path
 
 import connectorx as cx
 import pandas as pd
+import pyarrow as pa
 from loguru import logger
 
 from tse_analytics.core.color_manager import get_color_hex
@@ -187,10 +188,6 @@ def _read_main_table(
         variable = Variable(item["id"], item["unit"], item["description"], item["type"], Aggregation.MEAN, False)
         variables[variable.name] = variable
         dtypes[variable.name] = item["type"]
-    # Ignore the time for "DateTime" column
-    dtypes.pop("DateTime")
-
-    dtypes = sanitize_dtypes(dtypes)
 
     # Drop core (default) variables from the list
     variables.pop("DateTime")
@@ -205,13 +202,19 @@ def _read_main_table(
     )
 
     # Convert types according to metadata
+    dtypes = sanitize_dtypes(dtypes)
     df = df.astype(dtypes, errors="ignore")
 
     # Convert DateTime from POSIX format
-    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns").dt.as_unit(TIME_RESOLUTION_UNIT)
+    df["DateTime"] = (
+        pd
+        .to_datetime(df["DateTime"], origin="unix", unit="ns")
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
+    )
 
     # Convert animal id to string first
-    df["Animal"] = df["Animal"].astype("string")
+    df["Animal"] = df["Animal"].astype("string[pyarrow]")
 
     # Convert to categorical types
     df = df.astype({
@@ -224,8 +227,15 @@ def _read_main_table(
 
     # Add Timedelta and Bin columns
     start_date_time = dataset.experiment_started
-    df.insert(loc=1, column="Timedelta", value=df["DateTime"] - start_date_time)
-    df.insert(loc=2, column="Bin", value=(df["Timedelta"] / sample_interval).round().astype("UInt64"))
+    df.insert(
+        loc=1,
+        column="Timedelta",
+        value=(df["DateTime"] - start_date_time).astype(pd.ArrowDtype(pa.duration(unit=TIME_RESOLUTION_UNIT))),
+    )
+    df.insert(loc=2, column="Bin", value=(df["Timedelta"] / sample_interval).round().astype("uint64[pyarrow]"))
+
+    # Convert to pyarrow backend
+    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     # Sort variables by name
     variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))

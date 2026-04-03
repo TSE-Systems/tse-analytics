@@ -162,7 +162,7 @@ class ActimotWidget(QWidget):
         df, trj_df, elapsed_time = result
 
         # Add custom variables
-        self.actimot_data.variables["x"] = Variable(
+        self.actimot_data.raw_datatable.variables["x"] = Variable(
             "x",
             "cm",
             "Centroid X",
@@ -171,7 +171,7 @@ class ActimotWidget(QWidget):
             False,
         )
 
-        self.actimot_data.variables["y"] = Variable(
+        self.actimot_data.raw_datatable.variables["y"] = Variable(
             "y",
             "cm",
             "Centroid Y",
@@ -180,7 +180,7 @@ class ActimotWidget(QWidget):
             False,
         )
 
-        self.actimot_data.variables["displacement"] = Variable(
+        self.actimot_data.raw_datatable.variables["displacement"] = Variable(
             "displacement",
             "cm",
             "Displacement",
@@ -189,7 +189,7 @@ class ActimotWidget(QWidget):
             False,
         )
 
-        self.actimot_data.variables["speed"] = Variable(
+        self.actimot_data.raw_datatable.variables["speed"] = Variable(
             "speed",
             "cm/s",
             "Speed",
@@ -198,7 +198,7 @@ class ActimotWidget(QWidget):
             False,
         )
 
-        self.actimot_data.variables["acceleration"] = Variable(
+        self.actimot_data.raw_datatable.variables["acceleration"] = Variable(
             "acceleration",
             "cm/s²",
             "Acceleration",
@@ -207,9 +207,9 @@ class ActimotWidget(QWidget):
             False,
         )
 
-        self.table_view.set_data(df, False)
+        # self.table_view.set_filter_mask(None)
 
-        self.plot_widget.set_variables(self.actimot_data.variables)
+        self.plot_widget.set_variables(self.actimot_data.raw_datatable.variables)
         self.plot_widget.set_data(df)
 
         self.trajectory_widget.set_data(trj_df)

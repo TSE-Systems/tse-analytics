@@ -3,6 +3,7 @@ from pathlib import Path
 
 import connectorx as cx
 import pandas as pd
+import pyarrow as pa
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.datatable import Datatable
@@ -19,7 +20,7 @@ def read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
 
     sample_interval = pd.Timedelta(metadata["sample_interval"])
 
-    # Read variables list
+    # Read variable list
     skipped_variables = ["DateTime", "Box"]
     variables: dict[str, Variable] = {}
     dtypes = {}
@@ -35,12 +36,8 @@ def read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
         if variable.name not in skipped_variables:
             variables[variable.name] = variable
         dtypes[variable.name] = item["type"]
-    # Ignore the time for "DateTime" column
-    dtypes.pop("DateTime")
 
-    dtypes = sanitize_dtypes(dtypes)
-
-    # Read measurements data
+    # Read measurement data
     df = cx.read_sql(
         f"sqlite:///{path}",
         f"SELECT * FROM {tse_import_settings.CALO_BIN_TABLE}",
@@ -48,10 +45,16 @@ def read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
     )
 
     # Convert types according to metadata
+    dtypes = sanitize_dtypes(dtypes)
     df = df.astype(dtypes, errors="ignore")
 
     # Convert DateTime from POSIX format
-    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns").dt.as_unit(TIME_RESOLUTION_UNIT)
+    df["DateTime"] = (
+        pd
+        .to_datetime(df["DateTime"], origin="unix", unit="ns")
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
+    )
 
     # Insert Animal column
     box_to_animal_map = {animal.properties["Box"]: animal.id for animal in dataset.animals.values()}
@@ -121,6 +124,9 @@ def read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
     df.insert(2, "Bin", bins)
     df.insert(3, "Offset", offsets)
 
+    # Convert to pyarrow backend
+    df = df.convert_dtypes(dtype_backend="pyarrow")
+
     raw_datatable = Datatable(
         dataset,
         tse_import_settings.CALO_BIN_TABLE,
@@ -181,11 +187,14 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     df.insert(
         0,
         "DateTime",
-        pd.to_datetime(
+        pd
+        .to_datetime(
             df["Date"] + " " + df["Time"],
             format="mixed",
             dayfirst=csv_import_settings.day_first,
-        ),
+        )
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT))),
     )
     df.drop(columns=["Date", "Time"], inplace=True)
 
@@ -280,6 +289,9 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     df.insert(1, "Timedelta", timedeltas)
     df.insert(2, "Bin", bins)
     df.insert(3, "Offset", offsets)
+
+    # Convert to pyarrow backend
+    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     raw_datatable = Datatable(
         dataset,

@@ -76,11 +76,11 @@ def _import_animals(path: Path) -> dict | None:
         return None
 
     dtype = {
-        "Name": "string",
-        "Tag": "string",
-        "Sex": "string",
-        "Group": "string",
-        "Notes": "string",
+        "Name": "string[pyarrow]",
+        "Tag": "string[pyarrow]",
+        "Sex": "string[pyarrow]",
+        "Group": "string[pyarrow]",
+        "Notes": "string[pyarrow]",
     }
 
     df = pd.read_csv(
@@ -122,19 +122,19 @@ def _import_visits_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "ID": "UInt64",
-        "Animal": "string",
-        "Start": "string",
-        "End": "string",
-        "Module": "string",
-        "Cage": "UInt8",
-        "Corner": "UInt8",
-        "CornerCondition": "Int8",
-        "PlaceError": "boolean",
-        "AntennaNumber": "UInt64",
-        "AntennaDuration": "UInt64",
-        "PresenceNumber": "UInt64",
-        "PresenceDuration": "Float64",
+        "ID": "uint64[pyarrow]",
+        "Animal": "string[pyarrow]",
+        "Start": "string[pyarrow]",
+        "End": "string[pyarrow]",
+        "Module": "string[pyarrow]",
+        "Cage": "uint8[pyarrow]",
+        "Corner": "uint8[pyarrow]",
+        "CornerCondition": "int8[pyarrow]",
+        "PlaceError": "bool[pyarrow]",
+        "AntennaNumber": "uint64[pyarrow]",
+        "AntennaDuration": "uint64[pyarrow]",
+        "PresenceNumber": "uint64[pyarrow]",
+        "PresenceDuration": "float64[pyarrow]",
     }
 
     df = pd.read_csv(
@@ -183,8 +183,11 @@ def _import_visits_df(folder_path: Path) -> pd.DataFrame | None:
     df.reset_index(drop=True, inplace=True)
 
     # Set visit number column
-    df["VisitNumber"] = df.groupby("AnimalTag").cumcount().astype("UInt64")
+    df["VisitNumber"] = df.groupby("AnimalTag").cumcount().astype("uint64[pyarrow]")
     # df["VisitNumber"] = df.groupby("AnimalTag")["VisitID"].rank(method="first").astype("UInt64")
+
+    # Convert to pyarrow backend
+    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     return df
 
@@ -198,21 +201,21 @@ def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame | None:
     #     first_line = file.readline()
 
     dtype = {
-        "VisitID": "UInt64",
-        "Start": "string",
-        "End": "string",
-        "Side": "UInt8",
-        "SideCondition": "Int8",
-        "SideError": "boolean",
-        "TimeError": "boolean",
-        "ConditionError": "boolean",
-        "LicksNumber": "UInt64",
-        "LicksDuration": "Float64",
-        "AirState": "boolean",
-        "DoorState": "boolean",
-        "LED1State": "UInt8",
-        "LED2State": "UInt8",
-        "LED3State": "UInt8",
+        "VisitID": "uint64[pyarrow]",
+        "Start": "string[pyarrow]",
+        "End": "string[pyarrow]",
+        "Side": "uint8[pyarrow]",
+        "SideCondition": "int8[pyarrow]",
+        "SideError": "bool[pyarrow]",
+        "TimeError": "bool[pyarrow]",
+        "ConditionError": "bool[pyarrow]",
+        "LicksNumber": "uint64[pyarrow]",
+        "LicksDuration": "float64[pyarrow]",
+        "AirState": "bool[pyarrow]",
+        "DoorState": "bool[pyarrow]",
+        "LED1State": "uint8[pyarrow]",
+        "LED2State": "uint8[pyarrow]",
+        "LED3State": "uint8[pyarrow]",
     }
 
     df = pd.read_csv(
@@ -255,6 +258,9 @@ def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame | None:
     df.sort_values(["Start"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
+    # Convert to pyarrow backend
+    df = df.convert_dtypes(dtype_backend="pyarrow")
+
     return df
 
 
@@ -264,9 +270,9 @@ def _import_environment_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "DateTime": "string",
-        "Temperature": "Float64",
-        "Illumination": "UInt64",
+        "DateTime": "string[pyarrow]",
+        "Temperature": "float32[pyarrow]",
+        "Illumination": "uint32[pyarrow]",
     }
 
     df = pd.read_csv(
@@ -286,6 +292,9 @@ def _import_environment_df(folder_path: Path) -> pd.DataFrame | None:
     df.sort_values(["DateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
+    # Convert to pyarrow backend
+    df = df.convert_dtypes(dtype_backend="pyarrow")
+
     return df
 
 
@@ -295,12 +304,12 @@ def _import_hardware_events_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "DateTime": "string",
-        "Type": "UInt8",
-        "Cage": "UInt8",
-        "Corner": "UInt8",
-        "Side": "UInt8",
-        "State": "UInt8",
+        "DateTime": "string[pyarrow]",
+        "Type": "uint8[pyarrow]",
+        "Cage": "uint8[pyarrow]",
+        "Corner": "uint8[pyarrow]",
+        "Side": "uint8[pyarrow]",
+        "State": "uint8[pyarrow]",
     }
 
     df = pd.read_csv(
@@ -336,6 +345,9 @@ def _import_hardware_events_df(folder_path: Path) -> pd.DataFrame | None:
     df.sort_values(["DateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
+    # Convert to pyarrow backend
+    df = df.convert_dtypes(dtype_backend="pyarrow")
+
     return df
 
 
@@ -345,13 +357,13 @@ def _import_log_df(folder_path: Path) -> pd.DataFrame | None:
         return None
 
     dtype = {
-        "DateTime": "string",
-        "Category": "string",
-        "Type": "string",
-        "Cage": "UInt8",
-        "Corner": "UInt8",
-        "Side": "UInt8",
-        "Notes": "string",
+        "DateTime": "string[pyarrow]",
+        "Category": "string[pyarrow]",
+        "Type": "string[pyarrow]",
+        "Cage": "uint8[pyarrow]",
+        "Corner": "uint8[pyarrow]",
+        "Side": "uint8[pyarrow]",
+        "Notes": "string[pyarrow]",
     }
 
     df = pd.read_csv(
@@ -402,5 +414,8 @@ def _import_log_df(folder_path: Path) -> pd.DataFrame | None:
 
     df.sort_values(["DateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
+
+    # Convert to pyarrow backend
+    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     return df
