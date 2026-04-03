@@ -2,6 +2,7 @@ from pathlib import Path
 
 import connectorx as cx
 import pandas as pd
+import pyarrow as pa
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.datatable import Datatable
@@ -19,7 +20,7 @@ def read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedBinD
 
     sample_interval = pd.Timedelta(metadata["sample_interval"])
 
-    # Read variables list
+    # Read variable list
     skipped_variables = ["DateTime", "Box", "Animal"]
     variables: dict[str, Variable] = {}
     dtypes = {}
@@ -35,9 +36,8 @@ def read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedBinD
         if variable.name not in skipped_variables:
             variables[variable.name] = variable
         dtypes[variable.name] = item["type"]
-    dtypes = sanitize_dtypes(dtypes)
 
-    # Read measurements data
+    # Read measurement data
     df = cx.read_sql(
         f"sqlite:///{path}",
         f"SELECT * FROM {tse_import_settings.DRINKFEED_BIN_TABLE}",
@@ -45,10 +45,16 @@ def read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedBinD
     )
 
     # Convert types according to metadata
+    dtypes = sanitize_dtypes(dtypes)
     df = df.astype(dtypes, errors="ignore")
 
     # Convert DateTime from POSIX format
-    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns").dt.as_unit("ms")
+    df["DateTime"] = (
+        pd
+        .to_datetime(df["DateTime"], origin="unix", unit="ns")
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
+    )
 
     # Add Animal column
     box_to_animal_map = {}
@@ -59,10 +65,10 @@ def read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedBinD
         df.insert(
             df.columns.get_loc("Box"),
             "Animal",
-            df["Box"].astype("string").replace(box_to_animal_map),
+            df["Box"].astype("string[pyarrow]").replace(box_to_animal_map),
         )
     else:
-        df["Animal"] = df["Animal"].astype("string")
+        df["Animal"] = df["Animal"].astype("string[pyarrow]")
 
     df = df.astype({
         "Animal": "category",
@@ -71,6 +77,9 @@ def read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedBinD
     # Sort by DateTime column
     df.sort_values(by=["DateTime", "Animal"], inplace=True)
     df.reset_index(drop=True, inplace=True)
+
+    # Convert to pyarrow backend
+    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     raw_datatable = Datatable(
         dataset,
@@ -101,7 +110,6 @@ def read_drinkfeed_raw(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedRawD
     dtypes = {}
     for item in table_metadata["columns"].values():
         dtypes[item["id"]] = item["type"]
-    dtypes = sanitize_dtypes(dtypes)
 
     # Read measurements data
     df = cx.read_sql(
@@ -111,10 +119,16 @@ def read_drinkfeed_raw(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedRawD
     )
 
     # Convert types according to metadata
+    dtypes = sanitize_dtypes(dtypes)
     df = df.astype(dtypes, errors="ignore")
 
     # Convert DateTime from POSIX format
-    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns").dt.as_unit(TIME_RESOLUTION_UNIT)
+    df["DateTime"] = (
+        pd
+        .to_datetime(df["DateTime"], origin="unix", unit="ns")
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
+    )
 
     # Sort by DateTime column
     df.sort_values(by=["DateTime"], inplace=True)
@@ -153,10 +167,13 @@ def read_drinkfeed_raw(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedRawD
             sensor,
             "",
             "Sensor value",
-            "Float64",
+            "float64[pyarrow]",
             Aggregation.MEAN,
             False,
         )
+
+    # Convert to pyarrow backend
+    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     raw_datatable = Datatable(
         dataset,
@@ -184,12 +201,9 @@ def import_drinkfeed_bin_csv_data(
     csv_import_settings: CsvImportSettings,
 ) -> DrinkFeedBinData | None:
     path = Path(filename)
-    if path.is_file() and path.suffix.lower() == ".csv":
-        return _load_from_csv(path, dataset, csv_import_settings)
-    return None
+    if not path.is_file() or path.suffix.lower() != ".csv":
+        return None
 
-
-def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings) -> DrinkFeedBinData:
     with open(path) as f:
         lines = f.readlines()
 
@@ -212,11 +226,14 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     raw_df.insert(
         0,
         "DateTime",
-        pd.to_datetime(
+        pd
+        .to_datetime(
             raw_df["Date"] + " " + raw_df["Time"],
             format="mixed",
             dayfirst=csv_import_settings.day_first,
-        ),
+        )
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT))),
     )
     raw_df.drop(columns=["Date", "Time"], inplace=True)
 
@@ -293,8 +310,11 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     # convert categorical types
     new_df = new_df.astype({
         "Animal": "category",
-        "Box": "UInt8",
+        "Box": "uint16[pyarrow]",
     })
+
+    # Convert to pyarrow backend
+    new_df = new_df.convert_dtypes(dtype_backend="pyarrow")
 
     raw_datatable = Datatable(
         dataset,

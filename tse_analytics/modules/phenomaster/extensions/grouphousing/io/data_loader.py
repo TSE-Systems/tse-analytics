@@ -2,11 +2,13 @@ from pathlib import Path
 
 import connectorx as cx
 import pandas as pd
+import pyarrow as pa
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.core.utils.data import sanitize_dtypes
+from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.extensions.grouphousing.data.grouphousing_data import GroupHousingData
 from tse_analytics.modules.phenomaster.io import tse_import_settings
@@ -16,7 +18,7 @@ def read_grouphousing(path: Path, dataset: PhenoMasterDataset) -> GroupHousingDa
     metadata = dataset.metadata["tables"][tse_import_settings.GROUP_HOUSING_TABLE]
     hardware_metadata = dataset.metadata["hardware"][tse_import_settings.GROUP_HOUSING_TABLE]
 
-    # Read variables list
+    # Read variable list
     dtypes = {}
     for item in metadata["columns"].values():
         variable = Variable(
@@ -34,7 +36,7 @@ def read_grouphousing(path: Path, dataset: PhenoMasterDataset) -> GroupHousingDa
 
     dtypes = sanitize_dtypes(dtypes)
 
-    # Read measurements data
+    # Read measurement data
     df = cx.read_sql(
         f"sqlite:///{path}",
         f"SELECT * FROM {tse_import_settings.GROUP_HOUSING_TABLE}",
@@ -45,13 +47,23 @@ def read_grouphousing(path: Path, dataset: PhenoMasterDataset) -> GroupHousingDa
     df = df.astype(dtypes, errors="ignore")
 
     # Convert DateTime from POSIX format
-    df["StartDateTime"] = pd.to_datetime(df["StartDateTime"], origin="unix", unit="ns")
-    df["EndDateTime"] = pd.to_datetime(df["EndDateTime"], origin="unix", unit="ns")
+    df["StartDateTime"] = (
+        pd
+        .to_datetime(df["StartDateTime"], origin="unix", unit="ns")
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
+    )
+    df["EndDateTime"] = (
+        pd
+        .to_datetime(df["EndDateTime"], origin="unix", unit="ns")
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
+    )
     # Insert Duration column
     df.insert(
         df.columns.get_loc("EndDateTime") + 1,
         "Duration",
-        df["EndDateTime"] - df["StartDateTime"],
+        (df["EndDateTime"] - df["StartDateTime"]).astype(pd.ArrowDtype(pa.duration(unit=TIME_RESOLUTION_UNIT))),
     )
 
     # Convert dict keys type from str to int
@@ -59,7 +71,7 @@ def read_grouphousing(path: Path, dataset: PhenoMasterDataset) -> GroupHousingDa
     df.insert(
         df.columns.get_loc("Channel") + 1,
         "ChannelType",
-        df["Channel"].astype("string").replace(channel_to_channel_type_mapping),
+        df["Channel"].astype("string[pyarrow]").replace(channel_to_channel_type_mapping),
     )
 
     df = df.astype({
@@ -69,6 +81,9 @@ def read_grouphousing(path: Path, dataset: PhenoMasterDataset) -> GroupHousingDa
 
     df.sort_values(by=["StartDateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
+
+    # Convert to pyarrow backend
+    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     raw_datatable = Datatable(
         dataset,
@@ -91,23 +106,22 @@ def read_grouphousing(path: Path, dataset: PhenoMasterDataset) -> GroupHousingDa
 
 
 def import_grouphousing_csv_data(
-    filename: str, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings
+    filename: str,
+    dataset: PhenoMasterDataset,
+    csv_import_settings: CsvImportSettings,
 ) -> GroupHousingData | None:
     path = Path(filename)
-    if path.is_file() and path.suffix.lower() == ".csv":
-        return _load_from_csv(path, dataset, csv_import_settings)
-    return None
+    if not path.is_file() or path.suffix.lower() != ".csv":
+        return None
 
-
-def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings) -> GroupHousingData:
     dtype = {
-        "Number": "UInt64",
-        "Date": "string",
-        "Time": "string",
-        "BoxNo": "UInt8",
-        "ChannelNo": "UInt8",
-        "Channel type": "string",
-        "Animal": "string",
+        "Number": "uint64[pyarrow]",
+        "Date": "string[pyarrow]",
+        "Time": "string[pyarrow]",
+        "BoxNo": "uint16[pyarrow]",
+        "ChannelNo": "uint8[pyarrow]",
+        "Channel type": "string[pyarrow]",
+        "Animal": "string[pyarrow]",
     }
 
     df = pd.read_csv(
@@ -133,11 +147,14 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     df.insert(
         0,
         "StartDateTime",
-        pd.to_datetime(
+        pd
+        .to_datetime(
             df["Date"] + " " + df["Time"],
             dayfirst=csv_import_settings.day_first,
             format=csv_import_settings.datetime_format if csv_import_settings.use_datetime_format else None,
-        ),
+        )
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT))),
     )
     df.insert(
         df.columns.get_loc("StartDateTime") + 1,
@@ -157,6 +174,9 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
 
     df.sort_values(by=["StartDateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
+
+    # Convert to pyarrow backend
+    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     raw_datatable = Datatable(
         dataset,

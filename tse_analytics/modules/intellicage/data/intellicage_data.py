@@ -248,7 +248,7 @@ class IntelliCageData:
         # Convert types
         df = df.astype({
             "Animal": "category",
-            "PlaceError": "Int64",
+            "PlaceError": "int64[pyarrow]",
         })
 
         datatable = Datatable(
@@ -561,12 +561,15 @@ class IntelliCageData:
         # Convert types
         df = df.astype({
             # "Animal": "category",
-            "SideError": "Int64",
-            "TimeError": "Int64",
-            "DoorState": "Int64",
-            "AirState": "Int64",
-            "ConditionError": "Int64",
+            "SideError": "int64[pyarrow]",
+            "TimeError": "int64[pyarrow]",
+            "DoorState": "int64[pyarrow]",
+            "AirState": "int64[pyarrow]",
+            "ConditionError": "int64[pyarrow]",
         })
+
+        # Convert to pyarrow backend
+        df = df.convert_dtypes(dtype_backend="pyarrow")
 
         datatable = Datatable(
             self.dataset,

@@ -3,6 +3,7 @@ from pathlib import Path
 import connectorx as cx
 import numpy as np
 import pandas as pd
+import pyarrow as pa
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.datatable import Datatable
@@ -24,13 +25,18 @@ def read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> ActimotData:
     )
 
     # Convert types
-    df = df.astype({"Box": "UInt16"}, errors="ignore")
+    df = df.astype({"Box": "uint16[pyarrow]"}, errors="ignore")
 
     df["X"] = np.left_shift(df["X2"].to_numpy(dtype=np.uint64), 32) + df["X1"].to_numpy(dtype=np.uint64)
     df = df.drop(columns=["X1", "X2"])
 
     # Convert DateTime from POSIX format
-    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns").dt.as_unit(TIME_RESOLUTION_UNIT)
+    df["DateTime"] = (
+        pd
+        .to_datetime(df["DateTime"], origin="unix", unit="ns")
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
+    )
 
     box_to_animal_map = {animal.properties["Box"]: animal.id for animal in dataset.animals.values()}
     df.insert(
@@ -44,6 +50,9 @@ def read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> ActimotData:
         "Animal": "category",
         "Box": "category",
     })
+
+    # Convert to pyarrow backend
+    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     raw_datatable = Datatable(
         dataset,
@@ -90,13 +99,13 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     usecols = [datetime_column_header, "Rel. [s]", "BoxNr", "X (cm)", "Y (cm)", "X", "Y"]
 
     dtype = {
-        datetime_column_header: "string",
-        "Rel. [s]": "Float64",
-        "BoxNr": "UInt8",
-        "X (cm)": "Float64",
-        "Y (cm)": "Float64",
-        "X": "string",
-        "Y": "string",
+        datetime_column_header: "string[pyarrow]",
+        "Rel. [s]": "float64[pyarrow]",
+        "BoxNr": "uint16[pyarrow]",
+        "X (cm)": "float64[pyarrow]",
+        "Y (cm)": "float64[pyarrow]",
+        "X": "string[pyarrow]",
+        "Y": "string[pyarrow]",
     }
 
     # for i in range(1, 65):
@@ -107,7 +116,7 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     #     usecols.append(f"Y{i}")
     #     dtype[f"Y{i}"] = "UInt8"
 
-    raw_df = pd.read_csv(
+    df = pd.read_csv(
         path,
         delimiter=csv_import_settings.delimiter,
         decimal=csv_import_settings.decimal_separator,
@@ -119,47 +128,53 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     )
 
     # Rename table columns
-    raw_df.rename(columns={datetime_column_header: "DateTime", "BoxNr": "Box"}, inplace=True)
+    df.rename(columns={datetime_column_header: "DateTime", "BoxNr": "Box"}, inplace=True)
 
     # Convert DateTime column
-    raw_df["DateTime"] = pd.to_datetime(
-        raw_df["DateTime"],
-        format=csv_import_settings.datetime_format if csv_import_settings.use_datetime_format else "mixed",
-        dayfirst=csv_import_settings.day_first,
+    df["DateTime"] = (
+        pd
+        .to_datetime(
+            df["DateTime"],
+            format=csv_import_settings.datetime_format if csv_import_settings.use_datetime_format else "mixed",
+            dayfirst=csv_import_settings.day_first,
+        )
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
     )
 
     box_to_animal_map = {}
     for animal in dataset.animals.values():
         box_to_animal_map[animal.properties["Box"]] = animal.id
 
-    new_df = raw_df.copy()
-
-    new_df.insert(
-        new_df.columns.get_loc("Box") + 1,
+    df.insert(
+        df.columns.get_loc("Box") + 1,
         "Animal",
         None,
     )
 
-    new_df["Animal"] = new_df["Box"].astype("Int64")
-    new_df.replace({"Animal": box_to_animal_map}, inplace=True)
+    df["Animal"] = df["Box"].astype("int16[pyarrow]")
+    df.replace({"Animal": box_to_animal_map}, inplace=True)
 
-    new_df = new_df.sort_values(["Box", "DateTime"])
-    new_df.reset_index(drop=True, inplace=True)
+    df = df.sort_values(["Box", "DateTime"])
+    df.reset_index(drop=True, inplace=True)
 
     # convert categorical types
-    new_df = new_df.astype({
+    df = df.astype({
         "Animal": "category",
     })
 
     # Sampling interval
-    sampling_interval = new_df.iloc[1].at["DateTime"] - new_df.iloc[0].at["DateTime"]
+    sampling_interval = df.iloc[1].at["DateTime"] - df.iloc[0].at["DateTime"]
+
+    # Convert to pyarrow backend
+    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     raw_datatable = Datatable(
         dataset,
         tse_import_settings.ACTIMOT_RAW_TABLE,
         f"Raw {tse_import_settings.ACTIMOT_RAW_TABLE} datatable",
         {},
-        new_df,
+        df,
         {
             "origin_path": str(path),
             "sampling_interval": sampling_interval,

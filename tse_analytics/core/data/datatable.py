@@ -289,14 +289,14 @@ class Datatable:
         result.dropna(subset=["DateTime"], inplace=True)
 
         # Assign new bins numbers
-        result["Bin"] = (result["Timedelta"] / resampling_interval).round().astype("UInt64")
+        result["Bin"] = (result["Timedelta"] / resampling_interval).round().astype("uint64[pyarrow]")
 
         result.sort_values(by=["Timedelta", "Animal"], inplace=True)
         result.reset_index(inplace=True, drop=True)
 
         if "Run" in result.columns:
             result = result.astype({
-                "Run": "UInt8",
+                "Run": "uint8[pyarrow]",
             })
 
         self.metadata["sampling_interval"] = resampling_interval
@@ -332,7 +332,7 @@ class Datatable:
                 for animal_id in level.animal_ids:
                     animal_factor_map[animal_id] = level.name
 
-            df[factor.name] = df["Animal"].astype("string")
+            df[factor.name] = df["Animal"].astype("string[pyarrow]")
             df.replace({factor.name: animal_factor_map}, inplace=True)
             df[factor.name] = df[factor.name].astype("category")
 

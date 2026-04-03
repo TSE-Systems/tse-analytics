@@ -19,11 +19,13 @@ from io import StringIO
 from pathlib import Path
 
 import pandas as pd
+import pyarrow as pa
 
 from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
+from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
 
@@ -126,19 +128,27 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
         df.insert(
             0,
             "DateTime",
-            pd.to_datetime(
+            pd
+            .to_datetime(
                 df["Date"] + " " + df["Time"],
                 format="mixed",
                 dayfirst=csv_import_settings.day_first,
-            ),
+            )
+            .dt.as_unit(TIME_RESOLUTION_UNIT)
+            .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT))),
         )
         df.drop(columns=["Date", "Time"], inplace=True)
     else:
         # Convert DateTime column
-        df["DateTime"] = pd.to_datetime(
-            df["DateTime"],
-            format="mixed",
-            dayfirst=csv_import_settings.day_first,
+        df["DateTime"] = (
+            pd
+            .to_datetime(
+                df["DateTime"],
+                format="mixed",
+                dayfirst=csv_import_settings.day_first,
+            )
+            .dt.as_unit(TIME_RESOLUTION_UNIT)
+            .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
         )
 
     # TODO: Drop "Box" column?
@@ -146,7 +156,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
 
     # Apply categorical types
     df = df.astype({
-        "Animal": "string",
+        "Animal": "string[pyarrow]",
     })
 
     df = df.astype({
@@ -165,8 +175,12 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
 
     start_date_time = df.at[0, "DateTime"]
     end_date_time = df["DateTime"].iat[-1]
-    df.insert(loc=1, column="Timedelta", value=df["DateTime"] - start_date_time)
-    df.insert(loc=2, column="Bin", value=(df["Timedelta"] / timedelta).round().astype("UInt64"))
+    df.insert(
+        loc=1,
+        column="Timedelta",
+        value=(df["DateTime"] - start_date_time).astype(pd.ArrowDtype(pa.duration(unit=TIME_RESOLUTION_UNIT))),
+    )
+    df.insert(loc=2, column="Bin", value=(df["Timedelta"] / timedelta).round().astype("uint64[pyarrow]"))
 
     # Sort variables by name
     variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))
@@ -208,6 +222,9 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
         metadata=metadata,
         animals=animals,
     )
+
+    # Convert to pyarrow backend
+    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     datatable = Datatable(
         dataset,
