@@ -166,10 +166,10 @@ class TestLoadWorkspace:
         """Test that load_workspace loads a workspace from file."""
         mock_workspace = Workspace(name="Loaded Workspace")
 
-        with patch("builtins.open", mock_open(read_data=pickle.dumps(mock_workspace))):
+        with patch("tse_analytics.core.services.workspace_service._load_from_duckdb", return_value=mock_workspace):
             with patch.object(messaging, "broadcast"):
                 with patch("tse_analytics.core.services.workspace_service.QTimer"):
-                    manager.load_workspace("test_path.pkl")
+                    manager.load_workspace("test_path.duckdb")
 
         loaded_workspace = manager.get_workspace()
         assert loaded_workspace.name == "Loaded Workspace"
@@ -180,27 +180,44 @@ class TestLoadWorkspace:
             manager.set_selected_dataset(mock_dataset)
 
         mock_workspace = Workspace(name="New Workspace")
+        with patch("tse_analytics.core.services.workspace_service._load_from_duckdb", return_value=mock_workspace):
+            with patch.object(messaging, "broadcast"):
+                with patch("tse_analytics.core.services.workspace_service.QTimer"):
+                    manager.load_workspace("test_path.duckdb")
+
+        assert manager.get_selected_dataset() is None
+
+    def test_loads_legacy_workspace_from_file(self, manager):
+        """Test that load_workspace loads a legacy pickle workspace."""
+        mock_workspace = Workspace(name="Legacy Workspace")
+
         with patch("builtins.open", mock_open(read_data=pickle.dumps(mock_workspace))):
             with patch.object(messaging, "broadcast"):
                 with patch("tse_analytics.core.services.workspace_service.QTimer"):
-                    manager.load_workspace("test_path.pkl")
+                    manager.load_workspace("test_path.workspace")
 
-        assert manager.get_selected_dataset() is None
+        loaded_workspace = manager.get_workspace()
+        assert loaded_workspace.name == "Legacy Workspace"
 
 
 class TestSaveWorkspace:
     """Tests for save_workspace method."""
 
-    def test_saves_workspace_to_file(self, manager):
-        """Test that save_workspace saves the workspace to a file."""
-        with patch("builtins.open", mock_open()) as mock_file:
-            with patch("pickle.dump") as mock_dump:
-                manager.save_workspace("test_path.pkl")
+    def test_saves_workspace_to_duckdb(self, manager):
+        """Test that save_workspace saves the workspace to a DuckDB file."""
+        with patch("tse_analytics.core.services.workspace_service._save_to_duckdb") as mock_save:
+            manager.save_workspace("test_path.duckdb")
 
-                mock_file.assert_called_once_with("test_path.pkl", "wb")
-                assert mock_dump.called
-                # Check that workspace was passed to pickle.dump
-                assert isinstance(mock_dump.call_args[0][0], Workspace)
+            mock_save.assert_called_once_with("test_path.duckdb", manager.get_workspace())
+
+    def test_saves_workspace_to_legacy_pickle(self, manager):
+        """Test that save_workspace saves to legacy pickle when .workspace extension."""
+        with patch("builtins.open", mock_open()) as mock_file:
+            with patch("tse_analytics.core.services.workspace_service.pickle") as mock_pickle:
+                manager.save_workspace("test_path.workspace")
+
+                mock_file.assert_called_once_with("test_path.workspace", "wb")
+                assert mock_pickle.dump.called
 
 
 class TestAddDataset:

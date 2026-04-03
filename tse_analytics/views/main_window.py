@@ -148,7 +148,7 @@ class MainWindow(QMainWindow):
         # Load the selected workspace file if provided as an argument
         if len(args) > 1:
             workspace_path = Path(args[1])
-            if workspace_path.suffix.lower() == ".workspace" and workspace_path.exists() and workspace_path.is_file():
+            if workspace_path.suffix.lower() in (".duckdb", ".workspace") and workspace_path.exists() and workspace_path.is_file():
                 self._load_workspace(str(workspace_path))
 
     def _set_style(self, name: str) -> None:
@@ -234,14 +234,17 @@ class MainWindow(QMainWindow):
             self,
             "Load Workspace",
             "",
-            "Workspace Files (*.workspace)",
+            "DuckDB Workspace (*.duckdb);;Legacy Workspace (*.workspace)",
         )
         if file_path:
             self._load_workspace(file_path)
 
     def _save_workspace_dialog(self) -> None:
         filename, _ = QFileDialog.getSaveFileName(
-            self, "Save TSE Analytics Workspace", "", "Workspace Files (*.workspace)"
+            self,
+            "Save TSE Analytics Workspace",
+            "",
+            "DuckDB Workspace (*.duckdb);;Legacy Workspace (*.workspace)",
         )
         if filename:
             manager.save_workspace(filename)
