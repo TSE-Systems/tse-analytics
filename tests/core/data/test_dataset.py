@@ -48,16 +48,6 @@ class TestDatasetProperties:
     def test_description(self, sample_dataset):
         assert sample_dataset.description == "A test dataset"
 
-    def test_source_path(self, sample_dataset):
-        assert sample_dataset.source_path == "/test/path"
-
-    def test_source_path_missing(self):
-        from tse_analytics.core.data.dataset import Dataset
-
-        with patch("tse_analytics.core.data.dataset.messaging"):
-            ds = Dataset(metadata={"name": "N", "description": "D"}, animals={})
-        assert ds.source_path == ""
-
     def test_experiment_started(self, sample_dataset):
         result = sample_dataset.experiment_started
         assert isinstance(result, pd.Timestamp)

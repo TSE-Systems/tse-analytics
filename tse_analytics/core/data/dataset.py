@@ -35,6 +35,8 @@ class Dataset:
 
     def __init__(
         self,
+        name: str,
+        description: str,
         metadata: dict[str, Any] | list[dict],
         animals: dict[str, Animal],
     ):
@@ -43,12 +45,18 @@ class Dataset:
 
         Parameters
         ----------
+        name: str
+            Name of the dataset.
+        description : str
+            Description of the dataset.
         metadata : dict or list[dict]
             Metadata describing the dataset, including name, description, and experiment times.
         animals : dict[str, Animal]
             Dictionary mapping animal IDs to Animal objects.
         """
         self.id = uuid7()
+        self.name = name
+        self.description = description
         self.metadata = metadata
         self.animals = animals
 
@@ -57,30 +65,6 @@ class Dataset:
         self.reports: dict[str, Report] = {}
 
         self.binning_settings = BinningSettings()
-
-    @property
-    def name(self) -> str:
-        """
-        Get the name of the dataset.
-
-        Returns
-        -------
-        str
-            The name of the dataset from metadata.
-        """
-        return self.metadata["name"]
-
-    @property
-    def description(self) -> str:
-        """
-        Get the description of the dataset.
-
-        Returns
-        -------
-        str
-            The description of the dataset from metadata.
-        """
-        return self.metadata["description"]
 
     @property
     def source_path(self) -> str:

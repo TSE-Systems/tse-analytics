@@ -7,7 +7,6 @@ import xmltodict
 from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.data.shared import Animal
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
-from tse_analytics.modules.intellicage.data.intellicage_data import IntelliCageData
 from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
 
 
@@ -18,10 +17,19 @@ def import_intellicage_dataset_v2(path: Path, tmp_path: Path, data_descriptor: d
     metadata = _import_metadata(tmp_path / "Sessions.xml")
     animals = _import_animals(tmp_path / "Animals.txt")
 
+    folder_path = tmp_path / "IntelliCage"
+    raw_data = {
+        "Visits [raw]": _import_visits_df(folder_path),
+        "Nosepokes [raw]": _import_nosepokes_df(folder_path),
+        "Environment [raw]": _import_environment_df(folder_path),
+        "HardwareEvents [raw]": _import_hardware_events_df(folder_path),
+        "Log [raw]": _import_log_df(folder_path),
+    }
+
     dataset = IntelliCageDataset(
-        metadata={
-            "name": path.stem,
-            "description": "IntelliCage dataset v2",
+        path.stem,
+        "IntelliCage dataset v2",
+        {
             "source_path": str(path),
             "experiment_started": metadata["Interval"]["Start"],
             "experiment_stopped": metadata["Interval"]["End"],
@@ -29,32 +37,18 @@ def import_intellicage_dataset_v2(path: Path, tmp_path: Path, data_descriptor: d
             "experiment": metadata,
             "animals": {k: v.get_dict() for (k, v) in animals.items()},
         },
-        animals=animals,
-    )
-
-    folder_path = tmp_path / "IntelliCage"
-    raw_data = {
-        "Visits": _import_visits_df(folder_path),
-        "Nosepokes": _import_nosepokes_df(folder_path),
-        "Environment": _import_environment_df(folder_path),
-        "HardwareEvents": _import_hardware_events_df(folder_path),
-        "Log": _import_log_df(folder_path),
-    }
-
-    dataset.intellicage_data = IntelliCageData(
-        dataset,
-        "IntelliCage raw data",
+        animals,
         raw_data,
     )
 
-    dataset.intellicage_data.preprocess_data()
+    dataset.preprocess_data()
 
     return dataset
 
 
-def _import_metadata(path: Path) -> dict | None:
+def _import_metadata(path: Path) -> dict:
     if not path.is_file():
-        return None
+        raise FileNotFoundError(f"Sessions file not found: {path}")
 
     with open(path, encoding="utf-8-sig") as file:
         result = xmltodict.parse(
@@ -66,9 +60,9 @@ def _import_metadata(path: Path) -> dict | None:
     return result["ArrayOfSession"]["Session"]
 
 
-def _import_animals(path: Path) -> dict | None:
+def _import_animals(path: Path) -> dict:
     if not path.is_file():
-        return None
+        raise FileNotFoundError(f"Animals file not found: {path}")
 
     dtype = {
         "AnimalName": "string[pyarrow]",
@@ -116,10 +110,10 @@ def _import_animals(path: Path) -> dict | None:
     return animals
 
 
-def _import_visits_df(folder_path: Path) -> pd.DataFrame | None:
+def _import_visits_df(folder_path: Path) -> pd.DataFrame:
     file_path = folder_path / "Visits.txt"
     if not file_path.is_file():
-        return None
+        raise FileNotFoundError(f"Visits file not found: {file_path}")
 
     dtype = {
         "VisitID": "uint64[pyarrow]",
@@ -206,10 +200,10 @@ def _import_visits_df(folder_path: Path) -> pd.DataFrame | None:
     return df
 
 
-def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame | None:
+def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame:
     file_path = folder_path / "Nosepokes.txt"
     if not file_path.is_file():
-        return None
+        raise FileNotFoundError(f"Nosepokes file not found: {file_path}")
 
     with open(file_path) as file:
         first_line = file.readline()
@@ -297,10 +291,10 @@ def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame | None:
     return df
 
 
-def _import_environment_df(folder_path: Path) -> pd.DataFrame | None:
+def _import_environment_df(folder_path: Path) -> pd.DataFrame:
     file_path = folder_path / "Environment.txt"
     if not file_path.is_file():
-        return None
+        raise FileNotFoundError(f"Environment file not found: {file_path}")
 
     dtype = {
         "DateTime": "string[pyarrow]",
@@ -338,10 +332,10 @@ def _import_environment_df(folder_path: Path) -> pd.DataFrame | None:
     return df
 
 
-def _import_hardware_events_df(folder_path: Path) -> pd.DataFrame | None:
+def _import_hardware_events_df(folder_path: Path) -> pd.DataFrame:
     file_path = folder_path / "HardwareEvents.txt"
     if not file_path.is_file():
-        return None
+        raise FileNotFoundError(f"HardwareEvents file not found: {file_path}")
 
     dtype = {
         "DateTime": "string[pyarrow]",
@@ -389,10 +383,10 @@ def _import_hardware_events_df(folder_path: Path) -> pd.DataFrame | None:
     return df
 
 
-def _import_log_df(folder_path: Path) -> pd.DataFrame | None:
+def _import_log_df(folder_path: Path) -> pd.DataFrame:
     file_path = folder_path / "Log.txt"
     if not file_path.is_file():
-        return None
+        raise FileNotFoundError(f"Log file not found: {file_path}")
 
     dtype = {
         "DateTime": "string[pyarrow]",

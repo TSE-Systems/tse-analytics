@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import importlib
 import json
+import timeit
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -102,7 +103,8 @@ def _import_class(fqn: str) -> type:
 
 
 def _short_id(uuid: UUID) -> str:
-    return uuid.hex[:12]
+    # Get last 12 symbols of hex representation of UUID
+    return uuid.hex[-12:]
 
 
 def _df_table_name(dataset_id: UUID, datatable_id: UUID) -> str:
@@ -122,111 +124,59 @@ def _ext_table_name(dataset_id: UUID, extension_key: str, data_key: str) -> str:
 _META_TABLES_DDL = [
     """
     CREATE TABLE _meta_workspace (
-        id              VARCHAR NOT NULL,
+        id              UUID NOT NULL,
         name            VARCHAR NOT NULL,
-        description     VARCHAR NOT NULL DEFAULT '',
-        metadata_json   VARCHAR NOT NULL DEFAULT '{}',
-        schema_version  INTEGER NOT NULL
+        description     VARCHAR,
+        metadata        JSON,
+        schema_version  UINTEGER NOT NULL
     )
     """,
     """
     CREATE TABLE _meta_datasets (
-        id              VARCHAR NOT NULL,
-        dataset_class   VARCHAR NOT NULL,
-        metadata_json   VARCHAR NOT NULL
+        id                UUID NOT NULL,
+        name              VARCHAR NOT NULL,
+        description       VARCHAR,
+        dataset_class     VARCHAR NOT NULL,
+        animals           JSON NOT NULL,
+        factors           JSON NOT NULL,
+        binning_settings  JSON NOT NULL,
+        metadata          JSON
     )
     """,
     """
-    CREATE TABLE _meta_animals (
-        dataset_id      VARCHAR NOT NULL,
-        animal_id       VARCHAR NOT NULL,
-        color           VARCHAR NOT NULL,
-        properties_json VARCHAR NOT NULL DEFAULT '{}'
-    )
-    """,
-    """
-    CREATE TABLE _meta_factors (
-        dataset_id      VARCHAR NOT NULL,
-        factor_name     VARCHAR NOT NULL
-    )
-    """,
-    """
-    CREATE TABLE _meta_factor_levels (
-        dataset_id      VARCHAR NOT NULL,
-        factor_name     VARCHAR NOT NULL,
-        level_name      VARCHAR NOT NULL,
-        color           VARCHAR NOT NULL,
-        animal_ids_json VARCHAR NOT NULL DEFAULT '[]'
-    )
-    """,
-    """
-    CREATE TABLE _meta_binning_settings (
-        dataset_id          VARCHAR NOT NULL,
-        intervals_unit      VARCHAR NOT NULL DEFAULT 'hour',
-        intervals_delta     INTEGER NOT NULL DEFAULT 1,
-        cycles_light_start  VARCHAR NOT NULL DEFAULT '07:00:00',
-        cycles_dark_start   VARCHAR NOT NULL DEFAULT '19:00:00',
-        phases_json         VARCHAR NOT NULL DEFAULT '[]'
-    )
-    """,
-    """
-    CREATE TABLE _meta_reports (
-        dataset_id      VARCHAR NOT NULL,
+    CREATE TABLE reports (
+        dataset_id      UUID NOT NULL,
         report_name     VARCHAR NOT NULL,
-        content         VARCHAR NOT NULL DEFAULT '',
+        content         VARCHAR,
         timestamp       TIMESTAMP NOT NULL
     )
     """,
     """
     CREATE TABLE _meta_datatables (
-        id                      VARCHAR NOT NULL,
-        dataset_id              VARCHAR NOT NULL,
+        id                      UUID NOT NULL,
+        dataset_id              UUID NOT NULL,
         name                    VARCHAR NOT NULL,
-        description             VARCHAR NOT NULL DEFAULT '',
+        description             VARCHAR,
         duckdb_table_name       VARCHAR NOT NULL,
-        metadata_json           VARCHAR NOT NULL DEFAULT '{}',
-        parent_datatable_id     VARCHAR,
-        extension_key           VARCHAR,
-        outliers_mode           VARCHAR NOT NULL DEFAULT 'Outliers detection off',
-        outliers_type           VARCHAR NOT NULL DEFAULT 'Interquartile Range (IQR)',
-        iqr_multiplier          DOUBLE  NOT NULL DEFAULT 1.5,
-        min_threshold_enabled   BOOLEAN NOT NULL DEFAULT FALSE,
-        min_threshold           DOUBLE  NOT NULL DEFAULT 0.0,
-        max_threshold_enabled   BOOLEAN NOT NULL DEFAULT FALSE,
-        max_threshold           DOUBLE  NOT NULL DEFAULT 0.0
-    )
-    """,
-    """
-    CREATE TABLE _meta_variables (
-        datatable_id    VARCHAR NOT NULL,
-        var_name        VARCHAR NOT NULL,
-        unit            VARCHAR NOT NULL DEFAULT '',
-        description     VARCHAR NOT NULL DEFAULT '',
-        type            VARCHAR NOT NULL DEFAULT '',
-        aggregation     VARCHAR NOT NULL DEFAULT 'mean',
-        remove_outliers BOOLEAN NOT NULL DEFAULT FALSE
-    )
-    """,
-    """
-    CREATE TABLE _meta_column_dtypes (
-        datatable_id        VARCHAR NOT NULL,
-        column_name         VARCHAR NOT NULL,
-        pandas_dtype        VARCHAR NOT NULL,
-        category_values_json VARCHAR
+        variables               JSON NOT NULL,
+        metadata                JSON,
+        parent_datatable_id     UUID,
+        extension_name          VARCHAR,
+        outliers_settings       JSON NOT NULL
     )
     """,
     """
     CREATE TABLE _meta_extensions (
-        dataset_id      VARCHAR NOT NULL,
+        dataset_id      UUID NOT NULL,
         extension_key   VARCHAR NOT NULL,
         extension_class VARCHAR NOT NULL,
         extension_name  VARCHAR NOT NULL,
-        extra_json      VARCHAR NOT NULL DEFAULT '{}'
+        extra           JSON
     )
     """,
     """
     CREATE TABLE _meta_extension_dataframes (
-        dataset_id          VARCHAR NOT NULL,
+        dataset_id          UUID NOT NULL,
         extension_key       VARCHAR NOT NULL,
         data_key            VARCHAR NOT NULL,
         duckdb_table_name   VARCHAR NOT NULL
@@ -249,43 +199,15 @@ def _save_dataframe(
     con: duckdb.DuckDBPyConnection,
     table_name: str,
     df: pd.DataFrame,
-    owner_id: str,
+    owner_id: UUID,
 ) -> None:
     """Write a DataFrame as a DuckDB table and record column dtypes."""
     if df.empty:
         # For empty DataFrames, create the table with proper schema
         con.execute(f'CREATE TABLE "{table_name}" AS SELECT * FROM df WHERE 1=0')
-        for col in df.columns:
-            dtype_str = str(df[col].dtype)
-            cat_json = None
-            if dtype_str == "category":
-                cat_json = json.dumps(df[col].cat.categories.tolist(), default=_json_default, ensure_ascii=False)
-            con.execute(
-                "INSERT INTO _meta_column_dtypes VALUES (?, ?, ?, ?)",
-                [owner_id, col, dtype_str, cat_json],
-            )
         return
 
-    prepared = df.copy()
-    for col in prepared.columns:
-        dtype_str = str(prepared[col].dtype)
-        cat_json = None
-
-        if dtype_str == "category":
-            cat_json = json.dumps(prepared[col].cat.categories.tolist(), default=_json_default, ensure_ascii=False)
-            prepared[col] = prepared[col].astype("object")
-        elif "timedelta" in dtype_str:
-            prepared[col] = prepared[col].astype("int64")
-        elif dtype_str in _NULLABLE_INT_DTYPES:
-            # Convert to regular numpy int for DuckDB compatibility, keeping NAs
-            pass
-
-        con.execute(
-            "INSERT INTO _meta_column_dtypes VALUES (?, ?, ?, ?)",
-            [owner_id, col, dtype_str, cat_json],
-        )
-
-    con.execute(f'CREATE TABLE "{table_name}" AS SELECT * FROM prepared')
+    con.execute(f'CREATE TABLE "{table_name}" AS SELECT * FROM df')
 
 
 def _load_dataframe(con: duckdb.DuckDBPyConnection, table_name: str, owner_id: str) -> pd.DataFrame:
@@ -323,146 +245,100 @@ def _load_dataframe(con: duckdb.DuckDBPyConnection, table_name: str, owner_id: s
 # ---------------------------------------------------------------------------
 
 
-def _save_workspace_meta(con: duckdb.DuckDBPyConnection, workspace: Workspace) -> None:
+def _save_workspace(con: duckdb.DuckDBPyConnection, workspace: Workspace) -> None:
     con.execute(
         "INSERT INTO _meta_workspace VALUES (?, ?, ?, ?, ?)",
-        [str(workspace.id), workspace.name, workspace.description, _dumps(workspace.metadata), _SCHEMA_VERSION],
-    )
-
-
-def _save_animals(con: duckdb.DuckDBPyConnection, dataset_id: str, animals: dict[str, Animal]) -> None:
-    for animal in animals.values():
-        con.execute(
-            "INSERT INTO _meta_animals VALUES (?, ?, ?, ?)",
-            [dataset_id, animal.id, animal.color, _dumps(animal.properties)],
-        )
-
-
-def _save_factors(con: duckdb.DuckDBPyConnection, dataset_id: str, factors: dict[str, Factor]) -> None:
-    for factor in factors.values():
-        con.execute("INSERT INTO _meta_factors VALUES (?, ?)", [dataset_id, factor.name])
-        for level in factor.levels:
-            con.execute(
-                "INSERT INTO _meta_factor_levels VALUES (?, ?, ?, ?, ?)",
-                [dataset_id, factor.name, level.name, level.color, json.dumps(level.animal_ids)],
-            )
-
-
-def _save_binning_settings(con: duckdb.DuckDBPyConnection, dataset_id: str, bs: BinningSettings) -> None:
-    phases_json = _dumps([
-        {"name": p.name, "start_timestamp_ns": int(p.start_timestamp.as_unit("ns").value)}
-        for p in bs.time_phases_settings.time_phases
-    ])
-    con.execute(
-        "INSERT INTO _meta_binning_settings VALUES (?, ?, ?, ?, ?, ?)",
         [
-            dataset_id,
-            bs.time_intervals_settings.unit,
-            bs.time_intervals_settings.delta,
-            bs.time_cycles_settings.light_cycle_start.isoformat(),
-            bs.time_cycles_settings.dark_cycle_start.isoformat(),
-            phases_json,
+            workspace.id,
+            workspace.name,
+            workspace.description,
+            _dumps(workspace.metadata),
+            _SCHEMA_VERSION,
         ],
     )
 
 
-def _save_reports(con: duckdb.DuckDBPyConnection, dataset_id: str, reports: dict[str, Report]) -> None:
+def _save_reports(con: duckdb.DuckDBPyConnection, dataset_id: UUID, reports: dict[str, Report]) -> None:
     for report in reports.values():
         con.execute(
             "INSERT INTO _meta_reports VALUES (?, ?, ?, ?)",
-            [dataset_id, report.name, report.content, report.timestamp],
-        )
-
-
-def _save_variables(con: duckdb.DuckDBPyConnection, datatable_id: str, variables: dict[str, Variable]) -> None:
-    for var in variables.values():
-        con.execute(
-            "INSERT INTO _meta_variables VALUES (?, ?, ?, ?, ?, ?, ?)",
-            [datatable_id, var.name, var.unit, var.description, var.type, str(var.aggregation), var.remove_outliers],
+            [
+                dataset_id,
+                report.name,
+                report.content,
+                report.timestamp,
+            ],
         )
 
 
 def _save_datatable(
     con: duckdb.DuckDBPyConnection,
-    dataset_id: UUID,
     datatable: Datatable,
-    parent_id: str | None = None,
-    extension_key: str | None = None,
+    parent_id: UUID | None = None,
+    extension_name: str | None = None,
 ) -> None:
-    dt_id = str(datatable.id)
-    table_name = _df_table_name(dataset_id, datatable.id)
+    table_name = _df_table_name(datatable.dataset.id, datatable.id)
 
-    _save_dataframe(con, table_name, datatable.df, dt_id)
-    _save_variables(con, dt_id, datatable.variables)
+    _save_dataframe(con, table_name, datatable.df, datatable.id)
 
-    os = datatable.outliers_settings
+    variables_json = {}
+    for variable in datatable.variables.values():
+        variables_json[variable.name] = variable.get_dict()
+
+    outliers_settings_json = {}
+
     con.execute(
-        "INSERT INTO _meta_datatables VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO _meta_datatables VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [
-            dt_id,
-            str(dataset_id),
+            datatable.id,
+            datatable.dataset.id,
             datatable.name,
             datatable.description,
             table_name,
-            _dumps(datatable.metadata),
+            variables_json,
+            datatable.metadata,
             parent_id,
-            extension_key,
-            str(os.mode),
-            str(os.type),
-            os.iqr_multiplier,
-            os.min_threshold_enabled,
-            os.min_threshold,
-            os.max_threshold_enabled,
-            os.max_threshold,
+            extension_name,
+            outliers_settings_json,
         ],
     )
 
     for derived in datatable.derived_tables.values():
-        _save_datatable(con, dataset_id, derived, parent_id=dt_id)
+        _save_datatable(con, derived, parent_id=datatable.id)
 
 
-def _save_extension_phenomaster(con: duckdb.DuckDBPyConnection, dataset_id: UUID, dataset: Dataset) -> None:
+def _save_extension_phenomaster(con: duckdb.DuckDBPyConnection, dataset: Dataset) -> None:
     from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 
     if not isinstance(dataset, PhenoMasterDataset):
         return
 
-    for key, ext in dataset.extensions_data.items():
+    for extension_name, extension_data in dataset.extensions_data.items():
         extra: dict[str, Any] = {}
-        if hasattr(ext, "ref_box_mapping"):
-            extra["ref_box_mapping"] = ext.ref_box_mapping
-        if hasattr(ext, "animal_ids"):
-            extra["animal_ids"] = ext.animal_ids
+        if hasattr(extension_data, "ref_box_mapping"):
+            extra["ref_box_mapping"] = extension_data.ref_box_mapping
+        if hasattr(extension_data, "animal_ids"):
+            extra["animal_ids"] = extension_data.animal_ids
 
         con.execute(
             "INSERT INTO _meta_extensions VALUES (?, ?, ?, ?, ?)",
-            [str(dataset_id), key, _class_fqn(ext), ext.name, _dumps(extra)],
+            [
+                dataset.id,
+                extension_name,
+                _class_fqn(extension_data),
+                extension_data.name,
+                extra,
+            ],
         )
 
-        _save_datatable(con, dataset_id, ext.raw_datatable, extension_key=key)
+        _save_datatable(con, extension_data.raw_datatable, extension_name=extension_name)
 
 
-def _save_extension_intellicage(con: duckdb.DuckDBPyConnection, dataset_id: UUID, dataset: Dataset) -> None:
+def _save_extension_intellicage(con: duckdb.DuckDBPyConnection, dataset: Dataset) -> None:
     from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
 
-    if not isinstance(dataset, IntelliCageDataset) or dataset.intellicage_data is None:
+    if not isinstance(dataset, IntelliCageDataset):
         return
-
-    ic = dataset.intellicage_data
-    extra = {"device_ids": ic.device_ids}
-    con.execute(
-        "INSERT INTO _meta_extensions VALUES (?, ?, ?, ?, ?)",
-        [str(dataset_id), "intellicage_data", _class_fqn(ic), ic.name, _dumps(extra)],
-    )
-
-    for data_key, df in ic.raw_data.items():
-        table_name = _ext_table_name(dataset_id, "intellicage_data", data_key)
-        owner_id = f"ext_{_short_id(dataset_id)}_intellicage_data_{data_key}"
-        _save_dataframe(con, table_name, df, owner_id)
-        con.execute(
-            "INSERT INTO _meta_extension_dataframes VALUES (?, ?, ?, ?)",
-            [str(dataset_id), "intellicage_data", data_key, table_name],
-        )
 
 
 def _save_extension_intellimaze(con: duckdb.DuckDBPyConnection, dataset_id: UUID, dataset: Dataset) -> None:
@@ -475,7 +351,13 @@ def _save_extension_intellimaze(con: duckdb.DuckDBPyConnection, dataset_id: UUID
         extra = {"device_ids": ext.device_ids}
         con.execute(
             "INSERT INTO _meta_extensions VALUES (?, ?, ?, ?, ?)",
-            [str(dataset_id), key, _class_fqn(ext), ext.name, _dumps(extra)],
+            [
+                str(dataset_id),
+                key,
+                _class_fqn(ext),
+                ext.name,
+                _dumps(extra),
+            ],
         )
 
         for data_key, df in ext.raw_data.items():
@@ -484,60 +366,81 @@ def _save_extension_intellimaze(con: duckdb.DuckDBPyConnection, dataset_id: UUID
             _save_dataframe(con, table_name, df, owner_id)
             con.execute(
                 "INSERT INTO _meta_extension_dataframes VALUES (?, ?, ?, ?)",
-                [str(dataset_id), key, data_key, table_name],
+                [
+                    str(dataset_id),
+                    key,
+                    data_key,
+                    table_name,
+                ],
             )
 
 
 def _save_dataset(con: duckdb.DuckDBPyConnection, dataset: Dataset) -> None:
-    ds_id = str(dataset.id)
-
     # Store IntelliMaze devices in metadata for reconstruction
-    metadata_to_save = dataset.metadata
     extra_init: dict[str, Any] = {}
     from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 
     if isinstance(dataset, IntelliMazeDataset):
         extra_init["devices"] = dataset.devices
 
+    animals_json = {}
+    for animal in dataset.animals.values():
+        animals_json[animal.id] = animal.get_dict()
+
+    factors_json = {}
+    binning_settings_json = {}
+
     con.execute(
-        "INSERT INTO _meta_datasets VALUES (?, ?, ?)",
-        [ds_id, _class_fqn(dataset), _dumps({"metadata": metadata_to_save, "extra_init": extra_init})],
+        "INSERT INTO _meta_datasets VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        [
+            dataset.id,
+            dataset.name,
+            dataset.description,
+            _class_fqn(dataset),
+            animals_json,
+            factors_json,
+            binning_settings_json,
+            {
+                "metadata": dataset.metadata,
+                "extra_init": extra_init,
+            },
+        ],
     )
 
-    _save_animals(con, ds_id, dataset.animals)
-    _save_factors(con, ds_id, dataset.factors)
-    _save_binning_settings(con, ds_id, dataset.binning_settings)
-    _save_reports(con, ds_id, dataset.reports)
+    _save_reports(con, dataset.id, dataset.reports)
 
     for datatable in dataset.datatables.values():
-        _save_datatable(con, dataset.id, datatable)
+        _save_datatable(con, datatable)
 
-    _save_extension_phenomaster(con, dataset.id, dataset)
-    _save_extension_intellicage(con, dataset.id, dataset)
-    _save_extension_intellimaze(con, dataset.id, dataset)
+    _save_extension_phenomaster(con, dataset)
+    _save_extension_intellicage(con, dataset)
+    # _save_extension_intellimaze(con, dataset.id, dataset)
 
 
-def save_workspace(path: str, workspace: Workspace) -> None:
+def save_workspace(filename: str, workspace: Workspace) -> None:
     """Save a Workspace to a DuckDB file.
 
     Args:
-        path: Destination file path.
+        filename: Destination file path.
         workspace: The workspace to persist.
     """
-    p = Path(path)
-    if p.exists():
-        p.unlink()
+    path = Path(filename)
+    if path.exists():
+        path.unlink()
 
     logger.info("Saving workspace to {}", path)
-    con = duckdb.connect(str(p))
+
+    tic = timeit.default_timer()
+    con = duckdb.connect(path)
     try:
         _create_meta_tables(con)
-        _save_workspace_meta(con, workspace)
+        _save_workspace(con, workspace)
         for dataset in workspace.datasets.values():
             _save_dataset(con, dataset)
     finally:
         con.close()
-    logger.info("Workspace saved successfully")
+
+    logger.info(f"Workspace saved successfully in {(timeit.default_timer() - tic):.3f} sec")
 
 
 # ---------------------------------------------------------------------------

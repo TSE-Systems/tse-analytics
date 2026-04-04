@@ -21,6 +21,8 @@ class IntelliMazeDataset(Dataset):
 
     def __init__(
         self,
+        name: str,
+        description: str,
         metadata: dict | list[dict],
         animals: dict[str, Animal],
         devices: dict[str, list[str]],
@@ -29,11 +31,15 @@ class IntelliMazeDataset(Dataset):
         Initialize an IntelliMazeDataset.
 
         Args:
+            name (str): Name of the dataset.
+            description (str): Description of the dataset.
             metadata (dict | list[dict]): Metadata for the dataset.
             animals (dict[str, Animal]): Dictionary mapping animal IDs to Animal objects.
             devices (dict[str, list[str]]): Dictionary mapping extension names to lists of device IDs.
         """
         super().__init__(
+            name,
+            description,
             metadata,
             animals,
         )

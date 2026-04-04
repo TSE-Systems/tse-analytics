@@ -48,7 +48,7 @@ class IntelliCageData:
         self.name = name
         self.raw_data = raw_data
 
-        self.device_ids = self.raw_data["HardwareEvents"]["Cage"].unique().tolist()
+        self.device_ids = self.raw_data["HardwareEvents [raw]"]["Cage"].unique().tolist()
         self.device_ids.sort()
 
     def get_raw_data(self):

@@ -200,8 +200,6 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
     df.info(buf=buf)
 
     metadata = {
-        "name": name,
-        "description": description,
         "source_path": str(path),
         "experiment_started": str(start_date_time),
         "experiment_stopped": str(end_date_time),
@@ -219,8 +217,10 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
     }
 
     dataset = PhenoMasterDataset(
-        metadata=metadata,
-        animals=animals,
+        name,
+        description,
+        metadata,
+        animals,
     )
 
     # Convert to pyarrow backend

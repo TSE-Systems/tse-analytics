@@ -422,25 +422,14 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                     item.report.dataset, widget, f"Report - {item.report.name}", QIcon(":/icons/table.png")
                 )
             elif isinstance(item, ExtensionTreeItem):
-                match item.name:
-                    case "IntelliCage raw data":
-                        widget = RawDataWidget(
-                            item.extension_data.name,
-                            item.extension_data.get_raw_data(),
-                            item.extension_data.get_device_ids(),
-                            "Cage",
-                            True,
-                            self,
-                        )
-                    case _:
-                        widget = RawDataWidget(
-                            item.extension_data.name,
-                            item.extension_data.get_raw_data(),
-                            item.extension_data.get_device_ids(),
-                            "DeviceId",
-                            False,
-                            self,
-                        )
+                widget = RawDataWidget(
+                    item.extension_data.name,
+                    item.extension_data.get_raw_data(),
+                    item.extension_data.get_device_ids(),
+                    "DeviceId",
+                    False,
+                    self,
+                )
                 LayoutManager.add_widget_to_central_area(
                     manager.get_selected_dataset(),
                     widget,

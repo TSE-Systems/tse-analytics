@@ -225,7 +225,8 @@ class Datatable:
         animal_ids : set[str]
             Set of animal IDs to exclude from the datatable.
         """
-        self.df = exclude_animals_from_df(self.df, animal_ids)
+        if "Animal" in self.df.columns:
+            self.df = exclude_animals_from_df(self.df, animal_ids)
 
     def exclude_time(self, range_start: datetime, range_end: datetime) -> None:
         """
@@ -314,6 +315,9 @@ class Datatable:
         factors : dict[str, Factor]
             Dictionary mapping factor names to Factor objects.
         """
+        if "[raw]" in self.name or "Animal" not in self.df.columns:
+            return
+
         # TODO: should be copy?
         df = self.df.copy()
 

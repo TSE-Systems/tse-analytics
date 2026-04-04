@@ -72,6 +72,8 @@ def _merge_continuous(
     merged_metadata = _merge_metadata(merged_dataset_name, "continuous", merged_animals, datasets)
 
     result = PhenoMasterDataset(
+        merged_dataset_name,
+        "PhenoMaster merged dataset",
         metadata=merged_metadata,
         animals=merged_animals,
     )
@@ -173,6 +175,8 @@ def _merge_overlap(
     merged_metadata = _merge_metadata(merged_dataset_name, "overlap", merged_animals, datasets)
 
     result = PhenoMasterDataset(
+        merged_dataset_name,
+        "PhenoMaster merged dataset",
         metadata=merged_metadata,
         animals=merged_animals,
     )
@@ -256,8 +260,6 @@ def _merge_metadata(
         experiment_stopped = max(dataset.experiment_stopped for dataset in datasets)
 
     result = {
-        "name": merged_dataset_name,
-        "description": "PhenoMaster dataset",
         "merging_mode": merging_mode,
         "experiment_started": str(experiment_started),
         "experiment_stopped": str(experiment_stopped),

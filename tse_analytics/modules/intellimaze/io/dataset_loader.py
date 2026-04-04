@@ -70,9 +70,9 @@ def import_intellimaze_dataset(path: Path) -> IntelliMazeDataset | None:
                 animals = _import_animals_v5(tmp_path / "Animals" / "Animals.animals")
 
             dataset = IntelliMazeDataset(
-                metadata={
-                    "name": path.stem,
-                    "description": "IntelliMaze dataset",
+                path.stem,
+                "IntelliMaze dataset",
+                {
                     "source_path": str(path),
                     "experiment_started": str(
                         pd.to_datetime(metadata["ExperimentStarted"], format="%m/%d/%Y %H:%M:%S")
@@ -83,8 +83,8 @@ def import_intellimaze_dataset(path: Path) -> IntelliMazeDataset | None:
                     "experiment": metadata,
                     "animals": {k: v.get_dict() for (k, v) in animals.items()},
                 },
-                animals=animals,
-                devices=devices,
+                animals,
+                devices,
             )
 
             for extension_name, data_loader in extension_data_loaders.items():

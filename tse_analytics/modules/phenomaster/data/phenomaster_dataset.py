@@ -26,6 +26,8 @@ class PhenoMasterDataset(Dataset):
 
     def __init__(
         self,
+        name: str,
+        description: str,
         metadata: dict | list[dict],
         animals: dict[str, Animal],
     ):
@@ -33,10 +35,14 @@ class PhenoMasterDataset(Dataset):
         Initialize a PhenoMasterDataset.
 
         Args:
+            name (str): Name of the dataset
+            description (str): Description of the dataset
             metadata (dict | list[dict]): Metadata describing the dataset
             animals (dict[str, Animal]): Dictionary mapping animal IDs to Animal objects
         """
         super().__init__(
+            name,
+            description,
             metadata,
             animals,
         )
@@ -99,7 +105,7 @@ class PhenoMasterDataset(Dataset):
         """
         super().exclude_animals(animal_ids)
 
-        for key, extension in self.extensions_data.items():
+        for extension in self.extensions_data.values():
             extension.raw_df = exclude_animals_from_df(extension.raw_df, animal_ids)
 
     def append_fitting_results(

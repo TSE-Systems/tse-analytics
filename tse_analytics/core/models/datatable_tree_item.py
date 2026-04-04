@@ -48,6 +48,9 @@ class DatatableTreeItem(TreeItem):
         Returns:
             QIcon: An icon representing a datatable.
         """
+        if "[raw]" in self.datatable.name:
+            return QIcon(":/icons/icons8-extension-16.png")
+
         return QIcon(":/icons/icons8-data-sheet-16.png")
 
     @property

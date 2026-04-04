@@ -49,6 +49,8 @@ def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportS
     animals = _get_animals(metadata["animals"])
 
     dataset = PhenoMasterDataset(
+        metadata["experiment"]["experiment_no"],
+        "PhenoMaster dataset",
         metadata=metadata,
         animals=animals,
     )
@@ -118,8 +120,6 @@ def _read_metadata(path: Path) -> dict:
         item["id"] = str(item["id"])
 
     # Add standard data fields
-    metadata["name"] = metadata["experiment"]["experiment_no"]
-    metadata["description"] = "PhenoMaster dataset"
     metadata["source_path"] = str(path)
     metadata["experiment_started"] = metadata["experiment"]["start_datetime"]
     metadata["experiment_stopped"] = metadata["experiment"]["end_datetime"]
