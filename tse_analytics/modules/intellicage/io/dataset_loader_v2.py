@@ -19,11 +19,11 @@ def import_intellicage_dataset_v2(path: Path, tmp_path: Path, data_descriptor: d
 
     folder_path = tmp_path / "IntelliCage"
     raw_data = {
-        "Visits [raw]": _import_visits_df(folder_path),
-        "Nosepokes [raw]": _import_nosepokes_df(folder_path),
-        "Environment [raw]": _import_environment_df(folder_path),
-        "HardwareEvents [raw]": _import_hardware_events_df(folder_path),
-        "Log [raw]": _import_log_df(folder_path),
+        "Visits": _import_visits_df(folder_path),
+        "Nosepokes": _import_nosepokes_df(folder_path),
+        "Environment": _import_environment_df(folder_path),
+        "HardwareEvents": _import_hardware_events_df(folder_path),
+        "Log": _import_log_df(folder_path),
     }
 
     dataset = IntelliCageDataset(

@@ -51,7 +51,7 @@ class IntelliCageDataset(Dataset):
             animals,
         )
 
-        device_ids = raw_data["HardwareEvents [raw]"]["Cage"].unique().tolist()
+        device_ids = raw_data["HardwareEvents"]["Cage"].unique().tolist()
         device_ids.sort()
         self.metadata["device_ids"] = device_ids
 
@@ -64,7 +64,7 @@ class IntelliCageDataset(Dataset):
                 raw_df,
                 {},
             )
-            self.add_datatable(datatable)
+            self.add_raw_datatable("IntelliCage", datatable)
 
     def preprocess_data(self) -> None:
         """
@@ -103,7 +103,7 @@ class IntelliCageDataset(Dataset):
         Datatable
             A structured datatable containing processed visit data.
         """
-        df = self.datatables["Visits [raw]"].df.copy()
+        df = self.raw_datatables["IntelliCage"]["Visits"].df.copy()
 
         # Replace animal tags with animal IDs
         tag_to_animal_map = {}
@@ -143,14 +143,14 @@ class IntelliCageDataset(Dataset):
         if self.metadata["data_descriptor"]["Version"] == "Version1":
             df = pd.merge_asof(
                 df,
-                self.datatables["Environment [raw]"].df,
+                self.raw_datatables["IntelliCage"]["Environment"].df,
                 on="DateTime",
                 direction="nearest",
             )
         else:
             df = pd.merge_asof(
                 df,
-                self.datatables["Environment [raw]"].df,
+                self.raw_datatables["IntelliCage"]["Environment"].df,
                 on="DateTime",
                 by="Cage",
                 direction="nearest",
@@ -280,7 +280,7 @@ class IntelliCageDataset(Dataset):
         Datatable
             A structured datatable containing processed nosepoke data.
         """
-        df = self.datatables["Nosepokes [raw]"].df.copy()
+        df = self.raw_datatables["IntelliCage"]["Nosepokes"].df.copy()
         visits_preprocessed_df = visits_datatable.df.copy()
 
         # Sanitize visits table before merging
@@ -339,14 +339,14 @@ class IntelliCageDataset(Dataset):
         if self.metadata["data_descriptor"]["Version"] == "Version1":
             df = pd.merge_asof(
                 df,
-                self.datatables["Environment [raw]"].df,
+                self.raw_datatables["IntelliCage"]["Environment"].df,
                 on="DateTime",
                 direction="nearest",
             )
         else:
             df = pd.merge_asof(
                 df,
-                self.datatables["Environment [raw]"].df,
+                self.raw_datatables["IntelliCage"]["Environment"].df,
                 on="DateTime",
                 by="Cage",
                 direction="nearest",

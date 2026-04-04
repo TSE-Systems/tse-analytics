@@ -696,7 +696,6 @@ def _load_extensions_phenomaster(con: duckdb.DuckDBPyConnection, dataset: Datase
 
 
 def _load_extensions_intellicage(con: duckdb.DuckDBPyConnection, dataset: Dataset) -> None:
-    from tse_analytics.modules.intellicage.data.intellicage_data import IntelliCageData
     from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
 
     if not isinstance(dataset, IntelliCageDataset):
@@ -714,14 +713,6 @@ def _load_extensions_intellicage(con: duckdb.DuckDBPyConnection, dataset: Datase
     extra = _loads(extra_json)
 
     raw_data = _load_extension_dataframes(con, str(dataset.id), "intellicage_data")
-
-    ic = IntelliCageData.__new__(IntelliCageData)
-    ic.dataset = dataset
-    ic.name = ext_name
-    ic.raw_data = raw_data
-    ic.device_ids = extra.get("device_ids", [])
-
-    dataset.intellicage_data = ic
 
 
 def _load_extensions_intellimaze(con: duckdb.DuckDBPyConnection, dataset: Dataset) -> None:

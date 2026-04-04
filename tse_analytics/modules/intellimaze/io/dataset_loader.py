@@ -82,9 +82,9 @@ def import_intellimaze_dataset(path: Path) -> IntelliMazeDataset | None:
                     ),
                     "experiment": metadata,
                     "animals": {k: v.get_dict() for (k, v) in animals.items()},
+                    "devices": devices,
                 },
                 animals,
-                devices,
             )
 
             for extension_name, data_loader in extension_data_loaders.items():
@@ -97,7 +97,7 @@ def import_intellimaze_dataset(path: Path) -> IntelliMazeDataset | None:
     factors: dict[str, Factor] = {}
     expected_factor_names = ("Group", "Sex", "Strain", "Treatment")
     for factor_name in expected_factor_names:
-        factor = _extract_factor(factor_name, factors, dataset)
+        factor = _extract_factor(factor_name, dataset)
         if factor is not None:
             factors[factor.name] = factor
 
@@ -301,7 +301,7 @@ def _import_animals_v6(animals_file_path: Path, groups_file_path: Path) -> dict 
     return animals
 
 
-def _extract_factor(factor_name: str, factors: dict[str, Factor], dataset: IntelliMazeDataset) -> Factor | None:
+def _extract_factor(factor_name: str, dataset: IntelliMazeDataset) -> Factor | None:
     """
     Extract a factor from dataset properties.
 
@@ -309,7 +309,6 @@ def _extract_factor(factor_name: str, factors: dict[str, Factor], dataset: Intel
 
     Args:
         factor_name (str): The name of the factor to extract.
-        factors (dict[str, Factor]): Dictionary of existing factors.
         dataset (IntelliMazeDataset): The dataset containing animal properties.
 
     Returns:

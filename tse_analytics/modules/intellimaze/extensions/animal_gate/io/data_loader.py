@@ -9,7 +9,9 @@ as well as variable data.
 from pathlib import Path
 
 import pandas as pd
+import pyarrow as pa
 
+from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 from tse_analytics.modules.intellimaze.extensions.animal_gate.data.animal_gate_data import AnimalGateData
 from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
@@ -55,7 +57,7 @@ def import_data(
     return data
 
 
-def _import_sessions_df(folder_path: Path) -> pd.DataFrame | None:
+def _import_sessions_df(folder_path: Path) -> pd.DataFrame:
     """
     Import sessions data from a file.
 
@@ -66,21 +68,21 @@ def _import_sessions_df(folder_path: Path) -> pd.DataFrame | None:
         folder_path (Path): Path to the folder containing the Sessions.txt file.
 
     Returns:
-        pd.DataFrame | None: A DataFrame containing the sessions data, or None if the file doesn't exist.
+        pd.DataFrame: A DataFrame containing the sessions data.
     """
     file_path = folder_path / "Sessions.txt"
     if not file_path.is_file():
-        return None
+        raise FileNotFoundError(f"File not found: {file_path}")
 
     dtype = {
-        "DeviceId": "string",
-        "IdSectionVisited": "UInt8",
-        "StandbySectionVisited": "UInt8",
-        "Direction": "string",
-        "Weight": "Float64",
-        "Tag": "string",
-        "Start": "string",
-        "End": "string",
+        "DeviceId": "string[pyarrow]",
+        "IdSectionVisited": "uint8[pyarrow]",
+        "StandbySectionVisited": "uint8[pyarrow]",
+        "Direction": "string[pyarrow]",
+        "Weight": "float64[pyarrow]",
+        "Tag": "string[pyarrow]",
+        "Start": "string[pyarrow]",
+        "End": "string[pyarrow]",
     }
 
     df = pd.read_csv(
@@ -88,23 +90,36 @@ def _import_sessions_df(folder_path: Path) -> pd.DataFrame | None:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
+        dtype_backend="pyarrow",
     )
 
     # TODO: does -1 means no weight measurement?
     df["Weight"] = df["Weight"].replace(-1, pd.NA)
 
     # Convert DateTime columns
-    df["Start"] = pd.to_datetime(
-        df["Start"],
-        format="ISO8601",
-        utc=False,
-    ).dt.tz_localize(None)
+    df["Start"] = (
+        pd
+        .to_datetime(
+            df["Start"],
+            format="ISO8601",
+            utc=False,
+        )
+        .dt.tz_localize(None)
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
+    )
 
-    df["End"] = pd.to_datetime(
-        df["End"],
-        format="ISO8601",
-        utc=False,
-    ).dt.tz_localize(None)
+    df["End"] = (
+        pd
+        .to_datetime(
+            df["End"],
+            format="ISO8601",
+            utc=False,
+        )
+        .dt.tz_localize(None)
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
+    )
 
     # Convert categorical types
     df = df.astype({
@@ -116,10 +131,13 @@ def _import_sessions_df(folder_path: Path) -> pd.DataFrame | None:
     df.sort_values(["Start"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
+    # Convert to pyarrow backend
+    df = df.convert_dtypes(dtype_backend="pyarrow")
+
     return df
 
 
-def _import_antenna_df(folder_path: Path) -> pd.DataFrame | None:
+def _import_antenna_df(folder_path: Path) -> pd.DataFrame:
     """
     Import antenna data from a file.
 
@@ -130,17 +148,17 @@ def _import_antenna_df(folder_path: Path) -> pd.DataFrame | None:
         folder_path (Path): Path to the folder containing the Antenna.txt file.
 
     Returns:
-        pd.DataFrame | None: A DataFrame containing the antenna data, or None if the file doesn't exist.
+        pd.DataFrame: A DataFrame containing the antenna data.
     """
     file_path = folder_path / "Antenna.txt"
     if not file_path.is_file():
-        return None
+        raise FileNotFoundError(f"File not found: {file_path}")
 
     dtype = {
-        "Time": "string",
-        "DeviceId": "string",
-        "Tag": "string",
-        "AnimalName": "string",
+        "Time": "string[pyarrow]",
+        "DeviceId": "string[pyarrow]",
+        "Tag": "string[pyarrow]",
+        "AnimalName": "string[pyarrow]",
     }
 
     df = pd.read_csv(
@@ -148,14 +166,21 @@ def _import_antenna_df(folder_path: Path) -> pd.DataFrame | None:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
+        dtype_backend="pyarrow",
     )
 
     # Convert DateTime columns
-    df["Time"] = pd.to_datetime(
-        df["Time"],
-        format="ISO8601",
-        utc=False,
-    ).dt.tz_localize(None)
+    df["Time"] = (
+        pd
+        .to_datetime(
+            df["Time"],
+            format="ISO8601",
+            utc=False,
+        )
+        .dt.tz_localize(None)
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
+    )
 
     # Convert categorical types
     df = df.astype({
@@ -166,10 +191,13 @@ def _import_antenna_df(folder_path: Path) -> pd.DataFrame | None:
     df.sort_values(["Time"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
+    # Convert to pyarrow backend
+    df = df.convert_dtypes(dtype_backend="pyarrow")
+
     return df
 
 
-def _import_log_df(folder_path: Path) -> pd.DataFrame | None:
+def _import_log_df(folder_path: Path) -> pd.DataFrame:
     """
     Import log data from a file.
 
@@ -180,19 +208,19 @@ def _import_log_df(folder_path: Path) -> pd.DataFrame | None:
         folder_path (Path): Path to the folder containing the Log.txt file.
 
     Returns:
-        pd.DataFrame | None: A DataFrame containing the log data, or None if the file doesn't exist.
+        pd.DataFrame: A DataFrame containing the log data.
     """
     file_path = folder_path / "Log.txt"
     if not file_path.is_file():
-        return None
+        raise FileNotFoundError(f"File not found: {file_path}")
 
     dtype = {
-        "DateTime": "string",
-        "DeviceId": "string",
-        "Phase": "string",
-        "Flag": "string",
-        "Tag": "string",
-        "Description": "string",
+        "DateTime": "string[pyarrow]",
+        "DeviceId": "string[pyarrow]",
+        "Phase": "string[pyarrow]",
+        "Flag": "string[pyarrow]",
+        "Tag": "string[pyarrow]",
+        "Description": "string[pyarrow]",
     }
 
     df = pd.read_csv(
@@ -200,14 +228,21 @@ def _import_log_df(folder_path: Path) -> pd.DataFrame | None:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
+        dtype_backend="pyarrow",
     )
 
     # Convert DateTime columns
-    df["DateTime"] = pd.to_datetime(
-        df["DateTime"],
-        format="ISO8601",
-        utc=False,
-    ).dt.tz_localize(None)
+    df["DateTime"] = (
+        pd
+        .to_datetime(
+            df["DateTime"],
+            format="ISO8601",
+            utc=False,
+        )
+        .dt.tz_localize(None)
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
+    )
 
     # Convert categorical types
     df = df.astype({
@@ -220,10 +255,13 @@ def _import_log_df(folder_path: Path) -> pd.DataFrame | None:
     df.sort_values(["DateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
+    # Convert to pyarrow backend
+    df = df.convert_dtypes(dtype_backend="pyarrow")
+
     return df
 
 
-def _import_input_df(folder_path: Path) -> pd.DataFrame | None:
+def _import_input_df(folder_path: Path) -> pd.DataFrame:
     """
     Import input data from a file.
 
@@ -233,21 +271,25 @@ def _import_input_df(folder_path: Path) -> pd.DataFrame | None:
         folder_path (Path): Path to the folder containing the Input.txt file.
 
     Returns:
-        pd.DataFrame | None: A DataFrame containing the input data, or None if the file doesn't exist.
+        pd.DataFrame: A DataFrame containing the input data.
     """
     file_path = folder_path / "Input.txt"
     if not file_path.is_file():
-        return None
+        raise FileNotFoundError(f"File not found: {file_path}")
 
     df = pd.read_csv(
         file_path,
         header=None,
+        dtype_backend="pyarrow",
     )
+
+    # Convert to pyarrow backend
+    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     return df
 
 
-def _import_output_df(folder_path: Path) -> pd.DataFrame | None:
+def _import_output_df(folder_path: Path) -> pd.DataFrame:
     """
     Import output data from a file.
 
@@ -261,11 +303,15 @@ def _import_output_df(folder_path: Path) -> pd.DataFrame | None:
     """
     file_path = folder_path / "Output.txt"
     if not file_path.is_file():
-        return None
+        raise FileNotFoundError(f"File not found: {file_path}")
 
     df = pd.read_csv(
         file_path,
         header=None,
+        dtype_backend="pyarrow",
     )
+
+    # Convert to pyarrow backend
+    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     return df

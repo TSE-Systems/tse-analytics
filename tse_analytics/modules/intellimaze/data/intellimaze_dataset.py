@@ -15,7 +15,6 @@ class IntelliMazeDataset(Dataset):
     It manages device information and extension data for various IntelliMaze components.
 
     Attributes:
-        devices (dict[str, list[str]]): Dictionary mapping extension names to lists of device IDs.
         extensions_data (dict[str, IntelliMazeExtensionData]): Dictionary mapping extension names to their data.
     """
 
@@ -25,7 +24,6 @@ class IntelliMazeDataset(Dataset):
         description: str,
         metadata: dict | list[dict],
         animals: dict[str, Animal],
-        devices: dict[str, list[str]],
     ):
         """
         Initialize an IntelliMazeDataset.
@@ -35,7 +33,6 @@ class IntelliMazeDataset(Dataset):
             description (str): Description of the dataset.
             metadata (dict | list[dict]): Metadata for the dataset.
             animals (dict[str, Animal]): Dictionary mapping animal IDs to Animal objects.
-            devices (dict[str, list[str]]): Dictionary mapping extension names to lists of device IDs.
         """
         super().__init__(
             name,
@@ -44,9 +41,14 @@ class IntelliMazeDataset(Dataset):
             animals,
         )
 
-        self.devices = devices
-
         self.extensions_data: dict[str, IntelliMazeExtensionData] = {}
+
+    @property
+    def devices(self) -> dict[str, list[str]]:
+        """
+        Dictionary mapping extension names to lists of device IDs
+        """
+        return self.metadata.get("devices", {})
 
     def get_tag_to_name_map(self) -> dict[str, str]:
         """

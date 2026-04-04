@@ -64,6 +64,8 @@ class Dataset:
         self.datatables: dict[str, Datatable] = {}
         self.reports: dict[str, Report] = {}
 
+        self.raw_datatables: dict[str, dict[str, Datatable]] = {}
+
         self.binning_settings = BinningSettings()
 
     @property
@@ -76,7 +78,7 @@ class Dataset:
         str
             The source path of the dataset from metadata, or an empty string if not available.
         """
-        return self.metadata["source_path"] if "source_path" in self.metadata else ""
+        return self.metadata.get("source_path", "")
 
     @property
     def runs(self) -> int:
@@ -132,6 +134,22 @@ class Dataset:
         """
         self.datatables[datatable.name] = datatable
 
+    def add_raw_datatable(self, extension_name: str, datatable: Datatable) -> None:
+        """
+        Add raw datatable to the dataset.
+
+        Parameters
+        ----------
+        extension_name : str
+            Name of the extension that created the datatable.
+        datatable : Datatable
+            The raw datatable to add to the dataset.
+        """
+        datatable.metadata["extension_name"] = extension_name
+        if extension_name not in self.raw_datatables:
+            self.raw_datatables[extension_name] = {}
+        self.raw_datatables[extension_name][datatable.name] = datatable
+
     def remove_datatable(self, datatable: Datatable) -> None:
         """
         Remove a datatable and its derived subtree from the dataset.
@@ -145,10 +163,18 @@ class Dataset:
         datatable : Datatable
             The datatable to remove from the dataset.
         """
-        if datatable.parent_table is None:
-            self.datatables.pop(datatable.name)
+        if datatable.extension_name:
+            # Remove raw datatable
+            if datatable.parent_table is None:
+                self.raw_datatables[datatable.extension_name].pop(datatable.name)
+            else:
+                datatable.parent_table.derived_tables.pop(datatable.name)
         else:
-            datatable.parent_table.derived_tables.pop(datatable.name)
+            # Remove regular datatable
+            if datatable.parent_table is None:
+                self.datatables.pop(datatable.name)
+            else:
+                datatable.parent_table.derived_tables.pop(datatable.name)
 
     def rename(self, name: str) -> None:
         """
@@ -366,10 +392,24 @@ class Dataset:
             The dataset tree item to add children to.
         """
         dataset_tree_item.clear()
+
+        # Add datatables nodes
         for datatable in self.datatables.values():
             datatable_tree_item = DatatableTreeItem(datatable)
             self._add_derived_tables(datatable_tree_item, datatable)
             dataset_tree_item.add_child(datatable_tree_item)
+
+        # Add raw datatables nodes
+        if len(self.raw_datatables) > 0:
+            raw_datatables_node = TreeItem("Raw Data")
+            dataset_tree_item.add_child(raw_datatables_node)
+            for extension_name, extension_datatables in self.raw_datatables.items():
+                extension_node = TreeItem(extension_name)
+                raw_datatables_node.add_child(extension_node)
+                for datatable in extension_datatables.values():
+                    raw_datatable_tree_item = DatatableTreeItem(datatable)
+                    self._add_derived_tables(raw_datatable_tree_item, datatable)
+                    extension_node.add_child(raw_datatable_tree_item)
 
         # Add reports nodes
         if len(self.reports) > 0:

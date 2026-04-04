@@ -11,9 +11,9 @@ import pickle
 from PySide6.QtCore import QTimer
 
 from tse_analytics.core import messaging
-from tse_analytics.core.data.storage import load_workspace as _load_from_duckdb
-from tse_analytics.core.data.storage import save_workspace as _save_to_duckdb
 from tse_analytics.core.data.workspace import Workspace
+from tse_analytics.core.io.storage import load_workspace as _load_from_duckdb
+from tse_analytics.core.io.storage import save_workspace as _save_to_duckdb
 from tse_analytics.core.services.selection_service import SelectionService
 
 

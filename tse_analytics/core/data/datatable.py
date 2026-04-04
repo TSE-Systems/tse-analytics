@@ -75,6 +75,10 @@ class Datatable:
         self.derived_tables: dict[str, Datatable] = {}
 
     @property
+    def extension_name(self) -> str | None:
+        return self.metadata.get("extension_name", None)
+
+    @property
     def sampling_interval(self) -> pd.Timedelta | None:
         return self.metadata.get("sampling_interval", None)
 
@@ -315,7 +319,7 @@ class Datatable:
         factors : dict[str, Factor]
             Dictionary mapping factor names to Factor objects.
         """
-        if "[raw]" in self.name or "Animal" not in self.df.columns:
+        if "Animal" not in self.df.columns:
             return
 
         # TODO: should be copy?

@@ -24,11 +24,11 @@ def import_intellicage_dataset_v1(path: Path, tmp_path: Path, data_descriptor: d
     animals = _import_animals(tmp_path / "Animals.txt")
 
     raw_data = {
-        "Visits [raw]": _import_visits_df(tmp_path),
-        "Nosepokes [raw]": _import_nosepokes_df(tmp_path),
-        "Environment [raw]": _import_environment_df(tmp_path),
-        "HardwareEvents [raw]": _import_hardware_events_df(tmp_path),
-        "Log [raw]": _import_log_df(tmp_path),
+        "Visits": _import_visits_df(tmp_path),
+        "Nosepokes": _import_nosepokes_df(tmp_path),
+        "Environment": _import_environment_df(tmp_path),
+        "HardwareEvents": _import_hardware_events_df(tmp_path),
+        "Log": _import_log_df(tmp_path),
     }
 
     dataset = IntelliCageDataset(
