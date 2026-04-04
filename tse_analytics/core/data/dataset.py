@@ -294,8 +294,14 @@ class Dataset:
                     new_meta_animals[item["id"]] = item
             self.metadata["animals"] = new_meta_animals
 
+        # Exclude animals from regular datatables
         for datatable in self.datatables.values():
             datatable.exclude_animals(animal_ids)
+
+        # Exclude animals from raw datatables
+        for extension_name, extension_datatables in self.raw_datatables.items():
+            for datatable in extension_datatables.values():
+                datatable.exclude_animals(animal_ids)
 
     def exclude_time(self, range_start: datetime, range_end: datetime) -> None:
         """

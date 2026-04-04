@@ -11,16 +11,17 @@ from pathlib import Path
 import pandas as pd
 import pyarrow as pa
 
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
-from tse_analytics.modules.intellimaze.extensions.animal_gate.data.animal_gate_data import AnimalGateData
+from tse_analytics.modules.intellimaze.extensions.animal_gate.data import processor
 from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
 
 
 def import_data(
     folder_path: Path,
     dataset: IntelliMazeDataset,
-) -> AnimalGateData:
+) -> dict[str, Datatable]:
     """
     Import Animal Gate data from files.
 
@@ -30,34 +31,25 @@ def import_data(
     Args:
         folder_path (Path): Path to the folder containing the data files.
         dataset (IntelliMazeDataset): The dataset to add the data to.
-
-    Returns:
-        AnimalGateData: An AnimalGateData object containing the imported data.
     """
-    raw_data = {
-        "Sessions": _import_sessions_df(folder_path),
-        "Antenna": _import_antenna_df(folder_path),
-        "Log": _import_log_df(folder_path),
-        "Input": _import_input_df(folder_path),
-        "Output": _import_output_df(folder_path),
+    extension_data = {
+        "Sessions": _import_sessions_df(dataset, folder_path / "Sessions.txt"),
+        "Antenna": _import_antenna_df(dataset, folder_path / "Antenna.txt"),
+        "Log": _import_log_df(dataset, folder_path / "Log.txt"),
+        "Input": _import_input_df(dataset, folder_path / "Input.txt"),
+        "Output": _import_output_df(dataset, folder_path / "Output.txt"),
     }
 
-    variables_data = import_variable_data(folder_path)
+    variables_data = import_variable_data(dataset, folder_path)
     if len(variables_data) > 0:
-        raw_data = raw_data | variables_data
+        extension_data = extension_data | variables_data
 
-    data = AnimalGateData(
-        dataset,
-        "AnimalGate extension data",
-        raw_data,
-    )
+    processor.preprocess_data(dataset, extension_data)
 
-    data.preprocess_data()
-
-    return data
+    return extension_data
 
 
-def _import_sessions_df(folder_path: Path) -> pd.DataFrame:
+def _import_sessions_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
     """
     Import sessions data from a file.
 
@@ -70,7 +62,6 @@ def _import_sessions_df(folder_path: Path) -> pd.DataFrame:
     Returns:
         pd.DataFrame: A DataFrame containing the sessions data.
     """
-    file_path = folder_path / "Sessions.txt"
     if not file_path.is_file():
         raise FileNotFoundError(f"File not found: {file_path}")
 
@@ -134,10 +125,19 @@ def _import_sessions_df(folder_path: Path) -> pd.DataFrame:
     # Convert to pyarrow backend
     df = df.convert_dtypes(dtype_backend="pyarrow")
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "Sessions",
+        f"{processor.EXTENSION_NAME} sessions data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable
 
 
-def _import_antenna_df(folder_path: Path) -> pd.DataFrame:
+def _import_antenna_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
     """
     Import antenna data from a file.
 
@@ -150,7 +150,6 @@ def _import_antenna_df(folder_path: Path) -> pd.DataFrame:
     Returns:
         pd.DataFrame: A DataFrame containing the antenna data.
     """
-    file_path = folder_path / "Antenna.txt"
     if not file_path.is_file():
         raise FileNotFoundError(f"File not found: {file_path}")
 
@@ -194,10 +193,19 @@ def _import_antenna_df(folder_path: Path) -> pd.DataFrame:
     # Convert to pyarrow backend
     df = df.convert_dtypes(dtype_backend="pyarrow")
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "Antenna",
+        f"{processor.EXTENSION_NAME} antenna data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable
 
 
-def _import_log_df(folder_path: Path) -> pd.DataFrame:
+def _import_log_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
     """
     Import log data from a file.
 
@@ -210,7 +218,6 @@ def _import_log_df(folder_path: Path) -> pd.DataFrame:
     Returns:
         pd.DataFrame: A DataFrame containing the log data.
     """
-    file_path = folder_path / "Log.txt"
     if not file_path.is_file():
         raise FileNotFoundError(f"File not found: {file_path}")
 
@@ -258,10 +265,19 @@ def _import_log_df(folder_path: Path) -> pd.DataFrame:
     # Convert to pyarrow backend
     df = df.convert_dtypes(dtype_backend="pyarrow")
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "Log",
+        f"{processor.EXTENSION_NAME} log data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable
 
 
-def _import_input_df(folder_path: Path) -> pd.DataFrame:
+def _import_input_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
     """
     Import input data from a file.
 
@@ -273,7 +289,6 @@ def _import_input_df(folder_path: Path) -> pd.DataFrame:
     Returns:
         pd.DataFrame: A DataFrame containing the input data.
     """
-    file_path = folder_path / "Input.txt"
     if not file_path.is_file():
         raise FileNotFoundError(f"File not found: {file_path}")
 
@@ -286,10 +301,19 @@ def _import_input_df(folder_path: Path) -> pd.DataFrame:
     # Convert to pyarrow backend
     df = df.convert_dtypes(dtype_backend="pyarrow")
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "Input",
+        f"{processor.EXTENSION_NAME} input data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable
 
 
-def _import_output_df(folder_path: Path) -> pd.DataFrame:
+def _import_output_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
     """
     Import output data from a file.
 
@@ -301,7 +325,6 @@ def _import_output_df(folder_path: Path) -> pd.DataFrame:
     Returns:
         pd.DataFrame | None: A DataFrame containing the output data, or None if the file doesn't exist.
     """
-    file_path = folder_path / "Output.txt"
     if not file_path.is_file():
         raise FileNotFoundError(f"File not found: {file_path}")
 
@@ -314,4 +337,13 @@ def _import_output_df(folder_path: Path) -> pd.DataFrame:
     # Convert to pyarrow backend
     df = df.convert_dtypes(dtype_backend="pyarrow")
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "Output",
+        f"{processor.EXTENSION_NAME} output data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable

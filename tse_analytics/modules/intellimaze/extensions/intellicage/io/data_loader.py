@@ -3,41 +3,35 @@ from pathlib import Path
 import pandas as pd
 import pyarrow as pa
 
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
-from tse_analytics.modules.intellimaze.extensions.intellicage.data.intellicage_data import IntelliCageData
+from tse_analytics.modules.intellimaze.extensions.intellicage.data import processor
 from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
 
 
 def import_data(
     folder_path: Path,
     dataset: IntelliMazeDataset,
-) -> IntelliCageData:
-    raw_data = {
-        "Visits": _import_visits_df(folder_path),
-        "Nosepokes": _import_nosepokes_df(folder_path),
-        "Environment": _import_environment_df(folder_path),
-        "HardwareEvents": _import_hardware_events_df(folder_path),
-        "Log": _import_log_df(folder_path),
+) -> dict[str, Datatable]:
+    extension_data = {
+        "Visits": _import_visits_df(dataset, folder_path / "Visit.txt"),
+        "Nosepokes": _import_nosepokes_df(dataset, folder_path / "Nosepoke.txt"),
+        "Environment": _import_environment_df(dataset, folder_path / "Environment.txt"),
+        "HardwareEvents": _import_hardware_events_df(dataset, folder_path / "Hardware.txt"),
+        "Log": _import_log_df(dataset, folder_path / "Log.txt"),
     }
 
-    variables_data = import_variable_data(folder_path)
+    variables_data = import_variable_data(dataset, folder_path)
     if len(variables_data) > 0:
-        raw_data = raw_data | variables_data
+        extension_data = extension_data | variables_data
 
-    data = IntelliCageData(
-        dataset,
-        "IntelliCage extension data",
-        raw_data,
-    )
+    processor.preprocess_data(dataset, extension_data)
 
-    data.preprocess_data()
-
-    return data
+    return extension_data
 
 
-def _import_visits_df(folder_path: Path) -> pd.DataFrame:
-    file_path = folder_path / "Visit.txt"
+def _import_visits_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
         raise FileNotFoundError(f"Visit file not found: {file_path}")
 
@@ -126,11 +120,19 @@ def _import_visits_df(folder_path: Path) -> pd.DataFrame:
     # Convert to pyarrow backend
     df = df.convert_dtypes(dtype_backend="pyarrow")
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "Visits",
+        f"{processor.EXTENSION_NAME} visits data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable
 
 
-def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame:
-    file_path = folder_path / "Nosepoke.txt"
+def _import_nosepokes_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
         raise FileNotFoundError(f"Nosepoke file not found: {file_path}")
 
@@ -213,11 +215,19 @@ def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame:
     # Convert to pyarrow backend
     df = df.convert_dtypes(dtype_backend="pyarrow")
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "Nosepokes",
+        f"{processor.EXTENSION_NAME} nosepokes data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable
 
 
-def _import_environment_df(folder_path: Path) -> pd.DataFrame:
-    file_path = folder_path / "Environment.txt"
+def _import_environment_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
         raise FileNotFoundError(f"Environment file not found: {file_path}")
 
@@ -268,11 +278,19 @@ def _import_environment_df(folder_path: Path) -> pd.DataFrame:
     # Convert to pyarrow backend
     df = df.convert_dtypes(dtype_backend="pyarrow")
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "Environment",
+        f"{processor.EXTENSION_NAME} environment data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable
 
 
-def _import_hardware_events_df(folder_path: Path) -> pd.DataFrame:
-    file_path = folder_path / "Hardware.txt"
+def _import_hardware_events_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
         raise FileNotFoundError(f"Hardware events file not found: {file_path}")
 
@@ -331,11 +349,19 @@ def _import_hardware_events_df(folder_path: Path) -> pd.DataFrame:
     # Convert to pyarrow backend
     df = df.convert_dtypes(dtype_backend="pyarrow")
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "HardwareEvents",
+        f"{processor.EXTENSION_NAME} hardware events data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable
 
 
-def _import_log_df(folder_path: Path) -> pd.DataFrame:
-    file_path = folder_path / "Log.txt"
+def _import_log_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
         raise FileNotFoundError(f"Log file not found: {file_path}")
 
@@ -407,4 +433,13 @@ def _import_log_df(folder_path: Path) -> pd.DataFrame:
     # Convert to pyarrow backend
     df = df.convert_dtypes(dtype_backend="pyarrow")
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "Log",
+        f"{processor.EXTENSION_NAME} log data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable

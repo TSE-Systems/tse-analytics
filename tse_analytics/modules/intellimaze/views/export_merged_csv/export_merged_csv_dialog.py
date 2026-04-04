@@ -3,9 +3,26 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QFileDialog, QListWidgetItem, QWidget
 
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
+from tse_analytics.modules.intellimaze.extensions import (
+    actor,
+    animal_gate,
+    consumption_scale,
+    intellicage,
+    operant_device,
+    running_wheel,
+)
 from tse_analytics.modules.intellimaze.views.export_merged_csv.export_merged_csv_dialog_ui import (
     Ui_ExportMergedCsvDialog,
 )
+
+extension_csv_getters = {
+    actor.EXTENSION_NAME: actor.data.get_csv_data,
+    animal_gate.EXTENSION_NAME: animal_gate.data.get_csv_data,
+    consumption_scale.EXTENSION_NAME: consumption_scale.data.get_csv_data,
+    intellicage.EXTENSION_NAME: intellicage.data.get_csv_data,
+    operant_device.EXTENSION_NAME: operant_device.data.get_csv_data,
+    running_wheel.EXTENSION_NAME: running_wheel.data.get_csv_data,
+}
 
 
 class ExportMergedCsvDialog(QDialog):
@@ -16,7 +33,7 @@ class ExportMergedCsvDialog(QDialog):
 
         self.dataset = dataset
 
-        for extension_name in dataset.extensions_data.keys():
+        for extension_name in dataset.raw_datatables.keys():
             item = QListWidgetItem(extension_name)
             item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
             item.setCheckState(Qt.CheckState.Unchecked)
@@ -41,7 +58,9 @@ class ExportMergedCsvDialog(QDialog):
             for index in range(self.ui.listWidgetExtensions.count()):
                 item = self.ui.listWidgetExtensions.item(index)
                 if item.checkState() == Qt.CheckState.Checked:
-                    extension_name, csv_data = self.dataset.extensions_data[item.text()].get_csv_data(
+                    extension_name, csv_data = extension_csv_getters[item.text()](
+                        self.dataset,
+                        self.dataset.raw_datatables[item.text()],
                         export_registrations,
                         export_variables,
                     )

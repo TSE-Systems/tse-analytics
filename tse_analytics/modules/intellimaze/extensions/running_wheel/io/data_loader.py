@@ -3,38 +3,32 @@ from pathlib import Path
 import pandas as pd
 import pyarrow as pa
 
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
-from tse_analytics.modules.intellimaze.extensions.running_wheel.data.running_wheel_data import RunningWheelData
+from tse_analytics.modules.intellimaze.extensions.running_wheel.data import processor
 from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
 
 
 def import_data(
     folder_path: Path,
     dataset: IntelliMazeDataset,
-) -> RunningWheelData:
-    raw_data = {
-        "Registration": _import_registration_df(folder_path),
-        "Model": _import_model_df(folder_path),
+) -> dict[str, Datatable]:
+    extension_data = {
+        "Registration": _import_registration_df(dataset, folder_path / "Registration.txt"),
+        "Model": _import_model_df(dataset, folder_path / "Model.txt"),
     }
 
-    variables_data = import_variable_data(folder_path)
+    variables_data = import_variable_data(dataset, folder_path)
     if len(variables_data) > 0:
-        raw_data = raw_data | variables_data
+        extension_data = extension_data | variables_data
 
-    data = RunningWheelData(
-        dataset,
-        "RunningWheel extension data",
-        raw_data,
-    )
+    processor.preprocess_data(dataset, extension_data)
 
-    data.preprocess_data()
-
-    return data
+    return extension_data
 
 
-def _import_registration_df(folder_path: Path) -> pd.DataFrame:
-    file_path = folder_path / "Registration.txt"
+def _import_registration_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
         raise FileNotFoundError(f"Registration file not found: {file_path}")
 
@@ -79,11 +73,19 @@ def _import_registration_df(folder_path: Path) -> pd.DataFrame:
     # Convert to pyarrow backend
     df = df.convert_dtypes(dtype_backend="pyarrow")
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "Registration",
+        f"{processor.EXTENSION_NAME} registration data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable
 
 
-def _import_model_df(folder_path: Path) -> pd.DataFrame:
-    file_path = folder_path / "Model.txt"
+def _import_model_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
         raise FileNotFoundError(f"Model file not found: {file_path}")
 
@@ -128,4 +130,13 @@ def _import_model_df(folder_path: Path) -> pd.DataFrame:
     # Convert to pyarrow backend
     df = df.convert_dtypes(dtype_backend="pyarrow")
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "Model",
+        f"{processor.EXTENSION_NAME} model data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable

@@ -2,10 +2,64 @@ import pandas as pd
 
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
-from tse_analytics.modules.intellimaze.data.intellimaze_extension_data import IntelliMazeExtensionData
 
 
-def get_combined_variables_table(extension_data: IntelliMazeExtensionData) -> pd.DataFrame:
+def get_variables_csv_data(
+    extension_data: dict[str, Datatable],
+    extension_name: str,
+    tag_to_animal_map: dict[str, str],
+) -> dict[str, pd.DataFrame]:
+    """
+    Get CSV data for variables.
+
+    This method converts variable data to a format suitable for CSV export.
+
+    Args:
+        extension_name (str): The name of the extension.
+        tag_to_animal_map (dict[str, str]): Dictionary mapping animal tags to animal IDs.
+
+    Returns:
+        dict[str, pd.DataFrame]: Dictionary mapping variable types to DataFrames.
+    """
+    result: dict[str, pd.DataFrame] = {}
+
+    variables_dict = {
+        "DoubleVariables": "Doubles",
+        "IntegerVariables": "Integers",
+        "BooleanVariables": "Booleans",
+    }
+
+    for name, type in variables_dict.items():
+        if name in extension_data:
+            data: dict[str, list | str] = {
+                "DateTime": [],
+                "DeviceType": extension_name,
+                "DeviceId": [],
+                "AnimalName": [],
+                "AnimalTag": [],
+                "TableType": type,
+                "Name": [],
+                "Data": [],
+            }
+
+            for row in extension_data[name].df.itertuples():
+                data["DateTime"].append(row.Time)
+                data["DeviceId"].append(row.DeviceId)
+                data["AnimalName"].append(tag_to_animal_map[row.Tag] if row.Tag == row.Tag else "")
+                data["AnimalTag"].append(row.Tag if row.Tag == row.Tag else "")
+
+                data["Name"].append(row.Name)
+                data["Data"].append(row.Data)
+
+            result[name] = pd.DataFrame(data)
+
+    return result
+
+
+def get_combined_variables_table(
+    dataset: IntelliMazeDataset,
+    extension_data: dict[str, Datatable],
+) -> pd.DataFrame:
     """
     Combine variable tables from different sources into a single DataFrame.
 
@@ -21,7 +75,7 @@ def get_combined_variables_table(extension_data: IntelliMazeExtensionData) -> pd
     result = pd.DataFrame()
     table_names = ["IntegerVariables", "DoubleVariables", "BooleanVariables"]
     for table_name in table_names:
-        df = _preprocess_variable_table(table_name, extension_data)
+        df = _preprocess_variable_table(dataset, table_name, extension_data)
         if df is not None:
             result = pd.concat([result, df], ignore_index=True, sort=False)
     result.sort_values(["DateTime"], inplace=True)
@@ -34,7 +88,11 @@ def get_combined_variables_table(extension_data: IntelliMazeExtensionData) -> pd
     return result
 
 
-def _preprocess_variable_table(table_name: str, extension_data: IntelliMazeExtensionData) -> pd.DataFrame | None:
+def _preprocess_variable_table(
+    dataset: IntelliMazeDataset,
+    table_name: str,
+    extension_data: dict[str, Datatable],
+) -> pd.DataFrame | None:
     """
     Preprocess a variable table for use in analysis.
 
@@ -55,14 +113,14 @@ def _preprocess_variable_table(table_name: str, extension_data: IntelliMazeExten
     Returns:
         pd.DataFrame | None: The preprocessed DataFrame, or None if the table doesn't exist.
     """
-    if table_name not in extension_data.raw_data:
+    if table_name not in extension_data:
         return None
 
-    df = extension_data.raw_data[table_name].copy()
+    df = extension_data[table_name].df.copy()
 
     # Replace animal tags with animal IDs
     tag_to_animal_map = {}
-    for animal in extension_data.dataset.animals.values():
+    for animal in dataset.animals.values():
         tag_to_animal_map[animal.properties["Tag"]] = animal.id
     df["Animal"] = df["Tag"].replace(tag_to_animal_map)
 
@@ -125,7 +183,7 @@ def preprocess_main_table(dataset: IntelliMazeDataset) -> None:
     """
     datatables = []
 
-    for extension_name in dataset.extensions_data.keys():
+    for extension_name in dataset.raw_datatables.keys():
         if extension_name in dataset.datatables:
             datatables.append(dataset.datatables[extension_name])
 
@@ -134,6 +192,9 @@ def preprocess_main_table(dataset: IntelliMazeDataset) -> None:
     for datatable in datatables:
         dataframes.append(datatable.df)
         variables = variables | datatable.variables
+
+    if len(dataframes) == 0:
+        return
 
     # Sort variables by name
     variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))

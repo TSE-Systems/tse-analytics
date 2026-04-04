@@ -17,16 +17,17 @@ from tse_analytics.modules.intellimaze.extensions import (
     animal_gate,
     consumption_scale,
     intellicage,
+    operant_device,
     running_wheel,
 )
 
 extension_data_loaders = {
+    actor.EXTENSION_NAME: actor.io.import_data,
     animal_gate.EXTENSION_NAME: animal_gate.io.import_data,
     consumption_scale.EXTENSION_NAME: consumption_scale.io.import_data,
-    running_wheel.EXTENSION_NAME: running_wheel.io.import_data,
-    actor.EXTENSION_NAME: actor.io.import_data,
     intellicage.EXTENSION_NAME: intellicage.io.import_data,
-    # operant_device.EXTENSION_NAME: operant_device.io.import_data,
+    operant_device.EXTENSION_NAME: operant_device.io.import_data,
+    running_wheel.EXTENSION_NAME: running_wheel.io.import_data,
 }
 
 
@@ -89,7 +90,9 @@ def import_intellimaze_dataset(path: Path) -> IntelliMazeDataset | None:
 
             for extension_name, data_loader in extension_data_loaders.items():
                 if extension_name in devices and (tmp_path / extension_name).is_dir():
-                    dataset.extensions_data[extension_name] = data_loader(tmp_path / extension_name, dataset)
+                    extension_data = data_loader(tmp_path / extension_name, dataset)
+                    for raw_datatable in extension_data.values():
+                        dataset.add_raw_datatable(extension_name, raw_datatable)
 
     preprocess_main_table(dataset)
 

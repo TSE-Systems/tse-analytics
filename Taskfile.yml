@@ -23,7 +23,6 @@ tasks:
   build-ui:views:
     cmds:
       - pyside6-uic tse_analytics/views/main_window.ui -o tse_analytics/views/main_window_ui.py
-      - pyside6-uic tse_analytics/views/misc/raw_data_widget/raw_data_widget.ui -o tse_analytics/views/misc/raw_data_widget/raw_data_widget_ui.py
       - pyside6-uic tse_analytics/views/factors/factors_dialog.ui -o tse_analytics/views/factors/factors_dialog_ui.py
       - pyside6-uic tse_analytics/views/datasets/datasets_merge_dialog.ui -o tse_analytics/views/datasets/datasets_merge_dialog_ui.py
       - pyside6-uic tse_analytics/views/datasets/adjust_dataset_dialog.ui -o tse_analytics/views/datasets/adjust_dataset_dialog_ui.py

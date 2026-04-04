@@ -3,10 +3,12 @@ from pathlib import Path
 import pandas as pd
 import pyarrow as pa
 
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
+from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 
 
-def import_variable_data(folder_path: Path) -> dict[str, pd.DataFrame]:
+def import_variable_data(dataset: IntelliMazeDataset, folder_path: Path) -> dict[str, Datatable]:
     """
     Import variable data from a folder.
 
@@ -19,24 +21,24 @@ def import_variable_data(folder_path: Path) -> dict[str, pd.DataFrame]:
     Returns:
         dict[str, pd.DataFrame]: Dictionary mapping variable types to DataFrames.
     """
-    result = {}
+    result: dict[str, Datatable] = {}
 
-    integer_variables = _import_integer_variables_data(folder_path / "IntegerVariables.txt")
+    integer_variables = _import_integer_variables_data(dataset, folder_path / "IntegerVariables.txt")
     if integer_variables is not None:
         result["IntegerVariables"] = integer_variables
 
-    double_variables = _import_double_variables_data(folder_path / "DoubleVariables.txt")
+    double_variables = _import_double_variables_data(dataset, folder_path / "DoubleVariables.txt")
     if double_variables is not None:
         result["DoubleVariables"] = double_variables
 
-    boolean_variables = _import_boolean_variables_data(folder_path / "BooleanVariables.txt")
+    boolean_variables = _import_boolean_variables_data(dataset, folder_path / "BooleanVariables.txt")
     if boolean_variables is not None:
         result["BooleanVariables"] = boolean_variables
 
     return result
 
 
-def _import_integer_variables_data(file_path: Path) -> pd.DataFrame | None:
+def _import_integer_variables_data(dataset: IntelliMazeDataset, file_path: Path) -> Datatable | None:
     """
     Import integer variable data from a text file.
 
@@ -94,10 +96,19 @@ def _import_integer_variables_data(file_path: Path) -> pd.DataFrame | None:
     # Convert to pyarrow backend
     df = df.convert_dtypes(dtype_backend="pyarrow")
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "IntegerVariables",
+        "IntelliMaze integer variables data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable
 
 
-def _import_double_variables_data(file_path: Path) -> pd.DataFrame | None:
+def _import_double_variables_data(dataset: IntelliMazeDataset, file_path: Path) -> Datatable | None:
     """
     Import double variable data from a text file.
 
@@ -155,10 +166,19 @@ def _import_double_variables_data(file_path: Path) -> pd.DataFrame | None:
     # Convert to pyarrow backend
     df = df.convert_dtypes(dtype_backend="pyarrow")
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "DoubleVariables",
+        "IntelliMaze double variables data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable
 
 
-def _import_boolean_variables_data(file_path: Path) -> pd.DataFrame | None:
+def _import_boolean_variables_data(dataset: IntelliMazeDataset, file_path: Path) -> Datatable | None:
     """
     Import boolean variable data from a text file.
 
@@ -215,4 +235,13 @@ def _import_boolean_variables_data(file_path: Path) -> pd.DataFrame | None:
     # Convert to pyarrow backend
     df = df.convert_dtypes(dtype_backend="pyarrow")
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "BooleanVariables",
+        "IntelliMaze boolean variables data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable

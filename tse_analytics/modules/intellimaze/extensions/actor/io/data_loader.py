@@ -10,16 +10,17 @@ from pathlib import Path
 import pandas as pd
 import pyarrow as pa
 
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
-from tse_analytics.modules.intellimaze.extensions.actor.data.actor_data import ActorData
+from tse_analytics.modules.intellimaze.extensions.actor.data import processor
 from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
 
 
 def import_data(
     folder_path: Path,
     dataset: IntelliMazeDataset,
-) -> ActorData:
+) -> dict[str, Datatable]:
     """
     Import Actor data from files.
 
@@ -29,31 +30,22 @@ def import_data(
     Args:
         folder_path (Path): Path to the folder containing the data files.
         dataset (IntelliMazeDataset): The dataset to add the data to.
-
-    Returns:
-        ActorData: An ActorData object containing the imported data.
     """
-    raw_data = {
-        "State": _import_state_df(folder_path),
-        "Model": _import_model_df(folder_path),
+    extension_data = {
+        "State": _import_state_df(dataset, folder_path / "State.txt"),
+        "Model": _import_model_df(dataset, folder_path / "Model.txt"),
     }
 
-    variables_data = import_variable_data(folder_path)
+    variables_data = import_variable_data(dataset, folder_path)
     if len(variables_data) > 0:
-        raw_data = raw_data | variables_data
+        extension_data = extension_data | variables_data
 
-    data = ActorData(
-        dataset,
-        "Actor extension data",
-        raw_data,
-    )
+    processor.preprocess_data(dataset, extension_data)
 
-    data.preprocess_data()
-
-    return data
+    return extension_data
 
 
-def _import_state_df(folder_path: Path) -> pd.DataFrame:
+def _import_state_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
     """
     Import state data from a file.
 
@@ -66,7 +58,6 @@ def _import_state_df(folder_path: Path) -> pd.DataFrame:
     Returns:
         pd.DataFrame: A DataFrame containing the state data.
     """
-    file_path = folder_path / "State.txt"
     if not file_path.is_file():
         raise FileNotFoundError(f"File not found: {file_path}")
 
@@ -113,23 +104,19 @@ def _import_state_df(folder_path: Path) -> pd.DataFrame:
     # Convert to pyarrow backend
     df = df.convert_dtypes(dtype_backend="pyarrow")
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "State",
+        f"{processor.EXTENSION_NAME} state data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable
 
 
-def _import_model_df(folder_path: Path) -> pd.DataFrame:
-    """
-    Import model data from a file.
-
-    This function loads data from the Model.txt file in the specified folder,
-    performs type conversions, and sorts the data by time.
-
-    Args:
-        folder_path (Path): Path to the folder containing the Model.txt file.
-
-    Returns:
-        pd.DataFrame: A DataFrame containing the model data.
-    """
-    file_path = folder_path / "Model.txt"
+def _import_model_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
         raise FileNotFoundError(f"File not found: {file_path}")
 
@@ -174,4 +161,13 @@ def _import_model_df(folder_path: Path) -> pd.DataFrame:
     # Convert to pyarrow backend
     df = df.convert_dtypes(dtype_backend="pyarrow")
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "Model",
+        f"{processor.EXTENSION_NAME} model data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable

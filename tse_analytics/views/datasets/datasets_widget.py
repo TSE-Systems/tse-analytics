@@ -20,7 +20,6 @@ from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.datatable_tree_item import DatatableTreeItem
-from tse_analytics.core.models.extension_tree_item import ExtensionTreeItem
 from tse_analytics.core.models.report_tree_item import ReportTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
 from tse_analytics.core.models.workspace_model import WorkspaceModel
@@ -31,7 +30,6 @@ from tse_analytics.toolbox.data_table.data_table_widget import DataTableWidget
 from tse_analytics.toolbox.report.report_widget import ReportWidget
 from tse_analytics.views.datasets.adjust_dataset_dialog import AdjustDatasetDialog
 from tse_analytics.views.datasets.datasets_merge_dialog import DatasetsMergeDialog
-from tse_analytics.views.misc.raw_data_widget.raw_data_widget import RawDataWidget
 from tse_analytics.views.misc.toolbox_button import ToolboxButton
 
 
@@ -420,21 +418,6 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                 widget = ReportWidget(item.report)
                 LayoutManager.add_widget_to_central_area(
                     item.report.dataset, widget, f"Report - {item.report.name}", QIcon(":/icons/table.png")
-                )
-            elif isinstance(item, ExtensionTreeItem):
-                widget = RawDataWidget(
-                    item.extension_data.name,
-                    item.extension_data.get_raw_data(),
-                    item.extension_data.get_device_ids(),
-                    "DeviceId",
-                    False,
-                    self,
-                )
-                LayoutManager.add_widget_to_central_area(
-                    manager.get_selected_dataset(),
-                    widget,
-                    item.extension_data.name,
-                    QIcon(":/icons/icons8-extension-16.png"),
                 )
             elif isinstance(item, DatatableTreeItem):
                 manager.set_selected_dataset(item.datatable.dataset)
