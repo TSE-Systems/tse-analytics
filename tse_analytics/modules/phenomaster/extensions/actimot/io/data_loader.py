@@ -9,11 +9,10 @@ from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
-from tse_analytics.modules.phenomaster.extensions.actimot.data.actimot_data import ActimotData
 from tse_analytics.modules.phenomaster.io import tse_import_settings
 
 
-def read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> ActimotData:
+def read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> Datatable:
     metadata = dataset.metadata["tables"][tse_import_settings.ACTIMOT_RAW_TABLE]
 
     sample_interval = pd.Timedelta(metadata["sample_interval"])
@@ -66,23 +65,18 @@ def read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> ActimotData:
         },
     )
 
-    return ActimotData(
-        dataset,
-        tse_import_settings.ACTIMOT_RAW_TABLE,
-        raw_datatable,
-    )
+    return raw_datatable
 
 
 def import_actimot_csv_data(
-    filename: str, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings
-) -> ActimotData | None:
+    filename: str,
+    dataset: PhenoMasterDataset,
+    csv_import_settings: CsvImportSettings,
+) -> Datatable | None:
     path = Path(filename)
-    if path.is_file() and path.suffix.lower() == ".csv":
-        return _load_from_csv(path, dataset, csv_import_settings)
-    return None
+    if not path.is_file() or path.suffix.lower() != ".csv":
+        return None
 
-
-def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings) -> ActimotData:
     with open(path) as f:
         lines = f.readlines()
 
@@ -124,6 +118,7 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
         low_memory=True,
         usecols=usecols,
         dtype=dtype,
+        dtype_backend="pyarrow",
         na_values=["-"],
     )
 
@@ -181,9 +176,4 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
         },
     )
 
-    actimot_data = ActimotData(
-        dataset,
-        tse_import_settings.ACTIMOT_RAW_TABLE,
-        raw_datatable,
-    )
-    return actimot_data
+    return raw_datatable

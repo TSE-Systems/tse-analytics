@@ -5,13 +5,13 @@ from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QToolBar, QWidget
 
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.phenomaster.extensions.actimot.actimot_settings import ActimotSettings
 from tse_analytics.modules.phenomaster.extensions.actimot.data.actimot_animal_item import ActimotAnimalItem
-from tse_analytics.modules.phenomaster.extensions.actimot.data.actimot_data import ActimotData
 from tse_analytics.modules.phenomaster.extensions.actimot.processor import calculate_trj
 from tse_analytics.modules.phenomaster.extensions.actimot.views.actimot_widget_ui import Ui_ActimotWidget
 from tse_analytics.modules.phenomaster.extensions.actimot.views.box_selector import BoxSelector
@@ -27,7 +27,7 @@ from tse_analytics.toolbox.data_table.data_table_widget import DataTableWidget
 
 
 class ActimotWidget(QWidget):
-    def __init__(self, actimot_data: ActimotData, parent: QWidget):
+    def __init__(self, actimot_data: Datatable, parent: QWidget):
         super().__init__(parent)
 
         self.ui = Ui_ActimotWidget()
@@ -62,7 +62,7 @@ class ActimotWidget(QWidget):
 
         self.ui.verticalLayout.insertWidget(0, toolbar)
 
-        self.table_view = DataTableWidget(actimot_data.raw_datatable, "ActiMot Events")
+        self.table_view = DataTableWidget(actimot_data, "ActiMot Events")
         self.ui.tabWidget.addTab(self.table_view, "Events")
 
         self.frames_widget = FramesWidget(self)
@@ -107,8 +107,8 @@ class ActimotWidget(QWidget):
     def _select_item(self, selected_item: ActimotAnimalItem) -> None:
         self.trj_df = None
 
-        filter_mask = self.actimot_data.raw_datatable.df["Box"] == selected_item.box
-        self.df = self.actimot_data.raw_datatable.df[filter_mask]
+        filter_mask = self.actimot_data.df["Box"] == selected_item.box
+        self.df = self.actimot_data.df[filter_mask]
 
         self._update_tabs()
 
@@ -162,7 +162,7 @@ class ActimotWidget(QWidget):
         df, trj_df, elapsed_time = result
 
         # Add custom variables
-        self.actimot_data.raw_datatable.variables["x"] = Variable(
+        self.actimot_data.variables["x"] = Variable(
             "x",
             "cm",
             "Centroid X",
@@ -171,7 +171,7 @@ class ActimotWidget(QWidget):
             False,
         )
 
-        self.actimot_data.raw_datatable.variables["y"] = Variable(
+        self.actimot_data.variables["y"] = Variable(
             "y",
             "cm",
             "Centroid Y",
@@ -180,7 +180,7 @@ class ActimotWidget(QWidget):
             False,
         )
 
-        self.actimot_data.raw_datatable.variables["displacement"] = Variable(
+        self.actimot_data.variables["displacement"] = Variable(
             "displacement",
             "cm",
             "Displacement",
@@ -189,7 +189,7 @@ class ActimotWidget(QWidget):
             False,
         )
 
-        self.actimot_data.raw_datatable.variables["speed"] = Variable(
+        self.actimot_data.variables["speed"] = Variable(
             "speed",
             "cm/s",
             "Speed",
@@ -198,7 +198,7 @@ class ActimotWidget(QWidget):
             False,
         )
 
-        self.actimot_data.raw_datatable.variables["acceleration"] = Variable(
+        self.actimot_data.variables["acceleration"] = Variable(
             "acceleration",
             "cm/s²",
             "Acceleration",
@@ -209,7 +209,7 @@ class ActimotWidget(QWidget):
 
         # self.table_view.set_filter_mask(None)
 
-        self.plot_widget.set_variables(self.actimot_data.raw_datatable.variables)
+        self.plot_widget.set_variables(self.actimot_data.variables)
         self.plot_widget.set_data(df)
 
         self.trajectory_widget.set_data(trj_df)

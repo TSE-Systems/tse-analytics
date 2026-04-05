@@ -3,16 +3,11 @@ import pandas as pd
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
-from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.utils.data import exclude_animals_from_df
 from tse_analytics.modules.phenomaster.data.phenomaster_extension_data import PhenoMasterExtensionData
-from tse_analytics.modules.phenomaster.extensions.actimot.data.actimot_data import ActimotData
 from tse_analytics.modules.phenomaster.extensions.calo.data.calo_data import CaloData
 from tse_analytics.modules.phenomaster.extensions.calo.fitting_result import FittingResult
-from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.drinkfeed_bin_data import DrinkFeedBinData
-from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.drinkfeed_raw_data import DrinkFeedRawData
 from tse_analytics.modules.phenomaster.extensions.grouphousing.data.grouphousing_data import GroupHousingData
-from tse_analytics.modules.phenomaster.extensions.phenomaster_extension_tree_item import PhenoMasterExtensionTreeItem
 
 
 class PhenoMasterDataset(Dataset):
@@ -52,18 +47,6 @@ class PhenoMasterDataset(Dataset):
     @property
     def calo_data(self) -> CaloData | None:
         return self.extensions_data.get("calo_data", None)
-
-    @property
-    def drinkfeed_bin_data(self) -> DrinkFeedBinData | None:
-        return self.extensions_data.get("drinkfeed_bin_data", None)
-
-    @property
-    def drinkfeed_raw_data(self) -> DrinkFeedRawData | None:
-        return self.extensions_data.get("drinkfeed_raw_data", None)
-
-    @property
-    def actimot_data(self) -> ActimotData | None:
-        return self.extensions_data.get("actimot_data", None)
 
     @property
     def grouphousing_data(self) -> GroupHousingData | None:
@@ -167,28 +150,3 @@ class PhenoMasterDataset(Dataset):
                     "EE-p", "[kcal/h]", "Predicted energy expenditure", "float64", Aggregation.MEAN, False
                 )
             messaging.broadcast(messaging.DatasetChangedMessage(self, self))
-
-    def add_children_tree_items(self, dataset_tree_item: DatasetTreeItem) -> None:
-        """
-        Add PhenoMaster-specific child items to the dataset tree.
-
-        This method overrides the base class method to add tree items for each
-        PhenoMaster data component (drinkfeed, actimot, calo, grouphousing) if they exist.
-        These tree items allow for navigation and visualization of the different
-        data components in the UI.
-
-        Args:
-            dataset_tree_item (DatasetTreeItem): The parent dataset tree item to add children to
-        """
-        super().add_children_tree_items(dataset_tree_item)
-
-        from tse_analytics.modules.phenomaster.extensions.extensions_registry import EXTENSIONS_REGISTRY
-
-        for key, extension_data in self.extensions_data.items():
-            dataset_tree_item.add_child(
-                PhenoMasterExtensionTreeItem(
-                    extension_data,
-                    EXTENSIONS_REGISTRY[key]["icon"],
-                    EXTENSIONS_REGISTRY[key]["widget"],
-                )
-            )

@@ -18,7 +18,7 @@ EXTENSIONS_REGISTRY = {
         "icon": QIcon(":/icons/icons8-bottle-of-water-16.png"),
         "widget": DrinkFeedWidget,
     },
-    "actimot_data": {
+    "actimot_raw": {
         "icon": QIcon(":/icons/icons8-grid-16.png"),
         "widget": ActimotWidget,
     },

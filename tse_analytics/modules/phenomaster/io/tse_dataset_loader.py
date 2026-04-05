@@ -75,8 +75,8 @@ def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportS
     # Import ActoMot raw data if present
     if import_settings.import_actimot_raw:
         if tse_import_settings.ACTIMOT_RAW_TABLE in metadata["tables"]:
-            actimot_data = read_actimot_raw(path, dataset)
-            dataset.extensions_data["actimot_data"] = actimot_data
+            actimot_datatable = read_actimot_raw(path, dataset)
+            dataset.add_raw_datatable("ActiMot", actimot_datatable)
 
     # Import drinkfeed bin data if present
     if import_settings.import_drinkfeed_bin:

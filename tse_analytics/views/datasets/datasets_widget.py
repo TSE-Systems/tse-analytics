@@ -24,7 +24,6 @@ from tse_analytics.core.models.report_tree_item import ReportTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
 from tse_analytics.core.models.workspace_model import WorkspaceModel
 from tse_analytics.core.utils.ui import set_inactive_palette
-from tse_analytics.modules.phenomaster.extensions.phenomaster_extension_tree_item import PhenoMasterExtensionTreeItem
 from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvDialog
 from tse_analytics.toolbox.data_table.data_table_widget import DataTableWidget
 from tse_analytics.toolbox.report.report_widget import ReportWidget
@@ -405,28 +404,34 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
         """
         if index.isValid():
             item = index.model().getItem(index)
-            if isinstance(item, PhenoMasterExtensionTreeItem) and item.extension_widget_type is not None:
-                widget = item.extension_widget_type(item.extension_data, self)
-                LayoutManager.add_widget_to_central_area(
-                    manager.get_selected_dataset(),
-                    widget,
-                    item.name,
-                    item.icon,
-                )
-            elif isinstance(item, ReportTreeItem):
+            if isinstance(item, ReportTreeItem):
                 manager.set_selected_dataset(item.report.dataset)
                 widget = ReportWidget(item.report)
                 LayoutManager.add_widget_to_central_area(
                     item.report.dataset, widget, f"Report - {item.report.name}", QIcon(":/icons/table.png")
                 )
             elif isinstance(item, DatatableTreeItem):
-                manager.set_selected_dataset(item.datatable.dataset)
-                manager.set_selected_datatable(item.datatable)
-                self.toolbox_button.set_enabled_actions(item.datatable.dataset, item.datatable)
-                widget = DataTableWidget(item.datatable)
-                LayoutManager.add_widget_to_central_area(
-                    item.datatable.dataset, widget, f"Table - {item.datatable.dataset.name}", QIcon(":/icons/table.png")
-                )
+                from tse_analytics.modules.phenomaster.extensions.extensions_registry import EXTENSIONS_REGISTRY
+
+                if item.datatable.extension_name and item.name in EXTENSIONS_REGISTRY:
+                    widget = EXTENSIONS_REGISTRY[item.name]["widget"](item.datatable, self)
+                    LayoutManager.add_widget_to_central_area(
+                        manager.get_selected_dataset(),
+                        widget,
+                        item.name,
+                        item.icon,
+                    )
+                else:
+                    manager.set_selected_dataset(item.datatable.dataset)
+                    manager.set_selected_datatable(item.datatable)
+                    self.toolbox_button.set_enabled_actions(item.datatable.dataset, item.datatable)
+                    widget = DataTableWidget(item.datatable)
+                    LayoutManager.add_widget_to_central_area(
+                        item.datatable.dataset,
+                        widget,
+                        f"Table - {item.datatable.dataset.name}",
+                        QIcon(":/icons/table.png"),
+                    )
 
     def _checked_item_changed(self, item, state: bool):
         """
