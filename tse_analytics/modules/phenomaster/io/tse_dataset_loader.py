@@ -8,11 +8,11 @@ import pyarrow as pa
 from loguru import logger
 
 from tse_analytics.core.color_manager import get_color_hex
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
 from tse_analytics.core.utils.data import sanitize_dtypes
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
 from tse_analytics.modules.phenomaster.extensions.actimot.io.data_loader import read_actimot_raw
 from tse_analytics.modules.phenomaster.extensions.calo.io.data_loader import read_calo_bin
@@ -21,7 +21,7 @@ from tse_analytics.modules.phenomaster.extensions.grouphousing.io.data_loader im
 from tse_analytics.modules.phenomaster.io import tse_import_settings
 
 
-def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportSettings) -> PhenoMasterDataset | None:
+def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportSettings) -> Dataset | None:
     """
     Loads and processes a PhenoMaster dataset from the specified path and settings.
 
@@ -48,9 +48,10 @@ def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportS
     metadata = _read_metadata(path)
     animals = _get_animals(metadata["animals"])
 
-    dataset = PhenoMasterDataset(
+    dataset = Dataset(
         metadata["experiment"]["experiment_no"],
         "PhenoMaster dataset",
+        "PhenoMaster",
         metadata=metadata,
         animals=animals,
     )
@@ -75,31 +76,31 @@ def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportS
     # Import ActoMot raw data if present
     if import_settings.import_actimot_raw:
         if tse_import_settings.ACTIMOT_RAW_TABLE in metadata["tables"]:
-            actimot_datatable = read_actimot_raw(path, dataset)
-            dataset.add_raw_datatable("ActiMot", actimot_datatable)
+            datatable = read_actimot_raw(path, dataset)
+            dataset.add_raw_datatable("ActiMot", datatable)
 
     # Import drinkfeed bin data if present
     if import_settings.import_drinkfeed_bin:
         if tse_import_settings.DRINKFEED_BIN_TABLE in metadata["tables"]:
-            drinkfeed_bin_data = read_drinkfeed_bin(path, dataset)
-            dataset.extensions_data["drinkfeed_bin_data"] = drinkfeed_bin_data
+            datatable = read_drinkfeed_bin(path, dataset)
+            dataset.add_raw_datatable("DrinkFeed", datatable)
 
     if import_settings.import_drinkfeed_raw:
         if tse_import_settings.DRINKFEED_RAW_TABLE in metadata["tables"]:
-            drinkfeed_raw_data = read_drinkfeed_raw(path, dataset)
-            dataset.extensions_data["drinkfeed_raw_data"] = drinkfeed_raw_data
+            datatable = read_drinkfeed_raw(path, dataset)
+            dataset.add_raw_datatable("DrinkFeed", datatable)
 
     # Import calo bin data if present
     if import_settings.import_calo_bin:
         if tse_import_settings.CALO_BIN_TABLE in metadata["tables"]:
-            calo_data = read_calo_bin(path, dataset)
-            dataset.extensions_data["calo_data"] = calo_data
+            datatable = read_calo_bin(path, dataset)
+            dataset.add_raw_datatable("Calo", datatable)
 
     # Import group housing data if present
     if import_settings.import_grouphousing:
         if tse_import_settings.GROUP_HOUSING_TABLE in metadata["tables"]:
-            grouphousing_data = read_grouphousing(path, dataset)
-            dataset.extensions_data["grouphousing_data"] = grouphousing_data
+            datatable = read_grouphousing(path, dataset)
+            dataset.add_raw_datatable("GroupHousing", datatable)
 
     logger.info(f"Import complete in {(timeit.default_timer() - tic):.3f} sec: {path}")
 

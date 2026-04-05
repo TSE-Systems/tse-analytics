@@ -3,12 +3,12 @@ from pathlib import Path
 import pandas as pd
 import pyarrow as pa
 
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
-from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 
 
-def import_variable_data(dataset: IntelliMazeDataset, folder_path: Path) -> dict[str, Datatable]:
+def import_variable_data(dataset: Dataset, folder_path: Path) -> dict[str, Datatable]:
     """
     Import variable data from a folder.
 
@@ -38,7 +38,7 @@ def import_variable_data(dataset: IntelliMazeDataset, folder_path: Path) -> dict
     return result
 
 
-def _import_integer_variables_data(dataset: IntelliMazeDataset, file_path: Path) -> Datatable | None:
+def _import_integer_variables_data(dataset: Dataset, file_path: Path) -> Datatable | None:
     """
     Import integer variable data from a text file.
 
@@ -108,7 +108,7 @@ def _import_integer_variables_data(dataset: IntelliMazeDataset, file_path: Path)
     return datatable
 
 
-def _import_double_variables_data(dataset: IntelliMazeDataset, file_path: Path) -> Datatable | None:
+def _import_double_variables_data(dataset: Dataset, file_path: Path) -> Datatable | None:
     """
     Import double variable data from a text file.
 
@@ -178,7 +178,7 @@ def _import_double_variables_data(dataset: IntelliMazeDataset, file_path: Path) 
     return datatable
 
 
-def _import_boolean_variables_data(dataset: IntelliMazeDataset, file_path: Path) -> Datatable | None:
+def _import_boolean_variables_data(dataset: Dataset, file_path: Path) -> Datatable | None:
     """
     Import boolean variable data from a text file.
 

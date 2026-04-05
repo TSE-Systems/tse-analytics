@@ -9,18 +9,18 @@ sequential in time) and overlap mode (datasets are treated as parallel experimen
 import pandas as pd
 
 from tse_analytics.core import color_manager
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Animal
-from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
 
 
 def merge_datasets(
     new_dataset_name: str,
-    datasets: list[IntelliCageDataset],
+    datasets: list[Dataset],
     single_run: bool,
     continuous_mode: bool,
     generate_new_animal_names: bool,
-) -> IntelliCageDataset | None:
+) -> Dataset | None:
     """
     Merge multiple IntelliCage datasets into a single dataset.
 
@@ -66,9 +66,9 @@ def merge_datasets(
 
 def _merge_continuous(
     merged_dataset_name: str,
-    datasets: list[IntelliCageDataset],
+    datasets: list[Dataset],
     single_run: bool,
-) -> IntelliCageDataset | None:
+) -> Dataset | None:
     """
     Merge datasets in continuous mode (sequential in time).
 
@@ -96,9 +96,10 @@ def _merge_continuous(
     merged_animals = _merge_animals(datasets)
     merged_metadata = _merge_metadata(merged_dataset_name, "continuous", merged_animals, datasets)
 
-    result = IntelliCageDataset(
+    result = Dataset(
         merged_dataset_name,
         "IntelliCage merged dataset",
+        "IntelliCage",
         merged_metadata,
         merged_animals,
     )
@@ -151,10 +152,10 @@ def _merge_continuous(
 
 def _merge_overlap(
     merged_dataset_name: str,
-    datasets: list[IntelliCageDataset],
+    datasets: list[Dataset],
     single_run: bool,
     generate_new_animal_names: bool,
-) -> IntelliCageDataset | None:
+) -> Dataset | None:
     """
     Merge datasets in overlap mode (parallel experiments).
 
@@ -177,7 +178,7 @@ def _merge_overlap(
 
     Returns
     -------
-    IntelliCageDataset | None
+    Dataset | None
         The merged dataset, or None if the merge failed.
     """
     first_dataset = datasets[0]
@@ -202,9 +203,10 @@ def _merge_overlap(
     merged_animals = _merge_animals(datasets)
     merged_metadata = _merge_metadata(merged_dataset_name, "overlap", merged_animals, datasets)
 
-    result = IntelliCageDataset(
+    result = Dataset(
         merged_dataset_name,
         "IntelliCage merged dataset",
+        "IntelliCage",
         merged_metadata,
         merged_animals,
     )
@@ -259,7 +261,7 @@ def _merge_metadata(
     merged_dataset_name: str,
     merging_mode: str,
     merged_animals: dict[str, Animal],
-    datasets: list[IntelliCageDataset],
+    datasets: list[Dataset],
 ) -> dict:
     """
     Merge metadata from multiple datasets.
@@ -301,7 +303,7 @@ def _merge_metadata(
     return result
 
 
-def _merge_animals(datasets: list[IntelliCageDataset]) -> dict[str, Animal]:
+def _merge_animals(datasets: list[Dataset]) -> dict[str, Animal]:
     """
     Merge animals from multiple datasets.
 
@@ -311,7 +313,7 @@ def _merge_animals(datasets: list[IntelliCageDataset]) -> dict[str, Animal]:
 
     Parameters
     ----------
-    datasets : list[IntelliCageDataset]
+    datasets : list[Dataset]
         List of source datasets.
 
     Returns

@@ -2,7 +2,7 @@ import pandas as pd
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QFileDialog, QListWidgetItem, QWidget
 
-from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.modules.intellimaze.extensions import (
     actor,
     animal_gate,
@@ -26,7 +26,7 @@ extension_csv_getters = {
 
 
 class ExportMergedCsvDialog(QDialog):
-    def __init__(self, dataset: IntelliMazeDataset, parent: QWidget | None = None):
+    def __init__(self, dataset: Dataset, parent: QWidget | None = None):
         super().__init__(parent)
         self.ui = Ui_ExportMergedCsvDialog()
         self.ui.setupUi(self)

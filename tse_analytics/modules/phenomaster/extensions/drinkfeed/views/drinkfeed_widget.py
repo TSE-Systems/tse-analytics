@@ -13,8 +13,6 @@ from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.drinkfeed_animal_item import DrinkFeedAnimalItem
-from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.drinkfeed_bin_data import DrinkFeedBinData
-from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.drinkfeed_raw_data import DrinkFeedRawData
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.drinkfeed_settings import DrinkFeedSettings
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.interval_processor import process_drinkfeed_intervals
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.sequential_processor import process_drinkfeed_sequences
@@ -43,7 +41,7 @@ from tse_analytics.views.misc.pandas_widget import PandasWidget
 
 
 class DrinkFeedWidget(QWidget):
-    def __init__(self, drinkfeed_data: DrinkFeedBinData | DrinkFeedRawData, parent: QWidget):
+    def __init__(self, datatable: Datatable, parent: QWidget):
         super().__init__(parent)
 
         self.ui = Ui_DrinkFeedWidget()
@@ -61,22 +59,19 @@ class DrinkFeedWidget(QWidget):
 
         settings = QSettings()
 
-        self.drinkfeed_data = drinkfeed_data
+        self.datatable = datatable
         self.selected_animals: list[DrinkFeedAnimalItem] = []
 
-        self.raw_df = self.drinkfeed_data.raw_datatable.df
+        self.raw_df = self.datatable.df
         # Check if dealing with DrinkFeedBin or DrinkFeedRaw data
-        if isinstance(drinkfeed_data, DrinkFeedBinData):
-            self.raw_long_df = pd.melt(
-                self.raw_df,
-                id_vars=["DateTime", "Animal", "Box"],
-                var_name="Sensor",
-                value_name="Value",
-            )
-            self.raw_long_df.sort_values(by=["DateTime"], inplace=True)
-            self.raw_long_df.reset_index(drop=True, inplace=True)
-        else:
-            self.raw_long_df = self.raw_df
+        self.raw_long_df = pd.melt(
+            self.raw_df,
+            id_vars=["DateTime", "Animal", "Box"],
+            var_name="Sensor",
+            value_name="Value",
+        )
+        self.raw_long_df.sort_values(by=["DateTime"], inplace=True)
+        self.raw_long_df.reset_index(drop=True, inplace=True)
 
         self.events_df: pd.DataFrame | None = None
         self.episodes_df: pd.DataFrame | None = None
@@ -99,29 +94,30 @@ class DrinkFeedWidget(QWidget):
 
         self.assign_animals_action = toolbar.addAction(QIcon(":/icons/icons8-merge-files-16.png"), "Assign Animals")
         self.assign_animals_action.setToolTip("Assign animals IDs using Group Housing data")
-        self.assign_animals_action.setEnabled(self.drinkfeed_data.dataset.grouphousing_data is not None)
+
+        self.assign_animals_action.setEnabled("GroupHousing" in self.datatable.dataset.raw_datatables)
         self.assign_animals_action.triggered.connect(self._assign_animals)
 
         self.ui.verticalLayout.insertWidget(0, toolbar)
 
-        self.raw_table_view = DataTableWidget(self.drinkfeed_data.raw_datatable, "Drink/Feed Raw Data")
+        self.raw_table_view = DataTableWidget(self.datatable, "Drink/Feed Raw Data")
         self.ui.tabWidget.addTab(self.raw_table_view, "Raw Data")
 
         self.raw_plot_widget = PlotWidget()
         self.raw_plot_widget.set_data(self.raw_long_df)
-        self.raw_plot_widget.set_variables(drinkfeed_data.raw_datatable.variables)
+        self.raw_plot_widget.set_variables(datatable.variables)
         self.ui.tabWidget.addTab(self.raw_plot_widget, "Raw Data Plot")
 
-        self.intervals_table_view = PandasWidget(self.drinkfeed_data.dataset, "Drink/Feed Intervals")
+        self.intervals_table_view = PandasWidget(self.datatable.dataset, "Drink/Feed Intervals")
         self.intervals_table_tab_index = self.ui.tabWidget.addTab(self.intervals_table_view, "Intervals")
 
         self.intervals_plot_widget = IntervalsPlotWidget()
         self.intervals_plot_tab_index = self.ui.tabWidget.addTab(self.intervals_plot_widget, "Intervals Plots")
 
-        self.events_table_view = PandasWidget(self.drinkfeed_data.dataset, "Drink/Feed Events")
+        self.events_table_view = PandasWidget(self.datatable.dataset, "Drink/Feed Events")
         self.events_table_tab_index = self.ui.tabWidget.addTab(self.events_table_view, "Events")
 
-        self.episodes_table_view = PandasWidget(self.drinkfeed_data.dataset, "Drink/Feed Episodes")
+        self.episodes_table_view = PandasWidget(self.datatable.dataset, "Drink/Feed Episodes")
         self.episodes_table_tab_index = self.ui.tabWidget.addTab(self.episodes_table_view, "Episodes")
 
         self.episodes_offset_plot_widget = EpisodesOffsetPlotWidget()
@@ -136,13 +132,13 @@ class DrinkFeedWidget(QWidget):
         self.drinkfeed_settings_widget = SettingsWidget()
         try:
             drinkfeed_settings = settings.value("DrinkFeedSettings", DrinkFeedSettings.get_default())
-            self.drinkfeed_settings_widget.set_data(self.drinkfeed_data.dataset, drinkfeed_settings)
+            self.drinkfeed_settings_widget.set_data(self.datatable.dataset, drinkfeed_settings)
         except Exception:
             drinkfeed_settings = DrinkFeedSettings.get_default()
-            self.drinkfeed_settings_widget.set_data(self.drinkfeed_data.dataset, drinkfeed_settings)
+            self.drinkfeed_settings_widget.set_data(self.datatable.dataset, drinkfeed_settings)
 
         self.drinkfeed_animal_selector = AnimalSelector(self._filter_animals, self.drinkfeed_settings_widget)
-        self.drinkfeed_animal_selector.set_data(drinkfeed_data.dataset)
+        self.drinkfeed_animal_selector.set_data(datatable.dataset)
 
         self.ui.toolBox.removeItem(0)
         self.ui.toolBox.addItem(
@@ -197,7 +193,7 @@ class DrinkFeedWidget(QWidget):
 
         if intervals_df is not None:
             self.intervals_table_view.set_data(intervals_df)
-            self.intervals_plot_widget.set_data(intervals_df, self.drinkfeed_data)
+            self.intervals_plot_widget.set_data(intervals_df, self.datatable)
 
     def _calculate(self):
         self.events_df = None
@@ -229,7 +225,7 @@ class DrinkFeedWidget(QWidget):
         tic = timeit.default_timer()
 
         self.events_df, self.episodes_df = process_drinkfeed_sequences(
-            self.drinkfeed_data,
+            self.datatable,
             self.raw_long_df,
             settings,
             diets_dict,
@@ -241,14 +237,14 @@ class DrinkFeedWidget(QWidget):
         self.events_table_view.set_data(self.events_df, False)
         self.episodes_table_view.set_data(self.episodes_df)
 
-        self.episodes_offset_plot_widget.set_data(self.episodes_df, self.drinkfeed_data.raw_datatable.variables)
-        self.episodes_gap_plot_widget.set_data(self.episodes_df, self.drinkfeed_data.raw_datatable.variables)
-        self.episodes_intake_plot_widget.set_data(self.episodes_df, self.drinkfeed_data.raw_datatable.variables)
+        self.episodes_offset_plot_widget.set_data(self.episodes_df, self.drinkfeed_data.variables)
+        self.episodes_gap_plot_widget.set_data(self.episodes_df, self.drinkfeed_data.variables)
+        self.episodes_intake_plot_widget.set_data(self.episodes_df, self.drinkfeed_data.variables)
 
         self._update_tabs()
         self.add_datatable_action.setEnabled(True)
         self.calculate_action.setEnabled(True)
-        self.assign_animals_action.setEnabled(self.drinkfeed_data.dataset.grouphousing_data is not None)
+        self.assign_animals_action.setEnabled("GroupHousing" in self.datatable.dataset.raw_datatables)
         self.toast.hide()
 
     def _do_interval_analysis(
@@ -259,7 +255,7 @@ class DrinkFeedWidget(QWidget):
         tic = timeit.default_timer()
 
         self.intervals_df = process_drinkfeed_intervals(
-            self.drinkfeed_data,
+            self.datatable,
             self.raw_long_df,
             settings,
             diets_dict,
@@ -274,7 +270,7 @@ class DrinkFeedWidget(QWidget):
         self._update_tabs()
         self.add_datatable_action.setEnabled(True)
         self.calculate_action.setEnabled(True)
-        self.assign_animals_action.setEnabled(self.drinkfeed_data.dataset.grouphousing_data is not None)
+        self.assign_animals_action.setEnabled("GroupHousing" in self.datatable.dataset.raw_datatables)
         self.toast.hide()
 
     def _add_datatable(self):
@@ -282,7 +278,7 @@ class DrinkFeedWidget(QWidget):
         now = datetime.now()
         now_string = now.strftime("%Y-%m-%d %H:%M:%S")
 
-        variables = self.drinkfeed_data.variables
+        variables = self.datatable.variables
 
         if settings.sequential_analysis_type and self.episodes_df is not None:
             # Make dataframe compatible with Datatable format
@@ -299,7 +295,7 @@ class DrinkFeedWidget(QWidget):
             episodes_df.reset_index(inplace=True)
 
             datatable = Datatable(
-                self.drinkfeed_data.dataset,
+                self.datatable.dataset,
                 f"DrinkFeedEpisodes [{now_string}]",
                 "Drink/Feed episodes",
                 variables,
@@ -308,7 +304,7 @@ class DrinkFeedWidget(QWidget):
                     "origin": "DrinkFeedEpisodes",
                 },
             )
-            datatable.set_factors(self.drinkfeed_data.dataset.factors)
+            datatable.set_factors(self.datatable.dataset.factors)
             manager.add_datatable(datatable)
         elif self.intervals_df is not None:
             timedelta = pd.Timedelta(
@@ -317,7 +313,7 @@ class DrinkFeedWidget(QWidget):
                 seconds=settings.fixed_interval.second,
             )
             datatable = Datatable(
-                self.drinkfeed_data.dataset,
+                self.datatable.dataset,
                 f"DrinkFeedIntervals [{now_string}]",
                 "Drink/Feed intervals",
                 variables,
@@ -327,13 +323,11 @@ class DrinkFeedWidget(QWidget):
                     "samping_interval": timedelta,
                 },
             )
-            datatable.set_factors(self.drinkfeed_data.dataset.factors)
+            datatable.set_factors(self.datatable.dataset.factors)
             manager.add_datatable(datatable)
 
     def _assign_animals(self):
-        grouphousing_df = self.drinkfeed_data.dataset.grouphousing_data.get_preprocessed_data(True, False, None)[
-            "DrinkFeed"
-        ]
+        grouphousing_df = self.datatable.dataset.grouphousing_data.get_preprocessed_data(True, False, None)["DrinkFeed"]
         grouphousing_df.rename(
             columns={
                 "StartDateTime": "DateTime",

@@ -5,18 +5,17 @@ import pandas as pd
 import pyarrow as pa
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.core.utils.data import sanitize_dtypes
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
-from tse_analytics.modules.phenomaster.extensions.grouphousing.data.grouphousing_data import GroupHousingData
-from tse_analytics.modules.phenomaster.io import tse_import_settings
+from tse_analytics.modules.phenomaster.io.tse_import_settings import GROUP_HOUSING_TABLE
 
 
-def read_grouphousing(path: Path, dataset: PhenoMasterDataset) -> GroupHousingData:
-    metadata = dataset.metadata["tables"][tse_import_settings.GROUP_HOUSING_TABLE]
-    hardware_metadata = dataset.metadata["hardware"][tse_import_settings.GROUP_HOUSING_TABLE]
+def read_grouphousing(path: Path, dataset: Dataset) -> Datatable:
+    metadata = dataset.metadata["tables"][GROUP_HOUSING_TABLE]
+    hardware_metadata = dataset.metadata["hardware"][GROUP_HOUSING_TABLE]
 
     # Read variable list
     dtypes = {}
@@ -39,7 +38,7 @@ def read_grouphousing(path: Path, dataset: PhenoMasterDataset) -> GroupHousingDa
     # Read measurement data
     df = cx.read_sql(
         f"sqlite:///{path}",
-        f"SELECT * FROM {tse_import_settings.GROUP_HOUSING_TABLE}",
+        f"SELECT * FROM {GROUP_HOUSING_TABLE}",
         return_type="pandas",
     )
 
@@ -85,31 +84,28 @@ def read_grouphousing(path: Path, dataset: PhenoMasterDataset) -> GroupHousingDa
     # Convert to pyarrow backend
     df = df.convert_dtypes(dtype_backend="pyarrow")
 
+    animal_ids = df["Animal"].unique().tolist()
+    animal_ids.sort()
+
     raw_datatable = Datatable(
         dataset,
-        tse_import_settings.GROUP_HOUSING_TABLE,
-        f"Raw {tse_import_settings.GROUP_HOUSING_TABLE} datatable",
+        GROUP_HOUSING_TABLE,
+        f"Raw {GROUP_HOUSING_TABLE} datatable",
         {},
         df,
         {
             "origin_path": str(path),
+            "animal_ids": animal_ids,
         },
     )
-
-    data = GroupHousingData(
-        dataset,
-        tse_import_settings.GROUP_HOUSING_TABLE,
-        raw_datatable,
-    )
-
-    return data
+    return raw_datatable
 
 
 def import_grouphousing_csv_data(
     filename: str,
-    dataset: PhenoMasterDataset,
+    dataset: Dataset,
     csv_import_settings: CsvImportSettings,
-) -> GroupHousingData | None:
+) -> Datatable | None:
     path = Path(filename)
     if not path.is_file() or path.suffix.lower() != ".csv":
         return None
@@ -131,6 +127,7 @@ def import_grouphousing_csv_data(
         skiprows=1,  # Skip header part
         low_memory=False,
         dtype=dtype,
+        dtype_backend="pyarrow",
     )
 
     # Rename table columns
@@ -178,20 +175,18 @@ def import_grouphousing_csv_data(
     # Convert to pyarrow backend
     df = df.convert_dtypes(dtype_backend="pyarrow")
 
+    animal_ids = df["Animal"].unique().tolist()
+    animal_ids.sort()
+
     raw_datatable = Datatable(
         dataset,
-        tse_import_settings.GROUP_HOUSING_TABLE,
-        f"Raw {tse_import_settings.GROUP_HOUSING_TABLE} datatable",
+        GROUP_HOUSING_TABLE,
+        f"Raw {GROUP_HOUSING_TABLE} datatable",
         {},
         df,
         {
             "origin_path": str(path),
+            "animal_ids": animal_ids,
         },
     )
-
-    data = GroupHousingData(
-        dataset,
-        tse_import_settings.GROUP_HOUSING_TABLE,
-        raw_datatable,
-    )
-    return data
+    return raw_datatable

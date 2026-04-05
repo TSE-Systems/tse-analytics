@@ -10,16 +10,16 @@ from pathlib import Path
 import pandas as pd
 import pyarrow as pa
 
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
-from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 from tse_analytics.modules.intellimaze.extensions.actor.data import processor
 from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
 
 
 def import_data(
     folder_path: Path,
-    dataset: IntelliMazeDataset,
+    dataset: Dataset,
 ) -> dict[str, Datatable]:
     """
     Import Actor data from files.
@@ -29,7 +29,7 @@ def import_data(
 
     Args:
         folder_path (Path): Path to the folder containing the data files.
-        dataset (IntelliMazeDataset): The dataset to add the data to.
+        dataset (Dataset): The dataset to add the data to.
     """
     extension_data = {
         "State": _import_state_df(dataset, folder_path / "State.txt"),

@@ -5,8 +5,7 @@ from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import QToolBar, QVBoxLayout, QWidget
 
 from tse_analytics.core import color_manager
-from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.drinkfeed_bin_data import DrinkFeedBinData
-from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.drinkfeed_raw_data import DrinkFeedRawData
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
@@ -40,9 +39,9 @@ class IntervalsPlotWidget(QWidget):
         toolbar.addWidget(plot_toolbar)
 
         self.df: pd.DataFrame | None = None
-        self.drinkfeed_data: DrinkFeedBinData | DrinkFeedRawData | None = None
+        self.drinkfeed_data: Datatable | None = None
 
-    def set_data(self, df: pd.DataFrame, drinkfeed_data: DrinkFeedBinData | DrinkFeedRawData) -> None:
+    def set_data(self, df: pd.DataFrame, drinkfeed_data: Datatable) -> None:
         self.df = df
         self.drinkfeed_data = drinkfeed_data
         self.variableSelector.set_data(drinkfeed_data.variables)

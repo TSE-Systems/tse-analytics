@@ -1,13 +1,13 @@
 import pandas as pd
 
-from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.drinkfeed_bin_data import DrinkFeedBinData
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.drinkfeed_settings import DrinkFeedSettings
 
 default_columns = ["DateTime", "Animal", "Box"]
 
 
 def process_drinkfeed_intervals(
-    drinkfeed_data: DrinkFeedBinData,
+    drinkfeed_data: Datatable,
     long_df: pd.DataFrame,
     settings: DrinkFeedSettings,
     diets_dict: dict[int, float],

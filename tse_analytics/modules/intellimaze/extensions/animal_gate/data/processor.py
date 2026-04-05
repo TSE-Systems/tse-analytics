@@ -8,22 +8,22 @@ ExtensionData class to handle AnimalGate specific data.
 
 import pandas as pd
 
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
-from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
-from tse_analytics.modules.intellimaze.data.utils import get_variables_csv_data
+from tse_analytics.modules.intellimaze.data.utils import get_tag_to_name_map, get_variables_csv_data
 
 EXTENSION_NAME = "AnimalGate"
 
 
 def preprocess_data(
-    dataset: IntelliMazeDataset,
+    dataset: Dataset,
     extension_data: dict[str, Datatable],
 ) -> None:
     df = extension_data["Sessions"].df.copy()
 
     # Replace animal tags with animal IDs
-    tag_to_animal_map = dataset.get_tag_to_name_map()
+    tag_to_animal_map = get_tag_to_name_map(dataset.animals)
     df["Animal"] = df["Tag"].replace(tag_to_animal_map)
 
     # Add duration column
@@ -94,7 +94,7 @@ def preprocess_data(
 
 
 def get_csv_data(
-    dataset: IntelliMazeDataset,
+    dataset: Dataset,
     extension_data: dict[str, Datatable],
     export_registrations: bool,
     export_variables: bool,
@@ -115,7 +115,7 @@ def get_csv_data(
     """
     result: dict[str, pd.DataFrame] = {}
 
-    tag_to_animal_map = dataset.get_tag_to_name_map()
+    tag_to_animal_map = get_tag_to_name_map(dataset.animals)
 
     if export_registrations:
         data: dict[str, list | str] = {

@@ -10,16 +10,16 @@ from pathlib import Path
 import pandas as pd
 import pyarrow as pa
 
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
-from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 from tse_analytics.modules.intellimaze.extensions.consumption_scale.data import processor
 from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
 
 
 def import_data(
     folder_path: Path,
-    dataset: IntelliMazeDataset,
+    dataset: Dataset,
 ) -> dict[str, Datatable]:
     """
     Import Consumption Scale data from files.
@@ -29,7 +29,7 @@ def import_data(
 
     Args:
         folder_path (Path): Path to the folder containing the data files.
-        dataset (IntelliMazeDataset): The dataset to add the data to.
+        dataset (Dataset): The dataset to add the data to.
 
     Returns:
         ConsumptionScaleData: A ConsumptionScaleData object containing the imported data.
@@ -48,7 +48,7 @@ def import_data(
     return extension_data
 
 
-def _import_consumption_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
+def _import_consumption_df(dataset: Dataset, file_path: Path) -> Datatable:
     """
     Import consumption data from a file.
 
@@ -116,7 +116,7 @@ def _import_consumption_df(dataset: IntelliMazeDataset, file_path: Path) -> Data
     return datatable
 
 
-def _import_model_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
+def _import_model_df(dataset: Dataset, file_path: Path) -> Datatable:
     """
     Import model data from a file.
 

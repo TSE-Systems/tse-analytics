@@ -15,9 +15,7 @@ from tse_analytics.core.data.report import Report
 from tse_analytics.core.services.selection_service import SelectionService
 from tse_analytics.core.services.workspace_service import WorkspaceService
 from tse_analytics.modules.intellicage.data import intellicage_dataset_merger
-from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
 from tse_analytics.modules.phenomaster.data import phenomaster_dataset_merger
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 
 
 class DatasetService:
@@ -96,7 +94,7 @@ class DatasetService:
         """
         first_dataset = datasets[0]
         merged_dataset = None
-        if isinstance(first_dataset, PhenoMasterDataset):
+        if first_dataset.dataset_type == "PhenoMaster":
             merged_dataset = phenomaster_dataset_merger.merge_datasets(
                 new_dataset_name,
                 datasets,
@@ -104,7 +102,7 @@ class DatasetService:
                 continuous_mode,
                 generate_new_animal_names,
             )
-        elif isinstance(first_dataset, IntelliCageDataset):
+        elif first_dataset.dataset_type == "IntelliCage":
             merged_dataset = intellicage_dataset_merger.merge_datasets(
                 new_dataset_name,
                 datasets,

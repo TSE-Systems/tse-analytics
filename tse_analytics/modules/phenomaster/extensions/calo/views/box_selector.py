@@ -1,10 +1,11 @@
 from PySide6.QtCore import QItemSelection, QSortFilterProxyModel, Qt
 from PySide6.QtWidgets import QAbstractItemView, QTableView, QWidget
 
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.utils.ui import set_inactive_palette
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.extensions.calo.data.calo_box import CaloBox
 from tse_analytics.modules.phenomaster.extensions.calo.data.calo_boxes_model import CaloBoxesModel
+from tse_analytics.modules.phenomaster.io.tse_import_settings import CALO_BIN_TABLE
 
 
 class BoxSelector(QTableView):
@@ -25,12 +26,12 @@ class BoxSelector(QTableView):
         self.sortByColumn(0, Qt.SortOrder.AscendingOrder)
         self.selectionModel().selectionChanged.connect(self._on_selection_changed)
 
-    def set_data(self, dataset: PhenoMasterDataset):
-        all_box_numbers = list(dataset.calo_data.raw_datatable.df["Box"].unique())
+    def set_data(self, dataset: Dataset):
+        all_box_numbers = dataset.raw_datatables["Calo"][CALO_BIN_TABLE].df["Box"].unique().tolist()
         boxes: list[CaloBox] = []
 
         for box in all_box_numbers:
-            ref_box = dataset.calo_data.ref_box_mapping.get(box, None)
+            ref_box = dataset.raw_datatables["Calo"][CALO_BIN_TABLE].metadata["ref_box_mapping"].get(box, None)
             if ref_box is not None:
                 boxes.append(CaloBox(box, ref_box))
         model = CaloBoxesModel(boxes)

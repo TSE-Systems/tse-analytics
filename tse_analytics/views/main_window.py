@@ -19,7 +19,6 @@ from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.intellicage.io.dataset_loader import import_intellicage_dataset
-from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 from tse_analytics.modules.intellimaze.io.dataset_loader import import_intellimaze_dataset
 from tse_analytics.modules.intellimaze.views.export_merged_csv.export_merged_csv_dialog import ExportMergedCsvDialog
 from tse_analytics.modules.phenomaster.io.tse_dataset_loader import load_tse_dataset
@@ -164,7 +163,7 @@ class MainWindow(QMainWindow):
 
     def _menu_file_about_to_show(self):
         dataset = manager.get_selected_dataset()
-        self.ui.actionExportMergedCsv.setVisible(dataset is not None and isinstance(dataset, IntelliMazeDataset))
+        self.ui.actionExportMergedCsv.setVisible(dataset is not None and dataset.dataset_type == "IntelliMaze")
 
     def _populate_open_recent(self):
         # Step 1. Remove the old options from the menu

@@ -1,8 +1,8 @@
 from PySide6.QtCore import QItemSelection, QSortFilterProxyModel, Qt, QTimer
 from PySide6.QtWidgets import QAbstractItemView, QTableView, QWidget
 
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.utils.ui import set_inactive_palette
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.extensions.actimot.data.actimot_animal_item import ActimotAnimalItem
 from tse_analytics.modules.phenomaster.extensions.actimot.data.actimot_boxes_model import ActimotBoxesModel
 
@@ -27,7 +27,7 @@ class BoxSelector(QTableView):
         self.sortByColumn(0, Qt.SortOrder.AscendingOrder)
         self.selectionModel().selectionChanged.connect(self._on_selection_changed)
 
-    def set_data(self, dataset: PhenoMasterDataset):
+    def set_data(self, dataset: Dataset):
         items: dict[str, ActimotAnimalItem] = {}
         for animal in dataset.animals.values():
             items[animal.id] = ActimotAnimalItem(animal.properties["Box"], animal.id, {})

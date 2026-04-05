@@ -8,11 +8,12 @@ and applying binning.
 
 from copy import deepcopy
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 from uuid import uuid7
 
 import pandas as pd
 
+from tse_analytics.core import messaging
 from tse_analytics.core.color_manager import get_factor_level_color_hex
 from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.datatable import Datatable
@@ -22,6 +23,8 @@ from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.datatable_tree_item import DatatableTreeItem
 from tse_analytics.core.models.report_tree_item import ReportTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
+
+DatasetType = Literal["PhenoMaster", "IntelliMaze", "IntelliCage"]
 
 
 class Dataset:
@@ -37,6 +40,7 @@ class Dataset:
         self,
         name: str,
         description: str,
+        dataset_type: DatasetType,
         metadata: dict[str, Any] | list[dict],
         animals: dict[str, Animal],
     ):
@@ -57,6 +61,7 @@ class Dataset:
         self.id = uuid7()
         self.name = name
         self.description = description
+        self.dataset_type = dataset_type
         self.metadata = metadata
         self.animals = animals
 
@@ -244,6 +249,10 @@ class Dataset:
         for datatable in self.datatables.values():
             datatable.rename_animal(old_id, animal)
 
+        for extension_datatables in self.raw_datatables.values():
+            for datatable in extension_datatables.values():
+                datatable.rename_animal(old_id, animal)
+
         # Rename animal in factor's levels definitions
         for factor in self.factors.values():
             for level in factor.levels:
@@ -263,7 +272,7 @@ class Dataset:
         self.animals.pop(old_id)
         self.animals[animal.id] = animal
 
-        # messaging.broadcast(messaging.DatasetChangedMessage(self, self))
+        messaging.broadcast(messaging.DatasetChangedMessage(self, self))
 
     def exclude_animals(self, animal_ids: set[str]) -> None:
         """
@@ -299,7 +308,7 @@ class Dataset:
             datatable.exclude_animals(animal_ids)
 
         # Exclude animals from raw datatables
-        for extension_name, extension_datatables in self.raw_datatables.items():
+        for extension_datatables in self.raw_datatables.values():
             for datatable in extension_datatables.values():
                 datatable.exclude_animals(animal_ids)
 
@@ -321,8 +330,13 @@ class Dataset:
             self.metadata["experiment_started"] = str(range_end)
         if range_start < self.experiment_stopped <= range_end:
             self.metadata["experiment_stopped"] = str(range_start)
+
         for datatable in self.datatables.values():
             datatable.exclude_time(range_start, range_end)
+
+        # for extension_datatables in self.raw_datatables.values():
+        #     for datatable in extension_datatables.values():
+        #         datatable.exclude_time(range_start, range_end)
 
     def trim_time(self, range_start: datetime, range_end: datetime) -> None:
         """
@@ -340,8 +354,13 @@ class Dataset:
         """
         self.metadata["experiment_started"] = str(range_start)
         self.metadata["experiment_stopped"] = str(range_end)
+
         for datatable in self.datatables.values():
             datatable.trim_time(range_start, range_end)
+
+        # for extension_datatables in self.raw_datatables.values():
+        #     for datatable in extension_datatables.values():
+        #         datatable.trim_time(range_start, range_end)
 
     def resample(self, resampling_interval: pd.Timedelta) -> None:
         """

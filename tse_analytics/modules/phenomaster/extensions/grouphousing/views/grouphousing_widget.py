@@ -5,9 +5,12 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QCheckBox, QLabel, QSpinBox, QToolBar, QWidget
 
 from tse_analytics.core import manager
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.modules.phenomaster.extensions.grouphousing.data.grouphousing_data import GroupHousingData
-from tse_analytics.modules.phenomaster.extensions.grouphousing.data.processor import preprocess_trafficage_datatable
+from tse_analytics.modules.phenomaster.extensions.grouphousing.data.processor import (
+    get_preprocessed_data,
+    preprocess_trafficage_datatable,
+)
 from tse_analytics.modules.phenomaster.extensions.grouphousing.views.activity_widget import ActivityWidget
 from tse_analytics.modules.phenomaster.extensions.grouphousing.views.grouphousing_widget_ui import Ui_GroupHousingWidget
 from tse_analytics.modules.phenomaster.extensions.grouphousing.views.heatmap.heatmap_widget import HeatmapWidget
@@ -18,7 +21,7 @@ from tse_analytics.modules.phenomaster.extensions.grouphousing.views.raw_data.ra
 
 
 class GroupHousingWidget(QWidget):
-    def __init__(self, grouphousing_data: GroupHousingData, parent: QWidget):
+    def __init__(self, datatable: Datatable, parent: QWidget):
         super().__init__(parent)
 
         self.ui = Ui_GroupHousingWidget()
@@ -33,7 +36,7 @@ class GroupHousingWidget(QWidget):
 
         # settings = QSettings()
 
-        self.grouphousing_data = grouphousing_data
+        self.datatable = datatable
 
         # Setup toolbar
         toolbar = QToolBar(
@@ -71,16 +74,16 @@ class GroupHousingWidget(QWidget):
 
         self.ui.verticalLayout.insertWidget(0, toolbar)
 
-        self.raw_data_widget = RawDataWidget(self.grouphousing_data, self)
+        self.raw_data_widget = RawDataWidget(self.datatable, self)
         self.ui.tabWidget.addTab(self.raw_data_widget, "Raw Data")
 
-        self.preprocessed_view = PreprocessedDataWidget(self.grouphousing_data, self)
+        self.preprocessed_view = PreprocessedDataWidget(self.datatable, self)
         self.preprocessed_data_tab_index = self.ui.tabWidget.addTab(self.preprocessed_view, "Preprocessed Data")
 
         self.activity_widget = ActivityWidget(self)
         self.activity_tab_index = self.ui.tabWidget.addTab(self.activity_widget, "Activity")
 
-        self.heatmap_widget = HeatmapWidget(self.grouphousing_data, self)
+        self.heatmap_widget = HeatmapWidget(self.datatable, self)
         self.heatmap_tab_index = self.ui.tabWidget.addTab(self.heatmap_widget, "Heatmap")
 
         self.preprocessed_df: dict[str, pd.DataFrame] | None = None
@@ -94,13 +97,14 @@ class GroupHousingWidget(QWidget):
         self.ui.tabWidget.setTabVisible(self.heatmap_tab_index, is_preprocessed)
 
     def _preprocess(self) -> None:
-        self.preprocessed_df = self.grouphousing_data.get_preprocessed_data(
+        self.preprocessed_df = get_preprocessed_data(
+            self.datatable,
             self.checkBoxRemoveRepeatingRecords.isChecked(),
             self.checkBoxRemoveOverlappingRecords.isChecked(),
             self.overlapping_timediff_spin_box.value(),
         )
         self.preprocessed_view.set_preprocessed_data(self.preprocessed_df)
-        self.activity_widget.set_preprocessed_data(self.grouphousing_data, self.preprocessed_df)
+        self.activity_widget.set_preprocessed_data(self.datatable, self.preprocessed_df)
         self.heatmap_widget.set_preprocessed_data(self.preprocessed_df)
         self._update_tabs()
         self.add_datatable_action.setEnabled(True)
@@ -109,7 +113,7 @@ class GroupHousingWidget(QWidget):
         if self.preprocessed_df is None or "TraffiCage" not in self.preprocessed_df:
             return
 
-        datatable = preprocess_trafficage_datatable(self.grouphousing_data.dataset, self.preprocessed_df["TraffiCage"])
+        datatable = preprocess_trafficage_datatable(self.datatable.dataset, self.preprocessed_df["TraffiCage"])
         manager.add_datatable(datatable)
 
         make_toast(

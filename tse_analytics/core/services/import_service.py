@@ -12,7 +12,6 @@ from tse_analytics.core.services.dataset_service import DatasetService
 from tse_analytics.core.services.selection_service import SelectionService
 from tse_analytics.core.services.workspace_service import WorkspaceService
 from tse_analytics.core.settings_manager import get_csv_import_settings
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.extensions.actimot.io.data_loader import import_actimot_csv_data
 from tse_analytics.modules.phenomaster.extensions.calo.io.data_loader import import_calo_csv_data
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.io.data_loader import import_drinkfeed_bin_csv_data
@@ -49,10 +48,10 @@ class ImportService:
             path: The path to the DrinkFeed CSV file to import.
         """
         dataset = self._selection.get_selected_dataset()
-        if dataset is not None and isinstance(dataset, PhenoMasterDataset):
-            data = import_drinkfeed_bin_csv_data(path, dataset, get_csv_import_settings())
-            if data is not None:
-                dataset.extensions_data["drinkfeed_bin_data"] = data
+        if dataset is not None:
+            datatable = import_drinkfeed_bin_csv_data(path, dataset, get_csv_import_settings())
+            if datatable is not None:
+                dataset.add_raw_datatable("DrinkFeed", datatable)
                 ws = self._workspace.get_workspace()
                 messaging.broadcast(messaging.WorkspaceChangedMessage(self, ws))
 
@@ -63,10 +62,10 @@ class ImportService:
             path: The path to the ActiMot CSV file to import.
         """
         dataset = self._selection.get_selected_dataset()
-        if dataset is not None and isinstance(dataset, PhenoMasterDataset):
-            data = import_actimot_csv_data(path, dataset, get_csv_import_settings())
-            if data is not None:
-                dataset.extensions_data["actimot_data"] = data
+        if dataset is not None:
+            datatable = import_actimot_csv_data(path, dataset, get_csv_import_settings())
+            if datatable is not None:
+                dataset.add_raw_datatable("ActiMot", datatable)
                 ws = self._workspace.get_workspace()
                 messaging.broadcast(messaging.WorkspaceChangedMessage(self, ws))
 
@@ -77,10 +76,10 @@ class ImportService:
             path: The path to the Calorimetry CSV file to import.
         """
         dataset = self._selection.get_selected_dataset()
-        if dataset is not None and isinstance(dataset, PhenoMasterDataset):
-            data = import_calo_csv_data(path, dataset, get_csv_import_settings())
-            if data is not None:
-                dataset.extensions_data["calo_data"] = data
+        if dataset is not None:
+            datatable = import_calo_csv_data(path, dataset, get_csv_import_settings())
+            if datatable is not None:
+                dataset.add_raw_datatable("Calo", datatable)
                 ws = self._workspace.get_workspace()
                 messaging.broadcast(messaging.WorkspaceChangedMessage(self, ws))
 
@@ -91,9 +90,9 @@ class ImportService:
             path: The path to the group housing CSV file to import.
         """
         dataset = self._selection.get_selected_dataset()
-        if dataset is not None and isinstance(dataset, PhenoMasterDataset):
-            data = import_grouphousing_csv_data(path, dataset, get_csv_import_settings())
-            if data is not None:
-                dataset.extensions_data["grouphousing_data"] = data
+        if dataset is not None:
+            datatable = import_grouphousing_csv_data(path, dataset, get_csv_import_settings())
+            if datatable is not None:
+                dataset.add_raw_datatable("GroupHousing", datatable)
                 ws = self._workspace.get_workspace()
                 messaging.broadcast(messaging.WorkspaceChangedMessage(self, ws))

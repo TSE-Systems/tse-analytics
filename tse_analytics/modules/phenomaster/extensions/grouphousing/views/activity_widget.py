@@ -3,7 +3,7 @@ import pyqtgraph as pg
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import QComboBox, QLabel, QToolBar, QVBoxLayout, QWidget
 
-from tse_analytics.modules.phenomaster.extensions.grouphousing.data.grouphousing_data import GroupHousingData
+from tse_analytics.core.data.datatable import Datatable
 
 
 class ActivityWidget(QWidget):
@@ -21,7 +21,7 @@ class ActivityWidget(QWidget):
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
 
-        self.data = None
+        self.datatable: Datatable | None = None
         self.preprocessed_data: dict[str, pd.DataFrame] | None = None
         self._channel_type = "TraffiCage"
 
@@ -60,8 +60,8 @@ class ActivityWidget(QWidget):
         self.region.sigRegionChanged.connect(self._region_changed)
         self.p1.sigXRangeChanged.connect(self._x_range_changed)
 
-    def set_preprocessed_data(self, data: GroupHousingData, preprocessed_data: dict[str, pd.DataFrame]):
-        self.data = data
+    def set_preprocessed_data(self, datatable: Datatable, preprocessed_data: dict[str, pd.DataFrame]):
+        self.datatable = datatable
         self.preprocessed_data = preprocessed_data
         self._refresh_plot()
 
@@ -75,7 +75,7 @@ class ActivityWidget(QWidget):
         self.legend.clear()
 
         df = self.preprocessed_data[self._channel_type]
-        x_min, x_max = self._plot_animals(self.data, df)
+        x_min, x_max = self._plot_animals(self.datatable, df)
         if x_min is None or x_max is None:
             return
         # bound the LinearRegionItem to the plotted data
@@ -88,7 +88,7 @@ class ActivityWidget(QWidget):
     def _x_range_changed(self, view_box, range):
         self.region.setRegion(range)
 
-    def _plot_animals(self, data: GroupHousingData, df: pd.DataFrame) -> tuple[float, float]:
+    def _plot_animals(self, data: Datatable, df: pd.DataFrame) -> tuple[float, float]:
         x_min = None
         x_max = None
 

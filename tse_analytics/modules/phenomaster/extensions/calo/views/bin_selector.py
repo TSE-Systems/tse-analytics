@@ -1,9 +1,10 @@
 from PySide6.QtCore import QItemSelection, QSortFilterProxyModel, Qt
 from PySide6.QtWidgets import QAbstractItemView, QTableView, QWidget
 
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.models.bins_model import BinsModel
 from tse_analytics.core.utils.ui import set_inactive_palette
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
+from tse_analytics.modules.phenomaster.io.tse_import_settings import CALO_BIN_TABLE
 
 
 class BinSelector(QTableView):
@@ -25,8 +26,8 @@ class BinSelector(QTableView):
         self.sortByColumn(0, Qt.SortOrder.AscendingOrder)
         self.selectionModel().selectionChanged.connect(self._on_selection_changed)
 
-    def set_data(self, dataset: PhenoMasterDataset):
-        bins = list(dataset.calo_data.raw_datatable.df["Bin"].unique())
+    def set_data(self, dataset: Dataset):
+        bins = dataset.raw_datatables["Calo"][CALO_BIN_TABLE].df["Bin"].unique().tolist()
         model = BinsModel(bins)
         self.model().setSourceModel(model)
         # self.resizeColumnsToContents()

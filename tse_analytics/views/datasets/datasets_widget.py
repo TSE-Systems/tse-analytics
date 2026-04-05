@@ -429,7 +429,7 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                     LayoutManager.add_widget_to_central_area(
                         item.datatable.dataset,
                         widget,
-                        f"Table - {item.datatable.dataset.name}",
+                        f"Table - {item.datatable.name}",
                         QIcon(":/icons/table.png"),
                     )
 

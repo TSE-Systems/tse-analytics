@@ -18,17 +18,10 @@ import duckdb
 import pandas as pd
 from loguru import logger
 
-from tse_analytics.core.data.binning import (
-    BinningSettings,
-    TimeCyclesBinningSettings,
-    TimeIntervalsBinningSettings,
-    TimePhasesBinningSettings,
-)
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings, OutliersType
 from tse_analytics.core.data.report import Report
-from tse_analytics.core.data.shared import Aggregation, Animal, Factor, FactorLevel, TimePhase, Variable
 from tse_analytics.core.data.workspace import Workspace
 
 _SCHEMA_VERSION = 1
@@ -107,14 +100,8 @@ def _short_id(uuid: UUID) -> str:
     return uuid.hex[-12:]
 
 
-def _df_table_name(dataset_id: UUID, datatable_id: UUID) -> str:
-    return f"df__{_short_id(dataset_id)}__{_short_id(datatable_id)}"
-
-
-def _ext_table_name(dataset_id: UUID, extension_key: str, data_key: str) -> str:
-    safe_ext = extension_key.replace(" ", "_").replace("-", "_").lower()
-    safe_key = data_key.replace(" ", "_").replace("-", "_").lower()
-    return f"ext__{_short_id(dataset_id)}__{safe_ext}__{safe_key}"
+def _df_table_name(datatable: Datatable) -> str:
+    return f"df__{datatable.name}__{_short_id(datatable.dataset.id)}__{_short_id(datatable.id)}"
 
 
 # ---------------------------------------------------------------------------
@@ -161,25 +148,20 @@ _META_TABLES_DDL = [
         variables               JSON NOT NULL,
         metadata                JSON,
         parent_datatable_id     UUID,
-        extension_name          VARCHAR,
         outliers_settings       JSON NOT NULL
     )
     """,
     """
-    CREATE TABLE _meta_extensions (
-        dataset_id      UUID NOT NULL,
-        extension_key   VARCHAR NOT NULL,
-        extension_class VARCHAR NOT NULL,
-        extension_name  VARCHAR NOT NULL,
-        extra           JSON
-    )
-    """,
-    """
-    CREATE TABLE _meta_extension_dataframes (
-        dataset_id          UUID NOT NULL,
-        extension_key       VARCHAR NOT NULL,
-        data_key            VARCHAR NOT NULL,
-        duckdb_table_name   VARCHAR NOT NULL
+    CREATE TABLE _meta_raw_datatables (
+        id                      UUID NOT NULL,
+        dataset_id              UUID NOT NULL,
+        name                    VARCHAR NOT NULL,
+        description             VARCHAR,
+        duckdb_table_name       VARCHAR NOT NULL,
+        variables               JSON NOT NULL,
+        metadata                JSON,
+        extension_name          VARCHAR,
+        outliers_settings       JSON NOT NULL
     )
     """,
 ]
@@ -199,7 +181,6 @@ def _save_dataframe(
     con: duckdb.DuckDBPyConnection,
     table_name: str,
     df: pd.DataFrame,
-    owner_id: UUID,
 ) -> None:
     """Write a DataFrame as a DuckDB table and record column dtypes."""
     if df.empty:
@@ -275,11 +256,10 @@ def _save_datatable(
     con: duckdb.DuckDBPyConnection,
     datatable: Datatable,
     parent_id: UUID | None = None,
-    extension_name: str | None = None,
 ) -> None:
-    table_name = _df_table_name(datatable.dataset.id, datatable.id)
+    table_name = _df_table_name(datatable)
 
-    _save_dataframe(con, table_name, datatable.df, datatable.id)
+    _save_dataframe(con, table_name, datatable.df)
 
     variables_json = {}
     for variable in datatable.variables.values():
@@ -288,7 +268,7 @@ def _save_datatable(
     outliers_settings_json = {}
 
     con.execute(
-        "INSERT INTO _meta_datatables VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO _meta_datatables VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [
             datatable.id,
             datatable.dataset.id,
@@ -298,7 +278,6 @@ def _save_datatable(
             variables_json,
             datatable.metadata,
             parent_id,
-            extension_name,
             outliers_settings_json,
         ],
     )
@@ -307,82 +286,38 @@ def _save_datatable(
         _save_datatable(con, derived, parent_id=datatable.id)
 
 
-def _save_extension_phenomaster(con: duckdb.DuckDBPyConnection, dataset: Dataset) -> None:
-    from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
+def _save_raw_datatable(
+    con: duckdb.DuckDBPyConnection,
+    datatable: Datatable,
+    extension_name: str | None = None,
+) -> None:
+    table_name = _df_table_name(datatable)
 
-    if not isinstance(dataset, PhenoMasterDataset):
-        return
+    _save_dataframe(con, table_name, datatable.df)
 
-    for extension_name, extension_data in dataset.extensions_data.items():
-        extra: dict[str, Any] = {}
-        if hasattr(extension_data, "ref_box_mapping"):
-            extra["ref_box_mapping"] = extension_data.ref_box_mapping
-        if hasattr(extension_data, "animal_ids"):
-            extra["animal_ids"] = extension_data.animal_ids
+    variables_json = {}
+    for variable in datatable.variables.values():
+        variables_json[variable.name] = variable.get_dict()
 
-        con.execute(
-            "INSERT INTO _meta_extensions VALUES (?, ?, ?, ?, ?)",
-            [
-                dataset.id,
-                extension_name,
-                _class_fqn(extension_data),
-                extension_data.name,
-                extra,
-            ],
-        )
+    outliers_settings_json = {}
 
-        _save_datatable(con, extension_data.raw_datatable, extension_name=extension_name)
-
-
-def _save_extension_intellicage(con: duckdb.DuckDBPyConnection, dataset: Dataset) -> None:
-    from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
-
-    if not isinstance(dataset, IntelliCageDataset):
-        return
-
-
-def _save_extension_intellimaze(con: duckdb.DuckDBPyConnection, dataset_id: UUID, dataset: Dataset) -> None:
-    from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
-
-    if not isinstance(dataset, IntelliMazeDataset):
-        return
-
-    for key, ext in dataset.extensions_data.items():
-        extra = {"device_ids": ext.device_ids}
-        con.execute(
-            "INSERT INTO _meta_extensions VALUES (?, ?, ?, ?, ?)",
-            [
-                str(dataset_id),
-                key,
-                _class_fqn(ext),
-                ext.name,
-                _dumps(extra),
-            ],
-        )
-
-        for data_key, df in ext.raw_data.items():
-            table_name = _ext_table_name(dataset_id, key, data_key)
-            owner_id = f"ext_{_short_id(dataset_id)}_{key}_{data_key}"
-            _save_dataframe(con, table_name, df, owner_id)
-            con.execute(
-                "INSERT INTO _meta_extension_dataframes VALUES (?, ?, ?, ?)",
-                [
-                    str(dataset_id),
-                    key,
-                    data_key,
-                    table_name,
-                ],
-            )
+    con.execute(
+        "INSERT INTO _meta_raw_datatables VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        [
+            datatable.id,
+            datatable.dataset.id,
+            datatable.name,
+            datatable.description,
+            table_name,
+            variables_json,
+            datatable.metadata,
+            extension_name,
+            outliers_settings_json,
+        ],
+    )
 
 
 def _save_dataset(con: duckdb.DuckDBPyConnection, dataset: Dataset) -> None:
-    # Store IntelliMaze devices in metadata for reconstruction
-    extra_init: dict[str, Any] = {}
-    from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
-
-    if isinstance(dataset, IntelliMazeDataset):
-        extra_init["devices"] = dataset.devices
-
     animals_json = {}
     for animal in dataset.animals.values():
         animals_json[animal.id] = animal.get_dict()
@@ -400,10 +335,7 @@ def _save_dataset(con: duckdb.DuckDBPyConnection, dataset: Dataset) -> None:
             animals_json,
             factors_json,
             binning_settings_json,
-            {
-                "metadata": dataset.metadata,
-                "extra_init": extra_init,
-            },
+            dataset.metadata,
         ],
     )
 
@@ -412,9 +344,9 @@ def _save_dataset(con: duckdb.DuckDBPyConnection, dataset: Dataset) -> None:
     for datatable in dataset.datatables.values():
         _save_datatable(con, datatable)
 
-    _save_extension_phenomaster(con, dataset)
-    _save_extension_intellicage(con, dataset)
-    # _save_extension_intellimaze(con, dataset.id, dataset)
+    for extension_name, extension_data in dataset.raw_datatables.items():
+        for raw_datatable in extension_data.values():
+            _save_raw_datatable(con, raw_datatable, extension_name)
 
 
 def save_workspace(filename: str, workspace: Workspace) -> None:
@@ -428,7 +360,7 @@ def save_workspace(filename: str, workspace: Workspace) -> None:
     if path.exists():
         path.unlink()
 
-    logger.info("Saving workspace to {}", path)
+    logger.info(f"Saving workspace to {path}")
 
     tic = timeit.default_timer()
     con = duckdb.connect(path)
@@ -451,67 +383,12 @@ def save_workspace(filename: str, workspace: Workspace) -> None:
 def _load_workspace_meta(con: duckdb.DuckDBPyConnection) -> Workspace:
     row = con.execute("SELECT * FROM _meta_workspace").fetchone()
     ws = Workspace(
-        id=UUID(row[0]),
+        id=row[0],
         name=row[1],
         description=row[2],
-        metadata=_loads(row[3]),
+        metadata=row[3],
     )
     return ws
-
-
-def _load_animals(con: duckdb.DuckDBPyConnection, dataset_id: str) -> dict[str, Animal]:
-    rows = con.execute(
-        "SELECT animal_id, color, properties_json FROM _meta_animals WHERE dataset_id = ?",
-        [dataset_id],
-    ).fetchall()
-    animals: dict[str, Animal] = {}
-    for animal_id, color, props_json in rows:
-        animals[animal_id] = Animal(id=animal_id, color=color, properties=_loads(props_json))
-    return animals
-
-
-def _load_factors(con: duckdb.DuckDBPyConnection, dataset_id: str) -> dict[str, Factor]:
-    factor_rows = con.execute(
-        "SELECT factor_name FROM _meta_factors WHERE dataset_id = ?",
-        [dataset_id],
-    ).fetchall()
-    factors: dict[str, Factor] = {}
-    for (factor_name,) in factor_rows:
-        level_rows = con.execute(
-            "SELECT level_name, color, animal_ids_json FROM _meta_factor_levels "
-            "WHERE dataset_id = ? AND factor_name = ?",
-            [dataset_id, factor_name],
-        ).fetchall()
-        levels = [FactorLevel(name=ln, color=c, animal_ids=json.loads(aids)) for ln, c, aids in level_rows]
-        factors[factor_name] = Factor(name=factor_name, levels=levels)
-    return factors
-
-
-def _load_binning_settings(con: duckdb.DuckDBPyConnection, dataset_id: str) -> BinningSettings:
-    row = con.execute(
-        "SELECT intervals_unit, intervals_delta, cycles_light_start, cycles_dark_start, phases_json "
-        "FROM _meta_binning_settings WHERE dataset_id = ?",
-        [dataset_id],
-    ).fetchone()
-    if row is None:
-        return BinningSettings()
-
-    from datetime import time
-
-    phases_data = _loads(row[4])
-    time_phases = [
-        TimePhase(name=p["name"], start_timestamp=pd.Timedelta(nanoseconds=p["start_timestamp_ns"]))
-        for p in phases_data
-    ]
-
-    return BinningSettings(
-        time_intervals_settings=TimeIntervalsBinningSettings(unit=row[0], delta=row[1]),
-        time_cycles_settings=TimeCyclesBinningSettings(
-            light_cycle_start=time.fromisoformat(row[2]),
-            dark_cycle_start=time.fromisoformat(row[3]),
-        ),
-        time_phases_settings=TimePhasesBinningSettings(time_phases=time_phases),
-    )
 
 
 def _load_reports(con: duckdb.DuckDBPyConnection, dataset_id: str, dataset: Dataset) -> dict[str, Report]:
@@ -523,25 +400,6 @@ def _load_reports(con: duckdb.DuckDBPyConnection, dataset_id: str, dataset: Data
     for name, content, timestamp in rows:
         reports[name] = Report(dataset=dataset, name=name, content=content, timestamp=timestamp)
     return reports
-
-
-def _load_variables(con: duckdb.DuckDBPyConnection, datatable_id: str) -> dict[str, Variable]:
-    rows = con.execute(
-        "SELECT var_name, unit, description, type, aggregation, remove_outliers "
-        "FROM _meta_variables WHERE datatable_id = ?",
-        [datatable_id],
-    ).fetchall()
-    variables: dict[str, Variable] = {}
-    for var_name, unit, desc, vtype, agg, remove in rows:
-        variables[var_name] = Variable(
-            name=var_name,
-            unit=unit,
-            description=desc,
-            type=vtype,
-            aggregation=Aggregation(agg),
-            remove_outliers=remove,
-        )
-    return variables
 
 
 def _load_datatables_for_dataset(
@@ -612,160 +470,19 @@ def _load_datatables_for_dataset(
     return {dt.name: dt for dt in all_tables.values() if dt.parent_table is None}
 
 
-def _load_extension_datatable(
-    con: duckdb.DuckDBPyConnection,
-    dataset: Dataset,
-    extension_key: str,
-) -> Datatable | None:
-    """Load a single extension raw_datatable."""
-    row = con.execute(
-        "SELECT id, name, description, duckdb_table_name, metadata_json, "
-        "outliers_mode, outliers_type, iqr_multiplier, "
-        "min_threshold_enabled, min_threshold, max_threshold_enabled, max_threshold "
-        "FROM _meta_datatables WHERE dataset_id = ? AND extension_key = ?",
-        [str(dataset.id), extension_key],
-    ).fetchone()
-    if row is None:
-        return None
-
-    dt_id, name, desc, tbl_name, meta_json, o_mode, o_type, o_iqr, o_min_en, o_min, o_max_en, o_max = row
-    variables = _load_variables(con, dt_id)
-    df = _load_dataframe(con, tbl_name, dt_id)
-    metadata = _loads(meta_json)
-
-    dt = Datatable(dataset=dataset, name=name, description=desc, variables=variables, df=df, metadata=metadata)
-    dt.id = UUID(dt_id)
-    dt.outliers_settings = OutliersSettings(
-        mode=OutliersMode(o_mode),
-        type=OutliersType(o_type),
-        iqr_multiplier=o_iqr,
-        min_threshold_enabled=o_min_en,
-        min_threshold=o_min,
-        max_threshold_enabled=o_max_en,
-        max_threshold=o_max,
-    )
-    return dt
-
-
-def _load_extension_dataframes(
-    con: duckdb.DuckDBPyConnection,
-    dataset_id: str,
-    extension_key: str,
-) -> dict[str, pd.DataFrame]:
-    """Load raw_data dict[str, DataFrame] for an IntelliCage/IntelliMaze extension."""
-    rows = con.execute(
-        "SELECT data_key, duckdb_table_name FROM _meta_extension_dataframes WHERE dataset_id = ? AND extension_key = ?",
-        [dataset_id, extension_key],
-    ).fetchall()
-    raw_data: dict[str, pd.DataFrame] = {}
-    for data_key, tbl_name in rows:
-        owner_id = f"ext_{dataset_id[:12]}_{extension_key}_{data_key}"
-        raw_data[data_key] = _load_dataframe(con, tbl_name, owner_id)
-    return raw_data
-
-
-def _load_extensions_phenomaster(con: duckdb.DuckDBPyConnection, dataset: Dataset) -> None:
-    from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
-
-    if not isinstance(dataset, PhenoMasterDataset):
-        return
-
-    rows = con.execute(
-        "SELECT extension_key, extension_class, extension_name, extra_json FROM _meta_extensions WHERE dataset_id = ?",
-        [str(dataset.id)],
-    ).fetchall()
-
-    for key, ext_class_fqn, ext_name, extra_json in rows:
-        ext_cls = _import_class(ext_class_fqn)
-        raw_dt = _load_extension_datatable(con, dataset, key)
-        if raw_dt is None:
-            continue
-
-        ext_obj = ext_cls.__new__(ext_cls)
-        ext_obj.dataset = dataset
-        ext_obj.name = ext_name
-        ext_obj.raw_datatable = raw_dt
-
-        extra = _loads(extra_json)
-        if "ref_box_mapping" in extra:
-            ext_obj.ref_box_mapping = {int(k): v for k, v in extra["ref_box_mapping"].items()}
-        if "animal_ids" in extra:
-            ext_obj.animal_ids = extra["animal_ids"]
-
-        dataset.extensions_data[key] = ext_obj
-
-
-def _load_extensions_intellicage(con: duckdb.DuckDBPyConnection, dataset: Dataset) -> None:
-    from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
-
-    if not isinstance(dataset, IntelliCageDataset):
-        return
-
-    row = con.execute(
-        "SELECT extension_key, extension_name, extra_json "
-        "FROM _meta_extensions WHERE dataset_id = ? AND extension_key = 'intellicage_data'",
-        [str(dataset.id)],
-    ).fetchone()
-    if row is None:
-        return
-
-    _, ext_name, extra_json = row
-    extra = _loads(extra_json)
-
-    raw_data = _load_extension_dataframes(con, str(dataset.id), "intellicage_data")
-
-
-def _load_extensions_intellimaze(con: duckdb.DuckDBPyConnection, dataset: Dataset) -> None:
-    from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
-
-    if not isinstance(dataset, IntelliMazeDataset):
-        return
-
-    rows = con.execute(
-        "SELECT extension_key, extension_class, extension_name, extra_json FROM _meta_extensions WHERE dataset_id = ?",
-        [str(dataset.id)],
-    ).fetchall()
-
-    for key, ext_class_fqn, ext_name, extra_json in rows:
-        ext_cls = _import_class(ext_class_fqn)
-        extra = _loads(extra_json)
-        raw_data = _load_extension_dataframes(con, str(dataset.id), key)
-
-        ext_obj = ext_cls.__new__(ext_cls)
-        ext_obj.dataset = dataset
-        ext_obj.name = ext_name
-        ext_obj.raw_data = raw_data
-        ext_obj.device_ids = extra.get("device_ids", [])
-
-        dataset.extensions_data[key] = ext_obj
-
-
 def _load_dataset(con: duckdb.DuckDBPyConnection, ds_id: str, ds_class_fqn: str, meta_json: str) -> Dataset:
     data = _loads(meta_json)
     metadata = data["metadata"]
-    extra_init = data.get("extra_init", {})
-
-    animals = _load_animals(con, ds_id)
 
     ds_cls = _import_class(ds_class_fqn)
 
-    # IntelliMazeDataset needs extra 'devices' param
-    from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
-
-    if issubclass(ds_cls, IntelliMazeDataset):
-        dataset = ds_cls(metadata=metadata, animals=animals, devices=extra_init.get("devices", {}))
-    else:
-        dataset = ds_cls(metadata=metadata, animals=animals)
+    dataset = ds_cls(metadata=metadata, animals=animals)
 
     dataset.id = UUID(ds_id)
     dataset.factors = _load_factors(con, ds_id)
     dataset.binning_settings = _load_binning_settings(con, ds_id)
     dataset.reports = _load_reports(con, ds_id, dataset)
     dataset.datatables = _load_datatables_for_dataset(con, dataset)
-
-    _load_extensions_phenomaster(con, dataset)
-    _load_extensions_intellicage(con, dataset)
-    _load_extensions_intellimaze(con, dataset)
 
     return dataset
 
@@ -779,17 +496,20 @@ def load_workspace(path: str) -> Workspace:
     Returns:
         The reconstructed Workspace.
     """
-    logger.info("Loading workspace from {}", path)
-    con = duckdb.connect(str(path), read_only=True)
+    logger.info(f"Loading workspace from {path}")
+
+    tic = timeit.default_timer()
+    con = duckdb.connect(path, read_only=True)
     try:
         workspace = _load_workspace_meta(con)
 
-        ds_rows = con.execute("SELECT id, dataset_class, metadata_json FROM _meta_datasets").fetchall()
-        for ds_id, ds_class_fqn, meta_json in ds_rows:
-            dataset = _load_dataset(con, ds_id, ds_class_fqn, meta_json)
+        dataset_rows = con.execute("SELECT id, dataset_class, metadata FROM _meta_datasets").fetchall()
+        for id, dataset_class, metadata in dataset_rows:
+            dataset = _load_dataset(con, id, dataset_class, metadata)
             workspace.datasets[dataset.id] = dataset
     finally:
         con.close()
 
-    logger.info("Workspace loaded successfully")
+    logger.info(f"Workspace loaded successfully in {(timeit.default_timer() - tic):.3f} sec")
+
     return workspace

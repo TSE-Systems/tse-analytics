@@ -6,17 +6,16 @@ import pandas as pd
 import pyarrow as pa
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.core.utils.data import sanitize_dtypes
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
-from tse_analytics.modules.phenomaster.extensions.calo.data.calo_data import CaloData
-from tse_analytics.modules.phenomaster.io import tse_import_settings
+from tse_analytics.modules.phenomaster.io.tse_import_settings import CALO_BIN_TABLE
 
 
-def read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
-    metadata = dataset.metadata["tables"][tse_import_settings.CALO_BIN_TABLE]
+def read_calo_bin(path: Path, dataset: Dataset) -> Datatable:
+    metadata = dataset.metadata["tables"][CALO_BIN_TABLE]
 
     sample_interval = pd.Timedelta(metadata["sample_interval"])
 
@@ -40,7 +39,7 @@ def read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
     # Read measurement data
     df = cx.read_sql(
         f"sqlite:///{path}",
-        f"SELECT * FROM {tse_import_settings.CALO_BIN_TABLE}",
+        f"SELECT * FROM {CALO_BIN_TABLE}",
         return_type="pandas",
     )
 
@@ -129,40 +128,34 @@ def read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
 
     raw_datatable = Datatable(
         dataset,
-        tse_import_settings.CALO_BIN_TABLE,
-        f"Raw {tse_import_settings.CALO_BIN_TABLE} datatable",
+        CALO_BIN_TABLE,
+        f"Raw {CALO_BIN_TABLE} datatable",
         variables,
         df,
         {
             "origin_path": str(path),
             "sampling_interval": sample_interval,
+            "ref_box_mapping": {},
         },
-    )
-
-    calo_data = CaloData(
-        dataset,
-        tse_import_settings.CALO_BIN_TABLE,
-        raw_datatable,
     )
 
     # Assign reference calo boxes
     for animal in dataset.animals.values():
         if "RefBox" in animal.properties:
-            calo_data.ref_box_mapping[animal.properties["Box"]] = animal.properties["RefBox"]
+            raw_datatable.metadata["ref_box_mapping"][animal.properties["Box"]] = animal.properties["RefBox"]
 
-    return calo_data
+    return raw_datatable
 
 
 def import_calo_csv_data(
-    filename: str, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings
-) -> CaloData | None:
+    filename: str,
+    dataset: Dataset,
+    csv_import_settings: CsvImportSettings,
+) -> Datatable | None:
     path = Path(filename)
-    if path.is_file() and path.suffix.lower() == ".csv":
-        return _load_from_csv(path, dataset, csv_import_settings)
-    return None
+    if not path.is_file() or path.suffix.lower() != ".csv":
+        return None
 
-
-def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings) -> CaloData:
     columns_line = None
     with open(path) as f:
         lines = f.readlines()
@@ -182,6 +175,7 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
         skiprows=header_line_number,  # Skip header part
         encoding="ISO-8859-1",
         na_values="-",
+        dtype_backend="pyarrow",
     )
 
     df.insert(
@@ -295,8 +289,8 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
 
     raw_datatable = Datatable(
         dataset,
-        tse_import_settings.CALO_BIN_TABLE,
-        f"Raw {tse_import_settings.CALO_BIN_TABLE} datatable",
+        CALO_BIN_TABLE,
+        f"Raw {CALO_BIN_TABLE} datatable",
         variables,
         df,
         {
@@ -305,18 +299,12 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
         },
     )
 
-    calo_data = CaloData(
-        dataset,
-        tse_import_settings.CALO_BIN_TABLE,
-        raw_datatable,
-    )
-
     # Assign reference calo boxes
     all_box_numbers = df["Box"].unique().tolist()
     for box in all_box_numbers:
-        calo_data.ref_box_mapping[box] = _get_ref_box_number(box, all_box_numbers)
+        raw_datatable.metadata["ref_box_mapping"][box] = _get_ref_box_number(box, all_box_numbers)
 
-    return calo_data
+    return raw_datatable
 
 
 def _get_ref_box_number(box: int, boxes: list[int]) -> int | None:

@@ -5,12 +5,14 @@ import pyarrow as pa
 import xmltodict
 
 from tse_analytics.core.color_manager import get_color_hex
+from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Animal
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
-from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
+from tse_analytics.modules.intellicage.data.processor import get_nosepokes_datatable, get_visits_datatable
 
 
-def import_intellicage_dataset_v2(path: Path, tmp_path: Path, data_descriptor: dict) -> IntelliCageDataset | None:
+def import_intellicage_dataset_v2(path: Path, tmp_path: Path, data_descriptor: dict) -> Dataset | None:
     """
     Imports IntelliCage datasets with DataVersion 2.x.
     """
@@ -26,9 +28,10 @@ def import_intellicage_dataset_v2(path: Path, tmp_path: Path, data_descriptor: d
         "Log": _import_log_df(folder_path),
     }
 
-    dataset = IntelliCageDataset(
+    dataset = Dataset(
         path.stem,
         "IntelliCage dataset v2",
+        "IntelliCage",
         {
             "source_path": str(path),
             "experiment_started": metadata["Interval"]["Start"],
@@ -38,10 +41,28 @@ def import_intellicage_dataset_v2(path: Path, tmp_path: Path, data_descriptor: d
             "animals": {k: v.get_dict() for (k, v) in animals.items()},
         },
         animals,
-        raw_data,
     )
 
-    dataset.preprocess_data()
+    device_ids = raw_data["HardwareEvents"]["Cage"].unique().tolist()
+    device_ids.sort()
+    dataset.metadata["device_ids"] = device_ids
+
+    for table_name, raw_df in raw_data.items():
+        datatable = Datatable(
+            dataset,
+            table_name,
+            f"IntelliCage [{table_name}]",
+            {},
+            raw_df,
+            {},
+        )
+        dataset.add_raw_datatable("IntelliCage", datatable)
+
+    visits_datatable = get_visits_datatable(dataset)
+    dataset.add_datatable(visits_datatable)
+
+    nosepokes_datatable = get_nosepokes_datatable(dataset, visits_datatable)
+    dataset.add_datatable(nosepokes_datatable)
 
     return dataset
 

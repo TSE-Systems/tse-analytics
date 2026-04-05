@@ -23,16 +23,16 @@ import pyarrow as pa
 
 from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.csv_import_settings import CsvImportSettings
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
 
 Section = namedtuple("Section", ["lines", "section_start_index", "section_end_index"])
 
 
-def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> PhenoMasterDataset | None:
+def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Dataset | None:
     """
     Load a PhenoMaster dataset from a CSV file.
 
@@ -216,9 +216,10 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
         },
     }
 
-    dataset = PhenoMasterDataset(
+    dataset = Dataset(
         name,
         description,
+        "PhenoMaster",
         metadata,
         animals,
     )

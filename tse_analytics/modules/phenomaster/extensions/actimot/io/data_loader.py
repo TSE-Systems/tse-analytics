@@ -6,20 +6,20 @@ import pandas as pd
 import pyarrow as pa
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
-from tse_analytics.modules.phenomaster.io import tse_import_settings
+from tse_analytics.modules.phenomaster.io.tse_import_settings import ACTIMOT_RAW_TABLE
 
 
-def read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> Datatable:
-    metadata = dataset.metadata["tables"][tse_import_settings.ACTIMOT_RAW_TABLE]
+def read_actimot_raw(path: Path, dataset: Dataset) -> Datatable:
+    metadata = dataset.metadata["tables"][ACTIMOT_RAW_TABLE]
 
     sample_interval = pd.Timedelta(metadata["sample_interval"])
 
     df = cx.read_sql(
         f"sqlite:///{path}",
-        f"SELECT DateTime, Box, X1, X2, Y1 AS Y FROM {tse_import_settings.ACTIMOT_RAW_TABLE}",
+        f"SELECT DateTime, Box, X1, X2, Y1 AS Y FROM {ACTIMOT_RAW_TABLE}",
         return_type="pandas",
     )
 
@@ -55,8 +55,8 @@ def read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> Datatable:
 
     raw_datatable = Datatable(
         dataset,
-        tse_import_settings.ACTIMOT_RAW_TABLE,
-        f"Raw {tse_import_settings.ACTIMOT_RAW_TABLE} datatable",
+        ACTIMOT_RAW_TABLE,
+        f"Raw {ACTIMOT_RAW_TABLE} datatable",
         {},
         df,
         {
@@ -70,7 +70,7 @@ def read_actimot_raw(path: Path, dataset: PhenoMasterDataset) -> Datatable:
 
 def import_actimot_csv_data(
     filename: str,
-    dataset: PhenoMasterDataset,
+    dataset: Dataset,
     csv_import_settings: CsvImportSettings,
 ) -> Datatable | None:
     path = Path(filename)
@@ -166,8 +166,8 @@ def import_actimot_csv_data(
 
     raw_datatable = Datatable(
         dataset,
-        tse_import_settings.ACTIMOT_RAW_TABLE,
-        f"Raw {tse_import_settings.ACTIMOT_RAW_TABLE} datatable",
+        ACTIMOT_RAW_TABLE,
+        f"Raw {ACTIMOT_RAW_TABLE} datatable",
         {},
         df,
         {

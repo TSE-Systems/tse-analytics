@@ -3,10 +3,10 @@ from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QFileDialog, QMenu, QToolBar, QToolButton, QWidget
 
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.models.pandas_simple_model import PandasSimpleModel
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
-from tse_analytics.modules.phenomaster.extensions.grouphousing.data.grouphousing_data import GroupHousingData
 from tse_analytics.modules.phenomaster.extensions.grouphousing.views.preprocessed_data.preprocessed_data_widget_ui import (
     Ui_PreprocessedDataWidget,
 )
@@ -15,12 +15,12 @@ from tse_analytics.modules.phenomaster.extensions.grouphousing.views.preprocesse
 class PreprocessedDataWidget(QWidget):
     def __init__(
         self,
-        data: GroupHousingData,
+        datatable: Datatable,
         parent: QWidget | None = None,
     ):
         super().__init__(parent)
 
-        self.data = data
+        self.datatable = datatable
         self.preprocessed_data: dict[str, pd.DataFrame] | None = None
 
         self.ui = Ui_PreprocessedDataWidget()
@@ -59,7 +59,8 @@ class PreprocessedDataWidget(QWidget):
         ])
         self.ui.listWidgetTables.itemSelectionChanged.connect(self._table_selection_changed)
 
-        self.ui.listWidgetAnimals.addItems(list(map(str, self.data.animal_ids)))
+        animal_ids = datatable.metadata.get("animal_ids", [])
+        self.ui.listWidgetAnimals.addItems(list(map(str, animal_ids)))
         self.ui.listWidgetAnimals.itemSelectionChanged.connect(self._animals_selection_changed)
 
         self.ui.listWidgetTables.setCurrentRow(0)

@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.modules.phenomaster.extensions.actimot.actimot_settings import ActimotSettings
 from tse_analytics.modules.phenomaster.extensions.actimot.views.settings.settings_widget_ui import Ui_SettingsWidget
 
@@ -14,9 +14,9 @@ class SettingsWidget(QWidget):
 
         self.ui.pushButtonResetSettings.clicked.connect(self._reset_settings)
 
-        self.dataset: PhenoMasterDataset | None = None
+        self.dataset: Dataset | None = None
 
-    def set_data(self, dataset: PhenoMasterDataset, actimot_settings: ActimotSettings):
+    def set_data(self, dataset: Dataset, actimot_settings: ActimotSettings):
         self.dataset = dataset
         self._set_settings(actimot_settings)
 

@@ -9,8 +9,8 @@ import xmltodict
 from loguru import logger
 
 from tse_analytics.core.color_manager import get_color_hex
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Animal, Factor
-from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 from tse_analytics.modules.intellimaze.data.utils import preprocess_main_table
 from tse_analytics.modules.intellimaze.extensions import (
     actor,
@@ -31,18 +31,18 @@ extension_data_loaders = {
 }
 
 
-def import_intellimaze_dataset(path: Path) -> IntelliMazeDataset | None:
+def import_intellimaze_dataset(path: Path) -> Dataset | None:
     """
     Import an IntelliMaze dataset from a zip file.
 
     This function extracts the zip file, imports metadata, devices, and animals,
-    creates an IntelliMazeDataset, and loads data for each extension.
+    creates an Dataset, and loads data for each extension.
 
     Args:
         path (Path): The path to the zip file containing the IntelliMaze dataset.
 
     Returns:
-        IntelliMazeDataset | None: The imported dataset, or None if the file is not a valid IntelliMaze dataset.
+        Dataset | None: The imported dataset, or None if the file is not a valid IntelliMaze dataset.
     """
     tic = timeit.default_timer()
 
@@ -70,9 +70,10 @@ def import_intellimaze_dataset(path: Path) -> IntelliMazeDataset | None:
             else:
                 animals = _import_animals_v5(tmp_path / "Animals" / "Animals.animals")
 
-            dataset = IntelliMazeDataset(
+            dataset = Dataset(
                 path.stem,
                 "IntelliMaze dataset",
+                "IntelliMaze",
                 {
                     "source_path": str(path),
                     "experiment_started": str(
@@ -304,7 +305,7 @@ def _import_animals_v6(animals_file_path: Path, groups_file_path: Path) -> dict 
     return animals
 
 
-def _extract_factor(factor_name: str, dataset: IntelliMazeDataset) -> Factor | None:
+def _extract_factor(factor_name: str, dataset: Dataset) -> Factor | None:
     """
     Extract a factor from dataset properties.
 

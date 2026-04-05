@@ -1,7 +1,21 @@
 import pandas as pd
 
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
+from tse_analytics.core.data.shared import Animal
+
+
+def get_tag_to_name_map(animals: dict[str, Animal]) -> dict[str, str]:
+    """
+    Get a mapping from animal tags to animal IDs.
+
+    Returns:
+        dict[str, str]: Dictionary mapping animal tags to animal IDs.
+    """
+    tag_to_animal_map = {}
+    for animal in animals.values():
+        tag_to_animal_map[animal.properties["Tag"]] = animal.id
+    return tag_to_animal_map
 
 
 def get_variables_csv_data(
@@ -57,7 +71,7 @@ def get_variables_csv_data(
 
 
 def get_combined_variables_table(
-    dataset: IntelliMazeDataset,
+    dataset: Dataset,
     extension_data: dict[str, Datatable],
 ) -> pd.DataFrame:
     """
@@ -170,7 +184,7 @@ def _preprocess_variable_table(
     return result
 
 
-def preprocess_main_table(dataset: IntelliMazeDataset) -> None:
+def preprocess_main_table(dataset: Dataset) -> None:
     """
     Preprocess the main data table for an IntelliMazeDataset.
 

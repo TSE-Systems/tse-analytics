@@ -3,16 +3,16 @@ from pathlib import Path
 import pandas as pd
 import pyarrow as pa
 
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
-from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 from tse_analytics.modules.intellimaze.extensions.running_wheel.data import processor
 from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
 
 
 def import_data(
     folder_path: Path,
-    dataset: IntelliMazeDataset,
+    dataset: Dataset,
 ) -> dict[str, Datatable]:
     extension_data = {
         "Registration": _import_registration_df(dataset, folder_path / "Registration.txt"),
@@ -28,7 +28,7 @@ def import_data(
     return extension_data
 
 
-def _import_registration_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
+def _import_registration_df(dataset: Dataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
         raise FileNotFoundError(f"Registration file not found: {file_path}")
 
@@ -85,7 +85,7 @@ def _import_registration_df(dataset: IntelliMazeDataset, file_path: Path) -> Dat
     return datatable
 
 
-def _import_model_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
+def _import_model_df(dataset: Dataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
         raise FileNotFoundError(f"Model file not found: {file_path}")
 

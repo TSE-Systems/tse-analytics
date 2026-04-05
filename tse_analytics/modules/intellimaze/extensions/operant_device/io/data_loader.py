@@ -3,16 +3,16 @@ from pathlib import Path
 import pandas as pd
 import pyarrow as pa
 
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
-from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 from tse_analytics.modules.intellimaze.extensions.operant_device.data import processor
 from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
 
 
 def import_data(
     folder_path: Path,
-    dataset: IntelliMazeDataset,
+    dataset: Dataset,
 ) -> dict[str, Datatable]:
     extension_data = {
         "Sessions": _import_sessions_df(dataset, folder_path / "Sessions.txt"),
@@ -31,7 +31,7 @@ def import_data(
     return extension_data
 
 
-def _import_sessions_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
+def _import_sessions_df(dataset: Dataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
         raise FileNotFoundError(f"Sessions file not found: {file_path}")
 
@@ -107,7 +107,7 @@ def _import_sessions_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatab
     return datatable
 
 
-def _import_antenna_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
+def _import_antenna_df(dataset: Dataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
         raise FileNotFoundError(f"Antenna file not found: {file_path}")
 
@@ -163,7 +163,7 @@ def _import_antenna_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatabl
     return datatable
 
 
-def _import_log_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
+def _import_log_df(dataset: Dataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
         raise FileNotFoundError(f"Log file not found: {file_path}")
 
@@ -223,7 +223,7 @@ def _import_log_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
     return datatable
 
 
-def _import_input_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
+def _import_input_df(dataset: Dataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
         raise FileNotFoundError(f"Input file not found: {file_path}")
 
@@ -248,7 +248,7 @@ def _import_input_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
     return datatable
 
 
-def _import_output_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
+def _import_output_df(dataset: Dataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
         raise FileNotFoundError(f"Output file not found: {file_path}")
 

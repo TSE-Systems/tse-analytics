@@ -5,18 +5,16 @@ import pandas as pd
 import pyarrow as pa
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.core.utils.data import sanitize_dtypes
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
-from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.drinkfeed_bin_data import DrinkFeedBinData
-from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.drinkfeed_raw_data import DrinkFeedRawData
-from tse_analytics.modules.phenomaster.io import tse_import_settings
+from tse_analytics.modules.phenomaster.io.tse_import_settings import DRINKFEED_BIN_TABLE, DRINKFEED_RAW_TABLE
 
 
-def read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedBinData:
-    metadata = dataset.metadata["tables"][tse_import_settings.DRINKFEED_BIN_TABLE]
+def read_drinkfeed_bin(path: Path, dataset: Dataset) -> Datatable:
+    metadata = dataset.metadata["tables"][DRINKFEED_BIN_TABLE]
 
     sample_interval = pd.Timedelta(metadata["sample_interval"])
 
@@ -40,7 +38,7 @@ def read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedBinD
     # Read measurement data
     df = cx.read_sql(
         f"sqlite:///{path}",
-        f"SELECT * FROM {tse_import_settings.DRINKFEED_BIN_TABLE}",
+        f"SELECT * FROM {DRINKFEED_BIN_TABLE}",
         return_type="pandas",
     )
 
@@ -83,8 +81,8 @@ def read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedBinD
 
     raw_datatable = Datatable(
         dataset,
-        tse_import_settings.DRINKFEED_BIN_TABLE,
-        f"Raw {tse_import_settings.DRINKFEED_BIN_TABLE} datatable",
+        DRINKFEED_BIN_TABLE,
+        f"Raw {DRINKFEED_BIN_TABLE} datatable",
         variables,
         df,
         {
@@ -93,18 +91,12 @@ def read_drinkfeed_bin(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedBinD
         },
     )
 
-    data = DrinkFeedBinData(
-        dataset,
-        tse_import_settings.DRINKFEED_BIN_TABLE,
-        raw_datatable,
-    )
-
-    return data
+    return raw_datatable
 
 
-def read_drinkfeed_raw(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedRawData:
-    table_metadata = dataset.metadata["tables"][tse_import_settings.DRINKFEED_RAW_TABLE]
-    hardware_metadata = dataset.metadata["hardware"][tse_import_settings.DRINKFEED_RAW_TABLE]
+def read_drinkfeed_raw(path: Path, dataset: Dataset) -> Datatable:
+    table_metadata = dataset.metadata["tables"][DRINKFEED_RAW_TABLE]
+    hardware_metadata = dataset.metadata["hardware"][DRINKFEED_RAW_TABLE]
 
     # Prepare dtypes
     dtypes = {}
@@ -114,7 +106,7 @@ def read_drinkfeed_raw(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedRawD
     # Read measurements data
     df = cx.read_sql(
         f"sqlite:///{path}",
-        f"SELECT * FROM {tse_import_settings.DRINKFEED_RAW_TABLE}",
+        f"SELECT * FROM {DRINKFEED_RAW_TABLE}",
         return_type="pandas",
     )
 
@@ -177,8 +169,8 @@ def read_drinkfeed_raw(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedRawD
 
     raw_datatable = Datatable(
         dataset,
-        tse_import_settings.DRINKFEED_RAW_TABLE,
-        f"Raw {tse_import_settings.DRINKFEED_RAW_TABLE} datatable",
+        DRINKFEED_RAW_TABLE,
+        f"Raw {DRINKFEED_RAW_TABLE} datatable",
         variables,
         df,
         {
@@ -186,20 +178,14 @@ def read_drinkfeed_raw(path: Path, dataset: PhenoMasterDataset) -> DrinkFeedRawD
         },
     )
 
-    data = DrinkFeedRawData(
-        dataset,
-        tse_import_settings.DRINKFEED_RAW_TABLE,
-        raw_datatable,
-    )
-
-    return data
+    return raw_datatable
 
 
 def import_drinkfeed_bin_csv_data(
     filename: str,
-    dataset: PhenoMasterDataset,
+    dataset: Dataset,
     csv_import_settings: CsvImportSettings,
-) -> DrinkFeedBinData | None:
+) -> Datatable | None:
     path = Path(filename)
     if not path.is_file() or path.suffix.lower() != ".csv":
         return None
@@ -221,6 +207,7 @@ def import_drinkfeed_bin_csv_data(
         decimal=csv_import_settings.decimal_separator,
         skiprows=header_line_number,  # Skip header part
         encoding="ISO-8859-1",
+        dtype_backend="pyarrow",
     )
 
     raw_df.insert(
@@ -318,8 +305,8 @@ def import_drinkfeed_bin_csv_data(
 
     raw_datatable = Datatable(
         dataset,
-        tse_import_settings.DRINKFEED_BIN_TABLE,
-        f"Raw {tse_import_settings.DRINKFEED_BIN_TABLE} datatable",
+        DRINKFEED_BIN_TABLE,
+        f"Raw {DRINKFEED_BIN_TABLE} datatable",
         variables,
         new_df,
         {
@@ -328,9 +315,4 @@ def import_drinkfeed_bin_csv_data(
         },
     )
 
-    data = DrinkFeedBinData(
-        dataset,
-        tse_import_settings.DRINKFEED_BIN_TABLE,
-        raw_datatable,
-    )
-    return data
+    return raw_datatable

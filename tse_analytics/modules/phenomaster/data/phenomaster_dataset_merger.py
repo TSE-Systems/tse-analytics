@@ -1,18 +1,18 @@
 import pandas as pd
 
 from tse_analytics.core import color_manager
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Animal
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 
 
 def merge_datasets(
     new_dataset_name: str,
-    datasets: list[PhenoMasterDataset],
+    datasets: list[Dataset],
     single_run: bool,
     continuous_mode: bool,
     generate_new_animal_names: bool,
-) -> PhenoMasterDataset | None:
+) -> Dataset | None:
     """
     Merge multiple PhenoMaster datasets into a single dataset.
 
@@ -48,9 +48,9 @@ def merge_datasets(
 
 def _merge_continuous(
     merged_dataset_name: str,
-    datasets: list[PhenoMasterDataset],
+    datasets: list[Dataset],
     single_run: bool,
-) -> PhenoMasterDataset | None:
+) -> Dataset | None:
     """
     Merge datasets in continuous mode (sequential experiments).
 
@@ -71,11 +71,12 @@ def _merge_continuous(
     merged_animals = _merge_animals(datasets)
     merged_metadata = _merge_metadata(merged_dataset_name, "continuous", merged_animals, datasets)
 
-    result = PhenoMasterDataset(
+    result = Dataset(
         merged_dataset_name,
         "PhenoMaster merged dataset",
-        metadata=merged_metadata,
-        animals=merged_animals,
+        "PhenoMaster",
+        merged_metadata,
+        merged_animals,
     )
 
     for datatable_name in first_dataset.datatables.keys():
@@ -131,10 +132,10 @@ def _merge_continuous(
 
 def _merge_overlap(
     merged_dataset_name: str,
-    datasets: list[PhenoMasterDataset],
+    datasets: list[Dataset],
     single_run: bool,
     generate_new_animal_names: bool,
-) -> PhenoMasterDataset | None:
+) -> Dataset | None:
     """
     Merge datasets in overlap mode (parallel experiments).
 
@@ -174,11 +175,12 @@ def _merge_overlap(
     merged_animals = _merge_animals(datasets)
     merged_metadata = _merge_metadata(merged_dataset_name, "overlap", merged_animals, datasets)
 
-    result = PhenoMasterDataset(
+    result = Dataset(
         merged_dataset_name,
         "PhenoMaster merged dataset",
-        metadata=merged_metadata,
-        animals=merged_animals,
+        "PhenoMaster",
+        merged_metadata,
+        merged_animals,
     )
 
     for datatable_name in first_dataset.datatables.keys():
@@ -235,7 +237,7 @@ def _merge_metadata(
     merged_dataset_name: str,
     merging_mode: str,
     merged_animals: dict[str, Animal],
-    datasets: list[PhenoMasterDataset],
+    datasets: list[Dataset],
 ) -> dict:
     """
     Merge metadata from multiple datasets.
@@ -271,7 +273,7 @@ def _merge_metadata(
     return result
 
 
-def _merge_animals(datasets: list[PhenoMasterDataset]) -> dict[str, Animal]:
+def _merge_animals(datasets: list[Dataset]) -> dict[str, Animal]:
     """
     Merge animal data from multiple datasets.
 

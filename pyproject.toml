@@ -47,7 +47,7 @@ dev = [
     "pytest==9.0.2",
     "qtsass==0.4.0",
     "ruff==0.15.9",
-    "ty==0.0.27",
+    "ty==0.0.29",
 ]
 
 [project.scripts]

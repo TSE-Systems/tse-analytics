@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.modules.phenomaster.extensions.calo.calo_settings import CaloSettings
 from tse_analytics.modules.phenomaster.extensions.calo.views.settings.settings_widget_ui import Ui_SettingsWidget
 
@@ -12,7 +12,7 @@ class SettingsWidget(QWidget):
         self.ui = Ui_SettingsWidget()
         self.ui.setupUi(self)
 
-        self.dataset: PhenoMasterDataset | None = None
+        self.dataset: Dataset | None = None
 
     def set_settings(self, settings: CaloSettings):
         self.ui.iterationsSpinBox.setValue(settings.iterations)
@@ -26,7 +26,7 @@ class SettingsWidget(QWidget):
             settings.co2_settings,
         )
 
-    def set_data(self, dataset: PhenoMasterDataset):
+    def set_data(self, dataset: Dataset):
         self.dataset = dataset
         flow_value = 0.5
         main_datatable = dataset.datatables["Main"]
