@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pandas as pd
-import pyarrow as pa
 
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
@@ -36,23 +35,23 @@ def _import_visits_df(dataset: Dataset, file_path: Path) -> Datatable:
         raise FileNotFoundError(f"Visit file not found: {file_path}")
 
     dtype = {
-        "VisitID": "uint64[pyarrow]",
-        "AnimalTag": "string[pyarrow]",
-        "Start": "string[pyarrow]",
-        "End": "string[pyarrow]",
-        "ModuleName": "string[pyarrow]",
-        "DeviceId": "string[pyarrow]",
-        "Corner": "uint8",
-        "CornerCondition": "int8[pyarrow]",
-        "PlaceError": "bool[pyarrow]",
-        "AntennaNumber": "uint64[pyarrow]",
-        "AntennaDuration": "float64[pyarrow]",
-        "PresenceNumber": "uint64[pyarrow]",
-        "PresenceDuration": "float64[pyarrow]",
-        "VisitSolution": "uint8[pyarrow]",
-        "LickNumber": "uint64[pyarrow]",
-        "LickContactTime": "float64[pyarrow]",
-        "LickDuration": "float64[pyarrow]",
+        "VisitID": "UInt64",
+        "AnimalTag": "string",
+        "Start": "string",
+        "End": "string",
+        "ModuleName": "string",
+        "DeviceId": "string",
+        "Corner": "UInt8",
+        "CornerCondition": "Int8",
+        "PlaceError": "boolean",
+        "AntennaNumber": "UInt64",
+        "AntennaDuration": "Float64",
+        "PresenceNumber": "UInt64",
+        "PresenceDuration": "Float64",
+        "VisitSolution": "UInt8",
+        "LickNumber": "UInt64",
+        "LickContactTime": "Float64",
+        "LickDuration": "Float64",
     }
 
     df = pd.read_csv(
@@ -60,7 +59,7 @@ def _import_visits_df(dataset: Dataset, file_path: Path) -> Datatable:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
@@ -73,7 +72,6 @@ def _import_visits_df(dataset: Dataset, file_path: Path) -> Datatable:
         )
         .dt.tz_localize(None)
         .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
     )
 
     df["End"] = (
@@ -85,7 +83,6 @@ def _import_visits_df(dataset: Dataset, file_path: Path) -> Datatable:
         )
         .dt.tz_localize(None)
         .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
     )
 
     # Convert numeric Enum values to categories
@@ -114,11 +111,8 @@ def _import_visits_df(dataset: Dataset, file_path: Path) -> Datatable:
     df.reset_index(drop=True, inplace=True)
 
     # Set visit number column
-    df["VisitNumber"] = df.groupby("AnimalTag").cumcount().astype("uint64[pyarrow]")
-    # df["VisitNumber"] = df.groupby("AnimalTag")["VisitID"].rank(method="first").astype("uint64[pyarrow]")
-
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
+    df["VisitNumber"] = df.groupby("AnimalTag").cumcount().astype("UInt64")
+    # df["VisitNumber"] = df.groupby("AnimalTag")["VisitID"].rank(method="first").astype("UInt64")
 
     datatable = Datatable(
         dataset,
@@ -137,23 +131,23 @@ def _import_nosepokes_df(dataset: Dataset, file_path: Path) -> Datatable:
         raise FileNotFoundError(f"Nosepoke file not found: {file_path}")
 
     dtype = {
-        "VisitID": "uint64[pyarrow]",
-        "Start": "string[pyarrow]",
-        "End": "string[pyarrow]",
-        "Side": "uint8[pyarrow]",
-        "SideCondition": "int8[pyarrow]",
-        "SideError": "bool[pyarrow]",
-        "TimeError": "bool[pyarrow]",
-        "ConditionError": "bool[pyarrow]",
-        "LickNumber": "uint64[pyarrow]",
-        "LickContactTime": "float64[pyarrow]",
-        "LickDuration": "float64[pyarrow]",
-        "AirState": "bool[pyarrow]",
-        "DoorState": "bool[pyarrow]",
-        "LED1State": "uint8[pyarrow]",
-        "LED2State": "uint8[pyarrow]",
-        "LED3State": "uint8[pyarrow]",
-        "LickStartTime": "string[pyarrow]",
+        "VisitID": "UInt64",
+        "Start": "string",
+        "End": "string",
+        "Side": "UInt8",
+        "SideCondition": "Int8",
+        "SideError": "boolean",
+        "TimeError": "boolean",
+        "ConditionError": "boolean",
+        "LickNumber": "UInt64",
+        "LickContactTime": "Float64",
+        "LickDuration": "Float64",
+        "AirState": "boolean",
+        "DoorState": "boolean",
+        "LED1State": "UInt8",
+        "LED2State": "UInt8",
+        "LED3State": "UInt8",
+        "LickStartTime": "string",
     }
 
     df = pd.read_csv(
@@ -161,7 +155,7 @@ def _import_nosepokes_df(dataset: Dataset, file_path: Path) -> Datatable:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
@@ -174,7 +168,6 @@ def _import_nosepokes_df(dataset: Dataset, file_path: Path) -> Datatable:
         )
         .dt.tz_localize(None)
         .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
     )
 
     df["End"] = (
@@ -186,7 +179,6 @@ def _import_nosepokes_df(dataset: Dataset, file_path: Path) -> Datatable:
         )
         .dt.tz_localize(None)
         .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
     )
 
     df["LickStartTime"] = (
@@ -198,7 +190,6 @@ def _import_nosepokes_df(dataset: Dataset, file_path: Path) -> Datatable:
         )
         .dt.tz_localize(None)
         .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
     )
 
     # Convert numeric Enum values to categories
@@ -211,9 +202,6 @@ def _import_nosepokes_df(dataset: Dataset, file_path: Path) -> Datatable:
 
     df.sort_values(["Start"], inplace=True)
     df.reset_index(drop=True, inplace=True)
-
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     datatable = Datatable(
         dataset,
@@ -232,10 +220,10 @@ def _import_environment_df(dataset: Dataset, file_path: Path) -> Datatable:
         raise FileNotFoundError(f"Environment file not found: {file_path}")
 
     dtype = {
-        "DateTimeOffset": "string[pyarrow]",
-        "Temperature": "float32[pyarrow]",
-        "Illumination": "uint32[pyarrow]",
-        "DeviceId": "string[pyarrow]",
+        "DateTimeOffset": "string",
+        "Temperature": "Float32",
+        "Illumination": "UInt32",
+        "DeviceId": "string",
     }
 
     df = pd.read_csv(
@@ -243,7 +231,7 @@ def _import_environment_df(dataset: Dataset, file_path: Path) -> Datatable:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
@@ -256,7 +244,6 @@ def _import_environment_df(dataset: Dataset, file_path: Path) -> Datatable:
         )
         .dt.tz_localize(None)
         .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
     )
 
     # Standardize column names
@@ -275,9 +262,6 @@ def _import_environment_df(dataset: Dataset, file_path: Path) -> Datatable:
     df.sort_values(["DateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
-
     datatable = Datatable(
         dataset,
         "Environment",
@@ -295,12 +279,12 @@ def _import_hardware_events_df(dataset: Dataset, file_path: Path) -> Datatable:
         raise FileNotFoundError(f"Hardware events file not found: {file_path}")
 
     dtype = {
-        "DateTimeOffset": "string[pyarrow]",
-        "HardwareType": "uint8[pyarrow]",
-        "DeviceId": "string[pyarrow]",
-        "Corner": "uint8[pyarrow]",
-        "Side": "uint8[pyarrow]",
-        "State": "uint32[pyarrow]",
+        "DateTimeOffset": "string",
+        "HardwareType": "UInt8",
+        "DeviceId": "string",
+        "Corner": "UInt8",
+        "Side": "UInt8",
+        "State": "UInt32",
     }
 
     df = pd.read_csv(
@@ -308,7 +292,7 @@ def _import_hardware_events_df(dataset: Dataset, file_path: Path) -> Datatable:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
@@ -321,7 +305,6 @@ def _import_hardware_events_df(dataset: Dataset, file_path: Path) -> Datatable:
         )
         .dt.tz_localize(None)
         .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
     )
 
     # Standardize column names
@@ -346,9 +329,6 @@ def _import_hardware_events_df(dataset: Dataset, file_path: Path) -> Datatable:
     df.sort_values(["DateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
-
     datatable = Datatable(
         dataset,
         "HardwareEvents",
@@ -366,13 +346,13 @@ def _import_log_df(dataset: Dataset, file_path: Path) -> Datatable:
         raise FileNotFoundError(f"Log file not found: {file_path}")
 
     dtype = {
-        "DateTimeOffset": "string[pyarrow]",
-        "LogCategory": "string[pyarrow]",
-        "LogType": "string[pyarrow]",
-        "DeviceId": "string[pyarrow]",
-        "Corner": "uint8[pyarrow]",
-        "Side": "uint8[pyarrow]",
-        "LogNotes": "string[pyarrow]",
+        "DateTimeOffset": "string",
+        "LogCategory": "string",
+        "LogType": "string",
+        "DeviceId": "string",
+        "Corner": "UInt8",
+        "Side": "UInt8",
+        "LogNotes": "string",
     }
 
     df = pd.read_csv(
@@ -380,7 +360,7 @@ def _import_log_df(dataset: Dataset, file_path: Path) -> Datatable:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
@@ -393,7 +373,6 @@ def _import_log_df(dataset: Dataset, file_path: Path) -> Datatable:
         )
         .dt.tz_localize(None)
         .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
     )
 
     # Standardize column names
@@ -429,9 +408,6 @@ def _import_log_df(dataset: Dataset, file_path: Path) -> Datatable:
 
     df.sort_values(["DateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
-
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     datatable = Datatable(
         dataset,

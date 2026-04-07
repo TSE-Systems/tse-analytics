@@ -8,7 +8,6 @@ It includes functions for loading consumption and model data, as well as variabl
 from pathlib import Path
 
 import pandas as pd
-import pyarrow as pa
 
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
@@ -65,10 +64,10 @@ def _import_consumption_df(dataset: Dataset, file_path: Path) -> Datatable:
         raise FileNotFoundError(f"File not found: {file_path}")
 
     dtype = {
-        "Time": "string[pyarrow]",
-        "DeviceId": "string[pyarrow]",
-        "Consumption": "float64[pyarrow]",
-        "Tag": "string[pyarrow]",
+        "Time": "string",
+        "DeviceId": "string",
+        "Consumption": "Float64",
+        "Tag": "string",
     }
 
     df = pd.read_csv(
@@ -76,7 +75,7 @@ def _import_consumption_df(dataset: Dataset, file_path: Path) -> Datatable:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
@@ -89,7 +88,6 @@ def _import_consumption_df(dataset: Dataset, file_path: Path) -> Datatable:
         )
         .dt.tz_localize(None)
         .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
     )
 
     # Convert categorical types
@@ -100,9 +98,6 @@ def _import_consumption_df(dataset: Dataset, file_path: Path) -> Datatable:
 
     df.sort_values(["Time"], inplace=True)
     df.reset_index(drop=True, inplace=True)
-
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     datatable = Datatable(
         dataset,
@@ -133,10 +128,10 @@ def _import_model_df(dataset: Dataset, file_path: Path) -> Datatable:
         raise FileNotFoundError(f"File not found: {file_path}")
 
     dtype = {
-        "Time": "string[pyarrow]",
-        "DeviceId": "string[pyarrow]",
-        "SwitchMode": "string[pyarrow]",
-        "Model": "string[pyarrow]",
+        "Time": "string",
+        "DeviceId": "string",
+        "SwitchMode": "string",
+        "Model": "string",
     }
 
     df = pd.read_csv(
@@ -144,7 +139,7 @@ def _import_model_df(dataset: Dataset, file_path: Path) -> Datatable:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
@@ -157,7 +152,6 @@ def _import_model_df(dataset: Dataset, file_path: Path) -> Datatable:
         )
         .dt.tz_localize(None)
         .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
     )
 
     # Convert categorical types
@@ -169,9 +163,6 @@ def _import_model_df(dataset: Dataset, file_path: Path) -> Datatable:
 
     df.sort_values(["Time"], inplace=True)
     df.reset_index(drop=True, inplace=True)
-
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     datatable = Datatable(
         dataset,

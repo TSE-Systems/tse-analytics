@@ -2,7 +2,6 @@ from pathlib import Path
 
 import connectorx as cx
 import pandas as pd
-import pyarrow as pa
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.dataset import Dataset
@@ -47,12 +46,7 @@ def read_drinkfeed_bin(path: Path, dataset: Dataset) -> Datatable:
     df = df.astype(dtypes, errors="ignore")
 
     # Convert DateTime from POSIX format
-    df["DateTime"] = (
-        pd
-        .to_datetime(df["DateTime"], origin="unix", unit="ns")
-        .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
-    )
+    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns").dt.as_unit(TIME_RESOLUTION_UNIT)
 
     # Add Animal column
     box_to_animal_map = {}
@@ -63,10 +57,10 @@ def read_drinkfeed_bin(path: Path, dataset: Dataset) -> Datatable:
         df.insert(
             df.columns.get_loc("Box"),
             "Animal",
-            df["Box"].astype("string[pyarrow]").replace(box_to_animal_map),
+            df["Box"].astype("string").replace(box_to_animal_map),
         )
     else:
-        df["Animal"] = df["Animal"].astype("string[pyarrow]")
+        df["Animal"] = df["Animal"].astype("string")
 
     df = df.astype({
         "Animal": "category",
@@ -75,9 +69,6 @@ def read_drinkfeed_bin(path: Path, dataset: Dataset) -> Datatable:
     # Sort by DateTime column
     df.sort_values(by=["DateTime", "Animal"], inplace=True)
     df.reset_index(drop=True, inplace=True)
-
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     raw_datatable = Datatable(
         dataset,
@@ -115,12 +106,7 @@ def read_drinkfeed_raw(path: Path, dataset: Dataset) -> Datatable:
     df = df.astype(dtypes, errors="ignore")
 
     # Convert DateTime from POSIX format
-    df["DateTime"] = (
-        pd
-        .to_datetime(df["DateTime"], origin="unix", unit="ns")
-        .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
-    )
+    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns").dt.as_unit(TIME_RESOLUTION_UNIT)
 
     # Sort by DateTime column
     df.sort_values(by=["DateTime"], inplace=True)
@@ -159,13 +145,10 @@ def read_drinkfeed_raw(path: Path, dataset: Dataset) -> Datatable:
             sensor,
             "",
             "Sensor value",
-            "float64[pyarrow]",
+            "Float64",
             Aggregation.MEAN,
             False,
         )
-
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     raw_datatable = Datatable(
         dataset,
@@ -207,20 +190,17 @@ def import_drinkfeed_bin_csv_data(
         decimal=csv_import_settings.decimal_separator,
         skiprows=header_line_number,  # Skip header part
         encoding="ISO-8859-1",
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
 
     raw_df.insert(
         0,
         "DateTime",
-        pd
-        .to_datetime(
+        pd.to_datetime(
             raw_df["Date"] + " " + raw_df["Time"],
             format="mixed",
             dayfirst=csv_import_settings.day_first,
-        )
-        .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT))),
+        ).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
     raw_df.drop(columns=["Date", "Time"], inplace=True)
 
@@ -246,19 +226,19 @@ def import_drinkfeed_bin_csv_data(
     # Build new dataframe
     variables: dict[str, Variable] = {}
     if drink1_present:
-        variables["Drink1"] = Variable("Drink1", "[ml]", "Drink1 sensor", "float64", Aggregation.MEAN, False)
+        variables["Drink1"] = Variable("Drink1", "[ml]", "Drink1 sensor", "Float64", Aggregation.MEAN, False)
     if feed1_present:
-        variables["Feed1"] = Variable("Feed1", "[g]", "Feed1 sensor", "float64", Aggregation.MEAN, False)
+        variables["Feed1"] = Variable("Feed1", "[g]", "Feed1 sensor", "Float64", Aggregation.MEAN, False)
     if drink2_present:
-        variables["Drink2"] = Variable("Drink2", "[ml]", "Drink2 sensor", "float64", Aggregation.MEAN, False)
+        variables["Drink2"] = Variable("Drink2", "[ml]", "Drink2 sensor", "Float64", Aggregation.MEAN, False)
     if feed2_present:
-        variables["Feed2"] = Variable("Feed2", "[g]", "Feed2 sensor", "float64", Aggregation.MEAN, False)
+        variables["Feed2"] = Variable("Feed2", "[g]", "Feed2 sensor", "Float64", Aggregation.MEAN, False)
     if weight_present:
-        variables["Weight"] = Variable("Weight", "[g]", "Animal weight", "float64", Aggregation.MEAN, False)
+        variables["Weight"] = Variable("Weight", "[g]", "Animal weight", "Float64", Aggregation.MEAN, False)
     if drink_present:
-        variables["Drink"] = Variable("Drink", "[ml]", "Drink sensor", "float64", Aggregation.MEAN, False)
+        variables["Drink"] = Variable("Drink", "[ml]", "Drink sensor", "Float64", Aggregation.MEAN, False)
     if feed_present:
-        variables["Feed"] = Variable("Feed", "[g]", "Feed sensor", "float64", Aggregation.MEAN, False)
+        variables["Feed"] = Variable("Feed", "[g]", "Feed sensor", "Float64", Aggregation.MEAN, False)
 
     box_to_animal_map = {}
     for animal in dataset.animals.values():
@@ -297,11 +277,8 @@ def import_drinkfeed_bin_csv_data(
     # convert categorical types
     new_df = new_df.astype({
         "Animal": "category",
-        "Box": "uint16[pyarrow]",
+        "Box": "UInt16",
     })
-
-    # Convert to pyarrow backend
-    new_df = new_df.convert_dtypes(dtype_backend="pyarrow")
 
     raw_datatable = Datatable(
         dataset,

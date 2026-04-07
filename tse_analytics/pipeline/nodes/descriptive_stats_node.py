@@ -18,7 +18,20 @@ class DescriptiveStatsNode(PipelineNode):
         if datatable is None or not isinstance(datatable, Datatable):
             return PipelinePacket.inactive(reason="Invalid input datatable")
 
-        numeric_columns = datatable.df.select_dtypes(include=["int", "float"]).columns
+        numeric_columns = datatable.df.select_dtypes(
+            include=[
+                "Int8",
+                "UInt8",
+                "Int16",
+                "UInt16",
+                "Int32",
+                "UInt32",
+                "Int64",
+                "UInt64",
+                "Float32",
+                "Float64",
+            ]
+        ).columns
         descriptive_df = datatable.df[numeric_columns].describe().T.reset_index()
         report = get_great_table(
             descriptive_df,

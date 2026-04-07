@@ -9,19 +9,19 @@ from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
 from tse_analytics.core.data.shared import Animal, Variable
 
 _dtypes_name_mapping = {
-    "int8": "int8[pyarrow]",
-    "int16": "int16[pyarrow]",
-    "int32": "int32[pyarrow]",
-    "int64": "int64[pyarrow]",
-    "uint8": "uint8[pyarrow]",
-    "uint16": "uint16[pyarrow]",
-    "uint32": "uint32[pyarrow]",
-    "uint64": "uint64[pyarrow]",
-    "float16": "float16[pyarrow]",
-    "float32": "float32[pyarrow]",
-    "float64": "float64[pyarrow]",
-    "bool": "bool[pyarrow]",
-    "str": "string[pyarrow]",
+    "int8": "Int8",
+    "int16": "Int16",
+    "int32": "Int32",
+    "int64": "Int64",
+    "uint8": "UInt8",
+    "uint16": "UInt16",
+    "uint32": "UInt32",
+    "uint64": "UInt64",
+    "float16": "Float16",
+    "float32": "Float32",
+    "float64": "Float64",
+    "bool": "boolean",
+    "str": "string",
 }
 
 
@@ -101,7 +101,7 @@ def rename_animal_df(df: pd.DataFrame, old_id: str, animal: Animal) -> pd.DataFr
         The DataFrame with the animal renamed.
     """
     df = df.astype({
-        "Animal": "string[pyarrow]",
+        "Animal": "string",
     })
     df.loc[df["Animal"] == old_id, "Animal"] = animal.id
     df = df.astype({
@@ -150,7 +150,7 @@ def reassign_df_timedelta_and_bin(
 
     # Reassign bins numbers
     if sampling_interval is not None:
-        df["Bin"] = (df["Timedelta"] / sampling_interval).round().astype("uint64[pyarrow]")
+        df["Bin"] = (df["Timedelta"] / sampling_interval).round().astype("UInt64")
     return df
 
 

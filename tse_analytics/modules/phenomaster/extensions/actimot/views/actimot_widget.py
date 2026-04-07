@@ -166,7 +166,7 @@ class ActimotWidget(QWidget):
             "x",
             "cm",
             "Centroid X",
-            "float64",
+            "Float64",
             Aggregation.MEAN,
             False,
         )
@@ -175,7 +175,7 @@ class ActimotWidget(QWidget):
             "y",
             "cm",
             "Centroid Y",
-            "float64",
+            "Float64",
             Aggregation.MEAN,
             False,
         )
@@ -184,7 +184,7 @@ class ActimotWidget(QWidget):
             "displacement",
             "cm",
             "Displacement",
-            "float64",
+            "Float64",
             Aggregation.MEAN,
             False,
         )
@@ -193,7 +193,7 @@ class ActimotWidget(QWidget):
             "speed",
             "cm/s",
             "Speed",
-            "float64",
+            "Float64",
             Aggregation.MEAN,
             False,
         )
@@ -202,7 +202,7 @@ class ActimotWidget(QWidget):
             "acceleration",
             "cm/s²",
             "Acceleration",
-            "float64",
+            "Float64",
             Aggregation.MEAN,
             False,
         )

@@ -3,7 +3,6 @@ from pathlib import Path
 
 import connectorx as cx
 import pandas as pd
-import pyarrow as pa
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.dataset import Dataset
@@ -48,12 +47,7 @@ def read_calo_bin(path: Path, dataset: Dataset) -> Datatable:
     df = df.astype(dtypes, errors="ignore")
 
     # Convert DateTime from POSIX format
-    df["DateTime"] = (
-        pd
-        .to_datetime(df["DateTime"], origin="unix", unit="ns")
-        .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
-    )
+    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns").dt.as_unit(TIME_RESOLUTION_UNIT)
 
     # Insert Animal column
     box_to_animal_map = {animal.properties["Box"]: animal.id for animal in dataset.animals.values()}
@@ -123,9 +117,6 @@ def read_calo_bin(path: Path, dataset: Dataset) -> Datatable:
     df.insert(2, "Bin", bins)
     df.insert(3, "Offset", offsets)
 
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
-
     raw_datatable = Datatable(
         dataset,
         CALO_BIN_TABLE,
@@ -175,20 +166,17 @@ def import_calo_csv_data(
         skiprows=header_line_number,  # Skip header part
         encoding="ISO-8859-1",
         na_values="-",
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
 
     df.insert(
         0,
         "DateTime",
-        pd
-        .to_datetime(
+        pd.to_datetime(
             df["Date"] + " " + df["Time"],
             format="mixed",
             dayfirst=csv_import_settings.day_first,
-        )
-        .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT))),
+        ).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
     df.drop(columns=["Date", "Time"], inplace=True)
 
@@ -211,7 +199,7 @@ def import_calo_csv_data(
             var_unit = ""
             if len(elements) == 2:
                 var_unit = elements[1]
-            variable = Variable(var_name, var_unit, "", "float64", Aggregation.MEAN, False)
+            variable = Variable(var_name, var_unit, "", "Float64", Aggregation.MEAN, False)
             variables[variable.name] = variable
 
     # Calculate sampling interval
@@ -283,9 +271,6 @@ def import_calo_csv_data(
     df.insert(1, "Timedelta", timedeltas)
     df.insert(2, "Bin", bins)
     df.insert(3, "Offset", offsets)
-
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     raw_datatable = Datatable(
         dataset,

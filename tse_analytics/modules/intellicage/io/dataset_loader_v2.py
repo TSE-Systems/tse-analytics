@@ -2,7 +2,6 @@ from dataclasses import asdict
 from pathlib import Path
 
 import pandas as pd
-import pyarrow as pa
 import xmltodict
 
 from tse_analytics.core.color_manager import get_color_hex
@@ -87,11 +86,11 @@ def _import_animals(path: Path) -> dict:
         raise FileNotFoundError(f"Animals file not found: {path}")
 
     dtype = {
-        "AnimalName": "string[pyarrow]",
-        "AnimalTag": "string[pyarrow]",
-        "Sex": "string[pyarrow]",
-        "GroupName": "string[pyarrow]",
-        "AnimalNotes": "string[pyarrow]",
+        "AnimalName": "string",
+        "AnimalTag": "string",
+        "Sex": "string",
+        "GroupName": "string",
+        "AnimalNotes": "string",
     }
 
     # Skip broken header
@@ -103,7 +102,7 @@ def _import_animals(path: Path) -> dict:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
 
     # Replace np.nan with empty strings
@@ -138,23 +137,23 @@ def _import_visits_df(folder_path: Path) -> pd.DataFrame:
         raise FileNotFoundError(f"Visits file not found: {file_path}")
 
     dtype = {
-        "VisitID": "uint64[pyarrow]",
-        "AnimalTag": "string[pyarrow]",
-        "Start": "string[pyarrow]",
-        "End": "string[pyarrow]",
-        "ModuleName": "string[pyarrow]",
-        "Cage": "uint8[pyarrow]",
-        "Corner": "uint8[pyarrow]",
-        "CornerCondition": "int8[pyarrow]",
-        "PlaceError": "bool[pyarrow]",
-        "AntennaNumber": "uint64[pyarrow]",
-        "AntennaDuration": "float64[pyarrow]",
-        "PresenceNumber": "uint64[pyarrow]",
-        "PresenceDuration": "float64[pyarrow]",
-        "VisitSolution": "uint8[pyarrow]",
-        "LickNumber": "uint64[pyarrow]",
-        "LickContactTime": "float64[pyarrow]",
-        "LickDuration": "float64[pyarrow]",
+        "VisitID": "UInt64",
+        "AnimalTag": "string",
+        "Start": "string",
+        "End": "string",
+        "ModuleName": "string",
+        "Cage": "UInt8",
+        "Corner": "UInt8",
+        "CornerCondition": "Int8",
+        "PlaceError": "boolean",
+        "AntennaNumber": "UInt64",
+        "AntennaDuration": "Float64",
+        "PresenceNumber": "UInt64",
+        "PresenceDuration": "Float64",
+        "VisitSolution": "UInt8",
+        "LickNumber": "UInt64",
+        "LickContactTime": "Float64",
+        "LickDuration": "Float64",
     }
 
     df = pd.read_csv(
@@ -162,31 +161,21 @@ def _import_visits_df(folder_path: Path) -> pd.DataFrame:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
-    df["Start"] = (
-        pd
-        .to_datetime(
-            df["Start"],
-            format="ISO8601",
-            utc=False,
-        )
-        .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
-    )
+    df["Start"] = pd.to_datetime(
+        df["Start"],
+        format="ISO8601",
+        utc=False,
+    ).dt.as_unit(TIME_RESOLUTION_UNIT)
 
-    df["End"] = (
-        pd
-        .to_datetime(
-            df["End"],
-            format="ISO8601",
-            utc=False,
-        )
-        .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
-    )
+    df["End"] = pd.to_datetime(
+        df["End"],
+        format="ISO8601",
+        utc=False,
+    ).dt.as_unit(TIME_RESOLUTION_UNIT)
 
     # Convert numeric Enum values to categories
     df = df.astype({
@@ -213,11 +202,8 @@ def _import_visits_df(folder_path: Path) -> pd.DataFrame:
     df.reset_index(drop=True, inplace=True)
 
     # Set visit number column
-    df["VisitNumber"] = df.groupby("AnimalTag").cumcount().astype("uint64[pyarrow]")
-    # df["VisitNumber"] = df.groupby("AnimalTag")["VisitID"].rank(method="first").astype("uint64[pyarrow]")
-
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
+    df["VisitNumber"] = df.groupby("AnimalTag").cumcount().astype("UInt64")
+    # df["VisitNumber"] = df.groupby("AnimalTag")["VisitID"].rank(method="first").astype("UInt64")
 
     return df
 
@@ -232,22 +218,22 @@ def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame:
         lick_start_time_column = "LickStartTime" in first_line
 
     dtype = {
-        "VisitID": "uint64[pyarrow]",
-        "Start": "string[pyarrow]",
-        "End": "string[pyarrow]",
-        "Side": "uint8[pyarrow]",
-        "SideCondition": "int8[pyarrow]",
-        "SideError": "bool[pyarrow]",
-        "TimeError": "bool[pyarrow]",
-        "ConditionError": "bool[pyarrow]",
-        "LickNumber": "uint64[pyarrow]",
-        "LickContactTime": "float64[pyarrow]",
-        "LickDuration": "float64[pyarrow]",
-        "AirState": "bool[pyarrow]",
-        "DoorState": "bool[pyarrow]",
-        "LED1State": "uint8[pyarrow]",
-        "LED2State": "uint8[pyarrow]",
-        "LED3State": "uint8[pyarrow]",
+        "VisitID": "UInt64",
+        "Start": "string",
+        "End": "string",
+        "Side": "UInt8",
+        "SideCondition": "Int8",
+        "SideError": "boolean",
+        "TimeError": "boolean",
+        "ConditionError": "boolean",
+        "LickNumber": "UInt64",
+        "LickContactTime": "Float64",
+        "LickDuration": "Float64",
+        "AirState": "boolean",
+        "DoorState": "boolean",
+        "LED1State": "UInt8",
+        "LED2State": "UInt8",
+        "LED3State": "UInt8",
     }
 
     if lick_start_time_column:
@@ -258,43 +244,28 @@ def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
-    df["Start"] = (
-        pd
-        .to_datetime(
-            df["Start"],
-            format="ISO8601",
-            utc=False,
-        )
-        .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
-    )
+    df["Start"] = pd.to_datetime(
+        df["Start"],
+        format="ISO8601",
+        utc=False,
+    ).dt.as_unit(TIME_RESOLUTION_UNIT)
 
-    df["End"] = (
-        pd
-        .to_datetime(
-            df["End"],
-            format="ISO8601",
-            utc=False,
-        )
-        .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
-    )
+    df["End"] = pd.to_datetime(
+        df["End"],
+        format="ISO8601",
+        utc=False,
+    ).dt.as_unit(TIME_RESOLUTION_UNIT)
 
     if lick_start_time_column:
-        df["LickStartTime"] = (
-            pd
-            .to_datetime(
-                df["LickStartTime"],
-                format="ISO8601",
-                utc=False,
-            )
-            .dt.as_unit(TIME_RESOLUTION_UNIT)
-            .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
-        )
+        df["LickStartTime"] = pd.to_datetime(
+            df["LickStartTime"],
+            format="ISO8601",
+            utc=False,
+        ).dt.as_unit(TIME_RESOLUTION_UNIT)
 
     # Convert numeric Enum values to categories
     df["SideCondition"] = pd.Categorical(df["SideCondition"], categories=[-1, 0, 1], ordered=True)
@@ -307,9 +278,6 @@ def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame:
     df.sort_values(["Start"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
-
     return df
 
 
@@ -319,10 +287,10 @@ def _import_environment_df(folder_path: Path) -> pd.DataFrame:
         raise FileNotFoundError(f"Environment file not found: {file_path}")
 
     dtype = {
-        "DateTime": "string[pyarrow]",
-        "Temperature": "float64[pyarrow]",
-        "Illumination": "uint64[pyarrow]",
-        "Cage": "uint8[pyarrow]",
+        "DateTime": "string",
+        "Temperature": "Float64",
+        "Illumination": "UInt64",
+        "Cage": "UInt8",
     }
 
     df = pd.read_csv(
@@ -330,26 +298,18 @@ def _import_environment_df(folder_path: Path) -> pd.DataFrame:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
-    df["DateTime"] = (
-        pd
-        .to_datetime(
-            df["DateTime"],
-            format="ISO8601",
-            utc=False,
-        )
-        .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
-    )
+    df["DateTime"] = pd.to_datetime(
+        df["DateTime"],
+        format="ISO8601",
+        utc=False,
+    ).dt.as_unit(TIME_RESOLUTION_UNIT)
 
     df.sort_values(["DateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
-
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     return df
 
@@ -360,12 +320,12 @@ def _import_hardware_events_df(folder_path: Path) -> pd.DataFrame:
         raise FileNotFoundError(f"HardwareEvents file not found: {file_path}")
 
     dtype = {
-        "DateTime": "string[pyarrow]",
-        "HardwareType": "uint8[pyarrow]",
-        "Cage": "uint8[pyarrow]",
-        "Corner": "uint8[pyarrow]",
-        "Side": "uint8[pyarrow]",
-        "State": "uint8[pyarrow]",
+        "DateTime": "string",
+        "HardwareType": "UInt8",
+        "Cage": "UInt8",
+        "Corner": "UInt8",
+        "Side": "UInt8",
+        "State": "UInt8",
     }
 
     df = pd.read_csv(
@@ -373,20 +333,15 @@ def _import_hardware_events_df(folder_path: Path) -> pd.DataFrame:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
-    df["DateTime"] = (
-        pd
-        .to_datetime(
-            df["DateTime"],
-            format="ISO8601",
-            utc=False,
-        )
-        .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
-    )
+    df["DateTime"] = pd.to_datetime(
+        df["DateTime"],
+        format="ISO8601",
+        utc=False,
+    ).dt.as_unit(TIME_RESOLUTION_UNIT)
 
     # Convert numeric Enum values to categories
     df["HardwareType"] = df["HardwareType"].astype("category")
@@ -399,9 +354,6 @@ def _import_hardware_events_df(folder_path: Path) -> pd.DataFrame:
     df.sort_values(["DateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
-
     return df
 
 
@@ -411,13 +363,13 @@ def _import_log_df(folder_path: Path) -> pd.DataFrame:
         raise FileNotFoundError(f"Log file not found: {file_path}")
 
     dtype = {
-        "DateTime": "string[pyarrow]",
-        "LogCategory": "string[pyarrow]",
-        "LogType": "string[pyarrow]",
-        "Cage": "uint8[pyarrow]",
-        "Corner": "uint8[pyarrow]",
-        "Side": "uint8[pyarrow]",
-        "LogNotes": "string[pyarrow]",
+        "DateTime": "string",
+        "LogCategory": "string",
+        "LogType": "string",
+        "Cage": "UInt8",
+        "Corner": "UInt8",
+        "Side": "UInt8",
+        "LogNotes": "string",
     }
 
     df = pd.read_csv(
@@ -425,20 +377,15 @@ def _import_log_df(folder_path: Path) -> pd.DataFrame:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
-    df["DateTime"] = (
-        pd
-        .to_datetime(
-            df["DateTime"],
-            format="ISO8601",
-            utc=False,
-        )
-        .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
-    )
+    df["DateTime"] = pd.to_datetime(
+        df["DateTime"],
+        format="ISO8601",
+        utc=False,
+    ).dt.as_unit(TIME_RESOLUTION_UNIT)
 
     # Convert numeric Enum values to categories
     df = df.astype({
@@ -464,8 +411,5 @@ def _import_log_df(folder_path: Path) -> pd.DataFrame:
 
     df.sort_values(["DateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
-
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     return df

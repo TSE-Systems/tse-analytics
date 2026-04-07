@@ -2,7 +2,6 @@ from pathlib import Path
 
 import connectorx as cx
 import pandas as pd
-import pyarrow as pa
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.dataset import Dataset
@@ -46,23 +45,13 @@ def read_grouphousing(path: Path, dataset: Dataset) -> Datatable:
     df = df.astype(dtypes, errors="ignore")
 
     # Convert DateTime from POSIX format
-    df["StartDateTime"] = (
-        pd
-        .to_datetime(df["StartDateTime"], origin="unix", unit="ns")
-        .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
-    )
-    df["EndDateTime"] = (
-        pd
-        .to_datetime(df["EndDateTime"], origin="unix", unit="ns")
-        .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
-    )
+    df["StartDateTime"] = pd.to_datetime(df["StartDateTime"], origin="unix", unit="ns").dt.as_unit(TIME_RESOLUTION_UNIT)
+    df["EndDateTime"] = pd.to_datetime(df["EndDateTime"], origin="unix", unit="ns").dt.as_unit(TIME_RESOLUTION_UNIT)
     # Insert Duration column
     df.insert(
         df.columns.get_loc("EndDateTime") + 1,
         "Duration",
-        (df["EndDateTime"] - df["StartDateTime"]).astype(pd.ArrowDtype(pa.duration(unit=TIME_RESOLUTION_UNIT))),
+        df["EndDateTime"] - df["StartDateTime"],
     )
 
     # Convert dict keys type from str to int
@@ -70,7 +59,7 @@ def read_grouphousing(path: Path, dataset: Dataset) -> Datatable:
     df.insert(
         df.columns.get_loc("Channel") + 1,
         "ChannelType",
-        df["Channel"].astype("string[pyarrow]").replace(channel_to_channel_type_mapping),
+        df["Channel"].astype("string").replace(channel_to_channel_type_mapping),
     )
 
     df = df.astype({
@@ -80,9 +69,6 @@ def read_grouphousing(path: Path, dataset: Dataset) -> Datatable:
 
     df.sort_values(by=["StartDateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
-
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     animal_ids = df["Animal"].unique().tolist()
     animal_ids.sort()
@@ -111,13 +97,13 @@ def import_grouphousing_csv_data(
         return None
 
     dtype = {
-        "Number": "uint64[pyarrow]",
-        "Date": "string[pyarrow]",
-        "Time": "string[pyarrow]",
-        "BoxNo": "uint16[pyarrow]",
-        "ChannelNo": "uint8[pyarrow]",
-        "Channel type": "string[pyarrow]",
-        "Animal": "string[pyarrow]",
+        "Number": "UInt64",
+        "Date": "string",
+        "Time": "string",
+        "BoxNo": "UInt16",
+        "ChannelNo": "UInt8",
+        "Channel type": "string",
+        "Animal": "string",
     }
 
     df = pd.read_csv(
@@ -127,7 +113,7 @@ def import_grouphousing_csv_data(
         skiprows=1,  # Skip header part
         low_memory=False,
         dtype=dtype,
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
 
     # Rename table columns
@@ -144,14 +130,11 @@ def import_grouphousing_csv_data(
     df.insert(
         0,
         "StartDateTime",
-        pd
-        .to_datetime(
+        pd.to_datetime(
             df["Date"] + " " + df["Time"],
             dayfirst=csv_import_settings.day_first,
             format=csv_import_settings.datetime_format if csv_import_settings.use_datetime_format else None,
-        )
-        .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT))),
+        ).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
     df.insert(
         df.columns.get_loc("StartDateTime") + 1,
@@ -171,9 +154,6 @@ def import_grouphousing_csv_data(
 
     df.sort_values(by=["StartDateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
-
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     animal_ids = df["Animal"].unique().tolist()
     animal_ids.sort()

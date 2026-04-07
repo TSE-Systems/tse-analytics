@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pandas as pd
-import pyarrow as pa
 
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
@@ -55,12 +54,12 @@ def _import_integer_variables_data(dataset: Dataset, file_path: Path) -> Datatab
         return None
 
     dtype = {
-        "Time": "string[pyarrow]",
-        "DeviceId": "string[pyarrow]",
-        "Name": "string[pyarrow]",
-        "Data": "int64[pyarrow]",
-        "ConditionValue": "int64[pyarrow]",
-        "Tag": "string[pyarrow]",
+        "Time": "string",
+        "DeviceId": "string",
+        "Name": "string",
+        "Data": "Int64",
+        "ConditionValue": "Int64",
+        "Tag": "string",
     }
 
     df = pd.read_csv(
@@ -68,7 +67,7 @@ def _import_integer_variables_data(dataset: Dataset, file_path: Path) -> Datatab
         delimiter="\t",
         decimal=".",
         dtype=dtype,
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
@@ -81,7 +80,6 @@ def _import_integer_variables_data(dataset: Dataset, file_path: Path) -> Datatab
         )
         .dt.tz_localize(None)
         .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
     )
 
     # Convert categorical types
@@ -92,9 +90,6 @@ def _import_integer_variables_data(dataset: Dataset, file_path: Path) -> Datatab
 
     df.sort_values(["Time"], inplace=True)
     df.reset_index(drop=True, inplace=True)
-
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     datatable = Datatable(
         dataset,
@@ -125,12 +120,12 @@ def _import_double_variables_data(dataset: Dataset, file_path: Path) -> Datatabl
         return None
 
     dtype = {
-        "Time": "string[pyarrow]",
-        "DeviceId": "string[pyarrow]",
-        "Name": "string[pyarrow]",
-        "Data": "float64[pyarrow]",
-        "ConditionValue": "float64[pyarrow]",
-        "Tag": "string[pyarrow]",
+        "Time": "string",
+        "DeviceId": "string",
+        "Name": "string",
+        "Data": "Float64",
+        "ConditionValue": "Float64",
+        "Tag": "string",
     }
 
     df = pd.read_csv(
@@ -138,7 +133,7 @@ def _import_double_variables_data(dataset: Dataset, file_path: Path) -> Datatabl
         delimiter="\t",
         decimal=".",
         dtype=dtype,
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
@@ -151,7 +146,6 @@ def _import_double_variables_data(dataset: Dataset, file_path: Path) -> Datatabl
         )
         .dt.tz_localize(None)
         .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
     )
 
     # Convert categorical types
@@ -162,9 +156,6 @@ def _import_double_variables_data(dataset: Dataset, file_path: Path) -> Datatabl
 
     df.sort_values(["Time"], inplace=True)
     df.reset_index(drop=True, inplace=True)
-
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     datatable = Datatable(
         dataset,
@@ -195,11 +186,11 @@ def _import_boolean_variables_data(dataset: Dataset, file_path: Path) -> Datatab
         return None
 
     dtype = {
-        "Time": "string[pyarrow]",
-        "DeviceId": "string[pyarrow]",
-        "Name": "string[pyarrow]",
-        "Data": "boolean[pyarrow]",
-        "Tag": "string[pyarrow]",
+        "Time": "string",
+        "DeviceId": "string",
+        "Name": "string",
+        "Data": "boolean",
+        "Tag": "string",
     }
 
     df = pd.read_csv(
@@ -207,7 +198,7 @@ def _import_boolean_variables_data(dataset: Dataset, file_path: Path) -> Datatab
         delimiter="\t",
         decimal=".",
         dtype=dtype,
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
@@ -220,7 +211,6 @@ def _import_boolean_variables_data(dataset: Dataset, file_path: Path) -> Datatab
         )
         .dt.tz_localize(None)
         .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
     )
 
     # Convert categorical types
@@ -231,9 +221,6 @@ def _import_boolean_variables_data(dataset: Dataset, file_path: Path) -> Datatab
 
     df.sort_values(["Time"], inplace=True)
     df.reset_index(drop=True, inplace=True)
-
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     datatable = Datatable(
         dataset,

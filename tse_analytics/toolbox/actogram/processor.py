@@ -3,7 +3,6 @@ from dataclasses import dataclass
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pyarrow as pa
 
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.dataset import Dataset
@@ -23,12 +22,12 @@ def dataframe_to_actogram(
     df = df.copy()
 
     # Extract day information
-    df["Date"] = df["DateTime"].astype(pd.ArrowDtype(pa.timestamp(unit="s")))
-    df["Time"] = df["DateTime"].dt.hour * 60 + df["DateTime"].dt.minute.astype("int64[pyarrow]")
+    df["Date"] = df["DateTime"].dt.date.astype("datetime64[s]")
+    df["Time"] = df["DateTime"].dt.hour * 60 + df["DateTime"].dt.minute.astype("Int64")
 
     # Determine bin for each timestamp
     minutes_per_bin = 24 * 60 / bins_per_day
-    df["Bin"] = (df["Time"] / minutes_per_bin).astype("int64[pyarrow]")
+    df["Bin"] = (df["Time"] / minutes_per_bin).astype("Int64")
 
     df = df.groupby(["Date", "Bin"], dropna=False, observed=False).aggregate({
         variable.name: variable.aggregation,

@@ -9,7 +9,6 @@ as well as variable data.
 from pathlib import Path
 
 import pandas as pd
-import pyarrow as pa
 
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
@@ -66,14 +65,14 @@ def _import_sessions_df(dataset: Dataset, file_path: Path) -> Datatable:
         raise FileNotFoundError(f"File not found: {file_path}")
 
     dtype = {
-        "DeviceId": "string[pyarrow]",
-        "IdSectionVisited": "uint8[pyarrow]",
-        "StandbySectionVisited": "uint8[pyarrow]",
-        "Direction": "string[pyarrow]",
-        "Weight": "float64[pyarrow]",
-        "Tag": "string[pyarrow]",
-        "Start": "string[pyarrow]",
-        "End": "string[pyarrow]",
+        "DeviceId": "string",
+        "IdSectionVisited": "UInt8",
+        "StandbySectionVisited": "UInt8",
+        "Direction": "string",
+        "Weight": "Float64",
+        "Tag": "string",
+        "Start": "string",
+        "End": "string",
     }
 
     df = pd.read_csv(
@@ -81,7 +80,7 @@ def _import_sessions_df(dataset: Dataset, file_path: Path) -> Datatable:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
 
     # TODO: does -1 means no weight measurement?
@@ -97,7 +96,6 @@ def _import_sessions_df(dataset: Dataset, file_path: Path) -> Datatable:
         )
         .dt.tz_localize(None)
         .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
     )
 
     df["End"] = (
@@ -109,7 +107,6 @@ def _import_sessions_df(dataset: Dataset, file_path: Path) -> Datatable:
         )
         .dt.tz_localize(None)
         .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
     )
 
     # Convert categorical types
@@ -121,9 +118,6 @@ def _import_sessions_df(dataset: Dataset, file_path: Path) -> Datatable:
 
     df.sort_values(["Start"], inplace=True)
     df.reset_index(drop=True, inplace=True)
-
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     datatable = Datatable(
         dataset,
@@ -154,10 +148,10 @@ def _import_antenna_df(dataset: Dataset, file_path: Path) -> Datatable:
         raise FileNotFoundError(f"File not found: {file_path}")
 
     dtype = {
-        "Time": "string[pyarrow]",
-        "DeviceId": "string[pyarrow]",
-        "Tag": "string[pyarrow]",
-        "AnimalName": "string[pyarrow]",
+        "Time": "string",
+        "DeviceId": "string",
+        "Tag": "string",
+        "AnimalName": "string",
     }
 
     df = pd.read_csv(
@@ -165,7 +159,7 @@ def _import_antenna_df(dataset: Dataset, file_path: Path) -> Datatable:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
@@ -178,7 +172,6 @@ def _import_antenna_df(dataset: Dataset, file_path: Path) -> Datatable:
         )
         .dt.tz_localize(None)
         .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
     )
 
     # Convert categorical types
@@ -189,9 +182,6 @@ def _import_antenna_df(dataset: Dataset, file_path: Path) -> Datatable:
 
     df.sort_values(["Time"], inplace=True)
     df.reset_index(drop=True, inplace=True)
-
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     datatable = Datatable(
         dataset,
@@ -222,12 +212,12 @@ def _import_log_df(dataset: Dataset, file_path: Path) -> Datatable:
         raise FileNotFoundError(f"File not found: {file_path}")
 
     dtype = {
-        "DateTime": "string[pyarrow]",
-        "DeviceId": "string[pyarrow]",
-        "Phase": "string[pyarrow]",
-        "Flag": "string[pyarrow]",
-        "Tag": "string[pyarrow]",
-        "Description": "string[pyarrow]",
+        "DateTime": "string",
+        "DeviceId": "string",
+        "Phase": "string",
+        "Flag": "string",
+        "Tag": "string",
+        "Description": "string",
     }
 
     df = pd.read_csv(
@@ -235,7 +225,7 @@ def _import_log_df(dataset: Dataset, file_path: Path) -> Datatable:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
@@ -248,7 +238,6 @@ def _import_log_df(dataset: Dataset, file_path: Path) -> Datatable:
         )
         .dt.tz_localize(None)
         .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
     )
 
     # Convert categorical types
@@ -261,9 +250,6 @@ def _import_log_df(dataset: Dataset, file_path: Path) -> Datatable:
 
     df.sort_values(["DateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
-
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     datatable = Datatable(
         dataset,
@@ -295,11 +281,8 @@ def _import_input_df(dataset: Dataset, file_path: Path) -> Datatable:
     df = pd.read_csv(
         file_path,
         header=None,
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
-
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     datatable = Datatable(
         dataset,
@@ -331,11 +314,8 @@ def _import_output_df(dataset: Dataset, file_path: Path) -> Datatable:
     df = pd.read_csv(
         file_path,
         header=None,
-        dtype_backend="pyarrow",
+        dtype_backend="numpy_nullable",
     )
-
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
 
     datatable = Datatable(
         dataset,

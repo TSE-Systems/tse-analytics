@@ -67,7 +67,7 @@ class AddVariableDialog(QDialog):
 
         if self.ui.radioButtonOriginAnimalProperty.isChecked():
             animal_property = self.ui.comboBoxAnimalProperty.currentText()
-            df[variable_name] = df["Animal"].astype("string[pyarrow]")
+            df[variable_name] = df["Animal"].astype("string")
             values_map = {}
             for animal in self.datatable.dataset.animals.values():
                 values_map[animal.id] = animal.properties[animal_property]
@@ -88,10 +88,10 @@ class AddVariableDialog(QDialog):
         try:
             # Set variable type
             df = df.astype({
-                variable_name: "float64[pyarrow]",
+                variable_name: "Float64",
             })
         except ValueError:
-            QMessageBox.warning(self, "Warning", "Variable type cannot be converted to float64.")
+            QMessageBox.warning(self, "Warning", "Variable type cannot be converted to Float64.")
             return
 
         # Add new variable
@@ -102,7 +102,7 @@ class AddVariableDialog(QDialog):
             name=variable_name,
             unit=unit,
             description=description,
-            type="float64",
+            type="Float64",
             aggregation=aggregation,
             remove_outliers=False,
         )

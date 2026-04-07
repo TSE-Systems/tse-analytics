@@ -1,8 +1,6 @@
 import pandas as pd
-import pyarrow as pa
 
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.drinkfeed_settings import DrinkFeedSettings
 
 
@@ -56,10 +54,8 @@ def process_drinkfeed_sequences(
     episodes_df = episodes_df.astype({
         "Sensor": "category",
         "Animal": "category",
-        "Id": "uint64[pyarrow]",
-        "Duration": pd.ArrowDtype(pa.duration(unit=TIME_RESOLUTION_UNIT)),
-        "Gap": pd.ArrowDtype(pa.duration(unit=TIME_RESOLUTION_UNIT)),
-        "Rate": "float64[pyarrow]",
+        "Id": "UInt64",
+        "Rate": "Float64",
     })
 
     return events_df, episodes_df
@@ -110,8 +106,8 @@ def _extract_sensor_events(
     events_df = df.copy()
 
     if events_df.empty:
-        events_df.insert(1, "EpisodeId", pd.array([], dtype="uint64[pyarrow]"))
-        events_df.insert(2, "Gap", pd.array([], dtype=pd.ArrowDtype(pa.duration(unit=TIME_RESOLUTION_UNIT))))
+        events_df.insert(1, "EpisodeId", pd.array([], dtype="UInt64"))
+        events_df.insert(2, "Gap", pd.array([], dtype="timedelta64[ns]"))
         return events_df
 
     timedelta = pd.Timedelta(
@@ -122,7 +118,7 @@ def _extract_sensor_events(
 
     gaps = events_df["DateTime"].diff()
     new_episode = gaps > timedelta
-    episode_ids = new_episode.astype("int8[pyarrow]").cumsum().astype("uint64[pyarrow]")
+    episode_ids = new_episode.astype("Int8").cumsum().astype("UInt64")
 
     events_df.insert(1, "EpisodeId", episode_ids.values)
     events_df.insert(2, "Gap", gaps.values)
@@ -194,7 +190,7 @@ def _extract_sensor_episodes(
     episodes["Gap[minutes]"] = (gap.dt.total_seconds() / 60).round(3).values
 
     episodes["Quantity"] = grouped["Quantity"].values
-    episodes["Quantity"] = episodes["Quantity"].astype("float64[pyarrow]")
+    episodes["Quantity"] = episodes["Quantity"].astype("Float64")
 
     # Rate = quantity / duration_minutes (NaN where duration is NaT)
     rate = grouped["Quantity"] / duration_minutes

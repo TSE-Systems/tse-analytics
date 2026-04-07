@@ -46,14 +46,14 @@ def process_time_interval_binning(
     result["Timedelta"] = result["Timedelta"].dt.round(timedelta)
 
     # Reassign bins numbers
-    result.insert(loc=0, column="Bin", value=(result["Timedelta"] / timedelta).round().astype("uint64[pyarrow]"))
+    result.insert(loc=0, column="Bin", value=(result["Timedelta"] / timedelta).round().astype("UInt64"))
 
     result.sort_values(by="Bin", inplace=True)
     result.reset_index(inplace=True, drop=True)
 
     if include_runs:
         result = result.astype({
-            "Run": "uint8[pyarrow]",
+            "Run": "UInt8",
         })
 
     return result

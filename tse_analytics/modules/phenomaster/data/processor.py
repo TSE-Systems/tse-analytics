@@ -41,25 +41,25 @@ def append_fitting_results(
 
         if "O2-p" not in main_datatable.variables:
             main_datatable.variables["O2-p"] = Variable(
-                "O2-p", "[%]", "Predicted O2", "float64", Aggregation.MEAN, False
+                "O2-p", "[%]", "Predicted O2", "Float64", Aggregation.MEAN, False
             )
         if "CO2-p" not in main_datatable.variables:
             main_datatable.variables["CO2-p"] = Variable(
-                "CO2-p", "[%]", "Predicted CO2", "float64", Aggregation.MEAN, False
+                "CO2-p", "[%]", "Predicted CO2", "Float64", Aggregation.MEAN, False
             )
         if "VO2-p" not in main_datatable.variables:
             main_datatable.variables["VO2-p"] = Variable(
-                "VO2-p", "[ml/h]", "Predicted VO2", "float64", Aggregation.MEAN, False
+                "VO2-p", "[ml/h]", "Predicted VO2", "Float64", Aggregation.MEAN, False
             )
         if "VCO2-p" not in main_datatable.variables:
             main_datatable.variables["VCO2-p"] = Variable(
-                "VCO2-p", "[ml/h]", "Predicted VCO2", "float64", Aggregation.MEAN, False
+                "VCO2-p", "[ml/h]", "Predicted VCO2", "Float64", Aggregation.MEAN, False
             )
         if "RER-p" not in main_datatable.variables:
             main_datatable.variables["RER-p"] = Variable(
-                "RER-p", "", "Predicted RER", "float64", Aggregation.MEAN, False
+                "RER-p", "", "Predicted RER", "Float64", Aggregation.MEAN, False
             )
         if "EE-p" not in main_datatable.variables:
             main_datatable.variables["EE-p"] = Variable(
-                "EE-p", "[kcal/h]", "Predicted energy expenditure", "float64", Aggregation.MEAN, False
+                "EE-p", "[kcal/h]", "Predicted energy expenditure", "Float64", Aggregation.MEAN, False
             )

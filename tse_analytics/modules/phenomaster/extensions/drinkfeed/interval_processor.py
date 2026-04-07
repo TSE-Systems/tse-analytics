@@ -52,7 +52,7 @@ def process_drinkfeed_intervals(
     intervals_df.insert(
         intervals_df.columns.get_loc("Timedelta") + 1,
         "Bin",
-        (intervals_df["Timedelta"] / timedelta).round().astype("uint64[pyarrow]"),
+        (intervals_df["Timedelta"] / timedelta).round().astype("UInt64"),
     )
 
     # Add caloric value column
@@ -69,10 +69,8 @@ def process_drinkfeed_intervals(
 
 def _add_caloric_column(df: pd.DataFrame, origin_column: str, diets_dict: dict[int, float]) -> pd.DataFrame:
     if origin_column in df.columns:
-        df.insert(
-            df.columns.get_loc(origin_column) + 1, f"{origin_column}-kcal", df["Animal"].astype("string[pyarrow]")
-        )
+        df.insert(df.columns.get_loc(origin_column) + 1, f"{origin_column}-kcal", df["Animal"].astype("string"))
         df.replace({f"{origin_column}-kcal": diets_dict}, inplace=True)
-        df[f"{origin_column}-kcal"] = df[f"{origin_column}-kcal"].astype("float64[pyarrow]")
+        df[f"{origin_column}-kcal"] = df[f"{origin_column}-kcal"].astype("Float64")
         df[f"{origin_column}-kcal"] = df[f"{origin_column}-kcal"] * df[origin_column]
     return df

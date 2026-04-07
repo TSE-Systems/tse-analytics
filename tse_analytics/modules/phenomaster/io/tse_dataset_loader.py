@@ -4,7 +4,6 @@ from pathlib import Path
 
 import connectorx as cx
 import pandas as pd
-import pyarrow as pa
 from loguru import logger
 
 from tse_analytics.core.color_manager import get_color_hex
@@ -207,15 +206,10 @@ def _read_main_table(
     df = df.astype(dtypes, errors="ignore")
 
     # Convert DateTime from POSIX format
-    df["DateTime"] = (
-        pd
-        .to_datetime(df["DateTime"], origin="unix", unit="ns")
-        .dt.as_unit(TIME_RESOLUTION_UNIT)
-        .astype(pd.ArrowDtype(pa.timestamp(unit=TIME_RESOLUTION_UNIT)))
-    )
+    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns").dt.as_unit(TIME_RESOLUTION_UNIT)
 
     # Convert animal id to string first
-    df["Animal"] = df["Animal"].astype("string[pyarrow]")
+    df["Animal"] = df["Animal"].astype("string")
 
     # Convert to categorical types
     df = df.astype({
@@ -231,12 +225,9 @@ def _read_main_table(
     df.insert(
         loc=1,
         column="Timedelta",
-        value=(df["DateTime"] - start_date_time).astype(pd.ArrowDtype(pa.duration(unit=TIME_RESOLUTION_UNIT))),
+        value=(df["DateTime"] - start_date_time),
     )
-    df.insert(loc=2, column="Bin", value=(df["Timedelta"] / sample_interval).round().astype("uint64[pyarrow]"))
-
-    # Convert to pyarrow backend
-    df = df.convert_dtypes(dtype_backend="pyarrow")
+    df.insert(loc=2, column="Bin", value=(df["Timedelta"] / sample_interval).round().astype("UInt64"))
 
     # Sort variables by name
     variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))
