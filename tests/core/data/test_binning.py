@@ -1,8 +1,7 @@
 """Tests for tse_analytics.core.data.binning module."""
 
-from datetime import time
+from datetime import time, timedelta
 
-import pandas as pd
 from tse_analytics.core.data.binning import (
     BinningMode,
     BinningSettings,
@@ -63,8 +62,8 @@ class TestTimePhasesBinningSettings:
 
     def test_stores_phases(self):
         phases = [
-            TimePhase(name="Phase1", start_timestamp=pd.Timedelta("0h")),
-            TimePhase(name="Phase2", start_timestamp=pd.Timedelta("12h")),
+            TimePhase(name="Phase1", start_timestamp=timedelta(0)),
+            TimePhase(name="Phase2", start_timestamp=timedelta(hours=12)),
         ]
         settings = TimePhasesBinningSettings(phases)
         assert len(settings.time_phases) == 2

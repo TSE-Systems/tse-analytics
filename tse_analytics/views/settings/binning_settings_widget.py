@@ -1,4 +1,5 @@
-import pandas as pd
+from datetime import timedelta
+
 from PySide6.QtCore import QSize, QTime
 from PySide6.QtWidgets import QHeaderView, QInputDialog, QWidget
 
@@ -68,10 +69,10 @@ class BinningSettingsWidget(QWidget, messaging.MessengerListener):
             return
         text, result = QInputDialog.getText(self, "Add Time Phase", "Please enter unique phase name:")
         if result:
-            start_timestamp = pd.Timedelta("0 days 00:00:00")
+            start_timestamp = timedelta(0)
             if len(self.time_phases_model.items) > 0:
                 start_timestamp = self.time_phases_model.items[-1].start_timestamp
-                start_timestamp = start_timestamp + pd.to_timedelta(1, unit="hours")
+                start_timestamp = start_timestamp + timedelta(hours=1)
             time_phase = TimePhase(name=text, start_timestamp=start_timestamp)
             self.time_phases_model.add_time_phase(time_phase)
             # self.dataset.apply_binning(self.dataset.binning_settings)

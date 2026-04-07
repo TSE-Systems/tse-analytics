@@ -15,7 +15,7 @@ def process_time_phases_binning(
 
     df["Bin"] = None
     for phase in settings.time_phases:
-        df.loc[df["Timedelta"] >= phase.start_timestamp, "Bin"] = phase.name
+        df.loc[df["Timedelta"] >= pd.Timedelta(phase.start_timestamp), "Bin"] = phase.name
 
     df["Bin"] = df["Bin"].astype("category")
 

@@ -1,8 +1,8 @@
 """Tests for tse_analytics.core.data.shared module."""
 
 from dataclasses import asdict
+from datetime import timedelta
 
-import pandas as pd
 from tse_analytics.core.data.binning import TimePhase
 from tse_analytics.core.data.shared import (
     Aggregation,
@@ -119,9 +119,9 @@ class TestTimePhase:
     """Tests for TimePhase dataclass."""
 
     def test_creation(self):
-        phase = TimePhase(name="Light", start_timestamp=pd.Timedelta("7h"))
+        phase = TimePhase(name="Light", start_timestamp=timedelta(hours=7))
         assert phase.name == "Light"
-        assert phase.start_timestamp == pd.Timedelta("7h")
+        assert phase.start_timestamp == timedelta(hours=7)
 
 
 class TestAnimalDiet:

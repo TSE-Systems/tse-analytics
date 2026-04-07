@@ -18,7 +18,7 @@ class TimePhasesModel(QAbstractTableModel):
     def data(self, index: QModelIndex, role: Qt.ItemDataRole = ...):
         if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
             item = self.items[index.row()]
-            values = (item.name, str(item.start_timestamp))
+            values = (item.name, str(pd.to_timedelta(item.start_timestamp)))
             return values[index.column()]
         return None
 
@@ -29,7 +29,7 @@ class TimePhasesModel(QAbstractTableModel):
                 item.name = value
             elif index.column() == 1:
                 try:
-                    item.start_timestamp = pd.to_timedelta(value)
+                    item.start_timestamp = pd.to_timedelta(value).to_pytimedelta()
                     messaging.broadcast(messaging.DatasetChangedMessage(self, self.dataset))
                 except ValueError:
                     return False

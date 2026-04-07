@@ -128,7 +128,7 @@ class TimePhase:
     ----------
     name : str
         The name of the time phase.
-    start_timestamp : pd.Timedelta
+    start_timestamp : timedelta
         The start time of the phase as a timedelta from the experiment start.
     """
 
