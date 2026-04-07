@@ -237,7 +237,7 @@ class MainWindow(QMainWindow):
             self,
             "Load Workspace",
             "",
-            "DuckDB Workspace (*.duckdb);;Legacy Workspace (*.workspace)",
+            "Workspace (*.workspace);;DuckDB (*.duckdb)",
         )
         if file_path:
             self._load_workspace(file_path)
@@ -247,7 +247,7 @@ class MainWindow(QMainWindow):
             self,
             "Save TSE Analytics Workspace",
             "",
-            "DuckDB Workspace (*.duckdb);;Legacy Workspace (*.workspace)",
+            "Workspace (*.workspace);;DuckDB (*.duckdb)",
         )
         if filename:
             manager.save_workspace(filename)

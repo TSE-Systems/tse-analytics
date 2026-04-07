@@ -336,12 +336,12 @@ class DrinkFeedWidget(QWidget):
             inplace=True,
         )
         grouphousing_df = grouphousing_df[["DateTime", "Box", "Sensor", "Animal"]]
-        grouphousing_df["Sensor"] = grouphousing_df["Sensor"].astype("string")
+        grouphousing_df["Sensor"] = grouphousing_df["Sensor"].astype("string[pyarrow]")
         grouphousing_df.reset_index(inplace=True)
 
         drinkfeed_df = self.raw_long_df.copy()
         drinkfeed_df.drop(columns=["Animal"], inplace=True)
-        drinkfeed_df["Sensor"] = drinkfeed_df["Sensor"].astype("string")
+        drinkfeed_df["Sensor"] = drinkfeed_df["Sensor"].astype("string[pyarrow]")
         drinkfeed_df.reset_index(inplace=True)
 
         df = pd.merge_asof(

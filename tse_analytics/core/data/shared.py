@@ -58,17 +58,6 @@ class Animal:
     color: str
     properties: dict[str, Any]
 
-    def get_dict(self):
-        """
-        Get a dictionary representation of the animal.
-
-        Returns
-        -------
-        dict
-            Dictionary containing the animal's attributes.
-        """
-        return self.__dict__
-
 
 @dataclass
 class FactorLevel:
@@ -134,17 +123,6 @@ class Variable:
     type: str
     aggregation: Aggregation
     remove_outliers: bool
-
-    def get_dict(self):
-        """
-        Get a dictionary representation of the variable.
-
-        Returns
-        -------
-        dict
-            Dictionary containing the variable's attributes.
-        """
-        return self.__dict__
 
 
 @dataclass

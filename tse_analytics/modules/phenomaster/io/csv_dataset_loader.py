@@ -11,10 +11,11 @@ typically contain several sections:
 - Data section: Contains the actual measurement data
 
 The module extracts information from these sections to create a structured
-PhenoMasterDataset object that can be used for analysis and visualization.
+Dataset object that can be used for analysis and visualization.
 """
 
 from collections import namedtuple
+from dataclasses import asdict
 from io import StringIO
 from pathlib import Path
 
@@ -37,7 +38,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Data
     Load a PhenoMaster dataset from a CSV file.
 
     This function parses a CSV file exported by a PhenoMaster system and creates
-    a PhenoMasterDataset object containing the data. It extracts information from
+    a Dataset object containing the data. It extracts information from
     various sections of the file (header, animal, sample interval, group, data)
     and organizes it into a structured dataset.
 
@@ -47,7 +48,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Data
                                                 delimiter, decimal separator, etc.
 
     Returns:
-        PhenoMasterDataset | None: A dataset containing the loaded data, or None if loading failed
+        Dataset | None: A dataset containing the loaded data, or None if loading failed
     """
     with open(path) as f:
         lines = f.readlines()
@@ -206,12 +207,12 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Data
         "experiment": {
             "pm_version": version,
         },
-        "animals": {k: v.get_dict() for (k, v) in animals.items()},
+        "animals": {k: asdict(v) for (k, v) in animals.items()},
         "tables": {
             "main_table": {
                 "id": "main_table",
                 "sample_interval": str(timedelta),
-                "columns": {k: v.get_dict() for (k, v) in variables.items()},
+                "columns": {k: asdict(v) for (k, v) in variables.items()},
             }
         },
     }

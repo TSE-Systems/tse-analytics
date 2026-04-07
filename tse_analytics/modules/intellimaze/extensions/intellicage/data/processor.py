@@ -1,8 +1,10 @@
 import pandas as pd
+import pyarrow as pa
 
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
+from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.intellimaze.data.utils import get_tag_to_name_map, get_variables_csv_data
 
 EXTENSION_NAME = "IntelliCage"
@@ -164,12 +166,16 @@ def _get_visits_datatable(
 
     # Add Timedelta column
     experiment_started = dataset.experiment_started
-    df.insert(loc=3, column="Timedelta", value=df["DateTime"] - experiment_started)
+    df.insert(
+        loc=3,
+        column="Timedelta",
+        value=(df["DateTime"] - experiment_started).astype(pd.ArrowDtype(pa.duration(unit=TIME_RESOLUTION_UNIT))),
+    )
 
     # Convert types
     df = df.astype({
         "Animal": "category",
-        "PlaceError": "UInt8",
+        "PlaceError": "uint8[pyarrow]",
     })
 
     datatable = Datatable(
@@ -464,11 +470,11 @@ def _get_nosepokes_datatable(
     # Convert types
     df = df.astype({
         # "Animal": "category",
-        "SideError": "UInt8",
-        "TimeError": "UInt8",
-        "DoorState": "UInt8",
-        "AirState": "UInt8",
-        "ConditionError": "UInt8",
+        "SideError": "uint8[pyarrow]",
+        "TimeError": "uint8[pyarrow]",
+        "DoorState": "uint8[pyarrow]",
+        "AirState": "uint8[pyarrow]",
+        "ConditionError": "uint8[pyarrow]",
     })
 
     datatable = Datatable(

@@ -2,6 +2,7 @@ import glob
 import tempfile
 import timeit
 import zipfile
+from dataclasses import asdict
 from pathlib import Path
 
 import pandas as pd
@@ -83,7 +84,7 @@ def import_intellimaze_dataset(path: Path) -> Dataset | None:
                         pd.to_datetime(metadata["ExperimentStopped"], format="%m/%d/%Y %H:%M:%S")
                     ),
                     "experiment": metadata,
-                    "animals": {k: v.get_dict() for (k, v) in animals.items()},
+                    "animals": {k: asdict(v) for (k, v) in animals.items()},
                     "devices": devices,
                 },
                 animals,
@@ -313,7 +314,7 @@ def _extract_factor(factor_name: str, dataset: Dataset) -> Factor | None:
 
     Args:
         factor_name (str): The name of the factor to extract.
-        dataset (IntelliMazeDataset): The dataset containing animal properties.
+        dataset (Dataset): The dataset containing animal properties.
 
     Returns:
         Factor | None: The extracted factor, or None if no levels were found.

@@ -7,10 +7,12 @@ ExtensionData class to handle ConsumptionScale specific data.
 """
 
 import pandas as pd
+import pyarrow as pa
 
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
+from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.intellimaze.data.utils import (
     get_combined_variables_table,
     get_tag_to_name_map,
@@ -80,7 +82,11 @@ def preprocess_data(
 
     # Add Timedelta column
     experiment_started = dataset.experiment_started
-    df.insert(loc=2, column="Timedelta", value=df["DateTime"] - experiment_started)
+    df.insert(
+        loc=2,
+        column="Timedelta",
+        value=(df["DateTime"] - experiment_started).astype(pd.ArrowDtype(pa.duration(unit=TIME_RESOLUTION_UNIT))),
+    )
 
     # Convert types
     df = df.astype({

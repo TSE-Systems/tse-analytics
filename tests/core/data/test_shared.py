@@ -1,5 +1,7 @@
 """Tests for tse_analytics.core.data.shared module."""
 
+from dataclasses import asdict
+
 import pandas as pd
 from tse_analytics.core.data.shared import (
     Aggregation,
@@ -41,7 +43,7 @@ class TestAnimal:
 
     def test_get_dict(self):
         animal = Animal(id="A1", color="#FF0000", properties={})
-        d = animal.get_dict()
+        d = asdict(animal)
         assert "id" in d
         assert "color" in d
         assert "properties" in d
@@ -49,7 +51,7 @@ class TestAnimal:
 
     def test_get_dict_returns_all_fields(self):
         animal = Animal(id="B2", color="#00FF00", properties={"cage": 3})
-        d = animal.get_dict()
+        d = asdict(animal)
         assert len(d) == 3
 
 
@@ -106,7 +108,7 @@ class TestVariable:
             aggregation=Aggregation.SUM,
             remove_outliers=False,
         )
-        d = var.get_dict()
+        d = asdict(var)
         assert "name" in d
         assert "unit" in d
         assert "aggregation" in d

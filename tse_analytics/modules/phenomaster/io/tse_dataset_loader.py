@@ -40,7 +40,7 @@ def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportS
         sets (ActoMot raw data, drink-feed bin data, calo bin data) should be
         imported along with the PhenoMaster dataset.
     :return:
-        A PhenoMasterDataset object containing the processed data, or None
+        A Dataset object containing the processed data, or None
         if the dataset could not be loaded or processed.
     """
     tic = timeit.default_timer()
@@ -176,7 +176,7 @@ def _get_animals(data: dict) -> dict[str, Animal]:
 
 def _read_main_table(
     path: Path,
-    dataset: PhenoMasterDataset,
+    dataset: Dataset,
 ) -> tuple[pd.DataFrame, dict[str, Variable], pd.Timedelta]:
     metadata = dataset.metadata["tables"][tse_import_settings.MAIN_TABLE]
 

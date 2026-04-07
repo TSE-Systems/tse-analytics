@@ -103,7 +103,7 @@ def get_combined_variables_table(
 
 
 def _preprocess_variable_table(
-    dataset: IntelliMazeDataset,
+    dataset: Dataset,
     table_name: str,
     extension_data: dict[str, Datatable],
 ) -> pd.DataFrame | None:
@@ -186,14 +186,14 @@ def _preprocess_variable_table(
 
 def preprocess_main_table(dataset: Dataset) -> None:
     """
-    Preprocess the main data table for an IntelliMazeDataset.
+    Preprocess the main data table for an Dataset.
 
     This function combines data from all extensions into a single main table,
     performs type conversions, sorts the data, and adds the resulting datatable
     to the dataset.
 
     Args:
-        dataset (IntelliMazeDataset): The dataset to preprocess.
+        dataset (Dataset): The dataset to preprocess.
     """
     datatables = []
 
@@ -347,7 +347,9 @@ def _preprocess_animal(
 
     # Add Timedelta and Bin columns
     result.insert(loc=1, column="Timedelta", value=result["DateTime"] - experiment_started)
-    result.insert(loc=2, column="Bin", value=(result["Timedelta"] / sampling_interval).round().astype("UInt64"))
+    result.insert(
+        loc=2, column="Bin", value=(result["Timedelta"] / sampling_interval).round().astype("uint64[pyarrow]")
+    )
 
     # Put back animal into dataframe
     result.insert(loc=3, column="Animal", value=animal_id)

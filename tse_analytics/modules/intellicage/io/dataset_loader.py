@@ -42,7 +42,7 @@ def import_intellicage_dataset(path: Path) -> Dataset | None:
 
     Returns
     -------
-    IntelliCageDataset | None
+    Dataset | None
         The imported dataset, or None if the import failed.
     """
     tic = timeit.default_timer()

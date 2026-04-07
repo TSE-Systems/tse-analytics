@@ -1,3 +1,5 @@
+from dataclasses import asdict
+
 import pandas as pd
 
 from tse_analytics.core import color_manager
@@ -22,7 +24,7 @@ def merge_datasets(
 
     Args:
         new_dataset_name (str): Name for the merged dataset
-        datasets (list[PhenoMasterDataset]): List of datasets to merge
+        datasets (list[Dataset]): List of datasets to merge
         single_run (bool): If True, all data will be treated as a single experimental run
         continuous_mode (bool): If True, datasets are merged as sequential experiments;
                                if False, datasets are merged as parallel experiments
@@ -30,7 +32,7 @@ def merge_datasets(
                                          across datasets (only used in overlap mode)
 
     Returns:
-        PhenoMasterDataset | None: The merged dataset, or None if merging failed
+        Dataset | None: The merged dataset, or None if merging failed
     """
     # sort datasets by start time
     datasets.sort(key=lambda dataset: dataset.experiment_started)
@@ -60,11 +62,11 @@ def _merge_continuous(
 
     Args:
         merged_dataset_name (str): Name for the merged dataset
-        datasets (list[PhenoMasterDataset]): List of datasets to merge, sorted by start time
+        datasets (list[Dataset]): List of datasets to merge, sorted by start time
         single_run (bool): If True, all data will be treated as a single experimental run
 
     Returns:
-        PhenoMasterDataset | None: The merged dataset, or None if merging failed
+        Dataset | None: The merged dataset, or None if merging failed
     """
     first_dataset = datasets[0]
 
@@ -105,11 +107,11 @@ def _merge_continuous(
 
         # convert categorical types
         new_df = new_df.astype({
-            "Animal": "string",
+            "Animal": "string[pyarrow]",
         })
         new_df = new_df.astype({
             "Animal": "category",
-            "Run": "UInt8",
+            "Run": "uint8[pyarrow]",
         })
 
         # Sort dataframe
@@ -145,13 +147,13 @@ def _merge_overlap(
 
     Args:
         merged_dataset_name (str): Name for the merged dataset
-        datasets (list[PhenoMasterDataset]): List of datasets to merge, sorted by start time
+        datasets (list[Dataset]): List of datasets to merge, sorted by start time
         single_run (bool): If True, all data will be treated as a single experimental run
         generate_new_animal_names (bool): If True, animal IDs will be modified to ensure
                                          uniqueness across datasets
 
     Returns:
-        PhenoMasterDataset | None: The merged dataset, or None if merging failed
+        Dataset | None: The merged dataset, or None if merging failed
     """
     first_dataset = datasets[0]
 
@@ -168,7 +170,7 @@ def _merge_overlap(
             dataset.animals = new_animals
 
             for datatable in dataset.datatables.values():
-                datatable.df["Animal"] = datatable.df["Animal"].astype("string")
+                datatable.df["Animal"] = datatable.df["Animal"].astype("string[pyarrow]")
                 datatable.df["Animal"] = datatable.df["Animal"].replace(name_map)
                 datatable.df["Animal"] = datatable.df["Animal"].astype("category")
 
@@ -204,11 +206,11 @@ def _merge_overlap(
 
         # convert categorical types
         new_df = new_df.astype({
-            "Animal": "string",
+            "Animal": "string[pyarrow]",
         })
         new_df = new_df.astype({
             "Animal": "category",
-            "Run": "UInt8",
+            "Run": "uint8[pyarrow]",
         })
 
         # TODO: reassign bin and timedelta. HOW?
@@ -250,7 +252,7 @@ def _merge_metadata(
         merged_dataset_name (str): Name for the merged dataset
         merging_mode (str): The mode used for merging ("continuous" or "overlap")
         merged_animals (dict[str, Animal]): Dictionary of merged animal objects
-        datasets (list[PhenoMasterDataset]): List of datasets being merged
+        datasets (list[Dataset]): List of datasets being merged
 
     Returns:
         dict: Merged metadata dictionary
@@ -265,7 +267,7 @@ def _merge_metadata(
         "merging_mode": merging_mode,
         "experiment_started": str(experiment_started),
         "experiment_stopped": str(experiment_stopped),
-        "animals": {k: v.get_dict() for (k, v) in merged_animals.items()},
+        "animals": {k: asdict(v) for (k, v) in merged_animals.items()},
         "runs": {},
     }
     for i, dataset in enumerate(datasets):
@@ -283,7 +285,7 @@ def _merge_animals(datasets: list[Dataset]) -> dict[str, Animal]:
     animal ID.
 
     Args:
-        datasets (list[PhenoMasterDataset]): List of datasets whose animal data will be merged
+        datasets (list[Dataset]): List of datasets whose animal data will be merged
 
     Returns:
         dict[str, Animal]: Dictionary mapping animal IDs to Animal objects

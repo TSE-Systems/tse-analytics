@@ -6,6 +6,8 @@ It supports different merging strategies, including continuous mode (datasets ar
 sequential in time) and overlap mode (datasets are treated as parallel experiments).
 """
 
+from dataclasses import asdict
+
 import pandas as pd
 
 from tse_analytics.core import color_manager
@@ -33,8 +35,8 @@ def merge_datasets(
     ----------
     new_dataset_name : str
         Name for the merged dataset.
-    datasets : list[IntelliCageDataset]
-        List of IntelliCageDataset objects to merge.
+    datasets : list[Dataset]
+        List of Dataset objects to merge.
     single_run : bool
         If True, all data will be treated as a single experimental run.
         If False, run numbers will be assigned based on the source dataset.
@@ -47,7 +49,7 @@ def merge_datasets(
 
     Returns
     -------
-    IntelliCageDataset | None
+    Dataset | None
         The merged dataset, or None if the merge failed.
     """
     # sort datasets by start time
@@ -80,15 +82,15 @@ def _merge_continuous(
     ----------
     merged_dataset_name : str
         Name for the merged dataset.
-    datasets : list[IntelliCageDataset]
-        List of IntelliCageDataset objects to merge, sorted by start time.
+    datasets : list[Dataset]
+        List of Dataset objects to merge, sorted by start time.
     single_run : bool
         If True, all data will be treated as a single experimental run.
         If False, run numbers will be assigned based on the source dataset.
 
     Returns
     -------
-    IntelliCageDataset | None
+    Dataset | None
         The merged dataset, or None if the merge failed.
     """
     first_dataset = datasets[0]
@@ -167,8 +169,8 @@ def _merge_overlap(
     ----------
     merged_dataset_name : str
         Name for the merged dataset.
-    datasets : list[IntelliCageDataset]
-        List of IntelliCageDataset objects to merge, sorted by start time.
+    datasets : list[Dataset]
+        List of Dataset objects to merge, sorted by start time.
     single_run : bool
         If True, all data will be treated as a single experimental run.
         If False, run numbers will be assigned based on the source dataset.
@@ -277,7 +279,7 @@ def _merge_metadata(
         The mode used for merging ("continuous" or "overlap").
     merged_animals : dict[str, Animal]
         Dictionary of animals in the merged dataset.
-    datasets : list[IntelliCageDataset]
+    datasets : list[Dataset]
         List of source datasets.
 
     Returns
@@ -295,7 +297,7 @@ def _merge_metadata(
         "merging_mode": merging_mode,
         "experiment_started": str(experiment_started),
         "experiment_stopped": str(experiment_stopped),
-        "animals": {k: v.get_dict() for (k, v) in merged_animals.items()},
+        "animals": {k: asdict(v) for (k, v) in merged_animals.items()},
         "runs": {},
     }
     for i, dataset in enumerate(datasets):

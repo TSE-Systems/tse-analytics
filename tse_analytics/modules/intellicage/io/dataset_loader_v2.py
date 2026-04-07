@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from pathlib import Path
 
 import pandas as pd
@@ -38,7 +39,7 @@ def import_intellicage_dataset_v2(path: Path, tmp_path: Path, data_descriptor: d
             "experiment_stopped": metadata["Interval"]["End"],
             "data_descriptor": data_descriptor,
             "experiment": metadata,
-            "animals": {k: v.get_dict() for (k, v) in animals.items()},
+            "animals": {k: asdict(v) for (k, v) in animals.items()},
         },
         animals,
     )
@@ -213,7 +214,7 @@ def _import_visits_df(folder_path: Path) -> pd.DataFrame:
 
     # Set visit number column
     df["VisitNumber"] = df.groupby("AnimalTag").cumcount().astype("uint64[pyarrow]")
-    # df["VisitNumber"] = df.groupby("AnimalTag")["VisitID"].rank(method="first").astype("UInt64")
+    # df["VisitNumber"] = df.groupby("AnimalTag")["VisitID"].rank(method="first").astype("uint64[pyarrow]")
 
     # Convert to pyarrow backend
     df = df.convert_dtypes(dtype_backend="pyarrow")

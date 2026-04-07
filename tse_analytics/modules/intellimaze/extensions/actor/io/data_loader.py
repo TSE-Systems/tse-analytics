@@ -45,7 +45,7 @@ def import_data(
     return extension_data
 
 
-def _import_state_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
+def _import_state_df(dataset: Dataset, file_path: Path) -> Datatable:
     """
     Import state data from a file.
 
@@ -116,7 +116,7 @@ def _import_state_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
     return datatable
 
 
-def _import_model_df(dataset: IntelliMazeDataset, file_path: Path) -> Datatable:
+def _import_model_df(dataset: Dataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
         raise FileNotFoundError(f"File not found: {file_path}")
 

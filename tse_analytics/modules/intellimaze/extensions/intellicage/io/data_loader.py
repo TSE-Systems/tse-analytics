@@ -115,7 +115,7 @@ def _import_visits_df(dataset: Dataset, file_path: Path) -> Datatable:
 
     # Set visit number column
     df["VisitNumber"] = df.groupby("AnimalTag").cumcount().astype("uint64[pyarrow]")
-    # df["VisitNumber"] = df.groupby("AnimalTag")["VisitID"].rank(method="first").astype("UInt64")
+    # df["VisitNumber"] = df.groupby("AnimalTag")["VisitID"].rank(method="first").astype("uint64[pyarrow]")
 
     # Convert to pyarrow backend
     df = df.convert_dtypes(dtype_backend="pyarrow")

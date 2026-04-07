@@ -65,11 +65,11 @@ class Dataset:
         self.metadata = metadata
         self.animals = animals
 
-        self.factors: dict[str, Factor] = {}
         self.datatables: dict[str, Datatable] = {}
-        self.reports: dict[str, Report] = {}
-
         self.raw_datatables: dict[str, dict[str, Datatable]] = {}
+
+        self.factors: dict[str, Factor] = {}
+        self.reports: dict[str, Report] = {}
 
         self.binning_settings = BinningSettings()
 
