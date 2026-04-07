@@ -6,11 +6,11 @@ including enumerations for aggregation and split modes, and dataclasses
 for animals, factors, variables, time phases, and animal diets.
 """
 
-from dataclasses import dataclass, field
 from enum import StrEnum, unique
 from typing import Any
 
-import pandas as pd
+from pydantic import Field
+from pydantic.dataclasses import dataclass
 
 
 @unique
@@ -76,7 +76,7 @@ class FactorLevel:
 
     name: str
     color: str
-    animal_ids: list[str] = field(default_factory=list)
+    animal_ids: list[str] = Field(default_factory=list)
 
 
 @dataclass
@@ -93,7 +93,7 @@ class Factor:
     """
 
     name: str
-    levels: list[FactorLevel] = field(default_factory=list)
+    levels: list[FactorLevel] = Field(default_factory=list)
 
 
 @dataclass
@@ -123,23 +123,6 @@ class Variable:
     type: str
     aggregation: Aggregation
     remove_outliers: bool
-
-
-@dataclass
-class TimePhase:
-    """
-    Dataclass representing a time phase in the experiment.
-
-    Attributes
-    ----------
-    name : str
-        The name of the time phase.
-    start_timestamp : pd.Timedelta
-        The start time of the phase as a timedelta from the experiment start.
-    """
-
-    name: str
-    start_timestamp: pd.Timedelta
 
 
 @dataclass

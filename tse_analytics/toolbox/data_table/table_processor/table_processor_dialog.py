@@ -8,9 +8,9 @@ from tse_analytics.core.data.binning import (
     BinningSettings,
     TimeCyclesBinningSettings,
     TimeIntervalsBinningSettings,
+    TimePhase,
 )
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import TimePhase
 from tse_analytics.core.models.time_phases_model import TimePhasesModel
 from tse_analytics.toolbox.data_table.processor import process_derived_table
 from tse_analytics.toolbox.data_table.table_processor.table_processor_dialog_ui import Ui_TableProcessorDialog

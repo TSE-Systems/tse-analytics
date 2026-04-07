@@ -3,8 +3,8 @@ from PySide6.QtCore import QSize, QTime
 from PySide6.QtWidgets import QHeaderView, QInputDialog, QWidget
 
 from tse_analytics.core import messaging
+from tse_analytics.core.data.binning import TimePhase
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.shared import TimePhase
 from tse_analytics.core.models.time_phases_model import TimePhasesModel
 from tse_analytics.views.settings.binning_settings_widget_ui import Ui_BinningSettingsWidget
 

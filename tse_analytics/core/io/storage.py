@@ -7,10 +7,7 @@ stored in relational ``_meta_*`` tables.
 
 from __future__ import annotations
 
-import importlib
-import json
 import timeit
-from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -18,79 +15,17 @@ from uuid import UUID
 import duckdb
 import pandas as pd
 from loguru import logger
+from pydantic import TypeAdapter
 
 from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings, OutliersType
+from tse_analytics.core.data.outliers import OutliersSettings
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import Animal, Factor, Variable
 from tse_analytics.core.data.workspace import Workspace
 
 _SCHEMA_VERSION = 1
-
-# ---------------------------------------------------------------------------
-# JSON helpers for types that stdlib json cannot handle
-# ---------------------------------------------------------------------------
-
-_NULLABLE_INT_DTYPES = frozenset({
-    "UInt8",
-    "UInt16",
-    "UInt32",
-    "UInt64",
-    "Int8",
-    "Int16",
-    "Int32",
-    "Int64",
-})
-
-_EXTENSION_DTYPES = _NULLABLE_INT_DTYPES | frozenset({
-    "Float32",
-    "Float64",
-    "boolean",
-    "string",
-})
-
-
-def _json_default(obj: object) -> object:
-    if isinstance(obj, pd.Timedelta):
-        return {"__type__": "pd.Timedelta", "nanoseconds": int(obj.as_unit("ns").value)}
-    if isinstance(obj, pd.Timestamp):
-        return {"__type__": "pd.Timestamp", "isoformat": obj.isoformat()}
-    raise TypeError(f"Cannot JSON-serialize {type(obj)}")
-
-
-def _json_object_hook(d: dict) -> Any:
-    t = d.get("__type__")
-    if t == "pd.Timedelta":
-        return pd.Timedelta(nanoseconds=d["nanoseconds"])
-    if t == "pd.Timestamp":
-        return pd.Timestamp(d["isoformat"])
-    return d
-
-
-def _dumps(obj: object) -> str:
-    return json.dumps(obj, default=_json_default, ensure_ascii=False)
-
-
-def _loads(s: str) -> Any:
-    return json.loads(s, object_hook=_json_object_hook)
-
-
-# ---------------------------------------------------------------------------
-# Dynamic class import
-# ---------------------------------------------------------------------------
-
-
-def _class_fqn(obj: object) -> str:
-    cls = type(obj)
-    return f"{cls.__module__}.{cls.__qualname__}"
-
-
-def _import_class(fqn: str) -> type:
-    module_path, class_name = fqn.rsplit(".", 1)
-    module = importlib.import_module(module_path)
-    return getattr(module, class_name)
 
 
 # ---------------------------------------------------------------------------
@@ -145,12 +80,12 @@ _META_TABLES_DDL = [
     CREATE TABLE _meta_datatables (
         id                      UUID NOT NULL,
         dataset_id              UUID NOT NULL,
+        parent_datatable_id     UUID,
         name                    VARCHAR NOT NULL,
         description             VARCHAR,
         duckdb_table_name       VARCHAR NOT NULL,
         variables               JSON NOT NULL,
         metadata                JSON,
-        parent_datatable_id     UUID,
         outliers_settings       JSON NOT NULL
     )
     """,
@@ -158,12 +93,12 @@ _META_TABLES_DDL = [
     CREATE TABLE _meta_raw_datatables (
         id                      UUID NOT NULL,
         dataset_id              UUID NOT NULL,
+        extension_name          VARCHAR NOT NULL,
         name                    VARCHAR NOT NULL,
         description             VARCHAR,
         duckdb_table_name       VARCHAR NOT NULL,
         variables               JSON NOT NULL,
         metadata                JSON,
-        extension_name          VARCHAR,
         outliers_settings       JSON NOT NULL
     )
     """,
@@ -198,29 +133,6 @@ def _load_dataframe(con: duckdb.DuckDBPyConnection, table_name: str) -> pd.DataF
     """Read a DuckDB table back into a DataFrame with original dtypes restored."""
     df = con.execute(f'SELECT * FROM "{table_name}"').fetchdf()
 
-    # rows = con.execute(
-    #     "SELECT column_name, pandas_dtype, category_values_json FROM _meta_column_dtypes WHERE datatable_id = ?",
-    #     [datatable_id],
-    # ).fetchall()
-    #
-    # for col_name, pandas_dtype, cat_json in rows:
-    #     if col_name not in df.columns:
-    #         continue
-    #
-    #     if pandas_dtype == "category":
-    #         categories = json.loads(cat_json, object_hook=_json_object_hook) if cat_json else None
-    #         # Replace DuckDB None / "None" string with proper NA before converting
-    #         df[col_name] = pd.Categorical(df[col_name], categories=categories, ordered=False)
-    #     elif "timedelta" in pandas_dtype:
-    #         df[col_name] = pd.to_timedelta(df[col_name], unit="ns")
-    #     elif pandas_dtype in _EXTENSION_DTYPES:
-    #         df[col_name] = df[col_name].astype(pandas_dtype)
-    #     elif "datetime64" in pandas_dtype and pandas_dtype != str(df[col_name].dtype):
-    #         try:
-    #             df[col_name] = df[col_name].astype(pandas_dtype)
-    #         except TypeError, ValueError:
-    #             pass
-
     return df
 
 
@@ -236,7 +148,7 @@ def _save_workspace(con: duckdb.DuckDBPyConnection, workspace: Workspace) -> Non
             workspace.id,
             workspace.name,
             workspace.description,
-            _dumps(workspace.metadata),
+            workspace.metadata,
             _SCHEMA_VERSION,
         ],
     )
@@ -264,22 +176,18 @@ def _save_datatable(
 
     _save_dataframe(con, table_name, datatable.df)
 
-    variables_json = {k: asdict(v) for k, v in datatable.variables.items()}
-
-    outliers_settings_json = asdict(datatable.outliers_settings)
-
     con.execute(
         "INSERT INTO _meta_datatables VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [
             datatable.id,
             datatable.dataset.id,
+            parent_id,
             datatable.name,
             datatable.description,
             table_name,
-            variables_json,
+            TypeAdapter(dict[str, Variable]).dump_python(datatable.variables),
             datatable.metadata,
-            parent_id,
-            outliers_settings_json,
+            TypeAdapter(OutliersSettings).dump_python(datatable.outliers_settings),
         ],
     )
 
@@ -296,31 +204,23 @@ def _save_raw_datatable(
 
     _save_dataframe(con, table_name, datatable.df)
 
-    variables_json = {k: asdict(v) for k, v in datatable.variables.items()}
-
-    outliers_settings_json = asdict(datatable.outliers_settings)
-
     con.execute(
         "INSERT INTO _meta_raw_datatables VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [
             datatable.id,
             datatable.dataset.id,
+            extension_name,
             datatable.name,
             datatable.description,
             table_name,
-            variables_json,
+            TypeAdapter(dict[str, Variable]).dump_python(datatable.variables),
             datatable.metadata,
-            extension_name,
-            outliers_settings_json,
+            TypeAdapter(OutliersSettings).dump_python(datatable.outliers_settings),
         ],
     )
 
 
 def _save_dataset(con: duckdb.DuckDBPyConnection, dataset: Dataset) -> None:
-    animals_json = {k: asdict(v) for k, v in dataset.animals.items()}
-    factors_json = {k: asdict(v) for k, v in dataset.factors.items()}
-    binning_settings_json = asdict(dataset.binning_settings)
-
     con.execute(
         "INSERT INTO _meta_datasets VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         [
@@ -328,9 +228,9 @@ def _save_dataset(con: duckdb.DuckDBPyConnection, dataset: Dataset) -> None:
             dataset.name,
             dataset.description,
             dataset.dataset_type,
-            animals_json,
-            factors_json,
-            binning_settings_json,
+            TypeAdapter(dict[str, Animal]).dump_python(dataset.animals),
+            TypeAdapter(dict[str, Factor]).dump_python(dataset.factors),
+            TypeAdapter(BinningSettings).dump_python(dataset.binning_settings),
             dataset.metadata,
         ],
     )
@@ -379,10 +279,10 @@ def save_workspace(filename: str, workspace: Workspace) -> None:
 def _load_workspace_meta(con: duckdb.DuckDBPyConnection) -> Workspace:
     row = con.execute("SELECT * FROM _meta_workspace").fetchone()
     ws = Workspace(
-        id=row[0],
-        name=row[1],
-        description=row[2],
-        metadata=row[3],
+        row[0],
+        row[1],
+        row[2],
+        TypeAdapter(dict[str, Any]).validate_json(row[3]),
     )
     return ws
 
@@ -395,10 +295,10 @@ def _load_reports(con: duckdb.DuckDBPyConnection, dataset_id: UUID, dataset: Dat
     reports: dict[str, Report] = {}
     for name, content, timestamp in rows:
         reports[name] = Report(
-            dataset=dataset,
-            name=name,
-            content=content,
-            timestamp=timestamp,
+            dataset,
+            name,
+            content,
+            timestamp,
         )
     return reports
 
@@ -409,49 +309,92 @@ def _load_datatables_for_dataset(
 ) -> dict[str, Datatable]:
     """Load all non-extension datatables for a dataset and wire the tree."""
     rows = con.execute(
-        "SELECT id, name, description, duckdb_table_name, variables, metadata, parent_datatable_id, outliers_settings "
+        "SELECT id, parent_datatable_id, name, description, duckdb_table_name, variables, metadata, outliers_settings "
         "FROM _meta_datatables WHERE dataset_id = ?",
         [dataset.id],
     ).fetchall()
 
-    all_tables: dict[str, Datatable] = {}  # keyed by datatable id string
+    datatables: dict[str, Datatable] = {}  # keyed by datatable id string
 
     for (
         datatable_id,
+        parent_datatable_id,
         name,
         description,
         duckdb_table_name,
         variables_json,
         metadata,
-        parent_datatable_id,
         outliers_settings,
     ) in rows:
-        variables: dict[str, Variable] = {k: Variable(**v) for k, v in json.loads(variables_json).items()}
         df = _load_dataframe(con, duckdb_table_name)
 
         datatable = Datatable(
             dataset,
             name,
             description,
-            variables,
+            TypeAdapter(dict[str, Variable]).validate_json(variables_json),
             df,
-            metadata,
+            TypeAdapter(dict[str, Any]).validate_json(metadata),
         )
         datatable.id = datatable_id
-        datatable.outliers_settings = OutliersSettings(**outliers_settings)
-        datatable_id._parent_id_tmp = parent_datatable_id  # type: ignore[attr-defined]
-        all_tables[datatable_id] = datatable
+        datatable.outliers_settings = TypeAdapter(OutliersSettings).validate_json(outliers_settings)
+        datatable._parent_id_tmp = parent_datatable_id  # type: ignore[attr-defined]
+        datatables[datatable_id] = datatable
 
     # Wire parent/child relationships
-    for datatable in all_tables.values():
+    for datatable in datatables.values():
         parent_id = datatable._parent_id_tmp  # type: ignore[attr-defined]
         del datatable._parent_id_tmp  # type: ignore[attr-defined]
-        if parent_id is not None and parent_id in all_tables:
-            parent = all_tables[parent_id]
+        if parent_id is not None and parent_id in datatables:
+            parent = datatables[parent_id]
             datatable.parent_table = parent
             parent.derived_tables[datatable.name] = datatable
 
-    return {datatable.name: datatable for datatable in all_tables.values() if datatable.parent_table is None}
+    return {datatable.name: datatable for datatable in datatables.values() if datatable.parent_table is None}
+
+
+def _load_raw_datatables_for_dataset(
+    con: duckdb.DuckDBPyConnection,
+    dataset: Dataset,
+) -> dict[str, dict[str, Datatable]]:
+    """Load all raw extension datatables for a dataset and wire the tree."""
+    rows = con.execute(
+        "SELECT id, extension_name, name, description, duckdb_table_name, variables, metadata, outliers_settings "
+        "FROM _meta_raw_datatables WHERE dataset_id = ?",
+        [dataset.id],
+    ).fetchall()
+
+    raw_datatables: dict[str, dict[str, Datatable]] = {}
+
+    for (
+        datatable_id,
+        extension_name,
+        name,
+        description,
+        duckdb_table_name,
+        variables_json,
+        metadata,
+        outliers_settings,
+    ) in rows:
+        df = _load_dataframe(con, duckdb_table_name)
+
+        datatable = Datatable(
+            dataset,
+            name,
+            description,
+            TypeAdapter(dict[str, Variable]).validate_json(variables_json),
+            df,
+            TypeAdapter(dict[str, Any]).validate_json(metadata),
+        )
+        datatable.id = datatable_id
+        datatable.outliers_settings = TypeAdapter(OutliersSettings).validate_json(outliers_settings)
+
+        if extension_name not in raw_datatables:
+            raw_datatables[extension_name] = {}
+
+        raw_datatables[extension_name][datatable.name] = datatable
+
+    return raw_datatables
 
 
 def _load_dataset(con: duckdb.DuckDBPyConnection, dataset_id: UUID) -> Dataset:
@@ -459,19 +402,21 @@ def _load_dataset(con: duckdb.DuckDBPyConnection, dataset_id: UUID) -> Dataset:
         "SELECT id, name, description, dataset_type, animals, factors, binning_settings, metadata FROM _meta_datasets WHERE id = ?",
         [dataset_id],
     ).fetchone()
-    animals: dict[str, Animal] = {k: Animal(**v) for k, v in json.loads(row[4]).items()}
+
     dataset = Dataset(
         row[1],
         row[2],
         row[3],
-        row[7],
-        animals,
+        TypeAdapter(dict[str, Any]).validate_json(row[7]),
+        TypeAdapter(dict[str, Animal]).validate_json(row[4]),
     )
     dataset.id = row[0]
-    dataset.factors = {k: Factor(**v) for k, v in json.loads(row[5]).items()}
-    dataset.binning_settings = BinningSettings(**json.loads(row[6]))
+    dataset.factors = TypeAdapter(dict[str, Factor]).validate_json(row[5])
+    dataset.binning_settings = TypeAdapter(BinningSettings).validate_json(row[6])
     dataset.reports = _load_reports(con, row[0], dataset)
-    _load_datatables_for_dataset(con, dataset)
+
+    dataset.datatables = _load_datatables_for_dataset(con, dataset)
+    dataset.raw_datatables = _load_raw_datatables_for_dataset(con, dataset)
 
     return dataset
 

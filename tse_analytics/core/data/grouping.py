@@ -1,5 +1,6 @@
-from dataclasses import dataclass
 from enum import StrEnum, unique
+
+from pydantic.dataclasses import dataclass
 
 
 @unique

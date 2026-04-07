@@ -3,13 +3,13 @@
 from dataclasses import asdict
 
 import pandas as pd
+from tse_analytics.core.data.binning import TimePhase
 from tse_analytics.core.data.shared import (
     Aggregation,
     Animal,
     AnimalDiet,
     Factor,
     FactorLevel,
-    TimePhase,
     Variable,
 )
 

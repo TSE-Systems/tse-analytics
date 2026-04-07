@@ -8,9 +8,9 @@ from tse_analytics.core.data.binning import (
     BinningSettings,
     TimeCyclesBinningSettings,
     TimeIntervalsBinningSettings,
+    TimePhase,
     TimePhasesBinningSettings,
 )
-from tse_analytics.core.data.shared import TimePhase
 
 
 class TestBinningMode:

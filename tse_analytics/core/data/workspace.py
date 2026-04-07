@@ -5,14 +5,16 @@ This module provides functionality for organizing and managing multiple datasets
 within a workspace.
 """
 
-from dataclasses import dataclass, field
 from typing import Any
 from uuid import UUID, uuid7
+
+from pydantic import ConfigDict, Field
+from pydantic.dataclasses import dataclass
 
 from tse_analytics.core.data.dataset import Dataset
 
 
-@dataclass
+@dataclass(config=ConfigDict(arbitrary_types_allowed=True))
 class Workspace:
     """
     A class representing a workspace containing multiple datasets.
@@ -37,5 +39,5 @@ class Workspace:
     id: UUID = uuid7()
     name: str = "Untitled Workspace"
     description: str = ""
-    metadata: dict[str, Any] = field(default_factory=dict)
-    datasets: dict[UUID, Dataset] = field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    datasets: dict[UUID, Dataset] = Field(default_factory=dict)
