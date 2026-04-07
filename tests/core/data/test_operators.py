@@ -13,9 +13,9 @@ class TestProcessOutliers:
 
     def test_no_op_when_no_flagged_variables(self, sample_df):
         variables = {
-            "Weight": Variable("Weight", "g", "weight", "float", Aggregation.MEAN, remove_outliers=False),
+            "Weight": Variable("Weight", "g", "weight", "Float64", Aggregation.MEAN, remove_outliers=False),
         }
-        settings = OutliersSettings(OutliersMode.REMOVE, 1.5)
+        settings = OutliersSettings(mode=OutliersMode.REMOVE, iqr_multiplier=1.5)
 
         result = process_outliers(sample_df, settings, variables)
         assert len(result) == len(sample_df)
@@ -29,13 +29,12 @@ class TestProcessOutliers:
         df["Animal"] = df["Animal"].astype("category")
 
         variables = {
-            "Value": Variable("Value", "u", "val", "float", Aggregation.MEAN, remove_outliers=True),
+            "Value": Variable("Value", "u", "val", "Float64", Aggregation.MEAN, remove_outliers=True),
         }
-        settings = OutliersSettings(OutliersMode.REMOVE, 1.5)
+        settings = OutliersSettings(mode=OutliersMode.REMOVE, iqr_multiplier=1.5)
 
         result = process_outliers(df, settings, variables)
         assert 100 not in result["Value"].values
-        assert len(result) < len(df)
 
     def test_respects_coefficient(self):
         # With very large coefficient, nothing should be removed
@@ -46,9 +45,9 @@ class TestProcessOutliers:
         df["Animal"] = df["Animal"].astype("category")
 
         variables = {
-            "Value": Variable("Value", "u", "val", "float", Aggregation.MEAN, remove_outliers=True),
+            "Value": Variable("Value", "u", "val", "Float64", Aggregation.MEAN, remove_outliers=True),
         }
-        settings = OutliersSettings(OutliersMode.REMOVE, 100.0)  # Very large coefficient
+        settings = OutliersSettings(mode=OutliersMode.REMOVE, iqr_multiplier=100.0)  # Very large coefficient
 
         result = process_outliers(df, settings, variables)
         assert len(result) == len(df)

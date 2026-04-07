@@ -116,7 +116,13 @@ def analysis_dataset(analysis_animals, analysis_factor, analysis_variables, anal
     }
 
     with patch("tse_analytics.core.data.dataset.messaging"):
-        dataset = Dataset(metadata=metadata, animals=analysis_animals)
+        dataset = Dataset(
+            name="Analysis Dataset",
+            description="Test dataset for analysis",
+            dataset_type="PhenoMaster",
+            metadata=metadata,
+            animals=analysis_animals,
+        )
         dataset.factors = {"Group": analysis_factor}
 
         datatable = Datatable(

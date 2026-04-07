@@ -113,7 +113,13 @@ def sample_dataset(sample_animals, sample_metadata):
     from tse_analytics.core.data.dataset import Dataset
 
     with patch("tse_analytics.core.data.dataset.messaging"):
-        dataset = Dataset(metadata=sample_metadata, animals=sample_animals)
+        dataset = Dataset(
+            name="Test Dataset",
+            description="A test dataset",
+            dataset_type="PhenoMaster",
+            metadata=sample_metadata,
+            animals=sample_animals,
+        )
     return dataset
 
 
@@ -128,7 +134,7 @@ def sample_datatable(sample_dataset, sample_variables, sample_df):
         description="Main datatable",
         variables=sample_variables,
         df=sample_df,
-        metadata={},
+        metadata={"sampling_interval": pd.Timedelta("1h")},
     )
     sample_dataset.datatables["Main"] = datatable
     return datatable

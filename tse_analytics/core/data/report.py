@@ -1,8 +1,6 @@
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING
-
-from pydantic import Field
-from pydantic.dataclasses import dataclass
 
 if TYPE_CHECKING:
     from tse_analytics.core.data.dataset import Dataset
@@ -28,4 +26,4 @@ class Report:
     dataset: Dataset
     name: str
     content: str
-    timestamp: datetime = Field(default_factory=datetime.now)
+    timestamp: datetime = field(default_factory=datetime.now)

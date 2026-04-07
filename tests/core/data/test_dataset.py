@@ -4,7 +4,6 @@ import pickle
 from unittest.mock import patch
 
 import pandas as pd
-from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings
 from tse_analytics.core.data.shared import Animal
 
 
@@ -23,6 +22,9 @@ class TestDatasetInit:
         # Create a fresh dataset for this test
         with patch("tse_analytics.core.data.dataset.messaging"):
             ds = Dataset(
+                name="Fresh",
+                description="d",
+                dataset_type="PhenoMaster",
                 metadata={"name": "Fresh", "description": "d"},
                 animals={},
             )
@@ -33,10 +35,6 @@ class TestDatasetInit:
 
     def test_initializes_empty_reports(self, sample_dataset):
         assert sample_dataset.reports == {}
-
-    def test_default_outliers_settings(self, sample_dataset):
-        assert sample_dataset.outliers_settings.mode == OutliersMode.OFF
-        assert sample_dataset.outliers_settings.iqr_multiplier == 1.5
 
 
 class TestDatasetProperties:
@@ -85,10 +83,10 @@ class TestDatasetDatatablesCRUD:
             metadata={},
         )
         sample_datatable.add_derived_table(derived)
-        assert derived.id in sample_datatable.derived_tables
+        assert derived.name in sample_datatable.derived_tables
 
         sample_dataset.remove_datatable(derived)
-        assert derived.id not in sample_datatable.derived_tables
+        assert derived.name not in sample_datatable.derived_tables
 
     def test_add_multiple_datatables(self, sample_dataset, sample_datatable, sample_variables, sample_df):
         from tse_analytics.core.data.datatable import Datatable
@@ -221,30 +219,6 @@ class TestSetFactors:
         sample_dataset.set_factors(factors)
         # The factor column should be added to the df
         assert "Group" in sample_datatable.df.columns
-
-
-class TestApplyOutliers:
-    """Tests for Dataset.apply_outliers."""
-
-    def test_stores_settings(self, sample_dataset):
-        from tse_analytics.core import messaging
-
-        settings = OutliersSettings(OutliersMode.REMOVE, 2.0)
-
-        with patch.object(messaging, "broadcast"):
-            sample_dataset.apply_outliers(settings)
-
-        assert sample_dataset.outliers_settings.mode == OutliersMode.REMOVE
-
-    def test_broadcasts_message(self, sample_dataset):
-        from tse_analytics.core import messaging
-
-        settings = OutliersSettings(OutliersMode.REMOVE, 2.0)
-
-        with patch.object(messaging, "broadcast") as mock_broadcast:
-            sample_dataset.apply_outliers(settings)
-
-        assert mock_broadcast.called
 
 
 class TestReports:

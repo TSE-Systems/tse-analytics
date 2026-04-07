@@ -190,7 +190,7 @@ class Dataset:
         name : str
             The new name for the dataset.
         """
-        self.metadata["name"] = name
+        self.name = name
 
     def extract_levels_from_property(self, property_name: str) -> dict[str, FactorLevel]:
         """

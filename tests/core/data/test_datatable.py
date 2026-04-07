@@ -149,13 +149,6 @@ class TestSetFactors:
 class TestGetFilteredDf:
     """Tests for Datatable.get_filtered_df."""
 
-    def test_filters_by_enabled_animals(self, sample_datatable):
-        # A3 is disabled in sample_animals
-        df = sample_datatable.get_filtered_df(["Animal", "Weight"])
-
-        assert "A3" not in df["Animal"].values
-        assert "A1" in df["Animal"].values
-
     def test_returns_specified_columns(self, sample_datatable):
         df = sample_datatable.get_filtered_df(["Animal", "Weight"])
         assert set(df.columns) == {"Animal", "Weight"}

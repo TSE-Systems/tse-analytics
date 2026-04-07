@@ -123,7 +123,7 @@ class DatasetService:
         """
         new_dataset = copy.deepcopy(original_dataset)
         new_dataset.id = uuid7()
-        new_dataset.metadata["name"] = new_dataset_name
+        new_dataset.name = new_dataset_name
         if new_dataset is not None:
             self.add_dataset(new_dataset)
 

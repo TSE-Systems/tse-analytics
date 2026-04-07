@@ -7,7 +7,6 @@ including fixed time intervals, light/dark cycles, and custom time phases.
 
 from datetime import time, timedelta
 from enum import StrEnum, unique
-from json import loads
 
 from pydantic import Field
 from pydantic.dataclasses import dataclass
@@ -58,17 +57,6 @@ class BinningSettings:
         default_factory=lambda: TimeCyclesBinningSettings(time(7, 0), time(19, 0))
     )
     time_phases_settings: TimePhasesBinningSettings = Field(default_factory=lambda: TimePhasesBinningSettings([]))
-
-    @staticmethod
-    def from_json_str(json_str: str):
-        json = loads(json_str)
-        return BinningSettings(
-            time_intervals_settings=TimeIntervalsBinningSettings(**json["time_intervals_settings"]),
-            time_cycles_settings=TimeCyclesBinningSettings(**json["time_cycles_settings"]),
-            time_phases_settings=TimePhasesBinningSettings([
-                TimePhase(**phase) for phase in json["time_phases_settings"]["time_phases"]
-            ]),
-        )
 
 
 @dataclass
