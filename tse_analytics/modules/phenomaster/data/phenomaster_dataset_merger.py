@@ -129,6 +129,8 @@ def _merge_continuous(
         )
         result.add_datatable(datatable)
 
+    _merge_raw_datatables(result, datasets)
+
     return result
 
 
@@ -176,7 +178,7 @@ def _merge_overlap(
 
             for extension_datatables in dataset.raw_datatables.values():
                 for datatable in extension_datatables.values():
-                    if "Animal" not in datatable.df.columns:
+                    if "Animal" in datatable.df.columns:
                         datatable.df["Animal"] = datatable.df["Animal"].astype("string")
                         datatable.df["Animal"] = datatable.df["Animal"].replace(name_map)
                         datatable.df["Animal"] = datatable.df["Animal"].astype("category")
@@ -240,7 +242,71 @@ def _merge_overlap(
         )
         result.add_datatable(datatable)
 
+    _merge_raw_datatables(result, datasets)
+
     return result
+
+
+def _merge_raw_datatables(merged_dataset: Dataset, datasets: list[Dataset]) -> None:
+    """
+    Merge raw_datatables (extension data) from source datasets into the merged dataset.
+
+    Uses intersection semantics: only extensions and datatables present in every
+    source dataset are merged. Schema-preserving — does not add a Run column or
+    reassign Timedelta/Bin.
+
+    Args:
+        merged_dataset (Dataset): The destination merged dataset.
+        datasets (list[Dataset]): Source datasets, sorted by start time.
+    """
+    first_dataset = datasets[0]
+
+    for extension_name, extension_datatables in first_dataset.raw_datatables.items():
+        # Intersection: extension must be present in every source dataset
+        if not all(extension_name in ds.raw_datatables for ds in datasets):
+            continue
+
+        for datatable_name, reference_datatable in extension_datatables.items():
+            # Intersection: datatable must be present in every source dataset's version
+            if not all(datatable_name in ds.raw_datatables[extension_name] for ds in datasets):
+                continue
+
+            dataframes = [ds.raw_datatables[extension_name][datatable_name].df for ds in datasets]
+            new_df = pd.concat(dataframes, ignore_index=True)
+
+            # Re-apply category dtype after concat (matches main-datatable handling)
+            if "Animal" in new_df.columns:
+                new_df = new_df.astype({"Animal": "string"})
+                new_df = new_df.astype({"Animal": "category"})
+
+            # Sort by the appropriate time column
+            if "DateTime" in new_df.columns:
+                sort_keys = ["DateTime"] + (["Animal"] if "Animal" in new_df.columns else [])
+                new_df.sort_values(by=sort_keys, inplace=True)
+                new_df.reset_index(drop=True, inplace=True)
+            elif "StartDateTime" in new_df.columns:
+                sort_keys = ["StartDateTime"] + (["Animal"] if "Animal" in new_df.columns else [])
+                new_df.sort_values(by=sort_keys, inplace=True)
+                new_df.reset_index(drop=True, inplace=True)
+
+            # Copy metadata from the reference version, drop the stale origin_path
+            new_metadata = {k: v for k, v in reference_datatable.metadata.items() if k != "origin_path"}
+
+            # Recompute animal_ids if present (e.g. GroupHousing) so it reflects the merged data
+            if "animal_ids" in new_metadata and "Animal" in new_df.columns:
+                animal_ids = new_df["Animal"].dropna().unique().tolist()
+                animal_ids.sort()
+                new_metadata["animal_ids"] = animal_ids
+
+            datatable = Datatable(
+                merged_dataset,
+                datatable_name,
+                f"Merged {datatable_name} datatable",
+                reference_datatable.variables,
+                new_df,
+                new_metadata,
+            )
+            merged_dataset.add_raw_datatable(extension_name, datatable)
 
 
 def _merge_metadata(
