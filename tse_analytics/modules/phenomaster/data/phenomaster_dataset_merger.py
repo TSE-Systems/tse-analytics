@@ -174,6 +174,13 @@ def _merge_overlap(
                 datatable.df["Animal"] = datatable.df["Animal"].replace(name_map)
                 datatable.df["Animal"] = datatable.df["Animal"].astype("category")
 
+            for extension_datatables in dataset.raw_datatables.values():
+                for datatable in extension_datatables.values():
+                    if "Animal" not in datatable.df.columns:
+                        datatable.df["Animal"] = datatable.df["Animal"].astype("string")
+                        datatable.df["Animal"] = datatable.df["Animal"].replace(name_map)
+                        datatable.df["Animal"] = datatable.df["Animal"].astype("category")
+
     merged_animals = _merge_animals(datasets)
     merged_metadata = _merge_metadata(merged_dataset_name, "overlap", merged_animals, datasets)
 
@@ -185,6 +192,7 @@ def _merge_overlap(
         merged_animals,
     )
 
+    # Merge main datatables
     for datatable_name in first_dataset.datatables.keys():
         dataframes = []
         for dataset in datasets:

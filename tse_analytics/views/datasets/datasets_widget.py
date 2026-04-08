@@ -132,11 +132,11 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
             message (messaging.WorkspaceChangedMessage): The workspace changed message
         """
         self.workspace_model.setupModelData(message.workspace)
-        self.treeView.expandToDepth(0)
+        self.treeView.expandToDepth(2)
 
     def _reports_changed(self, message: messaging.ReportsChangedMessage) -> None:
         self.workspace_model.update_reports(message.report)
-        self.treeView.expandToDepth(0)
+        self.treeView.expandToDepth(2)
 
     def _get_selected_tree_item(self) -> TreeItem | None:
         """

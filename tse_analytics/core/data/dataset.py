@@ -334,9 +334,9 @@ class Dataset:
         for datatable in self.datatables.values():
             datatable.exclude_time(range_start, range_end)
 
-        # for extension_datatables in self.raw_datatables.values():
-        #     for datatable in extension_datatables.values():
-        #         datatable.exclude_time(range_start, range_end)
+        for extension_datatables in self.raw_datatables.values():
+            for datatable in extension_datatables.values():
+                datatable.exclude_time(range_start, range_end)
 
     def trim_time(self, range_start: datetime, range_end: datetime) -> None:
         """
@@ -358,9 +358,9 @@ class Dataset:
         for datatable in self.datatables.values():
             datatable.trim_time(range_start, range_end)
 
-        # for extension_datatables in self.raw_datatables.values():
-        #     for datatable in extension_datatables.values():
-        #         datatable.trim_time(range_start, range_end)
+        for extension_datatables in self.raw_datatables.values():
+            for datatable in extension_datatables.values():
+                datatable.trim_time(range_start, range_end)
 
     def resample(self, resampling_interval: pd.Timedelta) -> None:
         """
@@ -429,12 +429,13 @@ class Dataset:
             raw_datatables_node = TreeItem("Raw Data")
             dataset_tree_item.add_child(raw_datatables_node)
             for extension_name, extension_datatables in self.raw_datatables.items():
-                extension_node = TreeItem(extension_name)
-                raw_datatables_node.add_child(extension_node)
-                for datatable in extension_datatables.values():
-                    raw_datatable_tree_item = DatatableTreeItem(datatable)
-                    self._add_derived_tables(raw_datatable_tree_item, datatable)
-                    extension_node.add_child(raw_datatable_tree_item)
+                if len(extension_datatables) > 0:
+                    extension_node = TreeItem(extension_name)
+                    raw_datatables_node.add_child(extension_node)
+                    for datatable in extension_datatables.values():
+                        raw_datatable_tree_item = DatatableTreeItem(datatable)
+                        self._add_derived_tables(raw_datatable_tree_item, datatable)
+                        extension_node.add_child(raw_datatable_tree_item)
 
         # Add reports nodes
         if len(self.reports) > 0:

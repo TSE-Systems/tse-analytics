@@ -45,21 +45,21 @@ class AdjustDatasetDialog(QDialog):
         self.ui.comboBoxResamplingUnit.addItems(["day", "hour", "minute"])
         self.ui.comboBoxResamplingUnit.setCurrentIndex(1)
 
-        self.ui.dateTimeEditTrimStart.setMinimumDateTime(dataset.experiment_started)
-        self.ui.dateTimeEditTrimStart.setMaximumDateTime(dataset.experiment_stopped)
-        self.ui.dateTimeEditTrimStart.setDateTime(dataset.experiment_started)
+        # self.ui.dateTimeEditTrimStart.setMinimumDateTime(dataset.experiment_started.to_pydatetime())
+        # self.ui.dateTimeEditTrimStart.setMaximumDateTime(dataset.experiment_stopped.to_pydatetime())
+        self.ui.dateTimeEditTrimStart.setDateTime(dataset.experiment_started.to_pydatetime())
 
-        self.ui.dateTimeEditTrimEnd.setMinimumDateTime(dataset.experiment_started)
-        self.ui.dateTimeEditTrimEnd.setMaximumDateTime(dataset.experiment_stopped)
-        self.ui.dateTimeEditTrimEnd.setDateTime(dataset.experiment_stopped)
+        # self.ui.dateTimeEditTrimEnd.setMinimumDateTime(dataset.experiment_started.to_pydatetime())
+        # self.ui.dateTimeEditTrimEnd.setMaximumDateTime(dataset.experiment_stopped.to_pydatetime())
+        self.ui.dateTimeEditTrimEnd.setDateTime(dataset.experiment_stopped.to_pydatetime())
 
-        self.ui.dateTimeEditExcludeStart.setMinimumDateTime(dataset.experiment_started)
-        self.ui.dateTimeEditExcludeStart.setMaximumDateTime(dataset.experiment_stopped)
-        self.ui.dateTimeEditExcludeStart.setDateTime(dataset.experiment_started)
+        # self.ui.dateTimeEditExcludeStart.setMinimumDateTime(dataset.experiment_started.to_pydatetime())
+        # self.ui.dateTimeEditExcludeStart.setMaximumDateTime(dataset.experiment_stopped.to_pydatetime())
+        self.ui.dateTimeEditExcludeStart.setDateTime(dataset.experiment_started.to_pydatetime())
 
-        self.ui.dateTimeEditExcludeEnd.setMinimumDateTime(dataset.experiment_started)
-        self.ui.dateTimeEditExcludeEnd.setMaximumDateTime(dataset.experiment_stopped)
-        self.ui.dateTimeEditExcludeEnd.setDateTime(dataset.experiment_stopped)
+        # self.ui.dateTimeEditExcludeEnd.setMinimumDateTime(dataset.experiment_started.to_pydatetime())
+        # self.ui.dateTimeEditExcludeEnd.setMaximumDateTime(dataset.experiment_stopped.to_pydatetime())
+        self.ui.dateTimeEditExcludeEnd.setDateTime(dataset.experiment_stopped.to_pydatetime())
 
         self.ui.tableWidgetAnimals.setHorizontalHeaderLabels(["Animal"])
         self.ui.tableWidgetAnimals.setRowCount(len(self.dataset.animals))
