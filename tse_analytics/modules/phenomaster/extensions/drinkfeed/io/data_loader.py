@@ -70,6 +70,14 @@ def read_drinkfeed_bin(path: Path, dataset: Dataset) -> Datatable:
     df.sort_values(by=["DateTime", "Animal"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
+    # Add Timedelta and Bin columns
+    df.insert(
+        loc=1,
+        column="Timedelta",
+        value=(df["DateTime"] - dataset.experiment_started),
+    )
+    df.insert(loc=2, column="Bin", value=(df["Timedelta"] / sample_interval).round().astype("UInt64"))
+
     raw_datatable = Datatable(
         dataset,
         DRINKFEED_BIN_TABLE,
@@ -78,7 +86,7 @@ def read_drinkfeed_bin(path: Path, dataset: Dataset) -> Datatable:
         df,
         {
             "origin_path": str(path),
-            "sampling_interval": sample_interval,
+            "sample_interval": sample_interval,
         },
     )
 
@@ -150,6 +158,13 @@ def read_drinkfeed_raw(path: Path, dataset: Dataset) -> Datatable:
             False,
         )
 
+    # Add Timedelta columns
+    df.insert(
+        loc=1,
+        column="Timedelta",
+        value=(df["DateTime"] - dataset.experiment_started),
+    )
+
     raw_datatable = Datatable(
         dataset,
         DRINKFEED_RAW_TABLE,
@@ -205,7 +220,7 @@ def import_drinkfeed_bin_csv_data(
     raw_df.drop(columns=["Date", "Time"], inplace=True)
 
     # Calculate sampling interval
-    sampling_interval = raw_df.iloc[1].at["DateTime"] - raw_df.iloc[0].at["DateTime"]
+    sample_interval = raw_df.iloc[1].at["DateTime"] - raw_df.iloc[0].at["DateTime"]
 
     # Find box numbers
     box_numbers = []
@@ -274,6 +289,14 @@ def import_drinkfeed_bin_csv_data(
     new_df = new_df.sort_values(["Box", "DateTime"])
     new_df.reset_index(drop=True, inplace=True)
 
+    # Add Timedelta and Bin columns
+    new_df.insert(
+        loc=1,
+        column="Timedelta",
+        value=(new_df["DateTime"] - dataset.experiment_started),
+    )
+    new_df.insert(loc=2, column="Bin", value=(new_df["Timedelta"] / sample_interval).round().astype("UInt64"))
+
     # convert categorical types
     new_df = new_df.astype({
         "Animal": "category",
@@ -288,7 +311,7 @@ def import_drinkfeed_bin_csv_data(
         new_df,
         {
             "origin_path": str(path),
-            "sampling_interval": sampling_interval,
+            "sample_interval": sample_interval,
         },
     )
 

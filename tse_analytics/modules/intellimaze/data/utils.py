@@ -246,7 +246,7 @@ def preprocess_main_table(dataset: Dataset) -> None:
     # experiment_stopped = dataset.experiment_stopped
     #
     # datetime_range = pd.date_range(
-    #     experiment_started.round("Min"), experiment_stopped.round("Min"), freq=sampling_interval
+    #     experiment_started.round("Min"), experiment_stopped.round("Min"), freq=sample_interval
     # )
     #
     # default_columns = ["DateTime", "Animal"]
@@ -268,7 +268,7 @@ def preprocess_main_table(dataset: Dataset) -> None:
     #         animal_data,
     #         datetime_range,
     #         experiment_started,
-    #         sampling_interval,
+    #         sample_interval,
     #         agg,
     #     )
     #     preprocessed_animal_df.append(preprocessed_df)
@@ -287,7 +287,7 @@ def preprocess_main_table(dataset: Dataset) -> None:
     # df.reset_index(drop=True, inplace=True)
     #
     # dataset.df = df
-    # dataset.sampling_interval = sampling_interval
+    # dataset.sample_interval = sample_interval
     #
     # dataset.variables = variables
     #
@@ -305,7 +305,7 @@ def _preprocess_animal(
     df: pd.DataFrame,
     datetime_range: pd.DatetimeIndex,
     experiment_started: pd.Timestamp,
-    sampling_interval: pd.Timedelta,
+    sample_interval: pd.Timedelta,
     agg: dict[str, str],
 ) -> pd.DataFrame:
     """
@@ -325,7 +325,7 @@ def _preprocess_animal(
         df (pd.DataFrame): The DataFrame containing the animal's data.
         datetime_range (pd.DatetimeIndex): The datetime range to reindex to.
         experiment_started (pd.Timestamp): The timestamp when the experiment started.
-        sampling_interval (pd.Timedelta): The sampling interval for resampling.
+        sample_interval (pd.Timedelta): The sampling interval for resampling.
         agg (dict[str, str]): Dictionary mapping column names to aggregation functions.
 
     Returns:
@@ -337,7 +337,7 @@ def _preprocess_animal(
     result["DateTime"] = result["DateTime"].dt.round("Min")
 
     # Resample data with one minute interval
-    result = result.resample(sampling_interval, on="DateTime", origin="start_day").aggregate(agg)
+    result = result.resample(sample_interval, on="DateTime", origin="start_day").aggregate(agg)
 
     result = result.reindex(datetime_range)
     # Fill missing data
@@ -347,7 +347,7 @@ def _preprocess_animal(
 
     # Add Timedelta and Bin columns
     result.insert(loc=1, column="Timedelta", value=result["DateTime"] - experiment_started)
-    result.insert(loc=2, column="Bin", value=(result["Timedelta"] / sampling_interval).round().astype("UInt64"))
+    result.insert(loc=2, column="Bin", value=(result["Timedelta"] / sample_interval).round().astype("UInt64"))
 
     # Put back animal into dataframe
     result.insert(loc=3, column="Animal", value=animal_id)

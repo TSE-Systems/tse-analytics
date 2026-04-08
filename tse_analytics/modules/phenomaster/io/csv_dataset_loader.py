@@ -28,6 +28,7 @@ from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
+from tse_analytics.modules.phenomaster.data.variables_helper import cleanup_variables
 
 Section = namedtuple("Section", ["lines", "section_start_index", "section_end_index"])
 
@@ -228,6 +229,9 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Data
         },
     )
     dataset.add_datatable(datatable)
+
+    # Clean up old variables
+    cleanup_variables(dataset)
 
     return dataset
 

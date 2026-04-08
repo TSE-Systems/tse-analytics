@@ -38,6 +38,13 @@ def read_actimot_raw(path: Path, dataset: Dataset) -> Datatable:
         df["Box"].map(box_to_animal_map),
     )
 
+    # Add Timedelta columns
+    df.insert(
+        loc=1,
+        column="Timedelta",
+        value=(df["DateTime"] - dataset.experiment_started),
+    )
+
     # Convert categorical types
     df = df.astype({
         "Animal": "category",
@@ -52,7 +59,7 @@ def read_actimot_raw(path: Path, dataset: Dataset) -> Datatable:
         df,
         {
             "origin_path": str(path),
-            "sampling_interval": sample_interval,
+            "sample_interval": sample_interval,
         },
     )
 
@@ -139,13 +146,20 @@ def import_actimot_csv_data(
     df = df.sort_values(["Box", "DateTime"])
     df.reset_index(drop=True, inplace=True)
 
+    # Add Timedelta columns
+    df.insert(
+        loc=1,
+        column="Timedelta",
+        value=(df["DateTime"] - dataset.experiment_started),
+    )
+
     # convert categorical types
     df = df.astype({
         "Animal": "category",
     })
 
     # Sampling interval
-    sampling_interval = df.iloc[1].at["DateTime"] - df.iloc[0].at["DateTime"]
+    sample_interval = df.iloc[1].at["DateTime"] - df.iloc[0].at["DateTime"]
 
     raw_datatable = Datatable(
         dataset,
@@ -155,7 +169,7 @@ def import_actimot_csv_data(
         df,
         {
             "origin_path": str(path),
-            "sampling_interval": sampling_interval,
+            "sample_interval": sample_interval,
         },
     )
 

@@ -81,8 +81,8 @@ class AdjustDatasetDialog(QDialog):
     def _resample(self) -> None:
         value = self.ui.spinBoxResamplingValue.value()
         unit = self.ui.comboBoxResamplingUnit.currentText()
-        resampling_interval = pd.Timedelta(f"{value}{unit}")
-        self.dataset.resample(resampling_interval)
+        resample_interval = pd.Timedelta(f"{value}{unit}")
+        self.dataset.resample(resample_interval)
 
     def _trim_time(self) -> None:
         """

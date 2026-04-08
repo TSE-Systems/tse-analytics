@@ -12,6 +12,7 @@ from tse_analytics.core.services.dataset_service import DatasetService
 from tse_analytics.core.services.selection_service import SelectionService
 from tse_analytics.core.services.workspace_service import WorkspaceService
 from tse_analytics.core.settings_manager import get_csv_import_settings
+from tse_analytics.modules.phenomaster.data.variables_helper import cleanup_variables
 from tse_analytics.modules.phenomaster.extensions.actimot.io.data_loader import import_actimot_csv_data
 from tse_analytics.modules.phenomaster.extensions.calo.io.data_loader import import_calo_csv_data
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.io.data_loader import import_drinkfeed_bin_csv_data
@@ -80,6 +81,8 @@ class ImportService:
             datatable = import_calo_csv_data(path, dataset, get_csv_import_settings())
             if datatable is not None:
                 dataset.add_raw_datatable("Calo", datatable)
+                # Clean up old variables
+                cleanup_variables(dataset)
                 ws = self._workspace.get_workspace()
                 messaging.broadcast(messaging.WorkspaceChangedMessage(self, ws))
 

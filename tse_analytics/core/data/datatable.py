@@ -79,12 +79,12 @@ class Datatable:
         return self.metadata.get("extension_name", None)
 
     @property
-    def sampling_interval(self) -> pd.Timedelta | None:
-        return self.metadata.get("sampling_interval", None)
+    def sample_interval(self) -> pd.Timedelta | None:
+        return self.metadata.get("sample_interval", None)
 
     @property
     def is_regular_timeseries(self) -> bool:
-        return self.sampling_interval is not None
+        return self.sample_interval is not None
 
     @property
     def start_timestamp(self) -> pd.Timestamp:
@@ -245,7 +245,7 @@ class Datatable:
         """
         self.df = self.df[(self.df["DateTime"] < range_start) | (self.df["DateTime"] > range_end)]
         merging_mode = self.get_merging_mode()
-        self.df = reassign_df_timedelta_and_bin(self.df, self.sampling_interval, merging_mode)
+        self.df = reassign_df_timedelta_and_bin(self.df, self.sample_interval, merging_mode)
 
     def trim_time(self, range_start: datetime, range_end: datetime) -> None:
         """
@@ -260,9 +260,9 @@ class Datatable:
         """
         self.df = self.df[(self.df["DateTime"] >= range_start) & (self.df["DateTime"] <= range_end)]
         merging_mode = self.get_merging_mode()
-        self.df = reassign_df_timedelta_and_bin(self.df, self.sampling_interval, merging_mode)
+        self.df = reassign_df_timedelta_and_bin(self.df, self.sample_interval, merging_mode)
 
-    def resample(self, resampling_interval: pd.Timedelta) -> None:
+    def resample(self, resample_interval: pd.Timedelta) -> None:
         """
         Resample the datatable to a new time interval.
 
@@ -271,7 +271,7 @@ class Datatable:
 
         Parameters
         ----------
-        resampling_interval : pd.Timedelta
+        resample_interval : pd.Timedelta
             The time interval to resample the data to.
         """
         agg = {
@@ -287,14 +287,14 @@ class Datatable:
                     agg[column] = self.variables[column].aggregation
 
         result = self.df.groupby(["Animal"], dropna=False, observed=False)
-        result = result.resample(resampling_interval, on="Timedelta", origin=self.dataset.experiment_started).agg(agg)
+        result = result.resample(resample_interval, on="Timedelta", origin=self.dataset.experiment_started).agg(agg)
         result.reset_index(inplace=True, drop=False)
 
         # Drop empty entries
         result.dropna(subset=["DateTime"], inplace=True)
 
         # Assign new bins numbers
-        result["Bin"] = (result["Timedelta"] / resampling_interval).round().astype("UInt64")
+        result["Bin"] = (result["Timedelta"] / resample_interval).round().astype("UInt64")
 
         result.sort_values(by=["Timedelta", "Animal"], inplace=True)
         result.reset_index(inplace=True, drop=True)
@@ -304,7 +304,7 @@ class Datatable:
                 "Run": "UInt8",
             })
 
-        self.metadata["sampling_interval"] = resampling_interval
+        self.metadata["sample_interval"] = resample_interval
         self.df = result
 
     def set_factors(self, factors: dict[str, Factor], old_factors: dict[str, Factor] | None = None) -> None:

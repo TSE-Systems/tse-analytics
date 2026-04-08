@@ -362,7 +362,7 @@ class Dataset:
             for datatable in extension_datatables.values():
                 datatable.trim_time(range_start, range_end)
 
-    def resample(self, resampling_interval: pd.Timedelta) -> None:
+    def resample(self, resample_interval: pd.Timedelta) -> None:
         """
         Resample all datatables in the dataset.
 
@@ -371,11 +371,11 @@ class Dataset:
 
         Parameters
         ----------
-        resampling_interval : pd.Timedelta
+        resample_interval : pd.Timedelta
             The time interval to resample the data to.
         """
         for datatable in self.datatables.values():
-            datatable.resample(resampling_interval)
+            datatable.resample(resample_interval)
 
     def set_factors(self, factors: dict[str, Factor], old_factors: dict[str, Factor] | None = None) -> None:
         """

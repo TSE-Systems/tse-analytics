@@ -68,15 +68,11 @@ def read_calo_bin(path: Path, dataset: Dataset) -> Datatable:
     previous_box = None
     bins = []
     offsets = []
-    timedeltas = []
     time_gap = timedelta(seconds=10)
     offset = 0
     for row in df.itertuples():
         timestamp = row.DateTime
         box = row.Box
-
-        if box != previous_box:
-            start_timestamp = timestamp
 
         if previous_timestamp is None:
             bins = [0]
@@ -91,7 +87,6 @@ def read_calo_bin(path: Path, dataset: Dataset) -> Datatable:
                 bin_number = 0
 
             bins.append(bin_number)
-            start_timestamp = timestamp
         else:
             bin_number = bins[-1]
 
@@ -105,15 +100,17 @@ def read_calo_bin(path: Path, dataset: Dataset) -> Datatable:
         if box != previous_box:
             previous_box = box
 
-        td = timestamp - start_timestamp
-        timedeltas.append(td)
-
         # offset = td.total_seconds()
         offsets.append(offset)
         offset = offset + 1
         previous_timestamp = timestamp
 
-    df.insert(1, "Timedelta", timedeltas)
+    # Add Timedelta columns
+    df.insert(
+        loc=1,
+        column="Timedelta",
+        value=(df["DateTime"] - dataset.experiment_started),
+    )
     df.insert(2, "Bin", bins)
     df.insert(3, "Offset", offsets)
 
@@ -125,7 +122,7 @@ def read_calo_bin(path: Path, dataset: Dataset) -> Datatable:
         df,
         {
             "origin_path": str(path),
-            "sampling_interval": sample_interval,
+            "sample_interval": sample_interval,
             "ref_box_mapping": {},
         },
     )
@@ -203,7 +200,7 @@ def import_calo_csv_data(
             variables[variable.name] = variable
 
     # Calculate sampling interval
-    sampling_interval = df.iloc[1].at["DateTime"] - df.iloc[0].at["DateTime"]
+    sample_interval = df.iloc[1].at["DateTime"] - df.iloc[0].at["DateTime"]
 
     # Insert Animal column
     box_to_animal_map = {animal.properties["Box"]: animal.id for animal in dataset.animals.values()}
@@ -223,15 +220,11 @@ def import_calo_csv_data(
     previous_box = None
     bins = []
     offsets = []
-    timedeltas = []
     time_gap = timedelta(seconds=10)
     offset = 0
     for row in df.itertuples():
         timestamp = row.DateTime
         box = row.Box
-
-        if box != previous_box:
-            start_timestamp = timestamp
 
         if previous_timestamp is None:
             bins = [0]
@@ -246,7 +239,6 @@ def import_calo_csv_data(
                 bin_number = 0
 
             bins.append(bin_number)
-            start_timestamp = timestamp
         else:
             bin_number = bins[-1]
 
@@ -260,15 +252,17 @@ def import_calo_csv_data(
         if box != previous_box:
             previous_box = box
 
-        td = timestamp - start_timestamp
-        timedeltas.append(td)
-
         # offset = td.total_seconds()
         offsets.append(offset)
         offset = offset + 1
         previous_timestamp = timestamp
 
-    df.insert(1, "Timedelta", timedeltas)
+    # Add Timedelta columns
+    df.insert(
+        loc=1,
+        column="Timedelta",
+        value=(df["DateTime"] - dataset.experiment_started),
+    )
     df.insert(2, "Bin", bins)
     df.insert(3, "Offset", offsets)
 
@@ -280,7 +274,8 @@ def import_calo_csv_data(
         df,
         {
             "origin_path": str(path),
-            "sampling_interval": sampling_interval,
+            "sample_interval": sample_interval,
+            "ref_box_mapping": {},
         },
     )
 

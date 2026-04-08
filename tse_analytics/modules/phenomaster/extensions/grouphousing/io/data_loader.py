@@ -70,6 +70,13 @@ def read_grouphousing(path: Path, dataset: Dataset) -> Datatable:
     df.sort_values(by=["StartDateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
+    # Add Timedelta columns
+    df.insert(
+        loc=1,
+        column="Timedelta",
+        value=(df["StartDateTime"] - dataset.experiment_started),
+    )
+
     animal_ids = df["Animal"].unique().tolist()
     animal_ids.sort()
 
@@ -154,6 +161,13 @@ def import_grouphousing_csv_data(
 
     df.sort_values(by=["StartDateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
+
+    # Add Timedelta columns
+    df.insert(
+        loc=1,
+        column="Timedelta",
+        value=(df["StartDateTime"] - dataset.experiment_started),
+    )
 
     animal_ids = df["Animal"].unique().tolist()
     animal_ids.sort()

@@ -252,13 +252,26 @@ def _merge_raw_datatables(merged_dataset: Dataset, datasets: list[Dataset]) -> N
     Merge raw_datatables (extension data) from source datasets into the merged dataset.
 
     Uses intersection semantics: only extensions and datatables present in every
-    source dataset are merged. Schema-preserving — does not add a Run column or
-    reassign Timedelta/Bin.
+    source dataset are merged. Before merging, assigns a `Timedelta` column (relative
+    to each source dataset's experiment start) to every raw datatable so the merged
+    result carries a consistent time-since-start column.
 
     Args:
         merged_dataset (Dataset): The destination merged dataset.
         datasets (list[Dataset]): Source datasets, sorted by start time.
     """
+    # Assign Timedelta column (since each source dataset's experiment start) to all
+    # raw datatables before merging them.
+    for ds in datasets:
+        start_date_time = ds.experiment_started
+        for extension_datatables in ds.raw_datatables.values():
+            for datatable in extension_datatables.values():
+                df = datatable.df
+                if "DateTime" in df.columns:
+                    df["Timedelta"] = df["DateTime"] - start_date_time
+                elif "StartDateTime" in df.columns:
+                    df["Timedelta"] = df["StartDateTime"] - start_date_time
+
     first_dataset = datasets[0]
 
     for extension_name, extension_datatables in first_dataset.raw_datatables.items():

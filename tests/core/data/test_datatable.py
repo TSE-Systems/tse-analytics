@@ -17,7 +17,7 @@ class TestDatatableInit:
         assert sample_datatable.description == "Main datatable"
 
     def test_stores_sampling_interval(self, sample_datatable):
-        assert sample_datatable.sampling_interval == pd.Timedelta("1h")
+        assert sample_datatable.sample_interval == pd.Timedelta("1h")
 
 
 class TestDatatableProperties:

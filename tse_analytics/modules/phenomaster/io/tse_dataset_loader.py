@@ -13,6 +13,7 @@ from tse_analytics.core.data.shared import Aggregation, Animal, Variable
 from tse_analytics.core.utils.data import sanitize_dtypes
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
+from tse_analytics.modules.phenomaster.data.variables_helper import cleanup_variables
 from tse_analytics.modules.phenomaster.extensions.actimot.io.data_loader import read_actimot_raw
 from tse_analytics.modules.phenomaster.extensions.calo.io.data_loader import read_calo_bin
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.io.data_loader import read_drinkfeed_bin, read_drinkfeed_raw
@@ -55,7 +56,7 @@ def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportS
         animals=animals,
     )
 
-    main_table_df, main_table_vars, main_table_sampling_interval = _read_main_table(path, dataset)
+    main_table_df, main_table_vars, main_table_sample_interval = _read_main_table(path, dataset)
     # Assign predefined variables properties
     main_table_vars = assign_predefined_values(main_table_vars)
 
@@ -67,7 +68,7 @@ def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportS
         main_table_df,
         {
             "origin": "Main",
-            "samping_interval": main_table_sampling_interval,
+            "sample_interval": main_table_sample_interval,
         },
     )
     dataset.add_datatable(datatable)
@@ -101,6 +102,9 @@ def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportS
             datatable = read_grouphousing(path, dataset)
             dataset.add_raw_datatable("GroupHousing", datatable)
 
+    # Clean up old variables
+    cleanup_variables(dataset)
+
     logger.info(f"Import complete in {(timeit.default_timer() - tic):.3f} sec: {path}")
 
     return dataset
@@ -128,15 +132,10 @@ def _read_metadata(path: Path) -> dict:
     metadata["experiment"]["runtime"] = str(pd.to_timedelta(metadata["experiment"]["runtime"], unit="ms"))
     metadata["experiment"]["cycle_interval"] = str(pd.to_timedelta(metadata["experiment"]["cycle_interval"], unit="ms"))
 
-    if tse_import_settings.MAIN_TABLE in metadata["tables"]:
-        metadata["tables"][tse_import_settings.MAIN_TABLE]["sample_interval"] = str(
-            pd.to_timedelta(metadata["tables"][tse_import_settings.MAIN_TABLE]["sample_interval"], unit="ms")
-        )
-
-    if tse_import_settings.ACTIMOT_RAW_TABLE in metadata["tables"]:
-        metadata["tables"][tse_import_settings.ACTIMOT_RAW_TABLE]["sample_interval"] = str(
-            pd.to_timedelta(metadata["tables"][tse_import_settings.ACTIMOT_RAW_TABLE]["sample_interval"], unit="ms")
-        )
+    # Convert sample intervals from [ms] to Timedeltas
+    for table_meta in metadata["tables"].values():
+        if "sample_interval" in table_meta:
+            table_meta["sample_interval"] = str(pd.to_timedelta(table_meta["sample_interval"], unit="ms"))
 
     return metadata
 
@@ -221,11 +220,10 @@ def _read_main_table(
     df.reset_index(drop=True, inplace=True)
 
     # Add Timedelta and Bin columns
-    start_date_time = dataset.experiment_started
     df.insert(
         loc=1,
         column="Timedelta",
-        value=(df["DateTime"] - start_date_time),
+        value=(df["DateTime"] - dataset.experiment_started),
     )
     df.insert(loc=2, column="Bin", value=(df["Timedelta"] / sample_interval).round().astype("UInt64"))
 

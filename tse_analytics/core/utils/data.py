@@ -111,7 +111,7 @@ def rename_animal_df(df: pd.DataFrame, old_id: str, animal: Animal) -> pd.DataFr
 
 
 def reassign_df_timedelta_and_bin(
-    df: pd.DataFrame, sampling_interval: pd.Timedelta, merging_mode: str | None
+    df: pd.DataFrame, sample_interval: pd.Timedelta, merging_mode: str | None
 ) -> pd.DataFrame:
     """
     Reassign timedelta and bin values in a DataFrame.
@@ -123,7 +123,7 @@ def reassign_df_timedelta_and_bin(
     ----------
     df : pd.DataFrame
         The DataFrame to process.
-    sampling_interval : pd.Timedelta or None
+    sample_interval : pd.Timedelta or None
         The sampling interval for bin calculation.
     merging_mode : str or None
         The merging mode, which affects how timedeltas are calculated.
@@ -149,8 +149,8 @@ def reassign_df_timedelta_and_bin(
         df["Timedelta"] = df["DateTime"] - start_date_time
 
     # Reassign bins numbers
-    if sampling_interval is not None:
-        df["Bin"] = (df["Timedelta"] / sampling_interval).round().astype("UInt64")
+    if sample_interval is not None:
+        df["Bin"] = (df["Timedelta"] / sample_interval).round().astype("UInt64")
     return df
 
 
