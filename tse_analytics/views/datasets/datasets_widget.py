@@ -415,6 +415,7 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
 
                 if item.datatable.extension_name and item.name in EXTENSIONS_REGISTRY:
                     widget = EXTENSIONS_REGISTRY[item.name]["widget"](item.datatable, self)
+                    widget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
                     LayoutManager.add_widget_to_central_area(
                         manager.get_selected_dataset(),
                         widget,

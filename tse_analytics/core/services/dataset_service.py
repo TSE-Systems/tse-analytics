@@ -15,7 +15,7 @@ from tse_analytics.core.data.report import Report
 from tse_analytics.core.services.selection_service import SelectionService
 from tse_analytics.core.services.workspace_service import WorkspaceService
 from tse_analytics.modules.intellicage.data import intellicage_dataset_merger
-from tse_analytics.modules.phenomaster.data import phenomaster_dataset_merger
+from tse_analytics.modules.phenomaster.data import processor
 
 
 class DatasetService:
@@ -95,7 +95,7 @@ class DatasetService:
         first_dataset = datasets[0]
         merged_dataset = None
         if first_dataset.dataset_type == "PhenoMaster":
-            merged_dataset = phenomaster_dataset_merger.merge_datasets(
+            merged_dataset = processor.merge_datasets(
                 new_dataset_name,
                 datasets,
                 single_run,

@@ -3,6 +3,7 @@ import pandas as pd
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Animal
+from tse_analytics.globals import TIME_RESOLUTION_UNIT
 
 
 def get_tag_to_name_map(animals: dict[str, Animal]) -> dict[str, str]:
@@ -96,8 +97,7 @@ def get_combined_variables_table(
     result.reset_index(drop=True, inplace=True)
 
     # # Add Timedelta column
-    # experiment_started = extension_data.dataset.experiment_started
-    # result.insert(loc=1, column="Timedelta", value=result["DateTime"] - experiment_started)
+    # result.insert(loc=1, column="Timedelta", value=(df["DateTime"] - extension_data.dataset.experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT))
 
     return result
 
@@ -336,7 +336,7 @@ def _preprocess_animal(
     # Decrease time resolution up to a minute
     result["DateTime"] = result["DateTime"].dt.round("Min")
 
-    # Resample data with one minute interval
+    # Resample data
     result = result.resample(sample_interval, on="DateTime", origin="start_day").aggregate(agg)
 
     result = result.reindex(datetime_range)
@@ -346,7 +346,11 @@ def _preprocess_animal(
     result.reset_index(drop=False, inplace=True, names=["DateTime"])
 
     # Add Timedelta and Bin columns
-    result.insert(loc=1, column="Timedelta", value=result["DateTime"] - experiment_started)
+    result.insert(
+        loc=1,
+        column="Timedelta",
+        value=(result["DateTime"] - experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT),
+    )
     result.insert(loc=2, column="Bin", value=(result["Timedelta"] / sample_interval).round().astype("UInt64"))
 
     # Put back animal into dataframe

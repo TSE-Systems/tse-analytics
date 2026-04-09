@@ -74,7 +74,7 @@ def read_drinkfeed_bin(path: Path, dataset: Dataset) -> Datatable:
     df.insert(
         loc=1,
         column="Timedelta",
-        value=(df["DateTime"] - dataset.experiment_started),
+        value=(df["DateTime"] - dataset.experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
     df.insert(loc=2, column="Bin", value=(df["Timedelta"] / sample_interval).round().astype("UInt64"))
 
@@ -162,7 +162,7 @@ def read_drinkfeed_raw(path: Path, dataset: Dataset) -> Datatable:
     df.insert(
         loc=1,
         column="Timedelta",
-        value=(df["DateTime"] - dataset.experiment_started),
+        value=(df["DateTime"] - dataset.experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
 
     raw_datatable = Datatable(
@@ -293,7 +293,7 @@ def import_drinkfeed_bin_csv_data(
     new_df.insert(
         loc=1,
         column="Timedelta",
-        value=(new_df["DateTime"] - dataset.experiment_started),
+        value=(new_df["DateTime"] - dataset.experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
     new_df.insert(loc=2, column="Bin", value=(new_df["Timedelta"] / sample_interval).round().astype("UInt64"))
 

@@ -109,7 +109,7 @@ def read_calo_bin(path: Path, dataset: Dataset) -> Datatable:
     df.insert(
         loc=1,
         column="Timedelta",
-        value=(df["DateTime"] - dataset.experiment_started),
+        value=(df["DateTime"] - dataset.experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
     df.insert(2, "Bin", bins)
     df.insert(3, "Offset", offsets)
@@ -261,7 +261,7 @@ def import_calo_csv_data(
     df.insert(
         loc=1,
         column="Timedelta",
-        value=(df["DateTime"] - dataset.experiment_started),
+        value=(df["DateTime"] - dataset.experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
     df.insert(2, "Bin", bins)
     df.insert(3, "Offset", offsets)

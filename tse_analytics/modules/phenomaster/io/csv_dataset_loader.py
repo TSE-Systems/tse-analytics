@@ -171,7 +171,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Data
     df.insert(
         loc=1,
         column="Timedelta",
-        value=(df["DateTime"] - start_date_time),
+        value=(df["DateTime"] - start_date_time).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
     df.insert(loc=2, column="Bin", value=(df["Timedelta"] / timedelta).round().astype("UInt64"))
 

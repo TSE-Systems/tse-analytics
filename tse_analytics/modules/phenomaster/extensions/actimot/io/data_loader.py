@@ -42,7 +42,7 @@ def read_actimot_raw(path: Path, dataset: Dataset) -> Datatable:
     df.insert(
         loc=1,
         column="Timedelta",
-        value=(df["DateTime"] - dataset.experiment_started),
+        value=(df["DateTime"] - dataset.experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
 
     # Convert categorical types
@@ -150,7 +150,7 @@ def import_actimot_csv_data(
     df.insert(
         loc=1,
         column="Timedelta",
-        value=(df["DateTime"] - dataset.experiment_started),
+        value=(df["DateTime"] - dataset.experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
 
     # convert categorical types

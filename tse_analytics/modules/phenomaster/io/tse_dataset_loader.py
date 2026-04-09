@@ -223,7 +223,7 @@ def _read_main_table(
     df.insert(
         loc=1,
         column="Timedelta",
-        value=(df["DateTime"] - dataset.experiment_started),
+        value=(df["DateTime"] - dataset.experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
     df.insert(loc=2, column="Bin", value=(df["Timedelta"] / sample_interval).round().astype("UInt64"))
 

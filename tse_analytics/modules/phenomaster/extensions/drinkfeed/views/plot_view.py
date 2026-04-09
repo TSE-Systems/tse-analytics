@@ -67,18 +67,21 @@ class PlotView(pg.GraphicsLayoutWidget):
         if self._df is None or self._df.empty or self._variable == "":
             return
 
-        variable_df = self._df[self._df["Sensor"] == self._variable]
-        if variable_df.empty:
+        df = self._df[self._df["Sensor"] == self._variable]
+        if df.empty:
             return
 
-        animal_ids = variable_df["Animal"].unique().tolist()
+        # Drop rows with NaN values
+        df = df.dropna()
+
+        animal_ids = df["Animal"].unique().tolist()
         for i, animal_id in enumerate(animal_ids):
-            filtered_data = variable_df[variable_df["Animal"] == animal_id]
+            filtered_data = df[df["Animal"] == animal_id]
 
             x = filtered_data["DateTime"].dt.as_unit("us")
             x = x.astype("int64") // 10**6
             x = x.to_numpy()
-            y = filtered_data["Value"].to_numpy()
+            y = filtered_data["Value"].to_numpy(dtype="float64")
 
             pen = mkPen(color=(i, len(animal_ids)), width=1)
             # p1d = self.p1.plot(x, y, symbol='o', symbolSize=2, symbolPen=pen, pen=pen)

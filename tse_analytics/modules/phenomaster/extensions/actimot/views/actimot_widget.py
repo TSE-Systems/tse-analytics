@@ -27,7 +27,7 @@ from tse_analytics.toolbox.data_table.data_table_widget import DataTableWidget
 
 
 class ActimotWidget(QWidget):
-    def __init__(self, actimot_data: Datatable, parent: QWidget):
+    def __init__(self, datatable: Datatable, parent: QWidget):
         super().__init__(parent)
 
         self.ui = Ui_ActimotWidget()
@@ -45,7 +45,7 @@ class ActimotWidget(QWidget):
 
         settings = QSettings()
 
-        self.actimot_data = actimot_data
+        self.datatable = datatable
         self.df: pd.DataFrame | None = None
         self.trj_df: traja.TrajaDataFrame | None = None
         self.toast = None
@@ -62,7 +62,7 @@ class ActimotWidget(QWidget):
 
         self.ui.verticalLayout.insertWidget(0, toolbar)
 
-        self.table_view = DataTableWidget(actimot_data, "ActiMot Events")
+        self.table_view = DataTableWidget(datatable, "ActiMot Events")
         self.ui.tabWidget.addTab(self.table_view, "Events")
 
         self.frames_widget = FramesWidget(self)
@@ -83,13 +83,13 @@ class ActimotWidget(QWidget):
         self.settings_widget = SettingsWidget(self)
         try:
             actimot_settings = settings.value("ActimotSettings", ActimotSettings.get_default())
-            self.settings_widget.set_data(self.actimot_data.dataset, actimot_settings)
+            self.settings_widget.set_data(self.datatable.dataset, actimot_settings)
         except Exception:
             actimot_settings = ActimotSettings.get_default()
-            self.settings_widget.set_data(self.actimot_data.dataset, actimot_settings)
+            self.settings_widget.set_data(self.datatable.dataset, actimot_settings)
 
         self.box_selector = BoxSelector(self._select_item, self.settings_widget, self)
-        self.box_selector.set_data(actimot_data.dataset)
+        self.box_selector.set_data(datatable.dataset)
 
         self.ui.toolBox.removeItem(0)
         self.ui.toolBox.addItem(self.box_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Boxes")
@@ -107,8 +107,8 @@ class ActimotWidget(QWidget):
     def _select_item(self, selected_item: ActimotAnimalItem) -> None:
         self.trj_df = None
 
-        filter_mask = self.actimot_data.df["Box"] == selected_item.box
-        self.df = self.actimot_data.df[filter_mask]
+        filter_mask = self.datatable.df["Box"] == selected_item.box
+        self.df = self.datatable.df[filter_mask]
 
         self._update_tabs()
 
@@ -162,7 +162,7 @@ class ActimotWidget(QWidget):
         df, trj_df, elapsed_time = result
 
         # Add custom variables
-        self.actimot_data.variables["x"] = Variable(
+        self.datatable.variables["x"] = Variable(
             "x",
             "cm",
             "Centroid X",
@@ -171,7 +171,7 @@ class ActimotWidget(QWidget):
             False,
         )
 
-        self.actimot_data.variables["y"] = Variable(
+        self.datatable.variables["y"] = Variable(
             "y",
             "cm",
             "Centroid Y",
@@ -180,7 +180,7 @@ class ActimotWidget(QWidget):
             False,
         )
 
-        self.actimot_data.variables["displacement"] = Variable(
+        self.datatable.variables["displacement"] = Variable(
             "displacement",
             "cm",
             "Displacement",
@@ -189,7 +189,7 @@ class ActimotWidget(QWidget):
             False,
         )
 
-        self.actimot_data.variables["speed"] = Variable(
+        self.datatable.variables["speed"] = Variable(
             "speed",
             "cm/s",
             "Speed",
@@ -198,7 +198,7 @@ class ActimotWidget(QWidget):
             False,
         )
 
-        self.actimot_data.variables["acceleration"] = Variable(
+        self.datatable.variables["acceleration"] = Variable(
             "acceleration",
             "cm/s²",
             "Acceleration",
@@ -209,7 +209,7 @@ class ActimotWidget(QWidget):
 
         # self.table_view.set_filter_mask(None)
 
-        self.plot_widget.set_variables(self.actimot_data.variables)
+        self.plot_widget.set_variables(self.datatable.variables)
         self.plot_widget.set_data(df)
 
         self.trajectory_widget.set_data(trj_df)

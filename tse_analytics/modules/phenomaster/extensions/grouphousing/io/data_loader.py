@@ -74,7 +74,7 @@ def read_grouphousing(path: Path, dataset: Dataset) -> Datatable:
     df.insert(
         loc=1,
         column="Timedelta",
-        value=(df["StartDateTime"] - dataset.experiment_started),
+        value=(df["StartDateTime"] - dataset.experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
 
     animal_ids = df["Animal"].unique().tolist()
@@ -166,7 +166,7 @@ def import_grouphousing_csv_data(
     df.insert(
         loc=1,
         column="Timedelta",
-        value=(df["StartDateTime"] - dataset.experiment_started),
+        value=(df["StartDateTime"] - dataset.experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
 
     animal_ids = df["Animal"].unique().tolist()
