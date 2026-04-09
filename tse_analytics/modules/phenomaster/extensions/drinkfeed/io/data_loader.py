@@ -27,7 +27,7 @@ def read_drinkfeed_bin(path: Path, dataset: Dataset) -> Datatable:
             item["unit"],
             item["description"],
             item["type"],
-            Aggregation.MEAN,
+            Aggregation.MEAN if "Weight" in item["id"] else Aggregation.SUM,
             False,
         )
         if variable.name not in skipped_variables:
@@ -241,19 +241,19 @@ def import_drinkfeed_bin_csv_data(
     # Build new dataframe
     variables: dict[str, Variable] = {}
     if drink1_present:
-        variables["Drink1"] = Variable("Drink1", "[ml]", "Drink1 sensor", "Float64", Aggregation.MEAN, False)
+        variables["Drink1"] = Variable("Drink1", "[ml]", "Drink1 sensor", "Float64", Aggregation.SUM, False)
     if feed1_present:
-        variables["Feed1"] = Variable("Feed1", "[g]", "Feed1 sensor", "Float64", Aggregation.MEAN, False)
+        variables["Feed1"] = Variable("Feed1", "[g]", "Feed1 sensor", "Float64", Aggregation.SUM, False)
     if drink2_present:
-        variables["Drink2"] = Variable("Drink2", "[ml]", "Drink2 sensor", "Float64", Aggregation.MEAN, False)
+        variables["Drink2"] = Variable("Drink2", "[ml]", "Drink2 sensor", "Float64", Aggregation.SUM, False)
     if feed2_present:
-        variables["Feed2"] = Variable("Feed2", "[g]", "Feed2 sensor", "Float64", Aggregation.MEAN, False)
+        variables["Feed2"] = Variable("Feed2", "[g]", "Feed2 sensor", "Float64", Aggregation.SUM, False)
     if weight_present:
         variables["Weight"] = Variable("Weight", "[g]", "Animal weight", "Float64", Aggregation.MEAN, False)
     if drink_present:
-        variables["Drink"] = Variable("Drink", "[ml]", "Drink sensor", "Float64", Aggregation.MEAN, False)
+        variables["Drink"] = Variable("Drink", "[ml]", "Drink sensor", "Float64", Aggregation.SUM, False)
     if feed_present:
-        variables["Feed"] = Variable("Feed", "[g]", "Feed sensor", "Float64", Aggregation.MEAN, False)
+        variables["Feed"] = Variable("Feed", "[g]", "Feed sensor", "Float64", Aggregation.SUM, False)
 
     box_to_animal_map = {}
     for animal in dataset.animals.values():

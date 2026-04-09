@@ -16,7 +16,7 @@ def group_by_columns(
     variables: dict[str, Variable],
     group_settings: GroupingSettings,
 ) -> pd.DataFrame:
-    if group_settings.mode == GroupingMode.ANIMAL:
+    if group_settings.mode == GroupingMode.ANIMAL or "Bin" not in df.columns:
         # No grouping needed
         return df
 

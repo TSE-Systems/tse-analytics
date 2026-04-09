@@ -39,12 +39,12 @@ class IntervalsPlotWidget(QWidget):
         toolbar.addWidget(plot_toolbar)
 
         self.df: pd.DataFrame | None = None
-        self.drinkfeed_data: Datatable | None = None
+        self.datatable: Datatable | None = None
 
-    def set_data(self, df: pd.DataFrame, drinkfeed_data: Datatable) -> None:
+    def set_data(self, df: pd.DataFrame, datatable: Datatable) -> None:
         self.df = df
-        self.drinkfeed_data = drinkfeed_data
-        self.variableSelector.set_data(drinkfeed_data.variables)
+        self.datatable = datatable
+        self.variableSelector.set_data(datatable.variables)
         self._update_plot()
 
     def _variable_changed(self, variable: str):
@@ -60,7 +60,7 @@ class IntervalsPlotWidget(QWidget):
 
         unit = "g" if "Feed" in selected_variable else "ml"
 
-        color = color_manager.get_animal_to_color_dict(self.drinkfeed_data.dataset.animals)
+        color = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
 
         self.canvas.clear(False)
         (

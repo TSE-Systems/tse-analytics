@@ -158,6 +158,11 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
         messaging.subscribe(self, messaging.OutliersChangedMessage, self._on_outliers_changed)
 
+    def set_datatable(self, datatable: Datatable) -> None:
+        self.datatable = datatable
+        self.variables_widget.set_data(datatable, self._settings.selected_variables)
+        self.refresh_data()
+
     def set_filter_mask(self, filter_mask: pd.Series | None) -> None:
         self.filter_mask = filter_mask
         self.refresh_data()

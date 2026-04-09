@@ -3,20 +3,16 @@ import pandas as pd
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.drinkfeed_settings import DrinkFeedSettings
 
-default_columns = ["DateTime", "Animal", "Box"]
-
 
 def process_drinkfeed_intervals(
-    drinkfeed_data: Datatable,
-    long_df: pd.DataFrame,
+    datatable: Datatable,
     settings: DrinkFeedSettings,
     diets_dict: dict[int, float],
 ):
     # TODO: drop unnecessary rows
     # long_df = long_df.loc[~(long_df["Value"] == 0)]
 
-    group_by = ["Animal", "Sensor"]
-    grouped = long_df.groupby(group_by, dropna=False, observed=False)
+    grouped = datatable.df.groupby(["Animal"], dropna=False, observed=False)
 
     timedelta = pd.Timedelta(
         hours=settings.fixed_interval.hour,
@@ -24,29 +20,17 @@ def process_drinkfeed_intervals(
         seconds=settings.fixed_interval.second,
     )
 
+    agg = {}
+    for variable in datatable.variables.values():
+        agg[variable.name] = variable.aggregation
+
     intervals_df = grouped.resample(
         timedelta,
-        on="DateTime",
-        origin=drinkfeed_data.dataset.experiment_started,
-    ).aggregate({
-        "Value": "sum",
-    })
+        on="Timedelta",
+        origin=datatable.dataset.experiment_started,
+    ).aggregate(agg)
 
-    intervals_df.sort_values(by=["DateTime", "Animal"], inplace=True)
-    intervals_df.reset_index(inplace=True)
-
-    sensors = intervals_df["Sensor"].unique().tolist()
-
-    intervals_df = intervals_df.pivot(index=["Animal", "DateTime"], columns="Sensor", values="Value")
-    intervals_df.reset_index(inplace=True)
-
-    # Calculate time delta
-    first_timestamp = intervals_df["DateTime"].min()
-    if first_timestamp > drinkfeed_data.dataset.experiment_started:
-        first_timestamp = drinkfeed_data.dataset.experiment_started
-    intervals_df.insert(
-        intervals_df.columns.get_loc("DateTime") + 1, "Timedelta", intervals_df["DateTime"] - first_timestamp
-    )
+    intervals_df = intervals_df.sort_values(by=["Timedelta", "Animal"]).reset_index()
 
     # Insert Bin column
     intervals_df.insert(
@@ -56,13 +40,12 @@ def process_drinkfeed_intervals(
     )
 
     # Add caloric value column
-    for sensor in sensors:
-        if "Feed" in sensor:
-            _add_caloric_column(intervals_df, sensor, diets_dict)
+    for variable in datatable.variables.values():
+        if "Feed" in variable.name:
+            _add_caloric_column(intervals_df, variable.name, diets_dict)
 
-    # Sort by DateTime column
-    intervals_df.sort_values(by=["DateTime", "Animal"], inplace=True)
-    intervals_df.reset_index(drop=True, inplace=True)
+    # Sort by Timedelta column
+    # intervals_df = intervals_df.sort_values(by=["Timedelta", "Animal"]).reset_index(drop=True)
 
     return intervals_df
 

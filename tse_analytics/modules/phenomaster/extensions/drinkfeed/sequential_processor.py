@@ -4,37 +4,36 @@ from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.drinkfeed_settings import DrinkFeedSettings
 
 
-def _find_invalid_episodes(events_df: pd.DataFrame, minimum_amount: float) -> pd.DataFrame:
-    valid = events_df["EpisodeId"].notna()
-    if valid.any():
-        episode_sum = events_df.loc[valid].groupby("EpisodeId")["Value"].transform("sum")
-        events_df.loc[valid, "EpisodeId"] = events_df.loc[valid, "EpisodeId"].where(episode_sum >= minimum_amount)
-    return events_df
-
-
 def process_drinkfeed_sequences(
-    drinkfeed_data: Datatable,
-    long_df: pd.DataFrame,
+    datatable: Datatable,
     settings: DrinkFeedSettings,
     diets_dict: dict[str, float],
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    long_df = long_df.loc[long_df["Value"] != 0]
+    long_df = pd.melt(
+        datatable.df[datatable.df.columns.difference(["Bin"])],
+        id_vars=["DateTime", "Timedelta", "Animal", "Box"],
+        var_name="Sensor",
+        value_name="Value",
+    )
+    long_df = long_df.sort_values(by=["Timedelta"]).reset_index(drop=True)
+    long_df["Sensor"] = long_df["Sensor"].astype("category")
 
-    long_df = long_df.sort_values(by=["DateTime"])
-    long_df = long_df.reset_index(drop=True)
+    # Filter out zero values
+    long_df = long_df.loc[long_df["Value"] != 0]
+    long_df = long_df.sort_values(by=["Timedelta"]).reset_index(drop=True)
 
     sensors = long_df["Sensor"].unique().tolist()
 
     events_parts: list[pd.DataFrame] = []
     episodes_parts: list[pd.DataFrame] = []
-    for animal_id in drinkfeed_data.dataset.animals.keys():
+    for animal_id in datatable.dataset.animals.keys():
         animal_df = long_df[long_df["Animal"] == animal_id]
         animal_events_df, animal_episodes_df = _process_animal(
             animal_id,
             animal_df,
             sensors,
             settings,
-            drinkfeed_data.df["DateTime"].iloc[0],
+            datatable.df["DateTime"].iloc[0],
         )
         if not animal_events_df.empty:
             events_parts.append(animal_events_df)
@@ -59,6 +58,14 @@ def process_drinkfeed_sequences(
     })
 
     return events_df, episodes_df
+
+
+def _find_invalid_episodes(events_df: pd.DataFrame, minimum_amount: float) -> pd.DataFrame:
+    valid = events_df["EpisodeId"].notna()
+    if valid.any():
+        episode_sum = events_df.loc[valid].groupby("EpisodeId")["Value"].transform("sum")
+        events_df.loc[valid, "EpisodeId"] = events_df.loc[valid, "EpisodeId"].where(episode_sum >= minimum_amount)
+    return events_df
 
 
 def _process_animal(
