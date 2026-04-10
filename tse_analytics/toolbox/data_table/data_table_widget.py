@@ -68,10 +68,12 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
 
-        self.add_derived_table_action = toolbar.addAction(
-            QIcon(":/icons/icons8-data-sheet-16.png"), "Add Derived Table"
-        )
-        self.add_derived_table_action.triggered.connect(self._add_derived_table)
+        # Disable add derived table button if the datatable raw datatable
+        if datatable and not datatable.extension_name:
+            self.add_derived_table_action = toolbar.addAction(
+                QIcon(":/icons/icons8-data-sheet-16.png"), "Add Derived Table"
+            )
+            self.add_derived_table_action.triggered.connect(self._add_derived_table)
 
         toolbar.addAction(QIcon(":/icons/icons8-resize-horizontal-16.png"), "Resize Columns").triggered.connect(
             self._resize_columns_width
@@ -154,6 +156,10 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
 
         self._splitter.restoreState(self._settings.splitter_state)
 
+        # Hide the variables widget if there are no variables
+        if datatable and len(self.datatable.variables) == 0:
+            self._splitter.setSizes([100, 0])
+
         self.refresh_data()
 
         messaging.subscribe(self, messaging.OutliersChangedMessage, self._on_outliers_changed)
@@ -191,7 +197,10 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         if message.datatable == self.datatable:
             self.refresh_data()
 
-    def refresh_data(self):
+    def refresh_data(self) -> None:
+        if not self.datatable:
+            return
+
         selected_variables = self.variables_widget.get_selected_variables_dict()
         selected_variable_names = list(selected_variables)
 

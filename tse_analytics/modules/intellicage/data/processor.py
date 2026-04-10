@@ -151,8 +151,7 @@ def get_visits_datatable(dataset: Dataset) -> Datatable:
         ),
     }
 
-    df.sort_values(["DateTime"], inplace=True)
-    df.reset_index(drop=True, inplace=True)
+    df = df.sort_values(["DateTime"]).reset_index(drop=True)
 
     # Add Timedelta column
     df.insert(

@@ -56,9 +56,14 @@ class IntervalsPlotWidget(QWidget):
             return
 
         selected_variable = self.variableSelector.currentText()
-        df = self.df
+        df = self.df[["Animal", "Bin", selected_variable]]
 
-        unit = "g" if "Feed" in selected_variable else "ml"
+        if "Feed" in selected_variable:
+            y_label = "Meal size [g]"
+        elif "Drink" in selected_variable:
+            y_label = "Meal size [ml]"
+        else:
+            y_label = "Weight [g]"
 
         color = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
 
@@ -70,7 +75,7 @@ class IntervalsPlotWidget(QWidget):
             .scale(color=color)
             .label(
                 x="Time [bin]",
-                y=f"Meal size [{unit}]",
+                y=y_label,
             )
             .on(self.canvas.figure)
             .plot(True)

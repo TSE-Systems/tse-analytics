@@ -9,8 +9,8 @@ from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
-class EpisodesOffsetPlotWidget(QWidget):
-    def __init__(self, parent: QWidget | None = None):
+class EpisodesImiPlotWidget(QWidget):
+    def __init__(self, variables: dict[str, Variable], parent: QWidget | None = None):
         super().__init__(parent)
 
         self._layout = QVBoxLayout(self)
@@ -24,6 +24,7 @@ class EpisodesOffsetPlotWidget(QWidget):
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
         self.variableSelector = VariableSelector(toolbar)
+        self.variableSelector.set_data(variables)
         self.variableSelector.currentTextChanged.connect(self._variable_changed)
         toolbar.addWidget(self.variableSelector)
 
@@ -39,9 +40,8 @@ class EpisodesOffsetPlotWidget(QWidget):
 
         self.df: pd.DataFrame | None = None
 
-    def set_data(self, df: pd.DataFrame, variables: dict[str, Variable]) -> None:
+    def set_data(self, df: pd.DataFrame) -> None:
         self.df = df
-        self.variableSelector.set_data(variables)
         self._update_plot()
 
     def _variable_changed(self, variable: str):
@@ -55,16 +55,24 @@ class EpisodesOffsetPlotWidget(QWidget):
         selected_variable = self.variableSelector.currentText()
         df = self.df[self.df["Sensor"] == selected_variable]
 
-        if df.empty:
-            return
-
-        df["Offset"] = df["Offset"] / pd.Timedelta(hours=1)
+        df["Interval"] = df["Interval"] / pd.Timedelta(minutes=1)
 
         self.canvas.clear(False)
         ax = self.canvas.figure.add_subplot(111)
 
-        sns.stripplot(data=df, x="Offset", y="Animal", hue="Animal", jitter=False, ax=ax)
-        ax.set_xlabel("Offset [hours]")
+        sns.stripplot(
+            data=df,
+            x="Interval",
+            y="Animal",
+            hue="Animal",
+            log_scale=True,
+            jitter=False,
+            size=3,
+            ax=ax,
+        )
+        ax.set_xlabel("Intermeal interval [min]")
+        ax.set_xticks([1, 10, 100, 1000])
+        ax.grid(True, which="minor", axis="x", ls="-")
 
         self.canvas.figure.tight_layout()
         self.canvas.draw()

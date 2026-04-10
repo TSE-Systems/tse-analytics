@@ -14,8 +14,7 @@ from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.services.selection_service import SelectionService
 from tse_analytics.core.services.workspace_service import WorkspaceService
-from tse_analytics.modules.intellicage.data import intellicage_dataset_merger
-from tse_analytics.modules.phenomaster.data import processor
+from tse_analytics.core.utils import data_merger
 
 
 class DatasetService:
@@ -92,24 +91,13 @@ class DatasetService:
             continuous_mode: Whether to use continuous mode for merging.
             generate_new_animal_names: Whether to generate new animal names.
         """
-        first_dataset = datasets[0]
-        merged_dataset = None
-        if first_dataset.dataset_type == "PhenoMaster":
-            merged_dataset = processor.merge_datasets(
-                new_dataset_name,
-                datasets,
-                single_run,
-                continuous_mode,
-                generate_new_animal_names,
-            )
-        elif first_dataset.dataset_type == "IntelliCage":
-            merged_dataset = intellicage_dataset_merger.merge_datasets(
-                new_dataset_name,
-                datasets,
-                single_run,
-                continuous_mode,
-                generate_new_animal_names,
-            )
+        merged_dataset = data_merger.merge_datasets(
+            new_dataset_name,
+            datasets,
+            single_run,
+            continuous_mode,
+            generate_new_animal_names,
+        )
 
         if merged_dataset is not None:
             self.add_dataset(merged_dataset)
