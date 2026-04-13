@@ -400,6 +400,9 @@ class Datatable:
                 self.variables[new_name] = self.variables.pop(old_name, None)
                 self.variables[new_name].name = new_name
 
+        # Sort variables by name
+        self.variables = dict(sorted(self.variables.items(), key=lambda x: x[0].lower()))
+
         self.df.rename(columns=variable_name_map, inplace=True, errors="ignore")
 
     def freeze_outliers_removal(self):
