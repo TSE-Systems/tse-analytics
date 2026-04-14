@@ -3,6 +3,7 @@ from datetime import datetime
 
 import pandas as pd
 from loguru import logger
+from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QToolBar, QWidget
@@ -282,11 +283,29 @@ class DrinkFeedWidget(QWidget):
             datatable.name = f"DrinkFeedEpisodes [{now_string}]"
             datatable.set_factors(self.datatable.dataset.factors)
             manager.add_datatable(datatable)
+
+            make_toast(
+                self,
+                "Drink/Feed Analysis",
+                "DrinkFeedEpisodes table added.",
+                duration=2000,
+                preset=ToastPreset.INFORMATION,
+                show_duration_bar=True,
+            ).show()
         elif self.intervals_datatable is not None:
             datatable = self.intervals_datatable.clone()
             datatable.name = f"DrinkFeedIntervals [{now_string}]"
             datatable.set_factors(self.datatable.dataset.factors)
             manager.add_datatable(datatable)
+
+            make_toast(
+                self,
+                "Drink/Feed Analysis",
+                "DrinkFeedIntervals table added.",
+                duration=2000,
+                preset=ToastPreset.INFORMATION,
+                show_duration_bar=True,
+            ).show()
 
     def _assign_animals(self):
         grouphousing_df = self.datatable.dataset.grouphousing_data.get_preprocessed_data(True, False, None)["DrinkFeed"]

@@ -36,7 +36,7 @@ def get_rm_anova_result(
             palette = color_manager.get_animal_to_color_dict(dataset.animals)
         case GroupingMode.RUN:
             subject = "Run"
-            palette = color_manager.colormap_name
+            palette = color_manager.get_run_to_color_dict(dataset.runs)
         case GroupingMode.FACTOR:
             subject = grouping_settings.factor_name
             palette = color_manager.get_level_to_color_dict(dataset.factors[subject])

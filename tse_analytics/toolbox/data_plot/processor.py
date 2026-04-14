@@ -41,7 +41,7 @@ def get_data_plot_result(
             palette = color_manager.get_animal_to_color_dict(datatable.dataset.animals)
         case GroupingMode.RUN:
             by = "Run"
-            palette = color_manager.colormap_name
+            palette = color_manager.get_run_to_color_dict(datatable.dataset.runs)
         case GroupingMode.FACTOR:
             by = grouping_settings.factor_name
             palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[by])

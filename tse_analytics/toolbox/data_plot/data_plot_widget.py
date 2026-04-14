@@ -94,7 +94,10 @@ class DataPlotWidget(QWidget):
         toolbar.addWidget(QLabel("Error Bar:"))
         self.comboBoxErrorBar = QComboBox(toolbar)
         self.comboBoxErrorBar.addItems(ERROR_BAR_TYPE.keys())
-        self.comboBoxErrorBar.setCurrentText(self._settings.error_bar)
+        if "Bin" in self.datatable.df.columns:
+            self.comboBoxErrorBar.setCurrentText(self._settings.error_bar)
+        else:
+            self.comboBoxErrorBar.setCurrentText(ERROR_BAR_TYPE["None"])
         toolbar.addWidget(self.comboBoxErrorBar)
 
         toolbar.addSeparator()
@@ -150,7 +153,7 @@ class DataPlotWidget(QWidget):
                 palette = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
             case GroupingMode.RUN:
                 by = "Run"
-                palette = color_manager.colormap_name
+                palette = color_manager.get_run_to_color_dict(self.datatable.dataset.runs)
             case GroupingMode.FACTOR:
                 by = grouping_settings.factor_name
                 palette = color_manager.get_level_to_color_dict(self.datatable.dataset.factors[by])

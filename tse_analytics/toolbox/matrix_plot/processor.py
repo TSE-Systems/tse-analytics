@@ -40,7 +40,7 @@ def get_matrix_plot_result(
             palette = color_manager.get_animal_to_color_dict(dataset.animals)
         case GroupingMode.RUN:
             hue = "Run"
-            palette = color_manager.colormap_name
+            palette = color_manager.get_run_to_color_dict(dataset.runs)
         case GroupingMode.FACTOR:
             hue = grouping_settings.factor_name
             palette = color_manager.get_level_to_color_dict(dataset.factors[hue])

@@ -4,6 +4,7 @@ import seaborn as sns
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtWidgets import QVBoxLayout, QWidget
 
+from tse_analytics.core import color_manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
 from tse_analytics.core.data.shared import Variable
@@ -60,21 +61,37 @@ class BarPlotView(QWidget):
         if not self._df.empty:
             match self._grouping_settings.mode:
                 case GroupingMode.ANIMAL:
-                    x_name = "Animal"
-                case GroupingMode.FACTOR:
-                    x_name = self._grouping_settings.factor_name
+                    by = "Animal"
+                    # Cleaning
+                    self._df[by] = self._df[by].cat.remove_unused_categories()
+                    palette = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
                 case GroupingMode.RUN:
-                    x_name = "Run"
+                    by = "Run"
+                    palette = color_manager.get_run_to_color_dict(self.datatable.dataset.runs)
+                case GroupingMode.FACTOR:
+                    by = self._grouping_settings.factor_name
+                    palette = color_manager.get_level_to_color_dict(self.datatable.dataset.factors[by])
                 case _:
-                    x_name = None
+                    by = None
+                    palette = color_manager.colormap_name
 
-            if self._grouping_settings.mode != GroupingMode.TOTAL and self._grouping_settings.mode != GroupingMode.RUN:
-                self._df[x_name] = self._df[x_name].cat.remove_unused_categories()
+            # TODO: workaround for issue with nullable Float64
+            # self._df[self._variable.name] = self._df[self._variable.name].astype(float)
+
+            if (
+                self._grouping_settings.mode == GroupingMode.ANIMAL
+                or self._grouping_settings.mode == GroupingMode.FACTOR
+            ):
+                # TODO: temporary fix for issue with broken categories offset when using pandas 3.0
+                self._df.sort_values(by, inplace=True)
+                self._df[by] = self._df[by].astype("string")
 
             facet_grid = sns.catplot(
                 data=self._df,
-                x=x_name,
+                x=by,
                 y=self._variable.name,
+                hue=by,
+                palette=palette,
                 col="Bin",
                 kind="bar",
                 errorbar=self._error_type if self._display_errors else None,
