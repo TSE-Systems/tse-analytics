@@ -114,35 +114,32 @@ class FastBarPlotWidget(QWidget):
                 by = grouping_settings.factor_name
                 palette = color_manager.get_level_to_color_dict(self.datatable.dataset.factors[by])
             case _:
-                by = None
+                by = "Total"
+                df[by] = by
                 palette = color_manager.colormap_name
 
         # TODO: workaround for issue with nullable Float64
         df[selected_variable.name] = df[selected_variable.name].astype(float)
 
-        if grouping_settings.mode != GroupingMode.TOTAL:
-            (
-                so
-                .Plot(
-                    df,
-                    x=by,
-                    y=selected_variable.name,
-                    color=by,
-                )
-                .add(so.Bar(), so.Agg())
-                .add(so.Range(), so.Est(errorbar="se"))
-                .facet("Bin", wrap=3)
-                .share(y=True)
-                .scale(color=palette)
-                .on(self.canvas.figure)
-                .plot(True)
+        (
+            so
+            .Plot(
+                df,
+                x=by,
+                y=selected_variable.name,
+                color=by,
             )
-        else:
-            # TODO: Add implementation for total grouping
-            pass
+            .add(so.Bar(), so.Agg())
+            .add(so.Range(), so.Est(errorbar="se"))
+            .facet("Bin", wrap=3)
+            .share(y=True)
+            .scale(color=palette)
+            .on(self.canvas.figure)
+            .plot(True)
+        )
 
-        # for ax in self.canvas.figure.axes:  # works across facets too
-        #     ax.tick_params(axis="x", rotation=90)
+        for ax in self.canvas.figure.axes:  # works across facets too
+            ax.tick_params(axis="x", rotation=90)
 
         self.canvas.figure.tight_layout()
         self.canvas.draw()
