@@ -2,6 +2,7 @@ import glob
 import tempfile
 import timeit
 import zipfile
+from dataclasses import asdict
 from pathlib import Path
 
 import pandas as pd
@@ -9,39 +10,40 @@ import xmltodict
 from loguru import logger
 
 from tse_analytics.core.color_manager import get_color_hex
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Animal, Factor
-from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 from tse_analytics.modules.intellimaze.data.utils import preprocess_main_table
 from tse_analytics.modules.intellimaze.extensions import (
     actor,
     animal_gate,
     consumption_scale,
     intellicage,
+    operant_device,
     running_wheel,
 )
 
 extension_data_loaders = {
+    actor.EXTENSION_NAME: actor.io.import_data,
     animal_gate.EXTENSION_NAME: animal_gate.io.import_data,
     consumption_scale.EXTENSION_NAME: consumption_scale.io.import_data,
-    running_wheel.EXTENSION_NAME: running_wheel.io.import_data,
-    actor.EXTENSION_NAME: actor.io.import_data,
     intellicage.EXTENSION_NAME: intellicage.io.import_data,
-    # operant_device.EXTENSION_NAME: operant_device.io.import_data,
+    operant_device.EXTENSION_NAME: operant_device.io.import_data,
+    running_wheel.EXTENSION_NAME: running_wheel.io.import_data,
 }
 
 
-def import_intellimaze_dataset(path: Path) -> IntelliMazeDataset | None:
+def import_intellimaze_dataset(path: Path) -> Dataset | None:
     """
     Import an IntelliMaze dataset from a zip file.
 
     This function extracts the zip file, imports metadata, devices, and animals,
-    creates an IntelliMazeDataset, and loads data for each extension.
+    creates an Dataset, and loads data for each extension.
 
     Args:
         path (Path): The path to the zip file containing the IntelliMaze dataset.
 
     Returns:
-        IntelliMazeDataset | None: The imported dataset, or None if the file is not a valid IntelliMaze dataset.
+        Dataset | None: The imported dataset, or None if the file is not a valid IntelliMaze dataset.
     """
     tic = timeit.default_timer()
 
@@ -69,10 +71,11 @@ def import_intellimaze_dataset(path: Path) -> IntelliMazeDataset | None:
             else:
                 animals = _import_animals_v5(tmp_path / "Animals" / "Animals.animals")
 
-            dataset = IntelliMazeDataset(
-                metadata={
-                    "name": path.stem,
-                    "description": "IntelliMaze dataset",
+            dataset = Dataset(
+                path.stem,
+                "IntelliMaze dataset",
+                "IntelliMaze",
+                {
                     "source_path": str(path),
                     "experiment_started": str(
                         pd.to_datetime(metadata["ExperimentStarted"], format="%m/%d/%Y %H:%M:%S")
@@ -81,15 +84,17 @@ def import_intellimaze_dataset(path: Path) -> IntelliMazeDataset | None:
                         pd.to_datetime(metadata["ExperimentStopped"], format="%m/%d/%Y %H:%M:%S")
                     ),
                     "experiment": metadata,
-                    "animals": {k: v.get_dict() for (k, v) in animals.items()},
+                    "animals": {k: asdict(v) for (k, v) in animals.items()},
+                    "devices": devices,
                 },
-                animals=animals,
-                devices=devices,
+                animals,
             )
 
             for extension_name, data_loader in extension_data_loaders.items():
                 if extension_name in devices and (tmp_path / extension_name).is_dir():
-                    dataset.extensions_data[extension_name] = data_loader(tmp_path / extension_name, dataset)
+                    extension_data = data_loader(tmp_path / extension_name, dataset)
+                    for raw_datatable in extension_data.values():
+                        dataset.add_raw_datatable(extension_name, raw_datatable)
 
     preprocess_main_table(dataset)
 
@@ -97,7 +102,7 @@ def import_intellimaze_dataset(path: Path) -> IntelliMazeDataset | None:
     factors: dict[str, Factor] = {}
     expected_factor_names = ("Group", "Sex", "Strain", "Treatment")
     for factor_name in expected_factor_names:
-        factor = _extract_factor(factor_name, factors, dataset)
+        factor = _extract_factor(factor_name, dataset)
         if factor is not None:
             factors[factor.name] = factor
 
@@ -211,7 +216,6 @@ def _import_animals_v5(animals_file_path: Path) -> dict | None:
             properties[field] = item[field] if field in item else ""
 
         animal = Animal(
-            enabled=True,
             id=str(item["Name"]),
             color=get_color_hex(index),
             properties=properties,
@@ -290,7 +294,6 @@ def _import_animals_v6(animals_file_path: Path, groups_file_path: Path) -> dict 
             properties[field] = item[field] if field in item else ""
 
         animal = Animal(
-            enabled=True,
             id=str(item["Name"]),
             color=get_color_hex(index),
             properties=properties,
@@ -303,7 +306,7 @@ def _import_animals_v6(animals_file_path: Path, groups_file_path: Path) -> dict 
     return animals
 
 
-def _extract_factor(factor_name: str, factors: dict[str, Factor], dataset: IntelliMazeDataset) -> Factor | None:
+def _extract_factor(factor_name: str, dataset: Dataset) -> Factor | None:
     """
     Extract a factor from dataset properties.
 
@@ -311,8 +314,7 @@ def _extract_factor(factor_name: str, factors: dict[str, Factor], dataset: Intel
 
     Args:
         factor_name (str): The name of the factor to extract.
-        factors (dict[str, Factor]): Dictionary of existing factors.
-        dataset (IntelliMazeDataset): The dataset containing animal properties.
+        dataset (Dataset): The dataset containing animal properties.
 
     Returns:
         Factor | None: The extracted factor, or None if no levels were found.

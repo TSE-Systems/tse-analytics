@@ -5,18 +5,20 @@ import connectorx as cx
 import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
+from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
-from tse_analytics.modules.phenomaster.extensions.calo.data.calo_data import CaloData
-from tse_analytics.modules.phenomaster.io import tse_import_settings
+from tse_analytics.core.utils.data import sanitize_dtypes
+from tse_analytics.globals import TIME_RESOLUTION_UNIT
+from tse_analytics.modules.phenomaster.io.tse_import_settings import CALO_BIN_TABLE
 
 
-def read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
-    metadata = dataset.metadata["tables"][tse_import_settings.CALO_BIN_TABLE]
+def read_calo_bin(path: Path, dataset: Dataset) -> Datatable:
+    metadata = dataset.metadata["tables"][CALO_BIN_TABLE]
 
     sample_interval = pd.Timedelta(metadata["sample_interval"])
 
-    # Read variables list
+    # Read variable list
     skipped_variables = ["DateTime", "Box"]
     variables: dict[str, Variable] = {}
     dtypes = {}
@@ -32,21 +34,20 @@ def read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
         if variable.name not in skipped_variables:
             variables[variable.name] = variable
         dtypes[variable.name] = item["type"]
-    # Ignore the time for "DateTime" column
-    dtypes.pop("DateTime")
 
-    # Read measurements data
+    # Read measurement data
     df = cx.read_sql(
         f"sqlite:///{path}",
-        f"SELECT * FROM {tse_import_settings.CALO_BIN_TABLE}",
+        f"SELECT * FROM {CALO_BIN_TABLE}",
         return_type="pandas",
     )
 
     # Convert types according to metadata
+    dtypes = sanitize_dtypes(dtypes)
     df = df.astype(dtypes, errors="ignore")
 
     # Convert DateTime from POSIX format
-    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
+    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns").dt.as_unit(TIME_RESOLUTION_UNIT)
 
     # Insert Animal column
     box_to_animal_map = {animal.properties["Box"]: animal.id for animal in dataset.animals.values()}
@@ -67,15 +68,11 @@ def read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
     previous_box = None
     bins = []
     offsets = []
-    timedeltas = []
     time_gap = timedelta(seconds=10)
     offset = 0
     for row in df.itertuples():
         timestamp = row.DateTime
         box = row.Box
-
-        if box != previous_box:
-            start_timestamp = timestamp
 
         if previous_timestamp is None:
             bins = [0]
@@ -90,7 +87,6 @@ def read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
                 bin_number = 0
 
             bins.append(bin_number)
-            start_timestamp = timestamp
         else:
             bin_number = bins[-1]
 
@@ -104,45 +100,50 @@ def read_calo_bin(path: Path, dataset: PhenoMasterDataset) -> CaloData:
         if box != previous_box:
             previous_box = box
 
-        td = timestamp - start_timestamp
-        timedeltas.append(td)
-
         # offset = td.total_seconds()
         offsets.append(offset)
         offset = offset + 1
         previous_timestamp = timestamp
 
-    df.insert(1, "Timedelta", timedeltas)
+    # Add Timedelta columns
+    df.insert(
+        loc=1,
+        column="Timedelta",
+        value=(df["DateTime"] - dataset.experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT),
+    )
     df.insert(2, "Bin", bins)
     df.insert(3, "Offset", offsets)
 
-    calo_data = CaloData(
+    raw_datatable = Datatable(
         dataset,
-        tse_import_settings.CALO_BIN_TABLE,
-        str(path),
+        CALO_BIN_TABLE,
+        f"Raw {CALO_BIN_TABLE} datatable",
         variables,
         df,
-        sample_interval,
+        {
+            "origin_path": str(path),
+            "sample_interval": sample_interval,
+            "ref_box_mapping": {},
+        },
     )
 
     # Assign reference calo boxes
     for animal in dataset.animals.values():
         if "RefBox" in animal.properties:
-            calo_data.ref_box_mapping[animal.properties["Box"]] = animal.properties["RefBox"]
+            raw_datatable.metadata["ref_box_mapping"][animal.properties["Box"]] = animal.properties["RefBox"]
 
-    return calo_data
+    return raw_datatable
 
 
 def import_calo_csv_data(
-    filename: str, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings
-) -> CaloData | None:
+    filename: str,
+    dataset: Dataset,
+    csv_import_settings: CsvImportSettings,
+) -> Datatable | None:
     path = Path(filename)
-    if path.is_file() and path.suffix.lower() == ".csv":
-        return _load_from_csv(path, dataset, csv_import_settings)
-    return None
+    if not path.is_file() or path.suffix.lower() != ".csv":
+        return None
 
-
-def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings) -> CaloData:
     columns_line = None
     with open(path) as f:
         lines = f.readlines()
@@ -162,6 +163,7 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
         skiprows=header_line_number,  # Skip header part
         encoding="ISO-8859-1",
         na_values="-",
+        dtype_backend="numpy_nullable",
     )
 
     df.insert(
@@ -171,7 +173,7 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
             df["Date"] + " " + df["Time"],
             format="mixed",
             dayfirst=csv_import_settings.day_first,
-        ),
+        ).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
     df.drop(columns=["Date", "Time"], inplace=True)
 
@@ -194,11 +196,11 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
             var_unit = ""
             if len(elements) == 2:
                 var_unit = elements[1]
-            variable = Variable(var_name, var_unit, "", "float64", Aggregation.MEAN, False)
+            variable = Variable(var_name, var_unit, "", "Float64", Aggregation.MEAN, False)
             variables[variable.name] = variable
 
     # Calculate sampling interval
-    sampling_interval = df.iloc[1].at["DateTime"] - df.iloc[0].at["DateTime"]
+    sample_interval = df.iloc[1].at["DateTime"] - df.iloc[0].at["DateTime"]
 
     # Insert Animal column
     box_to_animal_map = {animal.properties["Box"]: animal.id for animal in dataset.animals.values()}
@@ -218,15 +220,11 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     previous_box = None
     bins = []
     offsets = []
-    timedeltas = []
     time_gap = timedelta(seconds=10)
     offset = 0
     for row in df.itertuples():
         timestamp = row.DateTime
         box = row.Box
-
-        if box != previous_box:
-            start_timestamp = timestamp
 
         if previous_timestamp is None:
             bins = [0]
@@ -241,7 +239,6 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
                 bin_number = 0
 
             bins.append(bin_number)
-            start_timestamp = timestamp
         else:
             bin_number = bins[-1]
 
@@ -255,33 +252,39 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
         if box != previous_box:
             previous_box = box
 
-        td = timestamp - start_timestamp
-        timedeltas.append(td)
-
         # offset = td.total_seconds()
         offsets.append(offset)
         offset = offset + 1
         previous_timestamp = timestamp
 
-    df.insert(1, "Timedelta", timedeltas)
+    # Add Timedelta columns
+    df.insert(
+        loc=1,
+        column="Timedelta",
+        value=(df["DateTime"] - dataset.experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT),
+    )
     df.insert(2, "Bin", bins)
     df.insert(3, "Offset", offsets)
 
-    calo_data = CaloData(
+    raw_datatable = Datatable(
         dataset,
-        "calo_bin",
-        str(path),
+        CALO_BIN_TABLE,
+        f"Raw {CALO_BIN_TABLE} datatable",
         variables,
         df,
-        sampling_interval,
+        {
+            "origin_path": str(path),
+            "sample_interval": sample_interval,
+            "ref_box_mapping": {},
+        },
     )
 
     # Assign reference calo boxes
     all_box_numbers = df["Box"].unique().tolist()
     for box in all_box_numbers:
-        calo_data.ref_box_mapping[box] = _get_ref_box_number(box, all_box_numbers)
+        raw_datatable.metadata["ref_box_mapping"][box] = _get_ref_box_number(box, all_box_numbers)
 
-    return calo_data
+    return raw_datatable
 
 
 def _get_ref_box_number(box: int, boxes: list[int]) -> int | None:

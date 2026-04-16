@@ -25,9 +25,9 @@ from tse_analytics.core.data.shared import (
 def sample_animals():
     """3 animals: A1 and A2 enabled, A3 disabled."""
     return {
-        "A1": Animal(enabled=True, id="A1", color="#FF0000", properties={"group": "Control"}),
-        "A2": Animal(enabled=True, id="A2", color="#00FF00", properties={"group": "Treatment"}),
-        "A3": Animal(enabled=False, id="A3", color="#0000FF", properties={"group": "Treatment"}),
+        "A1": Animal(id="A1", color="#FF0000", properties={"group": "Control"}),
+        "A2": Animal(id="A2", color="#00FF00", properties={"group": "Treatment"}),
+        "A3": Animal(id="A3", color="#0000FF", properties={"group": "Treatment"}),
     }
 
 
@@ -113,7 +113,13 @@ def sample_dataset(sample_animals, sample_metadata):
     from tse_analytics.core.data.dataset import Dataset
 
     with patch("tse_analytics.core.data.dataset.messaging"):
-        dataset = Dataset(metadata=sample_metadata, animals=sample_animals)
+        dataset = Dataset(
+            name="Test Dataset",
+            description="A test dataset",
+            dataset_type="PhenoMaster",
+            metadata=sample_metadata,
+            animals=sample_animals,
+        )
     return dataset
 
 
@@ -128,7 +134,7 @@ def sample_datatable(sample_dataset, sample_variables, sample_df):
         description="Main datatable",
         variables=sample_variables,
         df=sample_df,
-        sampling_interval=pd.Timedelta("1h"),
+        metadata={"sample_interval": pd.Timedelta("1h")},
     )
     sample_dataset.datatables["Main"] = datatable
     return datatable

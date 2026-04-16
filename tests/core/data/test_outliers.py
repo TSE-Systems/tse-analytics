@@ -19,11 +19,11 @@ class TestOutliersSettings:
     """Tests for OutliersSettings."""
 
     def test_stores_values(self):
-        settings = OutliersSettings(OutliersMode.REMOVE, 1.5)
+        settings = OutliersSettings(mode=OutliersMode.REMOVE, iqr_multiplier=1.5)
         assert settings.mode == OutliersMode.REMOVE
         assert settings.iqr_multiplier == 1.5
 
     def test_off_mode(self):
-        settings = OutliersSettings(OutliersMode.OFF, 2.0)
+        settings = OutliersSettings(mode=OutliersMode.OFF, iqr_multiplier=2.0)
         assert settings.mode == OutliersMode.OFF
         assert settings.iqr_multiplier == 2.0

@@ -7,10 +7,13 @@ import pandas as pd
 from loguru import logger
 
 from tse_analytics.core.color_manager import get_color_hex
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
+from tse_analytics.core.utils.data import sanitize_dtypes
+from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
+from tse_analytics.modules.phenomaster.data.variables_helper import cleanup_variables
 from tse_analytics.modules.phenomaster.extensions.actimot.io.data_loader import read_actimot_raw
 from tse_analytics.modules.phenomaster.extensions.calo.io.data_loader import read_calo_bin
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.io.data_loader import read_drinkfeed_bin, read_drinkfeed_raw
@@ -18,7 +21,7 @@ from tse_analytics.modules.phenomaster.extensions.grouphousing.io.data_loader im
 from tse_analytics.modules.phenomaster.io import tse_import_settings
 
 
-def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportSettings) -> PhenoMasterDataset | None:
+def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportSettings) -> Dataset | None:
     """
     Loads and processes a PhenoMaster dataset from the specified path and settings.
 
@@ -37,7 +40,7 @@ def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportS
         sets (ActoMot raw data, drink-feed bin data, calo bin data) should be
         imported along with the PhenoMaster dataset.
     :return:
-        A PhenoMasterDataset object containing the processed data, or None
+        A Dataset object containing the processed data, or None
         if the dataset could not be loaded or processed.
     """
     tic = timeit.default_timer()
@@ -45,12 +48,15 @@ def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportS
     metadata = _read_metadata(path)
     animals = _get_animals(metadata["animals"])
 
-    dataset = PhenoMasterDataset(
+    dataset = Dataset(
+        metadata["experiment"]["experiment_no"],
+        "PhenoMaster dataset",
+        "PhenoMaster",
         metadata=metadata,
         animals=animals,
     )
 
-    main_table_df, main_table_vars, main_table_sampling_interval = _read_main_table(path, dataset)
+    main_table_df, main_table_vars, main_table_sample_interval = _read_main_table(path, dataset)
     # Assign predefined variables properties
     main_table_vars = assign_predefined_values(main_table_vars)
 
@@ -60,38 +66,44 @@ def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportS
         "Main table output from PhenoMaster experiment.",
         main_table_vars,
         main_table_df,
-        main_table_sampling_interval,
+        {
+            "origin": "Main",
+            "sample_interval": main_table_sample_interval,
+        },
     )
     dataset.add_datatable(datatable)
 
     # Import ActoMot raw data if present
     if import_settings.import_actimot_raw:
         if tse_import_settings.ACTIMOT_RAW_TABLE in metadata["tables"]:
-            actimot_data = read_actimot_raw(path, dataset)
-            dataset.extensions_data["actimot_data"] = actimot_data
+            datatable = read_actimot_raw(path, dataset)
+            dataset.add_raw_datatable("ActiMot", datatable)
 
     # Import drinkfeed bin data if present
     if import_settings.import_drinkfeed_bin:
         if tse_import_settings.DRINKFEED_BIN_TABLE in metadata["tables"]:
-            drinkfeed_bin_data = read_drinkfeed_bin(path, dataset)
-            dataset.extensions_data["drinkfeed_bin_data"] = drinkfeed_bin_data
+            datatable = read_drinkfeed_bin(path, dataset)
+            dataset.add_raw_datatable("DrinkFeed", datatable)
 
     if import_settings.import_drinkfeed_raw:
         if tse_import_settings.DRINKFEED_RAW_TABLE in metadata["tables"]:
-            drinkfeed_raw_data = read_drinkfeed_raw(path, dataset)
-            dataset.extensions_data["drinkfeed_raw_data"] = drinkfeed_raw_data
+            datatable = read_drinkfeed_raw(path, dataset)
+            dataset.add_raw_datatable("DrinkFeed", datatable)
 
     # Import calo bin data if present
     if import_settings.import_calo_bin:
         if tse_import_settings.CALO_BIN_TABLE in metadata["tables"]:
-            calo_data = read_calo_bin(path, dataset)
-            dataset.extensions_data["calo_data"] = calo_data
+            datatable = read_calo_bin(path, dataset)
+            dataset.add_raw_datatable("Calo", datatable)
 
     # Import group housing data if present
     if import_settings.import_grouphousing:
         if tse_import_settings.GROUP_HOUSING_TABLE in metadata["tables"]:
-            grouphousing_data = read_grouphousing(path, dataset)
-            dataset.extensions_data["grouphousing_data"] = grouphousing_data
+            datatable = read_grouphousing(path, dataset)
+            dataset.add_raw_datatable("GroupHousing", datatable)
+
+    # Clean up old variables
+    cleanup_variables(dataset)
 
     logger.info(f"Import complete in {(timeit.default_timer() - tic):.3f} sec: {path}")
 
@@ -112,8 +124,6 @@ def _read_metadata(path: Path) -> dict:
         item["id"] = str(item["id"])
 
     # Add standard data fields
-    metadata["name"] = metadata["experiment"]["experiment_no"]
-    metadata["description"] = "PhenoMaster dataset"
     metadata["source_path"] = str(path)
     metadata["experiment_started"] = metadata["experiment"]["start_datetime"]
     metadata["experiment_stopped"] = metadata["experiment"]["end_datetime"]
@@ -122,15 +132,10 @@ def _read_metadata(path: Path) -> dict:
     metadata["experiment"]["runtime"] = str(pd.to_timedelta(metadata["experiment"]["runtime"], unit="ms"))
     metadata["experiment"]["cycle_interval"] = str(pd.to_timedelta(metadata["experiment"]["cycle_interval"], unit="ms"))
 
-    if tse_import_settings.MAIN_TABLE in metadata["tables"]:
-        metadata["tables"][tse_import_settings.MAIN_TABLE]["sample_interval"] = str(
-            pd.to_timedelta(metadata["tables"][tse_import_settings.MAIN_TABLE]["sample_interval"], unit="ms")
-        )
-
-    if tse_import_settings.ACTIMOT_RAW_TABLE in metadata["tables"]:
-        metadata["tables"][tse_import_settings.ACTIMOT_RAW_TABLE]["sample_interval"] = str(
-            pd.to_timedelta(metadata["tables"][tse_import_settings.ACTIMOT_RAW_TABLE]["sample_interval"], unit="ms")
-        )
+    # Convert sample intervals from [ms] to Timedeltas
+    for table_meta in metadata["tables"].values():
+        if "sample_interval" in table_meta:
+            table_meta["sample_interval"] = str(pd.to_timedelta(table_meta["sample_interval"], unit="ms"))
 
     return metadata
 
@@ -155,7 +160,6 @@ def _get_animals(data: dict) -> dict[str, Animal]:
             properties["RefBox"] = int(item["ref_box"])
 
         animal = Animal(
-            enabled=bool(item["enabled"]),
             id=str(item["id"]),
             color=get_color_hex(index),
             properties=properties,
@@ -170,7 +174,7 @@ def _get_animals(data: dict) -> dict[str, Animal]:
 
 def _read_main_table(
     path: Path,
-    dataset: PhenoMasterDataset,
+    dataset: Dataset,
 ) -> tuple[pd.DataFrame, dict[str, Variable], pd.Timedelta]:
     metadata = dataset.metadata["tables"][tse_import_settings.MAIN_TABLE]
 
@@ -183,8 +187,6 @@ def _read_main_table(
         variable = Variable(item["id"], item["unit"], item["description"], item["type"], Aggregation.MEAN, False)
         variables[variable.name] = variable
         dtypes[variable.name] = item["type"]
-    # Ignore the time for "DateTime" column
-    dtypes.pop("DateTime")
 
     # Drop core (default) variables from the list
     variables.pop("DateTime")
@@ -199,13 +201,14 @@ def _read_main_table(
     )
 
     # Convert types according to metadata
+    dtypes = sanitize_dtypes(dtypes)
     df = df.astype(dtypes, errors="ignore")
 
     # Convert DateTime from POSIX format
-    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns")
+    df["DateTime"] = pd.to_datetime(df["DateTime"], origin="unix", unit="ns").dt.as_unit(TIME_RESOLUTION_UNIT)
 
     # Convert animal id to string first
-    df["Animal"] = df["Animal"].astype(str)
+    df["Animal"] = df["Animal"].astype("string")
 
     # Convert to categorical types
     df = df.astype({
@@ -217,9 +220,12 @@ def _read_main_table(
     df.reset_index(drop=True, inplace=True)
 
     # Add Timedelta and Bin columns
-    start_date_time = dataset.experiment_started
-    df.insert(loc=1, column="Timedelta", value=df["DateTime"] - start_date_time)
-    df.insert(loc=2, column="Bin", value=(df["Timedelta"] / sample_interval).round().astype(int))
+    df.insert(
+        loc=1,
+        column="Timedelta",
+        value=(df["DateTime"] - dataset.experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT),
+    )
+    df.insert(loc=2, column="Bin", value=(df["Timedelta"] / sample_interval).round().astype("UInt64"))
 
     # Sort variables by name
     variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))

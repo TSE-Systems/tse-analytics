@@ -37,9 +37,9 @@ class ResampleNode(PipelineNode):
         unit = str(self.get_property("unit"))
         delta = int(self.get_property("delta"))
 
-        resampling_interval = pd.to_timedelta(delta, unit=unit)
+        resample_interval = pd.to_timedelta(delta, unit=unit)
 
         result = datatable.clone()
-        result.resample(resampling_interval)
+        result.resample(resample_interval)
 
         return PipelinePacket(result)

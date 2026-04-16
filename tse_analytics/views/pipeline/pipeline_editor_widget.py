@@ -4,7 +4,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QToolBar, QVBoxLayout, QWidget
 
 from tse_analytics.core import manager
-from tse_analytics.core.utils import IS_RELEASE
+from tse_analytics.globals import IS_RELEASE
 from tse_analytics.pipeline import PipelineNodeGraph
 from tse_analytics.pipeline.nodes import (
     CheckboxNode,

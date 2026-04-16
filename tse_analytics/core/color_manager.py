@@ -86,3 +86,10 @@ def get_level_to_color_dict(factor: Factor) -> dict[str, str]:
     for level in factor.levels:
         result[level.name] = level.color
     return result
+
+
+def get_run_to_color_dict(number_of_runs: int) -> dict[int, str]:
+    result = {}
+    for run in range(number_of_runs):
+        result[run + 1] = get_factor_level_color_hex(run)
+    return result

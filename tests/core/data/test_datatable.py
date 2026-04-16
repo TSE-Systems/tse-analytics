@@ -17,7 +17,7 @@ class TestDatatableInit:
         assert sample_datatable.description == "Main datatable"
 
     def test_stores_sampling_interval(self, sample_datatable):
-        assert sample_datatable.sampling_interval == pd.Timedelta("1h")
+        assert sample_datatable.sample_interval == pd.Timedelta("1h")
 
 
 class TestDatatableProperties:
@@ -68,7 +68,7 @@ class TestRenameAnimal:
     """Tests for Datatable.rename_animal."""
 
     def test_rename_animal(self, sample_datatable):
-        new_animal = Animal(enabled=True, id="NewA1", color="#FF0000", properties={})
+        new_animal = Animal(id="NewA1", color="#FF0000", properties={})
         sample_datatable.rename_animal("A1", new_animal)
 
         assert "NewA1" in sample_datatable.df["Animal"].values
@@ -148,13 +148,6 @@ class TestSetFactors:
 
 class TestGetFilteredDf:
     """Tests for Datatable.get_filtered_df."""
-
-    def test_filters_by_enabled_animals(self, sample_datatable):
-        # A3 is disabled in sample_animals
-        df = sample_datatable.get_filtered_df(["Animal", "Weight"])
-
-        assert "A3" not in df["Animal"].values
-        assert "A1" in df["Animal"].values
 
     def test_returns_specified_columns(self, sample_datatable):
         df = sample_datatable.get_filtered_df(["Animal", "Weight"])

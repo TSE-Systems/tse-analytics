@@ -1,22 +1,16 @@
 import pandas as pd
 
-from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.drinkfeed_bin_data import DrinkFeedBinData
+from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.shared import Variable
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.drinkfeed_settings import DrinkFeedSettings
-
-default_columns = ["DateTime", "Animal", "Box"]
 
 
 def process_drinkfeed_intervals(
-    drinkfeed_data: DrinkFeedBinData,
-    long_df: pd.DataFrame,
+    datatable: Datatable,
     settings: DrinkFeedSettings,
     diets_dict: dict[int, float],
-):
-    # TODO: drop unnecessary rows
-    # long_df = long_df.loc[~(long_df["Value"] == 0)]
-
-    group_by = ["Animal", "Sensor"]
-    grouped = long_df.groupby(group_by, dropna=False, observed=False)
+) -> Datatable:
+    grouped = datatable.df.groupby(["Animal"], dropna=False, observed=False)
 
     timedelta = pd.Timedelta(
         hours=settings.fixed_interval.hour,
@@ -24,53 +18,74 @@ def process_drinkfeed_intervals(
         seconds=settings.fixed_interval.second,
     )
 
+    agg = {}
+    for variable in datatable.variables.values():
+        agg[variable.name] = variable.aggregation
+
     intervals_df = grouped.resample(
         timedelta,
-        on="DateTime",
-        origin=drinkfeed_data.dataset.experiment_started,
-    ).aggregate({
-        "Value": "sum",
-    })
+        on="Timedelta",
+        origin=datatable.dataset.experiment_started,
+    ).aggregate(agg)
 
-    intervals_df.sort_values(by=["DateTime", "Animal"], inplace=True)
-    intervals_df.reset_index(inplace=True)
-
-    sensors = intervals_df["Sensor"].unique().tolist()
-
-    intervals_df = intervals_df.pivot(index=["Animal", "DateTime"], columns="Sensor", values="Value")
-    intervals_df.reset_index(inplace=True)
-
-    # Calculate time delta
-    first_timestamp = intervals_df["DateTime"].min()
-    if first_timestamp > drinkfeed_data.dataset.experiment_started:
-        first_timestamp = drinkfeed_data.dataset.experiment_started
-    intervals_df.insert(
-        intervals_df.columns.get_loc("DateTime") + 1, "Timedelta", intervals_df["DateTime"] - first_timestamp
-    )
+    intervals_df = intervals_df.sort_values(by=["Timedelta", "Animal"]).reset_index()
 
     # Insert Bin column
     intervals_df.insert(
         intervals_df.columns.get_loc("Timedelta") + 1,
         "Bin",
-        (intervals_df["Timedelta"] / timedelta).round().astype(int),
+        (intervals_df["Timedelta"] / timedelta).round().astype("UInt64"),
     )
 
-    # Add caloric value column
-    for sensor in sensors:
-        if "Feed" in sensor:
-            _add_caloric_column(intervals_df, sensor, diets_dict)
+    variables = datatable.variables.copy()
 
-    # Sort by DateTime column
-    intervals_df.sort_values(by=["DateTime", "Animal"], inplace=True)
-    intervals_df.reset_index(drop=True, inplace=True)
+    for variable in datatable.variables.values():
+        # Add caloric value column
+        if "Feed" in variable.name:
+            intervals_df = _add_caloric_column(intervals_df, variable.name, diets_dict, variables)
 
-    return intervals_df
+    # Sort by Timedelta column
+    # intervals_df = intervals_df.sort_values(by=["Timedelta", "Animal"]).reset_index(drop=True)
+
+    intervals_datatable = Datatable(
+        datatable.dataset,
+        "DrinkFeedIntervals",
+        "Drink/Feed intervals datatable",
+        variables,
+        intervals_df,
+        {
+            "origin": "DrinkFeedIntervals",
+            "samping_interval": timedelta,
+        },
+    )
+
+    return intervals_datatable
 
 
-def _add_caloric_column(df: pd.DataFrame, origin_column: str, diets_dict: dict[int, float]) -> pd.DataFrame:
+def _add_caloric_column(
+    df: pd.DataFrame,
+    origin_column: str,
+    diets_dict: dict[int, float],
+    variables: dict[str, Variable],
+) -> pd.DataFrame:
     if origin_column in df.columns:
-        df.insert(df.columns.get_loc(origin_column) + 1, f"{origin_column}-kcal", df["Animal"].astype(str))
-        df.replace({f"{origin_column}-kcal": diets_dict}, inplace=True)
-        df[f"{origin_column}-kcal"] = df[f"{origin_column}-kcal"].astype(float)
-        df[f"{origin_column}-kcal"] = df[f"{origin_column}-kcal"] * df[origin_column]
+        new_name = f"{origin_column}[kcal]"
+        df.insert(
+            df.columns.get_loc(origin_column) + 1,
+            new_name,
+            df["Animal"].astype("string"),
+        )
+        df = df.replace({new_name: diets_dict})
+        df[new_name] = df[new_name].astype("Float64")
+        df[new_name] = df[new_name] * df[origin_column]
+
+        variable = Variable(
+            new_name,
+            "kcal",
+            f"{variables[origin_column].name} caloric value",
+            "Float64",
+            variables[origin_column].aggregation,
+            False,
+        )
+        variables[new_name] = variable
     return df

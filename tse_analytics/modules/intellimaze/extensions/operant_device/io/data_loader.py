@@ -1,54 +1,48 @@
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
-from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
-from tse_analytics.modules.intellimaze.extensions.operant_device.data.operant_device_data import OperantDeviceData
+from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.globals import TIME_RESOLUTION_UNIT
+from tse_analytics.modules.intellimaze.extensions.operant_device.data import processor
 from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
 
 
 def import_data(
     folder_path: Path,
-    dataset: IntelliMazeDataset,
-) -> OperantDeviceData:
-    raw_data = {
-        "Sessions": _import_sessions_df(folder_path),
-        "Antenna": _import_antenna_df(folder_path),
-        "Log": _import_log_df(folder_path),
-        "Input": _import_input_df(folder_path),
-        "Output": _import_output_df(folder_path),
+    dataset: Dataset,
+) -> dict[str, Datatable]:
+    extension_data = {
+        "Sessions": _import_sessions_df(dataset, folder_path / "Sessions.txt"),
+        "Antenna": _import_antenna_df(dataset, folder_path / "Antenna.txt"),
+        "Log": _import_log_df(dataset, folder_path / "Log.txt"),
+        "Input": _import_input_df(dataset, folder_path / "Input.txt"),
+        "Output": _import_output_df(dataset, folder_path / "Output.txt"),
     }
 
-    variables_data = import_variable_data(folder_path)
+    variables_data = import_variable_data(dataset, folder_path)
     if len(variables_data) > 0:
-        raw_data = raw_data | variables_data
+        extension_data = extension_data | variables_data
 
-    data = OperantDeviceData(
-        dataset,
-        "OperantDevice extension data",
-        raw_data,
-    )
+    processor.preprocess_data(dataset, extension_data)
 
-    data.preprocess_data()
-
-    return data
+    return extension_data
 
 
-def _import_sessions_df(folder_path: Path) -> pd.DataFrame | None:
-    file_path = folder_path / "Sessions.txt"
+def _import_sessions_df(dataset: Dataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
-        return None
+        raise FileNotFoundError(f"Sessions file not found: {file_path}")
 
     dtype = {
-        "DeviceId": str,
-        "IdSectionVisited": np.int8,
-        "StandbySectionVisited": np.int8,
-        "Direction": str,
-        "Weight": np.float64,
-        "Tag": str,
-        "Start": str,
-        "End": str,
+        "DeviceId": "string",
+        "IdSectionVisited": "UInt8",
+        "StandbySectionVisited": "UInt8",
+        "Direction": "string",
+        "Weight": "Float64",
+        "Tag": "string",
+        "Start": "string",
+        "End": "string",
     }
 
     df = pd.read_csv(
@@ -56,23 +50,34 @@ def _import_sessions_df(folder_path: Path) -> pd.DataFrame | None:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
+        dtype_backend="numpy_nullable",
     )
 
     # TODO: does -1 means no weight measurement?
-    df["Weight"] = df["Weight"].replace(-1, np.nan)
+    df["Weight"] = df["Weight"].replace(-1, pd.NA)
 
     # Convert DateTime columns
-    df["Start"] = pd.to_datetime(
-        df["Start"],
-        format="ISO8601",
-        utc=False,
-    ).dt.tz_localize(None)
+    df["Start"] = (
+        pd
+        .to_datetime(
+            df["Start"],
+            format="ISO8601",
+            utc=False,
+        )
+        .dt.tz_localize(None)
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+    )
 
-    df["End"] = pd.to_datetime(
-        df["End"],
-        format="ISO8601",
-        utc=False,
-    ).dt.tz_localize(None)
+    df["End"] = (
+        pd
+        .to_datetime(
+            df["End"],
+            format="ISO8601",
+            utc=False,
+        )
+        .dt.tz_localize(None)
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+    )
 
     # Convert categorical types
     df = df.astype({
@@ -84,19 +89,27 @@ def _import_sessions_df(folder_path: Path) -> pd.DataFrame | None:
     df.sort_values(["Start"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "Sessions",
+        f"{processor.EXTENSION_NAME} sessions data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable
 
 
-def _import_antenna_df(folder_path: Path) -> pd.DataFrame | None:
-    file_path = folder_path / "Antenna.txt"
+def _import_antenna_df(dataset: Dataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
-        return None
+        raise FileNotFoundError(f"Antenna file not found: {file_path}")
 
     dtype = {
-        "Time": str,
-        "DeviceId": str,
-        "Tag": str,
-        "AnimalName": str,
+        "Time": "string",
+        "DeviceId": "string",
+        "Tag": "string",
+        "AnimalName": "string",
     }
 
     df = pd.read_csv(
@@ -104,14 +117,20 @@ def _import_antenna_df(folder_path: Path) -> pd.DataFrame | None:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
-    df["Time"] = pd.to_datetime(
-        df["Time"],
-        format="ISO8601",
-        utc=False,
-    ).dt.tz_localize(None)
+    df["Time"] = (
+        pd
+        .to_datetime(
+            df["Time"],
+            format="ISO8601",
+            utc=False,
+        )
+        .dt.tz_localize(None)
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+    )
 
     # Convert categorical types
     df = df.astype({
@@ -122,21 +141,29 @@ def _import_antenna_df(folder_path: Path) -> pd.DataFrame | None:
     df.sort_values(["Time"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "Antenna",
+        f"{processor.EXTENSION_NAME} antenna data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable
 
 
-def _import_log_df(folder_path: Path) -> pd.DataFrame | None:
-    file_path = folder_path / "Log.txt"
+def _import_log_df(dataset: Dataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
-        return None
+        raise FileNotFoundError(f"Log file not found: {file_path}")
 
     dtype = {
-        "DateTime": str,
-        "DeviceId": str,
-        "Phase": str,
-        "Flag": str,
-        "Tag": str,
-        "Description": str,
+        "DateTime": "string",
+        "DeviceId": "string",
+        "Phase": "string",
+        "Flag": "string",
+        "Tag": "string",
+        "Description": "string",
     }
 
     df = pd.read_csv(
@@ -144,14 +171,20 @@ def _import_log_df(folder_path: Path) -> pd.DataFrame | None:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
-    df["DateTime"] = pd.to_datetime(
-        df["DateTime"],
-        format="ISO8601",
-        utc=False,
-    ).dt.tz_localize(None)
+    df["DateTime"] = (
+        pd
+        .to_datetime(
+            df["DateTime"],
+            format="ISO8601",
+            utc=False,
+        )
+        .dt.tz_localize(None)
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+    )
 
     # Convert categorical types
     df = df.astype({
@@ -164,30 +197,57 @@ def _import_log_df(folder_path: Path) -> pd.DataFrame | None:
     df.sort_values(["DateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "Log",
+        f"{processor.EXTENSION_NAME} log data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable
 
 
-def _import_input_df(folder_path: Path) -> pd.DataFrame | None:
-    file_path = folder_path / "Input.txt"
+def _import_input_df(dataset: Dataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
-        return None
+        raise FileNotFoundError(f"Input file not found: {file_path}")
 
     df = pd.read_csv(
         file_path,
         header=None,
+        dtype_backend="numpy_nullable",
     )
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "Input",
+        f"{processor.EXTENSION_NAME} input data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable
 
 
-def _import_output_df(folder_path: Path) -> pd.DataFrame | None:
-    file_path = folder_path / "Output.txt"
+def _import_output_df(dataset: Dataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
-        return None
+        raise FileNotFoundError(f"Output file not found: {file_path}")
 
     df = pd.read_csv(
         file_path,
         header=None,
+        dtype_backend="numpy_nullable",
     )
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "Output",
+        f"{processor.EXTENSION_NAME} output data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable

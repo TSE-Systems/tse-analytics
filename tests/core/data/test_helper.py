@@ -2,12 +2,8 @@
 
 import numpy as np
 import pandas as pd
-from tse_analytics.core.data.helper import (
-    normalize_nd_array,
-    reassign_df_timedelta_and_bin,
-    rename_animal_df,
-)
 from tse_analytics.core.data.shared import Animal
+from tse_analytics.core.utils.data import normalize_nd_array, reassign_df_timedelta_and_bin, rename_animal_df
 
 
 class TestRenameAnimalDf:
@@ -17,7 +13,7 @@ class TestRenameAnimalDf:
         df = pd.DataFrame({"Animal": ["A1", "A1", "A2"], "Value": [1, 2, 3]})
         df["Animal"] = df["Animal"].astype("category")
 
-        animal = Animal(enabled=True, id="A1_renamed", color="#FF0000", properties={})
+        animal = Animal(id="A1_renamed", color="#FF0000", properties={})
         result = rename_animal_df(df, "A1", animal)
 
         assert "A1_renamed" in result["Animal"].values
@@ -27,7 +23,7 @@ class TestRenameAnimalDf:
         df = pd.DataFrame({"Animal": ["A1", "A2"]})
         df["Animal"] = df["Animal"].astype("category")
 
-        animal = Animal(enabled=True, id="B1", color="#FF0000", properties={})
+        animal = Animal(id="B1", color="#FF0000", properties={})
         result = rename_animal_df(df, "A1", animal)
 
         assert result["Animal"].dtype.name == "category"
@@ -36,7 +32,7 @@ class TestRenameAnimalDf:
         df = pd.DataFrame({"Animal": ["A1", "A2", "A3"], "Value": [1, 2, 3]})
         df["Animal"] = df["Animal"].astype("category")
 
-        animal = Animal(enabled=True, id="B1", color="#FF0000", properties={})
+        animal = Animal(id="B1", color="#FF0000", properties={})
         result = rename_animal_df(df, "A1", animal)
 
         assert result.loc[1, "Animal"] == "A2"

@@ -1,14 +1,15 @@
 """Tests for tse_analytics.core.data.shared module."""
 
-import pandas as pd
+from dataclasses import asdict
+from datetime import timedelta
+
+from tse_analytics.core.data.binning import TimePhase
 from tse_analytics.core.data.shared import (
     Aggregation,
     Animal,
     AnimalDiet,
     Factor,
     FactorLevel,
-    SplitMode,
-    TimePhase,
     Variable,
 )
 
@@ -31,42 +32,27 @@ class TestAggregation:
         assert isinstance(Aggregation.MEAN, str)
 
 
-class TestSplitMode:
-    """Tests for SplitMode enum."""
-
-    def test_values(self):
-        assert SplitMode.ANIMAL == "Animal"
-        assert SplitMode.FACTOR == "Factor"
-        assert SplitMode.RUN == "Run"
-        assert SplitMode.TOTAL == "Total"
-
-    def test_is_str(self):
-        assert isinstance(SplitMode.ANIMAL, str)
-
-
 class TestAnimal:
     """Tests for Animal dataclass."""
 
     def test_creation(self):
-        animal = Animal(enabled=True, id="A1", color="#FF0000", properties={"weight": 25.0})
+        animal = Animal(id="A1", color="#FF0000", properties={"weight": 25.0})
         assert animal.id == "A1"
-        assert animal.enabled is True
         assert animal.color == "#FF0000"
         assert animal.properties == {"weight": 25.0}
 
     def test_get_dict(self):
-        animal = Animal(enabled=True, id="A1", color="#FF0000", properties={})
-        d = animal.get_dict()
+        animal = Animal(id="A1", color="#FF0000", properties={})
+        d = asdict(animal)
         assert "id" in d
-        assert "enabled" in d
         assert "color" in d
         assert "properties" in d
         assert d["id"] == "A1"
 
     def test_get_dict_returns_all_fields(self):
-        animal = Animal(enabled=False, id="B2", color="#00FF00", properties={"cage": 3})
-        d = animal.get_dict()
-        assert len(d) == 4
+        animal = Animal(id="B2", color="#00FF00", properties={"cage": 3})
+        d = asdict(animal)
+        assert len(d) == 3
 
 
 class TestFactorLevel:
@@ -122,7 +108,7 @@ class TestVariable:
             aggregation=Aggregation.SUM,
             remove_outliers=False,
         )
-        d = var.get_dict()
+        d = asdict(var)
         assert "name" in d
         assert "unit" in d
         assert "aggregation" in d
@@ -133,9 +119,9 @@ class TestTimePhase:
     """Tests for TimePhase dataclass."""
 
     def test_creation(self):
-        phase = TimePhase(name="Light", start_timestamp=pd.Timedelta("7h"))
+        phase = TimePhase(name="Light", start_timestamp=timedelta(hours=7))
         assert phase.name == "Light"
-        assert phase.start_timestamp == pd.Timedelta("7h")
+        assert phase.start_timestamp == timedelta(hours=7)
 
 
 class TestAnimalDiet:

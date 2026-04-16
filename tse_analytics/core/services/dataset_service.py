@@ -6,7 +6,7 @@ merging and cloning datasets.
 """
 
 import copy
-from uuid import uuid4
+from uuid import uuid7
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
@@ -14,10 +14,7 @@ from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.services.selection_service import SelectionService
 from tse_analytics.core.services.workspace_service import WorkspaceService
-from tse_analytics.modules.intellicage.data import intellicage_dataset_merger
-from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
-from tse_analytics.modules.phenomaster.data import phenomaster_dataset_merger
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
+from tse_analytics.core.utils import data_merger
 
 
 class DatasetService:
@@ -94,24 +91,13 @@ class DatasetService:
             continuous_mode: Whether to use continuous mode for merging.
             generate_new_animal_names: Whether to generate new animal names.
         """
-        first_dataset = datasets[0]
-        merged_dataset = None
-        if isinstance(first_dataset, PhenoMasterDataset):
-            merged_dataset = phenomaster_dataset_merger.merge_datasets(
-                new_dataset_name,
-                datasets,
-                single_run,
-                continuous_mode,
-                generate_new_animal_names,
-            )
-        elif isinstance(first_dataset, IntelliCageDataset):
-            merged_dataset = intellicage_dataset_merger.merge_datasets(
-                new_dataset_name,
-                datasets,
-                single_run,
-                continuous_mode,
-                generate_new_animal_names,
-            )
+        merged_dataset = data_merger.merge_datasets(
+            new_dataset_name,
+            datasets,
+            single_run,
+            continuous_mode,
+            generate_new_animal_names,
+        )
 
         if merged_dataset is not None:
             self.add_dataset(merged_dataset)
@@ -124,8 +110,8 @@ class DatasetService:
             new_dataset_name: The name for the new cloned dataset.
         """
         new_dataset = copy.deepcopy(original_dataset)
-        new_dataset.id = uuid4()
-        new_dataset.metadata["name"] = new_dataset_name
+        new_dataset.id = uuid7()
+        new_dataset.name = new_dataset_name
         if new_dataset is not None:
             self.add_dataset(new_dataset)
 

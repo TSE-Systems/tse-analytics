@@ -5,8 +5,9 @@ This module provides classes for configuring outlier detection and handling,
 including different modes (off, highlight, remove) and settings.
 """
 
-from dataclasses import dataclass
 from enum import StrEnum, unique
+
+from pydantic.dataclasses import dataclass
 
 
 @unique

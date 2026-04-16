@@ -28,7 +28,6 @@ def analysis_animals():
     for i in range(1, 7):
         group = "Control" if i <= 3 else "Treatment"
         animals[f"M{i}"] = Animal(
-            enabled=True,
             id=f"M{i}",
             color=f"#{'FF' if i <= 3 else '00'}0000",
             properties={"group": group},
@@ -117,7 +116,13 @@ def analysis_dataset(analysis_animals, analysis_factor, analysis_variables, anal
     }
 
     with patch("tse_analytics.core.data.dataset.messaging"):
-        dataset = Dataset(metadata=metadata, animals=analysis_animals)
+        dataset = Dataset(
+            name="Analysis Dataset",
+            description="Test dataset for analysis",
+            dataset_type="PhenoMaster",
+            metadata=metadata,
+            animals=analysis_animals,
+        )
         dataset.factors = {"Group": analysis_factor}
 
         datatable = Datatable(
@@ -126,7 +131,7 @@ def analysis_dataset(analysis_animals, analysis_factor, analysis_variables, anal
             description="Main datatable",
             variables=analysis_variables,
             df=analysis_df,
-            sampling_interval=pd.Timedelta("1h"),
+            metadata={},
         )
         dataset.datatables["Main"] = datatable
 

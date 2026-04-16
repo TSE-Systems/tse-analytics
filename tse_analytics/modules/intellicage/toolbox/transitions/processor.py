@@ -60,7 +60,7 @@ def _process_animal(
     animal_df = animal_df.dropna(subset=["NextCorner"])
 
     # Convert corner numbers to integers if they aren't already
-    animal_df["NextCorner"] = animal_df["NextCorner"].astype(int)
+    animal_df["NextCorner"] = animal_df["NextCorner"].astype("UInt8")
 
     # Create a transition matrix
     observed_matrix = pd.crosstab(animal_df["Corner"], animal_df["NextCorner"])

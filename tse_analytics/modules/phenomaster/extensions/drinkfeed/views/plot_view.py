@@ -8,8 +8,8 @@ class PlotView(pg.GraphicsLayoutWidget):
     def __init__(self, parent: QWidget, title="DrinkFeedPlot"):
         super().__init__(parent, title=title)
 
-        self._df: pd.DataFrame | None = None
-        self._variable: str = ""
+        self.df: pd.DataFrame | None = None
+        self.variable: str = ""
 
         # Set layout proportions
         self.ci.layout.setRowStretchFactor(0, 2)
@@ -51,11 +51,11 @@ class PlotView(pg.GraphicsLayoutWidget):
         self.region.setRegion(rgn)
 
     def set_data(self, df: pd.DataFrame):
-        self._df = df
+        self.df = df
         self._update_plot()
 
     def set_variable(self, variable: str):
-        self._variable = variable
+        self.variable = variable
         self._update_plot()
 
     def _update_plot(self):
@@ -64,21 +64,22 @@ class PlotView(pg.GraphicsLayoutWidget):
         self.p2.clearPlots()
         self.legend.clear()
 
-        if self._df is None or self._df.empty or self._variable == "":
+        if self.df is None or self.df.empty or self.variable == "":
             return
 
-        variable_df = self._df[self._df["Sensor"] == self._variable]
-        if variable_df.empty:
+        df = self.df[["Animal", "Timedelta", self.variable]]
+        if df.empty:
             return
 
-        animal_ids = variable_df["Animal"].unique().tolist()
+        # Drop rows with NaN values
+        df = df.dropna()
+
+        animal_ids = df["Animal"].unique().tolist()
         for i, animal_id in enumerate(animal_ids):
-            filtered_data = variable_df[variable_df["Animal"] == animal_id]
+            filtered_data = df[df["Animal"] == animal_id]
 
-            x = filtered_data["DateTime"].dt.as_unit("us")
-            x = x.astype("int64") // 10**6
-            x = x.to_numpy()
-            y = filtered_data["Value"].to_numpy()
+            x = filtered_data["Timedelta"].dt.total_seconds().to_numpy()
+            y = filtered_data[self.variable].to_numpy()
 
             pen = mkPen(color=(i, len(animal_ids)), width=1)
             # p1d = self.p1.plot(x, y, symbol='o', symbolSize=2, symbolPen=pen, pen=pen)

@@ -10,18 +10,15 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
-from uuid import uuid4
+from uuid import uuid7
 
 import pandas as pd
 
-from tse_analytics.core.data.helper import reassign_df_timedelta_and_bin, rename_animal_df
-from tse_analytics.core.data.operators.animal_filter_pipe_operator import filter_animals
-from tse_analytics.core.data.operators.group_by_pipe_operator import group_by_columns
+from tse_analytics.core import messaging
 from tse_analytics.core.data.operators.outliers_pipe_operator import process_outliers
-from tse_analytics.core.data.operators.time_binning_pipe_operator import process_time_binning
-from tse_analytics.core.data.outliers import OutliersMode
-from tse_analytics.core.data.shared import Animal, Factor, SplitMode, Variable
-from tse_analytics.core.utils.data import exclude_animals_from_df
+from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings
+from tse_analytics.core.data.shared import Animal, Factor, Variable
+from tse_analytics.core.utils.data import exclude_animals_from_df, reassign_df_timedelta_and_bin, rename_animal_df
 
 if TYPE_CHECKING:
     from tse_analytics.core.data.dataset import Dataset
@@ -37,9 +34,6 @@ class Datatable:
     processed data frames for analysis.
     """
 
-    """Default columns that are always present in a datatable."""
-    default_columns = ["Animal", "Timedelta", "DateTime"]
-
     def __init__(
         self,
         dataset: Dataset,
@@ -47,7 +41,7 @@ class Datatable:
         description: str,
         variables: dict[str, Variable],
         df: pd.DataFrame,
-        sampling_interval: pd.Timedelta | None,
+        metadata: dict[str, Any],
     ):
         """
         Initialize a Datatable instance.
@@ -64,18 +58,33 @@ class Datatable:
             Dictionary mapping variable names to Variable objects.
         df : pd.DataFrame
             The pandas DataFrame containing the data.
-        sampling_interval : pd.Timedelta or None
-            The sampling interval of the data, or None if not applicable.
+        metadata : dict[str, Any]
+            Metadata associated with the datatable, such as sampling interval.
         """
-        self.id = uuid4()
+        self.id = uuid7()
         self.dataset = dataset
         self.name = name
         self.description = description
         self.variables = variables
-
         self.df = df
+        self.metadata = metadata
 
-        self.sampling_interval = sampling_interval
+        self.outliers_settings = OutliersSettings()
+
+        self.parent_table: Datatable | None = None
+        self.derived_tables: dict[str, Datatable] = {}
+
+    @property
+    def extension_name(self) -> str | None:
+        return self.metadata.get("extension_name", None)
+
+    @property
+    def sample_interval(self) -> pd.Timedelta | None:
+        return self.metadata.get("sample_interval", None)
+
+    @property
+    def is_regular_timeseries(self) -> bool:
+        return self.sample_interval is not None
 
     @property
     def start_timestamp(self) -> pd.Timestamp:
@@ -136,11 +145,15 @@ class Datatable:
         list[str]
             List of default column names, including "Bin" and "Run" if they exist.
         """
-        columns = Datatable.default_columns
+        columns = ["Animal"]
+        if "DateTime" in self.df.columns:
+            columns.append("DateTime")
+        if "Timedelta" in self.df.columns:
+            columns.append("Timedelta")
         if "Bin" in self.df.columns:
-            columns = columns + ["Bin"]
+            columns.append("Bin")
         if "Run" in self.df.columns:
-            columns = columns + ["Run"]
+            columns.append("Run")
         return columns
 
     def get_categorical_columns(self) -> list[str]:
@@ -155,34 +168,44 @@ class Datatable:
         columns = self.df.select_dtypes(include=["category"]).columns.tolist()
         return columns
 
-    def get_group_by_columns(self, check_binning=True, disable_total_mode=False) -> list[str]:
+    def get_group_by_columns(
+        self,
+        disable_total_mode=False,
+        disable_run_mode=False,
+        disable_animal_mode=False,
+    ) -> list[str]:
         """
         Get the columns that can be used for grouping data.
-
-        Parameters
-        ----------
-        check_binning : bool, default=True
-            Whether to check if binning is applied or available.
-        disable_total_mode : bool, default=False
-            Whether Total mode should be available.
 
         Returns
         -------
         list[str]
             List of column names that can be used for grouping data.
         """
-        modes = ["Animal"]
-        if check_binning:
-            if not ("Bin" in self.df.columns or self.dataset.binning_settings.apply):
-                return modes
+        modes = ["Animal"] if not disable_animal_mode else []
         if not disable_total_mode:
             modes.append("Total")
-        if self.get_merging_mode() is not None:
+        if not disable_run_mode and "Run" in self.df.columns:
             modes.append("Run")
         if len(self.dataset.factors) > 0:
             for factor in self.dataset.factors.keys():
                 modes.append(factor)
         return modes
+
+    def apply_outliers(self, settings: OutliersSettings) -> None:
+        """
+        Apply outlier detection settings to the datatable.
+
+        This method updates the outlier detection settings for the datatable and
+        broadcasts a message to notify listeners of the change.
+
+        Parameters
+        ----------
+        settings : OutliersSettings
+            The outlier detection settings to apply to the datatable.
+        """
+        self.outliers_settings = settings
+        messaging.broadcast(messaging.OutliersChangedMessage(self, self))
 
     def rename_animal(self, old_id: str, animal: Animal) -> None:
         """
@@ -206,7 +229,8 @@ class Datatable:
         animal_ids : set[str]
             Set of animal IDs to exclude from the datatable.
         """
-        self.df = exclude_animals_from_df(self.df, animal_ids)
+        if "Animal" in self.df.columns:
+            self.df = exclude_animals_from_df(self.df, animal_ids)
 
     def exclude_time(self, range_start: datetime, range_end: datetime) -> None:
         """
@@ -221,7 +245,7 @@ class Datatable:
         """
         self.df = self.df[(self.df["DateTime"] < range_start) | (self.df["DateTime"] > range_end)]
         merging_mode = self.get_merging_mode()
-        self.df = reassign_df_timedelta_and_bin(self.df, self.sampling_interval, merging_mode)
+        self.df = reassign_df_timedelta_and_bin(self.df, self.sample_interval, merging_mode)
 
     def trim_time(self, range_start: datetime, range_end: datetime) -> None:
         """
@@ -236,9 +260,9 @@ class Datatable:
         """
         self.df = self.df[(self.df["DateTime"] >= range_start) & (self.df["DateTime"] <= range_end)]
         merging_mode = self.get_merging_mode()
-        self.df = reassign_df_timedelta_and_bin(self.df, self.sampling_interval, merging_mode)
+        self.df = reassign_df_timedelta_and_bin(self.df, self.sample_interval, merging_mode)
 
-    def resample(self, resampling_interval: pd.Timedelta) -> None:
+    def resample(self, resample_interval: pd.Timedelta) -> None:
         """
         Resample the datatable to a new time interval.
 
@@ -247,7 +271,7 @@ class Datatable:
 
         Parameters
         ----------
-        resampling_interval : pd.Timedelta
+        resample_interval : pd.Timedelta
             The time interval to resample the data to.
         """
         agg = {
@@ -263,24 +287,24 @@ class Datatable:
                     agg[column] = self.variables[column].aggregation
 
         result = self.df.groupby(["Animal"], dropna=False, observed=False)
-        result = result.resample(resampling_interval, on="Timedelta", origin=self.dataset.experiment_started).agg(agg)
+        result = result.resample(resample_interval, on="Timedelta", origin=self.dataset.experiment_started).agg(agg)
         result.reset_index(inplace=True, drop=False)
 
         # Drop empty entries
         result.dropna(subset=["DateTime"], inplace=True)
 
         # Assign new bins numbers
-        result["Bin"] = (result["Timedelta"] / resampling_interval).round().astype(int)
+        result["Bin"] = (result["Timedelta"] / resample_interval).round().astype("UInt64")
 
         result.sort_values(by=["Timedelta", "Animal"], inplace=True)
         result.reset_index(inplace=True, drop=True)
 
         if "Run" in result.columns:
             result = result.astype({
-                "Run": int,
+                "Run": "UInt8",
             })
 
-        self.sampling_interval = resampling_interval
+        self.metadata["sample_interval"] = resample_interval
         self.df = result
 
     def set_factors(self, factors: dict[str, Factor], old_factors: dict[str, Factor] | None = None) -> None:
@@ -295,12 +319,15 @@ class Datatable:
         factors : dict[str, Factor]
             Dictionary mapping factor names to Factor objects.
         """
+        if "Animal" not in self.df.columns:
+            return
+
         # TODO: should be copy?
         df = self.df.copy()
 
         # Drop old factors
         if old_factors is not None:
-            df.drop(columns=old_factors.keys(), inplace=True)
+            df.drop(columns=old_factors.keys(), inplace=True, errors="ignore")
 
         animal_ids = df["Animal"].unique()
 
@@ -313,7 +340,7 @@ class Datatable:
                 for animal_id in level.animal_ids:
                     animal_factor_map[animal_id] = level.name
 
-            df[factor.name] = df["Animal"].astype(str)
+            df[factor.name] = df["Animal"].astype("string")
             df.replace({factor.name: animal_factor_map}, inplace=True)
             df[factor.name] = df[factor.name].astype("category")
 
@@ -322,55 +349,6 @@ class Datatable:
             df[factor.name] = df[factor.name].cat.reorder_categories(order)
 
         self.df = df
-
-    def get_df(
-        self,
-        variable_columns: list[str],
-        split_mode: SplitMode,
-        factor_name: str,
-    ) -> pd.DataFrame:
-        """
-        Get a dataframe with the specified variables and split mode.
-
-        This method returns a dataframe containing the specified variables,
-        with appropriate grouping based on the split mode.
-
-        Parameters
-        ----------
-        variable_columns : list[str]
-            List of variable column names to include in the dataframe.
-        split_mode : SplitMode
-            The mode to use for splitting the data (by animal, factor, run, or total).
-        factor_name : str
-            The name of the factor to use when split_mode is FACTOR.
-
-        Returns
-        -------
-        pd.DataFrame
-            A dataframe containing the specified variables with appropriate grouping.
-        """
-        if self.dataset.binning_settings.apply:
-            # Binning is applied
-            variables = {col: self.variables[col] for col in variable_columns}
-            df = self.get_preprocessed_df(
-                variables,
-                split_mode,
-                factor_name,
-                False,
-            )
-        else:
-            match split_mode:
-                case SplitMode.ANIMAL:
-                    columns = variable_columns + ["Animal"]
-                case SplitMode.RUN:
-                    columns = variable_columns + ["Run"]
-                case SplitMode.FACTOR:
-                    columns = variable_columns + [factor_name]
-                case _:
-                    # Split by total
-                    columns = variable_columns
-            df = self.get_filtered_df(columns)
-        return df
 
     def get_filtered_df(
         self,
@@ -395,113 +373,12 @@ class Datatable:
         # TODO: Should use the copy?
         df = self.df[columns]
 
-        # Filter animals
-        df = filter_animals(df, self.dataset.animals).copy()
-
         # Outliers removal
-        if self.dataset.outliers_settings.mode == OutliersMode.REMOVE:
+        if self.outliers_settings.mode == OutliersMode.REMOVE:
             variables = {k: v for k, v in self.variables.items() if k in columns}
-            df = process_outliers(df, self.dataset.outliers_settings, variables)
+            df = process_outliers(df, self.outliers_settings, variables)
 
         return df
-
-    def get_preprocessed_df(
-        self,
-        variables: dict[str, Variable],
-        split_mode=SplitMode.ANIMAL,
-        selected_factor_name: str | None = None,
-        dropna=False,
-    ) -> pd.DataFrame:
-        """
-        Get a preprocessed dataframe with time binning and grouping applied.
-
-        Parameters
-        ----------
-        variables : dict[str, Variable]
-            Dictionary mapping variable names to Variable objects.
-        split_mode : SplitMode, default=SplitMode.ANIMAL
-            The mode to use for splitting the data.
-        selected_factor_name : str or None, default=None
-            The name of the factor to use when split_mode is FACTOR.
-        dropna : bool, default=False
-            Whether to drop rows with NaN values.
-
-        Returns
-        -------
-        pd.DataFrame
-            A preprocessed dataframe with time binning and grouping applied.
-        """
-        columns = self.get_default_columns() + list(self.dataset.factors) + list(variables)
-        result = self.get_filtered_df(columns)
-
-        # Time binning
-        result = process_time_binning(
-            result,
-            self.dataset.binning_settings,
-            variables,
-            self.dataset.experiment_started,
-        )
-
-        # Group by columns
-        result = group_by_columns(
-            result,
-            variables,
-            split_mode,
-            selected_factor_name,
-        )
-
-        # TODO: should or should not?
-        if dropna:
-            result.dropna(inplace=True)
-
-        return result
-
-    def get_preprocessed_df_columns(
-        self,
-        columns: list[str],
-        split_mode=SplitMode.ANIMAL,
-        selected_factor_name: str | None = None,
-    ) -> pd.DataFrame:
-        """
-        Get a preprocessed dataframe with specific columns.
-
-        Similar to get_preprocessed_df, but allows specifying exact columns to include.
-
-        Parameters
-        ----------
-        columns : list[str]
-            List of column names to include in the dataframe.
-        split_mode : SplitMode, default=SplitMode.ANIMAL
-            The mode to use for splitting the data.
-        selected_factor_name : str or None, default=None
-            The name of the factor to use when split_mode is FACTOR.
-
-        Returns
-        -------
-        pd.DataFrame
-            A preprocessed dataframe with the specified columns.
-        """
-        result = self.get_filtered_df(columns)
-
-        variables = {key: self.variables[key] for key in columns if key in self.variables}
-
-        # Time binning
-        result = process_time_binning(
-            result,
-            self.dataset.binning_settings,
-            variables,
-            self.dataset.experiment_started,
-        )
-
-        # Group by columns
-        result = group_by_columns(
-            result,
-            variables,
-            split_mode,
-            selected_factor_name,
-        )
-
-        return result
 
     def delete_variables(self, variable_names: list[str]) -> None:
         """
@@ -523,13 +400,25 @@ class Datatable:
                 self.variables[new_name] = self.variables.pop(old_name, None)
                 self.variables[new_name].name = new_name
 
+        # Sort variables by name
+        self.variables = dict(sorted(self.variables.items(), key=lambda x: x[0].lower()))
+
         self.df.rename(columns=variable_name_map, inplace=True, errors="ignore")
 
     def freeze_outliers_removal(self):
-        df = process_outliers(self.df, self.dataset.outliers_settings, self.variables)
+        df = process_outliers(self.df, self.outliers_settings, self.variables)
         self.df = df
 
     def clone(self):
         return Datatable(
-            self.dataset, self.name, self.description, self.variables, self.df.copy(), self.sampling_interval
+            self.dataset,
+            self.name,
+            self.description,
+            self.variables.copy(),
+            self.df.copy(),
+            self.metadata.copy(),
         )
+
+    def add_derived_table(self, derived_table: Datatable) -> None:
+        derived_table.parent_table = self
+        self.derived_tables[derived_table.name] = derived_table

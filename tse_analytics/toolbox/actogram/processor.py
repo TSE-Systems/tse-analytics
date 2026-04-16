@@ -6,9 +6,9 @@ import pandas as pd
 
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.helper import normalize_nd_array
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.utils import get_html_image_from_figure, time_to_float
+from tse_analytics.core.utils.data import normalize_nd_array
 
 
 def dataframe_to_actogram(
@@ -22,12 +22,12 @@ def dataframe_to_actogram(
     df = df.copy()
 
     # Extract day information
-    df["Date"] = df["DateTime"].dt.date
-    df["Time"] = df["DateTime"].dt.hour * 60 + df["DateTime"].dt.minute
+    df["Date"] = df["DateTime"].dt.date.astype("datetime64[s]")
+    df["Time"] = df["DateTime"].dt.hour * 60 + df["DateTime"].dt.minute.astype("Int64")
 
     # Determine bin for each timestamp
     minutes_per_bin = 24 * 60 / bins_per_day
-    df["Bin"] = (df["Time"] / minutes_per_bin).astype(int)
+    df["Bin"] = (df["Time"] / minutes_per_bin).astype("Int64")
 
     df = df.groupby(["Date", "Bin"], dropna=False, observed=False).aggregate({
         variable.name: variable.aggregation,

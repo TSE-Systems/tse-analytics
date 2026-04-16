@@ -1,21 +1,22 @@
 from pathlib import Path
 
 import connectorx as cx
-import numpy as np
 import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
+from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
-from tse_analytics.modules.phenomaster.extensions.grouphousing.data.grouphousing_data import GroupHousingData
-from tse_analytics.modules.phenomaster.io import tse_import_settings
+from tse_analytics.core.utils.data import sanitize_dtypes
+from tse_analytics.globals import TIME_RESOLUTION_UNIT
+from tse_analytics.modules.phenomaster.io.tse_import_settings import GROUP_HOUSING_TABLE
 
 
-def read_grouphousing(path: Path, dataset: PhenoMasterDataset) -> GroupHousingData:
-    metadata = dataset.metadata["tables"][tse_import_settings.GROUP_HOUSING_TABLE]
-    hardware_metadata = dataset.metadata["hardware"][tse_import_settings.GROUP_HOUSING_TABLE]
+def read_grouphousing(path: Path, dataset: Dataset) -> Datatable:
+    metadata = dataset.metadata["tables"][GROUP_HOUSING_TABLE]
+    hardware_metadata = dataset.metadata["hardware"][GROUP_HOUSING_TABLE]
 
-    # Read variables list
+    # Read variable list
     dtypes = {}
     for item in metadata["columns"].values():
         variable = Variable(
@@ -29,12 +30,14 @@ def read_grouphousing(path: Path, dataset: PhenoMasterDataset) -> GroupHousingDa
         dtypes[variable.name] = item["type"]
 
     dtypes["EndDateTime"] = "Int64"
-    dtypes["Animal"] = str
+    dtypes["Animal"] = "string"
 
-    # Read measurements data
+    dtypes = sanitize_dtypes(dtypes)
+
+    # Read measurement data
     df = cx.read_sql(
         f"sqlite:///{path}",
-        f"SELECT * FROM {tse_import_settings.GROUP_HOUSING_TABLE}",
+        f"SELECT * FROM {GROUP_HOUSING_TABLE}",
         return_type="pandas",
     )
 
@@ -42,8 +45,8 @@ def read_grouphousing(path: Path, dataset: PhenoMasterDataset) -> GroupHousingDa
     df = df.astype(dtypes, errors="ignore")
 
     # Convert DateTime from POSIX format
-    df["StartDateTime"] = pd.to_datetime(df["StartDateTime"], origin="unix", unit="ns")
-    df["EndDateTime"] = pd.to_datetime(df["EndDateTime"], origin="unix", unit="ns")
+    df["StartDateTime"] = pd.to_datetime(df["StartDateTime"], origin="unix", unit="ns").dt.as_unit(TIME_RESOLUTION_UNIT)
+    df["EndDateTime"] = pd.to_datetime(df["EndDateTime"], origin="unix", unit="ns").dt.as_unit(TIME_RESOLUTION_UNIT)
     # Insert Duration column
     df.insert(
         df.columns.get_loc("EndDateTime") + 1,
@@ -52,11 +55,11 @@ def read_grouphousing(path: Path, dataset: PhenoMasterDataset) -> GroupHousingDa
     )
 
     # Convert dict keys type from str to int
-    channel_to_channel_type_mapping = {int(k): v for k, v in hardware_metadata["channels"].items()}
+    channel_to_channel_type_mapping = {str(k): v for k, v in hardware_metadata["channels"].items()}
     df.insert(
         df.columns.get_loc("Channel") + 1,
         "ChannelType",
-        df["Channel"].replace(channel_to_channel_type_mapping),
+        df["Channel"].astype("string").replace(channel_to_channel_type_mapping),
     )
 
     df = df.astype({
@@ -67,34 +70,47 @@ def read_grouphousing(path: Path, dataset: PhenoMasterDataset) -> GroupHousingDa
     df.sort_values(by=["StartDateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    data = GroupHousingData(
-        dataset,
-        tse_import_settings.GROUP_HOUSING_TABLE,
-        str(path),
-        df,
+    # Add Timedelta columns
+    df.insert(
+        loc=1,
+        column="Timedelta",
+        value=(df["StartDateTime"] - dataset.experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
 
-    return data
+    animal_ids = df["Animal"].unique().tolist()
+    animal_ids.sort()
+
+    raw_datatable = Datatable(
+        dataset,
+        GROUP_HOUSING_TABLE,
+        f"Raw {GROUP_HOUSING_TABLE} datatable",
+        {},
+        df,
+        {
+            "origin_path": str(path),
+            "animal_ids": animal_ids,
+        },
+    )
+    return raw_datatable
 
 
 def import_grouphousing_csv_data(
-    filename: str, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings
-) -> GroupHousingData | None:
+    filename: str,
+    dataset: Dataset,
+    csv_import_settings: CsvImportSettings,
+) -> Datatable | None:
     path = Path(filename)
-    if path.is_file() and path.suffix.lower() == ".csv":
-        return _load_from_csv(path, dataset, csv_import_settings)
-    return None
+    if not path.is_file() or path.suffix.lower() != ".csv":
+        return None
 
-
-def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings: CsvImportSettings) -> GroupHousingData:
     dtype = {
-        "Number": np.int64,
-        "Date": str,
-        "Time": str,
-        "BoxNo": np.int64,
-        "ChannelNo": np.int64,
-        "Channel type": str,
-        "Animal": str,
+        "Number": "UInt64",
+        "Date": "string",
+        "Time": "string",
+        "BoxNo": "UInt16",
+        "ChannelNo": "UInt8",
+        "Channel type": "string",
+        "Animal": "string",
     }
 
     df = pd.read_csv(
@@ -104,6 +120,7 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
         skiprows=1,  # Skip header part
         low_memory=False,
         dtype=dtype,
+        dtype_backend="numpy_nullable",
     )
 
     # Rename table columns
@@ -124,7 +141,7 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
             df["Date"] + " " + df["Time"],
             dayfirst=csv_import_settings.day_first,
             format=csv_import_settings.datetime_format if csv_import_settings.use_datetime_format else None,
-        ),
+        ).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
     df.insert(
         df.columns.get_loc("StartDateTime") + 1,
@@ -145,10 +162,25 @@ def _load_from_csv(path: Path, dataset: PhenoMasterDataset, csv_import_settings:
     df.sort_values(by=["StartDateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    data = GroupHousingData(
-        dataset,
-        tse_import_settings.GROUP_HOUSING_TABLE,
-        str(path),
-        df,
+    # Add Timedelta columns
+    df.insert(
+        loc=1,
+        column="Timedelta",
+        value=(df["StartDateTime"] - dataset.experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
-    return data
+
+    animal_ids = df["Animal"].unique().tolist()
+    animal_ids.sort()
+
+    raw_datatable = Datatable(
+        dataset,
+        GROUP_HOUSING_TABLE,
+        f"Raw {GROUP_HOUSING_TABLE} datatable",
+        {},
+        df,
+        {
+            "origin_path": str(path),
+            "animal_ids": animal_ids,
+        },
+    )
+    return raw_datatable

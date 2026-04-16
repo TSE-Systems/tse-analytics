@@ -1,12 +1,10 @@
 """Tests for tse_analytics.toolbox.normality.processor module."""
 
 import matplotlib
+from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
+from tse_analytics.toolbox.normality.processor import NormalityTestResult, get_normality_result
 
 matplotlib.use("Agg")
-
-
-from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.toolbox.normality.processor import NormalityTestResult, get_normality_result
 
 
 class TestNormality:
@@ -16,8 +14,7 @@ class TestNormality:
         result = get_normality_result(
             df=analysis_df.copy(),
             variable_name="Metabolism",
-            split_mode=SplitMode.TOTAL,
-            factor_name=None,
+            grouping_settings=GroupingSettings(mode=GroupingMode.TOTAL),
             figsize=(6, 4),
         )
         assert isinstance(result, NormalityTestResult)
@@ -28,8 +25,7 @@ class TestNormality:
         result = get_normality_result(
             df=analysis_df.copy(),
             variable_name="Metabolism",
-            split_mode=SplitMode.ANIMAL,
-            factor_name=None,
+            grouping_settings=GroupingSettings(mode=GroupingMode.ANIMAL),
             figsize=(6, 4),
         )
         assert isinstance(result, NormalityTestResult)
@@ -39,8 +35,7 @@ class TestNormality:
         result = get_normality_result(
             df=analysis_df.copy(),
             variable_name="Metabolism",
-            split_mode=SplitMode.FACTOR,
-            factor_name="Group",
+            grouping_settings=GroupingSettings(mode=GroupingMode.FACTOR, factor_name="Group"),
             figsize=(6, 4),
         )
         assert isinstance(result, NormalityTestResult)
@@ -50,8 +45,7 @@ class TestNormality:
         result = get_normality_result(
             df=analysis_df.copy(),
             variable_name="Metabolism",
-            split_mode=SplitMode.RUN,
-            factor_name=None,
+            grouping_settings=GroupingSettings(mode=GroupingMode.RUN),
             figsize=(6, 4),
         )
         assert isinstance(result, NormalityTestResult)

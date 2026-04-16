@@ -2,22 +2,54 @@
 
 from datetime import time
 
+import numpy as np
 import pandas as pd
 
-from tse_analytics.core.data.shared import SplitMode
+from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
+from tse_analytics.core.data.shared import Animal, Variable
+
+_dtypes_name_mapping = {
+    "int8": "Int8",
+    "int16": "Int16",
+    "int32": "Int32",
+    "int64": "Int64",
+    "uint8": "UInt8",
+    "uint16": "UInt16",
+    "uint32": "UInt32",
+    "uint64": "UInt64",
+    "float16": "Float16",
+    "float32": "Float32",
+    "float64": "Float64",
+    "bool": "boolean",
+    "str": "string",
+}
 
 
-def get_group_by_params(group_by_str: str) -> tuple[SplitMode, str]:
-    # Convert group_by string to SplitMode and factor_name
+def get_group_by_params(group_by_str: str) -> GroupingSettings:
+    # Convert group_by string to GroupingSettings
     match group_by_str:
-        case SplitMode.ANIMAL.value:
-            return SplitMode.ANIMAL, ""
-        case SplitMode.RUN.value:
-            return SplitMode.RUN, ""
-        case SplitMode.TOTAL.value:
-            return SplitMode.TOTAL, ""
+        case GroupingMode.ANIMAL.value:
+            return GroupingSettings(mode=GroupingMode.ANIMAL)
+        case GroupingMode.RUN.value:
+            return GroupingSettings(mode=GroupingMode.RUN)
+        case GroupingMode.TOTAL.value:
+            return GroupingSettings(mode=GroupingMode.TOTAL)
+        case GroupingMode.FACTOR.value:
+            return GroupingSettings(mode=GroupingMode.FACTOR, factor_name=group_by_str)
         case _:
-            return SplitMode.FACTOR, group_by_str
+            raise ValueError(f"Invalid group_by value: {group_by_str}")
+
+
+def get_columns_by_grouping_settings(grouping_settings: GroupingSettings, variable_names: list[str]) -> list[str]:
+    match grouping_settings.mode:
+        case GroupingMode.ANIMAL:
+            return variable_names + ["Animal"]
+        case GroupingMode.RUN:
+            return variable_names + ["Run"]
+        case GroupingMode.FACTOR:
+            return variable_names + [grouping_settings.factor_name]
+        case GroupingMode.TOTAL:
+            return variable_names
 
 
 def time_to_float(value: time) -> float:
@@ -41,3 +73,125 @@ def exclude_animals_from_df(df: pd.DataFrame, animal_ids: set[str]) -> pd.DataFr
     df["Animal"] = df["Animal"].cat.remove_unused_categories()
     df.reset_index(inplace=True, drop=True)
     return df
+
+
+def sanitize_dtypes(dtypes: dict[str, str]) -> dict[str, str]:
+    for key, value in dtypes.items():
+        if value in _dtypes_name_mapping:
+            dtypes[key] = _dtypes_name_mapping[value]
+    return dtypes
+
+
+def rename_animal_df(df: pd.DataFrame, old_id: str, animal: Animal) -> pd.DataFrame:
+    """
+    Rename an animal in a DataFrame.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The DataFrame containing animal data.
+    old_id : str
+        The current ID of the animal.
+    animal : Animal
+        The animal object with the new ID.
+
+    Returns
+    -------
+    pd.DataFrame
+        The DataFrame with the animal renamed.
+    """
+    df = df.astype({
+        "Animal": "string",
+    })
+    df.loc[df["Animal"] == old_id, "Animal"] = animal.id
+    df = df.astype({
+        "Animal": "category",
+    })
+    return df
+
+
+def reassign_df_timedelta_and_bin(
+    df: pd.DataFrame, sample_interval: pd.Timedelta, merging_mode: str | None
+) -> pd.DataFrame:
+    """
+    Reassign timedelta and bin values in a DataFrame.
+
+    This function recalculates timedelta values based on the merging mode and
+    reassigns bin numbers based on the sampling interval.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The DataFrame to process.
+    sample_interval : pd.Timedelta or None
+        The sampling interval for bin calculation.
+    merging_mode : str or None
+        The merging mode, which affects how timedeltas are calculated.
+
+    Returns
+    -------
+    pd.DataFrame
+        The DataFrame with reassigned timedelta and bin values.
+    """
+    df.reset_index(inplace=True, drop=True)
+
+    if merging_mode == "overlap":
+        # Get unique runs numbers
+        runs = df["Run"].unique().tolist()
+
+        # Reassign timedeltas
+        for run in runs:
+            # Get start timestamp per run
+            start_date_time = df[df["Run"] == run]["DateTime"].iloc[0]
+            df.loc[df["Run"] == run, "Timedelta"] = df["DateTime"] - start_date_time
+    else:
+        start_date_time = df["DateTime"].iloc[0]
+        df["Timedelta"] = df["DateTime"] - start_date_time
+
+    # Reassign bins numbers
+    if sample_interval is not None:
+        df["Bin"] = (df["Timedelta"] / sample_interval).round().astype("UInt64")
+    return df
+
+
+def normalize_nd_array(input: np.ndarray):
+    """
+    Normalize a NumPy array to the range [0, 1].
+
+    Parameters
+    ----------
+    input : np.ndarray
+        The input array to normalize.
+
+    Returns
+    -------
+    np.ndarray
+        The normalized array with values in the range [0, 1].
+    """
+    min_value = np.min(input)
+    max_value = np.max(input)
+    return (input - min_value) / (max_value - min_value)
+
+
+def group_df_by_animal(
+    df: pd.DataFrame,
+    variables: dict[str, Variable],
+) -> pd.DataFrame:
+    if df.empty:
+        return df
+
+    default_columns = ["Animal"]
+    agg = {}
+    for column in df.columns:
+        if column not in default_columns:
+            if df.dtypes[column].name != "category":
+                if column in variables:
+                    agg[column] = variables[column].aggregation
+            else:
+                # Include categorical data fields
+                agg[column] = "first"
+
+    result = df.groupby("Animal", dropna=False, observed=False).aggregate(agg)
+    result.reset_index(inplace=True, drop=False)
+
+    return result

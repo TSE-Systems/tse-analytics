@@ -1,4 +1,4 @@
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.modules.phenomaster.io import tse_import_settings
 
 VARIABLES_TO_REMOVE = [
@@ -18,7 +18,7 @@ VARIABLES_TO_RENAME = {
 }
 
 
-def cleanup_variables(dataset: PhenoMasterDataset) -> None:
+def cleanup_variables(dataset: Dataset) -> None:
     for variable in VARIABLES_TO_REMOVE:
         dataset.metadata["tables"][tse_import_settings.MAIN_TABLE]["columns"].pop(variable, None)
 
@@ -33,16 +33,7 @@ def cleanup_variables(dataset: PhenoMasterDataset) -> None:
         table.delete_variables(VARIABLES_TO_REMOVE)
         table.rename_variables(VARIABLES_TO_RENAME)
 
-    # Process calo_bin data
-    if isinstance(dataset, PhenoMasterDataset):
-        if hasattr(dataset, "calo_data") and dataset.calo_data is not None:
-            for var_name in VARIABLES_TO_REMOVE:
-                dataset.calo_data.variables.pop(var_name, None)
-
-            for old_name, new_name in VARIABLES_TO_RENAME.items():
-                if old_name in dataset.calo_data.variables:
-                    dataset.calo_data.variables[new_name] = dataset.calo_data.variables.pop(old_name, None)
-                    dataset.calo_data.variables[new_name].name = new_name
-
-            dataset.calo_data.raw_df.drop(columns=VARIABLES_TO_REMOVE, inplace=True, errors="ignore")
-            dataset.calo_data.raw_df.rename(columns=VARIABLES_TO_RENAME, inplace=True, errors="ignore")
+    for extension_data in dataset.raw_datatables.values():
+        for table in extension_data.values():
+            table.delete_variables(VARIABLES_TO_REMOVE)
+            table.rename_variables(VARIABLES_TO_RENAME)

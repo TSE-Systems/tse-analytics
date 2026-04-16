@@ -6,21 +6,23 @@ It supports different merging strategies, including continuous mode (datasets ar
 sequential in time) and overlap mode (datasets are treated as parallel experiments).
 """
 
+from dataclasses import asdict
+
 import pandas as pd
 
 from tse_analytics.core import color_manager
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Animal
-from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
 
 
 def merge_datasets(
     new_dataset_name: str,
-    datasets: list[IntelliCageDataset],
+    datasets: list[Dataset],
     single_run: bool,
     continuous_mode: bool,
     generate_new_animal_names: bool,
-) -> IntelliCageDataset | None:
+) -> Dataset | None:
     """
     Merge multiple IntelliCage datasets into a single dataset.
 
@@ -33,8 +35,8 @@ def merge_datasets(
     ----------
     new_dataset_name : str
         Name for the merged dataset.
-    datasets : list[IntelliCageDataset]
-        List of IntelliCageDataset objects to merge.
+    datasets : list[Dataset]
+        List of Dataset objects to merge.
     single_run : bool
         If True, all data will be treated as a single experimental run.
         If False, run numbers will be assigned based on the source dataset.
@@ -47,7 +49,7 @@ def merge_datasets(
 
     Returns
     -------
-    IntelliCageDataset | None
+    Dataset | None
         The merged dataset, or None if the merge failed.
     """
     # sort datasets by start time
@@ -66,9 +68,9 @@ def merge_datasets(
 
 def _merge_continuous(
     merged_dataset_name: str,
-    datasets: list[IntelliCageDataset],
+    datasets: list[Dataset],
     single_run: bool,
-) -> IntelliCageDataset | None:
+) -> Dataset | None:
     """
     Merge datasets in continuous mode (sequential in time).
 
@@ -80,15 +82,15 @@ def _merge_continuous(
     ----------
     merged_dataset_name : str
         Name for the merged dataset.
-    datasets : list[IntelliCageDataset]
-        List of IntelliCageDataset objects to merge, sorted by start time.
+    datasets : list[Dataset]
+        List of Dataset objects to merge, sorted by start time.
     single_run : bool
         If True, all data will be treated as a single experimental run.
         If False, run numbers will be assigned based on the source dataset.
 
     Returns
     -------
-    IntelliCageDataset | None
+    Dataset | None
         The merged dataset, or None if the merge failed.
     """
     first_dataset = datasets[0]
@@ -96,9 +98,12 @@ def _merge_continuous(
     merged_animals = _merge_animals(datasets)
     merged_metadata = _merge_metadata(merged_dataset_name, "continuous", merged_animals, datasets)
 
-    result = IntelliCageDataset(
-        metadata=merged_metadata,
-        animals=merged_animals,
+    result = Dataset(
+        merged_dataset_name,
+        "IntelliCage merged dataset",
+        "IntelliCage",
+        merged_metadata,
+        merged_animals,
     )
 
     for datatable_name in first_dataset.datatables.keys():
@@ -122,11 +127,11 @@ def _merge_continuous(
 
         # convert categorical types
         new_df = new_df.astype({
-            "Animal": str,
+            "Animal": "string",
         })
         new_df = new_df.astype({
             "Animal": "category",
-            "Run": int,
+            "Run": "UInt8",
         })
 
         # Sort dataframe
@@ -140,7 +145,7 @@ def _merge_continuous(
             f"Merged {datatable_name} datatable",
             new_variables,
             new_df,
-            None,
+            {},
         )
         result.add_datatable(datatable)
 
@@ -149,10 +154,10 @@ def _merge_continuous(
 
 def _merge_overlap(
     merged_dataset_name: str,
-    datasets: list[IntelliCageDataset],
+    datasets: list[Dataset],
     single_run: bool,
     generate_new_animal_names: bool,
-) -> IntelliCageDataset | None:
+) -> Dataset | None:
     """
     Merge datasets in overlap mode (parallel experiments).
 
@@ -164,8 +169,8 @@ def _merge_overlap(
     ----------
     merged_dataset_name : str
         Name for the merged dataset.
-    datasets : list[IntelliCageDataset]
-        List of IntelliCageDataset objects to merge, sorted by start time.
+    datasets : list[Dataset]
+        List of Dataset objects to merge, sorted by start time.
     single_run : bool
         If True, all data will be treated as a single experimental run.
         If False, run numbers will be assigned based on the source dataset.
@@ -175,7 +180,7 @@ def _merge_overlap(
 
     Returns
     -------
-    IntelliCageDataset | None
+    Dataset | None
         The merged dataset, or None if the merge failed.
     """
     first_dataset = datasets[0]
@@ -193,16 +198,19 @@ def _merge_overlap(
             dataset.animals = new_animals
 
             for datatable in dataset.datatables.values():
-                datatable.df["Animal"] = datatable.df["Animal"].astype(str)
+                datatable.df["Animal"] = datatable.df["Animal"].astype("string")
                 datatable.df["Animal"] = datatable.df["Animal"].replace(name_map)
                 datatable.df["Animal"] = datatable.df["Animal"].astype("category")
 
     merged_animals = _merge_animals(datasets)
     merged_metadata = _merge_metadata(merged_dataset_name, "overlap", merged_animals, datasets)
 
-    result = IntelliCageDataset(
-        metadata=merged_metadata,
-        animals=merged_animals,
+    result = Dataset(
+        merged_dataset_name,
+        "IntelliCage merged dataset",
+        "IntelliCage",
+        merged_metadata,
+        merged_animals,
     )
 
     for datatable_name in first_dataset.datatables.keys():
@@ -222,11 +230,11 @@ def _merge_overlap(
 
         # convert categorical types
         new_df = new_df.astype({
-            "Animal": str,
+            "Animal": "string",
         })
         new_df = new_df.astype({
             "Animal": "category",
-            "Run": int,
+            "Run": "UInt8",
         })
 
         # TODO: reassign bin and timedelta. HOW?
@@ -244,7 +252,7 @@ def _merge_overlap(
             f"Merged {datatable_name} datatable",
             new_variables,
             new_df,
-            None,
+            {},
         )
         result.add_datatable(datatable)
 
@@ -255,7 +263,7 @@ def _merge_metadata(
     merged_dataset_name: str,
     merging_mode: str,
     merged_animals: dict[str, Animal],
-    datasets: list[IntelliCageDataset],
+    datasets: list[Dataset],
 ) -> dict:
     """
     Merge metadata from multiple datasets.
@@ -271,7 +279,7 @@ def _merge_metadata(
         The mode used for merging ("continuous" or "overlap").
     merged_animals : dict[str, Animal]
         Dictionary of animals in the merged dataset.
-    datasets : list[IntelliCageDataset]
+    datasets : list[Dataset]
         List of source datasets.
 
     Returns
@@ -286,12 +294,10 @@ def _merge_metadata(
         experiment_stopped = max(dataset.experiment_stopped for dataset in datasets)
 
     result = {
-        "name": merged_dataset_name,
-        "description": "IntelliCage dataset",
         "merging_mode": merging_mode,
         "experiment_started": str(experiment_started),
         "experiment_stopped": str(experiment_stopped),
-        "animals": {k: v.get_dict() for (k, v) in merged_animals.items()},
+        "animals": {k: asdict(v) for (k, v) in merged_animals.items()},
         "runs": {},
     }
     for i, dataset in enumerate(datasets):
@@ -299,7 +305,7 @@ def _merge_metadata(
     return result
 
 
-def _merge_animals(datasets: list[IntelliCageDataset]) -> dict[str, Animal]:
+def _merge_animals(datasets: list[Dataset]) -> dict[str, Animal]:
     """
     Merge animals from multiple datasets.
 
@@ -309,7 +315,7 @@ def _merge_animals(datasets: list[IntelliCageDataset]) -> dict[str, Animal]:
 
     Parameters
     ----------
-    datasets : list[IntelliCageDataset]
+    datasets : list[Dataset]
         List of source datasets.
 
     Returns

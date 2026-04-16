@@ -2,10 +2,10 @@ from functools import partial
 
 import pandas as pd
 from PySide6.QtCore import QItemSelection, QSortFilterProxyModel, Qt, QTimer
-from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QAbstractItemView, QMenu, QTableView, QWidget
 
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
+from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.utils.ui import set_inactive_palette
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.drinkfeed_animal_item import DrinkFeedAnimalItem
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.drinkfeed_animals_model import (
     DrinkFeedAnimalsModel,
@@ -23,18 +23,7 @@ class AnimalSelector(QTableView):
         self.callback = callback
         self.settings_widget = settings_widget
 
-        pal = self.palette()
-        pal.setColor(
-            QPalette.ColorGroup.Inactive,
-            QPalette.ColorRole.Highlight,
-            pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Highlight),
-        )
-        pal.setColor(
-            QPalette.ColorGroup.Inactive,
-            QPalette.ColorRole.HighlightedText,
-            pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.HighlightedText),
-        )
-        self.setPalette(pal)
+        set_inactive_palette(self)
 
         proxy_model = QSortFilterProxyModel()
         proxy_model.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
@@ -45,7 +34,7 @@ class AnimalSelector(QTableView):
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self._open_context_menu)
 
-    def set_data(self, dataset: PhenoMasterDataset):
+    def set_data(self, dataset: Dataset):
         items: dict[str, DrinkFeedAnimalItem] = {}
         for animal in dataset.animals.values():
             items[animal.id] = DrinkFeedAnimalItem(animal.properties["Box"], animal.id, pd.NA, {})

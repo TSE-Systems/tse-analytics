@@ -5,11 +5,10 @@ import pingouin as pg
 from matplotlib import rcParams
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
-from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.operators.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.utils import get_great_table, get_html_image_from_figure
+from tse_analytics.core.utils.data import group_df_by_animal
 
 
 @dataclass
@@ -28,14 +27,11 @@ def get_one_way_anova_result(
     if figsize is None:
         figsize = rcParams["figure.figsize"]
 
-    # Binning
-    df = process_time_interval_binning(
+    df = group_df_by_animal(
         df,
-        TimeIntervalsBinningSettings("day", 365),
         {
             variable.name: variable,
         },
-        origin=dataset.experiment_started,
     )
 
     # TODO: should or should not?

@@ -7,6 +7,6 @@ and merging multiple datasets.
 
 Key components:
 - IntelliCageData: Represents and processes raw IntelliCage data
-- IntelliCageDataset: Represents a complete IntelliCage experiment dataset
+- Dataset: Represents a complete IntelliCage experiment dataset
 - intellicage_dataset_merger: Functions for merging multiple IntelliCage datasets
 """

@@ -1,63 +1,57 @@
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
-from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
-from tse_analytics.modules.intellimaze.extensions.intellicage.data.intellicage_data import IntelliCageData
+from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.globals import TIME_RESOLUTION_UNIT
+from tse_analytics.modules.intellimaze.extensions.intellicage.data import processor
 from tse_analytics.modules.intellimaze.io.variable_data_loader import import_variable_data
 
 
 def import_data(
     folder_path: Path,
-    dataset: IntelliMazeDataset,
-) -> IntelliCageData:
-    raw_data = {
-        "Visits": _import_visits_df(folder_path),
-        "Nosepokes": _import_nosepokes_df(folder_path),
-        "Environment": _import_environment_df(folder_path),
-        "HardwareEvents": _import_hardware_events_df(folder_path),
-        "Log": _import_log_df(folder_path),
+    dataset: Dataset,
+) -> dict[str, Datatable]:
+    extension_data = {
+        "Visits": _import_visits_df(dataset, folder_path / "Visit.txt"),
+        "Nosepokes": _import_nosepokes_df(dataset, folder_path / "Nosepoke.txt"),
+        "Environment": _import_environment_df(dataset, folder_path / "Environment.txt"),
+        "HardwareEvents": _import_hardware_events_df(dataset, folder_path / "Hardware.txt"),
+        "Log": _import_log_df(dataset, folder_path / "Log.txt"),
     }
 
-    variables_data = import_variable_data(folder_path)
+    variables_data = import_variable_data(dataset, folder_path)
     if len(variables_data) > 0:
-        raw_data = raw_data | variables_data
+        extension_data = extension_data | variables_data
 
-    data = IntelliCageData(
-        dataset,
-        "IntelliCage extension data",
-        raw_data,
-    )
+    processor.preprocess_data(dataset, extension_data)
 
-    data.preprocess_data()
-
-    return data
+    return extension_data
 
 
-def _import_visits_df(folder_path: Path) -> pd.DataFrame | None:
-    file_path = folder_path / "Visit.txt"
+def _import_visits_df(dataset: Dataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
-        return None
+        raise FileNotFoundError(f"Visit file not found: {file_path}")
 
     dtype = {
-        "VisitID": np.int64,
-        "AnimalTag": str,
-        "Start": str,
-        "End": str,
-        "ModuleName": str,
-        "DeviceId": str,
-        "Corner": np.int8,
-        "CornerCondition": np.int8,
-        "PlaceError": bool,
-        "AntennaNumber": np.int64,
-        "AntennaDuration": np.float64,
-        "PresenceNumber": np.int64,
-        "PresenceDuration": np.float64,
-        "VisitSolution": np.int8,
-        "LickNumber": np.int64,
-        "LickContactTime": np.float64,
-        "LickDuration": np.float64,
+        "VisitID": "UInt64",
+        "AnimalTag": "string",
+        "Start": "string",
+        "End": "string",
+        "ModuleName": "string",
+        "DeviceId": "string",
+        "Corner": "UInt8",
+        "CornerCondition": "Int8",
+        "PlaceError": "boolean",
+        "AntennaNumber": "UInt64",
+        "AntennaDuration": "Float64",
+        "PresenceNumber": "UInt64",
+        "PresenceDuration": "Float64",
+        "VisitSolution": "UInt8",
+        "LickNumber": "UInt64",
+        "LickContactTime": "Float64",
+        "LickDuration": "Float64",
     }
 
     df = pd.read_csv(
@@ -65,20 +59,31 @@ def _import_visits_df(folder_path: Path) -> pd.DataFrame | None:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
-    df["Start"] = pd.to_datetime(
-        df["Start"],
-        format="ISO8601",
-        utc=False,
-    ).dt.tz_localize(None)
+    df["Start"] = (
+        pd
+        .to_datetime(
+            df["Start"],
+            format="ISO8601",
+            utc=False,
+        )
+        .dt.tz_localize(None)
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+    )
 
-    df["End"] = pd.to_datetime(
-        df["End"],
-        format="ISO8601",
-        utc=False,
-    ).dt.tz_localize(None)
+    df["End"] = (
+        pd
+        .to_datetime(
+            df["End"],
+            format="ISO8601",
+            utc=False,
+        )
+        .dt.tz_localize(None)
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+    )
 
     # Convert numeric Enum values to categories
     df = df.astype({
@@ -106,35 +111,43 @@ def _import_visits_df(folder_path: Path) -> pd.DataFrame | None:
     df.reset_index(drop=True, inplace=True)
 
     # Set visit number column
-    df["VisitNumber"] = df.groupby("AnimalTag").cumcount().astype(np.int64)
-    # df["VisitNumber"] = df.groupby("AnimalTag")["VisitID"].rank(method="first").astype(np.int64)
+    df["VisitNumber"] = df.groupby("AnimalTag").cumcount().astype("UInt64")
+    # df["VisitNumber"] = df.groupby("AnimalTag")["VisitID"].rank(method="first").astype("UInt64")
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "Visits",
+        f"{processor.EXTENSION_NAME} visits data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable
 
 
-def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame | None:
-    file_path = folder_path / "Nosepoke.txt"
+def _import_nosepokes_df(dataset: Dataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
-        return None
+        raise FileNotFoundError(f"Nosepoke file not found: {file_path}")
 
     dtype = {
-        "VisitID": np.int64,
-        "Start": str,
-        "End": str,
-        "Side": np.int8,
-        "SideCondition": np.int8,
-        "SideError": bool,
-        "TimeError": bool,
-        "ConditionError": bool,
-        "LickNumber": np.int64,
-        "LickContactTime": np.float64,
-        "LickDuration": np.float64,
-        "AirState": bool,
-        "DoorState": bool,
-        "LED1State": np.int8,
-        "LED2State": np.int8,
-        "LED3State": np.int8,
-        "LickStartTime": str,
+        "VisitID": "UInt64",
+        "Start": "string",
+        "End": "string",
+        "Side": "UInt8",
+        "SideCondition": "Int8",
+        "SideError": "boolean",
+        "TimeError": "boolean",
+        "ConditionError": "boolean",
+        "LickNumber": "UInt64",
+        "LickContactTime": "Float64",
+        "LickDuration": "Float64",
+        "AirState": "boolean",
+        "DoorState": "boolean",
+        "LED1State": "UInt8",
+        "LED2State": "UInt8",
+        "LED3State": "UInt8",
+        "LickStartTime": "string",
     }
 
     df = pd.read_csv(
@@ -142,26 +155,42 @@ def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame | None:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
-    df["Start"] = pd.to_datetime(
-        df["Start"],
-        format="ISO8601",
-        utc=False,
-    ).dt.tz_localize(None)
+    df["Start"] = (
+        pd
+        .to_datetime(
+            df["Start"],
+            format="ISO8601",
+            utc=False,
+        )
+        .dt.tz_localize(None)
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+    )
 
-    df["End"] = pd.to_datetime(
-        df["End"],
-        format="ISO8601",
-        utc=False,
-    ).dt.tz_localize(None)
+    df["End"] = (
+        pd
+        .to_datetime(
+            df["End"],
+            format="ISO8601",
+            utc=False,
+        )
+        .dt.tz_localize(None)
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+    )
 
-    df["LickStartTime"] = pd.to_datetime(
-        df["LickStartTime"],
-        format="ISO8601",
-        utc=False,
-    ).dt.tz_localize(None)
+    df["LickStartTime"] = (
+        pd
+        .to_datetime(
+            df["LickStartTime"],
+            format="ISO8601",
+            utc=False,
+        )
+        .dt.tz_localize(None)
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+    )
 
     # Convert numeric Enum values to categories
     df["SideCondition"] = pd.Categorical(df["SideCondition"], categories=[-1, 0, 1], ordered=True)
@@ -174,19 +203,27 @@ def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame | None:
     df.sort_values(["Start"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "Nosepokes",
+        f"{processor.EXTENSION_NAME} nosepokes data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable
 
 
-def _import_environment_df(folder_path: Path) -> pd.DataFrame | None:
-    file_path = folder_path / "Environment.txt"
+def _import_environment_df(dataset: Dataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
-        return None
+        raise FileNotFoundError(f"Environment file not found: {file_path}")
 
     dtype = {
-        "DateTimeOffset": str,
-        "Temperature": np.float32,
-        "Illumination": np.uint32,
-        "DeviceId": str,
+        "DateTimeOffset": "string",
+        "Temperature": "Float32",
+        "Illumination": "UInt32",
+        "DeviceId": "string",
     }
 
     df = pd.read_csv(
@@ -194,14 +231,20 @@ def _import_environment_df(folder_path: Path) -> pd.DataFrame | None:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
-    df["DateTimeOffset"] = pd.to_datetime(
-        df["DateTimeOffset"],
-        format="ISO8601",
-        utc=False,
-    ).dt.tz_localize(None)
+    df["DateTimeOffset"] = (
+        pd
+        .to_datetime(
+            df["DateTimeOffset"],
+            format="ISO8601",
+            utc=False,
+        )
+        .dt.tz_localize(None)
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+    )
 
     # Standardize column names
     df.rename(
@@ -219,21 +262,29 @@ def _import_environment_df(folder_path: Path) -> pd.DataFrame | None:
     df.sort_values(["DateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "Environment",
+        f"{processor.EXTENSION_NAME} environment data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable
 
 
-def _import_hardware_events_df(folder_path: Path) -> pd.DataFrame | None:
-    file_path = folder_path / "Hardware.txt"
+def _import_hardware_events_df(dataset: Dataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
-        return None
+        raise FileNotFoundError(f"Hardware events file not found: {file_path}")
 
     dtype = {
-        "DateTimeOffset": str,
-        "HardwareType": np.int8,
-        "DeviceId": str,
-        "Corner": np.int8,
-        "Side": "Int8",
-        "State": np.int32,
+        "DateTimeOffset": "string",
+        "HardwareType": "UInt8",
+        "DeviceId": "string",
+        "Corner": "UInt8",
+        "Side": "UInt8",
+        "State": "UInt32",
     }
 
     df = pd.read_csv(
@@ -241,14 +292,20 @@ def _import_hardware_events_df(folder_path: Path) -> pd.DataFrame | None:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
-    df["DateTimeOffset"] = pd.to_datetime(
-        df["DateTimeOffset"],
-        format="ISO8601",
-        utc=False,
-    ).dt.tz_localize(None)
+    df["DateTimeOffset"] = (
+        pd
+        .to_datetime(
+            df["DateTimeOffset"],
+            format="ISO8601",
+            utc=False,
+        )
+        .dt.tz_localize(None)
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+    )
 
     # Standardize column names
     df.rename(
@@ -272,22 +329,30 @@ def _import_hardware_events_df(folder_path: Path) -> pd.DataFrame | None:
     df.sort_values(["DateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "HardwareEvents",
+        f"{processor.EXTENSION_NAME} hardware events data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable
 
 
-def _import_log_df(folder_path: Path) -> pd.DataFrame | None:
-    file_path = folder_path / "Log.txt"
+def _import_log_df(dataset: Dataset, file_path: Path) -> Datatable:
     if not file_path.is_file():
-        return None
+        raise FileNotFoundError(f"Log file not found: {file_path}")
 
     dtype = {
-        "DateTimeOffset": str,
-        "LogCategory": str,
-        "LogType": str,
-        "DeviceId": str,
-        "Corner": "Int8",
-        "Side": "Int8",
-        "LogNotes": str,
+        "DateTimeOffset": "string",
+        "LogCategory": "string",
+        "LogType": "string",
+        "DeviceId": "string",
+        "Corner": "UInt8",
+        "Side": "UInt8",
+        "LogNotes": "string",
     }
 
     df = pd.read_csv(
@@ -295,14 +360,20 @@ def _import_log_df(folder_path: Path) -> pd.DataFrame | None:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
-    df["DateTimeOffset"] = pd.to_datetime(
-        df["DateTimeOffset"],
-        format="ISO8601",
-        utc=False,
-    ).dt.tz_localize(None)
+    df["DateTimeOffset"] = (
+        pd
+        .to_datetime(
+            df["DateTimeOffset"],
+            format="ISO8601",
+            utc=False,
+        )
+        .dt.tz_localize(None)
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+    )
 
     # Standardize column names
     df.rename(
@@ -338,4 +409,13 @@ def _import_log_df(folder_path: Path) -> pd.DataFrame | None:
     df.sort_values(["DateTime"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "Log",
+        f"{processor.EXTENSION_NAME} log data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable

@@ -2,7 +2,7 @@ from NodeGraphQt.widgets.node_widgets import NodeComboBox
 
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import SplitMode
+from tse_analytics.core.data.grouping import GroupingMode
 from tse_analytics.core.utils import get_group_by_params
 from tse_analytics.pipeline import PipelineNode
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
@@ -71,11 +71,11 @@ class DataPlotNode(PipelineNode):
         variables = {variable: datatable.variables[variable] for variable in variable_names}
 
         group_by_str = str(self.get_property("group_by"))
-        split_mode, factor_name = get_group_by_params(group_by_str)
-        if split_mode == SplitMode.FACTOR:
-            if not factor_name:
+        grouping_settings = get_group_by_params(group_by_str)
+        if grouping_settings.mode == GroupingMode.FACTOR:
+            if not grouping_settings.factor_name:
                 return PipelinePacket.inactive(reason="No factor selected")
-            if factor_name not in datatable.dataset.factors:
+            if grouping_settings.factor_name not in datatable.dataset.factors:
                 return PipelinePacket.inactive(reason="Invalid factor selected")
 
         error_bar = str(self.get_property("error_bar"))
@@ -87,8 +87,7 @@ class DataPlotNode(PipelineNode):
         result = get_data_plot_result(
             datatable,
             variables,
-            split_mode,
-            factor_name,
+            grouping_settings,
             error_bar_type,
             figsize=None,
         )

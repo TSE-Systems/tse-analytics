@@ -2,16 +2,17 @@ import os
 import timeit
 from multiprocessing import Pool
 
-import pandas as pd
 from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QMessageBox, QToolBar, QWidget
 
+from tse_analytics.core import messaging
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.toaster import make_toast
+from tse_analytics.modules.phenomaster.data.processor import append_fitting_results
 from tse_analytics.modules.phenomaster.extensions.calo.calo_settings import CaloSettings
 from tse_analytics.modules.phenomaster.extensions.calo.data.calo_box import CaloBox
-from tse_analytics.modules.phenomaster.extensions.calo.data.calo_data import CaloData
 from tse_analytics.modules.phenomaster.extensions.calo.fitting_params import FittingParams
 from tse_analytics.modules.phenomaster.extensions.calo.fitting_result import FittingResult
 from tse_analytics.modules.phenomaster.extensions.calo.processor import process_box
@@ -26,11 +27,11 @@ from tse_analytics.modules.phenomaster.extensions.calo.views.settings.settings_w
 from tse_analytics.modules.phenomaster.extensions.calo.views.test_fit.test_fit_widget import (
     TestFitWidget,
 )
-from tse_analytics.views.misc.pandas_widget import PandasWidget
+from tse_analytics.toolbox.data_table.data_table_widget import DataTableWidget
 
 
 class CaloWidget(QWidget):
-    def __init__(self, calo_data: CaloData, parent: QWidget):
+    def __init__(self, calo_datatable: Datatable, parent: QWidget):
         super().__init__(parent)
 
         self.ui = Ui_CaloWidget()
@@ -48,7 +49,7 @@ class CaloWidget(QWidget):
 
         settings = QSettings()
 
-        self.calo_data = calo_data
+        self.calo_datatable = calo_datatable
 
         self.selected_boxes: list[CaloBox] = []
         self.selected_bins: list[int] = []
@@ -74,22 +75,21 @@ class CaloWidget(QWidget):
 
         self.ui.verticalLayout.insertWidget(0, toolbar)
 
-        self.calo_table_view = PandasWidget(calo_data.dataset, "Calorimetry Data")
-        self.calo_table_view.set_data(calo_data.raw_df, False)
+        self.calo_table_view = DataTableWidget(calo_datatable, "Calorimetry Data")
         self.ui.tabWidget.addTab(self.calo_table_view, "Data")
 
         self.calo_plot_widget = PlotWidget()
-        self.calo_plot_widget.set_variables(calo_data.variables)
+        self.calo_plot_widget.set_variables(calo_datatable.variables)
         self.ui.tabWidget.addTab(self.calo_plot_widget, "Plot")
 
         self.ui.toolBox.removeItem(0)
 
         self.calo_box_selector = BoxSelector(self._filter_boxes)
-        self.calo_box_selector.set_data(calo_data.dataset)
+        self.calo_box_selector.set_data(calo_datatable.dataset)
         self.ui.toolBox.addItem(self.calo_box_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Boxes")
 
         self.calo_bin_selector = BinSelector(self._filter_bins)
-        self.calo_bin_selector.set_data(calo_data.dataset)
+        self.calo_bin_selector.set_data(calo_datatable.dataset)
         self.ui.toolBox.addItem(self.calo_bin_selector, QIcon(":/icons/icons8-dog-tag-16.png"), "Bins")
 
         try:
@@ -99,7 +99,7 @@ class CaloWidget(QWidget):
 
         self.calo_settings_widget = SettingsWidget()
         self.calo_settings_widget.set_settings(calo_settings)
-        self.calo_settings_widget.set_data(self.calo_data.dataset)
+        self.calo_settings_widget.set_data(self.calo_datatable.dataset)
         self.ui.toolBox.addItem(self.calo_settings_widget, QIcon(":/icons/icons8-dog-tag-16.png"), "Settings")
 
         self.calo_test_fit_widget = TestFitWidget(self.calo_settings_widget)
@@ -125,9 +125,32 @@ class CaloWidget(QWidget):
         self._filter()
 
     def _filter(self):
-        df = self._get_selected_data()
+        box_numbers = [b.box for b in self.selected_boxes]
+        if len(box_numbers) > 0:
+            box_filter_mask = self.calo_datatable.df["Box"].isin(box_numbers)
+        else:
+            box_filter_mask = None
 
-        self.calo_table_view.set_data(df)
+        if len(self.selected_bins) > 0:
+            bin_filter_mask = self.calo_datatable.df["Bin"].isin(self.selected_bins)
+        else:
+            bin_filter_mask = None
+
+        filter_mask = None
+        if box_filter_mask is not None and bin_filter_mask is not None:
+            filter_mask = box_filter_mask & bin_filter_mask
+        elif box_filter_mask is not None:
+            filter_mask = box_filter_mask
+        elif bin_filter_mask is not None:
+            filter_mask = bin_filter_mask
+
+        self.calo_table_view.set_filter_mask(filter_mask)
+
+        if box_filter_mask is not None:
+            df = self.calo_datatable.df[filter_mask]
+        else:
+            df = self.calo_datatable.df
+
         self.calo_plot_widget.set_data(df)
         self.calo_test_fit_widget.set_data(df)
 
@@ -147,19 +170,8 @@ class CaloWidget(QWidget):
             QMessageBox.question(self, "Append Data", "Do you want to append fitting results to Main table?")
             == QMessageBox.StandardButton.Yes
         ):
-            self.calo_data.dataset.append_fitting_results(self.fitting_results)
-
-    def _get_selected_data(self) -> pd.DataFrame:
-        df = self.calo_data.raw_df
-
-        if len(self.selected_boxes) > 0:
-            box_numbers = [b.box for b in self.selected_boxes]
-            df = df[df["Box"].isin(box_numbers)]
-
-        if len(self.selected_bins) > 0:
-            df = df[df["Bin"].isin(self.selected_bins)]
-
-        return df
+            append_fitting_results(self.calo_datatable.dataset, self.fitting_results)
+            messaging.broadcast(messaging.DatasetChangedMessage(self, self.calo_datatable.dataset))
 
     def _calculate(self):
         if len(self.selected_boxes) == 0:
@@ -168,10 +180,10 @@ class CaloWidget(QWidget):
         calo_settings = self.calo_settings_widget.get_calo_settings()
 
         # remove last bin
-        bin_numbers = sorted(self.calo_data.raw_df["Bin"].unique().tolist())
-        raw_df = self.calo_data.raw_df.loc[self.calo_data.raw_df["Bin"] != bin_numbers[-1]]
-        df = self.calo_data.dataset.datatables["Main"].df.loc[
-            self.calo_data.dataset.datatables["Main"].df["Bin"] != bin_numbers[-1]
+        bin_numbers = sorted(self.calo_datatable.df["Bin"].unique().tolist())
+        raw_df = self.calo_datatable.df.loc[self.calo_datatable.df["Bin"] != bin_numbers[-1]]
+        df = self.calo_datatable.dataset.datatables["Main"].df.loc[
+            self.calo_datatable.dataset.datatables["Main"].df["Bin"] != bin_numbers[-1]
         ]
 
         fitting_params_list: list[FittingParams] = []

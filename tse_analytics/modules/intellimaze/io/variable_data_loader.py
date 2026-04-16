@@ -2,8 +2,12 @@ from pathlib import Path
 
 import pandas as pd
 
+from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.globals import TIME_RESOLUTION_UNIT
 
-def import_variable_data(folder_path: Path) -> dict[str, pd.DataFrame]:
+
+def import_variable_data(dataset: Dataset, folder_path: Path) -> dict[str, Datatable]:
     """
     Import variable data from a folder.
 
@@ -16,24 +20,24 @@ def import_variable_data(folder_path: Path) -> dict[str, pd.DataFrame]:
     Returns:
         dict[str, pd.DataFrame]: Dictionary mapping variable types to DataFrames.
     """
-    result = {}
+    result: dict[str, Datatable] = {}
 
-    integer_variables = _import_integer_variables_data(folder_path)
+    integer_variables = _import_integer_variables_data(dataset, folder_path / "IntegerVariables.txt")
     if integer_variables is not None:
         result["IntegerVariables"] = integer_variables
 
-    double_variables = _import_double_variables_data(folder_path)
+    double_variables = _import_double_variables_data(dataset, folder_path / "DoubleVariables.txt")
     if double_variables is not None:
         result["DoubleVariables"] = double_variables
 
-    boolean_variables = _import_boolean_variables_data(folder_path)
+    boolean_variables = _import_boolean_variables_data(dataset, folder_path / "BooleanVariables.txt")
     if boolean_variables is not None:
         result["BooleanVariables"] = boolean_variables
 
     return result
 
 
-def _import_integer_variables_data(folder_path: Path) -> pd.DataFrame | None:
+def _import_integer_variables_data(dataset: Dataset, file_path: Path) -> Datatable | None:
     """
     Import integer variable data from a text file.
 
@@ -46,17 +50,16 @@ def _import_integer_variables_data(folder_path: Path) -> pd.DataFrame | None:
     Returns:
         pd.DataFrame | None: DataFrame containing integer variable data, or None if the file doesn't exist.
     """
-    file_path = folder_path / "IntegerVariables.txt"
     if not file_path.is_file():
         return None
 
     dtype = {
-        "Time": str,
-        "DeviceId": str,
-        "Name": str,
-        "Data": int,
-        "ConditionValue": int,
-        "Tag": str,
+        "Time": "string",
+        "DeviceId": "string",
+        "Name": "string",
+        "Data": "Int64",
+        "ConditionValue": "Int64",
+        "Tag": "string",
     }
 
     df = pd.read_csv(
@@ -64,14 +67,20 @@ def _import_integer_variables_data(folder_path: Path) -> pd.DataFrame | None:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
-    df["Time"] = pd.to_datetime(
-        df["Time"],
-        format="ISO8601",
-        utc=False,
-    ).dt.tz_localize(None)
+    df["Time"] = (
+        pd
+        .to_datetime(
+            df["Time"],
+            format="ISO8601",
+            utc=False,
+        )
+        .dt.tz_localize(None)
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+    )
 
     # Convert categorical types
     df = df.astype({
@@ -82,10 +91,19 @@ def _import_integer_variables_data(folder_path: Path) -> pd.DataFrame | None:
     df.sort_values(["Time"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "IntegerVariables",
+        "IntelliMaze integer variables data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable
 
 
-def _import_double_variables_data(folder_path: Path) -> pd.DataFrame | None:
+def _import_double_variables_data(dataset: Dataset, file_path: Path) -> Datatable | None:
     """
     Import double variable data from a text file.
 
@@ -98,17 +116,16 @@ def _import_double_variables_data(folder_path: Path) -> pd.DataFrame | None:
     Returns:
         pd.DataFrame | None: DataFrame containing double variable data, or None if the file doesn't exist.
     """
-    file_path = folder_path / "DoubleVariables.txt"
     if not file_path.is_file():
         return None
 
     dtype = {
-        "Time": str,
-        "DeviceId": str,
-        "Name": str,
-        "Data": float,
-        "ConditionValue": float,
-        "Tag": str,
+        "Time": "string",
+        "DeviceId": "string",
+        "Name": "string",
+        "Data": "Float64",
+        "ConditionValue": "Float64",
+        "Tag": "string",
     }
 
     df = pd.read_csv(
@@ -116,14 +133,20 @@ def _import_double_variables_data(folder_path: Path) -> pd.DataFrame | None:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
-    df["Time"] = pd.to_datetime(
-        df["Time"],
-        format="ISO8601",
-        utc=False,
-    ).dt.tz_localize(None)
+    df["Time"] = (
+        pd
+        .to_datetime(
+            df["Time"],
+            format="ISO8601",
+            utc=False,
+        )
+        .dt.tz_localize(None)
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+    )
 
     # Convert categorical types
     df = df.astype({
@@ -134,10 +157,19 @@ def _import_double_variables_data(folder_path: Path) -> pd.DataFrame | None:
     df.sort_values(["Time"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "DoubleVariables",
+        "IntelliMaze double variables data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable
 
 
-def _import_boolean_variables_data(folder_path: Path) -> pd.DataFrame | None:
+def _import_boolean_variables_data(dataset: Dataset, file_path: Path) -> Datatable | None:
     """
     Import boolean variable data from a text file.
 
@@ -150,16 +182,15 @@ def _import_boolean_variables_data(folder_path: Path) -> pd.DataFrame | None:
     Returns:
         pd.DataFrame | None: DataFrame containing boolean variable data, or None if the file doesn't exist.
     """
-    file_path = folder_path / "BooleanVariables.txt"
     if not file_path.is_file():
         return None
 
     dtype = {
-        "Time": str,
-        "DeviceId": str,
-        "Name": str,
-        "Data": bool,
-        "Tag": str,
+        "Time": "string",
+        "DeviceId": "string",
+        "Name": "string",
+        "Data": "boolean",
+        "Tag": "string",
     }
 
     df = pd.read_csv(
@@ -167,14 +198,20 @@ def _import_boolean_variables_data(folder_path: Path) -> pd.DataFrame | None:
         delimiter="\t",
         decimal=".",
         dtype=dtype,
+        dtype_backend="numpy_nullable",
     )
 
     # Convert DateTime columns
-    df["Time"] = pd.to_datetime(
-        df["Time"],
-        format="ISO8601",
-        utc=False,
-    ).dt.tz_localize(None)
+    df["Time"] = (
+        pd
+        .to_datetime(
+            df["Time"],
+            format="ISO8601",
+            utc=False,
+        )
+        .dt.tz_localize(None)
+        .dt.as_unit(TIME_RESOLUTION_UNIT)
+    )
 
     # Convert categorical types
     df = df.astype({
@@ -185,4 +222,13 @@ def _import_boolean_variables_data(folder_path: Path) -> pd.DataFrame | None:
     df.sort_values(["Time"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    return df
+    datatable = Datatable(
+        dataset,
+        "BooleanVariables",
+        "IntelliMaze boolean variables data",
+        {},
+        df,
+        {},
+    )
+
+    return datatable

@@ -64,6 +64,14 @@ class DataChangedMessage(Message):
         self.dataset = dataset
 
 
+class OutliersChangedMessage(Message):
+    """Indicates that datatable outliers changed"""
+
+    def __init__(self, sender, datatable: Datatable):
+        super().__init__(sender)
+        self.datatable = datatable
+
+
 class WorkspaceChangedMessage(Message):
     """Indicates that the workspace has changed"""
 

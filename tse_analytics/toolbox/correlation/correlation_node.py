@@ -3,6 +3,7 @@ from NodeGraphQt.widgets.node_widgets import NodeComboBox
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.utils import get_group_by_params
+from tse_analytics.core.utils.data import get_columns_by_grouping_settings
 from tse_analytics.pipeline import PipelineNode
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 from tse_analytics.toolbox.correlation.processor import get_correlation_result
@@ -66,13 +67,14 @@ class CorrelationNode(PipelineNode):
         if not y_variable:
             return PipelinePacket.inactive(reason="No Y variable selected")
 
-        split_mode, factor_name = get_group_by_params(group_by_str)
+        grouping_settings = get_group_by_params(group_by_str)
 
         # Determine variable columns (avoid duplicate if same variable)
         variable_columns = [x_variable] if x_variable == y_variable else [x_variable, y_variable]
 
         # Get dataframe with grouping
-        df = datatable.get_df(variable_columns, split_mode, factor_name if factor_name else "")
+        columns = get_columns_by_grouping_settings(grouping_settings, variable_columns)
+        df = datatable.get_filtered_df(columns)
 
         # Generate correlation result
         result = get_correlation_result(
@@ -80,8 +82,7 @@ class CorrelationNode(PipelineNode):
             df,
             x_variable,
             y_variable,
-            split_mode,
-            factor_name,
+            grouping_settings,
             figsize=None,
         )
 

@@ -1,6 +1,6 @@
 """Qt/widget utility helpers."""
 
-from PySide6.QtGui import QIcon, Qt
+from PySide6.QtGui import QIcon, QPalette, Qt
 from PySide6.QtWidgets import QSizePolicy, QToolButton, QWidget, QWidgetAction
 
 
@@ -65,3 +65,18 @@ def get_figsize_from_widget(widget: QWidget) -> tuple[float, float]:
     fig_height = widget_height / dpi
 
     return fig_width, fig_height
+
+
+def set_inactive_palette(widget: QWidget) -> None:
+    palette = widget.palette()
+    palette.setColor(
+        QPalette.ColorGroup.Inactive,
+        QPalette.ColorRole.Highlight,
+        palette.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Highlight),
+    )
+    palette.setColor(
+        QPalette.ColorGroup.Inactive,
+        QPalette.ColorRole.HighlightedText,
+        palette.color(QPalette.ColorGroup.Active, QPalette.ColorRole.HighlightedText),
+    )
+    widget.setPalette(palette)

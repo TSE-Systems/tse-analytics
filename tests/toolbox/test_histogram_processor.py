@@ -1,11 +1,10 @@
 """Tests for tse_analytics.toolbox.histogram.processor module."""
 
 import matplotlib
+from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
+from tse_analytics.toolbox.histogram.processor import HistogramResult, get_histogram_result
 
 matplotlib.use("Agg")
-
-from tse_analytics.core.data.shared import SplitMode
-from tse_analytics.toolbox.histogram.processor import HistogramResult, get_histogram_result
 
 
 class TestHistogram:
@@ -16,8 +15,7 @@ class TestHistogram:
             dataset=analysis_dataset,
             df=analysis_df.copy(),
             variable_name="Metabolism",
-            split_mode=SplitMode.TOTAL,
-            factor_name=None,
+            grouping_settings=GroupingSettings(mode=GroupingMode.TOTAL),
             figsize=(8, 6),
         )
         assert isinstance(result, HistogramResult)
@@ -28,8 +26,7 @@ class TestHistogram:
             dataset=analysis_dataset,
             df=analysis_df.copy(),
             variable_name="Metabolism",
-            split_mode=SplitMode.ANIMAL,
-            factor_name=None,
+            grouping_settings=GroupingSettings(mode=GroupingMode.ANIMAL),
             figsize=(8, 6),
         )
         assert isinstance(result, HistogramResult)
@@ -40,8 +37,7 @@ class TestHistogram:
             dataset=analysis_dataset,
             df=analysis_df.copy(),
             variable_name="Metabolism",
-            split_mode=SplitMode.FACTOR,
-            factor_name="Group",
+            grouping_settings=GroupingSettings(mode=GroupingMode.FACTOR, factor_name="Group"),
             figsize=(8, 6),
         )
         assert isinstance(result, HistogramResult)
@@ -51,8 +47,7 @@ class TestHistogram:
             dataset=analysis_dataset,
             df=analysis_df.copy(),
             variable_name="Metabolism",
-            split_mode=SplitMode.RUN,
-            factor_name=None,
+            grouping_settings=GroupingSettings(mode=GroupingMode.RUN),
             figsize=(8, 6),
         )
         assert isinstance(result, HistogramResult)

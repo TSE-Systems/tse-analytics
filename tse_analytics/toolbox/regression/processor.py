@@ -7,11 +7,11 @@ import seaborn.objects as so
 from matplotlib import rcParams
 
 from tse_analytics.core import color_manager
-from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.operators.time_intervals_binning_pipe_operator import process_time_interval_binning
-from tse_analytics.core.data.shared import SplitMode, Variable
+from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
+from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.utils import get_great_table, get_html_image_from_figure
+from tse_analytics.core.utils.data import group_df_by_animal
 
 
 @dataclass
@@ -24,37 +24,34 @@ def get_regression_result(
     df: pd.DataFrame,
     covariate: Variable,
     response: Variable,
-    split_mode: SplitMode,
-    factor_name: str | None,
+    grouping_settings: GroupingSettings,
     figsize: tuple[float, float] | None = None,
 ) -> RegressionResult:
     if figsize is None:
         figsize = rcParams["figure.figsize"]
 
     # Create a figure with a tight layout
-    figure = plt.Figure(figsize=(figsize[0], figsize[0] / 2), layout="tight")
+    figure = plt.Figure(figsize=figsize, layout="tight")
 
     # Group by animal
-    df = process_time_interval_binning(
+    df = group_df_by_animal(
         df,
-        TimeIntervalsBinningSettings("day", 365),
         {
             covariate.name: covariate,
             response.name: response,
         },
-        origin=dataset.experiment_started,
     )
 
-    match split_mode:
-        case SplitMode.ANIMAL:
+    match grouping_settings.mode:
+        case GroupingMode.ANIMAL:
             by = "Animal"
             palette = color_manager.get_animal_to_color_dict(dataset.animals)
-        case SplitMode.RUN:
+        case GroupingMode.RUN:
             by = "Run"
-            palette = color_manager.colormap_name
-        case SplitMode.FACTOR:
-            by = factor_name
-            palette = color_manager.get_level_to_color_dict(dataset.factors[factor_name])
+            palette = color_manager.get_run_to_color_dict(dataset.runs)
+        case GroupingMode.FACTOR:
+            by = grouping_settings.factor_name
+            palette = color_manager.get_level_to_color_dict(dataset.factors[by])
         case _:
             by = None
             palette = color_manager.colormap_name
@@ -77,13 +74,13 @@ def get_regression_result(
         .plot(True)
     )
 
-    match split_mode:
-        case SplitMode.ANIMAL:
+    match grouping_settings.mode:
+        case GroupingMode.ANIMAL:
             output = ""
-        case SplitMode.FACTOR:
+        case GroupingMode.FACTOR:
             output = ""
-            for level in df[factor_name].unique().tolist():
-                data = df[df[factor_name] == level]
+            for level in df[grouping_settings.factor_name].unique().tolist():
+                data = df[df[grouping_settings.factor_name] == level]
                 output = (
                     output
                     + get_great_table(
@@ -92,7 +89,7 @@ def get_regression_result(
                     ).as_raw_html(inline_css=True)
                     + "<p>"
                 )
-        case SplitMode.RUN:
+        case GroupingMode.RUN:
             output = ""
             for run in df["Run"].unique().tolist():
                 data = df[df["Run"] == run]
@@ -112,9 +109,9 @@ def get_regression_result(
             ).as_raw_html(inline_css=True)
 
     report = f"""
-    {get_html_image_from_figure(figure)}
-    <p>
     {output}
+    <p>
+    {get_html_image_from_figure(figure)}
     """
 
     return RegressionResult(

@@ -161,8 +161,8 @@ class TestGetAnimalToColorDict:
     def test_returns_dict(self):
         """Test that function returns a dictionary."""
         animals = {
-            "animal1": Animal(enabled=True, id="animal1", color="#FF0000", properties={}),
-            "animal2": Animal(enabled=True, id="animal2", color="#00FF00", properties={}),
+            "animal1": Animal(id="animal1", color="#FF0000", properties={}),
+            "animal2": Animal(id="animal2", color="#00FF00", properties={}),
         }
 
         result = get_animal_to_color_dict(animals)
@@ -172,8 +172,8 @@ class TestGetAnimalToColorDict:
     def test_maps_animal_ids_to_colors(self):
         """Test that animal IDs are correctly mapped to their colors."""
         animals = {
-            "animal1": Animal(enabled=True, id="animal1", color="#FF0000", properties={}),
-            "animal2": Animal(enabled=True, id="animal2", color="#00FF00", properties={}),
+            "animal1": Animal(id="animal1", color="#FF0000", properties={}),
+            "animal2": Animal(id="animal2", color="#00FF00", properties={}),
         }
 
         result = get_animal_to_color_dict(animals)
@@ -189,7 +189,7 @@ class TestGetAnimalToColorDict:
 
     def test_single_animal(self):
         """Test with a single animal."""
-        animals = {"solo": Animal(enabled=True, id="solo", color="#0000FF", properties={})}
+        animals = {"solo": Animal(id="solo", color="#0000FF", properties={})}
 
         result = get_animal_to_color_dict(animals)
 
@@ -199,9 +199,7 @@ class TestGetAnimalToColorDict:
     def test_multiple_animals(self):
         """Test with multiple animals."""
         animals = {
-            f"animal{i}": Animal(
-                enabled=True, id=f"animal{i}", color=f"#{'00' * i}{i}{i}{'00' * (2 - i)}", properties={}
-            )
+            f"animal{i}": Animal(id=f"animal{i}", color=f"#{'00' * i}{i}{i}{'00' * (2 - i)}", properties={})
             for i in range(5)
         }
 
@@ -213,8 +211,8 @@ class TestGetAnimalToColorDict:
     def test_preserves_all_colors(self):
         """Test that all color values are preserved."""
         animals = {
-            "a1": Animal(enabled=False, id="a1", color="#ABCDEF", properties={"weight": 100}),
-            "a2": Animal(enabled=True, id="a2", color="#123456", properties={"weight": 200}),
+            "a1": Animal(id="a1", color="#ABCDEF", properties={"weight": 100}),
+            "a2": Animal(id="a2", color="#123456", properties={"weight": 200}),
         }
 
         result = get_animal_to_color_dict(animals)

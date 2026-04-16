@@ -7,39 +7,23 @@ based on the specified split mode (by animal, factor, run, or total).
 
 import pandas as pd
 
-from tse_analytics.core.data.shared import SplitMode, Variable
+from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
+from tse_analytics.core.data.shared import Variable
 
 
 def group_by_columns(
-    df: pd.DataFrame, variables: dict[str, Variable], split_mode: SplitMode, selected_factor_name: str
+    df: pd.DataFrame,
+    variables: dict[str, Variable],
+    group_settings: GroupingSettings,
 ) -> pd.DataFrame:
-    """
-    Group a DataFrame by columns based on the specified split mode.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        The DataFrame to group.
-    variables : dict[str, Variable]
-        Dictionary mapping variable names to Variable objects.
-    split_mode : SplitMode
-        The mode to use for splitting the data (by animal, factor, run, or total).
-    selected_factor_name : str
-        The name of the factor to use when split_mode is FACTOR.
-
-    Returns
-    -------
-    pd.DataFrame
-        A grouped DataFrame with appropriate aggregations applied.
-    """
-    if split_mode == SplitMode.ANIMAL:
+    if group_settings.mode == GroupingMode.ANIMAL or "Bin" not in df.columns:
         # No grouping needed
         return df
 
-    match split_mode:
-        case SplitMode.FACTOR:
-            group_by = ["Bin", selected_factor_name]
-        case SplitMode.RUN:
+    match group_settings.mode:
+        case GroupingMode.FACTOR:
+            group_by = ["Bin", group_settings.factor_name]
+        case GroupingMode.RUN:
             group_by = ["Bin", "Run"]
         case _:  # Total split mode
             group_by = ["Bin"]
@@ -57,6 +41,7 @@ def group_by_columns(
         aggregation[variable.name] = "mean"
 
     result = df.groupby(group_by, dropna=False, observed=False).aggregate(aggregation)
+    # TODO: check if done properly
     result.reset_index(inplace=True)
 
     return result

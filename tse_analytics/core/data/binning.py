@@ -5,11 +5,11 @@ This module provides classes for configuring different types of time binning,
 including fixed time intervals, light/dark cycles, and custom time phases.
 """
 
-from dataclasses import dataclass, field
-from datetime import time
+from datetime import time, timedelta
 from enum import StrEnum, unique
 
-from tse_analytics.core.data.shared import TimePhase
+from pydantic import Field
+from pydantic.dataclasses import dataclass
 
 
 @unique
@@ -42,10 +42,6 @@ class BinningSettings:
 
     Attributes
     ----------
-    apply : bool
-        Whether to apply binning.
-    mode : BinningMode
-        The binning mode to use.
     time_intervals_settings : TimeIntervalsBinningSettings
         Settings for time intervals binning.
     time_cycles_settings : TimeCyclesBinningSettings
@@ -54,15 +50,13 @@ class BinningSettings:
         Settings for time phases binning.
     """
 
-    apply: bool = False
-    mode: BinningMode = BinningMode.INTERVALS
-    time_intervals_settings: TimeIntervalsBinningSettings = field(
+    time_intervals_settings: TimeIntervalsBinningSettings = Field(
         default_factory=lambda: TimeIntervalsBinningSettings("hour", 1)
     )
-    time_cycles_settings: TimeCyclesBinningSettings = field(
+    time_cycles_settings: TimeCyclesBinningSettings = Field(
         default_factory=lambda: TimeCyclesBinningSettings(time(7, 0), time(19, 0))
     )
-    time_phases_settings: TimePhasesBinningSettings = field(default_factory=lambda: TimePhasesBinningSettings([]))
+    time_phases_settings: TimePhasesBinningSettings = Field(default_factory=lambda: TimePhasesBinningSettings([]))
 
 
 @dataclass
@@ -110,4 +104,21 @@ class TimePhasesBinningSettings:
         List of time phases to bin data into.
     """
 
-    time_phases: list[TimePhase] = field(default_factory=list)
+    time_phases: list[TimePhase] = Field(default_factory=list)
+
+
+@dataclass
+class TimePhase:
+    """
+    Dataclass representing a time phase in the experiment.
+
+    Attributes
+    ----------
+    name : str
+        The name of the time phase.
+    start_timestamp : timedelta
+        The start time of the phase as a timedelta from the experiment start.
+    """
+
+    name: str
+    start_timestamp: timedelta

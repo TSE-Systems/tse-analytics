@@ -1,6 +1,4 @@
-from tse_analytics.core.data.binning import BinningMode
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import SplitMode
 from tse_analytics.pipeline import PipelineNode
 from tse_analytics.pipeline.enums import EFFECT_SIZE, P_ADJUSTMENT
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
@@ -60,7 +58,7 @@ class MixedAnovaNode(PipelineNode):
             return PipelinePacket.inactive(reason="Invalid input datatable")
 
         # Check if binning is applied
-        if not datatable.dataset.binning_settings.apply:
+        if "Bin" not in datatable.df.columns:
             return PipelinePacket.inactive(reason="Please apply a proper binning first")
 
         # Get configuration properties
@@ -90,19 +88,9 @@ class MixedAnovaNode(PipelineNode):
         effect_size = EFFECT_SIZE.get(effect_size_label, "hedges")
         p_adjustment = P_ADJUSTMENT.get(p_adjustment_label, "none")
 
-        # Disable pairwise tests for interval binning by default to avoid long computation
-        if datatable.dataset.binning_settings.mode == BinningMode.INTERVALS and do_pairwise_tests:
-            # Note: In the widget, this prompts the user. In the node, we just warn via tooltip.
-            tooltip = "Warning: Pairwise tests with interval binning may take a long time"
-            self.view.setToolTip(tooltip)
-
-        # Get preprocessed dataframe (always use ANIMAL split for Mixed-ANOVA)
-        df = datatable.get_preprocessed_df(
-            variables={variable.name: variable},
-            split_mode=SplitMode.ANIMAL,
-            selected_factor_name=None,
-            dropna=True,
-        )
+        columns = ["Animal", "Bin", factor_name, variable.name]
+        df = datatable.get_filtered_df(columns)
+        df.dropna(inplace=True)
 
         # Perform Mixed-ANOVA analysis
         result = get_mixed_anova_result(

@@ -4,11 +4,23 @@ libraries (matplotlib, PyQtGraph, pandas, seaborn), and provides the main entry 
 for the TSE Analytics application.
 """
 
+import sys
+
 import matplotlib as mpl
 import seaborn as sns
 import seaborn.objects as so
 from pyqtgraph import setConfigOptions
 from PySide6.QtCore import QSettings
+
+IS_RELEASE = getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS")
+
+CSV_IMPORT_ENABLED = False
+PIPELINE_ENABLED = False
+
+LAYOUT_VERSION = 14
+MAX_RECENT_FILES = 10
+
+TIME_RESOLUTION_UNIT = "ms"
 
 
 def init_global_settings():

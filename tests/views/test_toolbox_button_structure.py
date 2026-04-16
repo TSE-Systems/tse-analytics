@@ -122,7 +122,7 @@ def test_add_widget_trigger(qapp, mock_registry, capsys):
     from tse_analytics.views.misc.toolbox_button import ToolboxButton
 
     mock_datatable = MagicMock()
-    mock_datatable.dataset.name = "TestDataset"
+    mock_datatable.configure_mock(name="TestDataset")
 
     mock_manager = MagicMock()
     mock_manager.get_selected_datatable.return_value = mock_datatable

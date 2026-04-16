@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QCheckBox, QComboBox, QLabel, QToolBar, QWidget
 
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.utils import get_figsize_from_widget
+from tse_analytics.core.utils.data import get_columns_by_grouping_settings
 from tse_analytics.toolbox.distribution.processor import get_distribution_result
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
@@ -59,21 +60,17 @@ class DistributionWidget(ToolboxWidgetBase):
     def _update(self):
         self.report_view.clear()
 
-        split_mode, selected_factor_name = self.group_by_selector.get_group_by()
+        grouping_settings = self.group_by_selector.get_grouping_settings()
         variable = self.variableSelector.get_selected_variable()
 
-        df = self.datatable.get_df(
-            [variable.name],
-            split_mode,
-            selected_factor_name,
-        )
+        columns = get_columns_by_grouping_settings(grouping_settings, [variable.name])
+        df = self.datatable.get_filtered_df(columns)
 
         result = get_distribution_result(
             self.datatable.dataset,
             df,
             variable.name,
-            split_mode,
-            selected_factor_name,
+            grouping_settings,
             self.plot_type_combobox.currentText(),
             self.checkBoxShowPoints.isChecked(),
             get_figsize_from_widget(self.report_view),

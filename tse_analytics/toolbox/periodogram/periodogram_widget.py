@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from PySide6.QtWidgets import QLabel, QToolBar, QWidget
 
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.operators.group_by_pipe_operator import group_by_columns
 from tse_analytics.core.utils import get_figsize_from_widget
 from tse_analytics.toolbox.periodogram.processor import get_periodogram_result
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
@@ -40,7 +41,9 @@ class PeriodogramWidget(ToolboxWidgetBase):
         toolbar.addSeparator()
         toolbar.addWidget(QLabel("Group by:"))
         self.group_by_selector = GroupBySelector(
-            toolbar, self.datatable, check_binning=True, selected_mode=self._settings.group_by
+            toolbar,
+            self.datatable,
+            selected_mode=self._settings.group_by,
         )
         toolbar.addWidget(self.group_by_selector)
 
@@ -53,16 +56,20 @@ class PeriodogramWidget(ToolboxWidgetBase):
     def _update(self):
         self.report_view.clear()
 
-        split_mode, selected_factor_name = self.group_by_selector.get_group_by()
-
+        grouping_settings = self.group_by_selector.get_grouping_settings()
         variable = self.variableSelector.get_selected_variable()
 
-        df = self.datatable.get_preprocessed_df(
-            variables={variable.name: variable},
-            split_mode=split_mode,
-            selected_factor_name=selected_factor_name,
-            dropna=True,
+        columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + [variable.name]
+        df = self.datatable.get_filtered_df(columns)
+
+        # Group by columns
+        df = group_by_columns(
+            df,
+            {variable.name: variable},
+            grouping_settings,
         )
+
+        df.dropna(inplace=True)
 
         result = get_periodogram_result(
             df,

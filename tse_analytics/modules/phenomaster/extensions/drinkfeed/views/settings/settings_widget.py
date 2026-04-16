@@ -1,8 +1,8 @@
 from PySide6.QtCore import QTime
 from PySide6.QtWidgets import QHeaderView, QInputDialog, QWidget
 
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import AnimalDiet
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.diets_model import DietsModel
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.drinkfeed_settings import DrinkFeedSettings
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.views.settings.settings_widget_ui import Ui_SettingsWidget
@@ -21,10 +21,10 @@ class SettingsWidget(QWidget):
         self.ui.toolButtonAddDiet.clicked.connect(self._add_diet)
         self.ui.toolButtonDeleteDiet.clicked.connect(self._delete_diet)
 
-        self.dataset: PhenoMasterDataset | None = None
+        self.dataset: Dataset | None = None
         self.diets_model: DietsModel | None = None
 
-    def set_data(self, dataset: PhenoMasterDataset, drinkfeed_settings: DrinkFeedSettings):
+    def set_data(self, dataset: Dataset, drinkfeed_settings: DrinkFeedSettings):
         self.dataset = dataset
         self._set_settings(drinkfeed_settings)
 

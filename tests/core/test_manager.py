@@ -47,7 +47,7 @@ class TestManagerInitialization:
         """Test that Manager initializes with a default workspace."""
         workspace = manager.get_workspace()
         assert isinstance(workspace, Workspace)
-        assert workspace.name == "Default Workspace"
+        assert workspace.name == "Workspace"
 
     def test_initializes_with_no_selected_dataset(self, manager):
         """Test that Manager initializes with no selected dataset."""
@@ -164,12 +164,12 @@ class TestLoadWorkspace:
 
     def test_loads_workspace_from_file(self, manager):
         """Test that load_workspace loads a workspace from file."""
-        mock_workspace = Workspace("Loaded Workspace")
+        mock_workspace = Workspace(name="Loaded Workspace")
 
-        with patch("builtins.open", mock_open(read_data=pickle.dumps(mock_workspace))):
+        with patch("tse_analytics.core.services.workspace_service._load_from_duckdb", return_value=mock_workspace):
             with patch.object(messaging, "broadcast"):
                 with patch("tse_analytics.core.services.workspace_service.QTimer"):
-                    manager.load_workspace("test_path.pkl")
+                    manager.load_workspace("test_path.duckdb")
 
         loaded_workspace = manager.get_workspace()
         assert loaded_workspace.name == "Loaded Workspace"
@@ -179,28 +179,45 @@ class TestLoadWorkspace:
         with patch.object(messaging, "broadcast"):
             manager.set_selected_dataset(mock_dataset)
 
-        mock_workspace = Workspace("New Workspace")
+        mock_workspace = Workspace(name="New Workspace")
+        with patch("tse_analytics.core.services.workspace_service._load_from_duckdb", return_value=mock_workspace):
+            with patch.object(messaging, "broadcast"):
+                with patch("tse_analytics.core.services.workspace_service.QTimer"):
+                    manager.load_workspace("test_path.duckdb")
+
+        assert manager.get_selected_dataset() is None
+
+    def test_loads_legacy_workspace_from_file(self, manager):
+        """Test that load_workspace loads a legacy pickle workspace."""
+        mock_workspace = Workspace(name="Legacy Workspace")
+
         with patch("builtins.open", mock_open(read_data=pickle.dumps(mock_workspace))):
             with patch.object(messaging, "broadcast"):
                 with patch("tse_analytics.core.services.workspace_service.QTimer"):
-                    manager.load_workspace("test_path.pkl")
+                    manager.load_workspace("test_path.workspace")
 
-        assert manager.get_selected_dataset() is None
+        loaded_workspace = manager.get_workspace()
+        assert loaded_workspace.name == "Legacy Workspace"
 
 
 class TestSaveWorkspace:
     """Tests for save_workspace method."""
 
-    def test_saves_workspace_to_file(self, manager):
-        """Test that save_workspace saves the workspace to a file."""
-        with patch("builtins.open", mock_open()) as mock_file:
-            with patch("pickle.dump") as mock_dump:
-                manager.save_workspace("test_path.pkl")
+    def test_saves_workspace_to_duckdb(self, manager):
+        """Test that save_workspace saves the workspace to a DuckDB file."""
+        with patch("tse_analytics.core.services.workspace_service._save_to_duckdb") as mock_save:
+            manager.save_workspace("test_path.duckdb")
 
-                mock_file.assert_called_once_with("test_path.pkl", "wb")
-                assert mock_dump.called
-                # Check that workspace was passed to pickle.dump
-                assert isinstance(mock_dump.call_args[0][0], Workspace)
+            mock_save.assert_called_once_with("test_path.duckdb", manager.get_workspace())
+
+    def test_saves_workspace_to_legacy_pickle(self, manager):
+        """Test that save_workspace saves to legacy pickle when .workspace extension."""
+        with patch("builtins.open", mock_open()) as mock_file:
+            with patch("tse_analytics.core.services.workspace_service.pickle") as mock_pickle:
+                manager.save_workspace("test_path.workspace")
+
+                mock_file.assert_called_once_with("test_path.workspace", "wb")
+                assert mock_pickle.dump.called
 
 
 class TestAddDataset:
@@ -304,10 +321,10 @@ class TestCloneDataset:
     """Tests for clone_dataset method."""
 
     @patch("tse_analytics.core.services.dataset_service.copy.deepcopy")
-    @patch("tse_analytics.core.services.dataset_service.uuid4")
-    def test_creates_deep_copy_of_dataset(self, mock_uuid4, mock_deepcopy, manager, mock_dataset):
+    @patch("tse_analytics.core.services.dataset_service.uuid7")
+    def test_creates_deep_copy_of_dataset(self, mock_uuid7, mock_deepcopy, manager, mock_dataset):
         """Test that clone_dataset creates a deep copy of the dataset."""
-        mock_uuid4.return_value = UUID("12345678-1234-5678-1234-567812345678")
+        mock_uuid7.return_value = UUID("12345678-1234-5678-1234-567812345678")
         mock_cloned = MagicMock(spec=Dataset)
         mock_cloned.id = "cloned-id"
         mock_cloned.metadata = {"name": "Clone"}
@@ -319,11 +336,11 @@ class TestCloneDataset:
         mock_deepcopy.assert_called_once_with(mock_dataset)
 
     @patch("tse_analytics.core.services.dataset_service.copy.deepcopy")
-    @patch("tse_analytics.core.services.dataset_service.uuid4")
-    def test_assigns_new_id_to_clone(self, mock_uuid4, mock_deepcopy, manager, mock_dataset):
+    @patch("tse_analytics.core.services.dataset_service.uuid7")
+    def test_assigns_new_id_to_clone(self, mock_uuid7, mock_deepcopy, manager, mock_dataset):
         """Test that clone_dataset assigns a new UUID to the cloned dataset."""
         new_uuid = UUID("12345678-1234-5678-1234-567812345678")
-        mock_uuid4.return_value = new_uuid
+        mock_uuid7.return_value = new_uuid
 
         mock_cloned = MagicMock(spec=Dataset)
         mock_cloned.id = None
@@ -336,8 +353,8 @@ class TestCloneDataset:
         assert mock_cloned.id == new_uuid
 
     @patch("tse_analytics.core.services.dataset_service.copy.deepcopy")
-    @patch("tse_analytics.core.services.dataset_service.uuid4")
-    def test_sets_new_name_on_clone(self, mock_uuid4, mock_deepcopy, manager, mock_dataset):
+    @patch("tse_analytics.core.services.dataset_service.uuid7")
+    def test_sets_new_name_on_clone(self, mock_uuid7, mock_deepcopy, manager, mock_dataset):
         """Test that clone_dataset sets a new name on the cloned dataset."""
         mock_cloned = MagicMock(spec=Dataset)
         mock_cloned.metadata = {}
@@ -346,7 +363,7 @@ class TestCloneDataset:
         with patch.object(messaging, "broadcast"):
             manager.clone_dataset(mock_dataset, "New Clone Name")
 
-        assert mock_cloned.metadata["name"] == "New Clone Name"
+        assert mock_cloned.name == "New Clone Name"
 
 
 class TestModuleLevelFunctions:

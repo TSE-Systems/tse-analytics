@@ -7,7 +7,7 @@ from ptitprince import RainCloud
 
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.shared import SplitMode
+from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
 from tse_analytics.core.utils import get_html_image_from_figure
 
 
@@ -20,31 +20,29 @@ def get_distribution_result(
     dataset: Dataset,
     df: pd.DataFrame,
     variable_name: str,
-    split_mode: SplitMode,
-    factor_name: str | None,
+    grouping_settings: GroupingSettings,
     plot_type: str,
     show_points: bool,
     figsize: tuple[float, float] | None = None,
 ) -> DistributionResult:
-    match split_mode:
-        case SplitMode.ANIMAL:
+    match grouping_settings.mode:
+        case GroupingMode.ANIMAL:
             x = "Animal"
             palette = color_manager.get_animal_to_color_dict(dataset.animals)
-        case SplitMode.RUN:
+        case GroupingMode.RUN:
             x = "Run"
-            palette = color_manager.colormap_name
-        case SplitMode.FACTOR:
-            x = factor_name
-            palette = color_manager.get_level_to_color_dict(dataset.factors[factor_name])
+            palette = color_manager.get_run_to_color_dict(dataset.runs)
+        case GroupingMode.FACTOR:
+            x = grouping_settings.factor_name
+            palette = color_manager.get_level_to_color_dict(dataset.factors[x])
         case _:
             x = None
             palette = color_manager.colormap_name
 
-    if split_mode != SplitMode.TOTAL and split_mode != SplitMode.RUN:
-        # df[x] = df[x].cat.remove_unused_categories()
+    if grouping_settings.mode == GroupingMode.ANIMAL or grouping_settings.mode == GroupingMode.FACTOR:
         # TODO: temporary fix for issue with broken categories offset when using pandas 3.0
         df.sort_values(x, inplace=True)
-        df[x] = df[x].astype(str)
+        df[x] = df[x].astype("string")
 
     # Create a figure with a tight layout
     figure, ax = plt.subplots(1, 1, figsize=figsize, layout="tight")
@@ -57,6 +55,7 @@ def get_distribution_result(
                 x=x,
                 y=variable_name,
                 hue=x,
+                palette=palette,
                 ax=ax,
                 width_viol=0.5,
             )

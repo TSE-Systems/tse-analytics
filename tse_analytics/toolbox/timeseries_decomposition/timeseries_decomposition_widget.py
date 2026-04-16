@@ -48,8 +48,8 @@ class TimeseriesDecompositionWidget(ToolboxWidgetBase):
             minimum=1,
             maximum=10000,
             singleStep=1,
-            value=int(pd.Timedelta("24:00:00") / self.datatable.sampling_interval)
-            if self.datatable.sampling_interval is not None
+            value=int(pd.Timedelta("24:00:00") / self.datatable.sample_interval)
+            if self.datatable.sample_interval is not None
             else self._settings.period,
         )
         toolbar.addWidget(self.period_spin_box)

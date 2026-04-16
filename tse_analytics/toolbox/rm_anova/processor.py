@@ -7,7 +7,8 @@ from matplotlib import rcParams
 
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.shared import SplitMode, Variable
+from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
+from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.utils import get_great_table, get_html_image_from_plot
 
 
@@ -20,8 +21,7 @@ def get_rm_anova_result(
     dataset: Dataset,
     df: pd.DataFrame,
     variable: Variable,
-    split_mode: SplitMode,
-    factor_name: str,
+    grouping_settings: GroupingSettings,
     do_pairwise_tests: bool,
     effsize: str,
     padjust: str,
@@ -30,16 +30,16 @@ def get_rm_anova_result(
     if figsize is None:
         figsize = rcParams["figure.figsize"]
 
-    match split_mode:
-        case SplitMode.ANIMAL:
+    match grouping_settings.mode:
+        case GroupingMode.ANIMAL:
             subject = "Animal"
             palette = color_manager.get_animal_to_color_dict(dataset.animals)
-        case SplitMode.RUN:
+        case GroupingMode.RUN:
             subject = "Run"
-            palette = color_manager.colormap_name
-        case SplitMode.FACTOR:
-            subject = factor_name
-            palette = color_manager.get_level_to_color_dict(dataset.factors[factor_name])
+            palette = color_manager.get_run_to_color_dict(dataset.runs)
+        case GroupingMode.FACTOR:
+            subject = grouping_settings.factor_name
+            palette = color_manager.get_level_to_color_dict(dataset.factors[subject])
         case _:
             # Disabled for Total grouping mode
             subject = None
@@ -70,7 +70,7 @@ def get_rm_anova_result(
             df,
             x="Bin",
             y=variable.name,
-            color=subject if not split_mode == SplitMode.ANIMAL else None,
+            color=subject if not grouping_settings.mode == GroupingMode.ANIMAL else None,
         )
         .add(so.Range(), so.Est(errorbar="se"))
         .add(so.Dot(), so.Agg())

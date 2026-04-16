@@ -12,6 +12,8 @@ from PySide6.QtCore import QTimer
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.workspace import Workspace
+from tse_analytics.core.io.storage import load_workspace as _load_from_duckdb
+from tse_analytics.core.io.storage import save_workspace as _save_to_duckdb
 from tse_analytics.core.services.selection_service import SelectionService
 
 
@@ -23,7 +25,7 @@ class WorkspaceService:
     """
 
     def __init__(self, selection: SelectionService):
-        self._workspace = Workspace("Default Workspace")
+        self._workspace = Workspace(name="Workspace")
         self._selection = selection
 
     def get_workspace(self) -> Workspace:
@@ -36,27 +38,37 @@ class WorkspaceService:
 
     def new_workspace(self) -> None:
         """Create a new empty workspace and clear selections."""
-        self._workspace = Workspace("Workspace")
+        self._workspace = Workspace(name="Workspace")
         self._cleanup_workspace()
 
     def load_workspace(self, path: str) -> None:
         """Load a workspace from a file and clear selections.
 
+        Supports both DuckDB (``.duckdb``) and legacy pickle (``.workspace``) formats.
+
         Args:
             path: The path to the workspace file to load.
         """
-        with open(path, "rb") as file:
-            self._workspace = pickle.load(file)
+        if path.endswith(".workspace"):
+            with open(path, "rb") as file:
+                self._workspace = pickle.load(file)
+        else:
+            self._workspace = _load_from_duckdb(path)
         self._cleanup_workspace()
 
     def save_workspace(self, path: str) -> None:
         """Save the current workspace to a file.
 
+        Supports both DuckDB (``.duckdb``) and legacy pickle (``.workspace``) formats.
+
         Args:
             path: The path where the workspace file will be saved.
         """
-        with open(path, "wb") as file:
-            pickle.dump(self._workspace, file)
+        if path.endswith(".workspace"):
+            with open(path, "wb") as file:
+                pickle.dump(self._workspace, file)
+        else:
+            _save_to_duckdb(path, self._workspace)
 
     def _cleanup_workspace(self) -> None:
         """Clean up the workspace by clearing selections and triggering garbage collection.

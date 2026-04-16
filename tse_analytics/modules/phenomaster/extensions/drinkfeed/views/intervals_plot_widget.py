@@ -5,8 +5,7 @@ from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import QToolBar, QVBoxLayout, QWidget
 
 from tse_analytics.core import color_manager
-from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.drinkfeed_bin_data import DrinkFeedBinData
-from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.drinkfeed_raw_data import DrinkFeedRawData
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
@@ -40,12 +39,12 @@ class IntervalsPlotWidget(QWidget):
         toolbar.addWidget(plot_toolbar)
 
         self.df: pd.DataFrame | None = None
-        self.drinkfeed_data: DrinkFeedBinData | DrinkFeedRawData | None = None
+        self.datatable: Datatable | None = None
 
-    def set_data(self, df: pd.DataFrame, drinkfeed_data: DrinkFeedBinData | DrinkFeedRawData) -> None:
+    def set_data(self, df: pd.DataFrame, datatable: Datatable) -> None:
         self.df = df
-        self.drinkfeed_data = drinkfeed_data
-        self.variableSelector.set_data(drinkfeed_data.variables)
+        self.datatable = datatable
+        self.variableSelector.set_data(datatable.variables)
         self._update_plot()
 
     def _variable_changed(self, variable: str):
@@ -57,11 +56,16 @@ class IntervalsPlotWidget(QWidget):
             return
 
         selected_variable = self.variableSelector.currentText()
-        df = self.df
+        df = self.df[["Animal", "Bin", selected_variable]]
 
-        unit = "g" if "Feed" in selected_variable else "ml"
+        if "Feed" in selected_variable:
+            y_label = "Meal size [g]"
+        elif "Drink" in selected_variable:
+            y_label = "Meal size [ml]"
+        else:
+            y_label = "Weight [g]"
 
-        color = color_manager.get_animal_to_color_dict(self.drinkfeed_data.dataset.animals)
+        color = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
 
         self.canvas.clear(False)
         (
@@ -71,7 +75,7 @@ class IntervalsPlotWidget(QWidget):
             .scale(color=color)
             .label(
                 x="Time [bin]",
-                y=f"Meal size [{unit}]",
+                y=y_label,
             )
             .on(self.canvas.figure)
             .plot(True)

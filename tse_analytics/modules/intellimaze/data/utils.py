@@ -1,11 +1,80 @@
 import pandas as pd
 
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
-from tse_analytics.modules.intellimaze.data.intellimaze_extension_data import IntelliMazeExtensionData
+from tse_analytics.core.data.shared import Animal
+from tse_analytics.globals import TIME_RESOLUTION_UNIT
 
 
-def get_combined_variables_table(extension_data: IntelliMazeExtensionData) -> pd.DataFrame:
+def get_tag_to_name_map(animals: dict[str, Animal]) -> dict[str, str]:
+    """
+    Get a mapping from animal tags to animal IDs.
+
+    Returns:
+        dict[str, str]: Dictionary mapping animal tags to animal IDs.
+    """
+    tag_to_animal_map = {}
+    for animal in animals.values():
+        tag_to_animal_map[animal.properties["Tag"]] = animal.id
+    return tag_to_animal_map
+
+
+def get_variables_csv_data(
+    extension_data: dict[str, Datatable],
+    extension_name: str,
+    tag_to_animal_map: dict[str, str],
+) -> dict[str, pd.DataFrame]:
+    """
+    Get CSV data for variables.
+
+    This method converts variable data to a format suitable for CSV export.
+
+    Args:
+        extension_name (str): The name of the extension.
+        tag_to_animal_map (dict[str, str]): Dictionary mapping animal tags to animal IDs.
+
+    Returns:
+        dict[str, pd.DataFrame]: Dictionary mapping variable types to DataFrames.
+    """
+    result: dict[str, pd.DataFrame] = {}
+
+    variables_dict = {
+        "DoubleVariables": "Doubles",
+        "IntegerVariables": "Integers",
+        "BooleanVariables": "Booleans",
+    }
+
+    for name, type in variables_dict.items():
+        if name in extension_data:
+            data: dict[str, list | str] = {
+                "DateTime": [],
+                "DeviceType": extension_name,
+                "DeviceId": [],
+                "AnimalName": [],
+                "AnimalTag": [],
+                "TableType": type,
+                "Name": [],
+                "Data": [],
+            }
+
+            for row in extension_data[name].df.itertuples():
+                data["DateTime"].append(row.Time)
+                data["DeviceId"].append(row.DeviceId)
+                data["AnimalName"].append(tag_to_animal_map[row.Tag] if row.Tag == row.Tag else "")
+                data["AnimalTag"].append(row.Tag if row.Tag == row.Tag else "")
+
+                data["Name"].append(row.Name)
+                data["Data"].append(row.Data)
+
+            result[name] = pd.DataFrame(data)
+
+    return result
+
+
+def get_combined_variables_table(
+    dataset: Dataset,
+    extension_data: dict[str, Datatable],
+) -> pd.DataFrame:
     """
     Combine variable tables from different sources into a single DataFrame.
 
@@ -21,20 +90,23 @@ def get_combined_variables_table(extension_data: IntelliMazeExtensionData) -> pd
     result = pd.DataFrame()
     table_names = ["IntegerVariables", "DoubleVariables", "BooleanVariables"]
     for table_name in table_names:
-        df = _preprocess_variable_table(table_name, extension_data)
+        df = _preprocess_variable_table(dataset, table_name, extension_data)
         if df is not None:
             result = pd.concat([result, df], ignore_index=True, sort=False)
     result.sort_values(["DateTime"], inplace=True)
     result.reset_index(drop=True, inplace=True)
 
     # # Add Timedelta column
-    # experiment_started = extension_data.dataset.experiment_started
-    # result.insert(loc=1, column="Timedelta", value=result["DateTime"] - experiment_started)
+    # result.insert(loc=1, column="Timedelta", value=(df["DateTime"] - extension_data.dataset.experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT))
 
     return result
 
 
-def _preprocess_variable_table(table_name: str, extension_data: IntelliMazeExtensionData) -> pd.DataFrame | None:
+def _preprocess_variable_table(
+    dataset: Dataset,
+    table_name: str,
+    extension_data: dict[str, Datatable],
+) -> pd.DataFrame | None:
     """
     Preprocess a variable table for use in analysis.
 
@@ -55,14 +127,14 @@ def _preprocess_variable_table(table_name: str, extension_data: IntelliMazeExten
     Returns:
         pd.DataFrame | None: The preprocessed DataFrame, or None if the table doesn't exist.
     """
-    if table_name not in extension_data.raw_data:
+    if table_name not in extension_data:
         return None
 
-    df = extension_data.raw_data[table_name].copy()
+    df = extension_data[table_name].df.copy()
 
     # Replace animal tags with animal IDs
     tag_to_animal_map = {}
-    for animal in extension_data.dataset.animals.values():
+    for animal in dataset.animals.values():
         tag_to_animal_map[animal.properties["Tag"]] = animal.id
     df["Animal"] = df["Tag"].replace(tag_to_animal_map)
 
@@ -112,20 +184,20 @@ def _preprocess_variable_table(table_name: str, extension_data: IntelliMazeExten
     return result
 
 
-def preprocess_main_table(dataset: IntelliMazeDataset) -> None:
+def preprocess_main_table(dataset: Dataset) -> None:
     """
-    Preprocess the main data table for an IntelliMazeDataset.
+    Preprocess the main data table for an Dataset.
 
     This function combines data from all extensions into a single main table,
     performs type conversions, sorts the data, and adds the resulting datatable
     to the dataset.
 
     Args:
-        dataset (IntelliMazeDataset): The dataset to preprocess.
+        dataset (Dataset): The dataset to preprocess.
     """
     datatables = []
 
-    for extension_name in dataset.extensions_data.keys():
+    for extension_name in dataset.raw_datatables.keys():
         if extension_name in dataset.datatables:
             datatables.append(dataset.datatables[extension_name])
 
@@ -134,6 +206,9 @@ def preprocess_main_table(dataset: IntelliMazeDataset) -> None:
     for datatable in datatables:
         dataframes.append(datatable.df)
         variables = variables | datatable.variables
+
+    if len(dataframes) == 0:
+        return
 
     # Sort variables by name
     variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))
@@ -157,7 +232,9 @@ def preprocess_main_table(dataset: IntelliMazeDataset) -> None:
         "Main table",
         variables,
         df,
-        None,
+        {
+            "origin": "Main",
+        },
     )
     dataset.add_datatable(main_datatable)
 
@@ -169,7 +246,7 @@ def preprocess_main_table(dataset: IntelliMazeDataset) -> None:
     # experiment_stopped = dataset.experiment_stopped
     #
     # datetime_range = pd.date_range(
-    #     experiment_started.round("Min"), experiment_stopped.round("Min"), freq=sampling_interval
+    #     experiment_started.round("Min"), experiment_stopped.round("Min"), freq=sample_interval
     # )
     #
     # default_columns = ["DateTime", "Animal"]
@@ -191,7 +268,7 @@ def preprocess_main_table(dataset: IntelliMazeDataset) -> None:
     #         animal_data,
     #         datetime_range,
     #         experiment_started,
-    #         sampling_interval,
+    #         sample_interval,
     #         agg,
     #     )
     #     preprocessed_animal_df.append(preprocessed_df)
@@ -210,7 +287,7 @@ def preprocess_main_table(dataset: IntelliMazeDataset) -> None:
     # df.reset_index(drop=True, inplace=True)
     #
     # dataset.df = df
-    # dataset.sampling_interval = sampling_interval
+    # dataset.sample_interval = sample_interval
     #
     # dataset.variables = variables
     #
@@ -228,7 +305,7 @@ def _preprocess_animal(
     df: pd.DataFrame,
     datetime_range: pd.DatetimeIndex,
     experiment_started: pd.Timestamp,
-    sampling_interval: pd.Timedelta,
+    sample_interval: pd.Timedelta,
     agg: dict[str, str],
 ) -> pd.DataFrame:
     """
@@ -248,7 +325,7 @@ def _preprocess_animal(
         df (pd.DataFrame): The DataFrame containing the animal's data.
         datetime_range (pd.DatetimeIndex): The datetime range to reindex to.
         experiment_started (pd.Timestamp): The timestamp when the experiment started.
-        sampling_interval (pd.Timedelta): The sampling interval for resampling.
+        sample_interval (pd.Timedelta): The sampling interval for resampling.
         agg (dict[str, str]): Dictionary mapping column names to aggregation functions.
 
     Returns:
@@ -259,8 +336,8 @@ def _preprocess_animal(
     # Decrease time resolution up to a minute
     result["DateTime"] = result["DateTime"].dt.round("Min")
 
-    # Resample data with one minute interval
-    result = result.resample(sampling_interval, on="DateTime", origin="start_day").aggregate(agg)
+    # Resample data
+    result = result.resample(sample_interval, on="DateTime", origin="start_day").aggregate(agg)
 
     result = result.reindex(datetime_range)
     # Fill missing data
@@ -269,8 +346,12 @@ def _preprocess_animal(
     result.reset_index(drop=False, inplace=True, names=["DateTime"])
 
     # Add Timedelta and Bin columns
-    result.insert(loc=1, column="Timedelta", value=result["DateTime"] - experiment_started)
-    result.insert(loc=2, column="Bin", value=(result["Timedelta"] / sampling_interval).round().astype(int))
+    result.insert(
+        loc=1,
+        column="Timedelta",
+        value=(result["DateTime"] - experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT),
+    )
+    result.insert(loc=2, column="Bin", value=(result["Timedelta"] / sample_interval).round().astype("UInt64"))
 
     # Put back animal into dataframe
     result.insert(loc=3, column="Animal", value=animal_id)

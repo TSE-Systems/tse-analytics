@@ -52,7 +52,7 @@ class TimeseriesAutocorrelationWidget(ToolboxWidgetBase):
     def _update(self):
         self.report_view.clear()
 
-        if self.datatable.dataset.binning_settings.apply:
+        if "Bin" in self.datatable.df.columns:
             make_toast(
                 self,
                 self.title,

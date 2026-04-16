@@ -1,7 +1,7 @@
-from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QAbstractItemView, QTableWidget, QTableWidgetItem
 
 from tse_analytics.core.data.shared import Factor
+from tse_analytics.core.utils.ui import set_inactive_palette
 
 
 class FactorsTableWidget(QTableWidget):
@@ -35,18 +35,7 @@ class FactorsTableWidget(QTableWidget):
         self.verticalHeader().setMinimumSectionSize(20)
         self.verticalHeader().setDefaultSectionSize(20)
 
-        pal = self.palette()
-        pal.setColor(
-            QPalette.ColorGroup.Inactive,
-            QPalette.ColorRole.Highlight,
-            pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Highlight),
-        )
-        pal.setColor(
-            QPalette.ColorGroup.Inactive,
-            QPalette.ColorRole.HighlightedText,
-            pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.HighlightedText),
-        )
-        self.setPalette(pal)
+        set_inactive_palette(self)
 
     def set_selection_mode(self, mode: QAbstractItemView.SelectionMode) -> None:
         """

@@ -2,8 +2,9 @@ from NodeGraphQt.widgets.node_widgets import NodeComboBox
 
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import SplitMode
+from tse_analytics.core.data.grouping import GroupingMode
 from tse_analytics.core.utils import get_group_by_params
+from tse_analytics.core.utils.data import get_columns_by_grouping_settings
 from tse_analytics.pipeline import PipelineNode
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 from tse_analytics.toolbox.mds.processor import get_mds_result
@@ -73,11 +74,11 @@ class MdsNode(PipelineNode):
 
         # Parse group_by
         group_by_str = str(self.get_property("group_by"))
-        split_mode, factor_name = get_group_by_params(group_by_str)
-        if split_mode == SplitMode.FACTOR:
-            if not factor_name:
+        grouping_settings = get_group_by_params(group_by_str)
+        if grouping_settings.mode == GroupingMode.FACTOR:
+            if not grouping_settings.factor_name:
                 return PipelinePacket.inactive(reason="No factor selected")
-            if factor_name not in datatable.dataset.factors:
+            if grouping_settings.factor_name not in datatable.dataset.factors:
                 return PipelinePacket.inactive(reason="Invalid factor selected")
 
         # Parse max_iterations
@@ -89,20 +90,15 @@ class MdsNode(PipelineNode):
             return PipelinePacket.inactive(reason="Invalid max iterations value")
 
         # Get data
-        df = datatable.get_df(
-            variable_names,
-            split_mode,
-            factor_name,
-        )
-        df.dropna(inplace=True)
+        columns = get_columns_by_grouping_settings(grouping_settings, variable_names)
+        df = datatable.get_filtered_df(columns)
 
         # Perform MDS analysis
         result = get_mds_result(
             datatable.dataset,
             df,
             variable_names,
-            split_mode,
-            factor_name,
+            grouping_settings,
             max_iterations,
         )
 

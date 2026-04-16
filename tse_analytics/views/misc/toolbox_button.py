@@ -8,8 +8,6 @@ from tse_analytics.core import manager
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.layouts.layout_manager import LayoutManager
-from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
-from tse_analytics.modules.intellimaze.data.intellimaze_dataset import IntelliMazeDataset
 from tse_analytics.toolbox.toolbox_registry import ToolboxPluginInfo, registry
 
 
@@ -84,7 +82,7 @@ class ToolboxButton(QToolButton):
             datatable: The currently selected datatable, or None if no datatable is selected.
         """
         # Example logic for IntelliCage (needs to be adapted if registry keys change)
-        if isinstance(dataset, IntelliCageDataset) or isinstance(dataset, IntelliMazeDataset):
+        if dataset.dataset_type == "IntelliCage" or dataset.dataset_type == "IntelliMaze":
             if hasattr(self, "intellicage_menu"):
                 self.intellicage_menu.setEnabled(True)
 
@@ -121,6 +119,6 @@ class ToolboxButton(QToolButton):
         # Determine title and icon
         # Use widget.title if available, otherwise plugin label
         title = getattr(widget, "title", plugin_info.label)
-        final_title = f"{title} - {datatable.dataset.name}"
+        final_title = f"{title} - {datatable.name}"
 
         LayoutManager.add_widget_to_central_area(datatable.dataset, widget, final_title, QIcon(plugin_info.icon))

@@ -1,16 +1,15 @@
 """Tests for tse_analytics.core.data.binning module."""
 
-from datetime import time
+from datetime import time, timedelta
 
-import pandas as pd
 from tse_analytics.core.data.binning import (
     BinningMode,
     BinningSettings,
     TimeCyclesBinningSettings,
     TimeIntervalsBinningSettings,
+    TimePhase,
     TimePhasesBinningSettings,
 )
-from tse_analytics.core.data.shared import TimePhase
 
 
 class TestBinningMode:
@@ -27,16 +26,8 @@ class TestBinningSettings:
 
     def test_defaults(self):
         settings = BinningSettings()
-        assert settings.apply is False
-        assert settings.mode == BinningMode.INTERVALS
-        assert isinstance(settings.time_intervals_settings, TimeIntervalsBinningSettings)
         assert isinstance(settings.time_cycles_settings, TimeCyclesBinningSettings)
         assert isinstance(settings.time_phases_settings, TimePhasesBinningSettings)
-
-    def test_default_interval_settings(self):
-        settings = BinningSettings()
-        assert settings.time_intervals_settings.unit == "hour"
-        assert settings.time_intervals_settings.delta == 1
 
     def test_default_cycle_settings(self):
         settings = BinningSettings()
@@ -71,8 +62,8 @@ class TestTimePhasesBinningSettings:
 
     def test_stores_phases(self):
         phases = [
-            TimePhase(name="Phase1", start_timestamp=pd.Timedelta("0h")),
-            TimePhase(name="Phase2", start_timestamp=pd.Timedelta("12h")),
+            TimePhase(name="Phase1", start_timestamp=timedelta(0)),
+            TimePhase(name="Phase2", start_timestamp=timedelta(hours=12)),
         ]
         settings = TimePhasesBinningSettings(phases)
         assert len(settings.time_phases) == 2

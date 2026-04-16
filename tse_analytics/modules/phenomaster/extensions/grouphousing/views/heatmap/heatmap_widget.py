@@ -4,14 +4,14 @@ from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QWidget
 
-from tse_analytics.modules.phenomaster.extensions.grouphousing.data.grouphousing_data import GroupHousingData
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.modules.phenomaster.extensions.grouphousing.views.heatmap.heatmap_widget_ui import (
     Ui_HeatmapWidget,
 )
 
 
 class HeatmapWidget(QWidget):
-    def __init__(self, data: GroupHousingData, parent: QWidget | None = None):
+    def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
         self.ui = Ui_HeatmapWidget()
         self.ui.setupUi(self)
@@ -20,11 +20,12 @@ class HeatmapWidget(QWidget):
         plot_toolbar.setIconSize(QSize(16, 16))
         self.ui.verticalLayout.insertWidget(0, plot_toolbar)
 
-        self.data = data
+        self.datatable = datatable
         self.preprocessed_data: dict[str, pd.DataFrame] | None = None
         self.selected_animals: list[str] = []
 
-        self.ui.listWidgetAnimals.addItems(self.data.animal_ids)
+        animal_ids = datatable.metadata.get("animal_ids", [])
+        self.ui.listWidgetAnimals.addItems(animal_ids)
         self.ui.listWidgetAnimals.itemSelectionChanged.connect(self._animals_selection_changed)
         self.ui.listWidgetAnimals.setCurrentRow(0)
 

@@ -3,12 +3,13 @@ Module containing the Dataset class for managing experimental data.
 
 This module provides functionality for handling datasets, including metadata, animals,
 factors, and datatables. It supports operations like renaming animals, excluding time ranges,
-and applying binning and outlier detection.
+and applying binning.
 """
 
 from copy import deepcopy
 from datetime import datetime
-from uuid import uuid4
+from typing import Any, Literal
+from uuid import uuid7
 
 import pandas as pd
 
@@ -16,13 +17,21 @@ from tse_analytics.core import messaging
 from tse_analytics.core.color_manager import get_factor_level_color_hex
 from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.outliers import OutliersSettings
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import Animal, Factor, FactorLevel
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.datatable_tree_item import DatatableTreeItem
 from tse_analytics.core.models.report_tree_item import ReportTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
+from tse_analytics.core.utils.dataset import (
+    exclude_animals_recursively,
+    exclude_time_recursively,
+    rename_animal_recursively,
+    set_factors_recursively,
+    trim_time_recursively,
+)
+
+DatasetType = Literal["PhenoMaster", "IntelliMaze", "IntelliCage"]
 
 
 class Dataset:
@@ -31,12 +40,15 @@ class Dataset:
 
     The Dataset class manages experimental data, including metadata, animals, factors,
     and datatables. It provides methods for manipulating the dataset, such as renaming
-    animals, excluding time ranges, and applying binning and outlier detection.
+    animals, excluding time ranges, and applying binning.
     """
 
     def __init__(
         self,
-        metadata: dict | list[dict],
+        name: str,
+        description: str,
+        dataset_type: DatasetType,
+        metadata: dict[str, Any] | list[dict],
         animals: dict[str, Animal],
     ):
         """
@@ -44,46 +56,29 @@ class Dataset:
 
         Parameters
         ----------
+        name: str
+            Name of the dataset.
+        description : str
+            Description of the dataset.
         metadata : dict or list[dict]
             Metadata describing the dataset, including name, description, and experiment times.
         animals : dict[str, Animal]
             Dictionary mapping animal IDs to Animal objects.
         """
-        self.id = uuid4()
+        self.id = uuid7()
+        self.name = name
+        self.description = description
+        self.dataset_type = dataset_type
         self.metadata = metadata
-
         self.animals = animals
-        self.factors: dict[str, Factor] = {}
+
         self.datatables: dict[str, Datatable] = {}
+        self.raw_datatables: dict[str, dict[str, Datatable]] = {}
 
-        self.outliers_settings = OutliersSettings()
-        self.binning_settings = BinningSettings()
-
+        self.factors: dict[str, Factor] = {}
         self.reports: dict[str, Report] = {}
 
-    @property
-    def name(self) -> str:
-        """
-        Get the name of the dataset.
-
-        Returns
-        -------
-        str
-            The name of the dataset from metadata.
-        """
-        return self.metadata["name"]
-
-    @property
-    def description(self) -> str:
-        """
-        Get the description of the dataset.
-
-        Returns
-        -------
-        str
-            The description of the dataset from metadata.
-        """
-        return self.metadata["description"]
+        self.binning_settings = BinningSettings()
 
     @property
     def source_path(self) -> str:
@@ -95,7 +90,14 @@ class Dataset:
         str
             The source path of the dataset from metadata, or an empty string if not available.
         """
-        return self.metadata["source_path"] if "source_path" in self.metadata else ""
+        return self.metadata.get("source_path", "")
+
+    @property
+    def runs(self) -> int:
+        """
+        Get the number of runs in the dataset.
+        """
+        return len(self.metadata["runs"]) if "runs" in self.metadata else 1
 
     @property
     def experiment_started(self) -> pd.Timestamp:
@@ -144,16 +146,47 @@ class Dataset:
         """
         self.datatables[datatable.name] = datatable
 
+    def add_raw_datatable(self, extension_name: str, datatable: Datatable) -> None:
+        """
+        Add raw datatable to the dataset.
+
+        Parameters
+        ----------
+        extension_name : str
+            Name of the extension that created the datatable.
+        datatable : Datatable
+            The raw datatable to add to the dataset.
+        """
+        datatable.metadata["extension_name"] = extension_name
+        if extension_name not in self.raw_datatables:
+            self.raw_datatables[extension_name] = {}
+        self.raw_datatables[extension_name][datatable.name] = datatable
+
     def remove_datatable(self, datatable: Datatable) -> None:
         """
-        Remove a datatable from the dataset.
+        Remove a datatable and its derived subtree from the dataset.
+
+        Uses the datatable's parent_table reference to remove it directly
+        from either the top-level datatables or its parent's derived_tables,
+        then recursively cleans up the entire subtree.
 
         Parameters
         ----------
         datatable : Datatable
             The datatable to remove from the dataset.
         """
-        self.datatables.pop(datatable.name)
+        if datatable.extension_name:
+            # Remove raw datatable
+            if datatable.parent_table is None:
+                self.raw_datatables[datatable.extension_name].pop(datatable.name)
+            else:
+                datatable.parent_table.derived_tables.pop(datatable.name)
+        else:
+            # Remove regular datatable
+            if datatable.parent_table is None:
+                self.datatables.pop(datatable.name)
+            else:
+                datatable.parent_table.derived_tables.pop(datatable.name)
 
     def rename(self, name: str) -> None:
         """
@@ -164,7 +197,7 @@ class Dataset:
         name : str
             The new name for the dataset.
         """
-        self.metadata["name"] = name
+        self.name = name
 
     def extract_levels_from_property(self, property_name: str) -> dict[str, FactorLevel]:
         """
@@ -220,8 +253,13 @@ class Dataset:
         animal : Animal
             The animal object with the new ID.
         """
+
         for datatable in self.datatables.values():
-            datatable.rename_animal(old_id, animal)
+            rename_animal_recursively(datatable, old_id, animal)
+
+        for extension_datatables in self.raw_datatables.values():
+            for datatable in extension_datatables.values():
+                rename_animal_recursively(datatable, old_id, animal)
 
         # Rename animal in factor's levels definitions
         for factor in self.factors.values():
@@ -242,7 +280,7 @@ class Dataset:
         self.animals.pop(old_id)
         self.animals[animal.id] = animal
 
-        # messaging.broadcast(messaging.DatasetChangedMessage(self, self))
+        messaging.broadcast(messaging.DatasetChangedMessage(self, self))
 
     def exclude_animals(self, animal_ids: set[str]) -> None:
         """
@@ -273,8 +311,14 @@ class Dataset:
                     new_meta_animals[item["id"]] = item
             self.metadata["animals"] = new_meta_animals
 
+        # Exclude animals from regular datatables
         for datatable in self.datatables.values():
-            datatable.exclude_animals(animal_ids)
+            exclude_animals_recursively(datatable, animal_ids)
+
+        # Exclude animals from raw datatables
+        for extension_datatables in self.raw_datatables.values():
+            for datatable in extension_datatables.values():
+                exclude_animals_recursively(datatable, animal_ids)
 
     def exclude_time(self, range_start: datetime, range_end: datetime) -> None:
         """
@@ -294,8 +338,13 @@ class Dataset:
             self.metadata["experiment_started"] = str(range_end)
         if range_start < self.experiment_stopped <= range_end:
             self.metadata["experiment_stopped"] = str(range_start)
+
         for datatable in self.datatables.values():
-            datatable.exclude_time(range_start, range_end)
+            exclude_time_recursively(datatable, range_start, range_end)
+
+        for extension_datatables in self.raw_datatables.values():
+            for datatable in extension_datatables.values():
+                exclude_time_recursively(datatable, range_start, range_end)
 
     def trim_time(self, range_start: datetime, range_end: datetime) -> None:
         """
@@ -313,10 +362,15 @@ class Dataset:
         """
         self.metadata["experiment_started"] = str(range_start)
         self.metadata["experiment_stopped"] = str(range_end)
-        for datatable in self.datatables.values():
-            datatable.trim_time(range_start, range_end)
 
-    def resample(self, resampling_interval: pd.Timedelta) -> None:
+        for datatable in self.datatables.values():
+            trim_time_recursively(datatable, range_start, range_end)
+
+        for extension_datatables in self.raw_datatables.values():
+            for datatable in extension_datatables.values():
+                trim_time_recursively(datatable, range_start, range_end)
+
+    def resample(self, resample_interval: pd.Timedelta) -> None:
         """
         Resample all datatables in the dataset.
 
@@ -325,11 +379,11 @@ class Dataset:
 
         Parameters
         ----------
-        resampling_interval : pd.Timedelta
+        resample_interval : pd.Timedelta
             The time interval to resample the data to.
         """
         for datatable in self.datatables.values():
-            datatable.resample(resampling_interval)
+            datatable.resample(resample_interval)
 
     def set_factors(self, factors: dict[str, Factor], old_factors: dict[str, Factor] | None = None) -> None:
         """
@@ -345,37 +399,7 @@ class Dataset:
         self.factors = factors
 
         for datatable in self.datatables.values():
-            datatable.set_factors(factors, old_factors)
-
-    def apply_binning(self, binning_settings: BinningSettings) -> None:
-        """
-        Apply binning settings to the dataset.
-
-        This method updates the binning settings for the dataset and broadcasts
-        a message to notify listeners of the change.
-
-        Parameters
-        ----------
-        binning_settings : BinningSettings
-            The binning settings to apply to the dataset.
-        """
-        self.binning_settings = binning_settings
-        messaging.broadcast(messaging.BinningMessage(self, self, binning_settings))
-
-    def apply_outliers(self, settings: OutliersSettings) -> None:
-        """
-        Apply outlier detection settings to the dataset.
-
-        This method updates the outlier detection settings for the dataset and
-        broadcasts a message to notify listeners of the change.
-
-        Parameters
-        ----------
-        settings : OutliersSettings
-            The outlier detection settings to apply to the dataset.
-        """
-        self.outliers_settings = settings
-        messaging.broadcast(messaging.DataChangedMessage(self, self))
+            set_factors_recursively(datatable, factors, old_factors)
 
     def clone(self):
         """
@@ -401,8 +425,25 @@ class Dataset:
             The dataset tree item to add children to.
         """
         dataset_tree_item.clear()
+
+        # Add datatables nodes
         for datatable in self.datatables.values():
-            dataset_tree_item.add_child(DatatableTreeItem(datatable))
+            datatable_tree_item = DatatableTreeItem(datatable)
+            self._add_derived_tables(datatable_tree_item, datatable)
+            dataset_tree_item.add_child(datatable_tree_item)
+
+        # Add raw datatables nodes
+        if len(self.raw_datatables) > 0:
+            raw_datatables_node = TreeItem("Raw Data")
+            dataset_tree_item.add_child(raw_datatables_node)
+            for extension_name, extension_datatables in self.raw_datatables.items():
+                if len(extension_datatables) > 0:
+                    extension_node = TreeItem(extension_name)
+                    raw_datatables_node.add_child(extension_node)
+                    for datatable in extension_datatables.values():
+                        raw_datatable_tree_item = DatatableTreeItem(datatable)
+                        self._add_derived_tables(raw_datatable_tree_item, datatable)
+                        extension_node.add_child(raw_datatable_tree_item)
 
         # Add reports nodes
         if len(self.reports) > 0:
@@ -410,6 +451,12 @@ class Dataset:
             dataset_tree_item.add_child(reports_node)
             for report in self.reports.values():
                 reports_node.add_child(ReportTreeItem(report))
+
+    def _add_derived_tables(self, parent_tree_item: DatatableTreeItem, datatable: Datatable) -> None:
+        for derived_table in datatable.derived_tables.values():
+            derived_table_tree_item = DatatableTreeItem(derived_table)
+            self._add_derived_tables(derived_table_tree_item, derived_table)
+            parent_tree_item.add_child(derived_table_tree_item)
 
     def add_report(self, report: Report) -> None:
         if report.name in self.reports:

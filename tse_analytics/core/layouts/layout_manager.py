@@ -7,8 +7,7 @@ from PySide6.QtWidgets import QMenu, QWidget
 from PySide6QtAds import CDockAreaWidget, CDockContainerWidget, CDockManager, CDockWidget, DockWidgetArea
 
 from tse_analytics.core.data.dataset import Dataset
-
-LAYOUT_VERSION = 13
+from tse_analytics.globals import LAYOUT_VERSION
 
 CDockManager.setConfigFlags(CDockManager.DefaultOpaqueConfig)
 CDockManager.setConfigFlag(CDockManager.ActiveTabHasCloseButton, True)
@@ -29,8 +28,7 @@ DEFAULT_WIDGETS = {
     "Log",
     "Animals",
     "Factors",
-    "Variables",
-    "Binning",
+    "Time Binning",
 }
 
 

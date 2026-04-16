@@ -3,11 +3,10 @@ from dataclasses import dataclass
 import pandas as pd
 import pingouin as pg
 
-from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.operators.time_intervals_binning_pipe_operator import process_time_interval_binning
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.utils import get_great_table
+from tse_analytics.core.utils.data import group_df_by_animal
 
 
 @dataclass
@@ -24,15 +23,13 @@ def get_ancova_result(
     effsize: str,
     padjust: str,
 ) -> AncovaResult:
-    # Binning
-    df = process_time_interval_binning(
+    # Group by animal
+    df = group_df_by_animal(
         df,
-        TimeIntervalsBinningSettings("day", 365),
         {
             dependent_variable.name: dependent_variable,
             covariate_variable.name: covariate_variable,
         },
-        origin=dataset.experiment_started,
     )
 
     # TODO: should or should not?

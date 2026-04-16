@@ -9,7 +9,7 @@ from pathlib import Path
 from PySide6.QtCore import QUrl
 from PySide6.QtGui import QDesktopServices
 
-from tse_analytics.core.utils import IS_RELEASE
+from tse_analytics.globals import IS_RELEASE
 
 
 def show_online_help():

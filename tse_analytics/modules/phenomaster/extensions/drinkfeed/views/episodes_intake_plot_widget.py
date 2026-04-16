@@ -10,7 +10,7 @@ from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
 class EpisodesIntakePlotWidget(QWidget):
-    def __init__(self, parent: QWidget | None = None):
+    def __init__(self, variables: dict[str, Variable], parent: QWidget | None = None):
         super().__init__(parent)
 
         self._layout = QVBoxLayout(self)
@@ -24,6 +24,7 @@ class EpisodesIntakePlotWidget(QWidget):
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
         self.variableSelector = VariableSelector(toolbar)
+        self.variableSelector.set_data(variables)
         self.variableSelector.currentTextChanged.connect(self._variable_changed)
         toolbar.addWidget(self.variableSelector)
 
@@ -39,9 +40,8 @@ class EpisodesIntakePlotWidget(QWidget):
 
         self.df: pd.DataFrame | None = None
 
-    def set_data(self, df: pd.DataFrame, variables: dict[str, Variable]) -> None:
+    def set_data(self, df: pd.DataFrame) -> None:
         self.df = df
-        self.variableSelector.set_data(variables)
         self._update_plot()
 
     def _variable_changed(self, variable: str):
@@ -60,7 +60,14 @@ class EpisodesIntakePlotWidget(QWidget):
         self.canvas.clear(False)
         ax = self.canvas.figure.add_subplot(111)
 
-        sns.regplot(data=df, x="Duration", y="Quantity", ax=ax)
+        sns.regplot(
+            data=df,
+            x="Duration",
+            y="Quantity",
+            marker=".",
+            scatter_kws={"s": 3},
+            ax=ax,
+        )
         ax.set_xlabel("Meal duration [min]")
         unit = "g" if "Feed" in selected_variable else "ml"
         ax.set_ylabel(f"Meal size [{unit}]")

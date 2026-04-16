@@ -1,5 +1,5 @@
 from PySide6.QtCore import QModelIndex, QSize, Qt
-from PySide6.QtGui import QAction, QIcon, QPalette
+from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QDialog,
@@ -20,17 +20,15 @@ from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.datatable_tree_item import DatatableTreeItem
-from tse_analytics.core.models.extension_tree_item import ExtensionTreeItem
 from tse_analytics.core.models.report_tree_item import ReportTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
 from tse_analytics.core.models.workspace_model import WorkspaceModel
-from tse_analytics.modules.phenomaster.extensions.phenomaster_extension_tree_item import PhenoMasterExtensionTreeItem
+from tse_analytics.core.utils.ui import set_inactive_palette
 from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvDialog
 from tse_analytics.toolbox.data_table.data_table_widget import DataTableWidget
 from tse_analytics.toolbox.report.report_widget import ReportWidget
 from tse_analytics.views.datasets.adjust_dataset_dialog import AdjustDatasetDialog
 from tse_analytics.views.datasets.datasets_merge_dialog import DatasetsMergeDialog
-from tse_analytics.views.misc.raw_data_widget.raw_data_widget import RawDataWidget
 from tse_analytics.views.misc.toolbox_button import ToolboxButton
 
 
@@ -102,20 +100,10 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
         self.treeView = QTreeView(
             self,
             headerHidden=True,
+            expandsOnDoubleClick=False,
         )
 
-        pal = self.treeView.palette()
-        pal.setColor(
-            QPalette.ColorGroup.Inactive,
-            QPalette.ColorRole.Highlight,
-            pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Highlight),
-        )
-        pal.setColor(
-            QPalette.ColorGroup.Inactive,
-            QPalette.ColorRole.HighlightedText,
-            pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.HighlightedText),
-        )
-        self.treeView.setPalette(pal)
+        set_inactive_palette(self.treeView)
 
         self.treeView.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.treeView.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
@@ -126,6 +114,8 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
 
         self.treeView.selectionModel().currentChanged.connect(self._treeview_current_changed)
         self.treeView.doubleClicked.connect(self._treeview_double_clicked)
+        self.treeView.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.treeView.customContextMenuRequested.connect(self._show_context_menu)
 
         self._layout.addWidget(self.treeView)
 
@@ -142,11 +132,11 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
             message (messaging.WorkspaceChangedMessage): The workspace changed message
         """
         self.workspace_model.setupModelData(message.workspace)
-        self.treeView.expandAll()
+        self.treeView.expandToDepth(2)
 
     def _reports_changed(self, message: messaging.ReportsChangedMessage) -> None:
         self.workspace_model.update_reports(message.report)
-        self.treeView.expandAll()
+        self.treeView.expandToDepth(2)
 
     def _get_selected_tree_item(self) -> TreeItem | None:
         """
@@ -414,54 +404,35 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
         """
         if index.isValid():
             item = index.model().getItem(index)
-            if isinstance(item, PhenoMasterExtensionTreeItem) and item.extension_widget_type is not None:
-                widget = item.extension_widget_type(item.extension_data, self)
-                LayoutManager.add_widget_to_central_area(
-                    manager.get_selected_dataset(),
-                    widget,
-                    item.name,
-                    item.icon,
-                )
-            elif isinstance(item, ReportTreeItem):
+            if isinstance(item, ReportTreeItem):
                 manager.set_selected_dataset(item.report.dataset)
                 widget = ReportWidget(item.report)
                 LayoutManager.add_widget_to_central_area(
                     item.report.dataset, widget, f"Report - {item.report.name}", QIcon(":/icons/table.png")
                 )
-            elif isinstance(item, ExtensionTreeItem):
-                match item.name:
-                    case "IntelliCage raw data":
-                        widget = RawDataWidget(
-                            item.extension_data.name,
-                            item.extension_data.get_raw_data(),
-                            item.extension_data.get_device_ids(),
-                            "Cage",
-                            True,
-                            self,
-                        )
-                    case _:
-                        widget = RawDataWidget(
-                            item.extension_data.name,
-                            item.extension_data.get_raw_data(),
-                            item.extension_data.get_device_ids(),
-                            "DeviceId",
-                            False,
-                            self,
-                        )
-                LayoutManager.add_widget_to_central_area(
-                    manager.get_selected_dataset(),
-                    widget,
-                    item.extension_data.name,
-                    QIcon(":/icons/icons8-extension-16.png"),
-                )
             elif isinstance(item, DatatableTreeItem):
-                manager.set_selected_dataset(item.datatable.dataset)
-                manager.set_selected_datatable(item.datatable)
-                self.toolbox_button.set_enabled_actions(item.datatable.dataset, item.datatable)
-                widget = DataTableWidget(item.datatable)
-                LayoutManager.add_widget_to_central_area(
-                    item.datatable.dataset, widget, f"Table - {item.datatable.dataset.name}", QIcon(":/icons/table.png")
-                )
+                from tse_analytics.modules.phenomaster.extensions.extensions_registry import EXTENSIONS_REGISTRY
+
+                if item.datatable.extension_name and item.name in EXTENSIONS_REGISTRY:
+                    widget = EXTENSIONS_REGISTRY[item.name]["widget"](item.datatable, self)
+                    widget.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+                    LayoutManager.add_widget_to_central_area(
+                        manager.get_selected_dataset(),
+                        widget,
+                        item.name,
+                        item.icon,
+                    )
+                else:
+                    manager.set_selected_dataset(item.datatable.dataset)
+                    manager.set_selected_datatable(item.datatable)
+                    self.toolbox_button.set_enabled_actions(item.datatable.dataset, item.datatable)
+                    widget = DataTableWidget(item.datatable)
+                    LayoutManager.add_widget_to_central_area(
+                        item.datatable.dataset,
+                        widget,
+                        f"Table - {item.datatable.name}",
+                        QIcon(":/icons/table.png"),
+                    )
 
     def _checked_item_changed(self, item, state: bool):
         """
@@ -480,6 +451,36 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                 if item.checked:
                     checked_datasets_number += 1
             self.merge_dataset_action.setDisabled(checked_datasets_number < 2)
+
+    def _show_context_menu(self, pos) -> None:
+        index = self.treeView.indexAt(pos)
+        if not index.isValid():
+            return
+
+        tree_item = index.model().getItem(index)
+        if tree_item is None:
+            return
+
+        if isinstance(tree_item, DatatableTreeItem):
+            menu = QMenu(self.treeView)
+            # rename_datatable_action = menu.addAction("Rename Datatable")
+            delete_datatable_action = menu.addAction("Delete Datatable")
+            action = menu.exec(self.treeView.viewport().mapToGlobal(pos))
+
+            if action is None:
+                return
+
+            if action == delete_datatable_action:
+                if (
+                    QMessageBox.question(self, "Delete Datatable", "Do you want to delete selected datatable?")
+                    == QMessageBox.StandardButton.Yes
+                ):
+                    manager.remove_datatable(tree_item.datatable)
+            # elif action == rename_datatable_action:
+            #     text, result = QInputDialog.getText(self, "Rename Datatable", "Please enter unique table name:")
+            #     if result:
+            #         tree_item.datatable.name = text
+            #         self.treeView.model().dataChanged.emit(index, index)
 
     def minimumSizeHint(self) -> QSize:
         return QSize(200, 100)

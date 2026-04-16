@@ -1,8 +1,8 @@
 from PySide6.QtCore import QItemSelection, QSortFilterProxyModel, Qt, QTimer
-from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QAbstractItemView, QTableView, QWidget
 
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
+from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.utils.ui import set_inactive_palette
 from tse_analytics.modules.phenomaster.extensions.actimot.data.actimot_animal_item import ActimotAnimalItem
 from tse_analytics.modules.phenomaster.extensions.actimot.data.actimot_boxes_model import ActimotBoxesModel
 
@@ -19,18 +19,7 @@ class BoxSelector(QTableView):
         self.callback = callback
         self.settings_widget = settings_widget
 
-        pal = self.palette()
-        pal.setColor(
-            QPalette.ColorGroup.Inactive,
-            QPalette.ColorRole.Highlight,
-            pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Highlight),
-        )
-        pal.setColor(
-            QPalette.ColorGroup.Inactive,
-            QPalette.ColorRole.HighlightedText,
-            pal.color(QPalette.ColorGroup.Active, QPalette.ColorRole.HighlightedText),
-        )
-        self.setPalette(pal)
+        set_inactive_palette(self)
 
         proxy_model = QSortFilterProxyModel()
         proxy_model.setSortCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
@@ -38,7 +27,7 @@ class BoxSelector(QTableView):
         self.sortByColumn(0, Qt.SortOrder.AscendingOrder)
         self.selectionModel().selectionChanged.connect(self._on_selection_changed)
 
-    def set_data(self, dataset: PhenoMasterDataset):
+    def set_data(self, dataset: Dataset):
         items: dict[str, ActimotAnimalItem] = {}
         for animal in dataset.animals.values():
             items[animal.id] = ActimotAnimalItem(animal.properties["Box"], animal.id, {})
@@ -63,13 +52,13 @@ class BoxSelector(QTableView):
     def _on_selection_changed(self, selected: QItemSelection, deselected: QItemSelection):
         proxy_model = self.model()
         model = proxy_model.sourceModel()
-        selected_box: ActimotAnimalItem = None
+        selected_item: ActimotAnimalItem = None
         for index in self.selectedIndexes():
             if index.column() != 0:
                 continue
             if index.isValid():
                 source_index = proxy_model.mapToSource(index)
                 row = source_index.row()
-                box = model.items[row]
-                selected_box = box
-        self.callback(selected_box)
+                item = model.items[row]
+                selected_item = item
+        self.callback(selected_item)

@@ -15,8 +15,8 @@ from typing import Protocol
 import xmltodict
 from loguru import logger
 
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Factor
-from tse_analytics.modules.intellicage.data.intellicage_dataset import IntelliCageDataset
 from tse_analytics.modules.intellicage.io.dataset_loader_v1 import import_intellicage_dataset_v1
 from tse_analytics.modules.intellicage.io.dataset_loader_v2 import import_intellicage_dataset_v2
 
@@ -24,10 +24,10 @@ from tse_analytics.modules.intellicage.io.dataset_loader_v2 import import_intell
 class IntelliCageDatasetLoader(Protocol):
     """Protocol for dataset loader functions."""
 
-    def __call__(self, path: Path, tmp_path: Path, data_descriptor: dict) -> IntelliCageDataset | None: ...
+    def __call__(self, path: Path, tmp_path: Path, data_descriptor: dict) -> Dataset | None: ...
 
 
-def import_intellicage_dataset(path: Path) -> IntelliCageDataset | None:
+def import_intellicage_dataset(path: Path) -> Dataset | None:
     """
     Import an IntelliCage dataset from a zip file.
 
@@ -42,7 +42,7 @@ def import_intellicage_dataset(path: Path) -> IntelliCageDataset | None:
 
     Returns
     -------
-    IntelliCageDataset | None
+    Dataset | None
         The imported dataset, or None if the import failed.
     """
     tic = timeit.default_timer()
@@ -119,7 +119,7 @@ def _import_data_descriptor(path: Path) -> dict | None:
     return result["DataDescriptor"]
 
 
-def _extract_factor(factor_name: str, factors: dict[str, Factor], dataset: IntelliCageDataset) -> Factor | None:
+def _extract_factor(factor_name: str, factors: dict[str, Factor], dataset: Dataset) -> Factor | None:
     """
     Extract a factor from the dataset's animal properties.
 
@@ -132,7 +132,7 @@ def _extract_factor(factor_name: str, factors: dict[str, Factor], dataset: Intel
         Name of the factor to extract (e.g., "Sex", "Group").
     factors : dict[str, Factor]
         Dictionary of existing factors.
-    dataset : IntelliCageDataset
+    dataset : Dataset
         The dataset from which to extract the factor.
 
     Returns

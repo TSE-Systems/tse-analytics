@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 from PySide6.QtGui import QColor
@@ -34,22 +33,23 @@ class PandasModel(QAbstractTableModel):
         QAbstractTableModel.__init__(self, parent)
 
         self.datatable = datatable
-        self._data = np.array(df.values)
-        self._cols = df.columns
-        self.row_count, self.column_count = np.shape(self._data)
+        self.df = df
+        self.row_count, self.column_count = df.shape
 
-        if self.datatable.dataset.outliers_settings.mode == OutliersMode.HIGHLIGHT:
+        if self.datatable.outliers_settings.mode == OutliersMode.HIGHLIGHT:
             remove_outliers_for_vars = {
-                key: variable for (key, variable) in datatable.variables.items() if variable.remove_outliers
+                key: variable
+                for (key, variable) in datatable.variables.items()
+                if (variable.remove_outliers and variable.name in df.columns)
             }
             vars = list(remove_outliers_for_vars)
             if len(remove_outliers_for_vars) > 0:
-                match self.datatable.dataset.outliers_settings.type:
+                match self.datatable.outliers_settings.type:
                     case OutliersType.IQR:
-                        self.q1 = df[vars].quantile(0.25, numeric_only=True)
-                        self.q3 = df[vars].quantile(0.75, numeric_only=True)
+                        self.q1 = self.df[vars].quantile(0.25, numeric_only=True)
+                        self.q3 = self.df[vars].quantile(0.75, numeric_only=True)
                     case OutliersType.ZSCORE:
-                        self.z_score = ((df[vars] - df[vars].mean()) / df[vars].std()).abs()
+                        self.z_score = ((self.df[vars] - self.df[vars].mean()) / self.df[vars].std()).abs()
                     case OutliersType.THRESHOLDS:
                         pass
 
@@ -95,21 +95,18 @@ class PandasModel(QAbstractTableModel):
                 - None for unsupported roles
         """
         if role == Qt.ItemDataRole.DisplayRole:
-            return str(self._data[index.row(), index.column()])
-        if (
-            self.datatable.dataset.outliers_settings.mode == OutliersMode.HIGHLIGHT
-            and role == Qt.ItemDataRole.BackgroundRole
-        ):
-            value = self._data[index.row(), index.column()]
+            return str(self.df.iat[index.row(), index.column()])
+        if self.datatable.outliers_settings.mode == OutliersMode.HIGHLIGHT and role == Qt.ItemDataRole.BackgroundRole:
+            value = self.df.iat[index.row(), index.column()]
             if isinstance(value, int | float):
-                var_name = str(self._cols[index.column()])
+                var_name = str(self.df.columns[index.column()])
                 if var_name in self.datatable.variables and self.datatable.variables[var_name].remove_outliers:
-                    match self.datatable.dataset.outliers_settings.type:
+                    match self.datatable.outliers_settings.type:
                         case OutliersType.IQR:
                             q1 = self.q1[var_name]
                             q3 = self.q3[var_name]
                             iqr = q3 - q1
-                            iqr_multiplier = self.datatable.dataset.outliers_settings.iqr_multiplier
+                            iqr_multiplier = self.datatable.outliers_settings.iqr_multiplier
                             if (value < (q1 - iqr_multiplier * iqr)) or (value > (q3 + iqr_multiplier * iqr)):
                                 return PandasModel.outlier_color
                         case OutliersType.ZSCORE:
@@ -117,13 +114,23 @@ class PandasModel(QAbstractTableModel):
                             if z_score[index.row()] > 3:
                                 return PandasModel.outlier_color
                         case OutliersType.THRESHOLDS:
-                            if self.datatable.dataset.outliers_settings.min_threshold_enabled:
-                                if value < self.datatable.dataset.outliers_settings.min_threshold:
+                            if self.datatable.outliers_settings.min_threshold_enabled:
+                                if value < self.datatable.outliers_settings.min_threshold:
                                     return PandasModel.outlier_color
-                            if self.datatable.dataset.outliers_settings.max_threshold_enabled:
-                                if value > self.datatable.dataset.outliers_settings.max_threshold:
+                            if self.datatable.outliers_settings.max_threshold_enabled:
+                                if value > self.datatable.outliers_settings.max_threshold:
                                     return PandasModel.outlier_color
         return None
+
+    def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
+        if role == Qt.ItemDataRole.EditRole:
+            self.df.iloc[index.row(), index.column()] = value
+            row_index = self.df.index[index.row()]
+            col_name = self.df.columns[index.column()]
+            self.datatable.df.at[row_index, col_name] = value
+            self.dataChanged.emit(index, index, [role])
+            return True
+        return False
 
     def headerData(self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = ...):
         """
@@ -142,7 +149,7 @@ class PandasModel(QAbstractTableModel):
         """
         if role == Qt.ItemDataRole.DisplayRole:
             if orientation == Qt.Orientation.Horizontal:
-                return self._cols[section]
+                return self.df.columns[section]
             elif orientation == Qt.Orientation.Vertical:
                 return section
         return None

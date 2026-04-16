@@ -6,11 +6,11 @@ including enumerations for aggregation and split modes, and dataclasses
 for animals, factors, variables, time phases, and animal diets.
 """
 
-from dataclasses import dataclass, field
 from enum import StrEnum, unique
 from typing import Any
 
-import pandas as pd
+from pydantic import Field
+from pydantic.dataclasses import dataclass
 
 
 @unique
@@ -39,29 +39,6 @@ class Aggregation(StrEnum):
     MAX = "max"
 
 
-@unique
-class SplitMode(StrEnum):
-    """
-    Enumeration of available modes for splitting data.
-
-    Attributes
-    ----------
-    ANIMAL : str
-        Split data by animal.
-    FACTOR : str
-        Split data by factor.
-    RUN : str
-        Split data by run.
-    TOTAL : str
-        No splitting, use total data.
-    """
-
-    ANIMAL = "Animal"
-    FACTOR = "Factor"
-    RUN = "Run"
-    TOTAL = "Total"
-
-
 @dataclass
 class Animal:
     """
@@ -69,8 +46,6 @@ class Animal:
 
     Attributes
     ----------
-    enabled : bool
-        Whether the animal is enabled in the analysis.
     id : str
         The unique identifier for the animal.
     color : str
@@ -79,21 +54,9 @@ class Animal:
         Dictionary of animal properties.
     """
 
-    enabled: bool
     id: str
     color: str
     properties: dict[str, Any]
-
-    def get_dict(self):
-        """
-        Get a dictionary representation of the animal.
-
-        Returns
-        -------
-        dict
-            Dictionary containing the animal's attributes.
-        """
-        return self.__dict__
 
 
 @dataclass
@@ -113,7 +76,7 @@ class FactorLevel:
 
     name: str
     color: str
-    animal_ids: list[str] = field(default_factory=list)
+    animal_ids: list[str] = Field(default_factory=list)
 
 
 @dataclass
@@ -130,7 +93,7 @@ class Factor:
     """
 
     name: str
-    levels: list[FactorLevel] = field(default_factory=list)
+    levels: list[FactorLevel] = Field(default_factory=list)
 
 
 @dataclass
@@ -160,34 +123,6 @@ class Variable:
     type: str
     aggregation: Aggregation
     remove_outliers: bool
-
-    def get_dict(self):
-        """
-        Get a dictionary representation of the variable.
-
-        Returns
-        -------
-        dict
-            Dictionary containing the variable's attributes.
-        """
-        return self.__dict__
-
-
-@dataclass
-class TimePhase:
-    """
-    Dataclass representing a time phase in the experiment.
-
-    Attributes
-    ----------
-    name : str
-        The name of the time phase.
-    start_timestamp : pd.Timedelta
-        The start time of the phase as a timedelta from the experiment start.
-    """
-
-    name: str
-    start_timestamp: pd.Timedelta
 
 
 @dataclass

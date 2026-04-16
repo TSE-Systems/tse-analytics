@@ -11,10 +11,11 @@ typically contain several sections:
 - Data section: Contains the actual measurement data
 
 The module extracts information from these sections to create a structured
-PhenoMasterDataset object that can be used for analysis and visualization.
+Dataset object that can be used for analysis and visualization.
 """
 
 from collections import namedtuple
+from dataclasses import asdict
 from io import StringIO
 from pathlib import Path
 
@@ -22,20 +23,22 @@ import pandas as pd
 
 from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.csv_import_settings import CsvImportSettings
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
-from tse_analytics.modules.phenomaster.data.phenomaster_dataset import PhenoMasterDataset
+from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
+from tse_analytics.modules.phenomaster.data.variables_helper import cleanup_variables
 
 Section = namedtuple("Section", ["lines", "section_start_index", "section_end_index"])
 
 
-def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> PhenoMasterDataset | None:
+def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Dataset | None:
     """
     Load a PhenoMaster dataset from a CSV file.
 
     This function parses a CSV file exported by a PhenoMaster system and creates
-    a PhenoMasterDataset object containing the data. It extracts information from
+    a Dataset object containing the data. It extracts information from
     various sections of the file (header, animal, sample interval, group, data)
     and organizes it into a structured dataset.
 
@@ -45,7 +48,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
                                                 delimiter, decimal separator, etc.
 
     Returns:
-        PhenoMasterDataset | None: A dataset containing the loaded data, or None if loading failed
+        Dataset | None: A dataset containing the loaded data, or None if loading failed
     """
     with open(path) as f:
         lines = f.readlines()
@@ -79,7 +82,6 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
             "Text3": elements[5] if len(elements) == 6 else "",
         }
         animal = Animal(
-            enabled=True,
             id=elements[1],
             color=get_color_hex(index),
             properties=properties,
@@ -104,20 +106,20 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
             # Skip first 'Date Time', 'Animal No.' and 'Box' columns
             if i < 3:
                 continue
-        variable = Variable(item, columns_unit[i], "", "float64", Aggregation.MEAN, False)
+        variable = Variable(item, columns_unit[i], "", "Float64", Aggregation.MEAN, False)
         variables[variable.name] = variable
 
     data = data_section.lines[2:]
     data = [line.rstrip(csv_import_settings.delimiter) for line in data]
     csv = "\n".join(data)
 
-    # noinspection PyTypeChecker
     df = pd.read_csv(
         StringIO(csv),
         delimiter=csv_import_settings.delimiter,
         decimal=csv_import_settings.decimal_separator,
         na_values=["-"],
         names=columns,
+        dtype_backend="numpy_nullable",
     )
 
     # Rename table columns
@@ -131,7 +133,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
                 df["Date"] + " " + df["Time"],
                 format="mixed",
                 dayfirst=csv_import_settings.day_first,
-            ),
+            ).dt.as_unit(TIME_RESOLUTION_UNIT),
         )
         df.drop(columns=["Date", "Time"], inplace=True)
     else:
@@ -140,14 +142,14 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
             df["DateTime"],
             format="mixed",
             dayfirst=csv_import_settings.day_first,
-        )
+        ).dt.as_unit(TIME_RESOLUTION_UNIT)
 
     # TODO: Drop "Box" column?
     # df.drop(columns=["Box"], inplace=True)
 
     # Apply categorical types
     df = df.astype({
-        "Animal": "str",
+        "Animal": "string",
     })
 
     df = df.astype({
@@ -166,8 +168,12 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
 
     start_date_time = df.at[0, "DateTime"]
     end_date_time = df["DateTime"].iat[-1]
-    df.insert(loc=1, column="Timedelta", value=df["DateTime"] - start_date_time)
-    df.insert(loc=2, column="Bin", value=(df["Timedelta"] / timedelta).round().astype(int))
+    df.insert(
+        loc=1,
+        column="Timedelta",
+        value=(df["DateTime"] - start_date_time).dt.as_unit(TIME_RESOLUTION_UNIT),
+    )
+    df.insert(loc=2, column="Bin", value=(df["Timedelta"] / timedelta).round().astype("UInt64"))
 
     # Sort variables by name
     variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))
@@ -187,27 +193,28 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
     df.info(buf=buf)
 
     metadata = {
-        "name": name,
-        "description": description,
         "source_path": str(path),
         "experiment_started": str(start_date_time),
         "experiment_stopped": str(end_date_time),
         "experiment": {
             "pm_version": version,
         },
-        "animals": {k: v.get_dict() for (k, v) in animals.items()},
+        "animals": {k: asdict(v) for (k, v) in animals.items()},
         "tables": {
             "main_table": {
                 "id": "main_table",
                 "sample_interval": str(timedelta),
-                "columns": {k: v.get_dict() for (k, v) in variables.items()},
+                "columns": {k: asdict(v) for (k, v) in variables.items()},
             }
         },
     }
 
-    dataset = PhenoMasterDataset(
-        metadata=metadata,
-        animals=animals,
+    dataset = Dataset(
+        name,
+        description,
+        "PhenoMaster",
+        metadata,
+        animals,
     )
 
     datatable = Datatable(
@@ -216,9 +223,15 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Phen
         "Main table output from PhenoMaster experiment.",
         variables,
         df,
-        timedelta,
+        {
+            "origin": "Main",
+            "samping_interval": timedelta,
+        },
     )
     dataset.add_datatable(datatable)
+
+    # Clean up old variables
+    cleanup_variables(dataset)
 
     return dataset
 

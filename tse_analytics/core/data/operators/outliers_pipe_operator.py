@@ -47,8 +47,8 @@ def process_outliers(df: pd.DataFrame, settings: OutliersSettings, variables: di
             q3 = df[vars].quantile(0.75, numeric_only=True)
             iqr = q3 - q1
 
-            lower = q1 - 1.5 * iqr
-            upper = q3 + 1.5 * iqr
+            lower = q1 - settings.iqr_multiplier * iqr
+            upper = q3 + settings.iqr_multiplier * iqr
 
             # Return a boolean array of the rows with (any) outlier column values
             is_outlier = (df[vars] < lower) | (df[vars] > upper)
@@ -65,6 +65,10 @@ def process_outliers(df: pd.DataFrame, settings: OutliersSettings, variables: di
 
     if is_outlier is None:
         return df
+
+    # # Drop rows that contain any outlier in the flagged variables
+    # any_outlier = is_outlier.any(axis=1)
+    # df = df.loc[~any_outlier].copy()
 
     # Filter our dataframe based on a condition
     df[vars] = df[vars].mask(is_outlier)
