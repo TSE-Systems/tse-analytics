@@ -6,6 +6,7 @@ import pandas as pd
 import pyqtgraph as pg
 from pyqtgraph.exporters import ImageExporter
 from PySide6.QtCore import QBuffer, QByteArray, QIODevice, QSettings, QSize, Qt
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QCheckBox, QInputDialog, QLabel, QToolBar, QVBoxLayout, QWidget
 
 from tse_analytics.core import color_manager, manager
@@ -14,7 +15,8 @@ from tse_analytics.core.data.grouping import GroupingMode
 from tse_analytics.core.data.operators.group_by_pipe_operator import group_by_columns
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import Factor
-from tse_analytics.core.utils import get_h_spacer_widget
+from tse_analytics.core.utils import get_h_spacer_widget, get_widget_tool_button
+from tse_analytics.views.misc.animals_table_view import AnimalsTableView
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.TimedeltaAxisItem import TimedeltaAxisItem
 from tse_analytics.views.misc.variable_selector import VariableSelector
@@ -74,6 +76,16 @@ class FastLinePlotWidget(QWidget):
         self.checkBoxScatterPlot.setChecked(self._settings.scatter_plot)
         self.checkBoxScatterPlot.checkStateChanged.connect(self._set_scatter_plot)
         toolbar.addWidget(self.checkBoxScatterPlot)
+
+        self.animals_table_view = AnimalsTableView(self.datatable.dataset)
+        self.animals_table_view.selectionModel().selectionChanged.connect(self._refresh_data)
+        animals_button = get_widget_tool_button(
+            toolbar,
+            self.animals_table_view,
+            "Animal Filter",
+            QIcon(":/icons/icons8-rat-silhouette-16.png"),
+        )
+        toolbar.addWidget(animals_button)
 
         # Insert toolbar to the widget
         self._layout.addWidget(toolbar)
@@ -148,6 +160,9 @@ class FastLinePlotWidget(QWidget):
 
         match grouping_settings.mode:
             case GroupingMode.ANIMAL:
+                if len(self.animals_table_view.selectedIndexes()) > 0:
+                    df = df[df["Animal"].isin(self.animals_table_view.get_selected_animal_ids())]
+                    df["Animal"] = df["Animal"].cat.remove_unused_categories()
                 x_min, x_max = self._plot_animals(df, variable.name)
             case GroupingMode.FACTOR:
                 factor = self.datatable.dataset.factors[grouping_settings.factor_name]
@@ -185,9 +200,10 @@ class FastLinePlotWidget(QWidget):
         x_min = None
         x_max = None
 
-        animals = list(self.datatable.dataset.animals.values())
+        animal_ids = df["Animal"].cat.categories.tolist()
 
-        for animal in animals:
+        for animal_id in animal_ids:
+            animal = self.datatable.dataset.animals[animal_id]
             filtered_data = df[df["Animal"] == animal.id]
 
             pen = pg.mkPen(color=animal.color, width=1)

@@ -23,6 +23,13 @@ from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.datatable_tree_item import DatatableTreeItem
 from tse_analytics.core.models.report_tree_item import ReportTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
+from tse_analytics.core.utils.dataset import (
+    exclude_animals_recursively,
+    exclude_time_recursively,
+    rename_animal_recursively,
+    set_factors_recursively,
+    trim_time_recursively,
+)
 
 DatasetType = Literal["PhenoMaster", "IntelliMaze", "IntelliCage"]
 
@@ -246,12 +253,13 @@ class Dataset:
         animal : Animal
             The animal object with the new ID.
         """
+
         for datatable in self.datatables.values():
-            datatable.rename_animal(old_id, animal)
+            rename_animal_recursively(datatable, old_id, animal)
 
         for extension_datatables in self.raw_datatables.values():
             for datatable in extension_datatables.values():
-                datatable.rename_animal(old_id, animal)
+                rename_animal_recursively(datatable, old_id, animal)
 
         # Rename animal in factor's levels definitions
         for factor in self.factors.values():
@@ -305,12 +313,12 @@ class Dataset:
 
         # Exclude animals from regular datatables
         for datatable in self.datatables.values():
-            datatable.exclude_animals(animal_ids)
+            exclude_animals_recursively(datatable, animal_ids)
 
         # Exclude animals from raw datatables
         for extension_datatables in self.raw_datatables.values():
             for datatable in extension_datatables.values():
-                datatable.exclude_animals(animal_ids)
+                exclude_animals_recursively(datatable, animal_ids)
 
     def exclude_time(self, range_start: datetime, range_end: datetime) -> None:
         """
@@ -332,11 +340,11 @@ class Dataset:
             self.metadata["experiment_stopped"] = str(range_start)
 
         for datatable in self.datatables.values():
-            datatable.exclude_time(range_start, range_end)
+            exclude_time_recursively(datatable, range_start, range_end)
 
         for extension_datatables in self.raw_datatables.values():
             for datatable in extension_datatables.values():
-                datatable.exclude_time(range_start, range_end)
+                exclude_time_recursively(datatable, range_start, range_end)
 
     def trim_time(self, range_start: datetime, range_end: datetime) -> None:
         """
@@ -356,11 +364,11 @@ class Dataset:
         self.metadata["experiment_stopped"] = str(range_end)
 
         for datatable in self.datatables.values():
-            datatable.trim_time(range_start, range_end)
+            trim_time_recursively(datatable, range_start, range_end)
 
         for extension_datatables in self.raw_datatables.values():
             for datatable in extension_datatables.values():
-                datatable.trim_time(range_start, range_end)
+                trim_time_recursively(datatable, range_start, range_end)
 
     def resample(self, resample_interval: pd.Timedelta) -> None:
         """
@@ -391,7 +399,7 @@ class Dataset:
         self.factors = factors
 
         for datatable in self.datatables.values():
-            datatable.set_factors(factors, old_factors)
+            set_factors_recursively(datatable, factors, old_factors)
 
     def clone(self):
         """

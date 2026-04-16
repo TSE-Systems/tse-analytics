@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from io import StringIO
 
 import pandas as pd
 from loguru import logger
@@ -105,9 +106,18 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         # Horizontal spacer
         toolbar.addWidget(get_h_spacer_widget(toolbar))
 
+        self.table_info_widget = ReportEdit(toolbar)
+        self.table_info_widget.setMinimumSize(650, 400)
+        self.table_info_button = get_widget_tool_button(
+            toolbar,
+            self.table_info_widget,
+            "Table Info",
+            QIcon(":/icons/icons8-info-16.png"),
+        )
+        toolbar.addWidget(self.table_info_button)
+
         self.descriptive_stats_widget = ReportEdit(toolbar)
         self.descriptive_stats_widget.setMinimumWidth(600)
-
         self.show_stats_button = get_widget_tool_button(
             toolbar,
             self.descriptive_stats_widget,
@@ -237,6 +247,15 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             self.descriptive_stats_widget.clear()
             self.add_report_action.setEnabled(False)
             self.show_stats_button.setEnabled(False)
+
+        buffer = StringIO()
+        self.df.info(
+            verbose=True,
+            buf=buffer,
+            memory_usage=True,
+            show_counts=True,
+        )
+        self.table_info_widget.set_content(f"<pre>{buffer.getvalue()}</pre>")
 
         self.table_view.setModel(PandasModel(self.df, self.datatable))
         self.table_view.horizontalHeader().setSortIndicatorShown(False)

@@ -327,7 +327,7 @@ class Datatable:
 
         # Drop old factors
         if old_factors is not None:
-            df.drop(columns=old_factors.keys(), inplace=True)
+            df.drop(columns=old_factors.keys(), inplace=True, errors="ignore")
 
         animal_ids = df["Animal"].unique()
 
