@@ -26,6 +26,7 @@ class ToolboxRegistry:
 
     # Explicit category order – categories appear in this sequence.
     CATEGORY_ORDER: list[str] = [
+        "AI",
         "Data",
         "Exploration",
         "Bivariate",

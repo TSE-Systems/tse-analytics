@@ -85,6 +85,39 @@
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="groupBoxAIAgent">
+     <property name="title">
+      <string>AI Agent</string>
+     </property>
+     <layout class="QFormLayout" name="formLayoutAIAgent">
+      <item row="0" column="0">
+       <widget class="QLabel" name="anthropicApiKeyLabel">
+        <property name="text">
+         <string>Anthropic API Key</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="anthropicApiKeyLineEdit">
+        <property name="echoMode">
+         <enum>QLineEdit::EchoMode::Password</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="claudeModelLabel">
+        <property name="text">
+         <string>Default Claude Model</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="claudeModelComboBox"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Orientation::Vertical</enum>

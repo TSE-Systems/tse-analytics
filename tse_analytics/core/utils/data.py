@@ -34,10 +34,8 @@ def get_group_by_params(group_by_str: str) -> GroupingSettings:
             return GroupingSettings(mode=GroupingMode.RUN)
         case GroupingMode.TOTAL.value:
             return GroupingSettings(mode=GroupingMode.TOTAL)
-        case GroupingMode.FACTOR.value:
-            return GroupingSettings(mode=GroupingMode.FACTOR, factor_name=group_by_str)
         case _:
-            raise ValueError(f"Invalid group_by value: {group_by_str}")
+            return GroupingSettings(mode=GroupingMode.FACTOR, factor_name=group_by_str)
 
 
 def get_columns_by_grouping_settings(grouping_settings: GroupingSettings, variable_names: list[str]) -> list[str]:

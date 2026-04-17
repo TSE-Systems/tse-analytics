@@ -8,6 +8,7 @@ before the menus are built.
 import tse_analytics.modules.intellicage.toolbox.place_preference.place_preference_widget  # noqa: F401
 import tse_analytics.modules.intellicage.toolbox.transitions.transitions_widget  # noqa: F401
 import tse_analytics.toolbox.actogram.actogram_widget  # noqa: F401
+import tse_analytics.toolbox.ai_agent.ai_agent_widget  # noqa: F401
 import tse_analytics.toolbox.ancova.ancova_widget  # noqa: F401
 import tse_analytics.toolbox.correlation.correlation_widget  # noqa: F401
 import tse_analytics.toolbox.correlation_matrix.correlation_matrix_widget  # noqa: F401
