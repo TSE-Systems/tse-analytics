@@ -5,11 +5,12 @@ from PySide6.QtWidgets import QDialog, QWidget
 from tse_analytics.views.settings.settings_dialog_ui import Ui_SettingsDialog
 
 CLAUDE_MODELS = [
+    "claude-opus-4-7",
     "claude-opus-4-6",
     "claude-sonnet-4-6",
     "claude-haiku-4-5",
 ]
-DEFAULT_CLAUDE_MODEL = "claude-opus-4-6"
+DEFAULT_CLAUDE_MODEL = "claude-opus-4-7"
 
 
 class SettingsDialog(QDialog):
