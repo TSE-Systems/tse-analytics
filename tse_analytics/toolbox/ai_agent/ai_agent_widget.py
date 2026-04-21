@@ -46,7 +46,7 @@ CLAUDE_MODELS = [
     "claude-sonnet-4-6",
     "claude-haiku-4-5",
 ]
-DEFAULT_MODEL = "claude-opus-4-6"
+DEFAULT_MODEL = "claude-opus-4-7"
 MAX_RESULT_ROWS = 200
 MAX_TOKENS = 16000
 
