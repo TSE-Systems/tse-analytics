@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import anthropic
+import lmstudio as lms
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -36,6 +37,8 @@ from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils.formatting import get_great_table, get_html_image_from_figure
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
+from tse_analytics.toolbox.ai_agent.claude import call_claude
+from tse_analytics.toolbox.ai_agent.lmstudio import lms_get_response
 from tse_analytics.toolbox.ai_agent.prompt_builder import build_system_prompt
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
@@ -44,11 +47,10 @@ CLAUDE_MODELS = [
     "claude-opus-4-7",
     "claude-opus-4-6",
     "claude-sonnet-4-6",
-    "claude-haiku-4-5",
+    "lmstudio",
 ]
 DEFAULT_MODEL = "claude-opus-4-7"
 MAX_RESULT_ROWS = 200
-MAX_TOKENS = 16000
 
 _CODE_BLOCK_RE = re.compile(r"```(?:python)?\s*\n(.*?)```", re.DOTALL)
 
@@ -93,26 +95,9 @@ def _run_code(code: str, df: pd.DataFrame) -> Any:
         return None
 
 
-def _call_claude(
-    api_key: str,
-    model: str,
-    system_blocks: list[dict[str, Any]],
-    history: list[dict[str, Any]],
-) -> anthropic.types.Message:
-    """Worker entry point — runs in a thread, must not touch Qt."""
-    client = anthropic.Anthropic(api_key=api_key)
-    return client.messages.create(
-        model=model,
-        max_tokens=MAX_TOKENS,
-        system=system_blocks,
-        messages=history,
-        thinking={"type": "adaptive"},
-    )
-
-
 @toolbox_plugin(
     category="AI",
-    label="AI Agent",
+    label="TSE Assistant",
     icon=":/icons/icons8-analyze-16.png",
     order=0,
 )
@@ -123,7 +108,7 @@ class AIAgentWidget(ToolboxWidgetBase):
         super().__init__(
             datatable,
             AIAgentWidgetSettings,
-            title="AI Agent",
+            title="TSE Assistant",
             parent=parent,
         )
 
@@ -139,7 +124,9 @@ class AIAgentWidget(ToolboxWidgetBase):
 
         # Prompt input sits below the report view.
         self.prompt_edit = QLineEdit(self)
-        self.prompt_edit.setPlaceholderText("Ask Claude about this datatable — e.g. 'How many animals are there?'")
+        self.prompt_edit.setPlaceholderText(
+            "Ask TSE Assistant about this datatable — e.g. 'How many animals are there?'"
+        )
         self.prompt_edit.returnPressed.connect(self._update)
         self._layout.addWidget(self.prompt_edit)
 
@@ -202,23 +189,37 @@ class AIAgentWidget(ToolboxWidgetBase):
         self.prompt_edit.setEnabled(False)
 
         system_blocks = build_system_prompt(self.datatable)
-        worker = Worker(
-            _call_claude,
-            api_key,
-            self.model_combo.currentText(),
-            system_blocks,
-            list(self._history),
-        )
-        worker.signals.result.connect(self._on_llm_result)
-        worker.signals.error.connect(self._on_llm_error)
-        worker.signals.finished.connect(self._on_llm_finished)
+
+        if "claude" in self.model_combo.currentText().lower():
+            worker = Worker(
+                call_claude,
+                api_key,
+                self.model_combo.currentText(),
+                system_blocks,
+                list(self._history),
+            )
+            worker.signals.result.connect(self._on_claude_result)
+            worker.signals.error.connect(self._on_claude_error)
+            worker.signals.finished.connect(self._on_claude_finished)
+        else:
+            prompt = self.prompt_edit.text().strip()
+            worker = Worker(
+                lms_get_response,
+                self.model_combo.currentText(),
+                prompt,
+                system_blocks,
+                list(self._history),
+            )
+            worker.signals.result.connect(self._on_lms_result)
+            worker.signals.error.connect(self._on_claude_error)
+            worker.signals.finished.connect(self._on_claude_finished)
         TaskManager.start_task(worker)
 
     # ------------------------------------------------------------------
     # Worker callbacks
     # ------------------------------------------------------------------
 
-    def _on_llm_result(self, response: anthropic.types.Message) -> None:
+    def _on_claude_result(self, response: anthropic.types.Message) -> None:
         if not self._alive:
             return
 
@@ -253,7 +254,7 @@ class AIAgentWidget(ToolboxWidgetBase):
 
         self._append_result(result)
 
-    def _on_llm_error(self, exc_tuple: tuple) -> None:
+    def _on_claude_error(self, exc_tuple: tuple) -> None:
         if not self._alive:
             return
         exc_type, value, tb_str = exc_tuple
@@ -269,13 +270,41 @@ class AIAgentWidget(ToolboxWidgetBase):
         if self._history and self._history[-1].get("role") == "user":
             self._history.pop()
 
-    def _on_llm_finished(self) -> None:
+    def _on_claude_finished(self) -> None:
         if not self._alive:
             return
         self.update_action.setEnabled(True)
         self.prompt_edit.setEnabled(True)
         self.prompt_edit.clear()
         self.prompt_edit.setFocus()
+
+    def _on_lms_result(self, response: lms.PredictionResult) -> None:
+        if not self._alive:
+            return
+
+        self._history.append({"role": "assistant", "content": response.content})
+
+        try:
+            logger.debug(response.stats)
+        except Exception:
+            pass
+
+        text_parts = [response.content]
+        assistant_text = "\n\n".join(text_parts).strip()
+        self._append_assistant_turn(assistant_text)
+
+        code = _extract_code(assistant_text)
+        if not code:
+            return
+
+        self._append_code_block(code)
+        try:
+            result = _run_code(code, self.datatable.df)
+        except Exception:
+            self._append_error(traceback.format_exc())
+            return
+
+        self._append_result(result)
 
     # ------------------------------------------------------------------
     # Transcript rendering
@@ -289,7 +318,7 @@ class AIAgentWidget(ToolboxWidgetBase):
         # Strip the fenced code block from the displayed narration — we render it separately below.
         narration = _CODE_BLOCK_RE.sub("", text).strip()
         safe = html.escape(narration).replace("\n", "<br>")
-        self._transcript_html += f'<div style="margin:8px 0;"><b>Claude:</b> {safe}</div>'
+        self._transcript_html += f'<div style="margin:8px 0;"><b>TSE Assistant:</b> {safe}</div>'
         self._flush_transcript()
 
     def _append_code_block(self, code: str) -> None:
