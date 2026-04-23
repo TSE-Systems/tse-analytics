@@ -14,9 +14,9 @@ def preprocess_trafficage_datatable(dataset: Dataset, df: pd.DataFrame) -> Datat
 
     # Rename columns to be compatible with Datatable format
     df.rename(columns={"StartDateTime": "DateTime"}, inplace=True)
-    df.drop(columns=["EndDateTime"], inplace=True)
+    df.drop(columns=["EndDateTime", "Timedelta"], inplace=True, errors="ignore")
 
-    # Calculate time delta
+    # Recalculate timedelta
     first_timestamp = df["DateTime"].min()
     if first_timestamp > dataset.experiment_started:
         first_timestamp = dataset.experiment_started
