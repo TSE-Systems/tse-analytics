@@ -5,6 +5,7 @@ Lomb-Scargle period detection, single-component cosinor, activity onset/offset
 detection, a double-plotted actogram, and a group-level mixed-effects cosinor.
 """
 
+import math
 from dataclasses import dataclass
 from datetime import time
 
@@ -14,6 +15,7 @@ import pandas as pd
 import statsmodels.formula.api as smf
 from astropy.timeseries import LombScargle
 from loguru import logger
+from matplotlib.patches import Patch
 from scipy.stats import f as f_dist
 
 from tse_analytics.core import color_manager
@@ -27,7 +29,11 @@ from tse_analytics.core.utils import (
     time_to_float,
 )
 from tse_analytics.core.utils.data import normalize_nd_array
-from tse_analytics.toolbox.actogram.processor import dataframe_to_actogram, plot_enhanced_actogram
+from tse_analytics.toolbox.actogram.processor import (
+    _draw_double_plotted_bars,
+    dataframe_to_actogram,
+    plot_enhanced_actogram,
+)
 
 
 @dataclass
@@ -484,6 +490,267 @@ def _resolve_palette(
             return None
 
 
+# ---------------------------------------------------------------------------
+# Combined actograms (multi-group)
+# ---------------------------------------------------------------------------
+
+
+def _collect_group_actograms(
+    iter_df: pd.DataFrame,
+    key_col: str,
+    variable: Variable,
+    bins_per_day: int,
+) -> tuple[dict[str, np.ndarray], list]:
+    """Build per-group double-plotted actogram arrays aligned to the union of dates.
+
+    Each group's array is independently min-max normalized (matching the existing
+    per-group actogram loop). Missing days are zero-filled so every group shares
+    the same (n_days, bins_per_day) shape and can be rendered on a common axis.
+    """
+    raw: dict[str, tuple[np.ndarray, list]] = {}
+    all_days: set = set()
+    for label, g in iter_df.groupby(key_col, observed=True):
+        activity_array, unique_days = dataframe_to_actogram(g, variable, bins_per_day)
+        if activity_array.size == 0:
+            continue
+        if np.ptp(activity_array) > 0:
+            activity_array = normalize_nd_array(activity_array)
+        raw[str(label)] = (activity_array, unique_days)
+        all_days.update(unique_days)
+
+    shared_days = sorted(all_days)
+    if not shared_days:
+        return {}, []
+
+    day_to_idx = {d: i for i, d in enumerate(shared_days)}
+    n_days = len(shared_days)
+
+    groups_data: dict[str, np.ndarray] = {}
+    for label, (activity_array, unique_days) in raw.items():
+        aligned = np.zeros((n_days, bins_per_day))
+        for i, day in enumerate(unique_days):
+            aligned[day_to_idx[day]] = activity_array[i]
+        groups_data[label] = aligned
+
+    return groups_data, shared_days
+
+
+def plot_combined_actograms_grid(
+    groups_data: dict[str, np.ndarray],
+    shared_days: list,
+    figsize: tuple[float, float] | None,
+    binsize: float | None,
+    highlight_periods: list | None,
+    palette: dict[str, str] | None,
+    title: str,
+) -> plt.Figure:
+    """2D grid of double-plotted actograms, one subplot per group."""
+    n_groups = len(groups_data)
+    base_w, base_h = figsize if figsize else (10.0, 6.0)
+    if n_groups == 0:
+        fig = plt.Figure(figsize=(base_w, base_h), layout="tight")
+        fig.suptitle(title)
+        return fig
+
+    ncols = min(3, n_groups)
+    nrows = math.ceil(n_groups / ncols)
+
+    row_height = max(2.0, base_h * 0.55)
+    grid_figsize = (base_w, min(row_height * nrows, 24.0))
+
+    fig = plt.Figure(figsize=grid_figsize, layout="tight")
+    axes_grid = fig.subplots(nrows, ncols, sharex=True, squeeze=False)
+    flat_axes = axes_grid.flatten()
+
+    day_labels = [d.strftime("%Y-%m-%d") for d in shared_days]
+
+    for i, (label, activity_array) in enumerate(groups_data.items()):
+        ax = flat_axes[i]
+        color = (palette or {}).get(label, color_manager.get_color_hex(i))
+        _draw_double_plotted_bars(
+            ax,
+            activity_array,
+            binsize=binsize,
+            highlight_periods=highlight_periods,
+            bar_color=color,
+            day_labels=day_labels,
+        )
+        ax.set_title(label)
+
+    for j in range(n_groups, len(flat_axes)):
+        flat_axes[j].axis("off")
+
+    fig.suptitle(title)
+    return fig
+
+
+def plot_combined_actograms_3d(
+    groups_data: dict[str, np.ndarray],
+    shared_days: list,
+    figsize: tuple[float, float] | None,
+    binsize: float | None,
+    highlight_periods: list | None,
+    palette: dict[str, str] | None,
+    title: str,
+) -> plt.Figure:
+    """3D double-plotted actogram: X=time (0..48h), Y=day, Z=activity; one surface per group."""
+    base_w, base_h = figsize if figsize else (10.0, 6.0)
+    fig = plt.Figure(figsize=(base_w, max(base_h, 6.0)), layout="tight")
+    ax = fig.add_subplot(projection="3d")
+    ax.set_title(title)
+
+    if not groups_data:
+        return fig
+
+    first_array = next(iter(groups_data.values()))
+    n_days, bins_per_day = first_array.shape
+    double_bins = 2 * bins_per_day
+
+    x = np.arange(double_bins)
+    y = np.arange(n_days)
+    mesh_x, mesh_y = np.meshgrid(x, y)
+
+    if highlight_periods:
+        for period in highlight_periods:
+            start_bin = int(period["start"] / 24 * bins_per_day)
+            end_bin = int(period["end"] / 24 * bins_per_day)
+            band_color = period["color"]
+            band_alpha = period.get("alpha", 0.15)
+            for x0, x1 in ((start_bin, end_bin), (start_bin + bins_per_day, end_bin + bins_per_day)):
+                if x1 <= x0:
+                    continue
+                floor_x = np.array([[x0, x1], [x0, x1]])
+                floor_y = np.array([[-0.5, -0.5], [n_days - 0.5, n_days - 0.5]])
+                floor_z = np.zeros_like(floor_x, dtype=float)
+                ax.plot_surface(floor_x, floor_y, floor_z, color=band_color, alpha=band_alpha, linewidth=0)
+
+    proxies: list[Patch] = []
+    for i, (label, activity_array) in enumerate(groups_data.items()):
+        color = (palette or {}).get(label, color_manager.get_color_hex(i))
+        z = np.zeros((n_days, double_bins))
+        for d in range(n_days):
+            if d > 0:
+                z[d, :bins_per_day] = activity_array[d - 1]
+            z[d, bins_per_day:] = activity_array[d]
+
+        ax.plot_surface(
+            mesh_x,
+            mesh_y,
+            z,
+            color=color,
+            alpha=0.55,
+            edgecolor=color,
+            linewidth=0.2,
+            shade=True,
+        )
+        proxies.append(Patch(color=color, label=label))
+
+    if binsize:
+        time_labels = [f"{i}" for i in range(0, 26, 2)]
+    else:
+        time_labels = [f"{i}h" for i in range(0, 24, 4)]
+    xticks = np.linspace(0, bins_per_day, len(time_labels))
+    ax.set_xticks(np.concatenate([xticks, xticks + bins_per_day]))
+    ax.set_xticklabels(time_labels + time_labels)
+
+    ax.set_yticks(np.arange(n_days))
+    ax.set_yticklabels([d.strftime("%Y-%m-%d") for d in shared_days])
+
+    ax.set_xlabel("Time (hours)")
+    ax.set_ylabel("Day")
+    ax.set_zlabel("Activity (normalized)")
+    ax.view_init(elev=30, azim=-60)
+
+    if proxies:
+        ax.legend(handles=proxies, loc="upper left", fontsize="small")
+
+    return fig
+
+
+def plot_combined_actograms_overlay(
+    groups_data: dict[str, np.ndarray],
+    shared_days: list,
+    figsize: tuple[float, float] | None,
+    binsize: float | None,
+    highlight_periods: list | None,
+    palette: dict[str, str] | None,
+    title: str,
+) -> plt.Figure:
+    """Single 2D axes with all groups overlaid as step lines per day row."""
+    fig = plt.Figure(figsize=figsize, layout="tight")
+    ax = fig.subplots()
+    ax.set_title(title)
+
+    if not groups_data:
+        return fig
+
+    first_array = next(iter(groups_data.values()))
+    n_days, bins_per_day = first_array.shape
+
+    if highlight_periods:
+        for period in highlight_periods:
+            start_bin = int(period["start"] / 24 * bins_per_day)
+            end_bin = int(period["end"] / 24 * bins_per_day)
+            ax.axvspan(start_bin, end_bin, color=period["color"], alpha=period.get("alpha", 0.2), zorder=1)
+            ax.axvspan(
+                start_bin + bins_per_day,
+                end_bin + bins_per_day,
+                color=period["color"],
+                alpha=period.get("alpha", 0.2),
+                zorder=1,
+            )
+
+    for i, (label, activity_array) in enumerate(groups_data.items()):
+        color = (palette or {}).get(label, color_manager.get_color_hex(i))
+        legend_added = False
+        for d in range(n_days):
+            y_base = n_days - d
+            if d > 0:
+                ax.step(
+                    np.arange(bins_per_day),
+                    y_base + activity_array[d - 1],
+                    where="mid",
+                    color=color,
+                    linewidth=1.0,
+                    alpha=0.9,
+                    zorder=3,
+                    label=label if not legend_added else None,
+                )
+                legend_added = True
+            ax.step(
+                np.arange(bins_per_day, 2 * bins_per_day),
+                y_base + activity_array[d],
+                where="mid",
+                color=color,
+                linewidth=1.0,
+                alpha=0.9,
+                zorder=3,
+                label=label if not legend_added else None,
+            )
+            legend_added = True
+
+    if binsize:
+        time_labels = [f"{i}" for i in range(0, 26, 2)]
+    else:
+        time_labels = [f"{i}h" for i in range(0, 24, 4)]
+    xticks = np.linspace(0, bins_per_day, len(time_labels))
+    ax.set_xticks(np.concatenate([xticks, xticks + bins_per_day]))
+    ax.set_xticklabels(time_labels + time_labels)
+
+    ax.set_yticks(np.arange(1, n_days + 1))
+    ax.set_yticklabels([d.strftime("%Y-%m-%d") for d in shared_days][::-1])
+
+    ax.set_xlim(0, 2 * bins_per_day)
+    ax.set_ylim(0, n_days + 1)
+    ax.set_xlabel("Time (hours)")
+    ax.set_ylabel("Day")
+    ax.axvline(bins_per_day, color="gray", linestyle="-", alpha=0.7, zorder=2)
+    ax.grid(True, axis="x", alpha=0.3)
+    ax.legend(loc="upper right", fontsize="small")
+
+    return fig
+
+
 def get_chronobiology_result(
     datatable: Datatable,
     df: pd.DataFrame,
@@ -708,6 +975,53 @@ def get_chronobiology_result(
                     title=f"Actogram — {variable.name} ({label})",
                 )
                 sections.append(get_html_image_from_figure(figure))
+
+            groups_data, shared_days = _collect_group_actograms(iter_df, key_col, variable, bins_per_day)
+            if len(groups_data) >= 2:
+                sections.append("<h3>Combined actograms — grid</h3>")
+                sections.append(
+                    get_html_image_from_figure(
+                        plot_combined_actograms_grid(
+                            groups_data,
+                            shared_days,
+                            figsize,
+                            binsize=1 / bins_per_hour,
+                            highlight_periods=periods,
+                            palette=palette,
+                            title=f"Actograms grid — {variable.name}",
+                        )
+                    )
+                )
+
+                sections.append("<h3>Combined actograms — 3D</h3>")
+                sections.append(
+                    get_html_image_from_figure(
+                        plot_combined_actograms_3d(
+                            groups_data,
+                            shared_days,
+                            figsize,
+                            binsize=1 / bins_per_hour,
+                            highlight_periods=periods,
+                            palette=palette,
+                            title=f"3D actograms — {variable.name}",
+                        )
+                    )
+                )
+
+                sections.append("<h3>Combined actograms — overlay</h3>")
+                sections.append(
+                    get_html_image_from_figure(
+                        plot_combined_actograms_overlay(
+                            groups_data,
+                            shared_days,
+                            figsize,
+                            binsize=1 / bins_per_hour,
+                            highlight_periods=periods,
+                            palette=palette,
+                            title=f"Actograms overlay — {variable.name}",
+                        )
+                    )
+                )
 
     # --- Section 7: group-level mixed-effects cosinor ---------------------
     sections.append(f"<h3>Group-level cosinor with mixed effects (period = {period_hours:g} h)</h3>")
