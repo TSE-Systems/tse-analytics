@@ -16,6 +16,7 @@ class ChronobiologyWidgetSettings:
     group_by: str = "Animal"
     selected_variable: str = None
     period_hours: float = 24.0
+    period2_hours: float = 12.0
     bins_per_hour: int = 6
     onset_threshold_pct: float = 50.0
 
@@ -61,6 +62,17 @@ class ChronobiologyWidget(ToolboxWidgetBase):
         )
         toolbar.addWidget(self.period_spin_box)
 
+        toolbar.addWidget(QLabel("Harmonic period (h):"))
+        self.period2_spin_box = QDoubleSpinBox(
+            toolbar,
+            minimum=0.5,
+            maximum=72.0,
+            singleStep=0.5,
+            decimals=2,
+            value=self._settings.period2_hours,
+        )
+        toolbar.addWidget(self.period2_spin_box)
+
         toolbar.addWidget(QLabel("Bins/hour:"))
         self.bins_spin_box = QSpinBox(
             toolbar,
@@ -87,6 +99,7 @@ class ChronobiologyWidget(ToolboxWidgetBase):
             self.group_by_selector.currentText(),
             self.variableSelector.currentText(),
             self.period_spin_box.value(),
+            self.period2_spin_box.value(),
             self.bins_spin_box.value(),
             self.onset_threshold_spin_box.value(),
         )
@@ -107,6 +120,7 @@ class ChronobiologyWidget(ToolboxWidgetBase):
             variable,
             grouping_settings,
             period_hours=self.period_spin_box.value(),
+            period2_hours=self.period2_spin_box.value(),
             bins_per_hour=self.bins_spin_box.value(),
             onset_threshold_pct=self.onset_threshold_spin_box.value(),
             figsize=get_figsize_from_widget(self.report_view),

@@ -103,6 +103,76 @@ def _fit_cosinor(t_hours: np.ndarray, y: np.ndarray, period_hours: float = 24.0)
     }
 
 
+def _fit_two_component_cosinor(
+    t_hours: np.ndarray,
+    y: np.ndarray,
+    period1_hours: float = 24.0,
+    period2_hours: float = 12.0,
+) -> dict[str, float]:
+    """Two-component cosinor via OLS on [1, cos(ω₁t), sin(ω₁t), cos(ω₂t), sin(ω₂t)].
+
+    Returns MESOR, amplitude/acrophase per component, combined percent
+    rhythm (R²), and an F-test p-value vs. the intercept-only model
+    (df1=4, df2=n-5). NaNs on degenerate series.
+    """
+    t = np.asarray(t_hours, dtype=float)
+    y = np.asarray(y, dtype=float)
+    mask = np.isfinite(t) & np.isfinite(y)
+    t, y = t[mask], y[mask]
+    n = t.size
+    nan_result = {
+        "MESOR": float("nan"),
+        "Amplitude_1": float("nan"),
+        "Acrophase_1_h": float("nan"),
+        "Amplitude_2": float("nan"),
+        "Acrophase_2_h": float("nan"),
+        "PR": float("nan"),
+        "p_value": float("nan"),
+        "N": float(n),
+    }
+    if n < 6 or np.ptp(y) == 0 or period1_hours <= 0 or period2_hours <= 0:
+        return nan_result
+
+    omega1 = 2 * np.pi / period1_hours
+    omega2 = 2 * np.pi / period2_hours
+    x = np.column_stack([
+        np.ones_like(t),
+        np.cos(omega1 * t),
+        np.sin(omega1 * t),
+        np.cos(omega2 * t),
+        np.sin(omega2 * t),
+    ])
+    coeffs, *_ = np.linalg.lstsq(x, y, rcond=None)
+    mesor, b1, g1, b2, g2 = coeffs
+
+    amp1 = float(np.hypot(b1, g1))
+    amp2 = float(np.hypot(b2, g2))
+    acro1 = float((-np.arctan2(-g1, b1) / omega1) % period1_hours)
+    acro2 = float((-np.arctan2(-g2, b2) / omega2) % period2_hours)
+
+    y_pred = x @ coeffs
+    ss_res = float(np.sum((y - y_pred) ** 2))
+    ss_tot = float(np.sum((y - y.mean()) ** 2))
+    r2 = 1.0 - ss_res / ss_tot if ss_tot > 0 else 0.0
+
+    if n > 5 and ss_res > 0:
+        f_stat = ((ss_tot - ss_res) / 4.0) / (ss_res / (n - 5))
+        p_value = float(f_dist.sf(f_stat, 4, n - 5))
+    else:
+        p_value = float("nan")
+
+    return {
+        "MESOR": float(mesor),
+        "Amplitude_1": amp1,
+        "Acrophase_1_h": acro1,
+        "Amplitude_2": amp2,
+        "Acrophase_2_h": acro2,
+        "PR": float(r2),
+        "p_value": p_value,
+        "N": float(n),
+    }
+
+
 def _lombscargle_period(
     t_hours: np.ndarray,
     y: np.ndarray,
@@ -239,6 +309,43 @@ def _plot_cosinor_fits(
     ax.set_xlabel(f"Phase within {period_hours:g}-h period")
     ax.set_ylabel(f"{variable.name} ({variable.unit})" if variable.unit else variable.name)
     ax.set_title(f"Cosinor fits — {variable.name}")
+    ax.legend(fontsize="small")
+    ax.grid(True, alpha=0.3)
+    return figure
+
+
+def _plot_two_component_fits(
+    fits: dict[str, tuple[np.ndarray, np.ndarray, dict[str, float]]],
+    variable: Variable,
+    period1_hours: float,
+    period2_hours: float,
+    figsize: tuple[float, float] | None,
+) -> plt.Figure:
+    figure = plt.Figure(figsize=figsize, layout="tight")
+    ax = figure.subplots()
+    omega1 = 2 * np.pi / period1_hours
+    omega2 = 2 * np.pi / period2_hours
+    for i, (label, (t, y, params)) in enumerate(fits.items()):
+        if not np.isfinite(params.get("MESOR", np.nan)):
+            continue
+        color = color_manager.get_color_hex(i)
+        phase = t % period1_hours
+        ax.scatter(phase, y, alpha=0.25, s=8, color=color)
+        t_grid = np.linspace(0, period1_hours, 400)
+        y_fit = (
+            params["MESOR"]
+            + params["Amplitude_1"] * np.cos(omega1 * t_grid - omega1 * params["Acrophase_1_h"])
+            + params["Amplitude_2"] * np.cos(omega2 * t_grid - omega2 * params["Acrophase_2_h"])
+        )
+        ax.plot(
+            t_grid,
+            y_fit,
+            color=color,
+            label=f"{label} (A₁={params['Amplitude_1']:.2f}, A₂={params['Amplitude_2']:.2f})",
+        )
+    ax.set_xlabel(f"Phase within {period1_hours:g}-h period")
+    ax.set_ylabel(f"{variable.name} ({variable.unit})" if variable.unit else variable.name)
+    ax.set_title(f"Two-component cosinor fits — {variable.name}")
     ax.legend(fontsize="small")
     ax.grid(True, alpha=0.3)
     return figure
@@ -383,6 +490,7 @@ def get_chronobiology_result(
     variable: Variable,
     grouping_settings: GroupingSettings,
     period_hours: float = 24.0,
+    period2_hours: float = 12.0,
     bins_per_hour: int = 6,
     onset_threshold_pct: float = 50.0,
     figsize: tuple[float, float] | None = None,
@@ -421,6 +529,7 @@ def get_chronobiology_result(
             "Light cycle start": light_cycle_start.strftime("%H:%M"),
             "Dark cycle start": dark_cycle_start.strftime("%H:%M"),
             "Cosinor period (h)": f"{period_hours:g}",
+            "Harmonic period (h)": f"{period2_hours:g}",
             "Group by": grouping_settings.mode.value
             + (f" ({grouping_settings.factor_name})" if grouping_settings.mode == GroupingMode.FACTOR else ""),
         }
@@ -500,6 +609,33 @@ def get_chronobiology_result(
     sections.append(f"<h3>Single-component cosinor (period = {period_hours:g} h)</h3>")
     sections.append(get_great_table(pd.DataFrame(cosinor_rows), "Cosinor parameters").as_raw_html(inline_css=True))
     sections.append(get_html_image_from_figure(_plot_cosinor_fits(cosinor_fits, variable, period_hours, figsize)))
+
+    # --- Section 4b: two-component cosinor --------------------------------
+    two_comp_rows: list[dict] = []
+    two_comp_fits: dict[str, tuple[np.ndarray, np.ndarray, dict[str, float]]] = {}
+    if key_col is None:
+        t = _to_hours_since_start(iter_df["DateTime"], reference_time)
+        y = iter_df[variable.name].to_numpy(dtype=float)
+        params = _fit_two_component_cosinor(t, y, period_hours, period2_hours)
+        two_comp_fits["Total"] = (t, y, params)
+        two_comp_rows.append({"Group": "Total", **params})
+    else:
+        for label, g in iter_df.groupby(key_col, observed=True):
+            t = _to_hours_since_start(g["DateTime"], reference_time)
+            y = g[variable.name].to_numpy(dtype=float)
+            params = _fit_two_component_cosinor(t, y, period_hours, period2_hours)
+            two_comp_fits[str(label)] = (t, y, params)
+            two_comp_rows.append({"Group": str(label), **params})
+
+    sections.append(f"<h3>Two-component cosinor (periods = {period_hours:g} h + {period2_hours:g} h)</h3>")
+    sections.append(
+        get_great_table(pd.DataFrame(two_comp_rows), "Two-component cosinor parameters").as_raw_html(inline_css=True)
+    )
+    sections.append(
+        get_html_image_from_figure(
+            _plot_two_component_fits(two_comp_fits, variable, period_hours, period2_hours, figsize)
+        )
+    )
 
     # --- Section 5: activity onset / offset -------------------------------
     onset_tables: dict[str, pd.DataFrame] = {}
