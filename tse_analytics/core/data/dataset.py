@@ -15,6 +15,7 @@ import pandas as pd
 
 from tse_analytics.core import messaging
 from tse_analytics.core.color_manager import get_factor_level_color_hex
+from tse_analytics.core.data.analysis_log import AnalysisAction
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import Animal, Factor, FactorKind, FactorLevel, LightCyclesConfig
@@ -88,6 +89,8 @@ class Dataset:
         }
 
         self.reports: dict[str, Report] = {}
+
+        self.analysis_log: list[AnalysisAction] = []
 
     @property
     def light_cycles(self) -> LightCyclesConfig:

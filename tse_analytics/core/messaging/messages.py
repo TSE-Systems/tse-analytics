@@ -2,13 +2,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from tse_analytics.core.data.workspace import Workspace
 from tse_analytics.core.models.tree_item import TreeItem
 
 if TYPE_CHECKING:
+    from tse_analytics.core.data.analysis_log import AnalysisAction
     from tse_analytics.core.data.dataset import Dataset
     from tse_analytics.core.data.datatable import Datatable
     from tse_analytics.core.data.report import Report
+    from tse_analytics.core.data.workspace import Workspace
 
 
 class Message:
@@ -127,3 +128,12 @@ class AddToReportMessage(Message):
         """
         super().__init__(sender)
         self.dataset = dataset
+
+
+class AnalysisLogChangedMessage(Message):
+    """Indicates that an entry was appended to a dataset's analysis log."""
+
+    def __init__(self, sender, dataset: Dataset, action: AnalysisAction):
+        super().__init__(sender)
+        self.dataset = dataset
+        self.action = action

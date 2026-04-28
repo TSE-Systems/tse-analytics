@@ -17,6 +17,7 @@ import pandas as pd
 from loguru import logger
 from pydantic import TypeAdapter
 
+from tse_analytics.core.data.analysis_log import AnalysisAction
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.outliers import OutliersSettings
@@ -24,7 +25,7 @@ from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import Animal, Factor, Variable
 from tse_analytics.core.data.workspace import Workspace
 
-_SCHEMA_VERSION = 1
+_SCHEMA_VERSION = 2
 
 
 # ---------------------------------------------------------------------------
@@ -98,6 +99,16 @@ _META_TABLES_DDL = [
         variables               JSON NOT NULL,
         metadata                JSON,
         outliers_settings       JSON NOT NULL
+    )
+    """,
+    """
+    CREATE TABLE _meta_analysis_log (
+        dataset_id      UUID NOT NULL,
+        sequence        UINTEGER NOT NULL,
+        timestamp       TIMESTAMP NOT NULL,
+        kind            VARCHAR NOT NULL,
+        payload         JSON NOT NULL,
+        PRIMARY KEY (dataset_id, sequence)
     )
     """,
 ]
@@ -215,6 +226,26 @@ def _save_raw_datatable(
     )
 
 
+def _save_analysis_log(
+    con: duckdb.DuckDBPyConnection,
+    dataset_id: UUID,
+    log: list[AnalysisAction],
+) -> None:
+    adapter = TypeAdapter(AnalysisAction)
+    for action in log:
+        payload = adapter.dump_python(action, mode="json")
+        con.execute(
+            "INSERT INTO _meta_analysis_log VALUES (?, ?, ?, ?, ?)",
+            [
+                dataset_id,
+                action.sequence,
+                action.timestamp,
+                action.kind,
+                payload,
+            ],
+        )
+
+
 def _save_dataset(con: duckdb.DuckDBPyConnection, dataset: Dataset) -> None:
     con.execute(
         "INSERT INTO _meta_datasets VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -230,6 +261,7 @@ def _save_dataset(con: duckdb.DuckDBPyConnection, dataset: Dataset) -> None:
     )
 
     _save_reports(con, dataset.id, dataset.reports)
+    _save_analysis_log(con, dataset.id, dataset.analysis_log)
 
     for datatable in dataset.datatables.values():
         _save_datatable(con, datatable)
@@ -381,6 +413,26 @@ def _load_raw_datatables_for_dataset(
     return raw_datatables
 
 
+def _load_analysis_log(
+    con: duckdb.DuckDBPyConnection,
+    dataset_id: UUID,
+) -> list[AnalysisAction]:
+    # Forward-compatibility: workspaces saved with schema v1 do not have a
+    # `_meta_analysis_log` table; treat them as empty logs.
+    table_exists = con.execute(
+        "SELECT 1 FROM information_schema.tables WHERE table_name = '_meta_analysis_log'"
+    ).fetchone()
+    if table_exists is None:
+        return []
+
+    rows = con.execute(
+        "SELECT payload FROM _meta_analysis_log WHERE dataset_id = ? ORDER BY sequence",
+        [dataset_id],
+    ).fetchall()
+    adapter = TypeAdapter(AnalysisAction)
+    return [adapter.validate_json(payload) for (payload,) in rows]
+
+
 def _load_dataset(con: duckdb.DuckDBPyConnection, dataset_id: UUID) -> Dataset:
     row = con.execute(
         "SELECT id, name, description, dataset_type, animals, factors, metadata FROM _meta_datasets WHERE id = ?",
@@ -397,6 +449,7 @@ def _load_dataset(con: duckdb.DuckDBPyConnection, dataset_id: UUID) -> Dataset:
     dataset.id = row[0]
     dataset.factors = TypeAdapter(dict[str, Factor]).validate_json(row[5])
     dataset.reports = _load_reports(con, row[0], dataset)
+    dataset.analysis_log = _load_analysis_log(con, row[0])
 
     dataset.datatables = _load_datatables_for_dataset(con, dataset)
     dataset.raw_datatables = _load_raw_datatables_for_dataset(con, dataset)

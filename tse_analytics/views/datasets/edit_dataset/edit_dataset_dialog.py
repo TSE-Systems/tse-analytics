@@ -2,6 +2,11 @@ import pandas as pd
 from PySide6.QtWidgets import QDialog, QTableWidgetItem, QWidget
 
 from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.services.action_log_service import (
+    record_exclude_animals,
+    record_exclude_time,
+    record_trim_time,
+)
 from tse_analytics.views.datasets.edit_dataset.edit_dataset_dialog_ui import Ui_EditDatasetDialog
 
 """
@@ -91,6 +96,7 @@ class EditDatasetDialog(QDialog):
         start = self.ui.dateTimeEditTrimStart.dateTime().toPython()
         end = self.ui.dateTimeEditTrimEnd.dateTime().toPython()
         self.dataset.trim_time(start, end)
+        record_trim_time(self, self.dataset, start, end)
 
     def _exclude_time(self) -> None:
         """
@@ -99,6 +105,7 @@ class EditDatasetDialog(QDialog):
         start = self.ui.dateTimeEditExcludeStart.dateTime().toPython()
         end = self.ui.dateTimeEditExcludeEnd.dateTime().toPython()
         self.dataset.exclude_time(start, end)
+        record_exclude_time(self, self.dataset, start, end)
 
     def _exclude_animals(self) -> None:
         """
@@ -109,6 +116,8 @@ class EditDatasetDialog(QDialog):
         for index in selected_indices:
             selected_animal_ids.add(self.ui.tableWidgetAnimals.item(index.row(), 0).text())
         self.dataset.exclude_animals(selected_animal_ids)
+        if selected_animal_ids:
+            record_exclude_animals(self, self.dataset, selected_animal_ids)
 
     def _accepted(self) -> None:
         """

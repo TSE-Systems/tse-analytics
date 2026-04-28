@@ -7,6 +7,7 @@ from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Factor
 from tse_analytics.core.models.color_dialog_delegate import ColorDialogDelegate
 from tse_analytics.core.models.factors_model import FactorsModel
+from tse_analytics.core.services.action_log_service import record_set_factors
 from tse_analytics.views.factors.factors_dialog import FactorsDialog
 
 
@@ -61,4 +62,5 @@ class FactorsWidget(QWidget, messaging.MessengerListener):
             for factor in dlg.factors:
                 factors[factor.name] = factor
             self.dataset.set_factors(factors, self.dataset.factors)
+            record_set_factors(self, self.dataset, factors)
             messaging.broadcast(messaging.DatasetChangedMessage(self, self.dataset))

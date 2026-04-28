@@ -2,6 +2,7 @@ from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 from PySide6.QtGui import QColor
 
 from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.services.action_log_service import record_rename_animal
 
 
 class AnimalsModel(QAbstractTableModel):
@@ -85,6 +86,7 @@ class AnimalsModel(QAbstractTableModel):
                     old_id = item.id
                     item.id = value
                     self.dataset.rename_animal(old_id, item)
+                    record_rename_animal(self, self.dataset, old_id, item)
                     return True
             case _:
                 if role == Qt.ItemDataRole.EditRole:

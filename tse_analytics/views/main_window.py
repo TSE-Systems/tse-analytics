@@ -25,6 +25,7 @@ from tse_analytics.modules.phenomaster.io.tse_dataset_loader import load_tse_dat
 from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvDialog
 from tse_analytics.modules.phenomaster.views.import_tse_dialog import ImportTseDialog
 from tse_analytics.views.about.about_dialog import AboutDialog
+from tse_analytics.views.analysis_log.analysis_log_widget import AnalysisLogWidget
 from tse_analytics.views.animals.animals_widget import AnimalsWidget
 from tse_analytics.views.datasets.datasets_widget import DatasetsWidget
 from tse_analytics.views.factors.factors_widget import FactorsWidget
@@ -112,6 +113,11 @@ class MainWindow(QMainWindow):
         selector_dock_area = LayoutManager.add_dock_widget_to_area(
             PySide6QtAds.BottomDockWidgetArea, factors_dock_widget, animals_dock_area
         )
+
+        analysis_log_dock_widget = LayoutManager.register_dock_widget(
+            AnalysisLogWidget(), "Analysis Log", QIcon(":/icons/log.png")
+        )
+        LayoutManager.add_dock_widget_tab_to_area(analysis_log_dock_widget, selector_dock_area)
 
         self.ui.actionImportDataset.triggered.connect(self._import_dataset_dialog)
         self.ui.actionNewWorkspace.triggered.connect(self._new_workspace)

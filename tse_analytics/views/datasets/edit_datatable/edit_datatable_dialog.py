@@ -5,6 +5,7 @@ from tse_analytics.core.data.binning import (
     TimeIntervalsBinningSettings,
 )
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.services.action_log_service import record_create_derived_datatable
 from tse_analytics.views.datasets.edit_datatable.edit_datatable_dialog_ui import Ui_EditDatatableDialog
 from tse_analytics.views.datasets.edit_datatable.processor import process_table
 
@@ -55,18 +56,32 @@ class EditDatatableDialog(QDialog):
         for index in selected_indices:
             excluded_animal_ids.add(self.ui.tableWidgetAnimals.item(index.row(), 0).text())
 
-        process_table(
-            datatable,
-            excluded_animal_ids,
+        binning = (
             TimeIntervalsBinningSettings(
                 unit=self.ui.unitComboBox.currentText(),
                 delta=self.ui.deltaSpinBox.value(),
             )
             if self.ui.groupBoxResampling.isChecked()
-            else None,
+            else None
+        )
+
+        process_table(
+            datatable,
+            excluded_animal_ids,
+            binning,
         )
 
         self.datatable.dataset.add_datatable(datatable)
+
+        record_create_derived_datatable(
+            self,
+            self.datatable.dataset,
+            source_datatable_name=self.datatable.name,
+            target_datatable_name=datatable.name,
+            target_description=datatable.description,
+            excluded_animal_ids=excluded_animal_ids,
+            binning=binning,
+        )
 
         # Notify that the table has been edited.
         workspace = manager.get_workspace()
