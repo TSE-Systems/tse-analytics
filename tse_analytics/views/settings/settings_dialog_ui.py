@@ -17,14 +17,14 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QDialog, QDialogButtonBox,
     QDoubleSpinBox, QFormLayout, QGroupBox, QLabel,
-    QRadioButton, QSizePolicy, QSpacerItem, QSpinBox,
-    QVBoxLayout, QWidget)
+    QLineEdit, QRadioButton, QSizePolicy, QSpacerItem,
+    QSpinBox, QVBoxLayout, QWidget)
 
 class Ui_SettingsDialog(object):
     def setupUi(self, SettingsDialog):
         if not SettingsDialog.objectName():
             SettingsDialog.setObjectName(u"SettingsDialog")
-        SettingsDialog.resize(271, 281)
+        SettingsDialog.resize(271, 354)
         self.verticalLayout = QVBoxLayout(SettingsDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.groupBoxHelpMode = QGroupBox(SettingsDialog)
@@ -83,6 +83,24 @@ class Ui_SettingsDialog(object):
 
         self.verticalLayout.addWidget(self.groupBoxPlotsSettings)
 
+        self.groupBoxAIAgent = QGroupBox(SettingsDialog)
+        self.groupBoxAIAgent.setObjectName(u"groupBoxAIAgent")
+        self.formLayoutAIAgent = QFormLayout(self.groupBoxAIAgent)
+        self.formLayoutAIAgent.setObjectName(u"formLayoutAIAgent")
+        self.anthropicApiKeyLabel = QLabel(self.groupBoxAIAgent)
+        self.anthropicApiKeyLabel.setObjectName(u"anthropicApiKeyLabel")
+
+        self.formLayoutAIAgent.setWidget(0, QFormLayout.ItemRole.LabelRole, self.anthropicApiKeyLabel)
+
+        self.anthropicApiKeyLineEdit = QLineEdit(self.groupBoxAIAgent)
+        self.anthropicApiKeyLineEdit.setObjectName(u"anthropicApiKeyLineEdit")
+        self.anthropicApiKeyLineEdit.setEchoMode(QLineEdit.EchoMode.Password)
+
+        self.formLayoutAIAgent.setWidget(0, QFormLayout.ItemRole.FieldRole, self.anthropicApiKeyLineEdit)
+
+
+        self.verticalLayout.addWidget(self.groupBoxAIAgent)
+
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout.addItem(self.verticalSpacer)
@@ -111,5 +129,7 @@ class Ui_SettingsDialog(object):
         self.dpiLabel.setText(QCoreApplication.translate("SettingsDialog", u"DPI", None))
         self.figureWidthInchesLabel.setText(QCoreApplication.translate("SettingsDialog", u"Figure Width (inches)", None))
         self.figureHeightInchesLabel.setText(QCoreApplication.translate("SettingsDialog", u"Figure Height (inches)", None))
+        self.groupBoxAIAgent.setTitle(QCoreApplication.translate("SettingsDialog", u"AI Agent", None))
+        self.anthropicApiKeyLabel.setText(QCoreApplication.translate("SettingsDialog", u"Anthropic API Key", None))
     # retranslateUi
 

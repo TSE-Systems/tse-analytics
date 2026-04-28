@@ -2,6 +2,7 @@ from matplotlib import rcParams
 from PySide6.QtCore import QSettings
 from PySide6.QtWidgets import QDialog, QWidget
 
+from tse_analytics import globals
 from tse_analytics.views.settings.settings_dialog_ui import Ui_SettingsDialog
 
 
@@ -28,6 +29,12 @@ class SettingsDialog(QDialog):
         figure_height = float(settings.value("FigureHeight", 4.8))
         self.ui.figureHeightInchesDoubleSpinBox.setValue(figure_height)
 
+        if globals.INTERNAL_ENABLED:
+            api_key = str(settings.value("AnthropicApiKey", ""))
+            self.ui.anthropicApiKeyLineEdit.setText(api_key)
+        else:
+            self.ui.groupBoxAIAgent.setVisible(False)
+
         self.ui.buttonBox.accepted.connect(self._accepted)
 
     def _accepted(self) -> None:
@@ -38,6 +45,9 @@ class SettingsDialog(QDialog):
         settings.setValue("DPI", self.ui.dpiSpinBox.value())
         settings.setValue("FigureWidth", self.ui.figureWidthInchesDoubleSpinBox.value())
         settings.setValue("FigureHeight", self.ui.figureHeightInchesDoubleSpinBox.value())
+
+        if globals.INTERNAL_ENABLED:
+            settings.setValue("AnthropicApiKey", self.ui.anthropicApiKeyLineEdit.text().strip())
 
         rcParams["figure.dpi"] = self.ui.dpiSpinBox.value()
         rcParams["figure.figsize"] = (

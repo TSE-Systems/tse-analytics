@@ -62,6 +62,9 @@ class ToolboxButton(QToolButton):
             # Store IntelliCage menu for set_enabled_actions
             if category == "IntelliCage":
                 self.intellicage_menu = submenu
+            elif category == "AI":
+                self.ai_menu = submenu
+                self.ai_menu.setEnabled(False)
 
     def set_state(self, state: bool) -> None:
         """Enable or disable the toolbox button.
@@ -70,6 +73,10 @@ class ToolboxButton(QToolButton):
             state: True to enable the button, False to disable it.
         """
         self.setEnabled(state)
+
+    def enable_internal_tools(self, state: bool) -> None:
+        """Enable or disable internal toolbox buttons."""
+        self.ai_menu.setEnabled(state)
 
     def set_enabled_actions(self, dataset: Dataset, datatable: Datatable | None) -> None:
         """Enable or disable specific actions based on the selected dataset and datatable.
