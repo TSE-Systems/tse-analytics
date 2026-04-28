@@ -14,8 +14,7 @@ from PySide6.QtCore import QSettings
 
 IS_RELEASE = getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS")
 
-CSV_IMPORT_ENABLED = False
-PIPELINE_ENABLED = False
+INTERNAL_ENABLED = False
 
 LAYOUT_VERSION = 15
 MAX_RECENT_FILES = 10

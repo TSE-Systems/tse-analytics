@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>271</width>
-    <height>281</height>
+    <height>354</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -80,6 +80,29 @@
       </item>
       <item row="2" column="1">
        <widget class="QDoubleSpinBox" name="figureHeightInchesDoubleSpinBox"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxAIAgent">
+     <property name="title">
+      <string>AI Agent</string>
+     </property>
+     <layout class="QFormLayout" name="formLayoutAIAgent">
+      <item row="0" column="0">
+       <widget class="QLabel" name="anthropicApiKeyLabel">
+        <property name="text">
+         <string>Anthropic API Key</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="anthropicApiKeyLineEdit">
+        <property name="echoMode">
+         <enum>QLineEdit::EchoMode::Password</enum>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

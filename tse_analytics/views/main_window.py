@@ -282,7 +282,7 @@ class MainWindow(QMainWindow):
     def _import_dataset_dialog(self) -> None:
         filter = (
             "Data Files (*.tse *.csv *.zip);;TSE Datasets (*.tse);;CSV Files (*.csv);;IntelliMaze Datasets (*.zip)"
-            if globals.CSV_IMPORT_ENABLED
+            if globals.INTERNAL_ENABLED
             else "Data Files (*.tse *.zip);;TSE Datasets (*.tse);;IntelliMaze Datasets (*.zip)"
         )
         filename, _ = QFileDialog.getOpenFileName(
@@ -368,10 +368,10 @@ class MainWindow(QMainWindow):
         LayoutManager.open_perspective("Temporary")
 
     def _enable_internal_features(self):
-        globals.CSV_IMPORT_ENABLED = True
-        globals.PIPELINE_ENABLED = True
+        globals.INTERNAL_ENABLED = True
         self.dataset_widget.import_action.setVisible(True)
         self.ui.actionPipelineEditor.setVisible(True)
+        self.toolbox_button.enable_internal_tools(True)
         logger.info("Internal features enabled")
 
     def closeEvent(self, event: QCloseEvent) -> None:
