@@ -27,8 +27,9 @@ from tse_analytics.core.utils.ui import set_inactive_palette
 from tse_analytics.modules.phenomaster.views.import_csv_dialog import ImportCsvDialog
 from tse_analytics.toolbox.data_table.data_table_widget import DataTableWidget
 from tse_analytics.toolbox.report.report_widget import ReportWidget
-from tse_analytics.views.datasets.adjust_dataset_dialog import AdjustDatasetDialog
-from tse_analytics.views.datasets.datasets_merge_dialog import DatasetsMergeDialog
+from tse_analytics.views.datasets.edit_dataset.edit_dataset_dialog import EditDatasetDialog
+from tse_analytics.views.datasets.edit_datatable.edit_datatable_dialog import EditDatatableDialog
+from tse_analytics.views.datasets.merge_datasets.datasets_merge_dialog import DatasetsMergeDialog
 from tse_analytics.views.misc.toolbox_button import ToolboxButton
 
 
@@ -75,20 +76,20 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
         self.import_action.setVisible(False)
         self.import_action.setEnabled(False)
 
-        self.adjust_dataset_action = toolbar.addAction(QIcon(":/icons/icons8-adjust-16.png"), "Adjust")
-        self.adjust_dataset_action.setToolTip("Adjust selected dataset")
-        self.adjust_dataset_action.setEnabled(False)
-        self.adjust_dataset_action.triggered.connect(self._adjust_dataset)
+        self.edit_action = toolbar.addAction(QIcon(":/icons/icons8-adjust-16.png"), "Edit")
+        self.edit_action.setToolTip("Edit selected item")
+        self.edit_action.setEnabled(False)
+        self.edit_action.triggered.connect(self._edit_item)
 
         self.delete_action = toolbar.addAction(QIcon(":/icons/icons8-remove-16.png"), "Delete")
         self.delete_action.setToolTip("Delete selected item")
         self.delete_action.setEnabled(False)
         self.delete_action.triggered.connect(self._delete_item)
 
-        self.clone_dataset_action = toolbar.addAction(QIcon(":/icons/icons8-copy-16.png"), "Clone")
-        self.clone_dataset_action.setToolTip("Clone selected dataset")
-        self.clone_dataset_action.setEnabled(False)
-        self.clone_dataset_action.triggered.connect(self._clone_dataset)
+        self.clone_action = toolbar.addAction(QIcon(":/icons/icons8-copy-16.png"), "Clone")
+        self.clone_action.setToolTip("Clone selected item")
+        self.clone_action.setEnabled(False)
+        self.clone_action.triggered.connect(self._clone_item)
 
         self.merge_dataset_action = toolbar.addAction(QIcon(":/icons/icons8-merge-files-16.png"), "Merge")
         self.merge_dataset_action.setToolTip("Merge checked datasets")
@@ -279,22 +280,32 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
             if dialog.exec() == QDialog.DialogCode.Accepted:
                 manager.import_grouphousing_data(path)
 
-    def _adjust_dataset(self):
+    def _edit_item(self):
         """
-        Adjust the selected dataset.
+        Edit the selected item.
 
-        Opens an AdjustDatasetDialog to modify the selected dataset's properties.
+        Opens an EditDatasetDialog or EditDatatableDialog to modify the selected dataset's properties.
         If the dialog is accepted, updates the tree item name and sets the dataset
         as the selected dataset.
         """
         tree_item = self._get_selected_tree_item()
-        dataset = tree_item.dataset
-        dialog = AdjustDatasetDialog(dataset, self)
-        # TODO: check other cases!!
-        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-        if dialog.exec() == QDialog.DialogCode.Accepted:
-            tree_item.name = dataset.name
-            manager.set_selected_dataset(dataset)
+        if tree_item is not None:
+            if isinstance(tree_item, DatasetTreeItem):
+                dataset = tree_item.dataset
+                dialog = EditDatasetDialog(dataset, self)
+                # TODO: check other cases!!
+                dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+                if dialog.exec() == QDialog.DialogCode.Accepted:
+                    tree_item.name = dataset.name
+                    manager.set_selected_dataset(dataset)
+            elif isinstance(tree_item, DatatableTreeItem):
+                datatable = tree_item.datatable
+                dialog = EditDatatableDialog(datatable, self)
+                # TODO: check other cases!!
+                dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+                if dialog.exec() == QDialog.DialogCode.Accepted:
+                    tree_item.name = datatable.name
+                    manager.set_selected_datatable(datatable)
 
     def _delete_item(self):
         """
@@ -327,29 +338,34 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
             self.toolbox_button.set_state(False)
             self.pipeline_editor_action.setEnabled(False)
             self.import_action.setEnabled(False)
-            self.adjust_dataset_action.setEnabled(False)
+            self.edit_action.setEnabled(False)
             self.delete_action.setEnabled(False)
-            self.clone_dataset_action.setEnabled(False)
+            self.clone_action.setEnabled(False)
             self.merge_dataset_action.setEnabled(False)
 
-    def _clone_dataset(self):
+    def _clone_item(self):
         """
-        Clone the selected dataset.
+        Clone the selected item.
 
-        Prompts the user for a new dataset name and creates a clone of the
-        selected dataset with that name.
+        Prompts the user for a new name and creates a clone of the
+        selected item with that name.
         """
         tree_item = self._get_selected_tree_item()
-        if tree_item is not None and isinstance(tree_item, DatasetTreeItem):
+        if tree_item is not None:
             name, ok = QInputDialog.getText(
                 self,
-                "Enter new dataset name",
+                "Enter clone name",
                 "Name",
                 QLineEdit.EchoMode.Normal,
-                f"Clone of {tree_item.dataset.name}",
+                f"{tree_item.name} (clone)",
             )
             if ok:
-                manager.clone_dataset(tree_item.dataset, name)
+                if isinstance(tree_item, DatasetTreeItem):
+                    manager.clone_dataset(tree_item.dataset, name)
+                elif isinstance(tree_item, DatatableTreeItem):
+                    manager.clone_datatable(tree_item.datatable, name)
+                elif isinstance(tree_item, ReportTreeItem):
+                    manager.clone_report(tree_item.report, name)
 
     def _treeview_current_changed(self, current: QModelIndex, previous: QModelIndex):
         """
@@ -385,9 +401,9 @@ class DatasetsWidget(QWidget, messaging.MessengerListener):
                         manager.set_selected_dataset(item.dataset)
 
             self.import_action.setEnabled(is_dataset_item)
-            self.adjust_dataset_action.setEnabled(is_dataset_item)
+            self.edit_action.setEnabled(is_dataset_item or is_datatable_item)
             self.delete_action.setEnabled(is_dataset_item or is_datatable_item or is_report_item)
-            self.clone_dataset_action.setEnabled(is_dataset_item)
+            self.clone_action.setEnabled(is_dataset_item or is_datatable_item or is_report_item)
 
             self.toolbox_button.set_state(is_datatable_item)
             self.pipeline_editor_action.setEnabled(manager.get_selected_dataset() is not None)

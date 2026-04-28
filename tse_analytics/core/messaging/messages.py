@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.workspace import Workspace
 from tse_analytics.core.models.tree_item import TreeItem
 
@@ -115,21 +114,6 @@ class ReportsChangedMessage(Message):
     def __init__(self, sender, report: Report | None):
         super().__init__(sender)
         self.report = report
-
-
-class BinningMessage(Message):
-    """Indicates that a binning operation should be performed on a dataset"""
-
-    def __init__(self, sender, dataset: Dataset, settings: BinningSettings):
-        """Create a new BinningMessage
-
-        :param sender: The object sending the message
-        :param dataset: The dataset to perform binning on
-        :param settings: The binning settings to use
-        """
-        super().__init__(sender)
-        self.dataset = dataset
-        self.settings = settings
 
 
 class AddToReportMessage(Message):

@@ -6,57 +6,9 @@ including fixed time intervals, light/dark cycles, and custom time phases.
 """
 
 from datetime import time, timedelta
-from enum import StrEnum, unique
 
 from pydantic import Field
 from pydantic.dataclasses import dataclass
-
-
-@unique
-class BinningMode(StrEnum):
-    """
-    Enumeration of available binning modes.
-
-    Attributes
-    ----------
-    INTERVALS : str
-        Bin data into fixed time intervals.
-    CYCLES : str
-        Bin data into light and dark cycles.
-    PHASES : str
-        Bin data into custom time phases.
-    """
-
-    INTERVALS = "Time Intervals"
-    CYCLES = "Light/Dark Cycles"
-    PHASES = "Time Phases"
-
-
-@dataclass
-class BinningSettings:
-    """
-    Settings for time binning configuration.
-
-    This class holds the configuration for time binning, including the mode
-    and specific settings for each binning mode.
-
-    Attributes
-    ----------
-    time_intervals_settings : TimeIntervalsBinningSettings
-        Settings for time intervals binning.
-    time_cycles_settings : TimeCyclesBinningSettings
-        Settings for light/dark cycles binning.
-    time_phases_settings : TimePhasesBinningSettings
-        Settings for time phases binning.
-    """
-
-    time_intervals_settings: TimeIntervalsBinningSettings = Field(
-        default_factory=lambda: TimeIntervalsBinningSettings("hour", 1)
-    )
-    time_cycles_settings: TimeCyclesBinningSettings = Field(
-        default_factory=lambda: TimeCyclesBinningSettings(time(7, 0), time(19, 0))
-    )
-    time_phases_settings: TimePhasesBinningSettings = Field(default_factory=lambda: TimePhasesBinningSettings([]))
 
 
 @dataclass

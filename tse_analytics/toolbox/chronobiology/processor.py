@@ -763,7 +763,7 @@ def get_chronobiology_result(
     figsize: tuple[float, float] | None = None,
 ) -> ChronobiologyResult:
     dataset = datatable.dataset
-    time_cycles = dataset.binning_settings.time_cycles_settings
+    time_cycles = dataset.light_cycles
     light_cycle_start = time_cycles.light_cycle_start
     dark_cycle_start = time_cycles.dark_cycle_start
 

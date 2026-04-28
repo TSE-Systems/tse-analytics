@@ -33,7 +33,6 @@ from tse_analytics.views.logs.log_widget import LogWidget
 from tse_analytics.views.main_window_ui import Ui_MainWindow
 from tse_analytics.views.misc.toolbox_button import ToolboxButton
 from tse_analytics.views.pipeline.pipeline_editor_widget import PipelineEditorWidget
-from tse_analytics.views.settings.binning_settings_widget import BinningSettingsWidget
 from tse_analytics.views.settings.settings_dialog import SettingsDialog
 
 
@@ -113,12 +112,6 @@ class MainWindow(QMainWindow):
         selector_dock_area = LayoutManager.add_dock_widget_to_area(
             PySide6QtAds.BottomDockWidgetArea, factors_dock_widget, animals_dock_area
         )
-
-        binning_dock_widget = LayoutManager.register_dock_widget(
-            BinningSettingsWidget(), "Time Binning", QIcon(":/icons/binning.png")
-        )
-        LayoutManager.add_dock_widget_tab_to_area(binning_dock_widget, selector_dock_area)
-        selector_dock_area.setCurrentIndex(0)
 
         self.ui.actionImportDataset.triggered.connect(self._import_dataset_dialog)
         self.ui.actionNewWorkspace.triggered.connect(self._new_workspace)

@@ -71,23 +71,6 @@ class TestDatasetDatatablesCRUD:
         sample_dataset.remove_datatable(sample_datatable)
         assert "Main" not in sample_dataset.datatables
 
-    def test_remove_derived_datatable(self, sample_dataset, sample_datatable, sample_variables, sample_df):
-        from tse_analytics.core.data.datatable import Datatable
-
-        derived = Datatable(
-            dataset=sample_dataset,
-            name="Derived",
-            description="Derived table",
-            variables=sample_variables,
-            df=sample_df.copy(),
-            metadata={},
-        )
-        sample_datatable.add_derived_table(derived)
-        assert derived.name in sample_datatable.derived_tables
-
-        sample_dataset.remove_datatable(derived)
-        assert derived.name not in sample_datatable.derived_tables
-
     def test_add_multiple_datatables(self, sample_dataset, sample_datatable, sample_variables, sample_df):
         from tse_analytics.core.data.datatable import Datatable
 

@@ -190,7 +190,7 @@ def get_actogram_result(
     bins_per_hour: int,
     figsize: tuple[float, float] | None = None,
 ) -> ActogramResult:
-    settings = dataset.binning_settings.time_cycles_settings
+    light_cycles = dataset.light_cycles
 
     # Convert DataFrame to actogram format
     activity_array, unique_days = dataframe_to_actogram(df, variable, 24 * bins_per_hour)
@@ -201,11 +201,11 @@ def get_actogram_result(
     # Create day labels
     day_labels = [d.strftime("%Y-%m-%d") for d in unique_days]
 
-    if settings.dark_cycle_start < settings.light_cycle_start:
+    if light_cycles.dark_cycle_start < light_cycles.light_cycle_start:
         periods = [
             {
-                "start": time_to_float(settings.dark_cycle_start),
-                "end": time_to_float(settings.light_cycle_start),
+                "start": time_to_float(light_cycles.dark_cycle_start),
+                "end": time_to_float(light_cycles.light_cycle_start),
                 "color": "gray",
                 "alpha": 0.2,
             }
@@ -214,12 +214,12 @@ def get_actogram_result(
         periods = [
             {
                 "start": 0,
-                "end": time_to_float(settings.light_cycle_start),
+                "end": time_to_float(light_cycles.light_cycle_start),
                 "color": "gray",
                 "alpha": 0.2,
             },
             {
-                "start": time_to_float(settings.dark_cycle_start),
+                "start": time_to_float(light_cycles.dark_cycle_start),
                 "end": 24,
                 "color": "gray",
                 "alpha": 0.2,

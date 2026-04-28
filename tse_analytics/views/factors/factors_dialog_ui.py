@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'factors_dialog.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.10.2
+## Created by: Qt User Interface Compiler version 6.11.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -15,16 +15,19 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractButton, QApplication, QComboBox, QDialog,
-    QDialogButtonBox, QGroupBox, QHBoxLayout, QListWidget,
-    QListWidgetItem, QPushButton, QSizePolicy, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QComboBox,
+    QDialog, QDialogButtonBox, QFormLayout, QGroupBox,
+    QHBoxLayout, QHeaderView, QLabel, QListWidget,
+    QListWidgetItem, QPushButton, QSizePolicy, QSpacerItem,
+    QStackedWidget, QTableView, QTimeEdit, QToolButton,
+    QVBoxLayout, QWidget)
+import resources_rc
 
 class Ui_FactorsDialog(object):
     def setupUi(self, FactorsDialog):
         if not FactorsDialog.objectName():
             FactorsDialog.setObjectName(u"FactorsDialog")
-        FactorsDialog.resize(704, 513)
+        FactorsDialog.resize(820, 513)
         self.verticalLayout_8 = QVBoxLayout(FactorsDialog)
         self.verticalLayout_8.setObjectName(u"verticalLayout_8")
         self.horizontalLayout = QHBoxLayout()
@@ -88,17 +91,119 @@ class Ui_FactorsDialog(object):
 
         self.horizontalLayout.addWidget(self.groupBoxLevels)
 
-        self.groupBoxAnimals = QGroupBox(FactorsDialog)
-        self.groupBoxAnimals.setObjectName(u"groupBoxAnimals")
-        self.verticalLayout_4 = QVBoxLayout(self.groupBoxAnimals)
+        self.groupBoxConfig = QGroupBox(FactorsDialog)
+        self.groupBoxConfig.setObjectName(u"groupBoxConfig")
+        self.verticalLayout_5 = QVBoxLayout(self.groupBoxConfig)
+        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.stackedWidgetConfig = QStackedWidget(self.groupBoxConfig)
+        self.stackedWidgetConfig.setObjectName(u"stackedWidgetConfig")
+        self.pageAnimals = QWidget()
+        self.pageAnimals.setObjectName(u"pageAnimals")
+        self.verticalLayout_4 = QVBoxLayout(self.pageAnimals)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.listWidgetAnimals = QListWidget(self.groupBoxAnimals)
+        self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.labelAnimalsHint = QLabel(self.pageAnimals)
+        self.labelAnimalsHint.setObjectName(u"labelAnimalsHint")
+
+        self.verticalLayout_4.addWidget(self.labelAnimalsHint)
+
+        self.listWidgetAnimals = QListWidget(self.pageAnimals)
         self.listWidgetAnimals.setObjectName(u"listWidgetAnimals")
 
         self.verticalLayout_4.addWidget(self.listWidgetAnimals)
 
+        self.stackedWidgetConfig.addWidget(self.pageAnimals)
+        self.pageCycles = QWidget()
+        self.pageCycles.setObjectName(u"pageCycles")
+        self.verticalLayout_6 = QVBoxLayout(self.pageCycles)
+        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
+        self.verticalLayout_6.setContentsMargins(0, 0, 0, 0)
+        self.labelCyclesHint = QLabel(self.pageCycles)
+        self.labelCyclesHint.setObjectName(u"labelCyclesHint")
 
-        self.horizontalLayout.addWidget(self.groupBoxAnimals)
+        self.verticalLayout_6.addWidget(self.labelCyclesHint)
+
+        self.formLayoutCycles = QFormLayout()
+        self.formLayoutCycles.setObjectName(u"formLayoutCycles")
+        self.labelLightCycleStart = QLabel(self.pageCycles)
+        self.labelLightCycleStart.setObjectName(u"labelLightCycleStart")
+
+        self.formLayoutCycles.setWidget(0, QFormLayout.ItemRole.LabelRole, self.labelLightCycleStart)
+
+        self.timeEditLightStart = QTimeEdit(self.pageCycles)
+        self.timeEditLightStart.setObjectName(u"timeEditLightStart")
+        self.timeEditLightStart.setTime(QTime(7, 0, 0))
+
+        self.formLayoutCycles.setWidget(0, QFormLayout.ItemRole.FieldRole, self.timeEditLightStart)
+
+        self.labelDarkCycleStart = QLabel(self.pageCycles)
+        self.labelDarkCycleStart.setObjectName(u"labelDarkCycleStart")
+
+        self.formLayoutCycles.setWidget(1, QFormLayout.ItemRole.LabelRole, self.labelDarkCycleStart)
+
+        self.timeEditDarkStart = QTimeEdit(self.pageCycles)
+        self.timeEditDarkStart.setObjectName(u"timeEditDarkStart")
+        self.timeEditDarkStart.setTime(QTime(19, 0, 0))
+
+        self.formLayoutCycles.setWidget(1, QFormLayout.ItemRole.FieldRole, self.timeEditDarkStart)
+
+
+        self.verticalLayout_6.addLayout(self.formLayoutCycles)
+
+        self.verticalSpacerCycles = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout_6.addItem(self.verticalSpacerCycles)
+
+        self.stackedWidgetConfig.addWidget(self.pageCycles)
+        self.pagePhases = QWidget()
+        self.pagePhases.setObjectName(u"pagePhases")
+        self.verticalLayout_7 = QVBoxLayout(self.pagePhases)
+        self.verticalLayout_7.setObjectName(u"verticalLayout_7")
+        self.verticalLayout_7.setContentsMargins(0, 0, 0, 0)
+        self.labelPhasesHint = QLabel(self.pagePhases)
+        self.labelPhasesHint.setObjectName(u"labelPhasesHint")
+
+        self.verticalLayout_7.addWidget(self.labelPhasesHint)
+
+        self.tableViewPhases = QTableView(self.pagePhases)
+        self.tableViewPhases.setObjectName(u"tableViewPhases")
+        self.tableViewPhases.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.tableViewPhases.verticalHeader().setMinimumSectionSize(20)
+        self.tableViewPhases.verticalHeader().setDefaultSectionSize(20)
+
+        self.verticalLayout_7.addWidget(self.tableViewPhases)
+
+        self.horizontalLayoutPhases = QHBoxLayout()
+        self.horizontalLayoutPhases.setObjectName(u"horizontalLayoutPhases")
+        self.toolButtonAddPhase = QToolButton(self.pagePhases)
+        self.toolButtonAddPhase.setObjectName(u"toolButtonAddPhase")
+        icon = QIcon()
+        icon.addFile(u":/icons/icons8-add-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.toolButtonAddPhase.setIcon(icon)
+
+        self.horizontalLayoutPhases.addWidget(self.toolButtonAddPhase)
+
+        self.toolButtonDeletePhase = QToolButton(self.pagePhases)
+        self.toolButtonDeletePhase.setObjectName(u"toolButtonDeletePhase")
+        icon1 = QIcon()
+        icon1.addFile(u":/icons/icons8-minus-16.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.toolButtonDeletePhase.setIcon(icon1)
+
+        self.horizontalLayoutPhases.addWidget(self.toolButtonDeletePhase)
+
+        self.horizontalSpacerPhases = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayoutPhases.addItem(self.horizontalSpacerPhases)
+
+
+        self.verticalLayout_7.addLayout(self.horizontalLayoutPhases)
+
+        self.stackedWidgetConfig.addWidget(self.pagePhases)
+
+        self.verticalLayout_5.addWidget(self.stackedWidgetConfig)
+
+
+        self.horizontalLayout.addWidget(self.groupBoxConfig)
 
 
         self.verticalLayout_8.addLayout(self.horizontalLayout)
@@ -115,6 +220,9 @@ class Ui_FactorsDialog(object):
         self.buttonBox.accepted.connect(FactorsDialog.accept)
         self.buttonBox.rejected.connect(FactorsDialog.reject)
 
+        self.stackedWidgetConfig.setCurrentIndex(0)
+
+
         QMetaObject.connectSlotsByName(FactorsDialog)
     # setupUi
 
@@ -127,6 +235,17 @@ class Ui_FactorsDialog(object):
         self.pushButtonAddLevel.setText(QCoreApplication.translate("FactorsDialog", u"Add Level", None))
         self.pushButtonDeleteLevel.setText(QCoreApplication.translate("FactorsDialog", u"Delete Level", None))
         self.pushButtonExtractLevels.setText(QCoreApplication.translate("FactorsDialog", u"Extract levels from...", None))
-        self.groupBoxAnimals.setTitle(QCoreApplication.translate("FactorsDialog", u"Animals", None))
+        self.groupBoxConfig.setTitle(QCoreApplication.translate("FactorsDialog", u"Configuration", None))
+        self.labelAnimalsHint.setText(QCoreApplication.translate("FactorsDialog", u"Assign animals to the selected level:", None))
+        self.labelCyclesHint.setText(QCoreApplication.translate("FactorsDialog", u"Light/Dark cycle boundaries:", None))
+        self.labelLightCycleStart.setText(QCoreApplication.translate("FactorsDialog", u"Light cycle start", None))
+        self.labelDarkCycleStart.setText(QCoreApplication.translate("FactorsDialog", u"Dark cycle start", None))
+        self.labelPhasesHint.setText(QCoreApplication.translate("FactorsDialog", u"Phases (each phase becomes a level):", None))
+#if QT_CONFIG(tooltip)
+        self.toolButtonAddPhase.setToolTip(QCoreApplication.translate("FactorsDialog", u"Add phase", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(tooltip)
+        self.toolButtonDeletePhase.setToolTip(QCoreApplication.translate("FactorsDialog", u"Delete selected phase", None))
+#endif // QT_CONFIG(tooltip)
     # retranslateUi
 

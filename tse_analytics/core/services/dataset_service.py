@@ -5,7 +5,6 @@ Manages dataset, datatable, and report CRUD operations, including
 merging and cloning datasets.
 """
 
-import copy
 from uuid import uuid7
 
 from tse_analytics.core import messaging
@@ -102,18 +101,44 @@ class DatasetService:
         if merged_dataset is not None:
             self.add_dataset(merged_dataset)
 
-    def clone_dataset(self, original_dataset: Dataset, new_dataset_name: str) -> None:
+    def clone_dataset(self, original_dataset: Dataset, new_name: str) -> None:
         """Create a deep copy of a dataset with a new name and add it to the workspace.
 
         Args:
             original_dataset: The dataset to clone.
-            new_dataset_name: The name for the new cloned dataset.
+            new_name: The name for the new cloned dataset.
         """
-        new_dataset = copy.deepcopy(original_dataset)
+        new_dataset = original_dataset.clone()
         new_dataset.id = uuid7()
-        new_dataset.name = new_dataset_name
+        new_dataset.name = new_name
         if new_dataset is not None:
             self.add_dataset(new_dataset)
+
+    def clone_datatable(self, original_datatable: Datatable, new_name: str) -> None:
+        """Create a deep copy of a datatable with a new name and add it to the workspace.
+
+        Args:
+            original_datatable: The datatable to clone.
+            new_name: The name for the new cloned datatable.
+        """
+        new_datatable = original_datatable.clone()
+        new_datatable.id = uuid7()
+        new_datatable.name = new_name
+        if new_datatable is not None:
+            self.add_datatable(new_datatable)
+
+    def clone_report(self, original_report: Report, new_name: str) -> None:
+        """Create a deep copy of a report with a new name and add it to the workspace.
+
+        Args:
+            original_report: The report to clone.
+            new_name: The name for the new cloned report.
+        """
+        new_report = original_report.clone()
+        new_report.id = uuid7()
+        new_report.name = new_name
+        if new_report is not None:
+            self.add_report(new_report)
 
     def add_report(self, report: Report) -> None:
         """Add a report to its parent dataset.

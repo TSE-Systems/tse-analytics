@@ -202,7 +202,7 @@ class TestGetActogramResult:
         assert isinstance(result, ActogramResult)
 
     def test_dark_cycle_before_light_cycle(self, analysis_dataset, actogram_df, analysis_variables):
-        analysis_dataset.binning_settings.time_cycles_settings = TimeCyclesBinningSettings(
+        analysis_dataset.time_cycles = TimeCyclesBinningSettings(
             light_cycle_start=datetime.time(7, 0),
             dark_cycle_start=datetime.time(3, 0),
         )

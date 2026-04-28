@@ -1,12 +1,10 @@
 from dataclasses import dataclass
 
-import pandas as pd
 import pingouin as pg
 
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.utils import get_great_table
-from tse_analytics.core.utils.data import group_df_by_animal
 
 
 @dataclass
@@ -15,22 +13,25 @@ class NWayAnovaResult:
 
 
 def get_n_way_anova_result(
-    dataset: Dataset,
-    df: pd.DataFrame,
+    datatable: Datatable,
     dependent_variable: Variable,
     factor_names: list[str],
     effsize: str,
     padjust: str,
 ) -> NWayAnovaResult:
-    df = group_df_by_animal(
-        df,
-        {
-            dependent_variable.name: dependent_variable,
-        },
+    df = datatable.get_filtered_df(["Animal", dependent_variable.name] + factor_names)
+    df = (
+        df
+        .groupby(
+            ["Animal"] + factor_names,
+            dropna=False,
+            observed=True,
+        )
+        .aggregate({
+            dependent_variable.name: dependent_variable.aggregation,
+        })
+        .reset_index()
     )
-
-    # TODO: should or should not?
-    df.dropna(inplace=True)
 
     # Sanitize variable name: comma, bracket, and colon are not allowed in column names
     sanitized_dependent_variable = dependent_variable.name.replace("(", "_").replace(")", "").replace(",", "_")

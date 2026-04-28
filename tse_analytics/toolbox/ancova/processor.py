@@ -1,12 +1,10 @@
 from dataclasses import dataclass
 
-import pandas as pd
 import pingouin as pg
 
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.utils import get_great_table
-from tse_analytics.core.utils.data import group_df_by_animal
 
 
 @dataclass
@@ -15,25 +13,27 @@ class AncovaResult:
 
 
 def get_ancova_result(
-    dataset: Dataset,
-    df: pd.DataFrame,
+    datatable: Datatable,
     dependent_variable: Variable,
     covariate_variable: Variable,
     factor_name: str,
     effsize: str,
     padjust: str,
 ) -> AncovaResult:
-    # Group by animal
-    df = group_df_by_animal(
-        df,
-        {
-            dependent_variable.name: dependent_variable,
-            covariate_variable.name: covariate_variable,
-        },
+    df = datatable.get_filtered_df(["Animal", dependent_variable.name, covariate_variable.name, factor_name])
+    df = (
+        df
+        .groupby(
+            ["Animal", factor_name],
+            dropna=False,
+            observed=True,
+        )
+        .aggregate({
+            dependent_variable.name: dependent_variable.aggregation,
+            covariate_variable.name: covariate_variable.aggregation,
+        })
+        .reset_index()
     )
-
-    # TODO: should or should not?
-    df.dropna(inplace=True)
 
     ancova = pg.ancova(
         data=df,

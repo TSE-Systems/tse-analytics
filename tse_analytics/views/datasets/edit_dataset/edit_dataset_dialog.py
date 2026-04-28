@@ -2,17 +2,17 @@ import pandas as pd
 from PySide6.QtWidgets import QDialog, QTableWidgetItem, QWidget
 
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.views.datasets.adjust_dataset_dialog_ui import Ui_AdjustDatasetDialog
+from tse_analytics.views.datasets.edit_dataset.edit_dataset_dialog_ui import Ui_EditDatasetDialog
 
 """
-Adjust dataset dialog module for TSE Analytics.
+Edit dataset dialog module for TSE Analytics.
 
 This module provides a dialog for adjusting various properties of a dataset,
 including renaming, resampling, trimming time, excluding time periods, and excluding animals.
 """
 
 
-class AdjustDatasetDialog(QDialog):
+class EditDatasetDialog(QDialog):
     """
     Dialog for adjusting dataset properties.
 
@@ -33,7 +33,7 @@ class AdjustDatasetDialog(QDialog):
             parent (QWidget | None, optional): Parent widget. Defaults to None.
         """
         super().__init__(parent)
-        self.ui = Ui_AdjustDatasetDialog()
+        self.ui = Ui_EditDatasetDialog()
         self.ui.setupUi(self)
 
         self.dataset = dataset

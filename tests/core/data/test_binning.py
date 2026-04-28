@@ -3,40 +3,11 @@
 from datetime import time, timedelta
 
 from tse_analytics.core.data.binning import (
-    BinningMode,
-    BinningSettings,
     TimeCyclesBinningSettings,
     TimeIntervalsBinningSettings,
     TimePhase,
     TimePhasesBinningSettings,
 )
-
-
-class TestBinningMode:
-    """Tests for BinningMode enum."""
-
-    def test_values(self):
-        assert BinningMode.INTERVALS == "Time Intervals"
-        assert BinningMode.CYCLES == "Light/Dark Cycles"
-        assert BinningMode.PHASES == "Time Phases"
-
-
-class TestBinningSettings:
-    """Tests for BinningSettings default values."""
-
-    def test_defaults(self):
-        settings = BinningSettings()
-        assert isinstance(settings.time_cycles_settings, TimeCyclesBinningSettings)
-        assert isinstance(settings.time_phases_settings, TimePhasesBinningSettings)
-
-    def test_default_cycle_settings(self):
-        settings = BinningSettings()
-        assert settings.time_cycles_settings.light_cycle_start == time(7, 0)
-        assert settings.time_cycles_settings.dark_cycle_start == time(19, 0)
-
-    def test_default_phases_settings(self):
-        settings = BinningSettings()
-        assert settings.time_phases_settings.time_phases == []
 
 
 class TestTimeIntervalsBinningSettings:

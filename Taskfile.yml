@@ -24,15 +24,14 @@ tasks:
     cmds:
       - pyside6-uic tse_analytics/views/main_window.ui -o tse_analytics/views/main_window_ui.py
       - pyside6-uic tse_analytics/views/factors/factors_dialog.ui -o tse_analytics/views/factors/factors_dialog_ui.py
-      - pyside6-uic tse_analytics/views/datasets/datasets_merge_dialog.ui -o tse_analytics/views/datasets/datasets_merge_dialog_ui.py
-      - pyside6-uic tse_analytics/views/datasets/adjust_dataset_dialog.ui -o tse_analytics/views/datasets/adjust_dataset_dialog_ui.py
-      - pyside6-uic tse_analytics/views/settings/binning_settings_widget.ui -o tse_analytics/views/settings/binning_settings_widget_ui.py
+      - pyside6-uic tse_analytics/views/datasets/merge_datasets/datasets_merge_dialog.ui -o tse_analytics/views/datasets/merge_datasets/datasets_merge_dialog_ui.py
+      - pyside6-uic tse_analytics/views/datasets/edit_dataset/edit_dataset_dialog.ui -o tse_analytics/views/datasets/edit_dataset/edit_dataset_dialog_ui.py
+      - pyside6-uic tse_analytics/views/datasets/edit_datatable/edit_datatable_dialog.ui -o tse_analytics/views/datasets/edit_datatable/edit_datatable_dialog_ui.py
       - pyside6-uic tse_analytics/views/about/about_dialog.ui -o tse_analytics/views/about/about_dialog_ui.py
       - pyside6-uic tse_analytics/views/settings/settings_dialog.ui -o tse_analytics/views/settings/settings_dialog_ui.py
 
   build-ui:toolbox:
     cmds:
-      - pyside6-uic tse_analytics/toolbox/data_table/table_processor/table_processor_dialog.ui -o tse_analytics/toolbox/data_table/table_processor/table_processor_dialog_ui.py
       - pyside6-uic tse_analytics/toolbox/data_table/variables/add_variable_dialog.ui -o tse_analytics/toolbox/data_table/variables/add_variable_dialog_ui.py
       - pyside6-uic tse_analytics/toolbox/data_table/variables/outliers_widget.ui -o tse_analytics/toolbox/data_table/variables/outliers_widget_ui.py
       - pyside6-uic tse_analytics/toolbox/n_way_anova/n_way_anova_settings_widget.ui -o tse_analytics/toolbox/n_way_anova/n_way_anova_settings_widget_ui.py

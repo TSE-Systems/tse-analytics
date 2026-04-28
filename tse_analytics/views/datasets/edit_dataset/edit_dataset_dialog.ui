@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <author>Anton Rau</author>
- <class>AdjustDatasetDialog</class>
- <widget class="QDialog" name="AdjustDatasetDialog">
+ <class>EditDatasetDialog</class>
+ <widget class="QDialog" name="EditDatasetDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -12,7 +12,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Adjust Dataset</string>
+   <string>Edit Dataset</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -249,13 +249,13 @@
   </layout>
  </widget>
  <resources>
-  <include location="../../../resources/resources.qrc"/>
+  <include location="../../../../resources/resources.qrc"/>
  </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>AdjustDatasetDialog</receiver>
+   <receiver>EditDatasetDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -271,7 +271,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>AdjustDatasetDialog</receiver>
+   <receiver>EditDatasetDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

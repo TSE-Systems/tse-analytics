@@ -233,6 +233,9 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Data
     # Clean up old variables
     cleanup_variables(dataset)
 
+    # Set factors
+    dataset.set_factors(dataset.factors)
+
     return dataset
 
 

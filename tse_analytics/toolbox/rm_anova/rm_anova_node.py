@@ -96,16 +96,9 @@ class RmAnovaNode(PipelineNode):
         effect_size = EFFECT_SIZE.get(effect_size_label, "none")
         p_adjustment = P_ADJUSTMENT.get(p_adjustment_label, "none")
 
-        columns = ["Animal", "Bin", variable.name]
-        if grouping_settings.mode == GroupingMode.FACTOR:
-            columns.append(grouping_settings.factor_name)
-        df = datatable.get_filtered_df(columns)
-        df.dropna(inplace=True)
-
         # Perform RM-ANOVA analysis
         result = get_rm_anova_result(
-            datatable.dataset,
-            df,
+            datatable,
             variable,
             grouping_settings,
             do_pairwise_tests,

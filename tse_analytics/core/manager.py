@@ -22,79 +22,85 @@ class Manager:
 
     def __init__(self):
         """Initialize the Manager and its service dependencies."""
-        self.selection = SelectionService()
-        self.workspace = WorkspaceService(self.selection)
-        self.dataset = DatasetService(self.workspace, self.selection)
-        self.importer = ImportService(self.selection, self.dataset, self.workspace)
+        self.selection_service = SelectionService()
+        self.workspace_service = WorkspaceService(self.selection_service)
+        self.dataset_service = DatasetService(self.workspace_service, self.selection_service)
+        self.importer_service = ImportService(self.selection_service, self.dataset_service, self.workspace_service)
 
     # --- Selection delegates ---
     def get_selected_dataset(self):
-        return self.selection.get_selected_dataset()
+        return self.selection_service.get_selected_dataset()
 
     def set_selected_dataset(self, dataset):
-        return self.selection.set_selected_dataset(dataset)
+        return self.selection_service.set_selected_dataset(dataset)
 
     def get_selected_datatable(self):
-        return self.selection.get_selected_datatable()
+        return self.selection_service.get_selected_datatable()
 
     def set_selected_datatable(self, datatable):
-        return self.selection.set_selected_datatable(datatable)
+        return self.selection_service.set_selected_datatable(datatable)
 
     # --- Workspace delegates ---
     def get_workspace(self):
-        return self.workspace.get_workspace()
+        return self.workspace_service.get_workspace()
 
     def new_workspace(self):
-        return self.workspace.new_workspace()
+        return self.workspace_service.new_workspace()
 
     def load_workspace(self, path):
-        return self.workspace.load_workspace(path)
+        return self.workspace_service.load_workspace(path)
 
     def save_workspace(self, path):
-        return self.workspace.save_workspace(path)
+        return self.workspace_service.save_workspace(path)
 
     # --- Import delegates ---
     def import_csv_dataset(self, path):
-        return self.importer.import_csv_dataset(path)
+        return self.importer_service.import_csv_dataset(path)
 
     def import_drinkfeed_data(self, path):
-        return self.importer.import_drinkfeed_data(path)
+        return self.importer_service.import_drinkfeed_data(path)
 
     def import_actimot_data(self, path):
-        return self.importer.import_actimot_data(path)
+        return self.importer_service.import_actimot_data(path)
 
     def import_calo_data(self, path):
-        return self.importer.import_calo_data(path)
+        return self.importer_service.import_calo_data(path)
 
     def import_grouphousing_data(self, path):
-        return self.importer.import_grouphousing_data(path)
+        return self.importer_service.import_grouphousing_data(path)
 
     # --- Dataset delegates ---
     def add_dataset(self, dataset):
-        return self.dataset.add_dataset(dataset)
+        return self.dataset_service.add_dataset(dataset)
 
     def remove_dataset(self, dataset):
-        return self.dataset.remove_dataset(dataset)
+        return self.dataset_service.remove_dataset(dataset)
 
     def add_datatable(self, datatable):
-        return self.dataset.add_datatable(datatable)
+        return self.dataset_service.add_datatable(datatable)
 
     def remove_datatable(self, datatable):
-        return self.dataset.remove_datatable(datatable)
+        return self.dataset_service.remove_datatable(datatable)
 
     def merge_datasets(self, new_dataset_name, datasets, single_run, continuous_mode, generate_new_animal_names):
-        return self.dataset.merge_datasets(
+        return self.dataset_service.merge_datasets(
             new_dataset_name, datasets, single_run, continuous_mode, generate_new_animal_names
         )
 
-    def clone_dataset(self, original_dataset, new_dataset_name):
-        return self.dataset.clone_dataset(original_dataset, new_dataset_name)
+    def clone_dataset(self, original_dataset, new_name):
+        return self.dataset_service.clone_dataset(original_dataset, new_name)
+
+    def clone_datatable(self, original_datatable, new_name):
+        return self.dataset_service.clone_datatable(original_datatable, new_name)
+
+    def clone_report(self, original_report, new_name):
+        return self.dataset_service.clone_report(original_report, new_name)
 
     def add_report(self, report):
-        return self.dataset.add_report(report)
+        return self.dataset_service.add_report(report)
 
     def delete_report(self, report):
-        return self.dataset.delete_report(report)
+        return self.dataset_service.delete_report(report)
 
 
 _instance = Manager()
@@ -125,5 +131,7 @@ add_datatable = _instance.add_datatable
 remove_datatable = _instance.remove_datatable
 merge_datasets = _instance.merge_datasets
 clone_dataset = _instance.clone_dataset
+clone_datatable = _instance.clone_datatable
+clone_report = _instance.clone_report
 add_report = _instance.add_report
 delete_report = _instance.delete_report

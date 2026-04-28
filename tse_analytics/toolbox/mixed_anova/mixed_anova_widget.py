@@ -5,6 +5,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QLabel, QMessageBox, QToolBar, QWidget
 
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.shared import FactorKind
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import (
     get_figsize_from_widget,
@@ -21,8 +22,9 @@ from tse_analytics.views.misc.variable_selector import VariableSelector
 
 @dataclass
 class MixedAnovaWidgetSettings:
-    selected_variable: str | None = None
-    selected_factor: str | None = None
+    variable: str | None = None
+    between_subject_factor: str | None = None
+    within_subject_factor: str | None = None
 
 
 @toolbox_plugin(category="ANOVA", label="Mixed-design ANOVA", icon=":/icons/anova.png", order=3)
@@ -38,13 +40,26 @@ class MixedAnovaWidget(ToolboxWidgetBase):
     def _create_toolbar_items(self, toolbar: QToolBar) -> None:
         toolbar.addWidget(QLabel("Dependent variable:"))
         self.variable_selector = VariableSelector(toolbar)
-        self.variable_selector.set_data(self.datatable.variables, selected_variable=self._settings.selected_variable)
+        self.variable_selector.set_data(self.datatable.variables, selected_variable=self._settings.variable)
         toolbar.addWidget(self.variable_selector)
 
-        toolbar.addWidget(QLabel("Factor:"))
-        self.factor_selector = FactorSelector(toolbar)
-        self.factor_selector.set_data(self.datatable.dataset.factors, selected_factor=self._settings.selected_factor)
-        toolbar.addWidget(self.factor_selector)
+        toolbar.addWidget(QLabel("Between-subject Factor:"))
+        self.between_subject_factor_selector = FactorSelector(
+            toolbar,
+            self.datatable.dataset.factors,
+            selected_factor=self._settings.between_subject_factor,
+            show_factor_kind=[FactorKind.ANIMAL],
+        )
+        toolbar.addWidget(self.between_subject_factor_selector)
+
+        toolbar.addWidget(QLabel("Within-subject Factor:"))
+        self.within_subject_factor_selector = FactorSelector(
+            toolbar,
+            self.datatable.dataset.factors,
+            selected_factor=self._settings.within_subject_factor,
+            show_factor_kind=[FactorKind.LIGHT_CYCLES, FactorKind.TIME_PHASES],
+        )
+        toolbar.addWidget(self.within_subject_factor_selector)
 
         self.settings_widget = QWidget()
         self.settings_widget_ui = Ui_MixedAnovaSettingsWidget()
@@ -66,30 +81,33 @@ class MixedAnovaWidget(ToolboxWidgetBase):
     def _get_settings_value(self):
         return MixedAnovaWidgetSettings(
             self.variable_selector.currentText(),
-            self.factor_selector.currentText(),
+            self.between_subject_factor_selector.currentText(),
+            self.within_subject_factor_selector.currentText(),
         )
 
     def _update(self):
         self.report_view.clear()
 
         variable = self.variable_selector.get_selected_variable()
-        if variable is None:
+
+        between_subject_factor_name = self.between_subject_factor_selector.currentText()
+        if between_subject_factor_name == "":
             make_toast(
                 self,
                 self.title,
-                "Please select dependent variable.",
+                "Please select a between-subject factor.",
                 duration=2000,
                 preset=ToastPreset.WARNING,
                 show_duration_bar=True,
             ).show()
             return
 
-        factor_name = self.factor_selector.currentText()
-        if factor_name == "":
+        within_subject_factor_name = self.within_subject_factor_selector.currentText()
+        if within_subject_factor_name == "":
             make_toast(
                 self,
                 self.title,
-                "Please select a single factor.",
+                "Please select a within-subject factor.",
                 duration=2000,
                 preset=ToastPreset.WARNING,
                 show_duration_bar=True,
@@ -97,17 +115,7 @@ class MixedAnovaWidget(ToolboxWidgetBase):
             return
 
         do_pairwise_tests = True
-        if "Bin" not in self.datatable.df.columns:
-            make_toast(
-                self,
-                self.title,
-                "Please apply a proper binning first.",
-                duration=2000,
-                preset=ToastPreset.WARNING,
-                show_duration_bar=True,
-            ).show()
-            return
-        elif "Timedelta" in self.datatable.df.columns:
+        if within_subject_factor_name == "Bin":
             if (
                 QMessageBox.question(
                     self,
@@ -118,15 +126,15 @@ class MixedAnovaWidget(ToolboxWidgetBase):
             ):
                 do_pairwise_tests = False
 
-        columns = ["Animal", "Bin", factor_name, variable.name]
+        columns = ["Animal", between_subject_factor_name, within_subject_factor_name, variable.name]
         df = self.datatable.get_filtered_df(columns)
         df.dropna(inplace=True)
 
         result = get_mixed_anova_result(
-            self.datatable.dataset,
-            df,
+            self.datatable,
             variable,
-            factor_name,
+            between_subject_factor_name,
+            within_subject_factor_name,
             do_pairwise_tests,
             EFFECT_SIZE[self.settings_widget_ui.comboBoxEffectSizeType.currentText()],
             P_ADJUSTMENT[self.settings_widget_ui.comboBoxPAdjustment.currentText()],

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'adjust_dataset_dialog.ui'
+## Form generated from reading UI file 'edit_dataset_dialog.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.10.2
+## Created by: Qt User Interface Compiler version 6.11.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -22,14 +22,14 @@ from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication,
     QTableWidgetItem, QVBoxLayout, QWidget)
 import resources_rc
 
-class Ui_AdjustDatasetDialog(object):
-    def setupUi(self, AdjustDatasetDialog):
-        if not AdjustDatasetDialog.objectName():
-            AdjustDatasetDialog.setObjectName(u"AdjustDatasetDialog")
-        AdjustDatasetDialog.resize(924, 520)
-        self.verticalLayout = QVBoxLayout(AdjustDatasetDialog)
+class Ui_EditDatasetDialog(object):
+    def setupUi(self, EditDatasetDialog):
+        if not EditDatasetDialog.objectName():
+            EditDatasetDialog.setObjectName(u"EditDatasetDialog")
+        EditDatasetDialog.resize(924, 520)
+        self.verticalLayout = QVBoxLayout(EditDatasetDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.widgetMain = QWidget(AdjustDatasetDialog)
+        self.widgetMain = QWidget(EditDatasetDialog)
         self.widgetMain.setObjectName(u"widgetMain")
         self.horizontalLayout_4 = QHBoxLayout(self.widgetMain)
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
@@ -169,7 +169,7 @@ class Ui_AdjustDatasetDialog(object):
 
         self.verticalLayout.addWidget(self.widgetMain)
 
-        self.buttonBox = QDialogButtonBox(AdjustDatasetDialog)
+        self.buttonBox = QDialogButtonBox(EditDatasetDialog)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setOrientation(Qt.Orientation.Horizontal)
         self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
@@ -177,27 +177,27 @@ class Ui_AdjustDatasetDialog(object):
         self.verticalLayout.addWidget(self.buttonBox)
 
 
-        self.retranslateUi(AdjustDatasetDialog)
-        self.buttonBox.accepted.connect(AdjustDatasetDialog.accept)
-        self.buttonBox.rejected.connect(AdjustDatasetDialog.reject)
+        self.retranslateUi(EditDatasetDialog)
+        self.buttonBox.accepted.connect(EditDatasetDialog.accept)
+        self.buttonBox.rejected.connect(EditDatasetDialog.reject)
 
-        QMetaObject.connectSlotsByName(AdjustDatasetDialog)
+        QMetaObject.connectSlotsByName(EditDatasetDialog)
     # setupUi
 
-    def retranslateUi(self, AdjustDatasetDialog):
-        AdjustDatasetDialog.setWindowTitle(QCoreApplication.translate("AdjustDatasetDialog", u"Adjust Dataset", None))
-        self.groupBoxRename.setTitle(QCoreApplication.translate("AdjustDatasetDialog", u"Rename", None))
-        self.groupBoxResampling.setTitle(QCoreApplication.translate("AdjustDatasetDialog", u"Apply resampling", None))
-        self.groupBoxTrimTime.setTitle(QCoreApplication.translate("AdjustDatasetDialog", u"Trim time", None))
-        self.labelTrimTimeStart.setText(QCoreApplication.translate("AdjustDatasetDialog", u"Start:", None))
-        self.dateTimeEditTrimStart.setDisplayFormat(QCoreApplication.translate("AdjustDatasetDialog", u"yyyy-MM-dd HH:mm:ss", None))
-        self.labelTrimTimeEnd.setText(QCoreApplication.translate("AdjustDatasetDialog", u"End:", None))
-        self.dateTimeEditTrimEnd.setDisplayFormat(QCoreApplication.translate("AdjustDatasetDialog", u"yyyy-MM-dd HH:mm:ss", None))
-        self.groupBoxExcludeTime.setTitle(QCoreApplication.translate("AdjustDatasetDialog", u"Exclude time", None))
-        self.labelExcludeTimeStart.setText(QCoreApplication.translate("AdjustDatasetDialog", u"Start:", None))
-        self.dateTimeEditExcludeStart.setDisplayFormat(QCoreApplication.translate("AdjustDatasetDialog", u"yyyy-MM-dd HH:mm:ss", None))
-        self.labelExcludeTimeEnd.setText(QCoreApplication.translate("AdjustDatasetDialog", u"End:", None))
-        self.dateTimeEditExcludeEnd.setDisplayFormat(QCoreApplication.translate("AdjustDatasetDialog", u"yyyy-MM-dd HH:mm:ss", None))
-        self.groupBoxExcludeAnimals.setTitle(QCoreApplication.translate("AdjustDatasetDialog", u"Exclude animals", None))
+    def retranslateUi(self, EditDatasetDialog):
+        EditDatasetDialog.setWindowTitle(QCoreApplication.translate("EditDatasetDialog", u"Edit Dataset", None))
+        self.groupBoxRename.setTitle(QCoreApplication.translate("EditDatasetDialog", u"Rename", None))
+        self.groupBoxResampling.setTitle(QCoreApplication.translate("EditDatasetDialog", u"Apply resampling", None))
+        self.groupBoxTrimTime.setTitle(QCoreApplication.translate("EditDatasetDialog", u"Trim time", None))
+        self.labelTrimTimeStart.setText(QCoreApplication.translate("EditDatasetDialog", u"Start:", None))
+        self.dateTimeEditTrimStart.setDisplayFormat(QCoreApplication.translate("EditDatasetDialog", u"yyyy-MM-dd HH:mm:ss", None))
+        self.labelTrimTimeEnd.setText(QCoreApplication.translate("EditDatasetDialog", u"End:", None))
+        self.dateTimeEditTrimEnd.setDisplayFormat(QCoreApplication.translate("EditDatasetDialog", u"yyyy-MM-dd HH:mm:ss", None))
+        self.groupBoxExcludeTime.setTitle(QCoreApplication.translate("EditDatasetDialog", u"Exclude time", None))
+        self.labelExcludeTimeStart.setText(QCoreApplication.translate("EditDatasetDialog", u"Start:", None))
+        self.dateTimeEditExcludeStart.setDisplayFormat(QCoreApplication.translate("EditDatasetDialog", u"yyyy-MM-dd HH:mm:ss", None))
+        self.labelExcludeTimeEnd.setText(QCoreApplication.translate("EditDatasetDialog", u"End:", None))
+        self.dateTimeEditExcludeEnd.setDisplayFormat(QCoreApplication.translate("EditDatasetDialog", u"yyyy-MM-dd HH:mm:ss", None))
+        self.groupBoxExcludeAnimals.setTitle(QCoreApplication.translate("EditDatasetDialog", u"Exclude animals", None))
     # retranslateUi
 

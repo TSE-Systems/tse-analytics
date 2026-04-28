@@ -46,12 +46,8 @@ class OneWayAnovaNode(PipelineNode):
         factor_name = str(self.get_property("factor"))
         effect_size = str(self.get_property("effect_size"))
 
-        columns = datatable.get_default_columns() + list(datatable.dataset.factors) + [variable_name]
-        df = datatable.get_filtered_df(columns)
-
         result = get_one_way_anova_result(
-            datatable.dataset,
-            df,
+            datatable,
             datatable.variables[variable_name],
             factor_name,
             EFFECT_SIZE[effect_size],

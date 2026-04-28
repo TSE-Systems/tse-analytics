@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
-from tse_analytics.core.data.shared import Animal, Variable
+from tse_analytics.core.data.shared import Animal
 
 _dtypes_name_mapping = {
     "int8": "Int8",
@@ -171,27 +171,3 @@ def normalize_nd_array(input: np.ndarray):
     min_value = np.min(input)
     max_value = np.max(input)
     return (input - min_value) / (max_value - min_value)
-
-
-def group_df_by_animal(
-    df: pd.DataFrame,
-    variables: dict[str, Variable],
-) -> pd.DataFrame:
-    if df.empty:
-        return df
-
-    default_columns = ["Animal"]
-    agg = {}
-    for column in df.columns:
-        if column not in default_columns:
-            if df.dtypes[column].name != "category":
-                if column in variables:
-                    agg[column] = variables[column].aggregation
-            else:
-                # Include categorical data fields
-                agg[column] = "first"
-
-    result = df.groupby("Animal", dropna=False, observed=False).aggregate(agg)
-    result.reset_index(inplace=True, drop=False)
-
-    return result

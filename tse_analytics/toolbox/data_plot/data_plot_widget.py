@@ -194,10 +194,10 @@ class DataPlotWidget(QWidget):
         )
 
         # Draw light/dark bands
-        settings = self.datatable.dataset.binning_settings.time_cycles_settings
+        light_cycles = self.datatable.dataset.light_cycles
 
-        dark_start = time_to_float(settings.dark_cycle_start)
-        dark_end = time_to_float(settings.light_cycle_start)
+        dark_start = time_to_float(light_cycles.dark_cycle_start)
+        dark_end = time_to_float(light_cycles.light_cycle_start)
         dark_duration = abs(dark_end - dark_start)
         max_hours = df["Hours"].max()
 

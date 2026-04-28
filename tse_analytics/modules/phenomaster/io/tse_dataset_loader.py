@@ -105,6 +105,9 @@ def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportS
     # Clean up old variables
     cleanup_variables(dataset)
 
+    # Set factors
+    dataset.set_factors(dataset.factors)
+
     logger.info(f"Import complete in {(timeit.default_timer() - tic):.3f} sec: {path}")
 
     return dataset

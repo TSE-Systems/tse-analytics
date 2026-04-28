@@ -1,14 +1,12 @@
 from dataclasses import dataclass
 
-import pandas as pd
 import pingouin as pg
 from matplotlib import rcParams
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.utils import get_great_table, get_html_image_from_figure
-from tse_analytics.core.utils.data import group_df_by_animal
 
 
 @dataclass
@@ -17,33 +15,33 @@ class OneWayAnovaResult:
 
 
 def get_one_way_anova_result(
-    dataset: Dataset,
-    df: pd.DataFrame,
-    variable: Variable,
+    datatable: Datatable,
+    dependent_variable: Variable,
     factor_name: str,
     effsize: str,
     figsize: tuple[float, float] | None = None,
 ) -> OneWayAnovaResult:
-    if figsize is None:
-        figsize = rcParams["figure.figsize"]
-
-    df = group_df_by_animal(
-        df,
-        {
-            variable.name: variable,
-        },
+    df = datatable.get_filtered_df(["Animal", dependent_variable.name, factor_name])
+    df = (
+        df
+        .groupby(
+            ["Animal", factor_name],
+            dropna=False,
+            observed=True,
+        )
+        .aggregate({
+            dependent_variable.name: dependent_variable.aggregation,
+        })
+        .reset_index()
     )
 
-    # TODO: should or should not?
-    df.dropna(inplace=True)
-
-    normality = pg.normality(df, group=factor_name, dv=variable.name)
-    homoscedasticity = pg.homoscedasticity(df, group=factor_name, dv=variable.name)
+    normality = pg.normality(df, group=factor_name, dv=dependent_variable.name)
+    homoscedasticity = pg.homoscedasticity(df, group=factor_name, dv=dependent_variable.name)
 
     if homoscedasticity.loc["levene"]["equal_var"]:
         anova = pg.anova(
             data=df,
-            dv=variable.name,
+            dv=dependent_variable.name,
             between=factor_name,
             detailed=True,
         )
@@ -51,7 +49,7 @@ def get_one_way_anova_result(
 
         post_hoc_test = pg.pairwise_tukey(
             data=df,
-            dv=variable.name,
+            dv=dependent_variable.name,
             between=factor_name,
             effsize=effsize,
         )
@@ -59,23 +57,25 @@ def get_one_way_anova_result(
     else:
         anova = pg.welch_anova(
             data=df,
-            dv=variable.name,
+            dv=dependent_variable.name,
             between=factor_name,
         )
         anova_header = "One-way Welch ANOVA"
 
         post_hoc_test = pg.pairwise_gameshowell(
             data=df,
-            dv=variable.name,
+            dv=dependent_variable.name,
             between=factor_name,
             effsize=effsize,
         )
         post_hoc_test_header = "Pairwise Games-Howell post-hoc test"
 
-    pairwise_tukeyhsd_res = pairwise_tukeyhsd(df[variable.name], df[factor_name])
+    pairwise_tukeyhsd_res = pairwise_tukeyhsd(df[dependent_variable.name], df[factor_name])
+    if figsize is None:
+        figsize = rcParams["figure.figsize"]
     figure = pairwise_tukeyhsd_res.plot_simultaneous(
         ylabel="Level",
-        xlabel=variable.name,
+        xlabel=dependent_variable.name,
         figsize=(figsize[0], figsize[0] / 2),
     )
 

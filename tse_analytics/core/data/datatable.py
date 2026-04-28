@@ -13,11 +13,12 @@ from typing import TYPE_CHECKING, Any
 from uuid import uuid7
 
 import pandas as pd
+from loguru import logger
 
 from tse_analytics.core import messaging
 from tse_analytics.core.data.operators.outliers_pipe_operator import process_outliers
 from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings
-from tse_analytics.core.data.shared import Animal, Factor, Variable
+from tse_analytics.core.data.shared import Animal, Factor, FactorKind, Variable
 from tse_analytics.core.utils.data import exclude_animals_from_df, reassign_df_timedelta_and_bin, rename_animal_df
 
 if TYPE_CHECKING:
@@ -70,9 +71,6 @@ class Datatable:
         self.metadata = metadata
 
         self.outliers_settings = OutliersSettings()
-
-        self.parent_table: Datatable | None = None
-        self.derived_tables: dict[str, Datatable] = {}
 
     @property
     def extension_name(self) -> str | None:
@@ -312,12 +310,22 @@ class Datatable:
         Set the factors for the datatable.
 
         This method updates the active dataframe with factor columns based on the
-        provided factors dictionary.
+        provided factors dictionary. Each factor is materialized as a categorical
+        column whose values depend on the factor kind:
+
+        - ``ANIMAL`` factors map each row's ``Animal`` to a level name.
+        - ``TIME_CYCLES`` factors derive ``Light``/``Dark`` from the row's
+          ``DateTime`` time-of-day.
+        - ``TIME_PHASES`` factors assign a phase name based on the row's
+          ``Timedelta`` falling into the configured phase windows.
 
         Parameters
         ----------
         factors : dict[str, Factor]
             Dictionary mapping factor names to Factor objects.
+        old_factors : dict[str, Factor] | None
+            Previously applied factors; their columns are dropped before
+            re-applying.
         """
         if "Animal" not in self.df.columns:
             return
@@ -332,21 +340,13 @@ class Datatable:
         animal_ids = df["Animal"].unique()
 
         for factor in factors.values():
-            animal_factor_map: dict[str, Any] = {}
-            for animal_id in animal_ids:
-                animal_factor_map[animal_id] = pd.NA
-
-            for level in factor.levels:
-                for animal_id in level.animal_ids:
-                    animal_factor_map[animal_id] = level.name
-
-            df[factor.name] = df["Animal"].astype("string")
-            df.replace({factor.name: animal_factor_map}, inplace=True)
-            df[factor.name] = df[factor.name].astype("category")
-
-            # Sort levels alphabetically
-            order = sorted(df[factor.name].cat.categories.tolist(), key=str.lower)
-            df[factor.name] = df[factor.name].cat.reorder_categories(order)
+            match factor.kind:
+                case FactorKind.ANIMAL:
+                    _apply_animal_factor(df, factor, animal_ids)
+                case FactorKind.LIGHT_CYCLES:
+                    _apply_time_cycles_factor(df, factor)
+                case FactorKind.TIME_PHASES:
+                    _apply_time_phases_factor(df, factor)
 
         self.df = df
 
@@ -419,6 +419,51 @@ class Datatable:
             self.metadata.copy(),
         )
 
-    def add_derived_table(self, derived_table: Datatable) -> None:
-        derived_table.parent_table = self
-        self.derived_tables[derived_table.name] = derived_table
+
+def _apply_animal_factor(df: pd.DataFrame, factor: Factor, animal_ids) -> None:
+    animal_factor_map: dict[str, Any] = dict.fromkeys(animal_ids, pd.NA)
+    for level in factor.levels:
+        for animal_id in level.animal_ids:
+            animal_factor_map[animal_id] = level.name
+
+    df[factor.name] = df["Animal"].astype("string")
+    df.replace({factor.name: animal_factor_map}, inplace=True)
+    df[factor.name] = df[factor.name].astype("category")
+
+    # Sort levels alphabetically
+    order = sorted(df[factor.name].cat.categories.tolist(), key=str.lower)
+    df[factor.name] = df[factor.name].cat.reorder_categories(order)
+
+
+def _apply_time_cycles_factor(df: pd.DataFrame, factor: Factor) -> None:
+    cfg = factor.light_cycles
+    if cfg is None:
+        logger.debug(f"Skipping TIME_CYCLES factor '{factor.name}': missing config")
+        return
+    if "DateTime" not in df.columns:
+        logger.debug(f"Skipping TIME_CYCLES factor '{factor.name}': no DateTime column")
+        return
+
+    light_start = cfg.light_cycle_start
+    dark_start = cfg.dark_cycle_start
+
+    series = df["DateTime"].apply(lambda x: "Light" if light_start <= x.time() < dark_start else "Dark")
+    df[factor.name] = series.astype("category").cat.set_categories(["Light", "Dark"], ordered=True)
+
+
+def _apply_time_phases_factor(df: pd.DataFrame, factor: Factor) -> None:
+    cfg = factor.time_phases
+    if cfg is None or len(cfg.phases) == 0:
+        logger.debug(f"Skipping TIME_PHASES factor '{factor.name}': no phases configured")
+        return
+    if "Timedelta" not in df.columns:
+        logger.debug(f"Skipping TIME_PHASES factor '{factor.name}': no Timedelta column")
+        return
+
+    phases = sorted(cfg.phases, key=lambda p: p.start_timestamp)
+    df[factor.name] = pd.NA
+    for phase in phases:
+        df.loc[df["Timedelta"] >= pd.Timedelta(phase.start_timestamp), factor.name] = phase.name
+
+    categories = [phase.name for phase in phases]
+    df[factor.name] = df[factor.name].astype("category").cat.set_categories(categories, ordered=True)

@@ -17,7 +17,6 @@ import pandas as pd
 from loguru import logger
 from pydantic import TypeAdapter
 
-from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.outliers import OutliersSettings
@@ -64,7 +63,6 @@ _META_TABLES_DDL = [
         dataset_type      VARCHAR NOT NULL,
         animals           JSON NOT NULL,
         factors           JSON NOT NULL,
-        binning_settings  JSON NOT NULL,
         metadata          JSON
     )
     """,
@@ -191,9 +189,6 @@ def _save_datatable(
         ],
     )
 
-    for derived in datatable.derived_tables.values():
-        _save_datatable(con, derived, parent_id=datatable.id)
-
 
 def _save_raw_datatable(
     con: duckdb.DuckDBPyConnection,
@@ -222,7 +217,7 @@ def _save_raw_datatable(
 
 def _save_dataset(con: duckdb.DuckDBPyConnection, dataset: Dataset) -> None:
     con.execute(
-        "INSERT INTO _meta_datasets VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO _meta_datasets VALUES (?, ?, ?, ?, ?, ?, ?)",
         [
             dataset.id,
             dataset.name,
@@ -230,7 +225,6 @@ def _save_dataset(con: duckdb.DuckDBPyConnection, dataset: Dataset) -> None:
             dataset.dataset_type,
             TypeAdapter(dict[str, Animal]).dump_python(dataset.animals),
             TypeAdapter(dict[str, Factor]).dump_python(dataset.factors),
-            TypeAdapter(BinningSettings).dump_python(dataset.binning_settings),
             dataset.metadata,
         ],
     )
@@ -338,19 +332,9 @@ def _load_datatables_for_dataset(
         )
         datatable.id = datatable_id
         datatable.outliers_settings = TypeAdapter(OutliersSettings).validate_json(outliers_settings)
-        datatable._parent_id_tmp = parent_datatable_id  # type: ignore[attr-defined]
         datatables[datatable_id] = datatable
 
-    # Wire parent/child relationships
-    for datatable in datatables.values():
-        parent_id = datatable._parent_id_tmp  # type: ignore[attr-defined]
-        del datatable._parent_id_tmp  # type: ignore[attr-defined]
-        if parent_id is not None and parent_id in datatables:
-            parent = datatables[parent_id]
-            datatable.parent_table = parent
-            parent.derived_tables[datatable.name] = datatable
-
-    return {datatable.name: datatable for datatable in datatables.values() if datatable.parent_table is None}
+    return {datatable.name: datatable for datatable in datatables.values()}
 
 
 def _load_raw_datatables_for_dataset(
@@ -399,7 +383,7 @@ def _load_raw_datatables_for_dataset(
 
 def _load_dataset(con: duckdb.DuckDBPyConnection, dataset_id: UUID) -> Dataset:
     row = con.execute(
-        "SELECT id, name, description, dataset_type, animals, factors, binning_settings, metadata FROM _meta_datasets WHERE id = ?",
+        "SELECT id, name, description, dataset_type, animals, factors, metadata FROM _meta_datasets WHERE id = ?",
         [dataset_id],
     ).fetchone()
 
@@ -407,12 +391,11 @@ def _load_dataset(con: duckdb.DuckDBPyConnection, dataset_id: UUID) -> Dataset:
         row[1],
         row[2],
         row[3],
-        TypeAdapter(dict[str, Any]).validate_json(row[7]),
+        TypeAdapter(dict[str, Any]).validate_json(row[6]),
         TypeAdapter(dict[str, Animal]).validate_json(row[4]),
     )
     dataset.id = row[0]
     dataset.factors = TypeAdapter(dict[str, Factor]).validate_json(row[5])
-    dataset.binning_settings = TypeAdapter(BinningSettings).validate_json(row[6])
     dataset.reports = _load_reports(con, row[0], dataset)
 
     dataset.datatables = _load_datatables_for_dataset(con, dataset)

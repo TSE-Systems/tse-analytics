@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QComboBox
+from PySide6.QtWidgets import QComboBox, QWidget
 
-from tse_analytics.core.data.shared import Factor
+from tse_analytics.core.data.shared import Factor, FactorKind
 
 
 class FactorSelector(QComboBox):
@@ -11,12 +11,20 @@ class FactorSelector(QComboBox):
     allowing the user to select one factor for analysis.
     """
 
-    def __init__(self, parent=None):
+    def __init__(
+        self,
+        parent: QWidget,
+        factors: dict[str, Factor],
+        selected_factor: str = None,
+        show_factor_kind: list[FactorKind] | None = None,
+    ):
         super().__init__(parent)
 
-    def set_data(self, factors: dict[str, Factor], selected_factor: str = None) -> None:
         self.clear()
-        items = list(factors)
+        if show_factor_kind is None:
+            items = list(factors)
+        else:
+            items = [factor.name for factor in factors.values() if factor.kind in show_factor_kind]
         self.addItems(items)
         if selected_factor is not None:
             self.setCurrentText(selected_factor)

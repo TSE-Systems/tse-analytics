@@ -7,7 +7,7 @@ and applying binning.
 """
 
 from copy import deepcopy
-from datetime import datetime
+from datetime import datetime, time
 from typing import Any, Literal
 from uuid import uuid7
 
@@ -15,23 +15,30 @@ import pandas as pd
 
 from tse_analytics.core import messaging
 from tse_analytics.core.color_manager import get_factor_level_color_hex
-from tse_analytics.core.data.binning import BinningSettings
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
-from tse_analytics.core.data.shared import Animal, Factor, FactorLevel
+from tse_analytics.core.data.shared import Animal, Factor, FactorKind, FactorLevel, LightCyclesConfig
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.datatable_tree_item import DatatableTreeItem
 from tse_analytics.core.models.report_tree_item import ReportTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
-from tse_analytics.core.utils.dataset import (
-    exclude_animals_recursively,
-    exclude_time_recursively,
-    rename_animal_recursively,
-    set_factors_recursively,
-    trim_time_recursively,
-)
 
 DatasetType = Literal["PhenoMaster", "IntelliMaze", "IntelliCage"]
+
+
+def _get_default_light_cycle_factor() -> Factor:
+    return Factor(
+        name="LightCycle",
+        kind=FactorKind.LIGHT_CYCLES,
+        levels=[
+            FactorLevel(name="Light", color=get_factor_level_color_hex(1)),
+            FactorLevel(name="Dark", color=get_factor_level_color_hex(0)),
+        ],
+        light_cycles=LightCyclesConfig(
+            light_cycle_start=time(7, 0),
+            dark_cycle_start=time(19, 0),
+        ),
+    )
 
 
 class Dataset:
@@ -75,10 +82,16 @@ class Dataset:
         self.datatables: dict[str, Datatable] = {}
         self.raw_datatables: dict[str, dict[str, Datatable]] = {}
 
-        self.factors: dict[str, Factor] = {}
+        default_light_cycle_factor = _get_default_light_cycle_factor()
+        self.factors: dict[str, Factor] = {
+            default_light_cycle_factor.name: default_light_cycle_factor,
+        }
+
         self.reports: dict[str, Report] = {}
 
-        self.binning_settings = BinningSettings()
+    @property
+    def light_cycles(self) -> LightCyclesConfig:
+        return self.factors["LightCycle"].light_cycles
 
     @property
     def source_path(self) -> str:
@@ -164,29 +177,17 @@ class Dataset:
 
     def remove_datatable(self, datatable: Datatable) -> None:
         """
-        Remove a datatable and its derived subtree from the dataset.
-
-        Uses the datatable's parent_table reference to remove it directly
-        from either the top-level datatables or its parent's derived_tables,
-        then recursively cleans up the entire subtree.
+        Remove a datatable from the dataset.
 
         Parameters
         ----------
         datatable : Datatable
             The datatable to remove from the dataset.
         """
-        if datatable.extension_name:
-            # Remove raw datatable
-            if datatable.parent_table is None:
-                self.raw_datatables[datatable.extension_name].pop(datatable.name)
-            else:
-                datatable.parent_table.derived_tables.pop(datatable.name)
+        if datatable.extension_name is not None:
+            self.raw_datatables[datatable.extension_name].pop(datatable.name)
         else:
-            # Remove regular datatable
-            if datatable.parent_table is None:
-                self.datatables.pop(datatable.name)
-            else:
-                datatable.parent_table.derived_tables.pop(datatable.name)
+            self.datatables.pop(datatable.name)
 
     def rename(self, name: str) -> None:
         """
@@ -255,11 +256,11 @@ class Dataset:
         """
 
         for datatable in self.datatables.values():
-            rename_animal_recursively(datatable, old_id, animal)
+            datatable.rename_animal(old_id, animal)
 
         for extension_datatables in self.raw_datatables.values():
             for datatable in extension_datatables.values():
-                rename_animal_recursively(datatable, old_id, animal)
+                datatable.rename_animal(old_id, animal)
 
         # Rename animal in factor's levels definitions
         for factor in self.factors.values():
@@ -313,12 +314,12 @@ class Dataset:
 
         # Exclude animals from regular datatables
         for datatable in self.datatables.values():
-            exclude_animals_recursively(datatable, animal_ids)
+            datatable.exclude_animals(animal_ids)
 
         # Exclude animals from raw datatables
         for extension_datatables in self.raw_datatables.values():
             for datatable in extension_datatables.values():
-                exclude_animals_recursively(datatable, animal_ids)
+                datatable.exclude_animals(animal_ids)
 
     def exclude_time(self, range_start: datetime, range_end: datetime) -> None:
         """
@@ -340,11 +341,11 @@ class Dataset:
             self.metadata["experiment_stopped"] = str(range_start)
 
         for datatable in self.datatables.values():
-            exclude_time_recursively(datatable, range_start, range_end)
+            datatable.exclude_time(range_start, range_end)
 
         for extension_datatables in self.raw_datatables.values():
             for datatable in extension_datatables.values():
-                exclude_time_recursively(datatable, range_start, range_end)
+                datatable.exclude_time(range_start, range_end)
 
     def trim_time(self, range_start: datetime, range_end: datetime) -> None:
         """
@@ -364,11 +365,11 @@ class Dataset:
         self.metadata["experiment_stopped"] = str(range_end)
 
         for datatable in self.datatables.values():
-            trim_time_recursively(datatable, range_start, range_end)
+            datatable.trim_time(range_start, range_end)
 
         for extension_datatables in self.raw_datatables.values():
             for datatable in extension_datatables.values():
-                trim_time_recursively(datatable, range_start, range_end)
+                datatable.trim_time(range_start, range_end)
 
     def resample(self, resample_interval: pd.Timedelta) -> None:
         """
@@ -398,8 +399,11 @@ class Dataset:
         """
         self.factors = factors
 
+        if "LightCycle" not in self.factors:
+            self.factors["LightCycle"] = _get_default_light_cycle_factor()
+
         for datatable in self.datatables.values():
-            set_factors_recursively(datatable, factors, old_factors)
+            datatable.set_factors(factors, old_factors)
 
     def clone(self):
         """
@@ -429,7 +433,6 @@ class Dataset:
         # Add datatables nodes
         for datatable in self.datatables.values():
             datatable_tree_item = DatatableTreeItem(datatable)
-            self._add_derived_tables(datatable_tree_item, datatable)
             dataset_tree_item.add_child(datatable_tree_item)
 
         # Add raw datatables nodes
@@ -442,7 +445,6 @@ class Dataset:
                     raw_datatables_node.add_child(extension_node)
                     for datatable in extension_datatables.values():
                         raw_datatable_tree_item = DatatableTreeItem(datatable)
-                        self._add_derived_tables(raw_datatable_tree_item, datatable)
                         extension_node.add_child(raw_datatable_tree_item)
 
         # Add reports nodes
@@ -451,12 +453,6 @@ class Dataset:
             dataset_tree_item.add_child(reports_node)
             for report in self.reports.values():
                 reports_node.add_child(ReportTreeItem(report))
-
-    def _add_derived_tables(self, parent_tree_item: DatatableTreeItem, datatable: Datatable) -> None:
-        for derived_table in datatable.derived_tables.values():
-            derived_table_tree_item = DatatableTreeItem(derived_table)
-            self._add_derived_tables(derived_table_tree_item, derived_table)
-            parent_tree_item.add_child(derived_table_tree_item)
 
     def add_report(self, report: Report) -> None:
         if report.name in self.reports:

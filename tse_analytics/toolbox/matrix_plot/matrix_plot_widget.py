@@ -55,7 +55,7 @@ class MatrixPlotWidget(ToolboxWidgetBase):
         toolbar.addWidget(variables_button)
 
         toolbar.addSeparator()
-        toolbar.addWidget(QLabel("Group by:"))
+        toolbar.addWidget(QLabel("Color by:"))
         self.group_by_selector = GroupBySelector(toolbar, self.datatable, selected_mode=self._settings.group_by)
         toolbar.addWidget(self.group_by_selector)
 

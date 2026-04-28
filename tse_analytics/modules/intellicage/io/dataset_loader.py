@@ -80,8 +80,7 @@ def import_intellicage_dataset(path: Path) -> Dataset | None:
         if factor is not None:
             factors[factor.name] = factor
 
-    if len(factors) > 0:
-        dataset.set_factors(factors)
+    dataset.set_factors(factors)
 
     logger.info(f"Import complete in {(timeit.default_timer() - tic):.3f} sec: {path}")
 

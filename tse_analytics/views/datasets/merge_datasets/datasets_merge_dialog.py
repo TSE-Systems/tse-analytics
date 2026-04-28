@@ -12,8 +12,8 @@ from PySide6.QtWidgets import (
 
 from tse_analytics.core import manager
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.views.datasets.adjust_dataset_dialog import AdjustDatasetDialog
-from tse_analytics.views.datasets.datasets_merge_dialog_ui import Ui_DatasetsMergeDialog
+from tse_analytics.views.datasets.edit_dataset.edit_dataset_dialog import EditDatasetDialog
+from tse_analytics.views.datasets.merge_datasets.datasets_merge_dialog_ui import Ui_DatasetsMergeDialog
 
 
 class DatasetsMergeDialog(QDialog):
@@ -54,12 +54,12 @@ class DatasetsMergeDialog(QDialog):
             self.ui.tableWidget.setItem(i, 2, QTableWidgetItem(str(dataset.experiment_stopped)))
             self.ui.tableWidget.setItem(i, 3, QTableWidgetItem(str(dataset.experiment_duration)))
 
-            adjust_button = QPushButton("Adjust...")
-            adjust_button.clicked.connect(partial(self._adjust_dataset, dataset))
-            self.ui.tableWidget.setCellWidget(i, 4, adjust_button)
+            edit_button = QPushButton("Edit...")
+            edit_button.clicked.connect(partial(self._edit_dataset, dataset))
+            self.ui.tableWidget.setCellWidget(i, 4, edit_button)
 
-    def _adjust_dataset(self, dataset: Dataset):
-        dialog = AdjustDatasetDialog(dataset, self)
+    def _edit_dataset(self, dataset: Dataset):
+        dialog = EditDatasetDialog(dataset, self)
         # TODO: check other cases!!
         dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         if dialog.exec() == QDialog.DialogCode.Accepted:

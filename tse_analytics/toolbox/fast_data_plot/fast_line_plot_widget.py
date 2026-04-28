@@ -1,6 +1,7 @@
 import base64
 from dataclasses import dataclass
 from io import BytesIO
+from math import isnan
 
 import pandas as pd
 import pyqtgraph as pg
@@ -262,7 +263,8 @@ class FastLinePlotWidget(QWidget):
         Updates the main plot's x-range when the region selector is moved.
         """
         min_x, max_x = self.region.getRegion()
-        self.plot_item1.setXRange(min_x, max_x, padding=0)
+        if not isnan(min_x) and not isnan(max_x):
+            self.plot_item1.setXRange(min_x, max_x, padding=0)
 
     def _x_range_changed(self, view_box, range):
         """Handle changes in the main plot's x-range.

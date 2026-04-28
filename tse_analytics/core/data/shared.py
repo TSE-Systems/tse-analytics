@@ -6,6 +6,7 @@ including enumerations for aggregation and split modes, and dataclasses
 for animals, factors, variables, time phases, and animal diets.
 """
 
+from datetime import time, timedelta
 from enum import StrEnum, unique
 from typing import Any
 
@@ -79,6 +80,74 @@ class FactorLevel:
     animal_ids: list[str] = Field(default_factory=list)
 
 
+@unique
+class FactorKind(StrEnum):
+    """
+    Enumeration of factor kinds.
+
+    Attributes
+    ----------
+    ANIMAL : str
+        Per-animal factor (levels assigned by animal id).
+    LIGHT_CYCLES : str
+        Time-based factor with light/dark cycles derived from row DateTime.
+    TIME_PHASES : str
+        Time-based factor with named phases derived from row Timedelta.
+    """
+
+    ANIMAL = "animal"
+    LIGHT_CYCLES = "light_cycles"
+    TIME_PHASES = "time_phases"
+
+
+@dataclass
+class LightCyclesConfig:
+    """
+    Configuration for a LIGHT_CYCLES factor.
+
+    Attributes
+    ----------
+    light_cycle_start : time
+        The time of day when the light cycle starts.
+    dark_cycle_start : time
+        The time of day when the dark cycle starts.
+    """
+
+    light_cycle_start: time
+    dark_cycle_start: time
+
+
+@dataclass
+class TimePhase:
+    """
+    A single named phase used by a TIME_PHASES factor.
+
+    Attributes
+    ----------
+    name : str
+        The name of the phase (also the level name).
+    start_timestamp : timedelta
+        The start of the phase as a timedelta from the experiment start.
+    """
+
+    name: str
+    start_timestamp: timedelta
+
+
+@dataclass
+class TimePhasesConfig:
+    """
+    Configuration for a TIME_PHASES factor.
+
+    Attributes
+    ----------
+    phases : list[TimePhase]
+        Ordered list of phases that define the factor's levels.
+    """
+
+    phases: list[TimePhase] = Field(default_factory=list)
+
+
 @dataclass
 class Factor:
     """
@@ -90,10 +159,21 @@ class Factor:
         The name of the factor.
     levels : list[FactorLevel]
         List of levels for this factor.
+    kind : FactorKind
+        The kind of factor (animal-based or time-based). Defaults to ANIMAL
+        for backward compatibility with workspaces saved before time-based
+        factors were introduced.
+    light_cycles : LightCyclesConfig | None
+        Configuration for TIME_CYCLES kind; ``None`` for other kinds.
+    time_phases : TimePhasesConfig | None
+        Configuration for TIME_PHASES kind; ``None`` for other kinds.
     """
 
     name: str
     levels: list[FactorLevel] = Field(default_factory=list)
+    kind: FactorKind = FactorKind.ANIMAL
+    light_cycles: LightCyclesConfig | None = None
+    time_phases: TimePhasesConfig | None = None
 
 
 @dataclass

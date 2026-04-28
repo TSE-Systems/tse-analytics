@@ -7,7 +7,6 @@ from PySide6.QtCore import QByteArray, QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QAbstractItemView,
-    QDialog,
     QFileDialog,
     QInputDialog,
     QLabel,
@@ -29,7 +28,6 @@ from tse_analytics.core.models.pandas_model import PandasModel
 from tse_analytics.core.utils import get_great_table, get_h_spacer_widget, get_widget_tool_button
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
-from tse_analytics.toolbox.data_table.table_processor.table_processor_dialog import TableProcessorDialog
 from tse_analytics.toolbox.data_table.variables.variables_widget import VariablesWidget
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.views.misc.report_edit import ReportEdit
@@ -68,13 +66,6 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
             iconSize=QSize(16, 16),
             toolButtonStyle=Qt.ToolButtonStyle.ToolButtonTextBesideIcon,
         )
-
-        # Disable add derived table button if the datatable raw datatable
-        if datatable and not datatable.extension_name:
-            self.add_derived_table_action = toolbar.addAction(
-                QIcon(":/icons/icons8-data-sheet-16.png"), "Add Derived Table"
-            )
-            self.add_derived_table_action.triggered.connect(self._add_derived_table)
 
         toolbar.addAction(QIcon(":/icons/icons8-resize-horizontal-16.png"), "Resize Columns").triggered.connect(
             self._resize_columns_width
@@ -293,12 +284,6 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
                 model = self.table_view.model()
                 for idx in selected:
                     model.setData(idx, pd.NA, Qt.ItemDataRole.EditRole)
-
-    def _add_derived_table(self):
-        dialog = TableProcessorDialog(self.datatable, self)
-        if dialog.exec() == QDialog.DialogCode.Accepted:
-            pass
-        dialog.deleteLater()
 
     def _add_report(self):
         name, ok = QInputDialog.getText(

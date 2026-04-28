@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-TSE Analytics — PySide6 desktop app for analyzing TSE PhenoMaster, IntelliCage, and IntelliMaze experimental data.
+TSE Analytics — PySide6 desktop app for analyzing TSE PhenoMaster, IntelliCage and IntelliMaze experimental data.
 
 ## Quick Start
 
@@ -10,7 +10,18 @@ TSE Analytics — PySide6 desktop app for analyzing TSE PhenoMaster, IntelliCage
 - Data analysis pipeline editor is based on NodeGraphQt library.
 - UI is built with PySide6.
 - With Pandas always use numpy-nullable data types.
-- Always save a plan before starting its implementation to project ./.claude/plans/ folder.
+
+## Plan persistence
+
+After completing implementation of a plan (whether produced via Plan Mode or
+ad-hoc), save the final plan to `./.claude/plans/` in this project as a Markdown file.
+
+- Filename format: `YYYY-MM-DD-<kebab-case-summary>.md`
+- Include: the original task statement, the executed plan, files touched,
+  and any follow-ups or known limitations.
+- Do this before ending the turn that completes the implementation.
+- Never write plans to `~/.claude/plans/` for this project — always use
+  `./.claude/plans/` so the plan is committed alongside the code.
 
 ## Generated Files — Do Not Edit or Commit
 

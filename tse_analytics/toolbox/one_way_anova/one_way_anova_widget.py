@@ -4,6 +4,7 @@ from pyqttoast import ToastPreset
 from PySide6.QtWidgets import QComboBox, QLabel, QToolBar, QWidget
 
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.shared import FactorKind
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_figsize_from_widget
 from tse_analytics.pipeline.enums import EFFECT_SIZE
@@ -36,9 +37,13 @@ class OneWayAnovaWidget(ToolboxWidgetBase):
         self.variable_selector.set_data(self.datatable.variables, selected_variable=self._settings.selected_variable)
         toolbar.addWidget(self.variable_selector)
 
-        toolbar.addWidget(QLabel("Factor:"))
-        self.factor_selector = FactorSelector(toolbar)
-        self.factor_selector.set_data(self.datatable.dataset.factors, selected_factor=self._settings.selected_factor)
+        toolbar.addWidget(QLabel("Between-subject Factor:"))
+        self.factor_selector = FactorSelector(
+            toolbar,
+            self.datatable.dataset.factors,
+            selected_factor=self._settings.selected_factor,
+            show_factor_kind=[FactorKind.ANIMAL],
+        )
         toolbar.addWidget(self.factor_selector)
 
         toolbar.addWidget(QLabel("Effect size type:"))
@@ -80,14 +85,8 @@ class OneWayAnovaWidget(ToolboxWidgetBase):
             ).show()
             return
 
-        columns = (
-            self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + [dependent_variable.name]
-        )
-        df = self.datatable.get_filtered_df(columns)
-
         result = get_one_way_anova_result(
-            self.datatable.dataset,
-            df,
+            self.datatable,
             dependent_variable,
             factor_name,
             EFFECT_SIZE[self.comboBoxEffectSizeType.currentText()],
