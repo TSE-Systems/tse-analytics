@@ -3,7 +3,6 @@ from NodeGraphQt.widgets.node_widgets import NodeComboBox
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.utils import get_group_by_params
-from tse_analytics.core.utils.data import get_columns_by_grouping_settings
 from tse_analytics.pipeline import PipelineNode
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 from tse_analytics.toolbox.histogram.processor import get_histogram_result
@@ -63,13 +62,9 @@ class HistogramNode(PipelineNode):
 
         grouping_settings = get_group_by_params(group_by_str)
 
-        columns = get_columns_by_grouping_settings(grouping_settings, [variable_name])
-        df = datatable.get_filtered_df(columns)
-
         # Generate histogram result
         result = get_histogram_result(
-            datatable.dataset,
-            df,
+            datatable,
             variable_name,
             grouping_settings,
             figsize=None,

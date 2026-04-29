@@ -157,13 +157,9 @@ class UmapWidget(ToolboxWidgetBase):
         self.toast = make_toast(self, self.title, "Processing...")
         self.toast.show()
 
-        columns = get_columns_by_grouping_settings(grouping_settings, selected_variables)
-        df = self.datatable.get_filtered_df(columns)
-
         worker = Worker(
             get_umap_result,
-            self.datatable.dataset,
-            df,
+            self.datatable,
             selected_variables,
             grouping_settings,
             self.n_neighbors_spin_box.value(),

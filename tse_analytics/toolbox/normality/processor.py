@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 
 import matplotlib.pyplot as plt
-import pandas as pd
 import pingouin as pg
 
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
 from tse_analytics.core.utils import get_html_image_from_figure, get_plot_layout
+from tse_analytics.core.utils.data import get_columns_by_grouping_settings
 
 
 @dataclass
@@ -14,11 +15,14 @@ class NormalityTestResult:
 
 
 def get_normality_result(
-    df: pd.DataFrame,
+    datatable: Datatable,
     variable_name: str,
     grouping_settings: GroupingSettings,
     figsize: tuple[float, float] | None = None,
 ) -> NormalityTestResult:
+    columns = get_columns_by_grouping_settings(grouping_settings, [variable_name])
+    df = datatable.get_filtered_df(columns)
+
     if grouping_settings.mode == GroupingMode.ANIMAL:
         figure = plt.Figure(figsize=(figsize[0], figsize[0] * df["Animal"].nunique() / 9), layout="tight")
     else:

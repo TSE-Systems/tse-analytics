@@ -66,13 +66,8 @@ class TimeseriesAutocorrelationWidget(ToolboxWidgetBase):
         variable = self.variableSelector.get_selected_variable()
         animal = self.animalSelector.get_selected_animal()
 
-        columns = ["DateTime", "Timedelta", "Animal", variable.name]
-        df = self.datatable.get_filtered_df(columns)
-        df = df[df["Animal"] == animal.id]
-        df.reset_index(drop=True, inplace=True)
-
         result = get_timeseries_autocorrelation_result(
-            df,
+            self.datatable,
             animal.id,
             variable.name,
             get_figsize_from_widget(self.report_view),

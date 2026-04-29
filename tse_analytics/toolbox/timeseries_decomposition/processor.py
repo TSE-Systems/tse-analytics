@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from statsmodels.tsa.seasonal import STL, seasonal_decompose
 
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.utils import get_html_image_from_figure
 
 
@@ -13,29 +14,34 @@ class TimeseriesDecompositionResult:
 
 
 def get_timeseries_decomposition_result(
-    df: pd.DataFrame,
+    datatable: Datatable,
     animal_id: str,
-    variable: str,
+    variable_name: str,
     period: int,
     method: str,
     model: str,
     figsize: tuple[float, float] | None = None,
 ) -> TimeseriesDecompositionResult:
+    columns = ["Timedelta", "Animal", variable_name]
+    df = datatable.get_filtered_df(columns)
+    df = df[df["Animal"] == animal_id]
+    df.reset_index(drop=True, inplace=True)
+
     index = pd.TimedeltaIndex(df["Timedelta"])
     df.set_index(index, inplace=True)
 
     # TODO: not sure interpolation should be used...
-    df[variable] = df[variable].interpolate(limit_direction="both")
+    df[variable_name] = df[variable_name].interpolate(limit_direction="both")
 
     match method:
         case "STL (smoothing)":
             result = STL(
-                endog=df[variable],
+                endog=df[variable_name],
                 period=period,
             ).fit()
         case _:
             result = seasonal_decompose(
-                df[variable],
+                df[variable_name],
                 period=period,
                 model=model,
                 extrapolate_trend="freq",
@@ -45,7 +51,7 @@ def get_timeseries_decomposition_result(
     figure = plt.Figure(figsize=figsize, layout="tight")
 
     axs = figure.subplots(4, 1, sharex=True)
-    figure.suptitle(f"Variable: {variable}. Animal: {animal_id}. Period: {period}")
+    figure.suptitle(f"Variable: {variable_name}. Animal: {animal_id}. Period: {period}")
 
     result.observed.plot(ax=axs[0], ylabel="Observed", lw=1)
     result.trend.plot(ax=axs[1], ylabel="Trend", lw=1)

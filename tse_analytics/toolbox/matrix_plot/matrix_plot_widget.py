@@ -14,7 +14,6 @@ from PySide6.QtWidgets import (
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_figsize_from_widget, get_widget_tool_button
-from tse_analytics.core.utils.data import get_columns_by_grouping_settings
 from tse_analytics.toolbox.matrix_plot.processor import MATRIXPLOT_KIND, get_matrix_plot_result
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
@@ -89,12 +88,8 @@ class MatrixPlotWidget(ToolboxWidgetBase):
 
         grouping_settings = self.group_by_selector.get_grouping_settings()
 
-        columns = get_columns_by_grouping_settings(grouping_settings, selected_variables)
-        df = self.datatable.get_filtered_df(columns)
-
         result = get_matrix_plot_result(
-            self.datatable.dataset,
-            df,
+            self.datatable,
             list(selected_variables),
             grouping_settings,
             MATRIXPLOT_KIND[self.comboBoxPlotType.currentText()],

@@ -7,9 +7,10 @@ from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler
 
 from tse_analytics.core import color_manager
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
 from tse_analytics.core.utils import get_html_image_from_figure
+from tse_analytics.core.utils.data import get_columns_by_grouping_settings
 
 
 @dataclass
@@ -18,8 +19,7 @@ class TsneResult:
 
 
 def get_tsne_result(
-    dataset: Dataset,
-    df: pd.DataFrame,
+    datatable: Datatable,
     variables: list[str],
     grouping_settings: GroupingSettings,
     n_components: int,
@@ -28,19 +28,22 @@ def get_tsne_result(
     metric: str,
     figsize: tuple[float, float] | None = None,
 ) -> TsneResult:
+    columns = get_columns_by_grouping_settings(grouping_settings, variables)
+    df = datatable.get_filtered_df(columns)
+
     # Cleaning
     df.dropna(inplace=True)
 
     match grouping_settings.mode:
         case GroupingMode.ANIMAL:
             by = "Animal"
-            palette = color_manager.get_animal_to_color_dict(dataset.animals)
+            palette = color_manager.get_animal_to_color_dict(datatable.dataset.animals)
         case GroupingMode.RUN:
             by = "Run"
-            palette = color_manager.get_run_to_color_dict(dataset.runs)
+            palette = color_manager.get_run_to_color_dict(datatable.dataset.runs)
         case GroupingMode.FACTOR:
             by = grouping_settings.factor_name
-            palette = color_manager.get_level_to_color_dict(dataset.factors[by])
+            palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[by])
         case _:
             by = None
             palette = color_manager.colormap_name

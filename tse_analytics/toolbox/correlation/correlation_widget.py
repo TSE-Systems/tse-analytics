@@ -4,7 +4,6 @@ from PySide6.QtWidgets import QLabel, QToolBar, QWidget
 
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.utils import get_figsize_from_widget
-from tse_analytics.core.utils.data import get_columns_by_grouping_settings
 from tse_analytics.toolbox.correlation.processor import get_correlation_result
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
@@ -55,19 +54,12 @@ class CorrelationWidget(ToolboxWidgetBase):
     def _update(self):
         self.report_view.clear()
 
-        grouping_settings = self.group_by_selector.get_grouping_settings()
-
         x_var = self.xVariableSelector.get_selected_variable()
         y_var = self.yVariableSelector.get_selected_variable()
-
-        variable_columns = [x_var.name] if x_var.name == y_var.name else [x_var.name, y_var.name]
-
-        columns = get_columns_by_grouping_settings(grouping_settings, variable_columns)
-        df = self.datatable.get_filtered_df(columns)
+        grouping_settings = self.group_by_selector.get_grouping_settings()
 
         result = get_correlation_result(
-            self.datatable.dataset,
-            df,
+            self.datatable,
             x_var.name,
             y_var.name,
             grouping_settings,

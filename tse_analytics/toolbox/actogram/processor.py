@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from tse_analytics.core import color_manager
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.utils import get_html_image_from_figure, time_to_float
 from tse_analytics.core.utils.data import normalize_nd_array
@@ -184,13 +184,15 @@ class ActogramResult:
 
 
 def get_actogram_result(
-    dataset: Dataset,
-    df: pd.DataFrame,
+    datatable: Datatable,
     variable: Variable,
     bins_per_hour: int,
     figsize: tuple[float, float] | None = None,
 ) -> ActogramResult:
-    light_cycles = dataset.light_cycles
+    columns = ["Animal", "DateTime", variable.name]
+    df = datatable.get_filtered_df(columns)
+
+    light_cycles = datatable.dataset.light_cycles
 
     # Convert DataFrame to actogram format
     activity_array, unique_days = dataframe_to_actogram(df, variable, 24 * bins_per_hour)

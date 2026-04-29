@@ -27,10 +27,6 @@ class ToolboxButton(QToolButton):
         self._menus: dict[str, QMenu] = {}
         self._actions: dict[str, QAction] = {}
 
-        self._populate_menu()
-        self.setMenu(self._toolbox_menu)
-
-    def _populate_menu(self) -> None:
         """Dynamically populate the menu from the registry."""
         plugins_by_category = registry.get_plugins()
 
@@ -59,12 +55,13 @@ class ToolboxButton(QToolButton):
                     elif plugin.label == "Place Preference":
                         self.intellicage_place_preference_action = action
 
-            # Store IntelliCage menu for set_enabled_actions
-            if category == "IntelliCage":
-                self.intellicage_menu = submenu
-            elif category == "AI":
-                self.ai_menu = submenu
-                self.ai_menu.setEnabled(False)
+        self.intellicage_menu = self._menus["IntelliCage"]
+        self.intellicage_menu.menuAction().setVisible(False)
+
+        self.ai_menu = self._menus["AI"]
+        self.ai_menu.menuAction().setVisible(False)
+
+        self.setMenu(self._toolbox_menu)
 
     def set_state(self, state: bool) -> None:
         """Enable or disable the toolbox button.
@@ -76,7 +73,7 @@ class ToolboxButton(QToolButton):
 
     def enable_internal_tools(self, state: bool) -> None:
         """Enable or disable internal toolbox buttons."""
-        self.ai_menu.setEnabled(state)
+        self.ai_menu.menuAction().setVisible(state)
 
     def set_enabled_actions(self, dataset: Dataset, datatable: Datatable | None) -> None:
         """Enable or disable specific actions based on the selected dataset and datatable.
@@ -90,19 +87,17 @@ class ToolboxButton(QToolButton):
         """
         # Example logic for IntelliCage (needs to be adapted if registry keys change)
         if dataset.dataset_type == "IntelliCage" or dataset.dataset_type == "IntelliMaze":
-            if hasattr(self, "intellicage_menu"):
-                self.intellicage_menu.setEnabled(True)
+            self.intellicage_menu.menuAction().setVisible(True)
 
             if hasattr(self, "intellicage_transitions_action"):
-                self.intellicage_transitions_action.setEnabled(datatable is not None and datatable.name == "Visits")
+                self.intellicage_transitions_action.setVisible(datatable is not None and datatable.name == "Visits")
 
             if hasattr(self, "intellicage_place_preference_action"):
-                self.intellicage_place_preference_action.setEnabled(
+                self.intellicage_place_preference_action.setVisible(
                     datatable is not None and datatable.name == "Visits"
                 )
         else:
-            if hasattr(self, "intellicage_menu"):
-                self.intellicage_menu.setEnabled(False)
+            self.intellicage_menu.menuAction().setVisible(False)
 
     def _add_widget(self, plugin_info: ToolboxPluginInfo):
         """Generic method to add a widget to the central area.

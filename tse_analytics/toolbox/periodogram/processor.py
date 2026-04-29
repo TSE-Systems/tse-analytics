@@ -5,6 +5,9 @@ import numpy as np
 import pandas as pd
 from astropy.timeseries import LombScargle
 
+from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.grouping import GroupingSettings
+from tse_analytics.core.data.operators.group_by_pipe_operator import group_by_columns
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.utils import get_html_image_from_figure
 
@@ -15,10 +18,23 @@ class PeriodogramResult:
 
 
 def get_periodogram_result(
-    df: pd.DataFrame,
+    datatable: Datatable,
     variable: Variable,
+    grouping_settings: GroupingSettings,
     figsize: tuple[float, float] | None = None,
 ) -> PeriodogramResult:
+    columns = datatable.get_default_columns() + list(datatable.dataset.factors) + [variable.name]
+    df = datatable.get_filtered_df(columns)
+
+    # Group by columns
+    df = group_by_columns(
+        df,
+        {variable.name: variable},
+        grouping_settings,
+    )
+
+    df.dropna(inplace=True)
+
     t = df["DateTime"]
     y = df[variable.name]
 

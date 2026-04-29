@@ -4,7 +4,6 @@ from PySide6.QtWidgets import QLabel, QToolBar, QWidget
 
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.utils import get_figsize_from_widget
-from tse_analytics.core.utils.data import get_columns_by_grouping_settings
 from tse_analytics.toolbox.histogram.processor import get_histogram_result
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
@@ -50,12 +49,8 @@ class HistogramWidget(ToolboxWidgetBase):
         grouping_settings = self.group_by_selector.get_grouping_settings()
         variable = self.variableSelector.get_selected_variable()
 
-        columns = get_columns_by_grouping_settings(grouping_settings, [variable.name])
-        df = self.datatable.get_filtered_df(columns)
-
         result = get_histogram_result(
-            self.datatable.dataset,
-            df,
+            self.datatable,
             variable.name,
             grouping_settings,
             get_figsize_from_widget(self.report_view),

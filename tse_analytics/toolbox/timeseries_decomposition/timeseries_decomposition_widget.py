@@ -84,13 +84,8 @@ class TimeseriesDecompositionWidget(ToolboxWidgetBase):
         variable = self.variableSelector.get_selected_variable()
         animal = self.animalSelector.get_selected_animal()
 
-        columns = ["Timedelta", "Animal", variable.name]
-        df = self.datatable.get_filtered_df(columns)
-        df = df[df["Animal"] == animal.id]
-        df.reset_index(drop=True, inplace=True)
-
         result = get_timeseries_decomposition_result(
-            df,
+            self.datatable,
             animal.id,
             variable.name,
             self.period_spin_box.value(),

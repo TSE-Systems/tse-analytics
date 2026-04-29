@@ -46,7 +46,7 @@ dependencies = [
 dev = [
     "pyinstaller==6.20.0",
     "pyinstrument==5.1.2",
-    "pyrefly==0.63.0",
+    "pyrefly==0.63.1",
     "pytest==9.0.3",
     "qtsass==0.4.0",
     "ruff==0.15.12",

@@ -105,14 +105,9 @@ class UmapNode(PipelineNode):
         except ValueError, TypeError:
             return PipelinePacket.inactive(reason="Invalid max iterations value")
 
-        # Get data
-        columns = get_columns_by_grouping_settings(grouping_settings, variable_names)
-        df = datatable.get_filtered_df(columns)
-
         # Perform t-SNE analysis
         result = get_tsne_result(
-            datatable.dataset,
-            df,
+            datatable,
             variable_names,
             grouping_settings,
             perplexity,

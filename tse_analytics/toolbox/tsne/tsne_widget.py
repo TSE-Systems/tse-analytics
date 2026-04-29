@@ -15,7 +15,6 @@ from PySide6.QtWidgets import (
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_figsize_from_widget, get_widget_tool_button
-from tse_analytics.core.utils.data import get_columns_by_grouping_settings
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
@@ -169,13 +168,9 @@ class TsneWidget(ToolboxWidgetBase):
         self.toast = make_toast(self, self.title, "Processing...")
         self.toast.show()
 
-        columns = get_columns_by_grouping_settings(grouping_settings, selected_variables)
-        df = self.datatable.get_filtered_df(columns)
-
         worker = Worker(
             get_tsne_result,
-            self.datatable.dataset,
-            df,
+            self.datatable,
             selected_variables,
             grouping_settings,
             self.n_components_spin_box.value(),

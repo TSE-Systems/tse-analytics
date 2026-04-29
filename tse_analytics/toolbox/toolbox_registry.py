@@ -33,7 +33,6 @@ class ToolboxRegistry:
         "ANOVA",
         "Factor Analysis",
         "Chronobiology",
-        "Circadian Analysis",
         "Time Series",
         "IntelliCage",
     ]

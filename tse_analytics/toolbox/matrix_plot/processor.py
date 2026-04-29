@@ -1,14 +1,14 @@
 from dataclasses import dataclass
 from typing import Literal
 
-import pandas as pd
 import seaborn as sns
 from matplotlib import rcParams
 
 from tse_analytics.core import color_manager
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
 from tse_analytics.core.utils import get_html_image_from_figure
+from tse_analytics.core.utils.data import get_columns_by_grouping_settings
 
 MATRIXPLOT_KIND: dict[str, Literal["scatter", "kde", "hist", "reg"]] = {
     "Scatter Plot": "scatter",
@@ -24,26 +24,25 @@ class MatrixPlotResult:
 
 
 def get_matrix_plot_result(
-    dataset: Dataset,
-    df: pd.DataFrame,
+    datatable: Datatable,
     variables: list[str],
     grouping_settings: GroupingSettings,
     plot_kind: Literal["scatter", "kde", "hist", "reg"],
     figsize: tuple[float, float] | None = None,
 ) -> MatrixPlotResult:
-    if figsize is None:
-        figsize = rcParams["figure.figsize"]
+    columns = get_columns_by_grouping_settings(grouping_settings, variables)
+    df = datatable.get_filtered_df(columns)
 
     match grouping_settings.mode:
         case GroupingMode.ANIMAL:
             hue = "Animal"
-            palette = color_manager.get_animal_to_color_dict(dataset.animals)
+            palette = color_manager.get_animal_to_color_dict(datatable.dataset.animals)
         case GroupingMode.RUN:
             hue = "Run"
-            palette = color_manager.get_run_to_color_dict(dataset.runs)
+            palette = color_manager.get_run_to_color_dict(datatable.dataset.runs)
         case GroupingMode.FACTOR:
             hue = grouping_settings.factor_name
-            palette = color_manager.get_level_to_color_dict(dataset.factors[hue])
+            palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[hue])
         case _:  # Total
             hue = "None"
             palette = color_manager.colormap_name
@@ -56,6 +55,8 @@ def get_matrix_plot_result(
         palette=palette,
         markers=".",
     )
+    if figsize is None:
+        figsize = rcParams["figure.figsize"]
     pair_grid.figure.set_size_inches(figsize)
     pair_grid.figure.set_layout_engine("tight")
     # sns.move_legend(pair_grid, "upper right")

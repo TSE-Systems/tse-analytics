@@ -4,7 +4,6 @@ from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.grouping import GroupingMode
 from tse_analytics.core.utils import get_group_by_params
-from tse_analytics.core.utils.data import get_columns_by_grouping_settings
 from tse_analytics.pipeline import PipelineNode
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 from tse_analytics.toolbox.tsne.processor import get_tsne_result
@@ -105,14 +104,9 @@ class TsneNode(PipelineNode):
         except ValueError, TypeError:
             return PipelinePacket.inactive(reason="Invalid max iterations value")
 
-        # Get data
-        columns = get_columns_by_grouping_settings(grouping_settings, variable_names)
-        df = datatable.get_filtered_df(columns)
-
         # Perform t-SNE analysis
         result = get_tsne_result(
-            datatable.dataset,
-            df,
+            datatable,
             variable_names,
             grouping_settings,
             perplexity,
