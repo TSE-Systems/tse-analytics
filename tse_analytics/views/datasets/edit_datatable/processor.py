@@ -1,6 +1,9 @@
+import pandas as pd
+
 from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.operators.time_intervals_binning_pipe_operator import process_time_interval_binning
+
+default_columns = ["Animal", "Timedelta", "DateTime", "Run"]
 
 
 def process_table(
@@ -14,9 +17,49 @@ def process_table(
 
     # Time binning
     if time_intervals_settings is not None:
-        datatable.df = process_time_interval_binning(
-            datatable.df,
-            time_intervals_settings,
-            datatable.variables,
-            origin=datatable.dataset.experiment_started,
-        )
+        df = datatable.df
+        if df.empty:
+            return df
+
+        timedelta = pd.Timedelta(f"{time_intervals_settings.delta}{time_intervals_settings.unit}")
+
+        agg = {
+            "DateTime": "first",
+        }
+
+        include_runs = "Run" in df.columns
+        if include_runs:
+            agg["Run"] = "first"
+
+        for column in df.columns:
+            if column not in default_columns:
+                if df.dtypes[column].name != "category":
+                    if column in datatable.variables:
+                        agg[column] = datatable.variables[column].aggregation
+                else:
+                    # Include categorical data fields
+                    agg[column] = "first"
+
+        result = df.groupby("Animal", dropna=False, observed=False)
+        result = result.resample(timedelta, on="Timedelta", origin=datatable.dataset.experiment_started).aggregate(agg)
+
+        result = result[result["DateTime"].notna()]
+
+        # result.sort_values(by="Timedelta", inplace=True)
+        result.reset_index(inplace=True, drop=False)
+
+        # TODO: check if done properly: align timedelta to the resampling resolution
+        result["Timedelta"] = result["Timedelta"].dt.round(timedelta)
+
+        # Reassign bins numbers
+        result.insert(loc=0, column="Bin", value=(result["Timedelta"] / timedelta).round().astype("UInt64"))
+
+        result.sort_values(by="Bin", inplace=True)
+        result.reset_index(inplace=True, drop=True)
+
+        if include_runs:
+            result = result.astype({
+                "Run": "UInt8",
+            })
+
+        datatable.df = result
