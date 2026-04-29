@@ -242,7 +242,7 @@ def _plot_zt_profile(
 ) -> plt.Figure:
     df = df.copy()
     df["ZT"] = _compute_zeitgeber_time(df["DateTime"], light_cycle_start)
-    df["ZT_bin"] = df["ZT"].round().astype(int) % 24
+    df["ZT_bin"] = df["ZT"].round().astype("Int64") % 24
 
     figure = plt.Figure(figsize=figsize, layout="tight")
     ax = figure.subplots()

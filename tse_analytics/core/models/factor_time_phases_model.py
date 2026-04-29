@@ -10,7 +10,7 @@ import pandas as pd
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
 from tse_analytics.core.color_manager import get_factor_level_color_hex
-from tse_analytics.core.data.shared import Factor, FactorLevel, TimePhase
+from tse_analytics.core.data.shared import ByElapsedTimeConfig, Factor, FactorLevel, TimePhase
 
 
 class FactorTimePhasesModel(QAbstractTableModel):
@@ -28,9 +28,9 @@ class FactorTimePhasesModel(QAbstractTableModel):
 
     @property
     def items(self) -> list[TimePhase]:
-        if self.factor is None or self.factor.time_phases is None:
+        if self.factor is None or not isinstance(self.factor.config, ByElapsedTimeConfig):
             return []
-        return self.factor.time_phases.phases
+        return self.factor.config.phases
 
     def data(self, index: QModelIndex, role: Qt.ItemDataRole = ...):
         if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
@@ -80,20 +80,20 @@ class FactorTimePhasesModel(QAbstractTableModel):
         return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsEditable
 
     def add_phase(self, name: str, start_timestamp: timedelta) -> bool:
-        if self.factor is None or self.factor.time_phases is None:
+        if self.factor is None or not isinstance(self.factor.config, ByElapsedTimeConfig):
             return False
         if any(p.name == name for p in self.items):
             return False
         phase = TimePhase(name=name, start_timestamp=start_timestamp)
-        self.factor.time_phases.phases.append(phase)
+        self.factor.config.phases.append(phase)
         self.factor.levels.append(FactorLevel(name=name, color=get_factor_level_color_hex(len(self.factor.levels))))
         self.layoutChanged.emit()
         return True
 
     def delete_phase(self, index: QModelIndex) -> None:
-        if self.factor is None or not index.isValid():
+        if self.factor is None or not isinstance(self.factor.config, ByElapsedTimeConfig) or not index.isValid():
             return
         phase = self.items[index.row()]
-        del self.factor.time_phases.phases[index.row()]
+        del self.factor.config.phases[index.row()]
         self.factor.levels = [level for level in self.factor.levels if level.name != phase.name]
         self.layoutChanged.emit()

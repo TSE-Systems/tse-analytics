@@ -11,8 +11,7 @@ class TestAncova:
         variables = analysis_dataset.datatables["Main"].variables
 
         result = get_ancova_result(
-            dataset=analysis_dataset,
-            df=analysis_df.copy(),
+            datatable=analysis_dataset.datatables["Main"],
             dependent_variable=variables["Metabolism"],
             covariate_variable=variables["Activity"],
             factor_name="Group",
@@ -25,8 +24,7 @@ class TestAncova:
         variables = analysis_dataset.datatables["Main"].variables
 
         result = get_ancova_result(
-            dataset=analysis_dataset,
-            df=analysis_df.copy(),
+            datatable=analysis_dataset.datatables["Main"],
             dependent_variable=variables["Metabolism"],
             covariate_variable=variables["Activity"],
             factor_name="Group",
@@ -39,8 +37,7 @@ class TestAncova:
         variables = analysis_dataset.datatables["Main"].variables
 
         result = get_ancova_result(
-            dataset=analysis_dataset,
-            df=analysis_df.copy(),
+            datatable=analysis_dataset.datatables["Main"],
             dependent_variable=variables["Metabolism"],
             covariate_variable=variables["Activity"],
             factor_name="Group",
@@ -53,8 +50,7 @@ class TestAncova:
         variables = analysis_dataset.datatables["Main"].variables
 
         result = get_ancova_result(
-            dataset=analysis_dataset,
-            df=analysis_df.copy(),
+            datatable=analysis_dataset.datatables["Main"],
             dependent_variable=variables["Metabolism"],
             covariate_variable=variables["Activity"],
             factor_name="Group",
@@ -68,8 +64,7 @@ class TestAncova:
         variables = analysis_dataset.datatables["Main"].variables
 
         result = get_ancova_result(
-            dataset=analysis_dataset,
-            df=analysis_df.copy(),
+            datatable=analysis_dataset.datatables["Main"],
             dependent_variable=variables["Metabolism"],
             covariate_variable=variables["Activity"],
             factor_name="Group",
@@ -83,8 +78,7 @@ class TestAncova:
         variables = analysis_dataset.datatables["Main"].variables
 
         result = get_ancova_result(
-            dataset=analysis_dataset,
-            df=analysis_df.copy(),
+            datatable=analysis_dataset.datatables["Main"],
             dependent_variable=variables["Metabolism"],
             covariate_variable=variables["Activity"],
             factor_name="Group",
@@ -97,8 +91,7 @@ class TestAncova:
         variables = analysis_dataset.datatables["Main"].variables
 
         result = get_ancova_result(
-            dataset=analysis_dataset,
-            df=analysis_df.copy(),
+            datatable=analysis_dataset.datatables["Main"],
             dependent_variable=variables["Activity"],
             covariate_variable=variables["Metabolism"],
             factor_name="Group",

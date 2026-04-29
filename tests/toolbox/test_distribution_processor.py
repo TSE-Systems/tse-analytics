@@ -11,10 +11,9 @@ from tse_analytics.toolbox.distribution.processor import DistributionResult, get
 class TestDistribution:
     """Tests for get_distribution_result processor function."""
 
-    def test_box_plot_total_mode(self, analysis_dataset, analysis_df):
+    def test_box_plot_total_mode(self, analysis_dataset):
         result = get_distribution_result(
-            dataset=analysis_dataset,
-            df=analysis_df.copy(),
+            datatable=analysis_dataset.datatables["Main"],
             variable_name="Metabolism",
             grouping_settings=GroupingSettings(mode=GroupingMode.TOTAL),
             plot_type="Box plot",
@@ -24,10 +23,9 @@ class TestDistribution:
         assert isinstance(result, DistributionResult)
         assert "<img" in result.report
 
-    def test_violin_plot_total_mode(self, analysis_dataset, analysis_df):
+    def test_violin_plot_total_mode(self, analysis_dataset):
         result = get_distribution_result(
-            dataset=analysis_dataset,
-            df=analysis_df.copy(),
+            datatable=analysis_dataset.datatables["Main"],
             variable_name="Metabolism",
             grouping_settings=GroupingSettings(mode=GroupingMode.TOTAL),
             plot_type="Violin plot",
@@ -37,10 +35,9 @@ class TestDistribution:
         assert isinstance(result, DistributionResult)
         assert "<img" in result.report
 
-    def test_factor_mode(self, analysis_dataset, analysis_df):
+    def test_factor_mode(self, analysis_dataset):
         result = get_distribution_result(
-            dataset=analysis_dataset,
-            df=analysis_df.copy(),
+            datatable=analysis_dataset.datatables["Main"],
             variable_name="Metabolism",
             grouping_settings=GroupingSettings(mode=GroupingMode.FACTOR, factor_name="Group"),
             plot_type="Box plot",
@@ -49,10 +46,9 @@ class TestDistribution:
         )
         assert isinstance(result, DistributionResult)
 
-    def test_animal_mode(self, analysis_dataset, analysis_df):
+    def test_animal_mode(self, analysis_dataset):
         result = get_distribution_result(
-            dataset=analysis_dataset,
-            df=analysis_df.copy(),
+            datatable=analysis_dataset.datatables["Main"],
             variable_name="Metabolism",
             grouping_settings=GroupingSettings(mode=GroupingMode.ANIMAL),
             plot_type="Box plot",
@@ -61,10 +57,9 @@ class TestDistribution:
         )
         assert isinstance(result, DistributionResult)
 
-    def test_with_strip_points(self, analysis_dataset, analysis_df):
+    def test_with_strip_points(self, analysis_dataset):
         result = get_distribution_result(
-            dataset=analysis_dataset,
-            df=analysis_df.copy(),
+            datatable=analysis_dataset.datatables["Main"],
             variable_name="Metabolism",
             grouping_settings=GroupingSettings(mode=GroupingMode.FACTOR, factor_name="Group"),
             plot_type="Box plot",
@@ -74,10 +69,9 @@ class TestDistribution:
         assert isinstance(result, DistributionResult)
         assert "<img" in result.report
 
-    def test_run_mode(self, analysis_dataset, analysis_df):
+    def test_run_mode(self, analysis_dataset):
         result = get_distribution_result(
-            dataset=analysis_dataset,
-            df=analysis_df.copy(),
+            datatable=analysis_dataset.datatables["Main"],
             variable_name="Metabolism",
             grouping_settings=GroupingSettings(mode=GroupingMode.RUN),
             plot_type="Box plot",

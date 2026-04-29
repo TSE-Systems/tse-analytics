@@ -4,7 +4,7 @@ from pyqttoast import ToastPreset
 from PySide6.QtWidgets import QComboBox, QLabel, QToolBar, QWidget
 
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import FactorKind
+from tse_analytics.core.data.shared import FactorRole
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_figsize_from_widget
 from tse_analytics.pipeline.enums import EFFECT_SIZE
@@ -42,7 +42,7 @@ class OneWayAnovaWidget(ToolboxWidgetBase):
             toolbar,
             self.datatable.dataset.factors,
             selected_factor=self._settings.selected_factor,
-            show_factor_kind=[FactorKind.ANIMAL],
+            show_role=FactorRole.BETWEEN_SUBJECT,
         )
         toolbar.addWidget(self.factor_selector)
 

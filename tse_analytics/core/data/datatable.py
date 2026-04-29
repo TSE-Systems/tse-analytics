@@ -8,6 +8,7 @@ excluding time ranges, resampling, and applying factors.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 from uuid import uuid7
@@ -18,7 +19,16 @@ from loguru import logger
 from tse_analytics.core import messaging
 from tse_analytics.core.data.operators.outliers_pipe_operator import process_outliers
 from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings
-from tse_analytics.core.data.shared import Animal, Factor, FactorKind, Variable
+from tse_analytics.core.data.shared import (
+    Animal,
+    ByAnimalConfig,
+    ByAnimalPropertyConfig,
+    ByColumnConfig,
+    ByElapsedTimeConfig,
+    ByTimeOfDayConfig,
+    Factor,
+    Variable,
+)
 from tse_analytics.core.utils.data import exclude_animals_from_df, reassign_df_timedelta_and_bin, rename_animal_df
 
 if TYPE_CHECKING:
@@ -309,15 +319,11 @@ class Datatable:
         """
         Set the factors for the datatable.
 
-        This method updates the active dataframe with factor columns based on the
-        provided factors dictionary. Each factor is materialized as a categorical
-        column whose values depend on the factor kind:
-
-        - ``ANIMAL`` factors map each row's ``Animal`` to a level name.
-        - ``TIME_CYCLES`` factors derive ``Light``/``Dark`` from the row's
-          ``DateTime`` time-of-day.
-        - ``TIME_PHASES`` factors assign a phase name based on the row's
-          ``Timedelta`` falling into the configured phase windows.
+        Each factor is materialized as a categorical column on the active
+        dataframe by dispatching on the type of ``factor.config``. The
+        dispatch table is ``_FACTOR_APPLIERS``; adding a new factor source
+        requires only a new config type and a new applier function — no
+        changes to this method.
 
         Parameters
         ----------
@@ -337,16 +343,16 @@ class Datatable:
         if old_factors is not None:
             df.drop(columns=old_factors.keys(), inplace=True, errors="ignore")
 
-        animal_ids = df["Animal"].unique()
-
         for factor in factors.values():
-            match factor.kind:
-                case FactorKind.ANIMAL:
-                    _apply_animal_factor(df, factor, animal_ids)
-                case FactorKind.LIGHT_CYCLES:
-                    _apply_time_cycles_factor(df, factor)
-                case FactorKind.TIME_PHASES:
-                    _apply_time_phases_factor(df, factor)
+            config = factor.config
+            if config is None:
+                logger.debug(f"Skipping factor {factor.name!r}: no config")
+                continue
+            applier = _FACTOR_APPLIERS.get(type(config))
+            if applier is None:
+                logger.debug(f"Skipping factor {factor.name!r}: no applier registered for {type(config).__name__}")
+                continue
+            applier(df, factor, self.dataset)
 
         self.df = df
 
@@ -420,7 +426,9 @@ class Datatable:
         )
 
 
-def _apply_animal_factor(df: pd.DataFrame, factor: Factor, animal_ids) -> None:
+def _apply_by_animal(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:
+    del dataset  # unused; per-animal mapping comes from factor.levels
+    animal_ids = df["Animal"].unique()
     animal_factor_map: dict[str, Any] = dict.fromkeys(animal_ids, pd.NA)
     for level in factor.levels:
         for animal_id in level.animal_ids:
@@ -430,18 +438,34 @@ def _apply_animal_factor(df: pd.DataFrame, factor: Factor, animal_ids) -> None:
     df.replace({factor.name: animal_factor_map}, inplace=True)
     df[factor.name] = df[factor.name].astype("category")
 
-    # Sort levels alphabetically
     order = sorted(df[factor.name].cat.categories.tolist(), key=str.lower)
     df[factor.name] = df[factor.name].cat.reorder_categories(order)
 
 
-def _apply_time_cycles_factor(df: pd.DataFrame, factor: Factor) -> None:
-    cfg = factor.light_cycles
-    if cfg is None:
-        logger.debug(f"Skipping TIME_CYCLES factor '{factor.name}': missing config")
-        return
+def _apply_by_animal_property(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:
+    cfg = factor.config
+    assert isinstance(cfg, ByAnimalPropertyConfig)
+
+    animal_ids = df["Animal"].unique()
+    animal_factor_map: dict[str, Any] = dict.fromkeys(animal_ids, pd.NA)
+    for animal in dataset.animals.values():
+        if cfg.property_key in animal.properties:
+            animal_factor_map[animal.id] = str(animal.properties[cfg.property_key])
+
+    df[factor.name] = df["Animal"].astype("string")
+    df.replace({factor.name: animal_factor_map}, inplace=True)
+    df[factor.name] = df[factor.name].astype("category")
+
+    order = sorted(df[factor.name].cat.categories.tolist(), key=str.lower)
+    df[factor.name] = df[factor.name].cat.reorder_categories(order)
+
+
+def _apply_by_time_of_day(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:
+    del dataset  # unused
+    cfg = factor.config
+    assert isinstance(cfg, ByTimeOfDayConfig)
     if "DateTime" not in df.columns:
-        logger.debug(f"Skipping TIME_CYCLES factor '{factor.name}': no DateTime column")
+        logger.debug(f"Skipping factor {factor.name!r}: no DateTime column")
         return
 
     light_start = cfg.light_cycle_start
@@ -451,13 +475,15 @@ def _apply_time_cycles_factor(df: pd.DataFrame, factor: Factor) -> None:
     df[factor.name] = series.astype("category").cat.set_categories(["Light", "Dark"], ordered=True)
 
 
-def _apply_time_phases_factor(df: pd.DataFrame, factor: Factor) -> None:
-    cfg = factor.time_phases
-    if cfg is None or len(cfg.phases) == 0:
-        logger.debug(f"Skipping TIME_PHASES factor '{factor.name}': no phases configured")
+def _apply_by_elapsed_time(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:
+    del dataset  # unused
+    cfg = factor.config
+    assert isinstance(cfg, ByElapsedTimeConfig)
+    if len(cfg.phases) == 0:
+        logger.debug(f"Skipping factor {factor.name!r}: no phases configured")
         return
     if "Timedelta" not in df.columns:
-        logger.debug(f"Skipping TIME_PHASES factor '{factor.name}': no Timedelta column")
+        logger.debug(f"Skipping factor {factor.name!r}: no Timedelta column")
         return
 
     phases = sorted(cfg.phases, key=lambda p: p.start_timestamp)
@@ -467,3 +493,26 @@ def _apply_time_phases_factor(df: pd.DataFrame, factor: Factor) -> None:
 
     categories = [phase.name for phase in phases]
     df[factor.name] = df[factor.name].astype("category").cat.set_categories(categories, ordered=True)
+
+
+def _apply_by_column(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:
+    del dataset  # unused
+    cfg = factor.config
+    assert isinstance(cfg, ByColumnConfig)
+    if cfg.column not in df.columns:
+        logger.debug(f"Skipping factor {factor.name!r}: source column {cfg.column!r} not present")
+        return
+
+    series = df[cfg.column]
+    df[factor.name] = series if series.dtype.name == "category" else series.astype("category")
+
+
+_FactorApplier = Callable[[pd.DataFrame, Factor, "Dataset"], None]
+
+_FACTOR_APPLIERS: dict[type, _FactorApplier] = {
+    ByAnimalConfig: _apply_by_animal,
+    ByAnimalPropertyConfig: _apply_by_animal_property,
+    ByTimeOfDayConfig: _apply_by_time_of_day,
+    ByElapsedTimeConfig: _apply_by_elapsed_time,
+    ByColumnConfig: _apply_by_column,
+}

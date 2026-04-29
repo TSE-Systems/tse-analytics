@@ -11,7 +11,7 @@ from loguru import logger
 
 from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.shared import Animal, Factor
+from tse_analytics.core.data.shared import Animal, ByAnimalConfig, Factor
 from tse_analytics.modules.intellimaze.data.utils import preprocess_main_table
 from tse_analytics.modules.intellimaze.extensions import (
     actor,
@@ -320,6 +320,6 @@ def _extract_factor(factor_name: str, dataset: Dataset) -> Factor | None:
     """
     levels = dataset.extract_levels_from_property(factor_name)
     if len(levels) > 0:
-        return Factor(factor_name, list(levels.values()))
+        return Factor(name=factor_name, config=ByAnimalConfig(), levels=list(levels.values()))
     else:
         return None

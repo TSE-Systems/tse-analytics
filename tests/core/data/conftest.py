@@ -15,8 +15,10 @@ import pytest
 from tse_analytics.core.data.shared import (
     Aggregation,
     Animal,
+    ByAnimalConfig,
     Factor,
     FactorLevel,
+    FactorRole,
     Variable,
 )
 
@@ -59,6 +61,8 @@ def sample_factor():
     """Factor with 2 levels: Control (A1) and Treatment (A2, A3)."""
     return Factor(
         name="Group",
+        config=ByAnimalConfig(),
+        role=FactorRole.BETWEEN_SUBJECT,
         levels=[
             FactorLevel(name="Control", color="#FF0000", animal_ids=["A1"]),
             FactorLevel(name="Treatment", color="#00FF00", animal_ids=["A2", "A3"]),

@@ -10,10 +10,9 @@ matplotlib.use("Agg")
 class TestCorrelation:
     """Tests for get_correlation_result processor function."""
 
-    def test_total_mode(self, analysis_dataset, analysis_df):
+    def test_total_mode(self, analysis_dataset):
         result = get_correlation_result(
-            dataset=analysis_dataset,
-            df=analysis_df.copy(),
+            datatable=analysis_dataset.datatables["Main"],
             x_var_name="Metabolism",
             y_var_name="Activity",
             grouping_settings=GroupingSettings(mode=GroupingMode.TOTAL),
@@ -22,10 +21,9 @@ class TestCorrelation:
         assert isinstance(result, CorrelationResult)
         assert "<img" in result.report
 
-    def test_report_contains_ttest(self, analysis_dataset, analysis_df):
+    def test_report_contains_ttest(self, analysis_dataset):
         result = get_correlation_result(
-            dataset=analysis_dataset,
-            df=analysis_df.copy(),
+            datatable=analysis_dataset.datatables["Main"],
             x_var_name="Metabolism",
             y_var_name="Activity",
             grouping_settings=GroupingSettings(mode=GroupingMode.TOTAL),
@@ -33,10 +31,9 @@ class TestCorrelation:
         )
         assert "t-test" in result.report.lower()
 
-    def test_report_contains_correlation(self, analysis_dataset, analysis_df):
+    def test_report_contains_correlation(self, analysis_dataset):
         result = get_correlation_result(
-            dataset=analysis_dataset,
-            df=analysis_df.copy(),
+            datatable=analysis_dataset.datatables["Main"],
             x_var_name="Metabolism",
             y_var_name="Activity",
             grouping_settings=GroupingSettings(mode=GroupingMode.TOTAL),
@@ -44,10 +41,9 @@ class TestCorrelation:
         )
         assert "pearson" in result.report.lower()
 
-    def test_animal_mode(self, analysis_dataset, analysis_df):
+    def test_animal_mode(self, analysis_dataset):
         result = get_correlation_result(
-            dataset=analysis_dataset,
-            df=analysis_df.copy(),
+            datatable=analysis_dataset.datatables["Main"],
             x_var_name="Metabolism",
             y_var_name="Activity",
             grouping_settings=GroupingSettings(mode=GroupingMode.ANIMAL),
@@ -55,10 +51,9 @@ class TestCorrelation:
         )
         assert isinstance(result, CorrelationResult)
 
-    def test_factor_mode(self, analysis_dataset, analysis_df):
+    def test_factor_mode(self, analysis_dataset):
         result = get_correlation_result(
-            dataset=analysis_dataset,
-            df=analysis_df.copy(),
+            datatable=analysis_dataset.datatables["Main"],
             x_var_name="Metabolism",
             y_var_name="Activity",
             grouping_settings=GroupingSettings(mode=GroupingMode.FACTOR, factor_name="Group"),

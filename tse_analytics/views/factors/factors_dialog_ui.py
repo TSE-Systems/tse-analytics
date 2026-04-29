@@ -199,6 +199,46 @@ class Ui_FactorsDialog(object):
         self.verticalLayout_7.addLayout(self.horizontalLayoutPhases)
 
         self.stackedWidgetConfig.addWidget(self.pagePhases)
+        self.pageAnimalProperty = QWidget()
+        self.pageAnimalProperty.setObjectName(u"pageAnimalProperty")
+        self.verticalLayoutAnimalProperty = QVBoxLayout(self.pageAnimalProperty)
+        self.verticalLayoutAnimalProperty.setObjectName(u"verticalLayoutAnimalProperty")
+        self.verticalLayoutAnimalProperty.setContentsMargins(0, 0, 0, 0)
+        self.labelAnimalPropertyHint = QLabel(self.pageAnimalProperty)
+        self.labelAnimalPropertyHint.setObjectName(u"labelAnimalPropertyHint")
+
+        self.verticalLayoutAnimalProperty.addWidget(self.labelAnimalPropertyHint)
+
+        self.comboBoxAnimalProperty = QComboBox(self.pageAnimalProperty)
+        self.comboBoxAnimalProperty.setObjectName(u"comboBoxAnimalProperty")
+
+        self.verticalLayoutAnimalProperty.addWidget(self.comboBoxAnimalProperty)
+
+        self.verticalSpacerAnimalProperty = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayoutAnimalProperty.addItem(self.verticalSpacerAnimalProperty)
+
+        self.stackedWidgetConfig.addWidget(self.pageAnimalProperty)
+        self.pageColumn = QWidget()
+        self.pageColumn.setObjectName(u"pageColumn")
+        self.verticalLayoutColumn = QVBoxLayout(self.pageColumn)
+        self.verticalLayoutColumn.setObjectName(u"verticalLayoutColumn")
+        self.verticalLayoutColumn.setContentsMargins(0, 0, 0, 0)
+        self.labelColumnHint = QLabel(self.pageColumn)
+        self.labelColumnHint.setObjectName(u"labelColumnHint")
+
+        self.verticalLayoutColumn.addWidget(self.labelColumnHint)
+
+        self.comboBoxColumn = QComboBox(self.pageColumn)
+        self.comboBoxColumn.setObjectName(u"comboBoxColumn")
+
+        self.verticalLayoutColumn.addWidget(self.comboBoxColumn)
+
+        self.verticalSpacerColumn = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayoutColumn.addItem(self.verticalSpacerColumn)
+
+        self.stackedWidgetConfig.addWidget(self.pageColumn)
 
         self.verticalLayout_5.addWidget(self.stackedWidgetConfig)
 
@@ -247,5 +287,7 @@ class Ui_FactorsDialog(object):
 #if QT_CONFIG(tooltip)
         self.toolButtonDeletePhase.setToolTip(QCoreApplication.translate("FactorsDialog", u"Delete selected phase", None))
 #endif // QT_CONFIG(tooltip)
+        self.labelAnimalPropertyHint.setText(QCoreApplication.translate("FactorsDialog", u"Animal property whose value defines the level for each animal:", None))
+        self.labelColumnHint.setText(QCoreApplication.translate("FactorsDialog", u"Datatable column whose values define the factor levels:", None))
     # retranslateUi
 

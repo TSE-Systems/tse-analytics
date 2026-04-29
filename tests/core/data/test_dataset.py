@@ -30,11 +30,15 @@ class TestDatasetInit:
             )
         assert ds.datatables == {}
 
-    def test_initializes_empty_factors(self, sample_dataset):
-        assert sample_dataset.factors == {}
-
     def test_initializes_empty_reports(self, sample_dataset):
         assert sample_dataset.reports == {}
+
+    def test_subject_id_column_defaults_to_animal(self, sample_dataset):
+        assert sample_dataset.subject_id_column == "Animal"
+
+    def test_subject_id_column_is_overridable(self, sample_dataset):
+        sample_dataset.subject_id_column = "Cage"
+        assert sample_dataset.subject_id_column == "Cage"
 
 
 class TestDatasetProperties:

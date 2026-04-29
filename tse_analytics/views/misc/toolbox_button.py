@@ -55,11 +55,13 @@ class ToolboxButton(QToolButton):
                     elif plugin.label == "Place Preference":
                         self.intellicage_place_preference_action = action
 
-        self.intellicage_menu = self._menus["IntelliCage"]
-        self.intellicage_menu.menuAction().setVisible(False)
+        if "IntelliCage" in self._menus:
+            self.intellicage_menu = self._menus["IntelliCage"]
+            self.intellicage_menu.menuAction().setVisible(False)
 
-        self.ai_menu = self._menus["AI"]
-        self.ai_menu.menuAction().setVisible(False)
+        if "AI" in self._menus:
+            self.ai_menu = self._menus["AI"]
+            self.ai_menu.menuAction().setVisible(False)
 
         self.setMenu(self._toolbox_menu)
 

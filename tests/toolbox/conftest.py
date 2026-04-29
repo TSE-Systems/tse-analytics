@@ -15,8 +15,10 @@ from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import (
     Aggregation,
     Animal,
+    ByAnimalConfig,
     Factor,
     FactorLevel,
+    FactorRole,
     Variable,
 )
 
@@ -63,6 +65,8 @@ def analysis_factor():
     """Factor with Control and Treatment levels."""
     return Factor(
         name="Group",
+        config=ByAnimalConfig(),
+        role=FactorRole.BETWEEN_SUBJECT,
         levels=[
             FactorLevel(name="Control", color="#FF0000", animal_ids=["M1", "M2", "M3"]),
             FactorLevel(name="Treatment", color="#00FF00", animal_ids=["M4", "M5", "M6"]),

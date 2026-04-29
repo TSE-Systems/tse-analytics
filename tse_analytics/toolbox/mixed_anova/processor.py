@@ -27,8 +27,9 @@ def get_mixed_anova_result(
     padjust: str,
     figsize: tuple[float, float] | None = None,
 ) -> MixedAnovaResult:
+    subject = datatable.dataset.subject_id_column
     df = datatable.get_filtered_df([
-        "Animal",
+        subject,
         between_subject_factor_name,
         within_subject_factor_name,
         dependent_variable.name,
@@ -36,7 +37,7 @@ def get_mixed_anova_result(
     df = (
         df
         .groupby(
-            ["Animal", between_subject_factor_name, within_subject_factor_name],
+            [subject, between_subject_factor_name, within_subject_factor_name],
             dropna=False,
             observed=True,
         )
@@ -52,7 +53,7 @@ def get_mixed_anova_result(
         data=df,
         dv=dependent_variable.name,
         within=within_subject_factor_name,
-        subject="Animal",
+        subject=subject,
         method="mauchly",
     )
     sphericity = pd.DataFrame(
@@ -68,7 +69,7 @@ def get_mixed_anova_result(
         dv=dependent_variable.name,
         between=between_subject_factor_name,
         within=within_subject_factor_name,
-        subject="Animal",
+        subject=subject,
     )
     report_sections.append(get_great_table(anova, "Mixed-design ANOVA").as_raw_html(inline_css=True))
 
@@ -78,7 +79,7 @@ def get_mixed_anova_result(
             dv=dependent_variable.name,
             within=within_subject_factor_name,
             between=between_subject_factor_name,
-            subject="Animal",
+            subject=subject,
             return_desc=True,
             effsize=effsize,
             padjust=padjust,

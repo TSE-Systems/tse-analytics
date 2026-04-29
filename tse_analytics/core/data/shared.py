@@ -8,7 +8,7 @@ for animals, factors, variables, time phases, and animal diets.
 
 from datetime import time, timedelta
 from enum import StrEnum, unique
-from typing import Any
+from typing import Annotated, Any, Literal
 
 from pydantic import Field
 from pydantic.dataclasses import dataclass
@@ -81,46 +81,56 @@ class FactorLevel:
 
 
 @unique
-class FactorKind(StrEnum):
+class FactorRole(StrEnum):
     """
-    Enumeration of factor kinds.
+    Statistical role of a factor.
 
     Attributes
     ----------
-    ANIMAL : str
-        Per-animal factor (levels assigned by animal id).
-    LIGHT_CYCLES : str
-        Time-based factor with light/dark cycles derived from row DateTime.
-    TIME_PHASES : str
-        Time-based factor with named phases derived from row Timedelta.
+    BETWEEN_SUBJECT : str
+        Factor is constant per subject across all rows (e.g. genotype, group).
+    WITHIN_SUBJECT : str
+        Factor varies within a subject across rows (e.g. light/dark cycle,
+        time phase, trial number).
     """
 
-    ANIMAL = "animal"
-    LIGHT_CYCLES = "light_cycles"
-    TIME_PHASES = "time_phases"
+    BETWEEN_SUBJECT = "between_subject"
+    WITHIN_SUBJECT = "within_subject"
 
 
-@dataclass
-class LightCyclesConfig:
+@unique
+class FactorSource(StrEnum):
     """
-    Configuration for a LIGHT_CYCLES factor.
+    How factor levels are computed for each row of a datatable.
 
     Attributes
     ----------
-    light_cycle_start : time
-        The time of day when the light cycle starts.
-    dark_cycle_start : time
-        The time of day when the dark cycle starts.
+    BY_ANIMAL : str
+        Levels assigned via explicit per-animal mapping in
+        ``FactorLevel.animal_ids``.
+    BY_ANIMAL_PROPERTY : str
+        Levels derived from a key in ``Animal.properties``.
+    BY_TIME_OF_DAY : str
+        Levels derived from a row's ``DateTime`` time-of-day (e.g. light/dark
+        cycles).
+    BY_ELAPSED_TIME : str
+        Levels derived from a row's ``Timedelta`` from experiment start
+        (named phases).
+    BY_COLUMN : str
+        Levels read from an existing categorical column on the dataframe.
     """
 
-    light_cycle_start: time
-    dark_cycle_start: time
+    BY_ANIMAL = "by_animal"
+    BY_ANIMAL_PROPERTY = "by_animal_property"
+    BY_TIME_OF_DAY = "by_time_of_day"
+    BY_ELAPSED_TIME = "by_elapsed_time"
+    BY_COLUMN = "by_column"
 
 
 @dataclass
 class TimePhase:
     """
-    A single named phase used by a TIME_PHASES factor.
+    A single named phase used by a ``ByElapsedTimeConfig`` factor.
 
     Attributes
     ----------
@@ -135,9 +145,55 @@ class TimePhase:
 
 
 @dataclass
-class TimePhasesConfig:
+class ByAnimalConfig:
     """
-    Configuration for a TIME_PHASES factor.
+    Factor source: levels assigned by explicit ``animal_id -> level`` mapping
+    encoded in ``FactorLevel.animal_ids``.
+    """
+
+    source: Literal[FactorSource.BY_ANIMAL] = FactorSource.BY_ANIMAL
+
+
+@dataclass
+class ByAnimalPropertyConfig:
+    """
+    Factor source: levels derived from a key in ``Animal.properties``.
+
+    Attributes
+    ----------
+    property_key : str
+        The key in ``Animal.properties`` whose value provides the level name
+        for each animal.
+    """
+
+    property_key: str
+    source: Literal[FactorSource.BY_ANIMAL_PROPERTY] = FactorSource.BY_ANIMAL_PROPERTY
+
+
+@dataclass
+class ByTimeOfDayConfig:
+    """
+    Factor source: levels derived from each row's ``DateTime`` time-of-day
+    (e.g. ``Light`` / ``Dark`` cycles).
+
+    Attributes
+    ----------
+    light_cycle_start : time
+        The time of day when the light cycle starts.
+    dark_cycle_start : time
+        The time of day when the dark cycle starts.
+    """
+
+    light_cycle_start: time
+    dark_cycle_start: time
+    source: Literal[FactorSource.BY_TIME_OF_DAY] = FactorSource.BY_TIME_OF_DAY
+
+
+@dataclass
+class ByElapsedTimeConfig:
+    """
+    Factor source: levels derived from each row's ``Timedelta`` since
+    experiment start (named phases).
 
     Attributes
     ----------
@@ -146,6 +202,29 @@ class TimePhasesConfig:
     """
 
     phases: list[TimePhase] = Field(default_factory=list)
+    source: Literal[FactorSource.BY_ELAPSED_TIME] = FactorSource.BY_ELAPSED_TIME
+
+
+@dataclass
+class ByColumnConfig:
+    """
+    Factor source: levels read from an existing categorical column on the
+    datatable's dataframe.
+
+    Attributes
+    ----------
+    column : str
+        The name of the column to read level values from.
+    """
+
+    column: str
+    source: Literal[FactorSource.BY_COLUMN] = FactorSource.BY_COLUMN
+
+
+FactorConfig = Annotated[
+    ByAnimalConfig | ByAnimalPropertyConfig | ByTimeOfDayConfig | ByElapsedTimeConfig | ByColumnConfig,
+    Field(discriminator="source"),
+]
 
 
 @dataclass
@@ -153,27 +232,29 @@ class Factor:
     """
     Dataclass representing a factor in the experiment.
 
+    A factor has two orthogonal first-class attributes:
+
+    - ``role`` (``FactorRole``): the statistical role — between-subject (constant
+      per subject) or within-subject (varies within a subject).
+    - ``config`` (``FactorConfig``): a discriminated union describing how the
+      factor's level values are computed for each row of the datatable.
+
     Attributes
     ----------
     name : str
         The name of the factor.
+    config : FactorConfig
+        Discriminated config describing how the factor is computed. Required.
+    role : FactorRole
+        Statistical role.
     levels : list[FactorLevel]
         List of levels for this factor.
-    kind : FactorKind
-        The kind of factor (animal-based or time-based). Defaults to ANIMAL
-        for backward compatibility with workspaces saved before time-based
-        factors were introduced.
-    light_cycles : LightCyclesConfig | None
-        Configuration for TIME_CYCLES kind; ``None`` for other kinds.
-    time_phases : TimePhasesConfig | None
-        Configuration for TIME_PHASES kind; ``None`` for other kinds.
     """
 
     name: str
+    config: FactorConfig
+    role: FactorRole
     levels: list[FactorLevel] = Field(default_factory=list)
-    kind: FactorKind = FactorKind.ANIMAL
-    light_cycles: LightCyclesConfig | None = None
-    time_phases: TimePhasesConfig | None = None
 
 
 @dataclass

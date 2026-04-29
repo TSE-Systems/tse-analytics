@@ -12,7 +12,7 @@ from tse_analytics.core.color_manager import (
     get_factor_level_color_hex,
     get_level_to_color_dict,
 )
-from tse_analytics.core.data.shared import Animal, Factor, FactorLevel
+from tse_analytics.core.data.shared import Animal, ByAnimalConfig, Factor, FactorLevel, FactorRole
 
 
 class TestGetColorTuple:
@@ -228,6 +228,8 @@ class TestGetLevelToColorDict:
         """Test that function returns a dictionary."""
         factor = Factor(
             name="Treatment",
+            config=ByAnimalConfig(),
+            role=FactorRole.BETWEEN_SUBJECT,
             levels=[
                 FactorLevel(name="Control", color="#FF0000", animal_ids=["a1"]),
                 FactorLevel(name="Drug", color="#00FF00", animal_ids=["a2"]),
@@ -242,6 +244,8 @@ class TestGetLevelToColorDict:
         """Test that level names are correctly mapped to their colors."""
         factor = Factor(
             name="Treatment",
+            config=ByAnimalConfig(),
+            role=FactorRole.BETWEEN_SUBJECT,
             levels=[
                 FactorLevel(name="Control", color="#FF0000", animal_ids=["a1"]),
                 FactorLevel(name="Drug", color="#00FF00", animal_ids=["a2"]),
@@ -255,7 +259,7 @@ class TestGetLevelToColorDict:
 
     def test_empty_factor_levels(self):
         """Test handling of factor with no levels."""
-        factor = Factor(name="Empty", levels=[])
+        factor = Factor(name="Empty", config=ByAnimalConfig(), role=FactorRole.BETWEEN_SUBJECT, levels=[])
 
         result = get_level_to_color_dict(factor)
 
@@ -263,7 +267,12 @@ class TestGetLevelToColorDict:
 
     def test_single_level(self):
         """Test with a factor having a single level."""
-        factor = Factor(name="Simple", levels=[FactorLevel(name="Only", color="#0000FF", animal_ids=[])])
+        factor = Factor(
+            name="Simple",
+            config=ByAnimalConfig(),
+            role=FactorRole.BETWEEN_SUBJECT,
+            levels=[FactorLevel(name="Only", color="#0000FF", animal_ids=[])],
+        )
 
         result = get_level_to_color_dict(factor)
 
@@ -274,6 +283,8 @@ class TestGetLevelToColorDict:
         """Test with multiple levels."""
         factor = Factor(
             name="MultiLevel",
+            config=ByAnimalConfig(),
+            role=FactorRole.BETWEEN_SUBJECT,
             levels=[
                 FactorLevel(name="Low", color="#111111", animal_ids=["a1"]),
                 FactorLevel(name="Medium", color="#222222", animal_ids=["a2"]),
@@ -292,6 +303,8 @@ class TestGetLevelToColorDict:
         """Test that all color values are preserved correctly."""
         factor = Factor(
             name="Test",
+            config=ByAnimalConfig(),
+            role=FactorRole.BETWEEN_SUBJECT,
             levels=[
                 FactorLevel(name="Alpha", color="#ABCDEF", animal_ids=["x"]),
                 FactorLevel(name="Beta", color="#FEDCBA", animal_ids=["y"]),
@@ -305,8 +318,18 @@ class TestGetLevelToColorDict:
 
     def test_different_factor_names_dont_affect_result(self):
         """Test that factor name doesn't affect the level-to-color mapping."""
-        factor1 = Factor(name="FactorA", levels=[FactorLevel(name="Level1", color="#111111", animal_ids=[])])
-        factor2 = Factor(name="FactorB", levels=[FactorLevel(name="Level1", color="#111111", animal_ids=[])])
+        factor1 = Factor(
+            name="FactorA",
+            config=ByAnimalConfig(),
+            role=FactorRole.BETWEEN_SUBJECT,
+            levels=[FactorLevel(name="Level1", color="#111111", animal_ids=[])],
+        )
+        factor2 = Factor(
+            name="FactorB",
+            config=ByAnimalConfig(),
+            role=FactorRole.BETWEEN_SUBJECT,
+            levels=[FactorLevel(name="Level1", color="#111111", animal_ids=[])],
+        )
 
         result1 = get_level_to_color_dict(factor1)
         result2 = get_level_to_color_dict(factor2)

@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QComboBox, QWidget
 
-from tse_analytics.core.data.shared import Factor, FactorKind
+from tse_analytics.core.data.shared import Factor, FactorRole
 
 
 class FactorSelector(QComboBox):
@@ -16,15 +16,15 @@ class FactorSelector(QComboBox):
         parent: QWidget,
         factors: dict[str, Factor],
         selected_factor: str = None,
-        show_factor_kind: list[FactorKind] | None = None,
+        show_role: FactorRole | None = None,
     ):
         super().__init__(parent)
 
         self.clear()
-        if show_factor_kind is None:
+        if show_role is None:
             items = list(factors)
         else:
-            items = [factor.name for factor in factors.values() if factor.kind in show_factor_kind]
+            items = [factor.name for factor in factors.values() if factor.role == show_role]
         self.addItems(items)
         if selected_factor is not None:
             self.setCurrentText(selected_factor)

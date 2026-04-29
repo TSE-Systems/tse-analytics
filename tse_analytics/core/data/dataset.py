@@ -17,7 +17,13 @@ from tse_analytics.core import messaging
 from tse_analytics.core.color_manager import get_factor_level_color_hex
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
-from tse_analytics.core.data.shared import Animal, Factor, FactorKind, FactorLevel, LightCyclesConfig
+from tse_analytics.core.data.shared import (
+    Animal,
+    ByTimeOfDayConfig,
+    Factor,
+    FactorLevel,
+    FactorRole,
+)
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.datatable_tree_item import DatatableTreeItem
 from tse_analytics.core.models.report_tree_item import ReportTreeItem
@@ -29,15 +35,15 @@ DatasetType = Literal["PhenoMaster", "IntelliMaze", "IntelliCage"]
 def _get_default_light_cycle_factor() -> Factor:
     return Factor(
         name="LightCycle",
-        kind=FactorKind.LIGHT_CYCLES,
+        role=FactorRole.WITHIN_SUBJECT,
+        config=ByTimeOfDayConfig(
+            light_cycle_start=time(7, 0),
+            dark_cycle_start=time(19, 0),
+        ),
         levels=[
             FactorLevel(name="Light", color=get_factor_level_color_hex(1)),
             FactorLevel(name="Dark", color=get_factor_level_color_hex(0)),
         ],
-        light_cycles=LightCyclesConfig(
-            light_cycle_start=time(7, 0),
-            dark_cycle_start=time(19, 0),
-        ),
     )
 
 
@@ -79,6 +85,14 @@ class Dataset:
         self.metadata = metadata
         self.animals = animals
 
+        # Column on each datatable's dataframe that identifies the
+        # within-subject grouping unit for repeated-measures statistics
+        # (the ``subject=`` argument to pingouin's ``mixed_anova`` /
+        # ``rm_anova`` / ``pairwise_tests``). Defaults to ``"Animal"`` for
+        # PhenoMaster / IntelliCage / IntelliMaze data; loaders may override
+        # for datasets where the natural subject differs.
+        self.subject_id_column: str = "Animal"
+
         self.datatables: dict[str, Datatable] = {}
         self.raw_datatables: dict[str, dict[str, Datatable]] = {}
 
@@ -90,8 +104,15 @@ class Dataset:
         self.reports: dict[str, Report] = {}
 
     @property
-    def light_cycles(self) -> LightCyclesConfig:
-        return self.factors["LightCycle"].light_cycles
+    def light_cycles(self) -> ByTimeOfDayConfig:
+        """Configuration for the dataset's light/dark cycle.
+
+        Returns the LightCycle factor's ``ByTimeOfDayConfig``. Consumers read
+        ``light_cycle_start`` and ``dark_cycle_start``.
+        """
+        factor = self.factors["LightCycle"]
+        assert isinstance(factor.config, ByTimeOfDayConfig)
+        return factor.config
 
     @property
     def source_path(self) -> str:

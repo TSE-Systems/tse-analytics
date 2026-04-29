@@ -5,7 +5,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QLabel, QMessageBox, QToolBar, QWidget
 
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import FactorKind
+from tse_analytics.core.data.shared import FactorRole
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import (
     get_figsize_from_widget,
@@ -48,7 +48,7 @@ class MixedAnovaWidget(ToolboxWidgetBase):
             toolbar,
             self.datatable.dataset.factors,
             selected_factor=self._settings.between_subject_factor,
-            show_factor_kind=[FactorKind.ANIMAL],
+            show_role=FactorRole.BETWEEN_SUBJECT,
         )
         toolbar.addWidget(self.between_subject_factor_selector)
 
@@ -57,7 +57,7 @@ class MixedAnovaWidget(ToolboxWidgetBase):
             toolbar,
             self.datatable.dataset.factors,
             selected_factor=self._settings.within_subject_factor,
-            show_factor_kind=[FactorKind.LIGHT_CYCLES, FactorKind.TIME_PHASES],
+            show_role=FactorRole.WITHIN_SUBJECT,
         )
         toolbar.addWidget(self.within_subject_factor_selector)
 
@@ -126,7 +126,12 @@ class MixedAnovaWidget(ToolboxWidgetBase):
             ):
                 do_pairwise_tests = False
 
-        columns = ["Animal", between_subject_factor_name, within_subject_factor_name, variable.name]
+        columns = [
+            self.datatable.dataset.subject_id_column,
+            between_subject_factor_name,
+            within_subject_factor_name,
+            variable.name,
+        ]
         df = self.datatable.get_filtered_df(columns)
         df.dropna(inplace=True)
 

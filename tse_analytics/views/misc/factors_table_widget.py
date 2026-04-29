@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QAbstractItemView, QAbstractScrollArea, QTableWidget, QTableWidgetItem
 
-from tse_analytics.core.data.shared import Factor, FactorKind
+from tse_analytics.core.data.shared import Factor, FactorRole
 from tse_analytics.core.utils.ui import set_inactive_palette
 
 
@@ -18,12 +18,12 @@ class FactorsTableWidget(QTableWidget):
         self,
         factors: dict[str, Factor],
         selected_factors: list[str],
-        show_factor_kind: list[FactorKind] | None,
+        show_role: FactorRole | None,
         show_bins: int | None = None,
         parent=None,
     ):
-        if show_factor_kind is not None:
-            factors = {name: factor for name, factor in factors.items() if factor.kind in show_factor_kind}
+        if show_role is not None:
+            factors = {name: factor for name, factor in factors.items() if factor.role == show_role}
 
         super().__init__(
             parent,

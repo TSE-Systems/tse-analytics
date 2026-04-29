@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
 )
 
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import FactorKind
+from tse_analytics.core.data.shared import FactorRole
 from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_widget_tool_button
 from tse_analytics.pipeline.enums import EFFECT_SIZE, P_ADJUSTMENT
@@ -46,7 +46,7 @@ class NWayAnovaWidget(ToolboxWidgetBase):
         self.factors_table_widget = FactorsTableWidget(
             self.datatable.dataset.factors,
             selected_factors=self._settings.selected_factors,
-            show_factor_kind=[FactorKind.ANIMAL],
+            show_role=FactorRole.BETWEEN_SUBJECT,
         )
         factors_button = get_widget_tool_button(
             toolbar,

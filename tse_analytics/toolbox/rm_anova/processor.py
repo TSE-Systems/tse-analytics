@@ -26,11 +26,12 @@ def get_rm_anova_result(
     padjust: str,
     figsize: tuple[float, float] | None = None,
 ) -> RMAnovaResult:
-    df = datatable.get_filtered_df(["Animal", dependent_variable.name] + factor_names)
+    subject = datatable.dataset.subject_id_column
+    df = datatable.get_filtered_df([subject, dependent_variable.name] + factor_names)
     df = (
         df
         .groupby(
-            ["Animal"] + factor_names,
+            [subject] + factor_names,
             dropna=False,
             observed=True,
         )
@@ -46,7 +47,7 @@ def get_rm_anova_result(
             data=df,
             dv=dependent_variable.name,
             within=factor_name,
-            subject="Animal",
+            subject=subject,
             method="mauchly",
         )
         sphericity = pd.DataFrame(
@@ -61,7 +62,7 @@ def get_rm_anova_result(
         data=df,
         dv=dependent_variable.name,
         within=factor_names,
-        subject="Animal",
+        subject=subject,
         detailed=True,
     )
     report_sections.append(get_great_table(anova, "Repeated measures ANOVA").as_raw_html(inline_css=True))
@@ -71,7 +72,7 @@ def get_rm_anova_result(
             data=df,
             dv=dependent_variable.name,
             within=factor_names,
-            subject="Animal",
+            subject=subject,
             return_desc=True,
             effsize=effsize,
             padjust=padjust,

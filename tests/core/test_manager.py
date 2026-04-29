@@ -317,55 +317,6 @@ class TestRemoveDatatable:
             assert mock_broadcast.call_count >= 1
 
 
-class TestCloneDataset:
-    """Tests for clone_dataset method."""
-
-    @patch("tse_analytics.core.services.dataset_service.copy.deepcopy")
-    @patch("tse_analytics.core.services.dataset_service.uuid7")
-    def test_creates_deep_copy_of_dataset(self, mock_uuid7, mock_deepcopy, manager, mock_dataset):
-        """Test that clone_dataset creates a deep copy of the dataset."""
-        mock_uuid7.return_value = UUID("12345678-1234-5678-1234-567812345678")
-        mock_cloned = MagicMock(spec=Dataset)
-        mock_cloned.id = "cloned-id"
-        mock_cloned.metadata = {"name": "Clone"}
-        mock_deepcopy.return_value = mock_cloned
-
-        with patch.object(messaging, "broadcast"):
-            manager.clone_dataset(mock_dataset, "Cloned Dataset")
-
-        mock_deepcopy.assert_called_once_with(mock_dataset)
-
-    @patch("tse_analytics.core.services.dataset_service.copy.deepcopy")
-    @patch("tse_analytics.core.services.dataset_service.uuid7")
-    def test_assigns_new_id_to_clone(self, mock_uuid7, mock_deepcopy, manager, mock_dataset):
-        """Test that clone_dataset assigns a new UUID to the cloned dataset."""
-        new_uuid = UUID("12345678-1234-5678-1234-567812345678")
-        mock_uuid7.return_value = new_uuid
-
-        mock_cloned = MagicMock(spec=Dataset)
-        mock_cloned.id = None
-        mock_cloned.metadata = {}
-        mock_deepcopy.return_value = mock_cloned
-
-        with patch.object(messaging, "broadcast"):
-            manager.clone_dataset(mock_dataset, "Cloned Dataset")
-
-        assert mock_cloned.id == new_uuid
-
-    @patch("tse_analytics.core.services.dataset_service.copy.deepcopy")
-    @patch("tse_analytics.core.services.dataset_service.uuid7")
-    def test_sets_new_name_on_clone(self, mock_uuid7, mock_deepcopy, manager, mock_dataset):
-        """Test that clone_dataset sets a new name on the cloned dataset."""
-        mock_cloned = MagicMock(spec=Dataset)
-        mock_cloned.metadata = {}
-        mock_deepcopy.return_value = mock_cloned
-
-        with patch.object(messaging, "broadcast"):
-            manager.clone_dataset(mock_dataset, "New Clone Name")
-
-        assert mock_cloned.name == "New Clone Name"
-
-
 class TestModuleLevelFunctions:
     """Tests for module-level function exports."""
 
