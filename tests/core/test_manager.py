@@ -2,22 +2,24 @@
 Unit tests for tse_analytics.core.manager module.
 """
 
+import importlib
 import pickle
 from unittest.mock import MagicMock, mock_open, patch
 from uuid import UUID
 
 import pytest
+from tse_analytics.core import manager as manager_module
 from tse_analytics.core import messaging
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.workspace import Workspace
-from tse_analytics.core.manager import Manager
 
 
 @pytest.fixture
 def manager():
-    """Create a fresh Manager instance for each test."""
-    return Manager()
+    """Reload manager module so each test starts with fresh services."""
+    importlib.reload(manager_module)
+    return manager_module
 
 
 @pytest.fixture
