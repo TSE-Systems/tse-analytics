@@ -50,7 +50,7 @@ def get_color_hex(index: int) -> str:
 def get_factor_level_color_hex(index: int) -> str:
     palette = sns.color_palette("deep")
     n_colors = len(palette)
-    if index > n_colors:
+    if index >= n_colors:
         index = index - (n_colors * (index // n_colors))
     color_tuple = palette[index]
     return rgb2hex(color_tuple)

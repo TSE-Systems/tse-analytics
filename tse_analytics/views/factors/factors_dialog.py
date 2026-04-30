@@ -181,11 +181,13 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
             )
         if source == FactorSource.BY_ANIMAL_PROPERTY:
             keys = self._available_animal_property_keys()
-            return Factor(
+            factor = Factor(
                 name=name,
                 role=FactorRole.BETWEEN_SUBJECT,
                 config=ByAnimalPropertyConfig(property_key=keys[0] if keys else ""),
             )
+            self._refresh_animal_property_levels(factor)
+            return factor
         if source == FactorSource.BY_ELAPSED_TIME:
             return Factor(
                 name=name,
@@ -357,6 +359,18 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         if self.selected_factor is None or not isinstance(self.selected_factor.config, ByAnimalPropertyConfig):
             return
         self.selected_factor.config.property_key = text
+        self._refresh_animal_property_levels(self.selected_factor)
+        self.listWidgetLevels.clear()
+        self.listWidgetLevels.addItems([level.name for level in self.selected_factor.levels])
+
+    def _refresh_animal_property_levels(self, factor: Factor) -> None:
+        config = factor.config
+        assert isinstance(config, ByAnimalPropertyConfig)
+        if not config.property_key:
+            factor.levels = []
+            return
+        levels = self.dataset.extract_levels_from_property(config.property_key)
+        factor.levels = list(levels.values())
 
     def _column_changed(self, text: str):
         if self.selected_factor is None or not isinstance(self.selected_factor.config, ByColumnConfig):
