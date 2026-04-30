@@ -262,6 +262,43 @@ class Dataset:
         levels = dict(sorted(levels.items(), key=lambda x: x[0].lower()))
         return levels
 
+    def extract_levels_from_column(self, column_name: str) -> dict[str, FactorLevel]:
+        """
+        Extract factor levels from the unique values of a datatable column.
+
+        Levels are derived from the first datatable that contains the column. NA
+        values are dropped, and remaining values are coerced to strings to form
+        level names.
+
+        Parameters
+        ----------
+        column_name : str
+            Name of the column to extract levels from.
+
+        Returns
+        -------
+        dict[str, FactorLevel]
+            A dictionary mapping level names to FactorLevel objects, sorted
+            case-insensitively by name. Empty if no datatable contains the column.
+        """
+        levels: dict[str, FactorLevel] = {}
+        for datatable in self.datatables.values():
+            if column_name in datatable.df.columns:
+                series = datatable.df[column_name].dropna()
+                unique_values = (
+                    series.unique().tolist() if series.dtype.name != "category" else list(series.cat.categories)
+                )
+                for index, value in enumerate(unique_values):
+                    level_name = str(value)
+                    levels[level_name] = FactorLevel(
+                        name=level_name,
+                        color=get_factor_level_color_hex(index),
+                    )
+                break
+
+        levels = dict(sorted(levels.items(), key=lambda x: x[0].lower()))
+        return levels
+
     def rename_animal(self, old_id: str, animal: Animal) -> None:
         """
         Rename an animal in the dataset.

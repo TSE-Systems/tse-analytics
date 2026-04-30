@@ -198,11 +198,13 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
             columns = self._available_column_names()
             # BY_COLUMN can be either role; default to BETWEEN_SUBJECT and let
             # users edit the role explicitly in a future iteration.
-            return Factor(
+            factor = Factor(
                 name=name,
                 role=FactorRole.BETWEEN_SUBJECT,
                 config=ByColumnConfig(column=columns[0] if columns else ""),
             )
+            self._refresh_column_levels(factor)
+            return factor
         raise ValueError(f"Unsupported factor source: {source}")
 
     def delete_factor(self):
@@ -376,6 +378,18 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         if self.selected_factor is None or not isinstance(self.selected_factor.config, ByColumnConfig):
             return
         self.selected_factor.config.column = text
+        self._refresh_column_levels(self.selected_factor)
+        self.listWidgetLevels.clear()
+        self.listWidgetLevels.addItems([level.name for level in self.selected_factor.levels])
+
+    def _refresh_column_levels(self, factor: Factor) -> None:
+        config = factor.config
+        assert isinstance(config, ByColumnConfig)
+        if not config.column:
+            factor.levels = []
+            return
+        levels = self.dataset.extract_levels_from_column(config.column)
+        factor.levels = list(levels.values())
 
     def _add_phase(self):
         if self.selected_factor is None or not isinstance(self.selected_factor.config, ByElapsedTimeConfig):
