@@ -16,7 +16,7 @@ import xmltodict
 from loguru import logger
 
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.shared import ByAnimalConfig, Factor
+from tse_analytics.core.data.shared import ByAnimalConfig, Factor, FactorRole
 from tse_analytics.modules.intellicage.io.dataset_loader_v1 import import_intellicage_dataset_v1
 from tse_analytics.modules.intellicage.io.dataset_loader_v2 import import_intellicage_dataset_v2
 
@@ -141,6 +141,8 @@ def _extract_factor(factor_name: str, factors: dict[str, Factor], dataset: Datas
     """
     levels = dataset.extract_levels_from_property(factor_name)
     if len(levels) > 0:
-        return Factor(name=factor_name, config=ByAnimalConfig(), levels=list(levels.values()))
+        return Factor(
+            name=factor_name, config=ByAnimalConfig(), role=FactorRole.BETWEEN_SUBJECT, levels=list(levels.values())
+        )
     else:
         return None
