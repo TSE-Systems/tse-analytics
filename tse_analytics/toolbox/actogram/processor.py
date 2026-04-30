@@ -118,6 +118,8 @@ def _draw_double_plotted_bars(
 
     ax.set_xticks(np.concatenate([xticks, xticks + bins_per_day]))
     ax.set_xticklabels(time_labels + time_labels)
+    # Hide every other tick label
+    [label.set_visible(False) for (i, label) in enumerate(ax.xaxis.get_ticklabels()) if i % 2 != 0]
     ax.set_yticks(np.arange(1, days_count + 1))
     ax.set_yticklabels(day_labels[::-1])
 

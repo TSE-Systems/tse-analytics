@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QComboBox, QWidget
 
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
+from tse_analytics.core.data.shared import FactorRole
 
 
 class GroupBySelector(QComboBox):
@@ -13,6 +14,7 @@ class GroupBySelector(QComboBox):
         disable_total_mode: bool = False,
         disable_run_mode: bool = False,
         disable_animal_mode: bool = False,
+        show_role: FactorRole | None = None,
     ):
         super().__init__(parent)
 
@@ -23,6 +25,7 @@ class GroupBySelector(QComboBox):
             disable_total_mode=disable_total_mode,
             disable_run_mode=disable_run_mode,
             disable_animal_mode=disable_animal_mode,
+            show_role=show_role,
         )
         self.addItems(modes)
 

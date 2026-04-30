@@ -2,7 +2,7 @@
 
 Composes a multi-section HTML report combining zeitgeber-time conversion,
 Lomb-Scargle period detection, single-component cosinor, activity onset/offset
-detection, a double-plotted actogram, and a group-level mixed-effects cosinor.
+detection, a double-plotted actogram.
 """
 
 import math
@@ -12,10 +12,7 @@ from datetime import time
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import statsmodels.formula.api as smf
 from astropy.timeseries import LombScargle
-from loguru import logger
-from matplotlib.patches import Patch
 from scipy.stats import f as f_dist
 
 from tse_analytics.core import color_manager
@@ -237,7 +234,7 @@ def _plot_zt_profile(
     variable: Variable,
     light_cycle_start: time,
     group_col: str | None,
-    palette: dict[str, str] | None,
+    palette: dict[str, str] | dict[int, str] | None,
     figsize: tuple[float, float] | None,
 ) -> plt.Figure:
     df = df.copy()
@@ -247,7 +244,7 @@ def _plot_zt_profile(
     figure = plt.Figure(figsize=figsize, layout="tight")
     ax = figure.subplots()
 
-    if group_col and group_col in df.columns:
+    if group_col in df.columns:
         for i, (level, g) in enumerate(df.groupby(group_col, observed=True)):
             agg = g.groupby("ZT_bin", observed=True)[variable.name].agg(["mean", "sem"]).reset_index()
             color = (palette or {}).get(str(level), color_manager.get_color_hex(i))
@@ -273,6 +270,7 @@ def _plot_zt_profile(
 def _plot_periodogram(
     series: dict[str, tuple[np.ndarray, np.ndarray, float]],
     variable: Variable,
+    palette: dict[str, str] | dict[int, str] | None,
     figsize: tuple[float, float] | None,
 ) -> plt.Figure:
     figure = plt.Figure(figsize=figsize, layout="tight")
@@ -280,7 +278,8 @@ def _plot_periodogram(
     for i, (label, (period, power, _dom)) in enumerate(series.items()):
         if period.size == 0:
             continue
-        ax.plot(period, power, label=label, color=color_manager.get_color_hex(i), alpha=0.8)
+        color = (palette or {}).get(str(label), color_manager.get_color_hex(i))
+        ax.plot(period, power, label=label, color=color, alpha=0.8)
     ax.axvline(x=24, color="red", linestyle="--", alpha=0.7, label="24 h")
     ax.set_xlabel("Period (hours)")
     ax.set_ylabel("Lomb–Scargle power")
@@ -294,6 +293,7 @@ def _plot_cosinor_fits(
     fits: dict[str, tuple[np.ndarray, np.ndarray, dict[str, float]]],
     variable: Variable,
     period_hours: float,
+    palette: dict[str, str] | dict[int, str] | None,
     figsize: tuple[float, float] | None,
 ) -> plt.Figure:
     figure = plt.Figure(figsize=figsize, layout="tight")
@@ -302,7 +302,7 @@ def _plot_cosinor_fits(
     for i, (label, (t, y, params)) in enumerate(fits.items()):
         if not np.isfinite(params.get("MESOR", np.nan)):
             continue
-        color = color_manager.get_color_hex(i)
+        color = (palette or {}).get(str(label), color_manager.get_color_hex(i))
         phase = t % period_hours
         order = np.argsort(phase)
         ax.scatter(phase, y, alpha=0.25, s=8, color=color)
@@ -325,6 +325,7 @@ def _plot_two_component_fits(
     variable: Variable,
     period1_hours: float,
     period2_hours: float,
+    palette: dict[str, str] | dict[int, str] | None,
     figsize: tuple[float, float] | None,
 ) -> plt.Figure:
     figure = plt.Figure(figsize=figsize, layout="tight")
@@ -334,7 +335,7 @@ def _plot_two_component_fits(
     for i, (label, (t, y, params)) in enumerate(fits.items()):
         if not np.isfinite(params.get("MESOR", np.nan)):
             continue
-        color = color_manager.get_color_hex(i)
+        color = (palette or {}).get(str(label), color_manager.get_color_hex(i))
         phase = t % period1_hours
         ax.scatter(phase, y, alpha=0.25, s=8, color=color)
         t_grid = np.linspace(0, period1_hours, 400)
@@ -359,6 +360,7 @@ def _plot_two_component_fits(
 
 def _plot_onset_offset(
     onsets: dict[str, pd.DataFrame],
+    palette: dict[str, str] | dict[int, str] | None,
     figsize: tuple[float, float] | None,
 ) -> plt.Figure:
     figure = plt.Figure(figsize=figsize, layout="tight")
@@ -366,7 +368,7 @@ def _plot_onset_offset(
     for i, (label, df) in enumerate(onsets.items()):
         if df.empty:
             continue
-        color = color_manager.get_color_hex(i)
+        color = (palette or {}).get(str(label), color_manager.get_color_hex(i))
         onset_h = (
             pd.to_datetime(df["Onset"], format="%H:%M").dt.hour
             + pd.to_datetime(df["Onset"], format="%H:%M").dt.minute / 60.0
@@ -406,64 +408,14 @@ def _build_actogram_periods(light_cycle_start: time, dark_cycle_start: time) -> 
 
 
 # ---------------------------------------------------------------------------
-# Mixed-effects cosinor
-# ---------------------------------------------------------------------------
-
-
-def _fit_mixed_cosinor(
-    df: pd.DataFrame,
-    y_col: str,
-    t_col: str,
-    animal_col: str,
-    period_hours: float,
-    group_col: str | None,
-) -> tuple[pd.DataFrame, str]:
-    """Group-level cosinor with Animal random intercept. Returns (table, label)."""
-    omega = 2 * np.pi / period_hours
-    work = df[[y_col, t_col, animal_col] + ([group_col] if group_col else [])].dropna().copy()
-    work["_cos"] = np.cos(omega * work[t_col].astype(float))
-    work["_sin"] = np.sin(omega * work[t_col].astype(float))
-
-    if group_col and work[group_col].nunique() > 1:
-        safe_group = "_grp"
-        work[safe_group] = work[group_col].astype(str)
-        formula = f"{y_col} ~ _cos + _sin + C({safe_group}) + C({safe_group}):_cos + C({safe_group}):_sin"
-    else:
-        formula = f"{y_col} ~ _cos + _sin"
-
-    label = "Mixed-effects cosinor"
-    try:
-        model = smf.mixedlm(formula, work, groups=work[animal_col].astype(str))
-        result = model.fit(reml=True, method=["lbfgs"])
-        params = result.params
-        se = result.bse
-        pvals = result.pvalues
-        table = pd.DataFrame({
-            "Term": params.index.astype(str),
-            "Estimate": params.values,
-            "Std. Error": se.values,
-            "p-value": pvals.values,
-        })
-    except Exception as exc:  # convergence/singular failure → OLS fallback
-        logger.warning(f"MixedLM failed ({exc}); falling back to OLS")
-        ols_result = smf.ols(formula, work).fit()
-        table = pd.DataFrame({
-            "Term": ols_result.params.index.astype(str),
-            "Estimate": ols_result.params.values,
-            "Std. Error": ols_result.bse.values,
-            "p-value": ols_result.pvalues.values,
-        })
-        label = "Group-level cosinor (OLS fallback)"
-    return table, label
-
-
-# ---------------------------------------------------------------------------
 # Orchestrator
 # ---------------------------------------------------------------------------
 
 
 def _resolve_group_column(grouping_settings: GroupingSettings) -> str | None:
     match grouping_settings.mode:
+        case GroupingMode.ANIMAL:
+            return "Animal"
         case GroupingMode.FACTOR:
             return grouping_settings.factor_name
         case GroupingMode.RUN:
@@ -475,17 +427,14 @@ def _resolve_group_column(grouping_settings: GroupingSettings) -> str | None:
 def _resolve_palette(
     datatable: Datatable,
     grouping_settings: GroupingSettings,
-) -> dict[str, str] | None:
+) -> dict[str, str] | dict[int, str] | None:
     match grouping_settings.mode:
+        case GroupingMode.ANIMAL:
+            return color_manager.get_animal_to_color_dict(datatable.dataset.animals)
         case GroupingMode.FACTOR:
-            factor = datatable.dataset.factors.get(grouping_settings.factor_name)
-            if factor is None:
-                return None
-            return {level.name: level.color for level in factor.levels}
+            return color_manager.get_level_to_color_dict(datatable.dataset.factors[grouping_settings.factor_name])
         case GroupingMode.RUN:
-            runs = datatable.dataset.metadata.get("runs")
-            n = len(runs) if isinstance(runs, list) else 0
-            return {str(k): v for k, v in color_manager.get_run_to_color_dict(n).items()}
+            return color_manager.get_run_to_color_dict(datatable.dataset.runs)
         case _:
             return None
 
@@ -584,176 +533,8 @@ def plot_combined_actograms_grid(
     return fig
 
 
-def plot_combined_actograms_3d(
-    groups_data: dict[str, np.ndarray],
-    shared_days: list,
-    figsize: tuple[float, float] | None,
-    binsize: float | None,
-    highlight_periods: list | None,
-    palette: dict[str, str] | None,
-    title: str,
-) -> plt.Figure:
-    """3D double-plotted actogram: X=time (0..48h), Y=day, Z=activity; one surface per group."""
-    base_w, base_h = figsize if figsize else (10.0, 6.0)
-    fig = plt.Figure(figsize=(base_w, max(base_h, 6.0)), layout="tight")
-    ax = fig.add_subplot(projection="3d")
-    ax.set_title(title)
-
-    if not groups_data:
-        return fig
-
-    first_array = next(iter(groups_data.values()))
-    n_days, bins_per_day = first_array.shape
-    double_bins = 2 * bins_per_day
-
-    x = np.arange(double_bins)
-    y = np.arange(n_days)
-    mesh_x, mesh_y = np.meshgrid(x, y)
-
-    if highlight_periods:
-        for period in highlight_periods:
-            start_bin = int(period["start"] / 24 * bins_per_day)
-            end_bin = int(period["end"] / 24 * bins_per_day)
-            band_color = period["color"]
-            band_alpha = period.get("alpha", 0.15)
-            for x0, x1 in ((start_bin, end_bin), (start_bin + bins_per_day, end_bin + bins_per_day)):
-                if x1 <= x0:
-                    continue
-                floor_x = np.array([[x0, x1], [x0, x1]])
-                floor_y = np.array([[-0.5, -0.5], [n_days - 0.5, n_days - 0.5]])
-                floor_z = np.zeros_like(floor_x, dtype=float)
-                ax.plot_surface(floor_x, floor_y, floor_z, color=band_color, alpha=band_alpha, linewidth=0)
-
-    proxies: list[Patch] = []
-    for i, (label, activity_array) in enumerate(groups_data.items()):
-        color = (palette or {}).get(label, color_manager.get_color_hex(i))
-        z = np.zeros((n_days, double_bins))
-        for d in range(n_days):
-            if d > 0:
-                z[d, :bins_per_day] = activity_array[d - 1]
-            z[d, bins_per_day:] = activity_array[d]
-
-        ax.plot_surface(
-            mesh_x,
-            mesh_y,
-            z,
-            color=color,
-            alpha=0.55,
-            edgecolor=color,
-            linewidth=0.2,
-            shade=True,
-        )
-        proxies.append(Patch(color=color, label=label))
-
-    if binsize:
-        time_labels = [f"{i}" for i in range(0, 26, 2)]
-    else:
-        time_labels = [f"{i}h" for i in range(0, 24, 4)]
-    xticks = np.linspace(0, bins_per_day, len(time_labels))
-    ax.set_xticks(np.concatenate([xticks, xticks + bins_per_day]))
-    ax.set_xticklabels(time_labels + time_labels)
-
-    ax.set_yticks(np.arange(n_days))
-    ax.set_yticklabels([d.strftime("%Y-%m-%d") for d in shared_days])
-
-    ax.set_xlabel("Time (hours)")
-    ax.set_ylabel("Day")
-    ax.set_zlabel("Activity (normalized)")
-    ax.view_init(elev=30, azim=-60)
-
-    if proxies:
-        ax.legend(handles=proxies, loc="upper left", fontsize="small")
-
-    return fig
-
-
-def plot_combined_actograms_overlay(
-    groups_data: dict[str, np.ndarray],
-    shared_days: list,
-    figsize: tuple[float, float] | None,
-    binsize: float | None,
-    highlight_periods: list | None,
-    palette: dict[str, str] | None,
-    title: str,
-) -> plt.Figure:
-    """Single 2D axes with all groups overlaid as step lines per day row."""
-    fig = plt.Figure(figsize=figsize, layout="tight")
-    ax = fig.subplots()
-    ax.set_title(title)
-
-    if not groups_data:
-        return fig
-
-    first_array = next(iter(groups_data.values()))
-    n_days, bins_per_day = first_array.shape
-
-    if highlight_periods:
-        for period in highlight_periods:
-            start_bin = int(period["start"] / 24 * bins_per_day)
-            end_bin = int(period["end"] / 24 * bins_per_day)
-            ax.axvspan(start_bin, end_bin, color=period["color"], alpha=period.get("alpha", 0.2), zorder=1)
-            ax.axvspan(
-                start_bin + bins_per_day,
-                end_bin + bins_per_day,
-                color=period["color"],
-                alpha=period.get("alpha", 0.2),
-                zorder=1,
-            )
-
-    for i, (label, activity_array) in enumerate(groups_data.items()):
-        color = (palette or {}).get(label, color_manager.get_color_hex(i))
-        legend_added = False
-        for d in range(n_days):
-            y_base = n_days - d
-            if d > 0:
-                ax.step(
-                    np.arange(bins_per_day),
-                    y_base + activity_array[d - 1],
-                    where="mid",
-                    color=color,
-                    linewidth=1.0,
-                    alpha=0.9,
-                    zorder=3,
-                    label=label if not legend_added else None,
-                )
-                legend_added = True
-            ax.step(
-                np.arange(bins_per_day, 2 * bins_per_day),
-                y_base + activity_array[d],
-                where="mid",
-                color=color,
-                linewidth=1.0,
-                alpha=0.9,
-                zorder=3,
-                label=label if not legend_added else None,
-            )
-            legend_added = True
-
-    if binsize:
-        time_labels = [f"{i}" for i in range(0, 26, 2)]
-    else:
-        time_labels = [f"{i}h" for i in range(0, 24, 4)]
-    xticks = np.linspace(0, bins_per_day, len(time_labels))
-    ax.set_xticks(np.concatenate([xticks, xticks + bins_per_day]))
-    ax.set_xticklabels(time_labels + time_labels)
-
-    ax.set_yticks(np.arange(1, n_days + 1))
-    ax.set_yticklabels([d.strftime("%Y-%m-%d") for d in shared_days][::-1])
-
-    ax.set_xlim(0, 2 * bins_per_day)
-    ax.set_ylim(0, n_days + 1)
-    ax.set_xlabel("Time (hours)")
-    ax.set_ylabel("Day")
-    ax.axvline(bins_per_day, color="gray", linestyle="-", alpha=0.7, zorder=2)
-    ax.grid(True, axis="x", alpha=0.3)
-    ax.legend(loc="upper right", fontsize="small")
-
-    return fig
-
-
 def get_chronobiology_result(
     datatable: Datatable,
-    df: pd.DataFrame,
     variable: Variable,
     grouping_settings: GroupingSettings,
     period_hours: float = 24.0,
@@ -762,6 +543,10 @@ def get_chronobiology_result(
     onset_threshold_pct: float = 50.0,
     figsize: tuple[float, float] | None = None,
 ) -> ChronobiologyResult:
+    columns = datatable.get_default_columns() + list(datatable.dataset.factors) + [variable.name]
+    df = datatable.get_filtered_df(columns)
+    df = df.dropna()
+
     dataset = datatable.dataset
     time_cycles = dataset.light_cycles
     light_cycle_start = time_cycles.light_cycle_start
@@ -812,7 +597,7 @@ def get_chronobiology_result(
         return ChronobiologyResult(report="\n<p>\n".join(sections))
 
     # Common reference and group column resolution -------------------------
-    reference_time = df["DateTime"].min()
+    reference_time = datatable.dataset.experiment_started
     group_col = _resolve_group_column(grouping_settings)
     palette = _resolve_palette(datatable, grouping_settings)
 
@@ -853,7 +638,7 @@ def get_chronobiology_result(
             ls_table_rows.append({"Group": str(label), "Dominant period (h)": dominant, "N samples": int(t.size)})
 
     sections.append("<h3>Lomb–Scargle periodogram</h3>")
-    sections.append(get_html_image_from_figure(_plot_periodogram(ls_series, variable, figsize)))
+    sections.append(get_html_image_from_figure(_plot_periodogram(ls_series, variable, palette, figsize)))
     sections.append(get_great_table(pd.DataFrame(ls_table_rows), "Dominant periods").as_raw_html(inline_css=True))
 
     # --- Section 4: single-component cosinor ------------------------------
@@ -875,7 +660,9 @@ def get_chronobiology_result(
 
     sections.append(f"<h3>Single-component cosinor (period = {period_hours:g} h)</h3>")
     sections.append(get_great_table(pd.DataFrame(cosinor_rows), "Cosinor parameters").as_raw_html(inline_css=True))
-    sections.append(get_html_image_from_figure(_plot_cosinor_fits(cosinor_fits, variable, period_hours, figsize)))
+    sections.append(
+        get_html_image_from_figure(_plot_cosinor_fits(cosinor_fits, variable, period_hours, palette, figsize))
+    )
 
     # --- Section 4b: two-component cosinor --------------------------------
     two_comp_rows: list[dict] = []
@@ -900,7 +687,7 @@ def get_chronobiology_result(
     )
     sections.append(
         get_html_image_from_figure(
-            _plot_two_component_fits(two_comp_fits, variable, period_hours, period2_hours, figsize)
+            _plot_two_component_fits(two_comp_fits, variable, period_hours, period2_hours, palette, figsize)
         )
     )
 
@@ -933,12 +720,11 @@ def get_chronobiology_result(
         sections.append(
             get_great_table(pd.DataFrame(onset_combined_rows), "Daily onset / offset").as_raw_html(inline_css=True)
         )
-        sections.append(get_html_image_from_figure(_plot_onset_offset(onset_tables, figsize)))
+        sections.append(get_html_image_from_figure(_plot_onset_offset(onset_tables, palette, figsize)))
     else:
         sections.append("<p><em>Not enough data to detect daily onset / offset.</em></p>")
 
     # --- Section 6: double-plotted actogram -------------------------------
-    sections.append("<h3>Double-plotted actogram</h3>")
     if duration is None or duration < pd.Timedelta(hours=48):
         sections.append("<p><em>Experiment shorter than 48 h — actogram skipped.</em></p>")
     else:
@@ -959,26 +745,8 @@ def get_chronobiology_result(
             )
             sections.append(get_html_image_from_figure(figure))
         else:
-            for i, (label, g) in enumerate(iter_df.groupby(key_col, observed=True)):
-                activity_array, unique_days = dataframe_to_actogram(g, variable, bins_per_day)
-                if activity_array.size == 0:
-                    continue
-                if np.ptp(activity_array) > 0:
-                    activity_array = normalize_nd_array(activity_array)
-                figure, _ = plot_enhanced_actogram(
-                    activity_array,
-                    figsize,
-                    [d.strftime("%Y-%m-%d") for d in unique_days],
-                    binsize=1 / bins_per_hour,
-                    highlight_periods=periods,
-                    bar_color=(palette or {}).get(str(label), color_manager.get_color_hex(i)),
-                    title=f"Actogram — {variable.name} ({label})",
-                )
-                sections.append(get_html_image_from_figure(figure))
-
             groups_data, shared_days = _collect_group_actograms(iter_df, key_col, variable, bins_per_day)
             if len(groups_data) >= 2:
-                sections.append("<h3>Combined actograms — grid</h3>")
                 sections.append(
                     get_html_image_from_figure(
                         plot_combined_actograms_grid(
@@ -992,52 +760,6 @@ def get_chronobiology_result(
                         )
                     )
                 )
-
-                sections.append("<h3>Combined actograms — 3D</h3>")
-                sections.append(
-                    get_html_image_from_figure(
-                        plot_combined_actograms_3d(
-                            groups_data,
-                            shared_days,
-                            figsize,
-                            binsize=1 / bins_per_hour,
-                            highlight_periods=periods,
-                            palette=palette,
-                            title=f"3D actograms — {variable.name}",
-                        )
-                    )
-                )
-
-                sections.append("<h3>Combined actograms — overlay</h3>")
-                sections.append(
-                    get_html_image_from_figure(
-                        plot_combined_actograms_overlay(
-                            groups_data,
-                            shared_days,
-                            figsize,
-                            binsize=1 / bins_per_hour,
-                            highlight_periods=periods,
-                            palette=palette,
-                            title=f"Actograms overlay — {variable.name}",
-                        )
-                    )
-                )
-
-    # --- Section 7: group-level mixed-effects cosinor ---------------------
-    sections.append(f"<h3>Group-level cosinor with mixed effects (period = {period_hours:g} h)</h3>")
-    me_df = df[
-        ["Animal", "DateTime", variable.name] + ([group_col] if group_col and group_col in df.columns else [])
-    ].copy()
-    me_df["_t_h"] = _to_hours_since_start(me_df["DateTime"], reference_time)
-    me_table, me_label = _fit_mixed_cosinor(
-        me_df,
-        y_col=variable.name,
-        t_col="_t_h",
-        animal_col="Animal",
-        period_hours=period_hours,
-        group_col=group_col if group_col and group_col in me_df.columns else None,
-    )
-    sections.append(get_great_table(me_table, me_label).as_raw_html(inline_css=True))
 
     report = "\n<p>\n".join(sections)
     return ChronobiologyResult(report=report)

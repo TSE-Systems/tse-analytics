@@ -27,6 +27,7 @@ from tse_analytics.core.data.shared import (
     ByElapsedTimeConfig,
     ByTimeOfDayConfig,
     Factor,
+    FactorRole,
     Variable,
 )
 from tse_analytics.core.utils.data import exclude_animals_from_df, reassign_df_timedelta_and_bin, rename_animal_df
@@ -181,6 +182,7 @@ class Datatable:
         disable_total_mode=False,
         disable_run_mode=False,
         disable_animal_mode=False,
+        show_role: FactorRole | None = None,
     ) -> list[str]:
         """
         Get the columns that can be used for grouping data.
@@ -196,8 +198,13 @@ class Datatable:
         if not disable_run_mode and "Run" in self.df.columns:
             modes.append("Run")
         if len(self.dataset.factors) > 0:
-            for factor in self.dataset.factors.keys():
-                modes.append(factor)
+            if show_role is None:
+                for factor in self.dataset.factors.keys():
+                    modes.append(factor)
+            else:
+                for factor in self.dataset.factors.values():
+                    if factor.role == show_role:
+                        modes.append(factor.name)
         return modes
 
     def apply_outliers(self, settings: OutliersSettings) -> None:

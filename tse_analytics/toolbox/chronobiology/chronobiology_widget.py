@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from PySide6.QtWidgets import QDoubleSpinBox, QLabel, QSpinBox, QToolBar, QWidget
 
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.shared import FactorRole
 from tse_analytics.core.utils import get_figsize_from_widget
 from tse_analytics.toolbox.chronobiology.processor import get_chronobiology_result
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
@@ -47,6 +48,7 @@ class ChronobiologyWidget(ToolboxWidgetBase):
             toolbar,
             self.datatable,
             selected_mode=self._settings.group_by,
+            show_role=FactorRole.BETWEEN_SUBJECT,
         )
         toolbar.addWidget(self.group_by_selector)
 
@@ -110,13 +112,8 @@ class ChronobiologyWidget(ToolboxWidgetBase):
         grouping_settings = self.group_by_selector.get_grouping_settings()
         variable = self.variableSelector.get_selected_variable()
 
-        columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + [variable.name]
-        df = self.datatable.get_filtered_df(columns)
-        df = df.dropna()
-
         result = get_chronobiology_result(
             self.datatable,
-            df,
             variable,
             grouping_settings,
             period_hours=self.period_spin_box.value(),
