@@ -529,7 +529,7 @@ def _apply_by_time_interval(df: pd.DataFrame, factor: Factor, dataset: Dataset) 
     if interval_td <= pd.Timedelta(0):
         logger.debug(f"Skipping factor {factor.name!r}: non-positive interval {interval_td!r}")
         return
-    df[factor.name] = (df["Timedelta"] / interval_td).round().astype("UInt64")
+    df[factor.name] = (df["Timedelta"] // interval_td).astype("UInt64")
 
 
 _FactorApplier = Callable[[pd.DataFrame, Factor, "Dataset"], None]
