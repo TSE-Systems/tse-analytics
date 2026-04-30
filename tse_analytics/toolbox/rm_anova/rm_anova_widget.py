@@ -42,12 +42,10 @@ class RMAnovaWidget(ToolboxWidgetBase):
         self.variable_selector.set_data(self.datatable.variables, selected_variable=self._settings.selected_variable)
         toolbar.addWidget(self.variable_selector)
 
-        show_bins = self.datatable.df["Bin"].nunique() if "Bin" in self.datatable.df.columns else None
         self.factors_table_widget = FactorsTableWidget(
             self.datatable.dataset.factors,
             selected_factors=self._settings.selected_factors,
             show_role=FactorRole.WITHIN_SUBJECT,
-            show_bins=show_bins,
         )
         factors_button = get_widget_tool_button(
             toolbar,

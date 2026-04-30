@@ -1,10 +1,11 @@
 """Tests for tse_analytics.core.data.dataset module."""
 
 import pickle
+from datetime import timedelta
 from unittest.mock import patch
 
 import pandas as pd
-from tse_analytics.core.data.shared import Animal
+from tse_analytics.core.data.shared import Animal, ByTimeIntervalConfig
 
 
 class TestDatasetInit:
@@ -206,6 +207,49 @@ class TestSetFactors:
         sample_dataset.set_factors(factors)
         # The factor column should be added to the df
         assert "Group" in sample_datatable.df.columns
+
+
+class TestAutoBinFactor:
+    """Tests for the auto-created system Bin factor."""
+
+    def test_auto_creates_bin_factor_for_regular_timeseries(self, sample_dataset, sample_datatable):
+        sample_dataset.set_factors(sample_dataset.factors)
+        assert "Bin" in sample_dataset.factors
+        bin_factor = sample_dataset.factors["Bin"]
+        assert isinstance(bin_factor.config, ByTimeIntervalConfig)
+        assert bin_factor.config.interval == timedelta(hours=1)
+
+    def test_materializes_bin_column_uint64(self, sample_dataset, sample_datatable):
+        sample_dataset.set_factors(sample_dataset.factors)
+        assert "Bin" in sample_datatable.df.columns
+        assert sample_datatable.df["Bin"].dtype.name == "UInt64"
+
+    def test_no_auto_bin_for_irregular(self, sample_dataset, sample_variables, sample_df):
+        from tse_analytics.core.data.datatable import Datatable
+
+        # Irregular: no sample_interval in metadata.
+        irregular = Datatable(
+            dataset=sample_dataset,
+            name="Events",
+            description="Irregular events",
+            variables=sample_variables,
+            df=sample_df.copy().drop(columns=["Bin"]),
+            metadata={},
+        )
+        sample_dataset.datatables["Events"] = irregular
+        sample_dataset.set_factors(sample_dataset.factors)
+        assert "Bin" not in sample_dataset.factors
+
+
+class TestResampleAndRebin:
+    """Tests for Dataset.resample_and_rebin."""
+
+    def test_updates_bin_factor_interval(self, sample_dataset, sample_datatable):
+        sample_dataset.set_factors(sample_dataset.factors)
+        sample_dataset.resample_and_rebin(pd.Timedelta("2h"))
+        bin_factor = sample_dataset.factors["Bin"]
+        assert isinstance(bin_factor.config, ByTimeIntervalConfig)
+        assert bin_factor.config.interval == timedelta(hours=2)
 
 
 class TestReports:

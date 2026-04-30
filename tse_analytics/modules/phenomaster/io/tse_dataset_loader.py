@@ -222,13 +222,13 @@ def _read_main_table(
     df.sort_values(by=["DateTime", "Animal"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    # Add Timedelta and Bin columns
+    # Add Timedelta column. Bin is materialized later by the auto-created
+    # "Bin" factor (see Dataset.set_factors).
     df.insert(
         loc=1,
         column="Timedelta",
         value=(df["DateTime"] - dataset.experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
-    df.insert(loc=2, column="Bin", value=(df["Timedelta"] / sample_interval).round().astype("UInt64"))
 
     # Sort variables by name
     variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))

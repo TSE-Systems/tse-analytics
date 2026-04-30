@@ -97,7 +97,7 @@ def merge_datasets(
         else:
             new_df["Run"] = new_df["Run"].astype("UInt8")
 
-        # Drop "Bin" column
+        # Drop "Bin" column — it will be re-materialized by set_factors below.
         if "Bin" in new_df.columns:
             new_df = new_df.drop(columns=["Bin"])
 
@@ -113,6 +113,14 @@ def merge_datasets(
         # Sort dataframe
         new_df = new_df.sort_values(by=["Timedelta", "Animal"]).reset_index(drop=True)
 
+        # Preserve sample_interval from the source so the merged datatable
+        # remains a regular timeseries and Dataset.set_factors auto-creates
+        # the Bin factor for it.
+        source_metadata = first_dataset.datatables[datatable_name].metadata
+        new_metadata: dict = {}
+        if "sample_interval" in source_metadata:
+            new_metadata["sample_interval"] = source_metadata["sample_interval"]
+
         new_variables = first_dataset.datatables[datatable_name].variables
         datatable = Datatable(
             merged_dataset,
@@ -120,11 +128,14 @@ def merge_datasets(
             f"Merged {datatable_name} datatable",
             new_variables,
             new_df,
-            {},
+            new_metadata,
         )
         merged_dataset.add_datatable(datatable)
 
     _merge_raw_datatables(merged_dataset, datasets, continuous_mode)
+
+    # Materialize Bin (and any other factor columns) on the merged datatables.
+    merged_dataset.set_factors(merged_dataset.factors)
 
     return merged_dataset
 

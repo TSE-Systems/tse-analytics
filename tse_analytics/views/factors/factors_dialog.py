@@ -22,6 +22,7 @@ from tse_analytics.core.data.shared import (
     ByAnimalPropertyConfig,
     ByColumnConfig,
     ByElapsedTimeConfig,
+    ByTimeIntervalConfig,
     ByTimeOfDayConfig,
     Factor,
     FactorLevel,
@@ -39,6 +40,7 @@ _USER_CREATABLE_SOURCES: dict[FactorSource, str] = {
     FactorSource.BY_ANIMAL_PROPERTY: "Animal property",
     FactorSource.BY_ELAPSED_TIME: "Time phases",
     FactorSource.BY_COLUMN: "Column",
+    FactorSource.BY_TIME_INTERVAL: "Time interval",
 }
 
 # Maps every source to the index of its config page in stackedWidgetConfig
@@ -49,15 +51,41 @@ _PAGE_INDEX: dict[FactorSource, int] = {
     FactorSource.BY_ELAPSED_TIME: 2,
     FactorSource.BY_ANIMAL_PROPERTY: 3,
     FactorSource.BY_COLUMN: 4,
+    FactorSource.BY_TIME_INTERVAL: 5,
 }
 
 _STANDARD_DF_COLUMNS = frozenset({"Animal", "DateTime", "Timedelta", "Bin", "Run"})
+
+# Bin width unit options for the BY_TIME_INTERVAL page. Each entry maps the
+# label shown in the combo box to the corresponding ``timedelta`` keyword
+# argument used to compose the final interval.
+_INTERVAL_UNITS: dict[str, str] = {
+    "second(s)": "seconds",
+    "minute(s)": "minutes",
+    "hour(s)": "hours",
+    "day(s)": "days",
+}
 
 
 def _factor_source(factor: Factor) -> FactorSource:
     """Return the FactorSource of a factor, coercing the discriminator string back to enum."""
     source = factor.config.source
     return source if isinstance(source, FactorSource) else FactorSource(source)
+
+
+def _split_timedelta_to_value_and_unit(interval: timedelta) -> tuple[int, str]:
+    """Express ``interval`` as (value, unit_label) using the largest unit that
+    divides it evenly. Falls back to seconds for sub-second components."""
+    total_seconds = int(interval.total_seconds())
+    if total_seconds <= 0:
+        return 1, "hour(s)"
+    if total_seconds % 86400 == 0:
+        return total_seconds // 86400, "day(s)"
+    if total_seconds % 3600 == 0:
+        return total_seconds // 3600, "hour(s)"
+    if total_seconds % 60 == 0:
+        return total_seconds // 60, "minute(s)"
+    return total_seconds, "second(s)"
 
 
 class _AddFactorDialog(QDialog):
@@ -107,6 +135,7 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         self.comboBoxFields.addItems(animal_property_keys)
         self.comboBoxAnimalProperty.addItems(animal_property_keys)
         self.comboBoxColumn.addItems(self._available_column_names())
+        self.comboBoxIntervalUnit.addItems(_INTERVAL_UNITS.keys())
 
         self.factors = list(self.dataset.factors.values()).copy()
         self.listWidgetFactors.addItems([factor.name for factor in self.factors])
@@ -136,6 +165,9 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         self.comboBoxAnimalProperty.currentTextChanged.connect(self._animal_property_changed)
         self.comboBoxColumn.currentTextChanged.connect(self._column_changed)
 
+        self.spinBoxIntervalValue.valueChanged.connect(self._interval_changed)
+        self.comboBoxIntervalUnit.currentTextChanged.connect(self._interval_changed)
+
         self.selected_factor: Factor | None = None
         self.selected_level: FactorLevel | None = None
 
@@ -150,10 +182,7 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
             return []
         first_dt = next(iter(self.dataset.datatables.values()))
         factor_names = {f.name for f in self.dataset.factors.values()}
-        return [
-            c for c in first_dt.df.columns
-            if c not in _STANDARD_DF_COLUMNS and c not in factor_names
-        ]
+        return [c for c in first_dt.df.columns if c not in _STANDARD_DF_COLUMNS and c not in factor_names]
 
     def add_factor(self):
         dlg = _AddFactorDialog(self)
@@ -205,6 +234,13 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
             )
             self._refresh_column_levels(factor)
             return factor
+        if source == FactorSource.BY_TIME_INTERVAL:
+            return Factor(
+                name=name,
+                role=FactorRole.WITHIN_SUBJECT,
+                config=ByTimeIntervalConfig(interval=timedelta(hours=1)),
+                levels=[],
+            )
         raise ValueError(f"Unsupported factor source: {source}")
 
     def delete_factor(self):
@@ -264,9 +300,12 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         config = self.selected_factor.config
         is_by_animal = isinstance(config, ByAnimalConfig)
         is_by_time_of_day = isinstance(config, ByTimeOfDayConfig)
+        # The auto-created "Bin" factor (a BY_TIME_INTERVAL with the reserved
+        # name "Bin") is non-deletable like LightCycle. User-created
+        # BY_TIME_INTERVAL factors with other names ARE deletable.
+        is_system_bin = isinstance(config, ByTimeIntervalConfig) and self.selected_factor.name == "Bin"
 
-        # The auto-created LightCycle factor cannot be deleted by the user.
-        self.pushButtonDeleteFactor.setDisabled(is_by_time_of_day)
+        self.pushButtonDeleteFactor.setDisabled(is_by_time_of_day or is_system_bin)
         self.pushButtonAddLevel.setEnabled(is_by_animal)
         self.pushButtonDeleteLevel.setEnabled(False)
         self.pushButtonExtractLevels.setEnabled(is_by_animal)
@@ -301,8 +340,39 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
                 self.comboBoxColumn.setCurrentText(config.column)
             self.comboBoxColumn.blockSignals(False)
             self.phases_model.set_factor(None)
+        elif isinstance(config, ByTimeIntervalConfig):
+            self._sync_time_interval_page(factor)
+            self.phases_model.set_factor(None)
         else:
             self.phases_model.set_factor(None)
+
+    def _sync_time_interval_page(self, factor: Factor) -> None:
+        config = factor.config
+        assert isinstance(config, ByTimeIntervalConfig)
+
+        value, unit_label = _split_timedelta_to_value_and_unit(config.interval)
+
+        self.spinBoxIntervalValue.blockSignals(True)
+        self.comboBoxIntervalUnit.blockSignals(True)
+        self.spinBoxIntervalValue.setValue(value)
+        self.comboBoxIntervalUnit.setCurrentText(unit_label)
+        self.spinBoxIntervalValue.blockSignals(False)
+        self.comboBoxIntervalUnit.blockSignals(False)
+
+        # The auto-created "Bin" factor must keep its interval aligned with the
+        # Calo extension's per-row bin numbers — Calo's processor joins the
+        # Main and calo raw datatables on (Box, Bin). Disable interval editing
+        # in that case to prevent silent mis-alignment.
+        is_system_bin = factor.name == "Bin"
+        has_calo = "Calo" in self.dataset.raw_datatables
+        lock_interval = is_system_bin and has_calo
+        self.spinBoxIntervalValue.setDisabled(lock_interval)
+        self.comboBoxIntervalUnit.setDisabled(lock_interval)
+        self.labelTimeIntervalCaloWarning.setText(
+            "Bin width is locked: the Calo extension is loaded and depends on the current bin alignment."
+            if lock_interval
+            else ""
+        )
 
     def current_group_text_changed(self, text: str):
         self.listWidgetAnimals.clear()
@@ -390,6 +460,16 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
             return
         levels = self.dataset.extract_levels_from_column(config.column)
         factor.levels = list(levels.values())
+
+    def _interval_changed(self, *_args) -> None:
+        if self.selected_factor is None or not isinstance(self.selected_factor.config, ByTimeIntervalConfig):
+            return
+        value = self.spinBoxIntervalValue.value()
+        unit_label = self.comboBoxIntervalUnit.currentText()
+        kwarg = _INTERVAL_UNITS.get(unit_label)
+        if kwarg is None:
+            return
+        self.selected_factor.config.interval = timedelta(**{kwarg: value})
 
     def _add_phase(self):
         if self.selected_factor is None or not isinstance(self.selected_factor.config, ByElapsedTimeConfig):

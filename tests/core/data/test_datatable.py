@@ -1,7 +1,14 @@
 """Tests for tse_analytics.core.data.datatable module."""
 
+from datetime import timedelta
+
 import pandas as pd
-from tse_analytics.core.data.shared import Animal
+from tse_analytics.core.data.shared import (
+    Animal,
+    ByTimeIntervalConfig,
+    Factor,
+    FactorRole,
+)
 
 
 class TestDatatableInit:
@@ -41,9 +48,10 @@ class TestDatatableProperties:
 class TestGetDefaultColumns:
     """Tests for Datatable.get_default_columns."""
 
-    def test_includes_bin_when_present(self, sample_datatable):
+    def test_excludes_bin(self, sample_datatable):
+        # Bin is materialized by the auto "Bin" factor, not a default column.
         columns = sample_datatable.get_default_columns()
-        assert "Bin" in columns
+        assert "Bin" not in columns
 
     def test_includes_base_columns(self, sample_datatable):
         columns = sample_datatable.get_default_columns()
@@ -198,3 +206,50 @@ class TestDatatableClone:
         clone = sample_datatable.clone()
         clone.df.iloc[0, clone.df.columns.get_loc("Weight")] = 999.0
         assert sample_datatable.df.iloc[0, sample_datatable.df.columns.get_loc("Weight")] != 999.0
+
+
+class TestApplyByTimeInterval:
+    """Tests for the BY_TIME_INTERVAL factor applier."""
+
+    def test_creates_uint64_column(self, sample_datatable):
+        factor = Factor(
+            name="Bin",
+            role=FactorRole.WITHIN_SUBJECT,
+            config=ByTimeIntervalConfig(interval=timedelta(hours=1)),
+            levels=[],
+        )
+        sample_datatable.set_factors({"Bin": factor})
+        assert sample_datatable.df["Bin"].dtype.name == "UInt64"
+
+    def test_bin_indices_match_one_hour_interval(self, sample_datatable):
+        factor = Factor(
+            name="Bin",
+            role=FactorRole.WITHIN_SUBJECT,
+            config=ByTimeIntervalConfig(interval=timedelta(hours=1)),
+            levels=[],
+        )
+        sample_datatable.set_factors({"Bin": factor})
+        # sample_df spans 5 hourly timepoints (indices 0..4)
+        assert set(sample_datatable.df["Bin"].unique().tolist()) == {0, 1, 2, 3, 4}
+
+    def test_redefining_to_24h_collapses_to_zero(self, sample_datatable):
+        factor = Factor(
+            name="Bin",
+            role=FactorRole.WITHIN_SUBJECT,
+            config=ByTimeIntervalConfig(interval=timedelta(days=1)),
+            levels=[],
+        )
+        sample_datatable.set_factors({"Bin": factor})
+        # All 5 timepoints span < 24h, so they all fall in bin 0.
+        assert (sample_datatable.df["Bin"] == 0).all()
+
+    def test_custom_factor_name_creates_named_column(self, sample_datatable):
+        factor = Factor(
+            name="Hour",
+            role=FactorRole.WITHIN_SUBJECT,
+            config=ByTimeIntervalConfig(interval=timedelta(hours=1)),
+            levels=[],
+        )
+        sample_datatable.set_factors({"Hour": factor})
+        assert "Hour" in sample_datatable.df.columns
+        assert sample_datatable.df["Hour"].dtype.name == "UInt64"

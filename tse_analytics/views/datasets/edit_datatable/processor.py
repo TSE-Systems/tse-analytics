@@ -2,6 +2,7 @@ import pandas as pd
 
 from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.shared import ByTimeIntervalConfig
 
 default_columns = ["Animal", "Timedelta", "DateTime", "Run"]
 
@@ -45,16 +46,14 @@ def process_table(
 
         result = result[result["DateTime"].notna()]
 
-        # result.sort_values(by="Timedelta", inplace=True)
         result.reset_index(inplace=True, drop=False)
 
         # TODO: check if done properly: align timedelta to the resampling resolution
         result["Timedelta"] = result["Timedelta"].dt.round(timedelta)
 
-        # Reassign bins numbers
-        result.insert(loc=0, column="Bin", value=(result["Timedelta"] / timedelta).round().astype("UInt64"))
-
-        result.sort_values(by="Bin", inplace=True)
+        # Drop any prior Bin column; the factor system re-materializes it below.
+        result.drop(columns=["Bin"], inplace=True, errors="ignore")
+        result.sort_values(by=["Timedelta", "Animal"], inplace=True)
         result.reset_index(inplace=True, drop=True)
 
         if include_runs:
@@ -62,4 +61,13 @@ def process_table(
                 "Run": "UInt8",
             })
 
+        datatable.metadata["sample_interval"] = timedelta
         datatable.df = result
+
+        # Sync the dataset's "Bin" factor interval and re-apply factors so the
+        # Bin column reflects the new binning.
+        dataset = datatable.dataset
+        bin_factor = dataset.factors.get("Bin")
+        if bin_factor is not None and isinstance(bin_factor.config, ByTimeIntervalConfig):
+            bin_factor.config.interval = timedelta.to_pytimedelta()
+        datatable.set_factors(dataset.factors)

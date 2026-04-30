@@ -25,12 +25,13 @@ from tse_analytics.core.data.shared import (
     ByAnimalPropertyConfig,
     ByColumnConfig,
     ByElapsedTimeConfig,
+    ByTimeIntervalConfig,
     ByTimeOfDayConfig,
     Factor,
     FactorRole,
     Variable,
 )
-from tse_analytics.core.utils.data import exclude_animals_from_df, reassign_df_timedelta_and_bin, rename_animal_df
+from tse_analytics.core.utils.data import exclude_animals_from_df, reassign_df_timedelta, rename_animal_df
 
 if TYPE_CHECKING:
     from tse_analytics.core.data.dataset import Dataset
@@ -149,18 +150,19 @@ class Datatable:
         """
         Get the default columns for this datatable.
 
+        ``"Bin"`` is intentionally excluded — it is materialized by a factor
+        (``ByTimeIntervalConfig``) and shows up via ``dataset.factors`` instead.
+
         Returns
         -------
         list[str]
-            List of default column names, including "Bin" and "Run" if they exist.
+            List of default column names, including "Run" if it exists.
         """
         columns = ["Animal"]
         if "DateTime" in self.df.columns:
             columns.append("DateTime")
         if "Timedelta" in self.df.columns:
             columns.append("Timedelta")
-        if "Bin" in self.df.columns:
-            columns.append("Bin")
         if "Run" in self.df.columns:
             columns.append("Run")
         return columns
@@ -260,7 +262,7 @@ class Datatable:
         """
         self.df = self.df[(self.df["DateTime"] < range_start) | (self.df["DateTime"] > range_end)]
         merging_mode = self.get_merging_mode()
-        self.df = reassign_df_timedelta_and_bin(self.df, self.sample_interval, merging_mode)
+        self.df = reassign_df_timedelta(self.df, merging_mode)
 
     def trim_time(self, range_start: datetime, range_end: datetime) -> None:
         """
@@ -275,7 +277,7 @@ class Datatable:
         """
         self.df = self.df[(self.df["DateTime"] >= range_start) & (self.df["DateTime"] <= range_end)]
         merging_mode = self.get_merging_mode()
-        self.df = reassign_df_timedelta_and_bin(self.df, self.sample_interval, merging_mode)
+        self.df = reassign_df_timedelta(self.df, merging_mode)
 
     def resample(self, resample_interval: pd.Timedelta) -> None:
         """
@@ -308,8 +310,10 @@ class Datatable:
         # Drop empty entries
         result.dropna(subset=["DateTime"], inplace=True)
 
-        # Assign new bins numbers
-        result["Bin"] = (result["Timedelta"] / resample_interval).round().astype("UInt64")
+        # Bin column is materialized by the factor system (see
+        # ``Dataset.resample_and_rebin``); resample stays purely local and
+        # leaves any existing Bin column behind, ready to be replaced.
+        result.drop(columns=["Bin"], inplace=True, errors="ignore")
 
         result.sort_values(by=["Timedelta", "Animal"], inplace=True)
         result.reset_index(inplace=True, drop=True)
@@ -514,6 +518,20 @@ def _apply_by_column(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None
     df[factor.name] = series if series.dtype.name == "category" else series.astype("category")
 
 
+def _apply_by_time_interval(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:
+    del dataset  # unused
+    cfg = factor.config
+    assert isinstance(cfg, ByTimeIntervalConfig)
+    if "Timedelta" not in df.columns:
+        logger.debug(f"Skipping factor {factor.name!r}: no Timedelta column")
+        return
+    interval_td = pd.Timedelta(cfg.interval)
+    if interval_td <= pd.Timedelta(0):
+        logger.debug(f"Skipping factor {factor.name!r}: non-positive interval {interval_td!r}")
+        return
+    df[factor.name] = (df["Timedelta"] / interval_td).round().astype("UInt64")
+
+
 _FactorApplier = Callable[[pd.DataFrame, Factor, "Dataset"], None]
 
 _FACTOR_APPLIERS: dict[type, _FactorApplier] = {
@@ -522,4 +540,5 @@ _FACTOR_APPLIERS: dict[type, _FactorApplier] = {
     ByTimeOfDayConfig: _apply_by_time_of_day,
     ByElapsedTimeConfig: _apply_by_elapsed_time,
     ByColumnConfig: _apply_by_column,
+    ByTimeIntervalConfig: _apply_by_time_interval,
 }

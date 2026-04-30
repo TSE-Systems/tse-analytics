@@ -19,8 +19,8 @@ from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication,
     QDialog, QDialogButtonBox, QFormLayout, QGroupBox,
     QHBoxLayout, QHeaderView, QLabel, QListWidget,
     QListWidgetItem, QPushButton, QSizePolicy, QSpacerItem,
-    QStackedWidget, QTableView, QTimeEdit, QToolButton,
-    QVBoxLayout, QWidget)
+    QSpinBox, QStackedWidget, QTableView, QTimeEdit,
+    QToolButton, QVBoxLayout, QWidget)
 import resources_rc
 
 class Ui_FactorsDialog(object):
@@ -239,6 +239,50 @@ class Ui_FactorsDialog(object):
         self.verticalLayoutColumn.addItem(self.verticalSpacerColumn)
 
         self.stackedWidgetConfig.addWidget(self.pageColumn)
+        self.pageTimeInterval = QWidget()
+        self.pageTimeInterval.setObjectName(u"pageTimeInterval")
+        self.verticalLayoutTimeInterval = QVBoxLayout(self.pageTimeInterval)
+        self.verticalLayoutTimeInterval.setObjectName(u"verticalLayoutTimeInterval")
+        self.verticalLayoutTimeInterval.setContentsMargins(0, 0, 0, 0)
+        self.labelTimeIntervalHint = QLabel(self.pageTimeInterval)
+        self.labelTimeIntervalHint.setObjectName(u"labelTimeIntervalHint")
+        self.labelTimeIntervalHint.setWordWrap(True)
+
+        self.verticalLayoutTimeInterval.addWidget(self.labelTimeIntervalHint)
+
+        self.horizontalLayoutTimeInterval = QHBoxLayout()
+        self.horizontalLayoutTimeInterval.setObjectName(u"horizontalLayoutTimeInterval")
+        self.spinBoxIntervalValue = QSpinBox(self.pageTimeInterval)
+        self.spinBoxIntervalValue.setObjectName(u"spinBoxIntervalValue")
+        self.spinBoxIntervalValue.setMinimum(1)
+        self.spinBoxIntervalValue.setMaximum(1000000)
+        self.spinBoxIntervalValue.setValue(1)
+
+        self.horizontalLayoutTimeInterval.addWidget(self.spinBoxIntervalValue)
+
+        self.comboBoxIntervalUnit = QComboBox(self.pageTimeInterval)
+        self.comboBoxIntervalUnit.setObjectName(u"comboBoxIntervalUnit")
+
+        self.horizontalLayoutTimeInterval.addWidget(self.comboBoxIntervalUnit)
+
+        self.horizontalSpacerTimeInterval = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayoutTimeInterval.addItem(self.horizontalSpacerTimeInterval)
+
+
+        self.verticalLayoutTimeInterval.addLayout(self.horizontalLayoutTimeInterval)
+
+        self.labelTimeIntervalCaloWarning = QLabel(self.pageTimeInterval)
+        self.labelTimeIntervalCaloWarning.setObjectName(u"labelTimeIntervalCaloWarning")
+        self.labelTimeIntervalCaloWarning.setWordWrap(True)
+
+        self.verticalLayoutTimeInterval.addWidget(self.labelTimeIntervalCaloWarning)
+
+        self.verticalSpacerTimeInterval = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayoutTimeInterval.addItem(self.verticalSpacerTimeInterval)
+
+        self.stackedWidgetConfig.addWidget(self.pageTimeInterval)
 
         self.verticalLayout_5.addWidget(self.stackedWidgetConfig)
 
@@ -289,5 +333,7 @@ class Ui_FactorsDialog(object):
 #endif // QT_CONFIG(tooltip)
         self.labelAnimalPropertyHint.setText(QCoreApplication.translate("FactorsDialog", u"Animal property whose value defines the level for each animal:", None))
         self.labelColumnHint.setText(QCoreApplication.translate("FactorsDialog", u"Datatable column whose values define the factor levels:", None))
+        self.labelTimeIntervalHint.setText(QCoreApplication.translate("FactorsDialog", u"Bin width. Each row is assigned an integer bin index (round(Timedelta / interval)) from experiment start.", None))
+        self.labelTimeIntervalCaloWarning.setText("")
     # retranslateUi
 

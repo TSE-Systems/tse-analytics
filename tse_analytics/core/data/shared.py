@@ -118,6 +118,9 @@ class FactorSource(StrEnum):
         (named phases).
     BY_COLUMN : str
         Levels read from an existing categorical column on the dataframe.
+    BY_TIME_INTERVAL : str
+        Sequential integer bins computed from each row's ``Timedelta`` since
+        experiment start at a user-defined interval.
     """
 
     BY_ANIMAL = "by_animal"
@@ -125,6 +128,7 @@ class FactorSource(StrEnum):
     BY_TIME_OF_DAY = "by_time_of_day"
     BY_ELAPSED_TIME = "by_elapsed_time"
     BY_COLUMN = "by_column"
+    BY_TIME_INTERVAL = "by_time_interval"
 
 
 @dataclass
@@ -221,8 +225,30 @@ class ByColumnConfig:
     source: Literal[FactorSource.BY_COLUMN] = FactorSource.BY_COLUMN
 
 
+@dataclass
+class ByTimeIntervalConfig:
+    """
+    Factor source: sequential integer bins computed from each row's
+    ``Timedelta`` at a user-defined interval. Materialized as a ``UInt64``
+    column whose values equal ``round(Timedelta / interval)``.
+
+    Attributes
+    ----------
+    interval : timedelta
+        The width of each bin. Must be positive.
+    """
+
+    interval: timedelta
+    source: Literal[FactorSource.BY_TIME_INTERVAL] = FactorSource.BY_TIME_INTERVAL
+
+
 FactorConfig = Annotated[
-    ByAnimalConfig | ByAnimalPropertyConfig | ByTimeOfDayConfig | ByElapsedTimeConfig | ByColumnConfig,
+    ByAnimalConfig
+    | ByAnimalPropertyConfig
+    | ByTimeOfDayConfig
+    | ByElapsedTimeConfig
+    | ByColumnConfig
+    | ByTimeIntervalConfig,
     Field(discriminator="source"),
 ]
 

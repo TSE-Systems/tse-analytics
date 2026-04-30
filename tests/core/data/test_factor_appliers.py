@@ -17,6 +17,7 @@ from tse_analytics.core.data.datatable import (
     _apply_by_animal_property,
     _apply_by_column,
     _apply_by_elapsed_time,
+    _apply_by_time_interval,
     _apply_by_time_of_day,
 )
 from tse_analytics.core.data.shared import (
@@ -25,6 +26,7 @@ from tse_analytics.core.data.shared import (
     ByAnimalPropertyConfig,
     ByColumnConfig,
     ByElapsedTimeConfig,
+    ByTimeIntervalConfig,
     ByTimeOfDayConfig,
     Factor,
     FactorLevel,
@@ -69,6 +71,7 @@ class TestDispatchRegistry:
             ByTimeOfDayConfig,
             ByElapsedTimeConfig,
             ByColumnConfig,
+            ByTimeIntervalConfig,
         }
 
     def test_registry_maps_to_expected_functions(self):
@@ -77,6 +80,7 @@ class TestDispatchRegistry:
         assert _FACTOR_APPLIERS[ByTimeOfDayConfig] is _apply_by_time_of_day
         assert _FACTOR_APPLIERS[ByElapsedTimeConfig] is _apply_by_elapsed_time
         assert _FACTOR_APPLIERS[ByColumnConfig] is _apply_by_column
+        assert _FACTOR_APPLIERS[ByTimeIntervalConfig] is _apply_by_time_interval
 
 
 class TestByAnimalApplier:
@@ -217,3 +221,51 @@ class TestByColumnApplier:
         )
         _apply_by_column(time_df, factor, stub_dataset)
         assert "Missing" not in time_df.columns
+
+
+class TestByTimeIntervalApplier:
+    def test_assigns_uint64_bins(self, time_df, stub_dataset):
+        factor = Factor(
+            name="Bin",
+            role=FactorRole.WITHIN_SUBJECT,
+            config=ByTimeIntervalConfig(interval=timedelta(hours=1)),
+            levels=[],
+        )
+        _apply_by_time_interval(time_df, factor, stub_dataset)
+
+        assert "Bin" in time_df.columns
+        assert time_df["Bin"].dtype.name == "UInt64"
+        # 4 hourly timepoints map to bin indices 0..3
+        assert set(time_df["Bin"].unique().tolist()) == {0, 1, 2, 3}
+
+    def test_collapses_to_zero_with_24h_interval(self, time_df, stub_dataset):
+        factor = Factor(
+            name="Day",
+            role=FactorRole.WITHIN_SUBJECT,
+            config=ByTimeIntervalConfig(interval=timedelta(days=1)),
+            levels=[],
+        )
+        _apply_by_time_interval(time_df, factor, stub_dataset)
+
+        assert (time_df["Day"] == 0).all()
+
+    def test_skips_when_timedelta_missing(self, stub_dataset):
+        df = pd.DataFrame({"Animal": ["A1", "A2"]})
+        factor = Factor(
+            name="Bin",
+            role=FactorRole.WITHIN_SUBJECT,
+            config=ByTimeIntervalConfig(interval=timedelta(hours=1)),
+            levels=[],
+        )
+        _apply_by_time_interval(df, factor, stub_dataset)
+        assert "Bin" not in df.columns
+
+    def test_skips_when_interval_non_positive(self, time_df, stub_dataset):
+        factor = Factor(
+            name="Bad",
+            role=FactorRole.WITHIN_SUBJECT,
+            config=ByTimeIntervalConfig(interval=timedelta(0)),
+            levels=[],
+        )
+        _apply_by_time_interval(time_df, factor, stub_dataset)
+        assert "Bad" not in time_df.columns

@@ -19,7 +19,6 @@ class FactorsTableWidget(QTableWidget):
         factors: dict[str, Factor],
         selected_factors: list[str],
         show_role: FactorRole | None,
-        show_bins: int | None = None,
         parent=None,
     ):
         if show_role is not None:
@@ -27,7 +26,7 @@ class FactorsTableWidget(QTableWidget):
 
         super().__init__(
             parent,
-            rowCount=len(factors) + 1 if show_bins else len(factors),
+            rowCount=len(factors),
             columnCount=self._COLUMN_NUMBER,
         )
 
@@ -52,10 +51,6 @@ class FactorsTableWidget(QTableWidget):
             if selected_factors is not None:
                 if factor.name in selected_factors:
                     self.selectRow(i)
-
-        if show_bins:
-            self.setItem(len(factors), 0, QTableWidgetItem("Bin"))
-            self.setItem(len(factors), 1, QTableWidgetItem(f"Bins: {show_bins}"))
 
     def get_selected_factor_names(self) -> list[str]:
         """

@@ -173,7 +173,8 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Data
         column="Timedelta",
         value=(df["DateTime"] - start_date_time).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
-    df.insert(loc=2, column="Bin", value=(df["Timedelta"] / timedelta).round().astype("UInt64"))
+    # Bin column is materialized later by the auto-created "Bin" factor
+    # (see Dataset.set_factors). The loader no longer assigns it directly.
 
     # Sort variables by name
     variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))

@@ -1,11 +1,9 @@
 from dataclasses import dataclass
 
-from pyqttoast import ToastPreset
 from PySide6.QtWidgets import QLabel, QToolBar, QWidget
 
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation
-from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_figsize_from_widget
 from tse_analytics.toolbox.timeseries_autocorrelation.processor import get_timeseries_autocorrelation_result
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
@@ -51,17 +49,6 @@ class TimeseriesAutocorrelationWidget(ToolboxWidgetBase):
 
     def _update(self):
         self.report_view.clear()
-
-        if "Bin" in self.datatable.df.columns:
-            make_toast(
-                self,
-                self.title,
-                "Timeseries analysis cannot be done when binning is active.",
-                duration=2000,
-                preset=ToastPreset.WARNING,
-                show_duration_bar=True,
-            ).show()
-            return
 
         variable = self.variableSelector.get_selected_variable()
         animal = self.animalSelector.get_selected_animal()

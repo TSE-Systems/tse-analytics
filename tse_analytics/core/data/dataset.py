@@ -19,6 +19,7 @@ from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import (
     Animal,
+    ByTimeIntervalConfig,
     ByTimeOfDayConfig,
     Factor,
     FactorLevel,
@@ -405,6 +406,10 @@ class Dataset:
             for datatable in extension_datatables.values():
                 datatable.exclude_time(range_start, range_end)
 
+        # Re-materialize factor columns whose values depend on Timedelta
+        # (Bin via ByTimeIntervalConfig, named phases via ByElapsedTimeConfig).
+        self.set_factors(self.factors)
+
     def trim_time(self, range_start: datetime, range_end: datetime) -> None:
         """
         Trim the dataset to a specific time range.
@@ -429,12 +434,18 @@ class Dataset:
             for datatable in extension_datatables.values():
                 datatable.trim_time(range_start, range_end)
 
+        # Re-materialize factor columns whose values depend on Timedelta.
+        self.set_factors(self.factors)
+
     def resample(self, resample_interval: pd.Timedelta) -> None:
         """
         Resample all datatables in the dataset.
 
         This method applies the specified resampling interval to all datatables
-        in the dataset.
+        in the dataset. Note that Bin (and any other ``BY_TIME_INTERVAL`` factor
+        column) is no longer recomputed inside ``Datatable.resample``; for the
+        user-facing flow, use ``resample_and_rebin`` instead, which also adjusts
+        the ``"Bin"`` factor's interval and re-applies all factors.
 
         Parameters
         ----------
@@ -443,6 +454,25 @@ class Dataset:
         """
         for datatable in self.datatables.values():
             datatable.resample(resample_interval)
+
+    def resample_and_rebin(self, resample_interval: pd.Timedelta) -> None:
+        """
+        Resample all datatables and align the ``"Bin"`` factor's interval.
+
+        Resamples every datatable to ``resample_interval``. If the dataset has a
+        ``"Bin"`` factor, its interval is updated to match, then all factors are
+        re-applied so the materialized Bin column reflects the new sampling.
+
+        Parameters
+        ----------
+        resample_interval : pd.Timedelta
+            The new sampling interval.
+        """
+        self.resample(resample_interval)
+        bin_factor = self.factors.get("Bin")
+        if bin_factor is not None and isinstance(bin_factor.config, ByTimeIntervalConfig):
+            bin_factor.config.interval = pd.Timedelta(resample_interval).to_pytimedelta()
+        self.set_factors(self.factors)
 
     def set_factors(self, factors: dict[str, Factor], old_factors: dict[str, Factor] | None = None) -> None:
         """
@@ -459,6 +489,25 @@ class Dataset:
 
         if "LightCycle" not in self.factors:
             self.factors["LightCycle"] = _get_default_light_cycle_factor()
+
+        # Auto-create a non-deletable "Bin" factor for regular timeseries
+        # datasets (PhenoMaster). Irregular datasets (IntelliCage / IntelliMaze)
+        # have no sample_interval and don't get one auto-created — users add
+        # their own time-interval factor with any name if they want binning.
+        if "Bin" not in self.factors:
+            first_regular = next(
+                (dt for dt in self.datatables.values() if dt.is_regular_timeseries),
+                None,
+            )
+            if first_regular is not None and first_regular.sample_interval is not None:
+                self.factors["Bin"] = Factor(
+                    name="Bin",
+                    role=FactorRole.WITHIN_SUBJECT,
+                    config=ByTimeIntervalConfig(
+                        interval=first_regular.sample_interval.to_pytimedelta(),
+                    ),
+                    levels=[],
+                )
 
         for datatable in self.datatables.values():
             datatable.set_factors(factors, old_factors)
