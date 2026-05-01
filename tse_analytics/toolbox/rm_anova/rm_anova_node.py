@@ -76,8 +76,6 @@ class RmAnovaNode(PipelineNode):
         match group_by_text:
             case "Animal":
                 grouping_settings = GroupingSettings(mode=GroupingMode.ANIMAL)
-            case "Run":
-                grouping_settings = GroupingSettings(mode=GroupingMode.RUN)
             case _:
                 if group_by_text in datatable.dataset.factors.keys():
                     grouping_settings = GroupingSettings(mode=GroupingMode.FACTOR, factor_name=group_by_text)

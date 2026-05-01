@@ -107,9 +107,6 @@ class FastBarPlotWidget(QWidget):
                 # Cleaning
                 df[by] = df[by].cat.remove_unused_categories()
                 palette = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
-            case GroupingMode.RUN:
-                by = "Run"
-                palette = color_manager.get_run_to_color_dict(self.datatable.dataset.runs)
             case GroupingMode.FACTOR:
                 by = grouping_settings.factor_name
                 palette = color_manager.get_level_to_color_dict(self.datatable.dataset.factors[by])

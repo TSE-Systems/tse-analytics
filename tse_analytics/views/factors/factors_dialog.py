@@ -54,7 +54,7 @@ _PAGE_INDEX: dict[FactorSource, int] = {
     FactorSource.BY_TIME_INTERVAL: 5,
 }
 
-_STANDARD_DF_COLUMNS = frozenset({"Animal", "DateTime", "Timedelta", "Run"})
+_STANDARD_DF_COLUMNS = frozenset({"Animal", "DateTime", "Timedelta"})
 
 # Bin width unit options for the BY_TIME_INTERVAL page. Each entry maps the
 # label shown in the combo box to the corresponding ``timedelta`` keyword

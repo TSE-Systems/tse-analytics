@@ -150,10 +150,6 @@ class DataPlotWidget(QWidget):
                 columns = ["Animal", "Timedelta"] + selected_variable_names
                 by = "Animal"
                 palette = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
-            case GroupingMode.RUN:
-                columns = ["Timedelta", "Run"] + selected_variable_names
-                by = "Run"
-                palette = color_manager.get_run_to_color_dict(self.datatable.dataset.runs)
             case GroupingMode.FACTOR:
                 columns = ["Timedelta", grouping_settings.factor_name] + selected_variable_names
                 by = grouping_settings.factor_name

@@ -175,11 +175,6 @@ class FastLinePlotWidget(QWidget):
 
                 factor = self.datatable.dataset.factors[grouping_settings.factor_name]
                 x_min, x_max = self._plot_factors(df, variable.name, factor)
-            case GroupingMode.RUN:
-                columns = ["Timedelta", "Run", variable.name]
-                df = self.datatable.get_filtered_df(columns)
-                df = df.groupby(["Timedelta", "Run"], dropna=False, observed=False).aggregate("mean").reset_index()
-                x_min, x_max = self._plot_runs(df, variable.name)
 
         # bound the LinearRegionItem to the plotted data
         self.region.setRegion([x_min, x_max])
@@ -252,24 +247,6 @@ class FastLinePlotWidget(QWidget):
                     x_min = tmp_min
                 if x_max is None or tmp_max > x_max:
                     x_max = tmp_max
-
-        return x_min, x_max
-
-    def _plot_runs(self, df: pd.DataFrame, variable_name: str) -> tuple[float, float]:
-        x_min = None
-        x_max = None
-
-        runs = df["Run"].unique()
-        for run in runs:
-            run_data = df[df["Run"] == run]
-
-            pen = pg.mkPen(color=color_manager.get_color_hex(int(run)), width=1)
-            tmp_min, tmp_max = self._plot_item(run_data, variable_name, f"Run {run}", pen)
-
-            if x_min is None or tmp_min < x_min:
-                x_min = tmp_min
-            if x_max is None or tmp_max > x_max:
-                x_max = tmp_max
 
         return x_min, x_max
 

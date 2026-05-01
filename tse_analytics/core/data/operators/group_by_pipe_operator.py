@@ -16,15 +16,12 @@ def group_by_columns(
     variables: dict[str, Variable],
     group_settings: GroupingSettings,
 ) -> pd.DataFrame:
-    if group_settings.mode == GroupingMode.ANIMAL:
-        # No grouping needed
-        return df
-
     match group_settings.mode:
+        case GroupingMode.ANIMAL:
+            # No grouping needed
+            return df
         case GroupingMode.FACTOR:
             group_by = ["Bin", group_settings.factor_name]
-        case GroupingMode.RUN:
-            group_by = ["Bin", "Run"]
 
     aggregation = {}
 

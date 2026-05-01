@@ -49,7 +49,6 @@ class RegressionWidget(ToolboxWidgetBase):
             toolbar,
             self.datatable,
             selected_mode=self._settings.group_by,
-            disable_run_mode=True,
             disable_animal_mode=True,
         )
         toolbar.addWidget(self.group_by_selector)

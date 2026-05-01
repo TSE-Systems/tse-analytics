@@ -29,13 +29,3 @@ class TestNormality:
         )
         assert isinstance(result, NormalityTestResult)
         assert "<img" in result.report
-
-    def test_run_mode(self, analysis_dataset):
-        result = get_normality_result(
-            datatable=analysis_dataset.datatables["Main"],
-            variable_name="Metabolism",
-            grouping_settings=GroupingSettings(mode=GroupingMode.RUN),
-            figsize=(6, 4),
-        )
-        assert isinstance(result, NormalityTestResult)
-        assert "<img" in result.report

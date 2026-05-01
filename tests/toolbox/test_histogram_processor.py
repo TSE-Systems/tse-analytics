@@ -28,12 +28,3 @@ class TestHistogram:
             figsize=(8, 6),
         )
         assert isinstance(result, HistogramResult)
-
-    def test_run_mode(self, analysis_dataset):
-        result = get_histogram_result(
-            datatable=analysis_dataset.datatables["Main"],
-            variable_name="Metabolism",
-            grouping_settings=GroupingSettings(mode=GroupingMode.RUN),
-            figsize=(8, 6),
-        )
-        assert isinstance(result, HistogramResult)

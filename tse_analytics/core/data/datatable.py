@@ -153,15 +153,13 @@ class Datatable:
         Returns
         -------
         list[str]
-            List of default column names, including "Run" if it exists.
+            List of default column names.
         """
         columns = ["Animal"]
         if "DateTime" in self.df.columns:
             columns.append("DateTime")
         if "Timedelta" in self.df.columns:
             columns.append("Timedelta")
-        if "Run" in self.df.columns:
-            columns.append("Run")
         return columns
 
     def get_categorical_columns(self) -> list[str]:
@@ -178,7 +176,6 @@ class Datatable:
 
     def get_group_by_columns(
         self,
-        disable_run_mode=False,
         disable_animal_mode=False,
         show_role: FactorRole | None = None,
     ) -> list[str]:
@@ -191,8 +188,6 @@ class Datatable:
             List of column names that can be used for grouping data.
         """
         modes = ["Animal"] if not disable_animal_mode else []
-        if not disable_run_mode and "Run" in self.df.columns:
-            modes.append("Run")
         if len(self.dataset.factors) > 0:
             if show_role is None:
                 for factor in self.dataset.factors.keys():

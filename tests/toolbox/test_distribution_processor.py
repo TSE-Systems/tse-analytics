@@ -44,14 +44,3 @@ class TestDistribution:
         )
         assert isinstance(result, DistributionResult)
         assert "<img" in result.report
-
-    def test_run_mode(self, analysis_dataset):
-        result = get_distribution_result(
-            datatable=analysis_dataset.datatables["Main"],
-            variable_name="Metabolism",
-            grouping_settings=GroupingSettings(mode=GroupingMode.RUN),
-            plot_type="Box plot",
-            show_points=False,
-            figsize=(8, 6),
-        )
-        assert isinstance(result, DistributionResult)

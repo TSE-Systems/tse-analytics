@@ -2,9 +2,8 @@ import pandas as pd
 
 from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import ByTimeIntervalConfig
 
-default_columns = ["Animal", "Timedelta", "DateTime", "Run"]
+default_columns = ["Animal", "Timedelta", "DateTime"]
 
 
 def process_table(

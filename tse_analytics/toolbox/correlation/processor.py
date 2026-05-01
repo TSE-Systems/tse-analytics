@@ -31,15 +31,11 @@ def get_correlation_result(
         case GroupingMode.ANIMAL:
             by = "Animal"
             palette = color_manager.get_animal_to_color_dict(datatable.dataset.animals)
-        case GroupingMode.RUN:
-            by = "Run"
-            palette = color_manager.get_run_to_color_dict(datatable.dataset.runs)
         case GroupingMode.FACTOR:
             by = grouping_settings.factor_name
             palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[by])
 
-    if grouping_settings.mode != GroupingMode.RUN:
-        df[by] = df[by].cat.remove_unused_categories()
+    df[by] = df[by].cat.remove_unused_categories()
 
     if figsize is None:
         figsize = rcParams["figure.figsize"]

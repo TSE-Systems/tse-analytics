@@ -30,8 +30,6 @@ def get_group_by_params(group_by_str: str) -> GroupingSettings:
     match group_by_str:
         case GroupingMode.ANIMAL.value:
             return GroupingSettings(mode=GroupingMode.ANIMAL)
-        case GroupingMode.RUN.value:
-            return GroupingSettings(mode=GroupingMode.RUN)
         case GroupingMode.FACTOR.value:
             return GroupingSettings(mode=GroupingMode.FACTOR, factor_name=group_by_str)
         case _:
@@ -42,8 +40,6 @@ def get_columns_by_grouping_settings(grouping_settings: GroupingSettings, variab
     match grouping_settings.mode:
         case GroupingMode.ANIMAL:
             return variable_names + ["Animal"]
-        case GroupingMode.RUN:
-            return variable_names + ["Run"]
         case GroupingMode.FACTOR:
             return variable_names + [grouping_settings.factor_name]
 

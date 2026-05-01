@@ -31,9 +31,6 @@ def get_distribution_result(
         case GroupingMode.ANIMAL:
             x = "Animal"
             palette = color_manager.get_animal_to_color_dict(datatable.dataset.animals)
-        case GroupingMode.RUN:
-            x = "Run"
-            palette = color_manager.get_run_to_color_dict(datatable.dataset.runs)
         case GroupingMode.FACTOR:
             x = grouping_settings.factor_name
             palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[x])

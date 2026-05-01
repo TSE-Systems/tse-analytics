@@ -46,9 +46,6 @@ def get_regression_result(
         case GroupingMode.ANIMAL:
             by = "Animal"
             palette = color_manager.get_animal_to_color_dict(datatable.dataset.animals)
-        case GroupingMode.RUN:
-            by = "Run"
-            palette = color_manager.get_run_to_color_dict(datatable.dataset.runs)
         case GroupingMode.FACTOR:
             by = grouping_settings.factor_name
             palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[by])
@@ -87,18 +84,6 @@ def get_regression_result(
                     + get_great_table(
                         pg.linear_regression(data[covariate.name], data[response.name], remove_na=True),
                         f"Level: {level}",
-                    ).as_raw_html(inline_css=True)
-                    + "<p>"
-                )
-        case GroupingMode.RUN:
-            output = ""
-            for run in df["Run"].unique().tolist():
-                data = df[df["Run"] == run]
-                output = (
-                    output
-                    + get_great_table(
-                        pg.linear_regression(data[covariate.name], data[response.name], remove_na=True),
-                        f"Run: {run}",
                     ).as_raw_html(inline_css=True)
                     + "<p>"
                 )

@@ -53,18 +53,6 @@ def get_normality_result(
                     ax=ax,
                 )
                 ax.set_title(level)
-        case GroupingMode.RUN:
-            runs = df["Run"].unique()
-            nrows, ncols = get_plot_layout(len(runs))
-            for index, run in enumerate(runs):
-                ax = figure.add_subplot(nrows, ncols, index + 1)
-                pg.qqplot(
-                    df[df["Run"] == run][variable_name],
-                    dist="norm",
-                    marker=".",
-                    ax=ax,
-                )
-                ax.set_title(f"Run: {run}")
 
     report = get_html_image_from_figure(figure)
 
