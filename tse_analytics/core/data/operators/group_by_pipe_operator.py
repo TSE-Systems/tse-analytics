@@ -25,8 +25,6 @@ def group_by_columns(
             group_by = ["Bin", group_settings.factor_name]
         case GroupingMode.RUN:
             group_by = ["Bin", "Run"]
-        case _:  # Total split mode
-            group_by = ["Bin"]
 
     aggregation = {}
 

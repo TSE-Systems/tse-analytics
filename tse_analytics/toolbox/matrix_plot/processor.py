@@ -43,9 +43,6 @@ def get_matrix_plot_result(
         case GroupingMode.FACTOR:
             hue = grouping_settings.factor_name
             palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[hue])
-        case _:  # Total
-            hue = "None"
-            palette = color_manager.colormap_name
 
     pair_grid = sns.pairplot(
         df[[hue] + variables] if hue is not None else df[variables],

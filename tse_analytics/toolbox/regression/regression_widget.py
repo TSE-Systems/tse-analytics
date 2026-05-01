@@ -13,7 +13,7 @@ from tse_analytics.views.misc.variable_selector import VariableSelector
 
 @dataclass
 class RegressionWidgetSettings:
-    group_by: str = "Total"
+    group_by: str = "LightCycle"
     covariate_variable: str | None = None
     response_variable: str | None = None
 

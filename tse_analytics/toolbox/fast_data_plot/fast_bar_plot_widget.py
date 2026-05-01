@@ -113,10 +113,6 @@ class FastBarPlotWidget(QWidget):
             case GroupingMode.FACTOR:
                 by = grouping_settings.factor_name
                 palette = color_manager.get_level_to_color_dict(self.datatable.dataset.factors[by])
-            case _:
-                by = "Total"
-                df[by] = by
-                palette = color_manager.colormap_name
 
         # TODO: workaround for issue with nullable Float64
         df[selected_variable.name] = df[selected_variable.name].astype(float)

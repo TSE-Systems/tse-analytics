@@ -65,15 +65,6 @@ def get_normality_result(
                     ax=ax,
                 )
                 ax.set_title(f"Run: {run}")
-        case GroupingMode.TOTAL:
-            ax = figure.add_subplot(1, 1, 1)
-            pg.qqplot(
-                df[variable_name],
-                dist="norm",
-                marker=".",
-                ax=ax,
-            )
-            ax.set_title("Total")
 
     report = get_html_image_from_figure(figure)
 

@@ -11,30 +11,6 @@ from tse_analytics.toolbox.distribution.processor import DistributionResult, get
 class TestDistribution:
     """Tests for get_distribution_result processor function."""
 
-    def test_box_plot_total_mode(self, analysis_dataset):
-        result = get_distribution_result(
-            datatable=analysis_dataset.datatables["Main"],
-            variable_name="Metabolism",
-            grouping_settings=GroupingSettings(mode=GroupingMode.TOTAL),
-            plot_type="Box plot",
-            show_points=False,
-            figsize=(8, 6),
-        )
-        assert isinstance(result, DistributionResult)
-        assert "<img" in result.report
-
-    def test_violin_plot_total_mode(self, analysis_dataset):
-        result = get_distribution_result(
-            datatable=analysis_dataset.datatables["Main"],
-            variable_name="Metabolism",
-            grouping_settings=GroupingSettings(mode=GroupingMode.TOTAL),
-            plot_type="Violin plot",
-            show_points=False,
-            figsize=(8, 6),
-        )
-        assert isinstance(result, DistributionResult)
-        assert "<img" in result.report
-
     def test_factor_mode(self, analysis_dataset):
         result = get_distribution_result(
             datatable=analysis_dataset.datatables["Main"],

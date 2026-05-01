@@ -11,7 +11,6 @@ class GroupBySelector(QComboBox):
         parent: QWidget,
         datatable: Datatable,
         selected_mode: str = None,
-        disable_total_mode: bool = False,
         disable_run_mode: bool = False,
         disable_animal_mode: bool = False,
         show_role: FactorRole | None = None,
@@ -22,7 +21,6 @@ class GroupBySelector(QComboBox):
         self.datatable = datatable
 
         modes = self.datatable.get_group_by_columns(
-            disable_total_mode=disable_total_mode,
             disable_run_mode=disable_run_mode,
             disable_animal_mode=disable_animal_mode,
             show_role=show_role,
@@ -38,8 +36,6 @@ class GroupBySelector(QComboBox):
         match mode_text:
             case "Animal":
                 grouping_mode = GroupingMode.ANIMAL
-            case "Total":
-                grouping_mode = GroupingMode.TOTAL
             case "Run":
                 grouping_mode = GroupingMode.RUN
             case _:

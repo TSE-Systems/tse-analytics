@@ -52,9 +52,6 @@ def get_regression_result(
         case GroupingMode.FACTOR:
             by = grouping_settings.factor_name
             palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[by])
-        case _:
-            by = None
-            palette = color_manager.colormap_name
 
     if figsize is None:
         figsize = rcParams["figure.figsize"]
@@ -105,12 +102,6 @@ def get_regression_result(
                     ).as_raw_html(inline_css=True)
                     + "<p>"
                 )
-        case _:
-            data = df
-            output = get_great_table(
-                pg.linear_regression(data[covariate.name], data[response.name], remove_na=True),
-                "Total",
-            ).as_raw_html(inline_css=True)
 
     report = f"""
     {output}

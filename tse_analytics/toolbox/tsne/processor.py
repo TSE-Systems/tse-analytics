@@ -44,9 +44,6 @@ def get_tsne_result(
         case GroupingMode.FACTOR:
             by = grouping_settings.factor_name
             palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[by])
-        case _:
-            by = None
-            palette = color_manager.colormap_name
 
     # Standardize the data
     scaler = StandardScaler()

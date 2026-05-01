@@ -10,23 +10,12 @@ matplotlib.use("Agg")
 class TestCorrelation:
     """Tests for get_correlation_result processor function."""
 
-    def test_total_mode(self, analysis_dataset):
-        result = get_correlation_result(
-            datatable=analysis_dataset.datatables["Main"],
-            x_var_name="Metabolism",
-            y_var_name="Activity",
-            grouping_settings=GroupingSettings(mode=GroupingMode.TOTAL),
-            figsize=(8, 6),
-        )
-        assert isinstance(result, CorrelationResult)
-        assert "<img" in result.report
-
     def test_report_contains_ttest(self, analysis_dataset):
         result = get_correlation_result(
             datatable=analysis_dataset.datatables["Main"],
             x_var_name="Metabolism",
             y_var_name="Activity",
-            grouping_settings=GroupingSettings(mode=GroupingMode.TOTAL),
+            grouping_settings=GroupingSettings(mode=GroupingMode.ANIMAL),
             figsize=(8, 6),
         )
         assert "t-test" in result.report.lower()
@@ -36,7 +25,7 @@ class TestCorrelation:
             datatable=analysis_dataset.datatables["Main"],
             x_var_name="Metabolism",
             y_var_name="Activity",
-            grouping_settings=GroupingSettings(mode=GroupingMode.TOTAL),
+            grouping_settings=GroupingSettings(mode=GroupingMode.ANIMAL),
             figsize=(8, 6),
         )
         assert "pearson" in result.report.lower()

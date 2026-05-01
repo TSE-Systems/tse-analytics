@@ -159,10 +159,6 @@ class DataPlotWidget(QWidget):
                 by = grouping_settings.factor_name
                 factor = self.datatable.dataset.factors[by]
                 palette = color_manager.get_level_to_color_dict(factor)
-            case GroupingMode.TOTAL:
-                columns = ["Timedelta"] + selected_variable_names
-                by = None
-                palette = color_manager.colormap_name
 
         df = self.datatable.get_filtered_df(columns)
         df["Hours"] = df["Timedelta"] / pd.Timedelta(1, "h")

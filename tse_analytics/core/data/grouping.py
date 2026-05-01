@@ -16,14 +16,11 @@ class GroupingMode(StrEnum):
         Split data by factor.
     RUN : str
         Split data by run.
-    TOTAL : str
-        No splitting, use total data.
     """
 
     ANIMAL = "Animal"
     FACTOR = "Factor"
     RUN = "Run"
-    TOTAL = "Total"
 
 
 @dataclass

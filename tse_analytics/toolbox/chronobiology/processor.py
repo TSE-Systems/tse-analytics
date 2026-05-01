@@ -420,8 +420,6 @@ def _resolve_group_column(grouping_settings: GroupingSettings) -> str | None:
             return grouping_settings.factor_name
         case GroupingMode.RUN:
             return "Run"
-        case _:
-            return None
 
 
 def _resolve_palette(
@@ -435,8 +433,6 @@ def _resolve_palette(
             return color_manager.get_level_to_color_dict(datatable.dataset.factors[grouping_settings.factor_name])
         case GroupingMode.RUN:
             return color_manager.get_run_to_color_dict(datatable.dataset.runs)
-        case _:
-            return None
 
 
 # ---------------------------------------------------------------------------

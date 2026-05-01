@@ -37,9 +37,6 @@ def get_distribution_result(
         case GroupingMode.FACTOR:
             x = grouping_settings.factor_name
             palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[x])
-        case _:
-            x = None
-            palette = color_manager.colormap_name
 
     if grouping_settings.mode == GroupingMode.ANIMAL or grouping_settings.mode == GroupingMode.FACTOR:
         # TODO: temporary fix for issue with broken categories offset when using pandas 3.0

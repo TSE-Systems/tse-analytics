@@ -178,7 +178,6 @@ class Datatable:
 
     def get_group_by_columns(
         self,
-        disable_total_mode=False,
         disable_run_mode=False,
         disable_animal_mode=False,
         show_role: FactorRole | None = None,
@@ -192,8 +191,6 @@ class Datatable:
             List of column names that can be used for grouping data.
         """
         modes = ["Animal"] if not disable_animal_mode else []
-        if not disable_total_mode:
-            modes.append("Total")
         if not disable_run_mode and "Run" in self.df.columns:
             modes.append("Run")
         if len(self.dataset.factors) > 0:

@@ -19,6 +19,7 @@ from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import (
     Animal,
+    ByAnimalConfig,
     ByTimeIntervalConfig,
     ByTimeOfDayConfig,
     Factor,
@@ -44,6 +45,17 @@ def _get_default_light_cycle_factor() -> Factor:
         levels=[
             FactorLevel(name="Light", color=get_factor_level_color_hex(1)),
             FactorLevel(name="Dark", color=get_factor_level_color_hex(0)),
+        ],
+    )
+
+
+def _get_default_total_factor(animals: dict[str, Animal]) -> Factor:
+    return Factor(
+        name="Total",
+        role=FactorRole.BETWEEN_SUBJECT,
+        config=ByAnimalConfig(),
+        levels=[
+            FactorLevel(name="All animals", color=get_factor_level_color_hex(0), animal_ids=list(animals.keys())),
         ],
     )
 
@@ -97,8 +109,10 @@ class Dataset:
         self.datatables: dict[str, Datatable] = {}
         self.raw_datatables: dict[str, dict[str, Datatable]] = {}
 
+        default_total_factor = _get_default_total_factor(self.animals)
         default_light_cycle_factor = _get_default_light_cycle_factor()
         self.factors: dict[str, Factor] = {
+            default_total_factor.name: default_total_factor,
             default_light_cycle_factor.name: default_light_cycle_factor,
         }
 
@@ -464,6 +478,9 @@ class Dataset:
             Dictionary mapping factor names to Factor objects.
         """
         self.factors = factors
+
+        if "Total" not in self.factors:
+            self.factors["Total"] = _get_default_total_factor(self.animals)
 
         if "LightCycle" not in self.factors:
             self.factors["LightCycle"] = _get_default_light_cycle_factor()

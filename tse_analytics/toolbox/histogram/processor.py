@@ -39,9 +39,6 @@ def get_histogram_result(
         case GroupingMode.FACTOR:
             by = grouping_settings.factor_name
             palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[by])
-        case _:
-            by = None
-            palette = color_manager.colormap_name
 
     # Create a figure with a tight layout
     figure = plt.Figure(figsize=figsize, layout="tight")

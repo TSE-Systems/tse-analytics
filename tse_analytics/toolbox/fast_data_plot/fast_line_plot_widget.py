@@ -162,12 +162,6 @@ class FastLinePlotWidget(QWidget):
                     df = df[df["Animal"].isin(self.animals_table_view.get_selected_animal_ids())]
                     df["Animal"] = df["Animal"].cat.remove_unused_categories()
                 x_min, x_max = self._plot_animals(df, variable.name)
-            case GroupingMode.TOTAL:
-                columns = ["Timedelta", variable.name]
-                df = self.datatable.get_filtered_df(columns)
-                df = df.groupby(["Timedelta"], dropna=False, observed=False).aggregate("mean").reset_index()
-
-                x_min, x_max = self._plot_total(df, variable.name)
             case GroupingMode.FACTOR:
                 columns = ["Timedelta", grouping_settings.factor_name, variable.name]
                 df = self.datatable.get_filtered_df(columns)
@@ -186,8 +180,6 @@ class FastLinePlotWidget(QWidget):
                 df = self.datatable.get_filtered_df(columns)
                 df = df.groupby(["Timedelta", "Run"], dropna=False, observed=False).aggregate("mean").reset_index()
                 x_min, x_max = self._plot_runs(df, variable.name)
-            case _:
-                raise ValueError("Unsupported grouping mode")
 
         # bound the LinearRegionItem to the plotted data
         self.region.setRegion([x_min, x_max])
@@ -279,11 +271,6 @@ class FastLinePlotWidget(QWidget):
             if x_max is None or tmp_max > x_max:
                 x_max = tmp_max
 
-        return x_min, x_max
-
-    def _plot_total(self, df: pd.DataFrame, variable_name: str) -> tuple[float, float]:
-        pen = pg.mkPen(color=color_manager.get_color_hex(0), width=1)
-        x_min, x_max = self._plot_item(df, variable_name, "Total", pen)
         return x_min, x_max
 
     def _region_changed(self):

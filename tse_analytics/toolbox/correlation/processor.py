@@ -37,11 +37,8 @@ def get_correlation_result(
         case GroupingMode.FACTOR:
             by = grouping_settings.factor_name
             palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[by])
-        case _:
-            by = None
-            palette = color_manager.colormap_name
 
-    if grouping_settings.mode != GroupingMode.TOTAL and grouping_settings.mode != GroupingMode.RUN:
+    if grouping_settings.mode != GroupingMode.RUN:
         df[by] = df[by].cat.remove_unused_categories()
 
     if figsize is None:
