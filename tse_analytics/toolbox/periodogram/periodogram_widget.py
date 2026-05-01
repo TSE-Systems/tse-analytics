@@ -55,13 +55,13 @@ class PeriodogramWidget(ToolboxWidgetBase):
     def _update(self):
         self.report_view.clear()
 
-        grouping_settings = self.group_by_selector.get_grouping_settings()
+        factor_name = self.group_by_selector.currentText()
         variable = self.variableSelector.get_selected_variable()
 
         result = get_periodogram_result(
             self.datatable,
             variable,
-            grouping_settings,
+            factor_name,
             get_figsize_from_widget(self.report_view),
         )
 

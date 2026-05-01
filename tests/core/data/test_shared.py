@@ -3,9 +3,7 @@
 from dataclasses import asdict
 from datetime import time, timedelta
 
-import pytest
-from pydantic import TypeAdapter, ValidationError
-from tse_analytics.core.data.binning import TimePhase
+from pydantic import TypeAdapter
 from tse_analytics.core.data.shared import (
     Aggregation,
     Animal,
@@ -125,15 +123,6 @@ class TestVariable:
         assert "unit" in d
         assert "aggregation" in d
         assert d["name"] == "Speed"
-
-
-class TestTimePhase:
-    """Tests for TimePhase dataclass."""
-
-    def test_creation(self):
-        phase = TimePhase(name="Light", start_timestamp=timedelta(hours=7))
-        assert phase.name == "Light"
-        assert phase.start_timestamp == timedelta(hours=7)
 
 
 class TestAnimalDiet:

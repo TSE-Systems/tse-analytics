@@ -176,7 +176,6 @@ class Datatable:
 
     def get_group_by_columns(
         self,
-        disable_animal_mode=False,
         show_role: FactorRole | None = None,
     ) -> list[str]:
         """
@@ -187,15 +186,14 @@ class Datatable:
         list[str]
             List of column names that can be used for grouping data.
         """
-        modes = ["Animal"] if not disable_animal_mode else []
-        if len(self.dataset.factors) > 0:
-            if show_role is None:
-                for factor in self.dataset.factors.keys():
-                    modes.append(factor)
-            else:
-                for factor in self.dataset.factors.values():
-                    if factor.role == show_role:
-                        modes.append(factor.name)
+        modes = []
+        if show_role is None:
+            for factor in self.dataset.factors.keys():
+                modes.append(factor)
+        else:
+            for factor in self.dataset.factors.values():
+                if factor.role == show_role:
+                    modes.append(factor.name)
         return modes
 
     def apply_outliers(self, settings: OutliersSettings) -> None:
@@ -334,8 +332,10 @@ class Datatable:
         # TODO: should be copy?
         df = self.df.copy()
 
-        # Drop old factors
+        # Drop old factors but ignore "Animal"
         if old_factors is not None:
+            if "Animal" in old_factors:
+                old_factors.pop("Animal")
             df.drop(columns=old_factors.keys(), inplace=True, errors="ignore")
 
         for factor in factors.values():
@@ -422,7 +422,6 @@ class Datatable:
 
 
 def _apply_by_animal(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:
-    del dataset  # unused; per-animal mapping comes from factor.levels
     animal_ids = df["Animal"].unique()
     animal_factor_map: dict[str, Any] = dict.fromkeys(animal_ids, pd.NA)
     for level in factor.levels:
@@ -456,7 +455,6 @@ def _apply_by_animal_property(df: pd.DataFrame, factor: Factor, dataset: Dataset
 
 
 def _apply_by_time_of_day(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:
-    del dataset  # unused
     cfg = factor.config
     assert isinstance(cfg, ByTimeOfDayConfig)
     if "DateTime" not in df.columns:
@@ -471,7 +469,6 @@ def _apply_by_time_of_day(df: pd.DataFrame, factor: Factor, dataset: Dataset) ->
 
 
 def _apply_by_elapsed_time(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:
-    del dataset  # unused
     cfg = factor.config
     assert isinstance(cfg, ByElapsedTimeConfig)
     if len(cfg.phases) == 0:
@@ -491,7 +488,6 @@ def _apply_by_elapsed_time(df: pd.DataFrame, factor: Factor, dataset: Dataset) -
 
 
 def _apply_by_column(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:
-    del dataset  # unused
     cfg = factor.config
     assert isinstance(cfg, ByColumnConfig)
     if cfg.column not in df.columns:

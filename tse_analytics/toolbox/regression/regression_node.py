@@ -2,7 +2,6 @@ from NodeGraphQt.widgets.node_widgets import NodeComboBox
 
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.utils import get_group_by_params
 from tse_analytics.pipeline import PipelineNode
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 from tse_analytics.toolbox.regression.processor import get_regression_result
@@ -58,7 +57,7 @@ class RegressionNode(PipelineNode):
 
         covariate_name = str(self.get_property("covariate_variable"))
         response_name = str(self.get_property("response_variable"))
-        group_by_str = str(self.get_property("group_by"))
+        factor_name = str(self.get_property("group_by"))
 
         if not covariate_name:
             return PipelinePacket.inactive(reason="No covariate variable selected")
@@ -74,13 +73,11 @@ class RegressionNode(PipelineNode):
         if response is None:
             return PipelinePacket.inactive(reason="Invalid response variable")
 
-        grouping_settings = get_group_by_params(group_by_str)
-
         result = get_regression_result(
             datatable,
             covariate,
             response,
-            grouping_settings,
+            factor_name,
             figsize=None,
         )
 

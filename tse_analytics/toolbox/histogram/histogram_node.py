@@ -2,7 +2,6 @@ from NodeGraphQt.widgets.node_widgets import NodeComboBox
 
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.utils import get_group_by_params
 from tse_analytics.pipeline import PipelineNode
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 from tse_analytics.toolbox.histogram.processor import get_histogram_result
@@ -55,18 +54,16 @@ class HistogramNode(PipelineNode):
             return PipelinePacket.inactive(reason="Invalid input datatable")
 
         variable_name = str(self.get_property("variable"))
-        group_by_str = str(self.get_property("group_by"))
+        factor_name = str(self.get_property("group_by"))
 
         if variable_name == "No variables" or not variable_name:
             return PipelinePacket.inactive(reason="No variable selected")
-
-        grouping_settings = get_group_by_params(group_by_str)
 
         # Generate histogram result
         result = get_histogram_result(
             datatable,
             variable_name,
-            grouping_settings,
+            factor_name,
             figsize=None,
         )
 

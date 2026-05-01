@@ -8,9 +8,7 @@ from sklearn.preprocessing import StandardScaler
 
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
 from tse_analytics.core.utils import get_html_image_from_figure
-from tse_analytics.core.utils.data import get_columns_by_grouping_settings
 
 
 @dataclass
@@ -21,26 +19,18 @@ class TsneResult:
 def get_tsne_result(
     datatable: Datatable,
     variables: list[str],
-    grouping_settings: GroupingSettings,
+    factor_name: str,
     n_components: int,
     perplexity: int,
     max_iterations: int,
     metric: str,
     figsize: tuple[float, float] | None = None,
 ) -> TsneResult:
-    columns = get_columns_by_grouping_settings(grouping_settings, variables)
+    columns = [factor_name] + variables
     df = datatable.get_filtered_df(columns)
 
     # Cleaning
     df.dropna(inplace=True)
-
-    match grouping_settings.mode:
-        case GroupingMode.ANIMAL:
-            by = "Animal"
-            palette = color_manager.get_animal_to_color_dict(datatable.dataset.animals)
-        case GroupingMode.FACTOR:
-            by = grouping_settings.factor_name
-            palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[by])
 
     # Standardize the data
     scaler = StandardScaler()
@@ -55,13 +45,13 @@ def get_tsne_result(
     )
     data = tsne.fit_transform(scaled_data)
 
+    palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[factor_name])
     match n_components:
         case 1:
             title = "t-SNE (1D)"
             result_df = pd.DataFrame(data=data, columns=["t-SNE1"])
             result_df = pd.concat([result_df, pd.Series(range(len(result_df)), name="N")], axis=1)
-            if by is not None:
-                result_df[by] = df[by].values
+            result_df[factor_name] = df[factor_name].values
 
             # Create a figure with a tight layout
             figure = plt.Figure(figsize=figsize, layout="tight")
@@ -71,7 +61,7 @@ def get_tsne_result(
                     result_df,
                     x="t-SNE1",
                     y="N",
-                    color=by,
+                    color=factor_name,
                 )
                 .add(so.Dot(pointsize=3))
                 .scale(color=palette)
@@ -86,8 +76,7 @@ def get_tsne_result(
                 "t-SNE1": data[:, 0],
                 "t-SNE2": data[:, 1],
             })
-            if by is not None:
-                result_df[by] = df[by].values
+            result_df[factor_name] = df[factor_name].values
 
             # Create a figure with a tight layout
             figure = plt.Figure(figsize=figsize, layout="tight")
@@ -97,7 +86,7 @@ def get_tsne_result(
                     result_df,
                     x="t-SNE1",
                     y="t-SNE2",
-                    color=by,
+                    color=factor_name,
                 )
                 .add(so.Dot(pointsize=3))
                 .scale(color=palette)
@@ -113,8 +102,7 @@ def get_tsne_result(
                 "t-SNE2": data[:, 1],
                 "t-SNE3": data[:, 2],
             })
-            if by is not None:
-                result_df[by] = df[by].values
+            result_df[factor_name] = df[factor_name].values
 
             figure, ax = plt.subplots(
                 1,
@@ -124,24 +112,16 @@ def get_tsne_result(
                 subplot_kw={"projection": "3d"},
             )
 
-            if by is not None:
-                for group, c in palette.items():
-                    group_df = result_df[result_df[by] == group]
-                    ax.scatter(
-                        group_df["t-SNE1"],
-                        group_df["t-SNE2"],
-                        group_df["t-SNE3"],
-                        c=c,
-                        label=group,
-                    )
-                ax.legend(title=by)
-            else:
+            for group, c in palette.items():
+                group_df = result_df[result_df[factor_name] == group]
                 ax.scatter(
-                    data=result_df,
-                    xs="t-SNE1",
-                    ys="t-SNE2",
-                    zs="t-SNE3",
+                    group_df["t-SNE1"],
+                    group_df["t-SNE2"],
+                    group_df["t-SNE3"],
+                    c=c,
+                    label=group,
                 )
+            ax.legend(title=factor_name)
 
             ax.set(
                 xlabel="t-SNE1",

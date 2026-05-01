@@ -6,9 +6,7 @@ from matplotlib import rcParams
 
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
 from tse_analytics.core.utils import get_great_table, get_html_image_from_figure
-from tse_analytics.core.utils.data import get_columns_by_grouping_settings
 
 
 @dataclass
@@ -20,31 +18,24 @@ def get_correlation_result(
     datatable: Datatable,
     x_var_name: str,
     y_var_name: str,
-    grouping_settings: GroupingSettings,
+    factor_name: str,
     figsize: tuple[float, float] | None = None,
 ) -> CorrelationResult:
     variable_columns = [x_var_name] if x_var_name == y_var_name else [x_var_name, y_var_name]
-    columns = get_columns_by_grouping_settings(grouping_settings, variable_columns)
+    columns = variable_columns + [factor_name]
     df = datatable.get_filtered_df(columns)
 
-    match grouping_settings.mode:
-        case GroupingMode.ANIMAL:
-            by = "Animal"
-            palette = color_manager.get_animal_to_color_dict(datatable.dataset.animals)
-        case GroupingMode.FACTOR:
-            by = grouping_settings.factor_name
-            palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[by])
-
-    df[by] = df[by].cat.remove_unused_categories()
+    df[factor_name] = df[factor_name].cat.remove_unused_categories()
 
     if figsize is None:
         figsize = rcParams["figure.figsize"]
 
+    palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[factor_name])
     joint_grid = sns.jointplot(
         data=df,
         x=x_var_name,
         y=y_var_name,
-        hue=by,
+        hue=factor_name,
         palette=palette,
         marker=".",
         height=figsize[1],

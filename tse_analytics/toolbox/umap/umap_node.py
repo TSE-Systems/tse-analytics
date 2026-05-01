@@ -2,9 +2,6 @@ from NodeGraphQt.widgets.node_widgets import NodeComboBox
 
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.grouping import GroupingMode
-from tse_analytics.core.utils import get_group_by_params
-from tse_analytics.core.utils.data import get_columns_by_grouping_settings
 from tse_analytics.pipeline import PipelineNode
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 from tse_analytics.toolbox.tsne.processor import get_tsne_result
@@ -81,13 +78,7 @@ class UmapNode(PipelineNode):
             return PipelinePacket.inactive(reason=f"Invalid variable(s): {invalid}")
 
         # Parse group_by
-        group_by_str = str(self.get_property("group_by"))
-        grouping_settings = get_group_by_params(group_by_str)
-        if grouping_settings.mode == GroupingMode.FACTOR:
-            if not grouping_settings.factor_name:
-                return PipelinePacket.inactive(reason="No factor selected")
-            if grouping_settings.factor_name not in datatable.dataset.factors:
-                return PipelinePacket.inactive(reason="Invalid factor selected")
+        factor_name = str(self.get_property("group_by"))
 
         # Parse perplexity
         try:
@@ -109,7 +100,7 @@ class UmapNode(PipelineNode):
         result = get_tsne_result(
             datatable,
             variable_names,
-            grouping_settings,
+            factor_name,
             perplexity,
             max_iterations,
         )

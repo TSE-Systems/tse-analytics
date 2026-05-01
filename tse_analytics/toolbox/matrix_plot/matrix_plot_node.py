@@ -2,8 +2,6 @@ from NodeGraphQt.widgets.node_widgets import NodeComboBox
 
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.grouping import GroupingMode
-from tse_analytics.core.utils import get_group_by_params
 from tse_analytics.pipeline import PipelineNode
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
 from tse_analytics.toolbox.matrix_plot.processor import MATRIXPLOT_KIND, get_matrix_plot_result
@@ -69,13 +67,7 @@ class MatrixPlotNode(PipelineNode):
             invalid = ", ".join(invalid_variables)
             return PipelinePacket.inactive(reason=f"Invalid variable(s): {invalid}")
 
-        group_by_str = str(self.get_property("group_by"))
-        grouping_settings = get_group_by_params(group_by_str)
-        if grouping_settings.mode == GroupingMode.FACTOR:
-            if not grouping_settings.factor_name:
-                return PipelinePacket.inactive(reason="No factor selected")
-            if grouping_settings.factor_name not in datatable.dataset.factors:
-                return PipelinePacket.inactive(reason="Invalid factor selected")
+        factor_name = str(self.get_property("group_by"))
 
         plot_type = str(self.get_property("plot_type"))
         plot_kind = MATRIXPLOT_KIND.get(plot_type)
@@ -85,7 +77,7 @@ class MatrixPlotNode(PipelineNode):
         result = get_matrix_plot_result(
             datatable,
             variable_names,
-            grouping_settings,
+            factor_name,
             plot_kind,
             figsize=None,
         )

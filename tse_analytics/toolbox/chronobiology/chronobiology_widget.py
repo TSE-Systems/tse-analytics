@@ -109,13 +109,13 @@ class ChronobiologyWidget(ToolboxWidgetBase):
     def _update(self):
         self.report_view.clear()
 
-        grouping_settings = self.group_by_selector.get_grouping_settings()
+        factor_name = self.group_by_selector.currentText()
         variable = self.variableSelector.get_selected_variable()
 
         result = get_chronobiology_result(
             self.datatable,
             variable,
-            grouping_settings,
+            factor_name,
             period_hours=self.period_spin_box.value(),
             period2_hours=self.period2_spin_box.value(),
             bins_per_hour=self.bins_spin_box.value(),

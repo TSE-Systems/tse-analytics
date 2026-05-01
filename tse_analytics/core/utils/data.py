@@ -5,7 +5,6 @@ from datetime import time
 import numpy as np
 import pandas as pd
 
-from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
 from tse_analytics.core.data.shared import Animal
 
 _dtypes_name_mapping = {
@@ -23,25 +22,6 @@ _dtypes_name_mapping = {
     "bool": "boolean",
     "str": "string",
 }
-
-
-def get_group_by_params(group_by_str: str) -> GroupingSettings:
-    # Convert group_by string to GroupingSettings
-    match group_by_str:
-        case GroupingMode.ANIMAL.value:
-            return GroupingSettings(mode=GroupingMode.ANIMAL)
-        case GroupingMode.FACTOR.value:
-            return GroupingSettings(mode=GroupingMode.FACTOR, factor_name=group_by_str)
-        case _:
-            raise ValueError(f"Invalid group_by value: {group_by_str}")
-
-
-def get_columns_by_grouping_settings(grouping_settings: GroupingSettings, variable_names: list[str]) -> list[str]:
-    match grouping_settings.mode:
-        case GroupingMode.ANIMAL:
-            return variable_names + ["Animal"]
-        case GroupingMode.FACTOR:
-            return variable_names + [grouping_settings.factor_name]
 
 
 def time_to_float(value: time) -> float:

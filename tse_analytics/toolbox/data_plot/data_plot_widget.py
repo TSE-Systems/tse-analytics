@@ -19,7 +19,6 @@ from PySide6.QtWidgets import (
 
 from tse_analytics.core import color_manager, manager
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.grouping import GroupingMode
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import FactorRole
 from tse_analytics.core.utils import (
@@ -142,19 +141,12 @@ class DataPlotWidget(QWidget):
         if len(selected_variable_names) == 0:
             return
 
-        grouping_settings = self.group_by_selector.get_grouping_settings()
+        factor_name = self.group_by_selector.currentText()
         error_bar = ERROR_BAR_TYPE[self.comboBoxErrorBar.currentText()]
 
-        match grouping_settings.mode:
-            case GroupingMode.ANIMAL:
-                columns = ["Animal", "Timedelta"] + selected_variable_names
-                by = "Animal"
-                palette = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
-            case GroupingMode.FACTOR:
-                columns = ["Timedelta", grouping_settings.factor_name] + selected_variable_names
-                by = grouping_settings.factor_name
-                factor = self.datatable.dataset.factors[by]
-                palette = color_manager.get_level_to_color_dict(factor)
+        columns = ["Timedelta", factor_name] + selected_variable_names
+        factor = self.datatable.dataset.factors[factor_name]
+        palette = color_manager.get_level_to_color_dict(factor)
 
         df = self.datatable.get_filtered_df(columns)
         df["Hours"] = df["Timedelta"] / pd.Timedelta(1, "h")
@@ -167,7 +159,7 @@ class DataPlotWidget(QWidget):
             .Plot(
                 df,
                 x="Hours",
-                color=by,
+                color=factor_name,
             )
             .pair(y=selected_variable_names)
             .add(so.Line(linewidth=self.linewidth_spin_box.value()), so.Agg(func="mean"))
@@ -176,11 +168,9 @@ class DataPlotWidget(QWidget):
         if error_bar is not None:
             plot = plot.add(so.Band(alpha=0.15), so.Est(errorbar=error_bar))
 
-        if grouping_settings.mode == GroupingMode.ANIMAL or (
-            grouping_settings.mode == GroupingMode.FACTOR and factor.role != FactorRole.WITHIN_SUBJECT
-        ):
+        if factor.role != FactorRole.WITHIN_SUBJECT:
             plot = plot.scale(
-                color=so.Nominal(palette, order=df[by].cat.categories.tolist()),
+                color=so.Nominal(palette, order=df[factor_name].cat.categories.tolist()),
             )
 
         (plot.on(self.canvas.figure).plot(True))

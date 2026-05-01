@@ -1,5 +1,4 @@
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
 from tse_analytics.pipeline import PipelineNode
 from tse_analytics.pipeline.enums import EFFECT_SIZE, P_ADJUSTMENT
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
@@ -68,19 +67,7 @@ class RmAnovaNode(PipelineNode):
         if variable is None:
             return PipelinePacket.inactive(reason=f"Variable '{variable_name}' not found")
 
-        # Parse group_by to determine GroupingSettings
-        group_by_text = str(self.get_property("group_by")).strip()
-        if not group_by_text:
-            group_by_text = "Animal"
-
-        match group_by_text:
-            case "Animal":
-                grouping_settings = GroupingSettings(mode=GroupingMode.ANIMAL)
-            case _:
-                if group_by_text in datatable.dataset.factors.keys():
-                    grouping_settings = GroupingSettings(mode=GroupingMode.FACTOR, factor_name=group_by_text)
-                else:
-                    grouping_settings = GroupingSettings(mode=GroupingMode.ANIMAL)
+        factor_name = str(self.get_property("group_by")).strip()
 
         # Get other settings
         effect_size_label = str(self.get_property("effect_size"))
@@ -94,7 +81,7 @@ class RmAnovaNode(PipelineNode):
         result = get_rm_anova_result(
             datatable,
             variable,
-            grouping_settings,
+            [factor_name],
             do_pairwise_tests,
             effect_size,
             p_adjustment,

@@ -1,9 +1,6 @@
 from PySide6.QtWidgets import QDialog, QTableWidgetItem, QWidget
 
 from tse_analytics.core import manager, messaging
-from tse_analytics.core.data.binning import (
-    TimeIntervalsBinningSettings,
-)
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.views.datasets.edit_datatable.edit_datatable_dialog_ui import Ui_EditDatatableDialog
 from tse_analytics.views.datasets.edit_datatable.processor import process_table
@@ -58,12 +55,9 @@ class EditDatatableDialog(QDialog):
         process_table(
             datatable,
             excluded_animal_ids,
-            TimeIntervalsBinningSettings(
-                unit=self.ui.unitComboBox.currentText(),
-                delta=self.ui.deltaSpinBox.value(),
-            )
-            if self.ui.groupBoxResampling.isChecked()
-            else None,
+            self.ui.groupBoxResampling.isChecked(),
+            self.ui.unitComboBox.currentText(),
+            self.ui.deltaSpinBox.value(),
         )
 
         self.datatable.dataset.add_datatable(datatable)

@@ -49,7 +49,6 @@ class RegressionWidget(ToolboxWidgetBase):
             toolbar,
             self.datatable,
             selected_mode=self._settings.group_by,
-            disable_animal_mode=True,
         )
         toolbar.addWidget(self.group_by_selector)
 
@@ -63,7 +62,7 @@ class RegressionWidget(ToolboxWidgetBase):
     def _update(self):
         self.report_view.clear()
 
-        grouping_settings = self.group_by_selector.get_grouping_settings()
+        factor_name = self.group_by_selector.currentText()
 
         covariate = self.covariateVariableSelector.get_selected_variable()
         response = self.responseVariableSelector.get_selected_variable()
@@ -72,7 +71,7 @@ class RegressionWidget(ToolboxWidgetBase):
             self.datatable,
             covariate,
             response,
-            grouping_settings,
+            factor_name,
             get_figsize_from_widget(self.report_view),
         )
 

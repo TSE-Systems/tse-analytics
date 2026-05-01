@@ -17,8 +17,6 @@ from scipy.stats import f as f_dist
 
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
-from tse_analytics.core.data.operators.group_by_pipe_operator import group_by_columns
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.utils import (
     get_great_table,
@@ -408,30 +406,6 @@ def _build_actogram_periods(light_cycle_start: time, dark_cycle_start: time) -> 
 
 
 # ---------------------------------------------------------------------------
-# Orchestrator
-# ---------------------------------------------------------------------------
-
-
-def _resolve_group_column(grouping_settings: GroupingSettings) -> str | None:
-    match grouping_settings.mode:
-        case GroupingMode.ANIMAL:
-            return "Animal"
-        case GroupingMode.FACTOR:
-            return grouping_settings.factor_name
-
-
-def _resolve_palette(
-    datatable: Datatable,
-    grouping_settings: GroupingSettings,
-) -> dict[str, str] | dict[int, str] | None:
-    match grouping_settings.mode:
-        case GroupingMode.ANIMAL:
-            return color_manager.get_animal_to_color_dict(datatable.dataset.animals)
-        case GroupingMode.FACTOR:
-            return color_manager.get_level_to_color_dict(datatable.dataset.factors[grouping_settings.factor_name])
-
-
-# ---------------------------------------------------------------------------
 # Combined actograms (multi-group)
 # ---------------------------------------------------------------------------
 
@@ -528,14 +502,14 @@ def plot_combined_actograms_grid(
 def get_chronobiology_result(
     datatable: Datatable,
     variable: Variable,
-    grouping_settings: GroupingSettings,
+    factor_name: str,
     period_hours: float = 24.0,
     period2_hours: float = 12.0,
     bins_per_hour: int = 6,
     onset_threshold_pct: float = 50.0,
     figsize: tuple[float, float] | None = None,
 ) -> ChronobiologyResult:
-    columns = datatable.get_default_columns() + list(datatable.dataset.factors) + [variable.name]
+    columns = ["DateTime", factor_name, variable.name]
     df = datatable.get_filtered_df(columns)
     df = df.dropna()
 
@@ -574,8 +548,7 @@ def get_chronobiology_result(
             "Dark cycle start": dark_cycle_start.strftime("%H:%M"),
             "Cosinor period (h)": f"{period_hours:g}",
             "Harmonic period (h)": f"{period2_hours:g}",
-            "Group by": grouping_settings.mode.value
-            + (f" ({grouping_settings.factor_name})" if grouping_settings.mode == GroupingMode.FACTOR else ""),
+            "Group by": factor_name,
         }
     ])
     sections.append(
@@ -590,11 +563,22 @@ def get_chronobiology_result(
 
     # Common reference and group column resolution -------------------------
     reference_time = datatable.dataset.experiment_started
-    group_col = _resolve_group_column(grouping_settings)
-    palette = _resolve_palette(datatable, grouping_settings)
+    group_col = factor_name
+    palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[factor_name])
 
-    # Build grouped df for visualisations (ZT profile / actogram) ----------
-    grouped_df = group_by_columns(df.copy(), {variable.name: variable}, grouping_settings)
+    # Build grouped df for visualisations (ZT profile / actogram)
+    if factor_name != "Animal":
+        grouped_df = (
+            df
+            .copy()
+            .groupby([factor_name, "DateTime"], dropna=False, observed=False)
+            .aggregate({
+                variable.name: "mean",
+            })
+            .reset_index()
+        )
+    else:
+        grouped_df = df.copy()
 
     # --- Section 2: ZT profile --------------------------------------------
     sections.append("<h3>Zeitgeber-time profile</h3>")
@@ -608,12 +592,8 @@ def get_chronobiology_result(
     # Iterate over animals (ANIMAL mode) or group levels (everything else).
     ls_series: dict[str, tuple[np.ndarray, np.ndarray, float]] = {}
     ls_table_rows: list[dict] = []
-    if grouping_settings.mode == GroupingMode.ANIMAL:
-        iter_df = df
-        key_col = "Animal"
-    else:
-        iter_df = grouped_df
-        key_col = group_col if group_col and group_col in grouped_df.columns else None
+    iter_df = grouped_df
+    key_col = group_col if group_col and group_col in grouped_df.columns else None
 
     if key_col is None:
         t = _to_hours_since_start(iter_df["DateTime"], reference_time)
@@ -686,14 +666,7 @@ def get_chronobiology_result(
     # --- Section 5: activity onset / offset -------------------------------
     onset_tables: dict[str, pd.DataFrame] = {}
     onset_combined_rows: list[dict] = []
-    if grouping_settings.mode == GroupingMode.ANIMAL:
-        for animal, g in df.groupby("Animal", observed=True):
-            table = _detect_onset_offset(g, variable.name, onset_threshold_pct)
-            if not table.empty:
-                onset_tables[str(animal)] = table
-                for _, row in table.iterrows():
-                    onset_combined_rows.append({"Animal": str(animal), **row.to_dict()})
-    elif key_col is not None:
+    if key_col is not None:
         for label, g in grouped_df.groupby(key_col, observed=True):
             table = _detect_onset_offset(g, variable.name, onset_threshold_pct)
             if not table.empty:

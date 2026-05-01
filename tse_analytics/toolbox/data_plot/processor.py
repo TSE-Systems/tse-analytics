@@ -6,7 +6,6 @@ from matplotlib import pyplot as plt
 
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.utils import get_html_image_from_figure, time_to_float
 
@@ -27,21 +26,13 @@ class DataPlotResult:
 def get_data_plot_result(
     datatable: Datatable,
     variables: dict[str, Variable],
-    grouping_settings: GroupingSettings,
+    factor_name: str,
     error_bar: str,
     figsize: tuple[float, float] | None = None,
 ) -> DataPlotResult:
     columns = datatable.get_default_columns() + list(datatable.dataset.factors) + list(variables)
     df = datatable.get_filtered_df(columns)
     df["Hours"] = df["Timedelta"] / pd.Timedelta(1, "h")
-
-    match grouping_settings.mode:
-        case GroupingMode.ANIMAL:
-            by = "Animal"
-            palette = color_manager.get_animal_to_color_dict(datatable.dataset.animals)
-        case GroupingMode.FACTOR:
-            by = grouping_settings.factor_name
-            palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[by])
 
     # TODO: workaround for issue with nullable Float64
     df[variables.keys()] = df[variables.keys()].astype(float)
@@ -53,7 +44,7 @@ def get_data_plot_result(
         .Plot(
             df,
             x="Hours",
-            color=by,
+            color=factor_name,
         )
         .pair(y=list(variables))
         .add(so.Line(linewidth=1.0), so.Agg(func="mean"))
@@ -62,16 +53,8 @@ def get_data_plot_result(
     if error_bar is not None:
         plot = plot.add(so.Band(alpha=0.15), so.Est(errorbar=error_bar))
 
-    (
-        plot
-        .scale(
-            color=so.Nominal(palette, order=df[by].cat.categories.tolist())
-            if (grouping_settings.mode == GroupingMode.ANIMAL or grouping_settings.mode == GroupingMode.FACTOR)
-            else palette,
-        )
-        .on(figure)
-        .plot(True)
-    )
+    palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[factor_name])
+    (plot.scale(color=so.Nominal(palette, order=df[factor_name].cat.categories.tolist())).on(figure).plot(True))
 
     light_cycles = datatable.dataset.light_cycles
 

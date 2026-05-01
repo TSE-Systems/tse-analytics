@@ -7,7 +7,6 @@ from PySide6.QtWidgets import QInputDialog, QLabel, QToolBar, QVBoxLayout, QWidg
 
 from tse_analytics.core import color_manager, manager
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.grouping import GroupingMode
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
@@ -95,32 +94,23 @@ class FastBarPlotWidget(QWidget):
         # Clear the plot
         self.canvas.clear(True)
 
-        grouping_settings = self.group_by_selector.get_grouping_settings()
+        factor_name = self.group_by_selector.currentText()
         selected_variable = self.variableSelector.get_selected_variable()
 
         columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + [selected_variable.name]
         df = self.datatable.get_filtered_df(columns)
 
-        match grouping_settings.mode:
-            case GroupingMode.ANIMAL:
-                by = "Animal"
-                # Cleaning
-                df[by] = df[by].cat.remove_unused_categories()
-                palette = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
-            case GroupingMode.FACTOR:
-                by = grouping_settings.factor_name
-                palette = color_manager.get_level_to_color_dict(self.datatable.dataset.factors[by])
-
         # TODO: workaround for issue with nullable Float64
         df[selected_variable.name] = df[selected_variable.name].astype(float)
 
+        palette = color_manager.get_level_to_color_dict(self.datatable.dataset.factors[factor_name])
         (
             so
             .Plot(
                 df,
-                x=by,
+                x=factor_name,
                 y=selected_variable.name,
-                color=by,
+                color=factor_name,
             )
             .add(so.Bar(), so.Agg())
             .add(so.Range(), so.Est(errorbar="se"))

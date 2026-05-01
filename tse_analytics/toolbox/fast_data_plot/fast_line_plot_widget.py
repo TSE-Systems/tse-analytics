@@ -12,7 +12,6 @@ from PySide6.QtWidgets import QCheckBox, QInputDialog, QLabel, QToolBar, QVBoxLa
 
 from tse_analytics.core import color_manager, manager
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.grouping import GroupingMode
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import Factor
 from tse_analytics.core.utils import get_h_spacer_widget, get_widget_tool_button
@@ -150,31 +149,16 @@ class FastLinePlotWidget(QWidget):
         self.plot_item2.clearPlots()
         self.legend.clear()
 
-        grouping_settings = self.group_by_selector.get_grouping_settings()
+        factor_name = self.group_by_selector.currentText()
         variable = self.variableSelector.get_selected_variable()
 
-        match grouping_settings.mode:
-            case GroupingMode.ANIMAL:
-                columns = ["Animal", "Timedelta", variable.name]
-                df = self.datatable.get_filtered_df(columns)
+        columns = ["Timedelta", factor_name, variable.name]
+        df = self.datatable.get_filtered_df(columns)
 
-                if len(self.animals_table_view.selectedIndexes()) > 0:
-                    df = df[df["Animal"].isin(self.animals_table_view.get_selected_animal_ids())]
-                    df["Animal"] = df["Animal"].cat.remove_unused_categories()
-                x_min, x_max = self._plot_animals(df, variable.name)
-            case GroupingMode.FACTOR:
-                columns = ["Timedelta", grouping_settings.factor_name, variable.name]
-                df = self.datatable.get_filtered_df(columns)
+        df = df.groupby(["Timedelta", factor_name], dropna=False, observed=False).aggregate("mean").reset_index()
 
-                df = (
-                    df
-                    .groupby(["Timedelta", grouping_settings.factor_name], dropna=False, observed=False)
-                    .aggregate("mean")
-                    .reset_index()
-                )
-
-                factor = self.datatable.dataset.factors[grouping_settings.factor_name]
-                x_min, x_max = self._plot_factors(df, variable.name, factor)
+        factor = self.datatable.dataset.factors[factor_name]
+        x_min, x_max = self._plot_factors(df, variable.name, factor)
 
         # bound the LinearRegionItem to the plotted data
         self.region.setRegion([x_min, x_max])
@@ -199,26 +183,6 @@ class FastLinePlotWidget(QWidget):
             return x.min(), x.max()
         else:
             return 0, 0
-
-    def _plot_animals(self, df: pd.DataFrame, variable_name: str) -> tuple[float, float]:
-        x_min = None
-        x_max = None
-
-        animal_ids = df["Animal"].cat.categories.tolist()
-
-        for animal_id in animal_ids:
-            animal = self.datatable.dataset.animals[animal_id]
-            filtered_data = df[df["Animal"] == animal.id]
-
-            pen = pg.mkPen(color=animal.color, width=1)
-            tmp_min, tmp_max = self._plot_item(filtered_data, variable_name, animal.id, pen)
-
-            if x_min is None or tmp_min < x_min:
-                x_min = tmp_min
-            if x_max is None or tmp_max > x_max:
-                x_max = tmp_max
-
-        return x_min, x_max
 
     def _plot_factors(self, df: pd.DataFrame, variable_name: str, factor: Factor) -> tuple[float, float]:
         x_min = None

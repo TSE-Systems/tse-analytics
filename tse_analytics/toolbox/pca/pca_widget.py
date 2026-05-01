@@ -93,7 +93,7 @@ class PcaWidget(ToolboxWidgetBase):
 
         self.update_action.setEnabled(False)
 
-        grouping_settings = self.group_by_selector.get_grouping_settings()
+        factor_name = self.group_by_selector.currentText()
 
         self.toast = make_toast(self, self.title, "Processing...")
         self.toast.show()
@@ -102,7 +102,7 @@ class PcaWidget(ToolboxWidgetBase):
             get_pca_result,
             self.datatable,
             selected_variables,
-            grouping_settings,
+            factor_name,
             get_figsize_from_widget(self.report_view),
         )
         worker.signals.result.connect(self._result)

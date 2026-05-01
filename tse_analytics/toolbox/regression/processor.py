@@ -7,10 +7,8 @@ from matplotlib import rcParams
 
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.utils import get_great_table, get_html_image_from_figure
-from tse_analytics.core.utils.data import get_columns_by_grouping_settings
 
 
 @dataclass
@@ -22,16 +20,16 @@ def get_regression_result(
     datatable: Datatable,
     covariate: Variable,
     response: Variable,
-    grouping_settings: GroupingSettings,
+    factor_name: str,
     figsize: tuple[float, float] | None = None,
 ) -> RegressionResult:
     columns = [response.name] if response.name == covariate.name else [covariate.name, response.name]
-    columns = ["Animal"] + get_columns_by_grouping_settings(grouping_settings, columns)
+    columns = ["Animal", factor_name] + columns
     df = datatable.get_filtered_df(columns)
     df = (
         df
         .groupby(
-            ["Animal"] + get_columns_by_grouping_settings(grouping_settings, []),
+            ["Animal", factor_name],
             dropna=False,
             observed=True,
         )
@@ -42,13 +40,7 @@ def get_regression_result(
         .reset_index()
     )
 
-    match grouping_settings.mode:
-        case GroupingMode.ANIMAL:
-            by = "Animal"
-            palette = color_manager.get_animal_to_color_dict(datatable.dataset.animals)
-        case GroupingMode.FACTOR:
-            by = grouping_settings.factor_name
-            palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[by])
+    palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[factor_name])
 
     if figsize is None:
         figsize = rcParams["figure.figsize"]
@@ -60,7 +52,7 @@ def get_regression_result(
             df,
             x=covariate.name,
             y=response.name,
-            color=by,
+            color=factor_name,
         )
         .add(so.Dot())
         .add(
@@ -72,21 +64,17 @@ def get_regression_result(
         .plot(True)
     )
 
-    match grouping_settings.mode:
-        case GroupingMode.ANIMAL:
-            output = ""
-        case GroupingMode.FACTOR:
-            output = ""
-            for level in df[grouping_settings.factor_name].unique().tolist():
-                data = df[df[grouping_settings.factor_name] == level]
-                output = (
-                    output
-                    + get_great_table(
-                        pg.linear_regression(data[covariate.name], data[response.name], remove_na=True),
-                        f"Level: {level}",
-                    ).as_raw_html(inline_css=True)
-                    + "<p>"
-                )
+    output = ""
+    for level in df[factor_name].unique().tolist():
+        data = df[df[factor_name] == level]
+        output = (
+            output
+            + get_great_table(
+                pg.linear_regression(data[covariate.name], data[response.name], remove_na=True),
+                f"Level: {level}",
+            ).as_raw_html(inline_css=True)
+            + "<p>"
+        )
 
     report = f"""
     {output}

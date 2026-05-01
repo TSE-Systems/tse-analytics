@@ -163,7 +163,7 @@ class TsneWidget(ToolboxWidgetBase):
             ).show()
             return
 
-        grouping_settings = self.group_by_selector.get_grouping_settings()
+        factor_name = self.group_by_selector.currentText()
 
         self.toast = make_toast(self, self.title, "Processing...")
         self.toast.show()
@@ -172,7 +172,7 @@ class TsneWidget(ToolboxWidgetBase):
             get_tsne_result,
             self.datatable,
             selected_variables,
-            grouping_settings,
+            factor_name,
             self.n_components_spin_box.value(),
             self.perplexity_spin_box.value(),
             self.maximum_iterations_spin_box.value(),

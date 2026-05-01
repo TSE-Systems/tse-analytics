@@ -56,13 +56,13 @@ class CorrelationWidget(ToolboxWidgetBase):
 
         x_var = self.xVariableSelector.get_selected_variable()
         y_var = self.yVariableSelector.get_selected_variable()
-        grouping_settings = self.group_by_selector.get_grouping_settings()
+        factor_name = self.group_by_selector.currentText()
 
         result = get_correlation_result(
             self.datatable,
             x_var.name,
             y_var.name,
-            grouping_settings,
+            factor_name,
             get_figsize_from_widget(self.report_view),
         )
 

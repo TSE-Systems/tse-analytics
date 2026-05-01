@@ -86,12 +86,12 @@ class MatrixPlotWidget(ToolboxWidgetBase):
             ).show()
             return
 
-        grouping_settings = self.group_by_selector.get_grouping_settings()
+        factor_name = self.group_by_selector.currentText()
 
         result = get_matrix_plot_result(
             self.datatable,
             list(selected_variables),
-            grouping_settings,
+            factor_name,
             MATRIXPLOT_KIND[self.comboBoxPlotType.currentText()],
             get_figsize_from_widget(self.report_view),
         )

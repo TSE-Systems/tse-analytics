@@ -1,6 +1,5 @@
 import pandas as pd
 
-from tse_analytics.core.data.binning import TimeIntervalsBinningSettings
 from tse_analytics.core.data.datatable import Datatable
 
 default_columns = ["Animal", "Timedelta", "DateTime"]
@@ -9,19 +8,21 @@ default_columns = ["Animal", "Timedelta", "DateTime"]
 def process_table(
     datatable: Datatable,
     excluded_animal_ids: set[str],
-    time_intervals_settings: TimeIntervalsBinningSettings | None,
+    resample: bool,
+    unit: str,
+    delta: int,
 ):
     # Exclude animals
     if len(excluded_animal_ids) > 0:
         datatable.exclude_animals(excluded_animal_ids)
 
     # Time binning
-    if time_intervals_settings is not None:
+    if resample:
         df = datatable.df
         if df.empty:
             return df
 
-        timedelta = pd.Timedelta(f"{time_intervals_settings.delta}{time_intervals_settings.unit}")
+        timedelta = pd.Timedelta(f"{delta}{unit}")
 
         agg = {
             "DateTime": "first",

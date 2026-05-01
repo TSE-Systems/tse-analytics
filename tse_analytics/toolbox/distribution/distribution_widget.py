@@ -59,13 +59,13 @@ class DistributionWidget(ToolboxWidgetBase):
     def _update(self):
         self.report_view.clear()
 
-        grouping_settings = self.group_by_selector.get_grouping_settings()
+        factor_name = self.group_by_selector.currentText()
         variable = self.variableSelector.get_selected_variable()
 
         result = get_distribution_result(
             self.datatable,
             variable.name,
-            grouping_settings,
+            factor_name,
             self.plot_type_combobox.currentText(),
             self.checkBoxShowPoints.isChecked(),
             get_figsize_from_widget(self.report_view),
