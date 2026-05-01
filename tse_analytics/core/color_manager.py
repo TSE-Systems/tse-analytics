@@ -76,10 +76,9 @@ def get_level_to_color_dict(factor: Factor) -> dict[str, str] | str:
     """
     Map factor level names to colors.
 
-    Returns a single hex color when the factor has no pre-computed levels
-    (e.g. ``BY_TIME_INTERVAL`` factors, where bin counts can be too large to
-    enumerate usefully). seaborn and plotnine palettes accept a single color
-    string and apply it to every group.
+    Returns a single hex color as a fallback when the factor has no levels.
+    seaborn and plotnine palettes accept a single color string and apply it
+    to every group.
 
     Args:
         factor: A Factor object containing levels.
@@ -91,10 +90,3 @@ def get_level_to_color_dict(factor: Factor) -> dict[str, str] | str:
     if not factor.levels:
         return get_factor_level_color_hex(0)
     return {level.name: level.color for level in factor.levels}
-
-
-def get_run_to_color_dict(number_of_runs: int) -> dict[int, str]:
-    result = {}
-    for run in range(number_of_runs):
-        result[run + 1] = get_factor_level_color_hex(run)
-    return result

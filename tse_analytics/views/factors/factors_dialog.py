@@ -60,8 +60,8 @@ _STANDARD_DF_COLUMNS = frozenset({"Animal", "DateTime", "Timedelta"})
 # label shown in the combo box to the corresponding ``timedelta`` keyword
 # argument used to compose the final interval.
 _INTERVAL_UNITS: dict[str, str] = {
-    "second(s)": "seconds",
-    "minute(s)": "minutes",
+    # "second(s)": "seconds",
+    # "minute(s)": "minutes",
     "hour(s)": "hours",
     "day(s)": "days",
 }
@@ -235,12 +235,13 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
             self._refresh_column_levels(factor)
             return factor
         if source == FactorSource.BY_TIME_INTERVAL:
-            return Factor(
+            factor = Factor(
                 name=name,
                 role=FactorRole.WITHIN_SUBJECT,
                 config=ByTimeIntervalConfig(interval=timedelta(hours=1)),
-                levels=[],
             )
+            self._refresh_time_interval_levels(factor)
+            return factor
         raise ValueError(f"Unsupported factor source: {source}")
 
     def delete_factor(self):
@@ -451,6 +452,15 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         if kwarg is None:
             return
         self.selected_factor.config.interval = timedelta(**{kwarg: value})
+        self._refresh_time_interval_levels(self.selected_factor)
+        self.listWidgetLevels.clear()
+        self.listWidgetLevels.addItems([level.name for level in self.selected_factor.levels])
+
+    def _refresh_time_interval_levels(self, factor: Factor) -> None:
+        config = factor.config
+        assert isinstance(config, ByTimeIntervalConfig)
+        levels = self.dataset.extract_levels_from_time_interval(config.interval)
+        factor.levels = list(levels.values())
 
     def _add_phase(self):
         if self.selected_factor is None or not isinstance(self.selected_factor.config, ByElapsedTimeConfig):

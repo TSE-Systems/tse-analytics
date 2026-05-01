@@ -503,7 +503,6 @@ def _apply_by_column(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None
 
 
 def _apply_by_time_interval(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:
-    del dataset  # unused
     cfg = factor.config
     assert isinstance(cfg, ByTimeIntervalConfig)
     if "Timedelta" not in df.columns:
@@ -513,7 +512,18 @@ def _apply_by_time_interval(df: pd.DataFrame, factor: Factor, dataset: Dataset) 
     if interval_td <= pd.Timedelta(0):
         logger.debug(f"Skipping factor {factor.name!r}: non-positive interval {interval_td!r}")
         return
-    df[factor.name] = (df["Timedelta"] // interval_td).astype("UInt64")
+
+    if not factor.levels:
+        factor.levels = list(dataset.extract_levels_from_time_interval(cfg.interval).values())
+    if not factor.levels:
+        logger.debug(f"Skipping factor {factor.name!r}: no levels could be derived")
+        return
+
+    bin_indices = (df["Timedelta"] // interval_td).astype("Int64")
+    name_for = {i: lvl.name for i, lvl in enumerate(factor.levels)}
+    df[factor.name] = bin_indices.map(name_for)
+    categories = [lvl.name for lvl in factor.levels]
+    df[factor.name] = df[factor.name].astype("category").cat.set_categories(categories, ordered=True)
 
 
 _FactorApplier = Callable[[pd.DataFrame, Factor, "Dataset"], None]

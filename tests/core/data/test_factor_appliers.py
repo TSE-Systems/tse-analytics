@@ -224,30 +224,31 @@ class TestByColumnApplier:
 
 
 class TestByTimeIntervalApplier:
-    def test_assigns_uint64_bins(self, time_df, stub_dataset):
+    def test_assigns_categorical_bins(self, time_df, stub_dataset):
         factor = Factor(
             name="Bin",
             role=FactorRole.WITHIN_SUBJECT,
             config=ByTimeIntervalConfig(interval=timedelta(hours=1)),
-            levels=[],
+            levels=[FactorLevel(name=f"Hour {i}", color="#000000") for i in range(4)],
         )
         _apply_by_time_interval(time_df, factor, stub_dataset)
 
         assert "Bin" in time_df.columns
-        assert time_df["Bin"].dtype.name == "UInt64"
-        # 4 hourly timepoints map to bin indices 0..3
-        assert set(time_df["Bin"].unique().tolist()) == {0, 1, 2, 3}
+        assert time_df["Bin"].dtype.name == "category"
+        assert time_df["Bin"].cat.ordered
+        # 4 hourly timepoints map to "Hour 0".."Hour 3"
+        assert set(time_df["Bin"].unique().tolist()) == {"Hour 0", "Hour 1", "Hour 2", "Hour 3"}
 
     def test_collapses_to_zero_with_24h_interval(self, time_df, stub_dataset):
         factor = Factor(
             name="Day",
             role=FactorRole.WITHIN_SUBJECT,
             config=ByTimeIntervalConfig(interval=timedelta(days=1)),
-            levels=[],
+            levels=[FactorLevel(name="Day 0", color="#000000")],
         )
         _apply_by_time_interval(time_df, factor, stub_dataset)
 
-        assert (time_df["Day"] == 0).all()
+        assert (time_df["Day"] == "Day 0").all()
 
     def test_skips_when_timedelta_missing(self, stub_dataset):
         df = pd.DataFrame({"Animal": ["A1", "A2"]})
@@ -255,7 +256,7 @@ class TestByTimeIntervalApplier:
             name="Bin",
             role=FactorRole.WITHIN_SUBJECT,
             config=ByTimeIntervalConfig(interval=timedelta(hours=1)),
-            levels=[],
+            levels=[FactorLevel(name="Hour 0", color="#000000")],
         )
         _apply_by_time_interval(df, factor, stub_dataset)
         assert "Bin" not in df.columns
@@ -265,7 +266,7 @@ class TestByTimeIntervalApplier:
             name="Bad",
             role=FactorRole.WITHIN_SUBJECT,
             config=ByTimeIntervalConfig(interval=timedelta(0)),
-            levels=[],
+            levels=[FactorLevel(name="Hour 0", color="#000000")],
         )
         _apply_by_time_interval(time_df, factor, stub_dataset)
         assert "Bad" not in time_df.columns

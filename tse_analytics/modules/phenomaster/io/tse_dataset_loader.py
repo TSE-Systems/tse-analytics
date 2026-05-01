@@ -126,6 +126,9 @@ def _read_metadata(path: Path) -> dict:
     for item in metadata["animals"].values():
         item["id"] = str(item["id"])
 
+    # Sort animals by ID
+    metadata["animals"] = dict(sorted(metadata["animals"].items()))
+
     # Add standard data fields
     metadata["source_path"] = str(path)
     metadata["experiment_started"] = metadata["experiment"]["start_datetime"]
@@ -168,9 +171,6 @@ def _get_animals(data: dict) -> dict[str, Animal]:
             properties=properties,
         )
         animals[animal.id] = animal
-
-    # Sort animals by ID
-    animals = dict(sorted(animals.items()))
 
     return animals
 

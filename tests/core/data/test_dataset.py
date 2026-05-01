@@ -5,7 +5,7 @@ from datetime import timedelta
 from unittest.mock import patch
 
 import pandas as pd
-from tse_analytics.core.data.shared import Animal, ByTimeIntervalConfig
+from tse_analytics.core.data.shared import Animal
 
 
 class TestDatasetInit:
@@ -117,6 +117,31 @@ class TestExtractLevelsFromProperty:
 
     def test_nonexistent_property_returns_empty(self, sample_dataset):
         levels = sample_dataset.extract_levels_from_property("nonexistent")
+        assert levels == {}
+
+
+class TestExtractLevelsFromTimeInterval:
+    """Tests for Dataset.extract_levels_from_time_interval."""
+
+    def test_one_hour_interval_produces_per_hour_levels(self, sample_dataset, sample_datatable):
+        levels = sample_dataset.extract_levels_from_time_interval(timedelta(hours=1))
+        assert list(levels.keys()) == ["Hour 0", "Hour 1", "Hour 2", "Hour 3", "Hour 4"]
+
+    def test_one_day_interval_produces_single_day_level(self, sample_dataset, sample_datatable):
+        levels = sample_dataset.extract_levels_from_time_interval(timedelta(days=1))
+        assert list(levels.keys()) == ["Day 0"]
+
+    def test_levels_have_distinct_colors(self, sample_dataset, sample_datatable):
+        levels = sample_dataset.extract_levels_from_time_interval(timedelta(hours=1))
+        colors = [lvl.color for lvl in levels.values()]
+        assert len(set(colors)) == len(colors)
+
+    def test_no_datatables_returns_empty(self, sample_dataset):
+        levels = sample_dataset.extract_levels_from_time_interval(timedelta(hours=1))
+        assert levels == {}
+
+    def test_non_positive_interval_returns_empty(self, sample_dataset, sample_datatable):
+        levels = sample_dataset.extract_levels_from_time_interval(timedelta(0))
         assert levels == {}
 
 

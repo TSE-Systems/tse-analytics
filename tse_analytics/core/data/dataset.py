@@ -7,20 +7,19 @@ and applying binning.
 """
 
 from copy import deepcopy
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 from typing import Any, Literal
 from uuid import uuid7
 
 import pandas as pd
 
 from tse_analytics.core import messaging
-from tse_analytics.core.color_manager import get_factor_level_color_hex
+from tse_analytics.core.color_manager import get_color_hex, get_factor_level_color_hex
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import (
     Animal,
     ByAnimalConfig,
-    ByTimeIntervalConfig,
     ByTimeOfDayConfig,
     Factor,
     FactorLevel,
@@ -34,6 +33,49 @@ from tse_analytics.core.models.tree_item import TreeItem
 DatasetType = Literal["PhenoMaster", "IntelliMaze", "IntelliCage"]
 
 
+def _time_interval_level_prefix(interval: timedelta) -> str:
+    """Return the level-name prefix derived from the largest unit that
+    divides ``interval`` evenly (``"Day"`` / ``"Hour"`` / ``"Minute"`` /
+    ``"Second"``)."""
+    total_seconds = int(interval.total_seconds())
+    if total_seconds > 0 and total_seconds % 86400 == 0:
+        return "Day"
+    if total_seconds > 0 and total_seconds % 3600 == 0:
+        return "Hour"
+    if total_seconds > 0 and total_seconds % 60 == 0:
+        return "Minute"
+    return "Second"
+
+
+def _get_default_animal_factor(animals: dict[str, Animal]) -> Factor:
+    levels = []
+    for i, animal in enumerate(animals.values()):
+        levels.append(
+            FactorLevel(
+                name=animal.id,
+                color=get_color_hex(i),
+                animal_ids=[animal.id],
+            )
+        )
+    return Factor(
+        name="Animal",
+        role=FactorRole.BETWEEN_SUBJECT,
+        config=ByAnimalConfig(),
+        levels=levels,
+    )
+
+
+def _get_default_total_factor(animals: dict[str, Animal]) -> Factor:
+    return Factor(
+        name="Total",
+        role=FactorRole.BETWEEN_SUBJECT,
+        config=ByAnimalConfig(),
+        levels=[
+            FactorLevel(name="All animals", color=get_factor_level_color_hex(0), animal_ids=list(animals.keys())),
+        ],
+    )
+
+
 def _get_default_light_cycle_factor() -> Factor:
     return Factor(
         name="LightCycle",
@@ -45,17 +87,6 @@ def _get_default_light_cycle_factor() -> Factor:
         levels=[
             FactorLevel(name="Light", color=get_factor_level_color_hex(1)),
             FactorLevel(name="Dark", color=get_factor_level_color_hex(0)),
-        ],
-    )
-
-
-def _get_default_total_factor(animals: dict[str, Animal]) -> Factor:
-    return Factor(
-        name="Total",
-        role=FactorRole.BETWEEN_SUBJECT,
-        config=ByAnimalConfig(),
-        levels=[
-            FactorLevel(name="All animals", color=get_factor_level_color_hex(0), animal_ids=list(animals.keys())),
         ],
     )
 
@@ -109,9 +140,11 @@ class Dataset:
         self.datatables: dict[str, Datatable] = {}
         self.raw_datatables: dict[str, dict[str, Datatable]] = {}
 
+        default_animal_factor = _get_default_animal_factor(self.animals)
         default_total_factor = _get_default_total_factor(self.animals)
         default_light_cycle_factor = _get_default_light_cycle_factor()
         self.factors: dict[str, Factor] = {
+            default_animal_factor.name: default_animal_factor,
             default_total_factor.name: default_total_factor,
             default_light_cycle_factor.name: default_light_cycle_factor,
         }
@@ -314,6 +347,56 @@ class Dataset:
         levels = dict(sorted(levels.items(), key=lambda x: x[0].lower()))
         return levels
 
+    def extract_levels_from_time_interval(self, interval: timedelta) -> dict[str, FactorLevel]:
+        """
+        Build factor levels for a ``BY_TIME_INTERVAL`` factor.
+
+        One level is generated per bin spanned by the dataset's ``Timedelta``
+        range at the requested ``interval``. Level names use a unit-derived
+        prefix (``"Day"``, ``"Hour"``, ``"Minute"``, ``"Second"``) followed by
+        the zero-based bin index, e.g. ``"Day 0"``, ``"Day 1"``. Colors are
+        assigned sequentially via ``get_factor_level_color_hex``.
+
+        Parameters
+        ----------
+        interval : timedelta
+            The width of each bin. Must be positive.
+
+        Returns
+        -------
+        dict[str, FactorLevel]
+            Mapping of level name to FactorLevel, in numeric (insertion) order.
+            Empty if ``interval`` is non-positive or no datatable exposes a
+            usable ``Timedelta`` column.
+        """
+        levels: dict[str, FactorLevel] = {}
+        interval_td = pd.Timedelta(interval)
+        if interval_td <= pd.Timedelta(0):
+            return levels
+
+        max_timedelta: pd.Timedelta | None = None
+        for datatable in self.datatables.values():
+            if "Timedelta" not in datatable.df.columns:
+                continue
+            series = datatable.df["Timedelta"].dropna()
+            if series.empty:
+                continue
+            max_timedelta = pd.Timedelta(series.max())
+            break
+
+        if max_timedelta is None or max_timedelta < pd.Timedelta(0):
+            return levels
+
+        num_bins = int(max_timedelta // interval_td) + 1
+        prefix = _time_interval_level_prefix(interval)
+        for index in range(num_bins):
+            level_name = f"{prefix} {index}"
+            levels[level_name] = FactorLevel(
+                name=level_name,
+                color=get_factor_level_color_hex(index),
+            )
+        return levels
+
     def rename_animal(self, old_id: str, animal: Animal) -> None:
         """
         Rename an animal in the dataset.
@@ -478,6 +561,9 @@ class Dataset:
             Dictionary mapping factor names to Factor objects.
         """
         self.factors = factors
+
+        if "Animal" not in self.factors:
+            self.factors["Animal"] = _get_default_animal_factor(self.animals)
 
         if "Total" not in self.factors:
             self.factors["Total"] = _get_default_total_factor(self.animals)

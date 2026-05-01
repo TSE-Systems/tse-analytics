@@ -211,7 +211,7 @@ class TestDatatableClone:
 class TestApplyByTimeInterval:
     """Tests for the BY_TIME_INTERVAL factor applier."""
 
-    def test_creates_uint64_column(self, sample_datatable):
+    def test_creates_ordered_categorical_column(self, sample_datatable):
         factor = Factor(
             name="Bin",
             role=FactorRole.WITHIN_SUBJECT,
@@ -219,7 +219,9 @@ class TestApplyByTimeInterval:
             levels=[],
         )
         sample_datatable.set_factors({"Bin": factor})
-        assert sample_datatable.df["Bin"].dtype.name == "UInt64"
+        column = sample_datatable.df["Bin"]
+        assert column.dtype.name == "category"
+        assert column.cat.ordered
 
     def test_bin_indices_match_one_hour_interval(self, sample_datatable):
         factor = Factor(
@@ -230,7 +232,19 @@ class TestApplyByTimeInterval:
         )
         sample_datatable.set_factors({"Bin": factor})
         # sample_df spans 5 hourly timepoints (indices 0..4)
-        assert set(sample_datatable.df["Bin"].unique().tolist()) == {0, 1, 2, 3, 4}
+        column = sample_datatable.df["Bin"]
+        assert set(column.unique().tolist()) == {"Hour 0", "Hour 1", "Hour 2", "Hour 3", "Hour 4"}
+        assert list(column.cat.categories) == ["Hour 0", "Hour 1", "Hour 2", "Hour 3", "Hour 4"]
+
+    def test_auto_populates_levels_when_empty(self, sample_datatable):
+        factor = Factor(
+            name="Bin",
+            role=FactorRole.WITHIN_SUBJECT,
+            config=ByTimeIntervalConfig(interval=timedelta(hours=1)),
+            levels=[],
+        )
+        sample_datatable.set_factors({"Bin": factor})
+        assert [lvl.name for lvl in factor.levels] == ["Hour 0", "Hour 1", "Hour 2", "Hour 3", "Hour 4"]
 
     def test_redefining_to_24h_collapses_to_zero(self, sample_datatable):
         factor = Factor(
@@ -241,7 +255,7 @@ class TestApplyByTimeInterval:
         )
         sample_datatable.set_factors({"Bin": factor})
         # All 5 timepoints span < 24h, so they all fall in bin 0.
-        assert (sample_datatable.df["Bin"] == 0).all()
+        assert (sample_datatable.df["Bin"] == "Day 0").all()
 
     def test_custom_factor_name_creates_named_column(self, sample_datatable):
         factor = Factor(
@@ -252,4 +266,4 @@ class TestApplyByTimeInterval:
         )
         sample_datatable.set_factors({"Hour": factor})
         assert "Hour" in sample_datatable.df.columns
-        assert sample_datatable.df["Hour"].dtype.name == "UInt64"
+        assert sample_datatable.df["Hour"].dtype.name == "category"
