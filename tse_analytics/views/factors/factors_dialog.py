@@ -54,7 +54,7 @@ _PAGE_INDEX: dict[FactorSource, int] = {
     FactorSource.BY_TIME_INTERVAL: 5,
 }
 
-_STANDARD_DF_COLUMNS = frozenset({"Animal", "DateTime", "Timedelta", "Bin", "Run"})
+_STANDARD_DF_COLUMNS = frozenset({"Animal", "DateTime", "Timedelta", "Run"})
 
 # Bin width unit options for the BY_TIME_INTERVAL page. Each entry maps the
 # label shown in the combo box to the corresponding ``timedelta`` keyword
@@ -300,12 +300,8 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         config = self.selected_factor.config
         is_by_animal = isinstance(config, ByAnimalConfig)
         is_by_time_of_day = isinstance(config, ByTimeOfDayConfig)
-        # The auto-created "Bin" factor (a BY_TIME_INTERVAL with the reserved
-        # name "Bin") is non-deletable like LightCycle. User-created
-        # BY_TIME_INTERVAL factors with other names ARE deletable.
-        is_system_bin = isinstance(config, ByTimeIntervalConfig) and self.selected_factor.name == "Bin"
 
-        self.pushButtonDeleteFactor.setDisabled(is_by_time_of_day or is_system_bin)
+        self.pushButtonDeleteFactor.setDisabled(is_by_time_of_day)
         self.pushButtonAddLevel.setEnabled(is_by_animal)
         self.pushButtonDeleteLevel.setEnabled(False)
         self.pushButtonExtractLevels.setEnabled(is_by_animal)
@@ -358,21 +354,6 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         self.comboBoxIntervalUnit.setCurrentText(unit_label)
         self.spinBoxIntervalValue.blockSignals(False)
         self.comboBoxIntervalUnit.blockSignals(False)
-
-        # The auto-created "Bin" factor must keep its interval aligned with the
-        # Calo extension's per-row bin numbers — Calo's processor joins the
-        # Main and calo raw datatables on (Box, Bin). Disable interval editing
-        # in that case to prevent silent mis-alignment.
-        is_system_bin = factor.name == "Bin"
-        has_calo = "Calo" in self.dataset.raw_datatables
-        lock_interval = is_system_bin and has_calo
-        self.spinBoxIntervalValue.setDisabled(lock_interval)
-        self.comboBoxIntervalUnit.setDisabled(lock_interval)
-        self.labelTimeIntervalCaloWarning.setText(
-            "Bin width is locked: the Calo extension is loaded and depends on the current bin alignment."
-            if lock_interval
-            else ""
-        )
 
     def current_group_text_changed(self, text: str):
         self.listWidgetAnimals.clear()

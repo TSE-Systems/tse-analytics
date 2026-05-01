@@ -115,16 +115,15 @@ class MixedAnovaWidget(ToolboxWidgetBase):
             return
 
         do_pairwise_tests = True
-        if within_subject_factor_name == "Bin":
-            if (
-                QMessageBox.question(
-                    self,
-                    "Perform pairwise tests?",
-                    "Calculation of pairwise tests with many time bins can take a long time!",
-                )
-                == QMessageBox.StandardButton.No
-            ):
-                do_pairwise_tests = False
+        if (
+            QMessageBox.question(
+                self,
+                "Perform pairwise tests?",
+                "Calculation of pairwise tests with many time bins can take a long time!",
+            )
+            == QMessageBox.StandardButton.No
+        ):
+            do_pairwise_tests = False
 
         columns = [
             self.datatable.dataset.subject_id_column,

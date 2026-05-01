@@ -70,13 +70,12 @@ def read_drinkfeed_bin(path: Path, dataset: Dataset) -> Datatable:
     df.sort_values(by=["DateTime", "Animal"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    # Add Timedelta and Bin columns
+    # Add Timedelta column
     df.insert(
         loc=1,
         column="Timedelta",
         value=(df["DateTime"] - dataset.experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
-    df.insert(loc=2, column="Bin", value=(df["Timedelta"] / sample_interval).round().astype("UInt64"))
 
     raw_datatable = Datatable(
         dataset,
@@ -289,13 +288,12 @@ def import_drinkfeed_bin_csv_data(
     new_df = new_df.sort_values(["Box", "DateTime"])
     new_df.reset_index(drop=True, inplace=True)
 
-    # Add Timedelta and Bin columns
+    # Add Timedelta column
     new_df.insert(
         loc=1,
         column="Timedelta",
         value=(new_df["DateTime"] - dataset.experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
-    new_df.insert(loc=2, column="Bin", value=(new_df["Timedelta"] / sample_interval).round().astype("UInt64"))
 
     # convert categorical types
     new_df = new_df.astype({

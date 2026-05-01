@@ -115,9 +115,6 @@ def reassign_df_timedelta(df: pd.DataFrame, merging_mode: str | None) -> pd.Data
     Reassign timedelta values in a DataFrame.
 
     This function recalculates timedelta values based on the merging mode.
-    Bin values are no longer recomputed here; the ``"Bin"`` column (and any
-    other time-bin factor column) is materialized by the factor system via
-    ``Dataset.set_factors`` after this call.
 
     Parameters
     ----------

@@ -13,7 +13,6 @@ from PySide6.QtWidgets import QCheckBox, QInputDialog, QLabel, QToolBar, QVBoxLa
 from tse_analytics.core import color_manager, manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.grouping import GroupingMode
-from tse_analytics.core.data.operators.group_by_pipe_operator import group_by_columns
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import Factor
 from tse_analytics.core.utils import get_h_spacer_widget, get_widget_tool_button
@@ -154,24 +153,41 @@ class FastLinePlotWidget(QWidget):
         grouping_settings = self.group_by_selector.get_grouping_settings()
         variable = self.variableSelector.get_selected_variable()
 
-        columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + [variable.name]
-        df = self.datatable.get_filtered_df(columns)
-
-        df = group_by_columns(df, {variable.name: variable}, grouping_settings)
-
         match grouping_settings.mode:
             case GroupingMode.ANIMAL:
+                columns = ["Animal", "Timedelta", variable.name]
+                df = self.datatable.get_filtered_df(columns)
+
                 if len(self.animals_table_view.selectedIndexes()) > 0:
                     df = df[df["Animal"].isin(self.animals_table_view.get_selected_animal_ids())]
                     df["Animal"] = df["Animal"].cat.remove_unused_categories()
                 x_min, x_max = self._plot_animals(df, variable.name)
+            case GroupingMode.TOTAL:
+                columns = ["Timedelta", variable.name]
+                df = self.datatable.get_filtered_df(columns)
+                df = df.groupby(["Timedelta"], dropna=False, observed=False).aggregate("mean").reset_index()
+
+                x_min, x_max = self._plot_total(df, variable.name)
             case GroupingMode.FACTOR:
+                columns = ["Timedelta", grouping_settings.factor_name, variable.name]
+                df = self.datatable.get_filtered_df(columns)
+
+                df = (
+                    df
+                    .groupby(["Timedelta", grouping_settings.factor_name], dropna=False, observed=False)
+                    .aggregate("mean")
+                    .reset_index()
+                )
+
                 factor = self.datatable.dataset.factors[grouping_settings.factor_name]
                 x_min, x_max = self._plot_factors(df, variable.name, factor)
             case GroupingMode.RUN:
+                columns = ["Timedelta", "Run", variable.name]
+                df = self.datatable.get_filtered_df(columns)
+                df = df.groupby(["Timedelta", "Run"], dropna=False, observed=False).aggregate("mean").reset_index()
                 x_min, x_max = self._plot_runs(df, variable.name)
             case _:
-                x_min, x_max = self._plot_total(df, variable.name)
+                raise ValueError("Unsupported grouping mode")
 
         # bound the LinearRegionItem to the plotted data
         self.region.setRegion([x_min, x_max])
@@ -221,16 +237,29 @@ class FastLinePlotWidget(QWidget):
         x_min = None
         x_max = None
 
-        for level in factor.levels:
-            factor_data = df[df[factor.name] == level.name]
+        if len(factor.levels) > 0:
+            for level in factor.levels:
+                factor_data = df[df[factor.name] == level.name]
 
-            pen = pg.mkPen(color=level.color, width=1)
-            tmp_min, tmp_max = self._plot_item(factor_data, variable_name, f"{level.name}", pen)
+                pen = pg.mkPen(color=level.color, width=1)
+                tmp_min, tmp_max = self._plot_item(factor_data, variable_name, f"{level.name}", pen)
 
-            if x_min is None or tmp_min < x_min:
-                x_min = tmp_min
-            if x_max is None or tmp_max > x_max:
-                x_max = tmp_max
+                if x_min is None or tmp_min < x_min:
+                    x_min = tmp_min
+                if x_max is None or tmp_max > x_max:
+                    x_max = tmp_max
+        else:
+            levels = df[factor.name].unique()
+            for level in levels:
+                factor_data = df[df[factor.name] == level]
+
+                pen = pg.mkPen(color=color_manager.get_color_hex(int(level)), width=1)
+                tmp_min, tmp_max = self._plot_item(factor_data, variable_name, f"{level}", pen)
+
+                if x_min is None or tmp_min < x_min:
+                    x_min = tmp_min
+                if x_max is None or tmp_max > x_max:
+                    x_max = tmp_max
 
         return x_min, x_max
 

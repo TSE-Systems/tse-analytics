@@ -105,16 +105,16 @@ class RMAnovaWidget(ToolboxWidgetBase):
                 show_duration_bar=True,
             ).show()
             return
-        elif "Bin" in factor_names:
-            if (
-                QMessageBox.question(
-                    self,
-                    "Perform pairwise tests?",
-                    "Calculation of pairwise tests with many time bins can take a long time!",
-                )
-                == QMessageBox.StandardButton.No
-            ):
-                do_pairwise_tests = False
+
+        if (
+            QMessageBox.question(
+                self,
+                "Perform pairwise tests?",
+                "Calculation of pairwise tests with many time bins can take a long time!",
+            )
+            == QMessageBox.StandardButton.No
+        ):
+            do_pairwise_tests = False
 
         result = get_rm_anova_result(
             self.datatable,

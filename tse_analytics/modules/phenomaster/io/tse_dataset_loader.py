@@ -222,8 +222,7 @@ def _read_main_table(
     df.sort_values(by=["DateTime", "Animal"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    # Add Timedelta column. Bin is materialized later by the auto-created
-    # "Bin" factor (see Dataset.set_factors).
+    # Add Timedelta column.
     df.insert(
         loc=1,
         column="Timedelta",

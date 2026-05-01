@@ -72,20 +72,25 @@ def get_animal_to_color_dict(animals: dict[str, Animal]) -> dict[str, str]:
     return result
 
 
-def get_level_to_color_dict(factor: Factor) -> dict[str, str]:
+def get_level_to_color_dict(factor: Factor) -> dict[str, str] | str:
     """
-    Create a dictionary mapping factor level names to their colors.
+    Map factor level names to colors.
+
+    Returns a single hex color when the factor has no pre-computed levels
+    (e.g. ``BY_TIME_INTERVAL`` factors, where bin counts can be too large to
+    enumerate usefully). seaborn and plotnine palettes accept a single color
+    string and apply it to every group.
 
     Args:
         factor: A Factor object containing levels.
 
     Returns:
-        A dictionary mapping level names to color strings.
+        A dict mapping level names to colors when levels are populated, or a
+        single hex color string otherwise.
     """
-    result = {}
-    for level in factor.levels:
-        result[level.name] = level.color
-    return result
+    if not factor.levels:
+        return get_factor_level_color_hex(0)
+    return {level.name: level.color for level in factor.levels}
 
 
 def get_run_to_color_dict(number_of_runs: int) -> dict[int, str]:

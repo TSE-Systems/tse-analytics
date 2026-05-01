@@ -11,7 +11,7 @@ def process_drinkfeed_sequences(
     diets_dict: dict[str, float],
 ) -> tuple[Datatable, Datatable]:
     long_df = pd.melt(
-        datatable.df[datatable.df.columns.difference(["DateTime", "Bin"])],
+        datatable.df[datatable.df.columns.difference(["DateTime"])],
         id_vars=["Timedelta", "Animal", "Box"],
         var_name="Sensor",
         value_name="Value",

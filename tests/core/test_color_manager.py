@@ -257,13 +257,15 @@ class TestGetLevelToColorDict:
         assert result["Control"] == "#FF0000"
         assert result["Drug"] == "#00FF00"
 
-    def test_empty_factor_levels(self):
-        """Test handling of factor with no levels."""
+    def test_empty_factor_levels_returns_single_color(self):
+        """Factors without populated levels (e.g. BY_TIME_INTERVAL) get a single hex color
+        so seaborn/plotnine can still build a valid palette."""
         factor = Factor(name="Empty", config=ByAnimalConfig(), role=FactorRole.BETWEEN_SUBJECT, levels=[])
 
         result = get_level_to_color_dict(factor)
 
-        assert result == {}
+        assert isinstance(result, str)
+        assert result.startswith("#")
 
     def test_single_level(self):
         """Test with a factor having a single level."""

@@ -57,10 +57,6 @@ class MixedAnovaNode(PipelineNode):
         if datatable is None or not isinstance(datatable, Datatable):
             return PipelinePacket.inactive(reason="Invalid input datatable")
 
-        # Check if binning is applied
-        if "Bin" not in datatable.df.columns:
-            return PipelinePacket.inactive(reason="Please apply a proper binning first")
-
         # Get configuration properties
         variable_name = str(self.get_property("variable")).strip()
         if not variable_name:

@@ -131,7 +131,7 @@ class FastBarPlotWidget(QWidget):
             )
             .add(so.Bar(), so.Agg())
             .add(so.Range(), so.Est(errorbar="se"))
-            .facet("Bin", wrap=3)
+            .facet("LightCycle", wrap=3)
             .share(y=True)
             .scale(color=palette)
             .on(self.canvas.figure)

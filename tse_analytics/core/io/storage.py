@@ -401,13 +401,6 @@ def _load_dataset(con: duckdb.DuckDBPyConnection, dataset_id: UUID) -> Dataset:
     dataset.datatables = _load_datatables_for_dataset(con, dataset)
     dataset.raw_datatables = _load_raw_datatables_for_dataset(con, dataset)
 
-    # Heal workspaces saved before the auto "Bin" factor existed: if any
-    # datatable is a regular timeseries but no "Bin" factor is present,
-    # re-running set_factors auto-creates and materializes one.
-    has_regular = any(dt.is_regular_timeseries for dt in dataset.datatables.values())
-    if has_regular and "Bin" not in dataset.factors:
-        dataset.set_factors(dataset.factors)
-
     return dataset
 
 

@@ -97,10 +97,6 @@ def merge_datasets(
         else:
             new_df["Run"] = new_df["Run"].astype("UInt8")
 
-        # Drop "Bin" column — it will be re-materialized by set_factors below.
-        if "Bin" in new_df.columns:
-            new_df = new_df.drop(columns=["Bin"])
-
         if continuous_mode:
             # Reassign timedelta column
             new_df["Timedelta"] = (new_df["DateTime"] - merged_dataset.experiment_started).dt.as_unit(

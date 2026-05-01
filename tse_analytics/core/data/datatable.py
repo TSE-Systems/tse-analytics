@@ -150,9 +150,6 @@ class Datatable:
         """
         Get the default columns for this datatable.
 
-        ``"Bin"`` is intentionally excluded — it is materialized by a factor
-        (``ByTimeIntervalConfig``) and shows up via ``dataset.factors`` instead.
-
         Returns
         -------
         list[str]
@@ -309,11 +306,6 @@ class Datatable:
 
         # Drop empty entries
         result.dropna(subset=["DateTime"], inplace=True)
-
-        # Bin column is materialized by the factor system (see
-        # ``Dataset.resample_and_rebin``); resample stays purely local and
-        # leaves any existing Bin column behind, ready to be replaced.
-        result.drop(columns=["Bin"], inplace=True, errors="ignore")
 
         result.sort_values(by=["Timedelta", "Animal"], inplace=True)
         result.reset_index(inplace=True, drop=True)
