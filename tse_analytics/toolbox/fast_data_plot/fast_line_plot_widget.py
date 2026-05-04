@@ -155,6 +155,10 @@ class FastLinePlotWidget(QWidget):
         columns = ["Timedelta", factor_name, variable.name]
         df = self.datatable.get_filtered_df(columns)
 
+        if factor_name == "Animal" and len(self.animals_table_view.selectedIndexes()) > 0:
+            df = df[df["Animal"].isin(self.animals_table_view.get_selected_animal_ids())]
+            df["Animal"] = df["Animal"].cat.remove_unused_categories()
+
         df = df.groupby(["Timedelta", factor_name], dropna=False, observed=False).aggregate("mean").reset_index()
 
         factor = self.datatable.dataset.factors[factor_name]
