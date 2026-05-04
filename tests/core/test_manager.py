@@ -5,7 +5,6 @@ Unit tests for tse_analytics.core.manager module.
 import importlib
 import pickle
 from unittest.mock import MagicMock, mock_open, patch
-from uuid import UUID
 
 import pytest
 from tse_analytics.core import manager as manager_module

@@ -40,7 +40,7 @@ def _format_factors(datatable: Datatable) -> str:
         return "(none)"
     lines = []
     for factor in factors.values():
-        level_names = ", ".join(level.name for level in factor.levels)
+        level_names = ", ".join(list(factor.levels.keys()))
         lines.append(f"- {factor.name}: [{level_names}]")
     return "\n".join(lines)
 

@@ -189,7 +189,7 @@ class FastLinePlotWidget(QWidget):
         x_max = None
 
         if len(factor.levels) > 0:
-            for level in factor.levels:
+            for level in factor.levels.values():
                 factor_data = df[df[factor.name] == level.name]
 
                 pen = pg.mkPen(color=level.color, width=1)

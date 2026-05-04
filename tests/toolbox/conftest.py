@@ -31,7 +31,6 @@ def analysis_animals():
         group = "Control" if i <= 3 else "Treatment"
         animals[f"M{i}"] = Animal(
             id=f"M{i}",
-            color=f"#{'FF' if i <= 3 else '00'}0000",
             properties={"group": group},
         )
     return animals
@@ -67,10 +66,10 @@ def analysis_factor():
         name="Group",
         config=ByAnimalConfig(),
         role=FactorRole.BETWEEN_SUBJECT,
-        levels=[
-            FactorLevel(name="Control", color="#FF0000", animal_ids=["M1", "M2", "M3"]),
-            FactorLevel(name="Treatment", color="#00FF00", animal_ids=["M4", "M5", "M6"]),
-        ],
+        levels={
+            "Control": FactorLevel(name="Control", color="#FF0000", animal_ids=["M1", "M2", "M3"]),
+            "Treatment": FactorLevel(name="Treatment", color="#00FF00", animal_ids=["M4", "M5", "M6"]),
+        },
     )
 
 

@@ -46,7 +46,7 @@ class FactorsTableWidget(QTableWidget):
 
         for i, factor in enumerate(factors.values()):
             self.setItem(i, 0, QTableWidgetItem(factor.name))
-            level_names = [level.name for level in factor.levels]
+            level_names = factor.levels.keys()
             self.setItem(i, 1, QTableWidgetItem(f"{', '.join(level_names)}"))
             if selected_factors is not None:
                 if factor.name in selected_factors:

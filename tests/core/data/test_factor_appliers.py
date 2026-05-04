@@ -39,9 +39,9 @@ from tse_analytics.core.data.shared import (
 def stub_dataset():
     """Duck-typed dataset with the only attribute appliers read: ``animals``."""
     animals = {
-        "A1": Animal(id="A1", color="#000000", properties={"Genotype": "WT", "Sex": "F"}),
-        "A2": Animal(id="A2", color="#000000", properties={"Genotype": "KO", "Sex": "F"}),
-        "A3": Animal(id="A3", color="#000000", properties={"Genotype": "KO", "Sex": "M"}),
+        "A1": Animal(id="A1", properties={"Genotype": "WT", "Sex": "F"}),
+        "A2": Animal(id="A2", properties={"Genotype": "KO", "Sex": "F"}),
+        "A3": Animal(id="A3", properties={"Genotype": "KO", "Sex": "M"}),
     }
     return SimpleNamespace(animals=animals)
 
@@ -89,10 +89,10 @@ class TestByAnimalApplier:
             name="Group",
             config=ByAnimalConfig(),
             role=FactorRole.BETWEEN_SUBJECT,
-            levels=[
-                FactorLevel(name="Ctrl", color="#000", animal_ids=["A1"]),
-                FactorLevel(name="Trt", color="#000", animal_ids=["A2", "A3"]),
-            ],
+            levels={
+                "Ctrl": FactorLevel(name="Ctrl", color="#000", animal_ids=["A1"]),
+                "Trt": FactorLevel(name="Trt", color="#000", animal_ids=["A2", "A3"]),
+            },
         )
         _apply_by_animal(time_df, factor, stub_dataset)
 
@@ -105,7 +105,7 @@ class TestByAnimalApplier:
             name="Partial",
             config=ByAnimalConfig(),
             role=FactorRole.BETWEEN_SUBJECT,
-            levels=[FactorLevel(name="Only", color="#000", animal_ids=["A1"])],
+            levels={"Only": FactorLevel(name="Only", color="#000", animal_ids=["A1"])},
         )
         _apply_by_animal(time_df, factor, stub_dataset)
 
@@ -128,7 +128,7 @@ class TestByAnimalPropertyApplier:
 
     def test_missing_property_yields_na(self, time_df, stub_dataset):
         # Drop the Sex property from A1 to test fallback
-        stub_dataset.animals["A1"] = Animal(id="A1", color="#000000", properties={"Genotype": "WT"})
+        stub_dataset.animals["A1"] = Animal(id="A1", properties={"Genotype": "WT"})
         factor = Factor(
             name="Sex",
             role=FactorRole.BETWEEN_SUBJECT,
@@ -229,7 +229,7 @@ class TestByTimeIntervalApplier:
             name="Bin",
             role=FactorRole.WITHIN_SUBJECT,
             config=ByTimeIntervalConfig(interval=timedelta(hours=1)),
-            levels=[FactorLevel(name=f"Hour {i}", color="#000000") for i in range(4)],
+            levels={f"Hour {i}": FactorLevel(name=f"Hour {i}", color="#000000") for i in range(4)},
         )
         _apply_by_time_interval(time_df, factor, stub_dataset)
 
@@ -244,7 +244,7 @@ class TestByTimeIntervalApplier:
             name="Day",
             role=FactorRole.WITHIN_SUBJECT,
             config=ByTimeIntervalConfig(interval=timedelta(days=1)),
-            levels=[FactorLevel(name="Day 0", color="#000000")],
+            levels={"Day 0": FactorLevel(name="Day 0", color="#000000")},
         )
         _apply_by_time_interval(time_df, factor, stub_dataset)
 
@@ -256,7 +256,7 @@ class TestByTimeIntervalApplier:
             name="Bin",
             role=FactorRole.WITHIN_SUBJECT,
             config=ByTimeIntervalConfig(interval=timedelta(hours=1)),
-            levels=[FactorLevel(name="Hour 0", color="#000000")],
+            levels={"Hour 0": FactorLevel(name="Hour 0", color="#000000")},
         )
         _apply_by_time_interval(df, factor, stub_dataset)
         assert "Bin" not in df.columns
@@ -266,7 +266,7 @@ class TestByTimeIntervalApplier:
             name="Bad",
             role=FactorRole.WITHIN_SUBJECT,
             config=ByTimeIntervalConfig(interval=timedelta(0)),
-            levels=[FactorLevel(name="Hour 0", color="#000000")],
+            levels={"Hour 0": FactorLevel(name="Hour 0", color="#000000")},
         )
         _apply_by_time_interval(time_df, factor, stub_dataset)
         assert "Bad" not in time_df.columns

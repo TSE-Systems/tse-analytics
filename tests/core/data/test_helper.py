@@ -13,7 +13,7 @@ class TestRenameAnimalDf:
         df = pd.DataFrame({"Animal": ["A1", "A1", "A2"], "Value": [1, 2, 3]})
         df["Animal"] = df["Animal"].astype("category")
 
-        animal = Animal(id="A1_renamed", color="#FF0000", properties={})
+        animal = Animal(id="A1_renamed", properties={})
         result = rename_animal_df(df, "A1", animal)
 
         assert "A1_renamed" in result["Animal"].values
@@ -23,7 +23,7 @@ class TestRenameAnimalDf:
         df = pd.DataFrame({"Animal": ["A1", "A2"]})
         df["Animal"] = df["Animal"].astype("category")
 
-        animal = Animal(id="B1", color="#FF0000", properties={})
+        animal = Animal(id="B1", properties={})
         result = rename_animal_df(df, "A1", animal)
 
         assert result["Animal"].dtype.name == "category"
@@ -32,7 +32,7 @@ class TestRenameAnimalDf:
         df = pd.DataFrame({"Animal": ["A1", "A2", "A3"], "Value": [1, 2, 3]})
         df["Animal"] = df["Animal"].astype("category")
 
-        animal = Animal(id="B1", color="#FF0000", properties={})
+        animal = Animal(id="B1", properties={})
         result = rename_animal_df(df, "A1", animal)
 
         assert result.loc[1, "Animal"] == "A2"

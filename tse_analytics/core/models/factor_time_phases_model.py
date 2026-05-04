@@ -53,10 +53,8 @@ class FactorTimePhasesModel(QAbstractTableModel):
                 return False
             old_name = item.name
             item.name = new_name
-            for level in self.factor.levels:
-                if level.name == old_name:
-                    level.name = new_name
-                    break
+            self.factor.levels[old_name].name = new_name
+            self.factor.levels[new_name] = self.factor.levels.pop(old_name)
             return True
         if index.column() == 1:
             try:
@@ -86,7 +84,7 @@ class FactorTimePhasesModel(QAbstractTableModel):
             return False
         phase = TimePhase(name=name, start_timestamp=start_timestamp)
         self.factor.config.phases.append(phase)
-        self.factor.levels.append(FactorLevel(name=name, color=get_factor_level_color_hex(len(self.factor.levels))))
+        self.factor.levels[name] = FactorLevel(name=name, color=get_factor_level_color_hex(len(self.factor.levels)))
         self.layoutChanged.emit()
         return True
 
@@ -95,5 +93,5 @@ class FactorTimePhasesModel(QAbstractTableModel):
             return
         phase = self.items[index.row()]
         del self.factor.config.phases[index.row()]
-        self.factor.levels = [level for level in self.factor.levels if level.name != phase.name]
+        self.factor.levels.pop(phase.name, None)
         self.layoutChanged.emit()

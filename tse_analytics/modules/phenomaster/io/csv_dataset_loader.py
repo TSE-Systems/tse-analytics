@@ -21,7 +21,6 @@ from pathlib import Path
 
 import pandas as pd
 
-from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
@@ -83,7 +82,6 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Data
         }
         animal = Animal(
             id=elements[1],
-            color=get_color_hex(index),
             properties=properties,
         )
         animals[animal.id] = animal

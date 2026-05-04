@@ -97,7 +97,8 @@ class ActivityWidget(QWidget):
             if filtered_data.empty:
                 continue
 
-            pen = pg.mkPen(color=animal.color, width=1)
+            color = data.dataset.factors["Animal"].levels[animal.id].color
+            pen = pg.mkPen(color=color, width=1)
             tmp_min, tmp_max = self._plot_item(filtered_data, animal.id, pen)
 
             if x_min is None or tmp_min < x_min:

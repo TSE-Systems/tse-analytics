@@ -48,14 +48,12 @@ def _time_interval_level_prefix(interval: timedelta) -> str:
 
 
 def _get_default_animal_factor(animals: dict[str, Animal]) -> Factor:
-    levels = []
+    levels = {}
     for i, animal in enumerate(animals.values()):
-        levels.append(
-            FactorLevel(
-                name=animal.id,
-                color=get_color_hex(i),
-                animal_ids=[animal.id],
-            )
+        levels[animal.id] = FactorLevel(
+            name=animal.id,
+            color=get_color_hex(i),
+            animal_ids=[animal.id],
         )
     return Factor(
         name="Animal",
@@ -70,9 +68,11 @@ def _get_default_total_factor(animals: dict[str, Animal]) -> Factor:
         name="Total",
         role=FactorRole.BETWEEN_SUBJECT,
         config=ByAnimalConfig(),
-        levels=[
-            FactorLevel(name="All animals", color=get_factor_level_color_hex(0), animal_ids=list(animals.keys())),
-        ],
+        levels={
+            "All animals": FactorLevel(
+                name="All animals", color=get_factor_level_color_hex(0), animal_ids=list(animals.keys())
+            ),
+        },
     )
 
 
@@ -84,10 +84,10 @@ def _get_default_light_cycle_factor() -> Factor:
             light_cycle_start=time(7, 0),
             dark_cycle_start=time(19, 0),
         ),
-        levels=[
-            FactorLevel(name="Light", color=get_factor_level_color_hex(1)),
-            FactorLevel(name="Dark", color=get_factor_level_color_hex(0)),
-        ],
+        levels={
+            "Light": FactorLevel(name="Light", color=get_factor_level_color_hex(1)),
+            "Dark": FactorLevel(name="Dark", color=get_factor_level_color_hex(0)),
+        },
     )
 
 
@@ -420,7 +420,7 @@ class Dataset:
 
         # Rename animal in factor's levels definitions
         for factor in self.factors.values():
-            for level in factor.levels:
+            for level in factor.levels.values():
                 for i, animal_id in enumerate(level.animal_ids):
                     if animal_id == old_id:
                         level.animal_ids[i] = animal.id
@@ -453,7 +453,7 @@ class Dataset:
         """
         # Remove animals from factor's levels definitions
         for factor in self.factors.values():
-            for level in factor.levels:
+            for level in factor.levels.values():
                 level_set = set(level.animal_ids)
                 filtered_set = level_set.difference(animal_ids)
                 level.animal_ids = list(filtered_set)

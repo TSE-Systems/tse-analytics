@@ -21,7 +21,7 @@ class FactorsModel(QAbstractItemModel):
         self.root_item.clear()
         for factor in self.factors.values():
             factor_tree_item = TreeItem(factor.name)
-            for level in factor.levels:
+            for level in factor.levels.values():
                 factor_tree_item.add_child(TreeItem(level.name, color=level.color))
             self.root_item.add_child(factor_tree_item)
         self.endResetModel()
@@ -81,7 +81,7 @@ class FactorsModel(QAbstractItemModel):
             item = self.getItem(index)
             item.color = value.name()
             factor = self.factors[item.parent_item().name]
-            for level in factor.levels:
+            for level in factor.levels.values():
                 if level.name == item.name:
                     level.color = item.color
                     break

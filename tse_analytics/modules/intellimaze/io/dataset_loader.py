@@ -9,7 +9,6 @@ import pandas as pd
 import xmltodict
 from loguru import logger
 
-from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.shared import Animal, ByAnimalConfig, Factor, FactorRole
 from tse_analytics.modules.intellimaze.data.utils import preprocess_main_table
@@ -216,7 +215,6 @@ def _import_animals_v5(animals_file_path: Path) -> dict | None:
 
         animal = Animal(
             id=str(item["Name"]),
-            color=get_color_hex(index),
             properties=properties,
         )
         animals[animal.id] = animal
@@ -294,7 +292,6 @@ def _import_animals_v6(animals_file_path: Path, groups_file_path: Path) -> dict 
 
         animal = Animal(
             id=str(item["Name"]),
-            color=get_color_hex(index),
             properties=properties,
         )
         animals[animal.id] = animal
@@ -320,8 +317,6 @@ def _extract_factor(factor_name: str, dataset: Dataset) -> Factor | None:
     """
     levels = dataset.extract_levels_from_property(factor_name)
     if len(levels) > 0:
-        return Factor(
-            name=factor_name, config=ByAnimalConfig(), role=FactorRole.BETWEEN_SUBJECT, levels=list(levels.values())
-        )
+        return Factor(name=factor_name, config=ByAnimalConfig(), role=FactorRole.BETWEEN_SUBJECT, levels=levels)
     else:
         return None

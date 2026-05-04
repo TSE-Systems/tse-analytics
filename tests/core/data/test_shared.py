@@ -46,23 +46,21 @@ class TestAnimal:
     """Tests for Animal dataclass."""
 
     def test_creation(self):
-        animal = Animal(id="A1", color="#FF0000", properties={"weight": 25.0})
+        animal = Animal(id="A1", properties={"weight": 25.0})
         assert animal.id == "A1"
-        assert animal.color == "#FF0000"
         assert animal.properties == {"weight": 25.0}
 
     def test_get_dict(self):
-        animal = Animal(id="A1", color="#FF0000", properties={})
+        animal = Animal(id="A1", properties={})
         d = asdict(animal)
         assert "id" in d
-        assert "color" in d
         assert "properties" in d
         assert d["id"] == "A1"
 
     def test_get_dict_returns_all_fields(self):
-        animal = Animal(id="B2", color="#00FF00", properties={"cage": 3})
+        animal = Animal(id="B2", properties={"cage": 3})
         d = asdict(animal)
-        assert len(d) == 3
+        assert len(d) == 2
 
 
 class TestFactorLevel:
@@ -82,14 +80,14 @@ class TestFactor:
     """Tests for Factor dataclass."""
 
     def test_creation(self):
-        levels = [FactorLevel(name="L1", color="#FF0000")]
+        levels = {"L1": FactorLevel(name="L1", color="#FF0000")}
         factor = Factor(name="Diet", config=ByAnimalConfig(), role=FactorRole.BETWEEN_SUBJECT, levels=levels)
         assert factor.name == "Diet"
         assert len(factor.levels) == 1
 
     def test_default_levels(self):
         factor = Factor(name="Empty", config=ByAnimalConfig(), role=FactorRole.BETWEEN_SUBJECT)
-        assert factor.levels == []
+        assert factor.levels == {}
 
 
 class TestVariable:
@@ -233,7 +231,7 @@ class TestFactorSerializationRoundTrip:
                 name="Treatment",
                 config=ByAnimalConfig(),
                 role=FactorRole.BETWEEN_SUBJECT,
-                levels=[FactorLevel(name="Control", color="#000000", animal_ids=["A1"])],
+                levels={"Control": FactorLevel(name="Control", color="#000000", animal_ids=["A1"])},
             ),
         }
         adapter = TypeAdapter(dict[str, Factor])

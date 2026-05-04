@@ -142,7 +142,10 @@ def _extract_factor(factor_name: str, factors: dict[str, Factor], dataset: Datas
     levels = dataset.extract_levels_from_property(factor_name)
     if len(levels) > 0:
         return Factor(
-            name=factor_name, config=ByAnimalConfig(), role=FactorRole.BETWEEN_SUBJECT, levels=list(levels.values())
+            name=factor_name,
+            config=ByAnimalConfig(),
+            role=FactorRole.BETWEEN_SUBJECT,
+            levels=levels,
         )
     else:
         return None

@@ -10,7 +10,6 @@ from dataclasses import asdict
 
 import pandas as pd
 
-from tse_analytics.core import color_manager
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Animal
@@ -59,9 +58,6 @@ def merge_datasets(
         merged_dataset = _merge_continuous(new_dataset_name, datasets, single_run)
     else:
         merged_dataset = _merge_overlap(new_dataset_name, datasets, single_run, generate_new_animal_names)
-
-    for index, animal in enumerate(merged_dataset.animals.values()):
-        animal.color = color_manager.get_color_hex(index)
 
     return merged_dataset
 

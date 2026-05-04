@@ -9,7 +9,7 @@ and factor levels to colors.
 import seaborn as sns
 from matplotlib.colors import rgb2hex
 
-from tse_analytics.core.data.shared import Animal, Factor
+from tse_analytics.core.data.shared import Factor
 
 colormap_name = "tab20"
 cmap = sns.color_palette(colormap_name, as_cmap=True)
@@ -56,7 +56,7 @@ def get_factor_level_color_hex(index: int) -> str:
     return rgb2hex(color_tuple)
 
 
-def get_animal_to_color_dict(animals: dict[str, Animal]) -> dict[str, str]:
+def get_animal_to_color_dict(factor: Factor) -> dict[str, str]:
     """
     Create a dictionary mapping animal IDs to their colors.
 
@@ -67,8 +67,8 @@ def get_animal_to_color_dict(animals: dict[str, Animal]) -> dict[str, str]:
         A dictionary mapping animal IDs to color strings.
     """
     result = {}
-    for animal in animals.values():
-        result[animal.id] = animal.color
+    for level in factor.levels.values():
+        result[level.name] = level.color
     return result
 
 
@@ -77,7 +77,7 @@ def get_level_to_color_dict(factor: Factor) -> dict[str, str] | str:
     Map factor level names to colors.
 
     Returns a single hex color as a fallback when the factor has no levels.
-    seaborn and plotnine palettes accept a single color string and apply it
+    seaborn and plotnine palettes, accept a single color string and apply it
     to every group.
 
     Args:
@@ -89,4 +89,4 @@ def get_level_to_color_dict(factor: Factor) -> dict[str, str] | str:
     """
     if not factor.levels:
         return get_factor_level_color_hex(0)
-    return {level.name: level.color for level in factor.levels}
+    return {level.name: level.color for level in factor.levels.values()}

@@ -49,14 +49,11 @@ class Animal:
     ----------
     id : str
         The unique identifier for the animal.
-    color : str
-        The color used to represent the animal in visualizations.
     properties : dict[str, Any]
         Dictionary of animal properties.
     """
 
     id: str
-    color: str
     properties: dict[str, Any]
 
 
@@ -273,14 +270,14 @@ class Factor:
         Discriminated config describing how the factor is computed. Required.
     role : FactorRole
         Statistical role.
-    levels : list[FactorLevel]
+    levels : dict[str, FactorLevel]
         List of levels for this factor.
     """
 
     name: str
     config: FactorConfig
     role: FactorRole
-    levels: list[FactorLevel] = Field(default_factory=list)
+    levels: dict[str, FactorLevel] = Field(default_factory=dict)
 
 
 @dataclass

@@ -76,7 +76,7 @@ class TestRenameAnimal:
     """Tests for Datatable.rename_animal."""
 
     def test_rename_animal(self, sample_datatable):
-        new_animal = Animal(id="NewA1", color="#FF0000", properties={})
+        new_animal = Animal(id="NewA1", properties={})
         sample_datatable.rename_animal("A1", new_animal)
 
         assert "NewA1" in sample_datatable.df["Animal"].values
@@ -216,7 +216,7 @@ class TestApplyByTimeInterval:
             name="Bin",
             role=FactorRole.WITHIN_SUBJECT,
             config=ByTimeIntervalConfig(interval=timedelta(hours=1)),
-            levels=[],
+            levels={},
         )
         sample_datatable.set_factors({"Bin": factor})
         column = sample_datatable.df["Bin"]
@@ -228,7 +228,7 @@ class TestApplyByTimeInterval:
             name="Bin",
             role=FactorRole.WITHIN_SUBJECT,
             config=ByTimeIntervalConfig(interval=timedelta(hours=1)),
-            levels=[],
+            levels={},
         )
         sample_datatable.set_factors({"Bin": factor})
         # sample_df spans 5 hourly timepoints (indices 0..4)
@@ -241,17 +241,17 @@ class TestApplyByTimeInterval:
             name="Bin",
             role=FactorRole.WITHIN_SUBJECT,
             config=ByTimeIntervalConfig(interval=timedelta(hours=1)),
-            levels=[],
+            levels={},
         )
         sample_datatable.set_factors({"Bin": factor})
-        assert [lvl.name for lvl in factor.levels] == ["Hour 0", "Hour 1", "Hour 2", "Hour 3", "Hour 4"]
+        assert list(factor.levels.keys()) == ["Hour 0", "Hour 1", "Hour 2", "Hour 3", "Hour 4"]
 
     def test_redefining_to_24h_collapses_to_zero(self, sample_datatable):
         factor = Factor(
             name="Bin",
             role=FactorRole.WITHIN_SUBJECT,
             config=ByTimeIntervalConfig(interval=timedelta(days=1)),
-            levels=[],
+            levels={},
         )
         sample_datatable.set_factors({"Bin": factor})
         # All 5 timepoints span < 24h, so they all fall in bin 0.
@@ -262,7 +262,7 @@ class TestApplyByTimeInterval:
             name="Hour",
             role=FactorRole.WITHIN_SUBJECT,
             config=ByTimeIntervalConfig(interval=timedelta(hours=1)),
-            levels=[],
+            levels={},
         )
         sample_datatable.set_factors({"Hour": factor})
         assert "Hour" in sample_datatable.df.columns

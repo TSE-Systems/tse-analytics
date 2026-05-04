@@ -424,7 +424,7 @@ class Datatable:
 def _apply_by_animal(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:
     animal_ids = df["Animal"].unique()
     animal_factor_map: dict[str, Any] = dict.fromkeys(animal_ids, pd.NA)
-    for level in factor.levels:
+    for level in factor.levels.values():
         for animal_id in level.animal_ids:
             animal_factor_map[animal_id] = level.name
 
@@ -510,15 +510,15 @@ def _apply_by_time_interval(df: pd.DataFrame, factor: Factor, dataset: Dataset) 
         return
 
     if not factor.levels:
-        factor.levels = list(dataset.extract_levels_from_time_interval(cfg.interval).values())
+        factor.levels = dataset.extract_levels_from_time_interval(cfg.interval)
     if not factor.levels:
         logger.debug(f"Skipping factor {factor.name!r}: no levels could be derived")
         return
 
     bin_indices = (df["Timedelta"] // interval_td).astype("Int64")
-    name_for = {i: lvl.name for i, lvl in enumerate(factor.levels)}
+    name_for = {i: lvl.name for i, lvl in enumerate(factor.levels.values())}
     df[factor.name] = bin_indices.map(name_for)
-    categories = [lvl.name for lvl in factor.levels]
+    categories = [lvl.name for lvl in factor.levels.values()]
     df[factor.name] = df[factor.name].astype("category").cat.set_categories(categories, ordered=True)
 
 

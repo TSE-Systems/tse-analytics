@@ -150,7 +150,7 @@ class TestRenameAnimal:
 
     def test_renames_in_animals_dict(self, sample_dataset, sample_datatable):
         old_animal = sample_dataset.animals["A1"]
-        new_animal = Animal(id="NewA1", color=old_animal.color, properties=old_animal.properties)
+        new_animal = Animal(id="NewA1", properties=old_animal.properties)
 
         sample_dataset.rename_animal("A1", new_animal)
 
@@ -159,7 +159,7 @@ class TestRenameAnimal:
 
     def test_renames_in_metadata(self, sample_dataset, sample_datatable):
         old_animal = sample_dataset.animals["A1"]
-        new_animal = Animal(id="NewA1", color=old_animal.color, properties=old_animal.properties)
+        new_animal = Animal(id="NewA1", properties=old_animal.properties)
 
         sample_dataset.rename_animal("A1", new_animal)
 
@@ -169,11 +169,11 @@ class TestRenameAnimal:
         sample_dataset.factors = {"Group": sample_factor}
 
         old_animal = sample_dataset.animals["A1"]
-        new_animal = Animal(id="NewA1", color=old_animal.color, properties=old_animal.properties)
+        new_animal = Animal(id="NewA1", properties=old_animal.properties)
 
         sample_dataset.rename_animal("A1", new_animal)
 
-        control_level = sample_factor.levels[0]
+        control_level = sample_factor.levels["Control"]
         assert "NewA1" in control_level.animal_ids
         assert "A1" not in control_level.animal_ids
 
@@ -195,7 +195,7 @@ class TestExcludeAnimals:
 
         sample_dataset.exclude_animals({"A1"})
 
-        control_level = sample_factor.levels[0]
+        control_level = sample_factor.levels["Control"]
         assert "A1" not in control_level.animal_ids
 
 

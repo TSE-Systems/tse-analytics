@@ -260,16 +260,16 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
                 name=text,
                 color=get_factor_level_color_hex(len(self.selected_factor.levels)),
             )
-            self.selected_factor.levels.append(level)
+            self.selected_factor.levels[level.name] = level
             self.listWidgetLevels.addItem(text)
 
     def delete_level(self):
         if self.selected_factor is None or not isinstance(self.selected_factor.config, ByAnimalConfig):
             return
         for item in self.listWidgetLevels.selectedItems():
-            level = next((x for x in self.selected_factor.levels if x.name == item.text()), None)
+            level = self.selected_factor.levels.get(item.text(), None)
             if level is not None:
-                self.selected_factor.levels.remove(level)
+                self.selected_factor.levels.pop(level.name, None)
             self.listWidgetLevels.takeItem(self.listWidgetLevels.row(item))
 
     def extract_levels(self):
@@ -278,9 +278,9 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         selected_field = self.comboBoxFields.currentText()
         if selected_field is not None:
             levels = self.dataset.extract_levels_from_property(selected_field)
-            self.selected_factor.levels = list(levels.values())
+            self.selected_factor.levels = levels
             self.listWidgetLevels.clear()
-            self.listWidgetLevels.addItems([level.name for level in self.selected_factor.levels])
+            self.listWidgetLevels.addItems(self.selected_factor.levels.keys())
 
     def current_factor_text_changed(self, text: str):
         self.listWidgetLevels.clear()
@@ -310,7 +310,7 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
 
         self.stackedWidgetConfig.setCurrentIndex(_PAGE_INDEX[_factor_source(self.selected_factor)])
 
-        self.listWidgetLevels.addItems([level.name for level in self.selected_factor.levels])
+        self.listWidgetLevels.addItems(self.selected_factor.levels.keys())
         self._sync_config_page(self.selected_factor)
 
     def _sync_config_page(self, factor: Factor) -> None:
@@ -360,7 +360,7 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         self.listWidgetAnimals.clear()
         if self.selected_factor is None:
             return
-        self.selected_level = next((x for x in self.selected_factor.levels if x.name == text), None)
+        self.selected_level = self.selected_factor.levels.get(text, None)
 
         is_by_animal = isinstance(self.selected_factor.config, ByAnimalConfig)
         self.pushButtonDeleteLevel.setEnabled(is_by_animal and self.selected_level is not None)
@@ -378,7 +378,7 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
             else:
                 item.setCheckState(Qt.CheckState.Unchecked)
 
-            for level in self.selected_factor.levels:
+            for level in self.selected_factor.levels.values():
                 if level != self.selected_level:
                     if animal_id in level.animal_ids:
                         item.setFlags(~Qt.ItemFlag.ItemIsEnabled)
@@ -415,16 +415,16 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         self.selected_factor.config.property_key = text
         self._refresh_animal_property_levels(self.selected_factor)
         self.listWidgetLevels.clear()
-        self.listWidgetLevels.addItems([level.name for level in self.selected_factor.levels])
+        self.listWidgetLevels.addItems(self.selected_factor.levels.keys())
 
     def _refresh_animal_property_levels(self, factor: Factor) -> None:
         config = factor.config
         assert isinstance(config, ByAnimalPropertyConfig)
         if not config.property_key:
-            factor.levels = []
+            factor.levels = {}
             return
         levels = self.dataset.extract_levels_from_property(config.property_key)
-        factor.levels = list(levels.values())
+        factor.levels = levels
 
     def _column_changed(self, text: str):
         if self.selected_factor is None or not isinstance(self.selected_factor.config, ByColumnConfig):
@@ -432,16 +432,16 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         self.selected_factor.config.column = text
         self._refresh_column_levels(self.selected_factor)
         self.listWidgetLevels.clear()
-        self.listWidgetLevels.addItems([level.name for level in self.selected_factor.levels])
+        self.listWidgetLevels.addItems(self.selected_factor.levels.keys())
 
     def _refresh_column_levels(self, factor: Factor) -> None:
         config = factor.config
         assert isinstance(config, ByColumnConfig)
         if not config.column:
-            factor.levels = []
+            factor.levels = {}
             return
         levels = self.dataset.extract_levels_from_column(config.column)
-        factor.levels = list(levels.values())
+        factor.levels = levels
 
     def _interval_changed(self, *_args) -> None:
         if self.selected_factor is None or not isinstance(self.selected_factor.config, ByTimeIntervalConfig):
@@ -454,13 +454,13 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         self.selected_factor.config.interval = timedelta(**{kwarg: value})
         self._refresh_time_interval_levels(self.selected_factor)
         self.listWidgetLevels.clear()
-        self.listWidgetLevels.addItems([level.name for level in self.selected_factor.levels])
+        self.listWidgetLevels.addItems(self.selected_factor.levels.keys())
 
     def _refresh_time_interval_levels(self, factor: Factor) -> None:
         config = factor.config
         assert isinstance(config, ByTimeIntervalConfig)
         levels = self.dataset.extract_levels_from_time_interval(config.interval)
-        factor.levels = list(levels.values())
+        factor.levels = levels
 
     def _add_phase(self):
         if self.selected_factor is None or not isinstance(self.selected_factor.config, ByElapsedTimeConfig):
@@ -479,7 +479,7 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
             return
 
         self.listWidgetLevels.clear()
-        self.listWidgetLevels.addItems([level.name for level in self.selected_factor.levels])
+        self.listWidgetLevels.addItems(self.selected_factor.levels.keys())
 
     def _delete_phase(self):
         if self.selected_factor is None or not isinstance(self.selected_factor.config, ByElapsedTimeConfig):
@@ -491,4 +491,4 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         self.tableViewPhases.clearSelection()
 
         self.listWidgetLevels.clear()
-        self.listWidgetLevels.addItems([level.name for level in self.selected_factor.levels])
+        self.listWidgetLevels.addItems(self.selected_factor.levels.keys())

@@ -6,7 +6,6 @@ import connectorx as cx
 import pandas as pd
 from loguru import logger
 
-from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
@@ -167,7 +166,6 @@ def _get_animals(data: dict) -> dict[str, Animal]:
 
         animal = Animal(
             id=str(item["id"]),
-            color=get_color_hex(index),
             properties=properties,
         )
         animals[animal.id] = animal
