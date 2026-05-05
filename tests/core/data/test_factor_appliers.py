@@ -1,4 +1,4 @@
-"""Tests for the factor applier dispatch in tse_analytics.core.data.datatable.
+"""Tests for the factor applier dispatch in tse_analytics.core.data.factor_appliers.
 
 Imports of ``Dataset`` are avoided to side-step a pre-existing circular-import
 issue between ``dataset`` / ``datatable`` / ``messaging``. Each applier only
@@ -11,8 +11,8 @@ from types import SimpleNamespace
 
 import pandas as pd
 import pytest
-from tse_analytics.core.data.datatable import (
-    _FACTOR_APPLIERS,
+from tse_analytics.core.data.factor_appliers import (
+    FACTOR_APPLIERS,
     _apply_by_animal,
     _apply_by_animal_property,
     _apply_by_column,
@@ -65,7 +65,7 @@ class TestDispatchRegistry:
     """The registry must enumerate one applier per FactorConfig type."""
 
     def test_registry_covers_all_config_types(self):
-        assert set(_FACTOR_APPLIERS) == {
+        assert set(FACTOR_APPLIERS) == {
             ByAnimalConfig,
             ByAnimalPropertyConfig,
             ByTimeOfDayConfig,
@@ -75,12 +75,12 @@ class TestDispatchRegistry:
         }
 
     def test_registry_maps_to_expected_functions(self):
-        assert _FACTOR_APPLIERS[ByAnimalConfig] is _apply_by_animal
-        assert _FACTOR_APPLIERS[ByAnimalPropertyConfig] is _apply_by_animal_property
-        assert _FACTOR_APPLIERS[ByTimeOfDayConfig] is _apply_by_time_of_day
-        assert _FACTOR_APPLIERS[ByElapsedTimeConfig] is _apply_by_elapsed_time
-        assert _FACTOR_APPLIERS[ByColumnConfig] is _apply_by_column
-        assert _FACTOR_APPLIERS[ByTimeIntervalConfig] is _apply_by_time_interval
+        assert FACTOR_APPLIERS[ByAnimalConfig] is _apply_by_animal
+        assert FACTOR_APPLIERS[ByAnimalPropertyConfig] is _apply_by_animal_property
+        assert FACTOR_APPLIERS[ByTimeOfDayConfig] is _apply_by_time_of_day
+        assert FACTOR_APPLIERS[ByElapsedTimeConfig] is _apply_by_elapsed_time
+        assert FACTOR_APPLIERS[ByColumnConfig] is _apply_by_column
+        assert FACTOR_APPLIERS[ByTimeIntervalConfig] is _apply_by_time_interval
 
 
 class TestByAnimalApplier:

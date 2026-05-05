@@ -8,26 +8,20 @@ excluding time ranges, resampling, and applying factors.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
+from collections.abc import Iterable
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 from uuid import uuid7
 
-import numpy as np
 import pandas as pd
 from loguru import logger
 
 from tse_analytics.core import messaging
+from tse_analytics.core.data.factor_appliers import FACTOR_APPLIERS
 from tse_analytics.core.data.operators.outliers_pipe_operator import process_outliers
 from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings
 from tse_analytics.core.data.shared import (
     Animal,
-    ByAnimalConfig,
-    ByAnimalPropertyConfig,
-    ByColumnConfig,
-    ByElapsedTimeConfig,
-    ByTimeIntervalConfig,
-    ByTimeOfDayConfig,
     Factor,
     FactorRole,
     Variable,
@@ -142,8 +136,7 @@ class Datatable:
         str or None
             The merging mode if it exists in the dataset metadata, otherwise None.
         """
-        merging_mode = self.dataset.metadata["merging_mode"] if "merging_mode" in self.dataset.metadata else None
-        return merging_mode
+        return self.dataset.metadata.get("merging_mode")
 
     def get_default_columns(self) -> list[str]:
         """
@@ -185,15 +178,9 @@ class Datatable:
         list[str]
             List of column names that can be used for grouping data.
         """
-        modes = []
         if show_role is None:
-            for factor in self.dataset.factors.keys():
-                modes.append(factor)
-        else:
-            for factor in self.dataset.factors.values():
-                if factor.role == show_role:
-                    modes.append(factor.name)
-        return modes
+            return list(self.dataset.factors.keys())
+        return [name for name, f in self.dataset.factors.items() if f.role == show_role]
 
     def apply_outliers(self, settings: OutliersSettings) -> None:
         """
@@ -235,6 +222,10 @@ class Datatable:
         if "Animal" in self.df.columns:
             self.df = exclude_animals_from_df(self.df, animal_ids)
 
+    def _filter_by_time_mask(self, mask: pd.Series) -> None:
+        self.df = self.df[mask]
+        self.df = reassign_df_timedelta(self.df, self.get_merging_mode())
+
     def exclude_time(self, range_start: datetime, range_end: datetime) -> None:
         """
         Exclude a time range from the datatable.
@@ -246,9 +237,9 @@ class Datatable:
         range_end : datetime
             End of the time range to exclude.
         """
-        self.df = self.df[(self.df["DateTime"] < range_start) | (self.df["DateTime"] > range_end)]
-        merging_mode = self.get_merging_mode()
-        self.df = reassign_df_timedelta(self.df, merging_mode)
+        self._filter_by_time_mask(
+            (self.df["DateTime"] < range_start) | (self.df["DateTime"] > range_end)
+        )
 
     def trim_time(self, range_start: datetime, range_end: datetime) -> None:
         """
@@ -261,9 +252,9 @@ class Datatable:
         range_end : datetime
             New end time for the datatable.
         """
-        self.df = self.df[(self.df["DateTime"] >= range_start) & (self.df["DateTime"] <= range_end)]
-        merging_mode = self.get_merging_mode()
-        self.df = reassign_df_timedelta(self.df, merging_mode)
+        self._filter_by_time_mask(
+            (self.df["DateTime"] >= range_start) & (self.df["DateTime"] <= range_end)
+        )
 
     def resample(self, resample_interval: pd.Timedelta) -> None:
         """
@@ -277,18 +268,15 @@ class Datatable:
         resample_interval : pd.Timedelta
             The time interval to resample the data to.
         """
-        agg = {
-            "DateTime": "first",
-        }
-
+        default_cols = set(self.get_default_columns())
+        agg: dict[str, Any] = {"DateTime": "first"}
         for column in self.df.columns:
-            if column not in self.get_default_columns():
-                if self.df.dtypes[column].name != "category":
-                    if column in self.variables:
-                        agg[column] = self.variables[column].aggregation
-                else:
-                    # Include categorical data fields
-                    agg[column] = "first"
+            if column in default_cols:
+                continue
+            if self.df.dtypes[column].name == "category":
+                agg[column] = "first"
+            elif column in self.variables:
+                agg[column] = self.variables[column].aggregation
 
         result = self.df.groupby(["Animal"], dropna=False, observed=False)
         result = result.resample(resample_interval, on="Timedelta", origin=self.dataset.experiment_started).agg(agg)
@@ -315,7 +303,7 @@ class Datatable:
 
         Each factor is materialized as a categorical column on the active
         dataframe by dispatching on the type of ``factor.config``. The
-        dispatch table is ``_FACTOR_APPLIERS``; adding a new factor source
+        dispatch table is ``FACTOR_APPLIERS``; adding a new factor source
         requires only a new config type and a new applier function — no
         changes to this method.
 
@@ -343,7 +331,7 @@ class Datatable:
             if config is None:
                 logger.debug(f"Skipping factor {factor.name!r}: no config")
                 continue
-            applier = _FACTOR_APPLIERS.get(type(config))
+            applier = FACTOR_APPLIERS.get(type(config))
             if applier is None:
                 logger.debug(f"Skipping factor {factor.name!r}: no applier registered for {type(config).__name__}")
                 continue
@@ -418,120 +406,3 @@ class Datatable:
             self.df.copy(),
             self.metadata.copy(),
         )
-
-
-def _apply_animal_map(df: pd.DataFrame, factor: Factor, animal_factor_map: dict[str, Any]) -> None:
-    series = df["Animal"].astype("string").map(animal_factor_map)
-    categories = sorted(
-        {v for v in animal_factor_map.values() if pd.notna(v)},
-        key=str.lower,
-    )
-    df[factor.name] = pd.Categorical(series, categories=categories)
-
-
-def _apply_by_animal(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:
-    animal_factor_map: dict[str, Any] = dict.fromkeys(df["Animal"].unique(), pd.NA)
-    for level in factor.levels.values():
-        for animal_id in level.animal_ids:
-            animal_factor_map[animal_id] = level.name
-    _apply_animal_map(df, factor, animal_factor_map)
-
-
-def _apply_by_animal_property(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:
-    cfg = factor.config
-    assert isinstance(cfg, ByAnimalPropertyConfig)
-
-    animal_factor_map: dict[str, Any] = dict.fromkeys(df["Animal"].unique(), pd.NA)
-    for animal in dataset.animals.values():
-        if cfg.property_key in animal.properties:
-            animal_factor_map[animal.id] = str(animal.properties[cfg.property_key])
-    _apply_animal_map(df, factor, animal_factor_map)
-
-
-def _apply_by_time_of_day(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:
-    cfg = factor.config
-    assert isinstance(cfg, ByTimeOfDayConfig)
-    if "DateTime" not in df.columns:
-        logger.debug(f"Skipping factor {factor.name!r}: no DateTime column")
-        return
-
-    light_start = cfg.light_cycle_start
-    dark_start = cfg.dark_cycle_start
-
-    times = df["DateTime"].dt.time
-    is_light = (times >= light_start) & (times < dark_start)
-    df[factor.name] = pd.Categorical(
-        np.where(is_light, "Light", "Dark"),
-        categories=["Light", "Dark"],
-        ordered=True,
-    )
-
-
-def _apply_by_elapsed_time(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:
-    cfg = factor.config
-    assert isinstance(cfg, ByElapsedTimeConfig)
-    if len(cfg.phases) == 0:
-        logger.debug(f"Skipping factor {factor.name!r}: no phases configured")
-        return
-    if "Timedelta" not in df.columns:
-        logger.debug(f"Skipping factor {factor.name!r}: no Timedelta column")
-        return
-
-    phases = sorted(cfg.phases, key=lambda p: p.start_timestamp)
-    edges = [pd.Timedelta(p.start_timestamp) for p in phases]
-    edges.append(pd.Timedelta.max)
-    labels = [p.name for p in phases]
-    df[factor.name] = pd.cut(
-        df["Timedelta"],
-        bins=edges,
-        labels=labels,
-        right=False,
-        ordered=True,
-    )
-
-
-def _apply_by_column(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:
-    cfg = factor.config
-    assert isinstance(cfg, ByColumnConfig)
-    if cfg.column not in df.columns:
-        logger.debug(f"Skipping factor {factor.name!r}: source column {cfg.column!r} not present")
-        return
-
-    series = df[cfg.column]
-    df[factor.name] = series if series.dtype.name == "category" else series.astype("category")
-
-
-def _apply_by_time_interval(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:
-    cfg = factor.config
-    assert isinstance(cfg, ByTimeIntervalConfig)
-    if "Timedelta" not in df.columns:
-        logger.debug(f"Skipping factor {factor.name!r}: no Timedelta column")
-        return
-    interval_td = pd.Timedelta(cfg.interval)
-    if interval_td <= pd.Timedelta(0):
-        logger.debug(f"Skipping factor {factor.name!r}: non-positive interval {interval_td!r}")
-        return
-
-    if not factor.levels:
-        factor.levels = dataset.extract_levels_from_time_interval(cfg.interval)
-    if not factor.levels:
-        logger.debug(f"Skipping factor {factor.name!r}: no levels could be derived")
-        return
-
-    bin_indices = (df["Timedelta"] // interval_td).astype("Int64")
-    name_for = {i: lvl.name for i, lvl in enumerate(factor.levels.values())}
-    df[factor.name] = bin_indices.map(name_for)
-    categories = [lvl.name for lvl in factor.levels.values()]
-    df[factor.name] = df[factor.name].astype("category").cat.set_categories(categories, ordered=True)
-
-
-_FactorApplier = Callable[[pd.DataFrame, Factor, "Dataset"], None]
-
-_FACTOR_APPLIERS: dict[type, _FactorApplier] = {
-    ByAnimalConfig: _apply_by_animal,
-    ByAnimalPropertyConfig: _apply_by_animal_property,
-    ByTimeOfDayConfig: _apply_by_time_of_day,
-    ByElapsedTimeConfig: _apply_by_elapsed_time,
-    ByColumnConfig: _apply_by_column,
-    ByTimeIntervalConfig: _apply_by_time_interval,
-}
