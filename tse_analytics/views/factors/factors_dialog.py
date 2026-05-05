@@ -182,7 +182,9 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
             return []
         first_dt = next(iter(self.dataset.datatables.values()))
         factor_names = {f.name for f in self.dataset.factors.values()}
-        return [c for c in first_dt.df.columns if c not in _STANDARD_DF_COLUMNS and c not in factor_names]
+        return [
+            c for c in first_dt.df.columns if (c not in _STANDARD_DF_COLUMNS and c not in factor_names) or c == "Run"
+        ]
 
     def add_factor(self):
         dlg = _AddFactorDialog(self)
@@ -301,8 +303,9 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         config = self.selected_factor.config
         is_by_animal = isinstance(config, ByAnimalConfig)
         is_by_time_of_day = isinstance(config, ByTimeOfDayConfig)
+        is_by_bin = isinstance(config, ByColumnConfig) and config.column == "Run"
 
-        self.pushButtonDeleteFactor.setDisabled(is_by_time_of_day)
+        self.pushButtonDeleteFactor.setDisabled(is_by_time_of_day or is_by_bin)
         self.pushButtonAddLevel.setEnabled(is_by_animal)
         self.pushButtonDeleteLevel.setEnabled(False)
         self.pushButtonExtractLevels.setEnabled(is_by_animal)

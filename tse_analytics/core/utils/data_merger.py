@@ -2,9 +2,10 @@ from dataclasses import asdict
 
 import pandas as pd
 
+from tse_analytics.core.color_manager import get_factor_level_color_hex
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import Animal
+from tse_analytics.core.data.shared import Animal, ByColumnConfig, Factor, FactorLevel, FactorRole
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
 
 
@@ -84,7 +85,7 @@ def merge_datasets(
         # Assign run number
         if not single_run:
             for run, df in enumerate(dataframes):
-                df["Run"] = run + 1
+                df["Run"] = f"Run {run}"
 
         new_df = pd.concat(dataframes, ignore_index=True)
 
@@ -92,7 +93,17 @@ def merge_datasets(
             if "Run" in new_df.columns:
                 new_df = new_df.drop(columns=["Run"])
         else:
-            new_df["Run"] = new_df["Run"].astype("UInt8")
+            new_df["Run"] = new_df["Run"].astype("category")
+            levels = {}
+            for i, run in enumerate(new_df["Run"].unique()):
+                levels[run] = FactorLevel(name=run, color=get_factor_level_color_hex(i))
+            factor = Factor(
+                name="Run",
+                role=FactorRole.WITHIN_SUBJECT if continuous_mode else FactorRole.BETWEEN_SUBJECT,
+                config=ByColumnConfig(column="Run"),
+                levels=levels,
+            )
+            merged_dataset.factors[factor.name] = factor
 
         if continuous_mode:
             # Reassign timedelta column
@@ -127,7 +138,7 @@ def merge_datasets(
 
     _merge_raw_datatables(merged_dataset, datasets, continuous_mode)
 
-    # Materialize Bin (and any other factor columns) on the merged datatables.
+    # Materialize factor columns on the merged datatables.
     merged_dataset.set_factors(merged_dataset.factors)
 
     return merged_dataset

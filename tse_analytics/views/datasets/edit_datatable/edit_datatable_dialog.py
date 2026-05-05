@@ -1,9 +1,9 @@
+import pandas as pd
 from PySide6.QtWidgets import QDialog, QTableWidgetItem, QWidget
 
 from tse_analytics.core import manager, messaging
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.views.datasets.edit_datatable.edit_datatable_dialog_ui import Ui_EditDatatableDialog
-from tse_analytics.views.datasets.edit_datatable.processor import process_table
 
 
 class EditDatatableDialog(QDialog):
@@ -52,13 +52,17 @@ class EditDatatableDialog(QDialog):
         for index in selected_indices:
             excluded_animal_ids.add(self.ui.tableWidgetAnimals.item(index.row(), 0).text())
 
-        process_table(
-            datatable,
-            excluded_animal_ids,
-            self.ui.groupBoxResampling.isChecked(),
-            self.ui.unitComboBox.currentText(),
-            self.ui.deltaSpinBox.value(),
-        )
+        # Exclude animals
+        if len(excluded_animal_ids) > 0:
+            datatable.exclude_animals(excluded_animal_ids)
+
+        # Resample datatable
+        if self.ui.groupBoxResampling.isChecked():
+            timedelta = pd.Timedelta(f"{self.ui.deltaSpinBox.value()}{self.ui.unitComboBox.currentText()}")
+            datatable.resample(timedelta)
+
+        # TODO: Re-apply factors
+        datatable.set_factors(datatable.dataset.factors)
 
         self.datatable.dataset.add_datatable(datatable)
 

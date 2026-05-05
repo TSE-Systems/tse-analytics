@@ -282,28 +282,26 @@ class Datatable:
             "DateTime": "first",
         }
 
-        if "Run" in self.df.columns:
-            agg["Run"] = "first"
-
         for column in self.df.columns:
             if column not in self.get_default_columns():
-                if self.df.dtypes[column].name != "category" and column in self.variables:
-                    agg[column] = self.variables[column].aggregation
+                if self.df.dtypes[column].name != "category":
+                    if column in self.variables:
+                        agg[column] = self.variables[column].aggregation
+                else:
+                    # Include categorical data fields
+                    agg[column] = "first"
 
         result = self.df.groupby(["Animal"], dropna=False, observed=False)
         result = result.resample(resample_interval, on="Timedelta", origin=self.dataset.experiment_started).agg(agg)
-        result.reset_index(inplace=True, drop=False)
 
         # Drop empty entries
-        result.dropna(subset=["DateTime"], inplace=True)
+        result = result[result["DateTime"].notna()].reset_index(drop=False)
+
+        # TODO: check if done properly: align timedelta to the resampling resolution
+        result["Timedelta"] = result["Timedelta"].dt.round(resample_interval)
 
         result.sort_values(by=["Timedelta", "Animal"], inplace=True)
         result.reset_index(inplace=True, drop=True)
-
-        if "Run" in result.columns:
-            result = result.astype({
-                "Run": "UInt8",
-            })
 
         self.metadata["sample_interval"] = resample_interval
         self.df = result
@@ -332,10 +330,12 @@ class Datatable:
         # TODO: should be copy?
         df = self.df.copy()
 
-        # Drop old factors but ignore "Animal"
+        # Drop old factors but ignore "Animal" and "Run"
         if old_factors is not None:
             if "Animal" in old_factors:
                 old_factors.pop("Animal")
+            if "Run" in old_factors:
+                old_factors.pop("Run")
             df.drop(columns=old_factors.keys(), inplace=True, errors="ignore")
 
         for factor in factors.values():
