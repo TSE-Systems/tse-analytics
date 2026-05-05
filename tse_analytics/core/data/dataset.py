@@ -6,24 +6,26 @@ factors, and datatables. It supports operations like renaming animals, excluding
 and applying binning.
 """
 
+from __future__ import annotations
+
+from collections.abc import Iterable, Iterator
 from copy import deepcopy
-from datetime import datetime, time, timedelta
+from datetime import datetime, timedelta
 from typing import Any, Literal
 from uuid import uuid7
 
 import pandas as pd
 
 from tse_analytics.core import messaging
-from tse_analytics.core.color_manager import get_color_hex, get_factor_level_color_hex
+from tse_analytics.core.color_manager import get_factor_level_color_hex
+from tse_analytics.core.data.dafault_factor_builders import DEFAULT_FACTOR_BUILDERS
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import (
     Animal,
-    ByAnimalConfig,
     ByTimeOfDayConfig,
     Factor,
     FactorLevel,
-    FactorRole,
 )
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.datatable_tree_item import DatatableTreeItem
@@ -47,50 +49,6 @@ def _time_interval_level_prefix(interval: timedelta) -> str:
     return "Second"
 
 
-def _get_default_animal_factor(animals: dict[str, Animal]) -> Factor:
-    levels = {}
-    for i, animal in enumerate(animals.values()):
-        levels[animal.id] = FactorLevel(
-            name=animal.id,
-            color=get_color_hex(i),
-            animal_ids=[animal.id],
-        )
-    return Factor(
-        name="Animal",
-        role=FactorRole.BETWEEN_SUBJECT,
-        config=ByAnimalConfig(),
-        levels=levels,
-    )
-
-
-def _get_default_total_factor(animals: dict[str, Animal]) -> Factor:
-    return Factor(
-        name="Total",
-        role=FactorRole.BETWEEN_SUBJECT,
-        config=ByAnimalConfig(),
-        levels={
-            "All animals": FactorLevel(
-                name="All animals", color=get_factor_level_color_hex(0), animal_ids=list(animals.keys())
-            ),
-        },
-    )
-
-
-def _get_default_light_cycle_factor() -> Factor:
-    return Factor(
-        name="LightCycle",
-        role=FactorRole.WITHIN_SUBJECT,
-        config=ByTimeOfDayConfig(
-            light_cycle_start=time(7, 0),
-            dark_cycle_start=time(19, 0),
-        ),
-        levels={
-            "Light": FactorLevel(name="Light", color=get_factor_level_color_hex(1)),
-            "Dark": FactorLevel(name="Dark", color=get_factor_level_color_hex(0)),
-        },
-    )
-
-
 class Dataset:
     """
     A class representing an experimental dataset.
@@ -105,7 +63,7 @@ class Dataset:
         name: str,
         description: str,
         dataset_type: DatasetType,
-        metadata: dict[str, Any] | list[dict],
+        metadata: dict[str, Any],
         animals: dict[str, Animal],
     ):
         """
@@ -113,11 +71,13 @@ class Dataset:
 
         Parameters
         ----------
-        name: str
+        name : str
             Name of the dataset.
         description : str
             Description of the dataset.
-        metadata : dict or list[dict]
+        dataset_type : DatasetType
+            Source platform of the dataset (PhenoMaster / IntelliMaze / IntelliCage).
+        metadata : dict[str, Any]
             Metadata describing the dataset, including name, description, and experiment times.
         animals : dict[str, Animal]
             Dictionary mapping animal IDs to Animal objects.
@@ -129,25 +89,14 @@ class Dataset:
         self.metadata = metadata
         self.animals = animals
 
-        # Column on each datatable's dataframe that identifies the
-        # within-subject grouping unit for repeated-measures statistics
-        # (the ``subject=`` argument to pingouin's ``mixed_anova`` /
-        # ``rm_anova`` / ``pairwise_tests``). Defaults to ``"Animal"`` for
-        # PhenoMaster / IntelliCage / IntelliMaze data; loaders may override
-        # for datasets where the natural subject differs.
+        # Subject column for repeated-measures stats (pingouin's ``subject=``); loaders may override.
         self.subject_id_column: str = "Animal"
 
         self.datatables: dict[str, Datatable] = {}
         self.raw_datatables: dict[str, dict[str, Datatable]] = {}
 
-        default_animal_factor = _get_default_animal_factor(self.animals)
-        default_total_factor = _get_default_total_factor(self.animals)
-        default_light_cycle_factor = _get_default_light_cycle_factor()
-        self.factors: dict[str, Factor] = {
-            default_animal_factor.name: default_animal_factor,
-            default_total_factor.name: default_total_factor,
-            default_light_cycle_factor.name: default_light_cycle_factor,
-        }
+        self.factors: dict[str, Factor] = {}
+        self._ensure_default_factors()
 
         self.reports: dict[str, Report] = {}
 
@@ -217,6 +166,18 @@ class Dataset:
         """
         return self.experiment_stopped - self.experiment_started
 
+    def _iter_all_datatables(self) -> Iterator[Datatable]:
+        """Yield every datatable owned by this dataset (regular first, then raw)."""
+        yield from self.datatables.values()
+        for extension_datatables in self.raw_datatables.values():
+            yield from extension_datatables.values()
+
+    def _ensure_default_factors(self) -> None:
+        """Add any missing built-in factors (Animal / Total / LightCycle)."""
+        for name, build in DEFAULT_FACTOR_BUILDERS.items():
+            if name not in self.factors:
+                self.factors[name] = build(self)
+
     def add_datatable(self, datatable: Datatable) -> None:
         """
         Add a datatable to the dataset.
@@ -273,8 +234,9 @@ class Dataset:
         """
         Extract factor levels from an animal property.
 
-        This method creates factor levels based on the values of a specific property
-        across all animals in the dataset.
+        Animals lacking ``property_name`` are bucketed into a synthetic
+        ``"Missing"`` level. If no animal has the property, an empty dict is
+        returned.
 
         Parameters
         ----------
@@ -284,31 +246,33 @@ class Dataset:
         Returns
         -------
         dict[str, FactorLevel]
-            A dictionary mapping level names to FactorLevel objects.
+            A dictionary mapping level names to FactorLevel objects, sorted
+            case-insensitively by name.
         """
         levels_dict: dict[str, list[str]] = {}
-        levels: dict[str, FactorLevel] = {}
+        missing_ids: list[str] = []
         for animal in self.animals.values():
             if property_name not in animal.properties:
-                return levels
+                missing_ids.append(animal.id)
+                continue
             level_name = str(animal.properties[property_name])
-            if level_name not in levels_dict:
-                levels_dict[level_name] = []
-            levels_dict[level_name].append(animal.id)
+            levels_dict.setdefault(level_name, []).append(animal.id)
 
-        index = 0
-        for key, value in levels_dict.items():
-            level = FactorLevel(
+        if not levels_dict:
+            return {}
+
+        if missing_ids:
+            levels_dict["Missing"] = missing_ids
+
+        levels: dict[str, FactorLevel] = {}
+        for index, (key, value) in enumerate(levels_dict.items()):
+            levels[key] = FactorLevel(
                 name=key,
                 color=get_factor_level_color_hex(index),
                 animal_ids=value,
             )
-            levels[level.name] = level
-            index += 1
 
-        # Sort levels by name
-        levels = dict(sorted(levels.items(), key=lambda x: x[0].lower()))
-        return levels
+        return dict(sorted(levels.items(), key=lambda x: x[0].lower()))
 
     def extract_levels_from_column(self, column_name: str) -> dict[str, FactorLevel]:
         """
@@ -411,12 +375,8 @@ class Dataset:
             The animal object with the new ID.
         """
 
-        for datatable in self.datatables.values():
+        for datatable in self._iter_all_datatables():
             datatable.rename_animal(old_id, animal)
-
-        for extension_datatables in self.raw_datatables.values():
-            for datatable in extension_datatables.values():
-                datatable.rename_animal(old_id, animal)
 
         # Rename animal in factor's levels definitions
         for factor in self.factors.values():
@@ -437,7 +397,7 @@ class Dataset:
         self.animals.pop(old_id)
         self.animals[animal.id] = animal
 
-        messaging.broadcast(messaging.DatasetChangedMessage(self, self))
+        messaging.broadcast(messaging.DatasetChangedMessage(sender=self, dataset=self))
 
     def exclude_animals(self, animal_ids: set[str]) -> None:
         """
@@ -468,14 +428,8 @@ class Dataset:
                     new_meta_animals[item["id"]] = item
             self.metadata["animals"] = new_meta_animals
 
-        # Exclude animals from regular datatables
-        for datatable in self.datatables.values():
+        for datatable in self._iter_all_datatables():
             datatable.exclude_animals(animal_ids)
-
-        # Exclude animals from raw datatables
-        for extension_datatables in self.raw_datatables.values():
-            for datatable in extension_datatables.values():
-                datatable.exclude_animals(animal_ids)
 
     def exclude_time(self, range_start: datetime, range_end: datetime) -> None:
         """
@@ -496,12 +450,8 @@ class Dataset:
         if range_start < self.experiment_stopped <= range_end:
             self.metadata["experiment_stopped"] = str(range_start)
 
-        for datatable in self.datatables.values():
+        for datatable in self._iter_all_datatables():
             datatable.exclude_time(range_start, range_end)
-
-        for extension_datatables in self.raw_datatables.values():
-            for datatable in extension_datatables.values():
-                datatable.exclude_time(range_start, range_end)
 
         # Re-materialize factor columns whose values depend on Timedelta
         # (Bin via ByTimeIntervalConfig, named phases via ByElapsedTimeConfig).
@@ -524,12 +474,8 @@ class Dataset:
         self.metadata["experiment_started"] = str(range_start)
         self.metadata["experiment_stopped"] = str(range_end)
 
-        for datatable in self.datatables.values():
+        for datatable in self._iter_all_datatables():
             datatable.trim_time(range_start, range_end)
-
-        for extension_datatables in self.raw_datatables.values():
-            for datatable in extension_datatables.values():
-                datatable.trim_time(range_start, range_end)
 
         # Re-materialize factor columns whose values depend on Timedelta.
         self.set_factors(self.factors)
@@ -549,7 +495,11 @@ class Dataset:
         for datatable in self.datatables.values():
             datatable.resample(resample_interval)
 
-    def set_factors(self, factors: dict[str, Factor], old_factors: dict[str, Factor] | None = None) -> None:
+    def set_factors(
+        self,
+        factors: dict[str, Factor],
+        old_factor_names: Iterable[str] | None = None,
+    ) -> None:
         """
         Set the factors for the dataset.
 
@@ -559,32 +509,56 @@ class Dataset:
         ----------
         factors : dict[str, Factor]
             Dictionary mapping factor names to Factor objects.
+        old_factor_names : Iterable[str] | None
+            Names of previously applied factors; their materialized columns are
+            dropped from each datatable before re-applying. ``"Animal"`` and
+            ``"Run"`` are preserved by ``Datatable.set_factors``.
         """
         self.factors = factors
+        self._ensure_default_factors()
 
-        if "Animal" not in self.factors:
-            self.factors["Animal"] = _get_default_animal_factor(self.animals)
-
-        if "Total" not in self.factors:
-            self.factors["Total"] = _get_default_total_factor(self.animals)
-
-        if "LightCycle" not in self.factors:
-            self.factors["LightCycle"] = _get_default_light_cycle_factor()
-
-        old_factor_names = list(old_factors.keys()) if old_factors is not None else None
         for datatable in self.datatables.values():
             datatable.set_factors(factors, old_factor_names)
 
-    def clone(self):
+    def clone(self) -> Dataset:
         """
         Create a deep copy of the dataset.
+
+        Uses ``Datatable.clone()`` (which uses pandas' ``df.copy()``) for each
+        datatable instead of ``copy.deepcopy``, which is significantly faster
+        for large dataframes.
 
         Returns
         -------
         Dataset
             A new Dataset instance that is a deep copy of this dataset.
         """
-        return deepcopy(self)
+        new = Dataset(
+            name=self.name,
+            description=self.description,
+            dataset_type=self.dataset_type,
+            metadata=deepcopy(self.metadata),
+            animals=deepcopy(self.animals),
+        )
+        new.subject_id_column = self.subject_id_column
+        new.factors = deepcopy(self.factors)
+        new.reports = deepcopy(self.reports)
+
+        new.datatables = {}
+        for name, dt in self.datatables.items():
+            cloned = dt.clone()
+            cloned.dataset = new
+            new.datatables[name] = cloned
+
+        new.raw_datatables = {}
+        for ext, tables in self.raw_datatables.items():
+            new.raw_datatables[ext] = {}
+            for name, dt in tables.items():
+                cloned = dt.clone()
+                cloned.dataset = new
+                new.raw_datatables[ext][name] = cloned
+
+        return new
 
     def add_children_tree_items(self, dataset_tree_item: DatasetTreeItem) -> None:
         """

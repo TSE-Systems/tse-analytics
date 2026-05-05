@@ -15,6 +15,7 @@ from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import Factor
 from tse_analytics.core.utils import get_h_spacer_widget, get_widget_tool_button
+from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.views.misc.animals_table_view import AnimalsTableView
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.TimedeltaAxisItem import TimedeltaAxisItem
@@ -28,6 +29,7 @@ class FastLinePlotWidgetSettings:
     scatter_plot: bool = False
 
 
+@toolbox_plugin(category="Data", label="Fast Line Plot", icon=":/icons/plot.png", order=1)
 class FastLinePlotWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
@@ -37,9 +39,12 @@ class FastLinePlotWidget(QWidget):
 
         # Settings management
         settings = QSettings()
-        self._settings: FastLinePlotWidgetSettings = settings.value(
-            self.__class__.__name__, FastLinePlotWidgetSettings()
-        )
+        try:
+            self._settings: FastLinePlotWidgetSettings = settings.value(
+                self.__class__.__name__, FastLinePlotWidgetSettings()
+            )
+        except Exception:
+            self._settings = FastLinePlotWidgetSettings()
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)

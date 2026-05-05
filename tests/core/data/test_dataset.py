@@ -119,6 +119,20 @@ class TestExtractLevelsFromProperty:
         levels = sample_dataset.extract_levels_from_property("nonexistent")
         assert levels == {}
 
+    def test_partial_coverage_buckets_missing_animals(self, sample_dataset):
+        # A2 lacks "diet" while A1 and A3 have it.
+        sample_dataset.animals["A1"].properties["diet"] = "low_fat"
+        sample_dataset.animals["A3"].properties["diet"] = "high_fat"
+
+        levels = sample_dataset.extract_levels_from_property("diet")
+
+        assert "Missing" in levels
+        assert levels["Missing"].animal_ids == ["A2"]
+        assert "low_fat" in levels
+        assert levels["low_fat"].animal_ids == ["A1"]
+        assert "high_fat" in levels
+        assert levels["high_fat"].animal_ids == ["A3"]
+
 
 class TestExtractLevelsFromTimeInterval:
     """Tests for Dataset.extract_levels_from_time_interval."""

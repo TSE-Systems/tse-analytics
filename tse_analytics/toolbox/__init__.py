@@ -16,7 +16,8 @@ import tse_analytics.toolbox.correlation_matrix.correlation_matrix_widget  # noq
 import tse_analytics.toolbox.data_plot.data_plot_widget  # noqa: F401
 import tse_analytics.toolbox.data_table.data_table_widget  # noqa: F401
 import tse_analytics.toolbox.distribution.distribution_widget  # noqa: F401
-import tse_analytics.toolbox.fast_data_plot.fast_data_plot_widget  # noqa: F401
+import tse_analytics.toolbox.facet_data_plot.facet_data_plot_widget  # noqa: F401
+import tse_analytics.toolbox.fast_line_plot.fast_line_plot_widget  # noqa: F401
 import tse_analytics.toolbox.histogram.histogram_widget  # noqa: F401
 import tse_analytics.toolbox.matrix_plot.matrix_plot_widget  # noqa: F401
 import tse_analytics.toolbox.mds.mds_widget  # noqa: F401

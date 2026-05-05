@@ -9,18 +9,21 @@ from tse_analytics.core import color_manager, manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure
+from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.MplCanvas import MplCanvas
 from tse_analytics.views.misc.variable_selector import VariableSelector
 
 
 @dataclass
-class FastBarPlotWidgetSettings:
+class FactorsPlotWidgetSettings:
+    facet_by: str = "LightCycle"
     group_by: str = "Animal"
     selected_variable: str = None
 
 
-class FastBarPlotWidget(QWidget):
+@toolbox_plugin(category="Data", label="Facet Plot", icon=":/icons/plot.png", order=2)
+class FactorsPlotWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
 
@@ -29,13 +32,18 @@ class FastBarPlotWidget(QWidget):
 
         # Settings management
         settings = QSettings()
-        self._settings: FastBarPlotWidgetSettings = settings.value(self.__class__.__name__, FastBarPlotWidgetSettings())
+        try:
+            self._settings: FactorsPlotWidgetSettings = settings.value(
+                self.__class__.__name__, FactorsPlotWidgetSettings()
+            )
+        except Exception:
+            self._settings = FactorsPlotWidgetSettings()
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
 
-        self.title = "Fast Bar Plot"
+        self.title = "Facet Plot"
 
         self.datatable = datatable
 
@@ -51,7 +59,15 @@ class FastBarPlotWidget(QWidget):
         self.variableSelector.currentTextChanged.connect(self._variable_changed)
         toolbar.addWidget(self.variableSelector)
 
-        toolbar.addSeparator()
+        toolbar.addWidget(QLabel("Facet by:"))
+        self.facet_by_selector = GroupBySelector(
+            toolbar,
+            self.datatable,
+            selected_mode=self._settings.facet_by,
+        )
+        self.facet_by_selector.currentTextChanged.connect(self._refresh_data)
+        toolbar.addWidget(self.facet_by_selector)
+
         toolbar.addWidget(QLabel("Group by:"))
         self.group_by_selector = GroupBySelector(
             toolbar,
@@ -81,7 +97,8 @@ class FastBarPlotWidget(QWidget):
         settings = QSettings()
         settings.setValue(
             self.__class__.__name__,
-            FastBarPlotWidgetSettings(
+            FactorsPlotWidgetSettings(
+                self.facet_by_selector.currentText(),
                 self.group_by_selector.currentText(),
                 self.variableSelector.currentText(),
             ),
@@ -95,9 +112,10 @@ class FastBarPlotWidget(QWidget):
         self.canvas.clear(True)
 
         factor_name = self.group_by_selector.currentText()
+        facet_name = self.facet_by_selector.currentText()
         selected_variable = self.variableSelector.get_selected_variable()
 
-        columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + [selected_variable.name]
+        columns = [factor_name, facet_name, selected_variable.name]
         df = self.datatable.get_filtered_df(columns)
 
         # TODO: workaround for issue with nullable Float64
@@ -114,7 +132,7 @@ class FastBarPlotWidget(QWidget):
             )
             .add(so.Bar(), so.Agg())
             .add(so.Range(), so.Est(errorbar="se"))
-            .facet("LightCycle", wrap=3)
+            .facet(facet_name, wrap=3)
             .share(y=True)
             .scale(color=palette)
             .on(self.canvas.figure)

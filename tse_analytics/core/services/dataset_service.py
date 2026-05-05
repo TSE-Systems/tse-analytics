@@ -109,7 +109,6 @@ class DatasetService:
             new_name: The name for the new cloned dataset.
         """
         new_dataset = original_dataset.clone()
-        new_dataset.id = uuid7()
         new_dataset.name = new_name
         if new_dataset is not None:
             self.add_dataset(new_dataset)

@@ -42,7 +42,7 @@ class DataPlotWidgetSettings:
     line_width: float = 1.0
 
 
-@toolbox_plugin(category="Data", label="Plot", icon=":/icons/plot.png", order=2)
+@toolbox_plugin(category="Data", label="Line Plot", icon=":/icons/plot.png", order=3)
 class DataPlotWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
@@ -52,7 +52,10 @@ class DataPlotWidget(QWidget):
 
         # Settings management
         settings = QSettings()
-        self._settings: DataPlotWidgetSettings = settings.value(self.__class__.__name__, DataPlotWidgetSettings())
+        try:
+            self._settings: DataPlotWidgetSettings = settings.value(self.__class__.__name__, DataPlotWidgetSettings())
+        except Exception:
+            self._settings = DataPlotWidgetSettings()
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)

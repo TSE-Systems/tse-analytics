@@ -237,9 +237,7 @@ class Datatable:
         range_end : datetime
             End of the time range to exclude.
         """
-        self._filter_by_time_mask(
-            (self.df["DateTime"] < range_start) | (self.df["DateTime"] > range_end)
-        )
+        self._filter_by_time_mask((self.df["DateTime"] < range_start) | (self.df["DateTime"] > range_end))
 
     def trim_time(self, range_start: datetime, range_end: datetime) -> None:
         """
@@ -252,9 +250,7 @@ class Datatable:
         range_end : datetime
             New end time for the datatable.
         """
-        self._filter_by_time_mask(
-            (self.df["DateTime"] >= range_start) & (self.df["DateTime"] <= range_end)
-        )
+        self._filter_by_time_mask((self.df["DateTime"] >= range_start) & (self.df["DateTime"] <= range_end))
 
     def resample(self, resample_interval: pd.Timedelta) -> None:
         """
