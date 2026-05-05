@@ -8,11 +8,12 @@ excluding time ranges, resampling, and applying factors.
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 from uuid import uuid7
 
+import numpy as np
 import pandas as pd
 from loguru import logger
 
@@ -106,8 +107,7 @@ class Datatable:
         pd.Timestamp
             The timestamp of the first row in the datatable.
         """
-        first_value = self.df.at[0, "DateTime"]
-        return first_value
+        return self.df["DateTime"].iloc[0]
 
     @property
     def end_timestamp(self) -> pd.Timestamp:
@@ -119,8 +119,7 @@ class Datatable:
         pd.Timestamp
             The timestamp of the last row in the datatable.
         """
-        last_value = self.df.at[self.df.index[-1], "DateTime"]
-        return last_value
+        return self.df["DateTime"].iloc[-1]
 
     @property
     def duration(self) -> pd.Timedelta:
@@ -306,7 +305,11 @@ class Datatable:
         self.metadata["sample_interval"] = resample_interval
         self.df = result
 
-    def set_factors(self, factors: dict[str, Factor], old_factors: dict[str, Factor] | None = None) -> None:
+    def set_factors(
+        self,
+        factors: dict[str, Factor],
+        old_factor_names: Iterable[str] | None = None,
+    ) -> None:
         """
         Set the factors for the datatable.
 
@@ -320,9 +323,9 @@ class Datatable:
         ----------
         factors : dict[str, Factor]
             Dictionary mapping factor names to Factor objects.
-        old_factors : dict[str, Factor] | None
-            Previously applied factors; their columns are dropped before
-            re-applying.
+        old_factor_names : Iterable[str] | None
+            Names of previously applied factors; their columns are dropped
+            before re-applying. ``"Animal"`` and ``"Run"`` are preserved.
         """
         if "Animal" not in self.df.columns:
             return
@@ -331,12 +334,9 @@ class Datatable:
         df = self.df.copy()
 
         # Drop old factors but ignore "Animal" and "Run"
-        if old_factors is not None:
-            if "Animal" in old_factors:
-                old_factors.pop("Animal")
-            if "Run" in old_factors:
-                old_factors.pop("Run")
-            df.drop(columns=old_factors.keys(), inplace=True, errors="ignore")
+        if old_factor_names is not None:
+            cols_to_drop = [n for n in old_factor_names if n not in ("Animal", "Run")]
+            df.drop(columns=cols_to_drop, inplace=True, errors="ignore")
 
         for factor in factors.values():
             config = factor.config
@@ -371,8 +371,7 @@ class Datatable:
         pd.DataFrame
             A filtered dataframe containing the specified columns.
         """
-        # TODO: Should use the copy?
-        df = self.df[columns]
+        df = self.df[columns].copy()
 
         # Outliers removal
         if self.outliers_settings.mode == OutliersMode.REMOVE:
@@ -398,7 +397,7 @@ class Datatable:
     def rename_variables(self, variable_name_map: dict[str, str]) -> None:
         for old_name, new_name in variable_name_map.items():
             if old_name in self.variables:
-                self.variables[new_name] = self.variables.pop(old_name, None)
+                self.variables[new_name] = self.variables.pop(old_name)
                 self.variables[new_name].name = new_name
 
         # Sort variables by name
@@ -421,37 +420,32 @@ class Datatable:
         )
 
 
+def _apply_animal_map(df: pd.DataFrame, factor: Factor, animal_factor_map: dict[str, Any]) -> None:
+    series = df["Animal"].astype("string").map(animal_factor_map)
+    categories = sorted(
+        {v for v in animal_factor_map.values() if pd.notna(v)},
+        key=str.lower,
+    )
+    df[factor.name] = pd.Categorical(series, categories=categories)
+
+
 def _apply_by_animal(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:
-    animal_ids = df["Animal"].unique()
-    animal_factor_map: dict[str, Any] = dict.fromkeys(animal_ids, pd.NA)
+    animal_factor_map: dict[str, Any] = dict.fromkeys(df["Animal"].unique(), pd.NA)
     for level in factor.levels.values():
         for animal_id in level.animal_ids:
             animal_factor_map[animal_id] = level.name
-
-    df[factor.name] = df["Animal"].astype("string")
-    df.replace({factor.name: animal_factor_map}, inplace=True)
-    df[factor.name] = df[factor.name].astype("category")
-
-    order = sorted(df[factor.name].cat.categories.tolist(), key=str.lower)
-    df[factor.name] = df[factor.name].cat.reorder_categories(order)
+    _apply_animal_map(df, factor, animal_factor_map)
 
 
 def _apply_by_animal_property(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:
     cfg = factor.config
     assert isinstance(cfg, ByAnimalPropertyConfig)
 
-    animal_ids = df["Animal"].unique()
-    animal_factor_map: dict[str, Any] = dict.fromkeys(animal_ids, pd.NA)
+    animal_factor_map: dict[str, Any] = dict.fromkeys(df["Animal"].unique(), pd.NA)
     for animal in dataset.animals.values():
         if cfg.property_key in animal.properties:
             animal_factor_map[animal.id] = str(animal.properties[cfg.property_key])
-
-    df[factor.name] = df["Animal"].astype("string")
-    df.replace({factor.name: animal_factor_map}, inplace=True)
-    df[factor.name] = df[factor.name].astype("category")
-
-    order = sorted(df[factor.name].cat.categories.tolist(), key=str.lower)
-    df[factor.name] = df[factor.name].cat.reorder_categories(order)
+    _apply_animal_map(df, factor, animal_factor_map)
 
 
 def _apply_by_time_of_day(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:
@@ -464,8 +458,13 @@ def _apply_by_time_of_day(df: pd.DataFrame, factor: Factor, dataset: Dataset) ->
     light_start = cfg.light_cycle_start
     dark_start = cfg.dark_cycle_start
 
-    series = df["DateTime"].apply(lambda x: "Light" if light_start <= x.time() < dark_start else "Dark")
-    df[factor.name] = series.astype("category").cat.set_categories(["Light", "Dark"], ordered=True)
+    times = df["DateTime"].dt.time
+    is_light = (times >= light_start) & (times < dark_start)
+    df[factor.name] = pd.Categorical(
+        np.where(is_light, "Light", "Dark"),
+        categories=["Light", "Dark"],
+        ordered=True,
+    )
 
 
 def _apply_by_elapsed_time(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:
@@ -479,12 +478,16 @@ def _apply_by_elapsed_time(df: pd.DataFrame, factor: Factor, dataset: Dataset) -
         return
 
     phases = sorted(cfg.phases, key=lambda p: p.start_timestamp)
-    df[factor.name] = pd.NA
-    for phase in phases:
-        df.loc[df["Timedelta"] >= pd.Timedelta(phase.start_timestamp), factor.name] = phase.name
-
-    categories = [phase.name for phase in phases]
-    df[factor.name] = df[factor.name].astype("category").cat.set_categories(categories, ordered=True)
+    edges = [pd.Timedelta(p.start_timestamp) for p in phases]
+    edges.append(pd.Timedelta.max)
+    labels = [p.name for p in phases]
+    df[factor.name] = pd.cut(
+        df["Timedelta"],
+        bins=edges,
+        labels=labels,
+        right=False,
+        ordered=True,
+    )
 
 
 def _apply_by_column(df: pd.DataFrame, factor: Factor, dataset: Dataset) -> None:

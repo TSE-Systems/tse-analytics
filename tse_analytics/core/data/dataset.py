@@ -571,8 +571,9 @@ class Dataset:
         if "LightCycle" not in self.factors:
             self.factors["LightCycle"] = _get_default_light_cycle_factor()
 
+        old_factor_names = list(old_factors.keys()) if old_factors is not None else None
         for datatable in self.datatables.values():
-            datatable.set_factors(factors, old_factors)
+            datatable.set_factors(factors, old_factor_names)
 
     def clone(self):
         """
