@@ -276,7 +276,7 @@ def preprocess_main_table(dataset: Dataset) -> None:
     # df = pd.concat(preprocessed_animal_df, ignore_index=True, sort=False)
     #
     # # Add Run column
-    # df.insert(loc=5, column="Run", value=1)
+    # df.insert(loc=5, column="Experiment", value=1)
     #
     # # Convert to categorical types
     # df = df.astype({

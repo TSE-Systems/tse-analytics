@@ -2,12 +2,14 @@ from dataclasses import dataclass
 
 import seaborn.objects as so
 from matplotlib.backends.backend_qt import NavigationToolbar2QT
+from pyqttoast import ToastPreset
 from PySide6.QtCore import QSettings, QSize, Qt
 from PySide6.QtWidgets import QInputDialog, QLabel, QToolBar, QVBoxLayout, QWidget
 
 from tse_analytics.core import color_manager, manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
+from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_h_spacer_widget, get_html_image_from_figure
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
@@ -113,6 +115,18 @@ class FactorsPlotWidget(QWidget):
 
         factor_name = self.group_by_selector.currentText()
         facet_name = self.facet_by_selector.currentText()
+
+        if factor_name == facet_name:
+            make_toast(
+                self,
+                self.title,
+                "Please select different factors for grouping and faceting.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
+            return
+
         selected_variable = self.variableSelector.get_selected_variable()
 
         columns = [factor_name, facet_name, selected_variable.name]

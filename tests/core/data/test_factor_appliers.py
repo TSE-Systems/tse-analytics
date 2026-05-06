@@ -226,18 +226,18 @@ class TestByColumnApplier:
 class TestByTimeIntervalApplier:
     def test_assigns_categorical_bins(self, time_df, stub_dataset):
         factor = Factor(
-            name="Bin",
+            name="Hour",
             role=FactorRole.WITHIN_SUBJECT,
             config=ByTimeIntervalConfig(interval=timedelta(hours=1)),
             levels={f"Hour {i}": FactorLevel(name=f"Hour {i}", color="#000000") for i in range(4)},
         )
         _apply_by_time_interval(time_df, factor, stub_dataset)
 
-        assert "Bin" in time_df.columns
-        assert time_df["Bin"].dtype.name == "category"
-        assert time_df["Bin"].cat.ordered
+        assert "Hour" in time_df.columns
+        assert time_df["Hour"].dtype.name == "category"
+        assert time_df["Hour"].cat.ordered
         # 4 hourly timepoints map to "Hour 0".."Hour 3"
-        assert set(time_df["Bin"].unique().tolist()) == {"Hour 0", "Hour 1", "Hour 2", "Hour 3"}
+        assert set(time_df["Hour"].unique().tolist()) == {"Hour 0", "Hour 1", "Hour 2", "Hour 3"}
 
     def test_collapses_to_zero_with_24h_interval(self, time_df, stub_dataset):
         factor = Factor(
@@ -253,13 +253,13 @@ class TestByTimeIntervalApplier:
     def test_skips_when_timedelta_missing(self, stub_dataset):
         df = pd.DataFrame({"Animal": ["A1", "A2"]})
         factor = Factor(
-            name="Bin",
+            name="Hour",
             role=FactorRole.WITHIN_SUBJECT,
             config=ByTimeIntervalConfig(interval=timedelta(hours=1)),
             levels={"Hour 0": FactorLevel(name="Hour 0", color="#000000")},
         )
         _apply_by_time_interval(df, factor, stub_dataset)
-        assert "Bin" not in df.columns
+        assert "Hour" not in df.columns
 
     def test_skips_when_interval_non_positive(self, time_df, stub_dataset):
         factor = Factor(

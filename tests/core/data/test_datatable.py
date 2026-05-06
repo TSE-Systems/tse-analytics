@@ -48,20 +48,15 @@ class TestDatatableProperties:
 class TestGetDefaultColumns:
     """Tests for Datatable.get_default_columns."""
 
-    def test_excludes_bin(self, sample_datatable):
-        # Bin is materialized by the auto "Bin" factor, not a default column.
-        columns = sample_datatable.get_default_columns()
-        assert "Bin" not in columns
-
     def test_includes_base_columns(self, sample_datatable):
         columns = sample_datatable.get_default_columns()
         assert "Animal" in columns
         assert "Timedelta" in columns
         assert "DateTime" in columns
 
-    def test_no_run_column_when_absent(self, sample_datatable):
+    def test_no_experiment_column_when_absent(self, sample_datatable):
         columns = sample_datatable.get_default_columns()
-        assert "Run" not in columns
+        assert "Experiment" not in columns
 
 
 class TestGetCategoricalColumns:
@@ -213,49 +208,49 @@ class TestApplyByTimeInterval:
 
     def test_creates_ordered_categorical_column(self, sample_datatable):
         factor = Factor(
-            name="Bin",
+            name="Hour",
             role=FactorRole.WITHIN_SUBJECT,
             config=ByTimeIntervalConfig(interval=timedelta(hours=1)),
             levels={},
         )
-        sample_datatable.set_factors({"Bin": factor})
-        column = sample_datatable.df["Bin"]
+        sample_datatable.set_factors({"Hour": factor})
+        column = sample_datatable.df["Hour"]
         assert column.dtype.name == "category"
         assert column.cat.ordered
 
-    def test_bin_indices_match_one_hour_interval(self, sample_datatable):
+    def test_hour_indices_match_one_hour_interval(self, sample_datatable):
         factor = Factor(
-            name="Bin",
+            name="Hour",
             role=FactorRole.WITHIN_SUBJECT,
             config=ByTimeIntervalConfig(interval=timedelta(hours=1)),
             levels={},
         )
-        sample_datatable.set_factors({"Bin": factor})
+        sample_datatable.set_factors({"Hour": factor})
         # sample_df spans 5 hourly timepoints (indices 0..4)
-        column = sample_datatable.df["Bin"]
+        column = sample_datatable.df["Hour"]
         assert set(column.unique().tolist()) == {"Hour 0", "Hour 1", "Hour 2", "Hour 3", "Hour 4"}
         assert list(column.cat.categories) == ["Hour 0", "Hour 1", "Hour 2", "Hour 3", "Hour 4"]
 
     def test_auto_populates_levels_when_empty(self, sample_datatable):
         factor = Factor(
-            name="Bin",
+            name="Hour",
             role=FactorRole.WITHIN_SUBJECT,
             config=ByTimeIntervalConfig(interval=timedelta(hours=1)),
             levels={},
         )
-        sample_datatable.set_factors({"Bin": factor})
+        sample_datatable.set_factors({"Hour": factor})
         assert list(factor.levels.keys()) == ["Hour 0", "Hour 1", "Hour 2", "Hour 3", "Hour 4"]
 
     def test_redefining_to_24h_collapses_to_zero(self, sample_datatable):
         factor = Factor(
-            name="Bin",
+            name="Days",
             role=FactorRole.WITHIN_SUBJECT,
             config=ByTimeIntervalConfig(interval=timedelta(days=1)),
             levels={},
         )
-        sample_datatable.set_factors({"Bin": factor})
+        sample_datatable.set_factors({"Days": factor})
         # All 5 timepoints span < 24h, so they all fall in bin 0.
-        assert (sample_datatable.df["Bin"] == "Day 0").all()
+        assert (sample_datatable.df["Days"] == "Day 0").all()
 
     def test_custom_factor_name_creates_named_column(self, sample_datatable):
         factor = Factor(

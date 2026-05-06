@@ -124,11 +124,11 @@ class Dataset:
         return self.metadata.get("source_path", "")
 
     @property
-    def runs(self) -> int:
+    def experiments(self) -> int:
         """
-        Get the number of runs in the dataset.
+        Get the number of experiments in the dataset.
         """
-        return len(self.metadata["runs"]) if "runs" in self.metadata else 1
+        return len(self.metadata["experiments"]) if "experiments" in self.metadata else 1
 
     @property
     def experiment_started(self) -> pd.Timestamp:
@@ -512,7 +512,7 @@ class Dataset:
         old_factor_names : Iterable[str] | None
             Names of previously applied factors; their materialized columns are
             dropped from each datatable before re-applying. ``"Animal"`` and
-            ``"Run"`` are preserved by ``Datatable.set_factors``.
+            ``"Experiment"`` are preserved by ``Datatable.set_factors``.
         """
         self.factors = factors
         self._ensure_default_factors()

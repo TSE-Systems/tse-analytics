@@ -61,7 +61,7 @@ class TestReassignDfTimedelta:
         df = pd.DataFrame({
             "DateTime": [base1, base1 + pd.Timedelta("1h"), base2, base2 + pd.Timedelta("1h")],
             "Timedelta": [pd.Timedelta(0)] * 4,
-            "Run": [1, 1, 2, 2],
+            "Experiment": [1, 1, 2, 2],
         })
 
         result = reassign_df_timedelta(df, "overlap")
@@ -69,19 +69,6 @@ class TestReassignDfTimedelta:
         # Each run starts from 0
         assert result["Timedelta"].iloc[0] == pd.Timedelta(0)
         assert result["Timedelta"].iloc[2] == pd.Timedelta(0)
-
-    def test_does_not_touch_bin_column(self):
-        base = pd.Timestamp("2024-01-01")
-        df = pd.DataFrame({
-            "DateTime": [base, base + pd.Timedelta("1h")],
-            "Timedelta": [pd.Timedelta(0), pd.Timedelta("1h")],
-            "Bin": [99, 99],
-        })
-
-        result = reassign_df_timedelta(df, None)
-        # Bin should remain unchanged — it's now materialized by the factor system.
-        assert result["Bin"].iloc[0] == 99
-        assert result["Bin"].iloc[1] == 99
 
 
 class TestNormalizeNdArray:

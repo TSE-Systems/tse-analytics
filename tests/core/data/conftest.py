@@ -83,7 +83,6 @@ def sample_df():
                 "Animal": animal,
                 "DateTime": base_time + i * interval,
                 "Timedelta": i * interval,
-                "Bin": i,
                 "Weight": 25.0 + i * 0.5 + (hash(animal) % 3),
                 "Speed": 1.0 + i * 0.1 + (hash(animal) % 2) * 0.5,
             })

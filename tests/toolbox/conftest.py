@@ -93,7 +93,6 @@ def analysis_df(analysis_animals, analysis_factor):
                 "Animal": animal_id,
                 "DateTime": base_time + i * interval,
                 "Timedelta": i * interval,
-                "Bin": i,
                 "Metabolism": base_metabolism + rng.normal(0, 0.5),
                 "Activity": base_activity + rng.normal(0, 10),
                 "Group": group,
@@ -103,7 +102,7 @@ def analysis_df(analysis_animals, analysis_factor):
     df["Animal"] = df["Animal"].astype("category")
     df["Timedelta"] = pd.to_timedelta(df["Timedelta"])
     df["Group"] = df["Group"].astype("category")
-    df["Run"] = pd.Categorical([1] * len(df))
+    df["Experiment"] = pd.Categorical([1] * len(df))
     return df
 
 

@@ -309,7 +309,7 @@ class Datatable:
             Dictionary mapping factor names to Factor objects.
         old_factor_names : Iterable[str] | None
             Names of previously applied factors; their columns are dropped
-            before re-applying. ``"Animal"`` and ``"Run"`` are preserved.
+            before re-applying. ``"Animal"`` and ``"Experiment"`` are preserved.
         """
         if "Animal" not in self.df.columns:
             return
@@ -317,9 +317,9 @@ class Datatable:
         # TODO: should be copy?
         df = self.df.copy()
 
-        # Drop old factors but ignore "Animal" and "Run"
+        # Drop old factors but ignore "Animal" and "Experiment"
         if old_factor_names is not None:
-            cols_to_drop = [n for n in old_factor_names if n not in ("Animal", "Run")]
+            cols_to_drop = [n for n in old_factor_names if n not in ("Animal", "Experiment")]
             df.drop(columns=cols_to_drop, inplace=True, errors="ignore")
 
         for factor in factors.values():

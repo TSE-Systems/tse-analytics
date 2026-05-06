@@ -82,25 +82,25 @@ def merge_datasets(
             if datatable_name in dataset.datatables:
                 dataframes.append(dataset.datatables[datatable_name].df)
 
-        # Assign run number
+        # Assign experiment number
         if not single_run:
-            for run, df in enumerate(dataframes):
-                df["Run"] = f"Run {run}"
+            for experiment, df in enumerate(dataframes):
+                df["Experiment"] = f"Experiment {experiment}"
 
         new_df = pd.concat(dataframes, ignore_index=True)
 
         if single_run:
-            if "Run" in new_df.columns:
-                new_df = new_df.drop(columns=["Run"])
+            if "Experiment" in new_df.columns:
+                new_df = new_df.drop(columns=["Experiment"])
         else:
-            new_df["Run"] = new_df["Run"].astype("category")
+            new_df["Experiment"] = new_df["Experiment"].astype("category")
             levels = {}
-            for i, run in enumerate(new_df["Run"].unique()):
-                levels[run] = FactorLevel(name=run, color=get_factor_level_color_hex(i))
+            for i, experiment in enumerate(new_df["Experiment"].unique()):
+                levels[experiment] = FactorLevel(name=experiment, color=get_factor_level_color_hex(i))
             factor = Factor(
-                name="Run",
+                name="Experiment",
                 role=FactorRole.WITHIN_SUBJECT if continuous_mode else FactorRole.BETWEEN_SUBJECT,
-                config=ByColumnConfig(column="Run"),
+                config=ByColumnConfig(column="Experiment"),
                 levels=levels,
             )
             merged_dataset.factors[factor.name] = factor
@@ -247,10 +247,10 @@ def _merge_metadata(
         "experiment_started": str(experiment_started),
         "experiment_stopped": str(experiment_stopped),
         "animals": {k: asdict(v) for (k, v) in merged_animals.items()},
-        "runs": {},
+        "experiments": {},
     }
     for i, dataset in enumerate(datasets):
-        result["runs"][str(i + 1)] = dataset.metadata
+        result["experiments"][f"Experiment {i}"] = dataset.metadata
     return result
 
 
