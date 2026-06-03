@@ -25,9 +25,8 @@ from tse_analytics.core.utils import (
     get_h_spacer_widget,
     get_html_image_from_figure,
     get_widget_tool_button,
-    time_to_float,
 )
-from tse_analytics.toolbox.data_plot.processor import ERROR_BAR_TYPE
+from tse_analytics.toolbox.data_plot.processor import ERROR_BAR_TYPE, compute_dark_band_spans
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.MplCanvas import MplCanvas
@@ -179,20 +178,14 @@ class DataPlotWidget(QWidget):
         (plot.on(self.canvas.figure).plot(True))
 
         # Draw light/dark bands
-        light_cycles = self.datatable.dataset.light_cycles
-
-        dark_start = time_to_float(light_cycles.dark_cycle_start)
-        dark_end = time_to_float(light_cycles.light_cycle_start)
-        dark_duration = abs(dark_end - dark_start)
-        max_hours = df["Hours"].max()
-
-        experiment_started_time = time_to_float(self.datatable.dataset.experiment_started.time())
-        time_shift = abs(experiment_started_time - dark_start)
-        start = time_shift
-        while start < max_hours:
+        dark_band_spans = compute_dark_band_spans(
+            self.datatable.dataset.light_cycles,
+            self.datatable.dataset.experiment_started,
+            df["Hours"].max(),
+        )
+        for band_start, band_end in dark_band_spans:
             for ax in self.canvas.figure.axes:
-                ax.axvspan(start, start + dark_duration, color="gray", alpha=0.15)
-            start = 24 + start
+                ax.axvspan(band_start, band_end, color="gray", alpha=0.15)
 
         self.canvas.figure.tight_layout()
         self.canvas.draw()

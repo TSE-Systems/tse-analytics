@@ -44,12 +44,13 @@ from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
 
 CLAUDE_MODELS = [
+    "claude-opus-4-8",
     "claude-opus-4-7",
     "claude-opus-4-6",
     "claude-sonnet-4-6",
     "lmstudio",
 ]
-DEFAULT_MODEL = "claude-opus-4-7"
+DEFAULT_MODEL = "claude-opus-4-8"
 MAX_RESULT_ROWS = 200
 
 _CODE_BLOCK_RE = re.compile(r"```(?:python)?\s*\n(.*?)```", re.DOTALL)

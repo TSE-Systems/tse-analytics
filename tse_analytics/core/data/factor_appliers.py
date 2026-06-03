@@ -70,7 +70,11 @@ def _apply_by_time_of_day(df: pd.DataFrame, factor: Factor, dataset: Dataset) ->
     dark_start = cfg.dark_cycle_start
 
     times = df["DateTime"].dt.time
-    is_light = (times >= light_start) & (times < dark_start)
+    if light_start <= dark_start:
+        is_light = (times >= light_start) & (times < dark_start)
+    else:
+        # Light period wraps past midnight (reversed cycle, e.g. 19:00 -> 07:00)
+        is_light = (times >= light_start) | (times < dark_start)
     df[factor.name] = pd.Categorical(
         np.where(is_light, "Light", "Dark"),
         categories=["Light", "Dark"],

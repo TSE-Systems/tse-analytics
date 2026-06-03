@@ -156,6 +156,22 @@ class TestByTimeOfDayApplier:
         assert time_df.loc[time_df["DateTime"].dt.hour == 6, "LightCycle"].unique().tolist() == ["Dark"]
         assert time_df.loc[time_df["DateTime"].dt.hour == 7, "LightCycle"].unique().tolist() == ["Light"]
 
+    def test_assigns_light_dark_reversed_cycle(self, time_df, stub_dataset):
+        # Reversed/wrap-around schedule: light 19:00 -> 07:00, dark during the day.
+        factor = Factor(
+            name="LightCycle",
+            role=FactorRole.WITHIN_SUBJECT,
+            config=ByTimeOfDayConfig(
+                light_cycle_start=time(19, 0),
+                dark_cycle_start=time(7, 0),
+            ),
+        )
+        _apply_by_time_of_day(time_df, factor, stub_dataset)
+
+        # 06:00 (< 07:00) -> Light; 07:00/08:00/09:00 -> Dark
+        assert time_df.loc[time_df["DateTime"].dt.hour == 6, "LightCycle"].unique().tolist() == ["Light"]
+        assert set(time_df.loc[time_df["DateTime"].dt.hour.isin([7, 8, 9]), "LightCycle"]) == {"Dark"}
+
     def test_skips_when_datetime_column_missing(self, stub_dataset):
         df = pd.DataFrame({"Animal": ["A1", "A2"]})
         factor = Factor(
