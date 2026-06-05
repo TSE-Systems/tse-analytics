@@ -14,7 +14,7 @@ class WorkerSignals(QObject):
 
     This class provides a set of Qt signals that can be used to communicate
     between worker threads and the main thread. These signals are used by
-    the Worker class to report results, errors, and progress updates.
+    the Worker class to report results and errors.
 
     Attributes:
         finished (Signal): Emitted when the worker has completed its task.
@@ -25,12 +25,8 @@ class WorkerSignals(QObject):
 
         result (Signal): Emitted when the worker successfully completes its task.
             Passes the return value from the worker function.
-
-        progress (Signal): Emitted to report progress updates from the worker.
-            Passes an integer indicating percentage of completion (0-100).
     """
 
     finished = Signal()
     error = Signal(tuple)
     result = Signal(object)
-    progress = Signal(int)

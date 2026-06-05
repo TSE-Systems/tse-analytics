@@ -19,6 +19,10 @@ class TaskManager(QObject):
     It initializes a thread pool and provides methods to start worker tasks with
     specified priorities.
 
+    A single instance must be constructed during application bootstrap (see
+    ``tse_analytics/main.py``) before any task is submitted; the thread pool is held as
+    class-level state and shared by the ``start_task`` classmethod.
+
     Attributes:
         threadpool (QThreadPool | None): The thread pool used to manage worker threads.
     """
@@ -30,7 +34,8 @@ class TaskManager(QObject):
         Initialize the TaskManager with a new thread pool.
 
         Args:
-            parent (QObject | None, optional): The parent QObject. Defaults to None.
+            parent (QObject): The parent QObject that owns the thread pool, ensuring it
+                is destroyed (and pending tasks awaited) together with the application.
         """
         super().__init__(parent)
         TaskManager.threadpool = QThreadPool(self)
@@ -45,5 +50,31 @@ class TaskManager(QObject):
             worker (Worker): The worker to execute.
             priority (QThread.Priority, optional): The priority of the task.
                 Defaults to QThread.Priority.IdlePriority.
+
+        Raises:
+            RuntimeError: If the TaskManager has not been initialized yet (no instance
+                was constructed during bootstrap).
         """
+        if cls.threadpool is None:
+            raise RuntimeError(
+                "TaskManager is not initialized; construct a TaskManager instance before starting tasks."
+            )
         cls.threadpool.start(worker, priority.value)
+
+    @classmethod
+    def wait_for_done(cls, timeout_ms: int = -1) -> bool:
+        """
+        Block until all running and queued tasks have finished.
+
+        Useful for deterministic teardown in tests and for graceful shutdown.
+
+        Args:
+            timeout_ms (int, optional): Maximum time to wait in milliseconds. A negative
+                value (the default) waits indefinitely.
+
+        Returns:
+            bool: ``True`` if all tasks finished, ``False`` if the timeout elapsed first.
+        """
+        if cls.threadpool is None:
+            return True
+        return cls.threadpool.waitForDone(timeout_ms)

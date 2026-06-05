@@ -5,9 +5,11 @@ This module provides the Worker class for executing functions in separate thread
 with signal handling for results, errors and completion status.
 """
 
-import sys
 import traceback
+from collections.abc import Callable
+from typing import Any
 
+from loguru import logger
 from PySide6.QtCore import QRunnable, Slot
 
 from tse_analytics.core.workers.worker_signals import WorkerSignals
@@ -34,7 +36,7 @@ class Worker(QRunnable):
         **kwargs: Keywords to pass to the callback function.
     """
 
-    def __init__(self, fn, *args, **kwargs):
+    def __init__(self, fn: Callable[..., Any], *args: Any, **kwargs: Any) -> None:
         """
         Initialize the worker with a function and its arguments.
 
@@ -51,11 +53,8 @@ class Worker(QRunnable):
         self.kwargs = kwargs
         self.signals = WorkerSignals()
 
-        # Add the callback to our kwargs
-        # self.kwargs['progress_callback'] = self.signals.progress
-
     @Slot()
-    def run(self):
+    def run(self) -> None:
         """
         Execute the function in the worker thread.
 
@@ -64,15 +63,18 @@ class Worker(QRunnable):
         - result signal with the function's return value on success
         - error signal with exception information on failure
         - finished signal when execution is complete (in both success and failure cases)
+
+        Failures are also logged through loguru so they reach the application's log
+        sink even when no handler is connected to the ``error`` signal.
         """
 
         # Retrieve args/kwargs here; and fire processing using them
         try:
             result = self.fn(*self.args, **self.kwargs)
-        except Exception:
-            traceback.print_exc()
-            exc_type, value = sys.exc_info()[:2]
-            self.signals.error.emit((exc_type, value, traceback.format_exc()))
+        except Exception as e:
+            fn_name = getattr(self.fn, "__name__", repr(self.fn))
+            logger.opt(exception=e).error("Worker function '{}' raised an exception", fn_name)
+            self.signals.error.emit((type(e), e, traceback.format_exc()))
         else:
             self.signals.result.emit(result)  # Return the result of the processing
         finally:
