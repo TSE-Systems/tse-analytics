@@ -35,10 +35,10 @@ from tse_analytics.core.utils import (
     get_html_image_from_figure,
     time_to_float,
 )
-from tse_analytics.core.utils.data import normalize_nd_array
 from tse_analytics.toolbox.actogram.processor import (
-    _draw_double_plotted_bars,
-    dataframe_to_actogram,
+    _build_actogram_periods,
+    _collect_group_actograms,
+    plot_combined_actograms_grid,
     plot_enhanced_actogram,
 )
 
@@ -521,116 +521,6 @@ def _plot_onset_offset(
     ax.grid(True, alpha=0.3)
     ax.invert_yaxis()
     return figure
-
-
-def _build_actogram_periods(light_cycle_start: time, dark_cycle_start: time) -> list[dict]:
-    if dark_cycle_start < light_cycle_start:
-        return [
-            {
-                "start": time_to_float(dark_cycle_start),
-                "end": time_to_float(light_cycle_start),
-                "color": "gray",
-                "alpha": 0.2,
-            }
-        ]
-    return [
-        {"start": 0.0, "end": time_to_float(light_cycle_start), "color": "gray", "alpha": 0.2},
-        {"start": time_to_float(dark_cycle_start), "end": 24.0, "color": "gray", "alpha": 0.2},
-    ]
-
-
-# ---------------------------------------------------------------------------
-# Combined actograms (multi-group)
-# ---------------------------------------------------------------------------
-
-
-def _collect_group_actograms(
-    iter_df: pd.DataFrame,
-    key_col: str,
-    variable: Variable,
-    bins_per_day: int,
-) -> tuple[dict[str, np.ndarray], list]:
-    """Build per-group double-plotted actogram arrays aligned to the union of dates.
-
-    Each group's array is independently min-max normalized (matching the existing
-    per-group actogram loop). Missing days are zero-filled so every group shares
-    the same (n_days, bins_per_day) shape and can be rendered on a common axis.
-    """
-    raw: dict[str, tuple[np.ndarray, list]] = {}
-    all_days: set = set()
-    for label, g in iter_df.groupby(key_col, observed=True):
-        activity_array, unique_days = dataframe_to_actogram(g, variable, bins_per_day)
-        if activity_array.size == 0:
-            continue
-        if np.ptp(activity_array) > 0:
-            activity_array = normalize_nd_array(activity_array)
-        raw[str(label)] = (activity_array, unique_days)
-        all_days.update(unique_days)
-
-    shared_days = sorted(all_days)
-    if not shared_days:
-        return {}, []
-
-    day_to_idx = {d: i for i, d in enumerate(shared_days)}
-    n_days = len(shared_days)
-
-    groups_data: dict[str, np.ndarray] = {}
-    for label, (activity_array, unique_days) in raw.items():
-        aligned = np.zeros((n_days, bins_per_day))
-        for i, day in enumerate(unique_days):
-            aligned[day_to_idx[day]] = activity_array[i]
-        groups_data[label] = aligned
-
-    return groups_data, shared_days
-
-
-def plot_combined_actograms_grid(
-    groups_data: dict[str, np.ndarray],
-    shared_days: list,
-    figsize: tuple[float, float] | None,
-    binsize: float | None,
-    highlight_periods: list | None,
-    palette: dict[str, str] | None,
-    title: str,
-) -> plt.Figure:
-    """2D grid of double-plotted actograms, one subplot per group."""
-    n_groups = len(groups_data)
-    base_w, base_h = figsize if figsize else (10.0, 6.0)
-    if n_groups == 0:
-        fig = plt.Figure(figsize=(base_w, base_h), layout="tight")
-        fig.suptitle(title)
-        return fig
-
-    ncols = min(3, n_groups)
-    nrows = math.ceil(n_groups / ncols)
-
-    row_height = max(2.0, base_h * 0.55)
-    grid_figsize = (base_w, min(row_height * nrows, 24.0))
-
-    fig = plt.Figure(figsize=grid_figsize, layout="tight")
-    axes_grid = fig.subplots(nrows, ncols, sharex=True, squeeze=False)
-    flat_axes = axes_grid.flatten()
-
-    day_labels = [d.strftime("%Y-%m-%d") for d in shared_days]
-
-    for i, (label, activity_array) in enumerate(groups_data.items()):
-        ax = flat_axes[i]
-        color = (palette or {}).get(label, color_manager.get_color_hex(i))
-        _draw_double_plotted_bars(
-            ax,
-            activity_array,
-            binsize=binsize,
-            highlight_periods=highlight_periods,
-            bar_color=color,
-            day_labels=day_labels,
-        )
-        ax.set_title(label)
-
-    for j in range(n_groups, len(flat_axes)):
-        flat_axes[j].axis("off")
-
-    fig.suptitle(title)
-    return fig
 
 
 def get_chronobiology_result(
