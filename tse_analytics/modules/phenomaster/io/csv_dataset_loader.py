@@ -21,7 +21,6 @@ from pathlib import Path
 
 import pandas as pd
 
-from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
@@ -83,7 +82,6 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Data
         }
         animal = Animal(
             id=elements[1],
-            color=get_color_hex(index),
             properties=properties,
         )
         animals[animal.id] = animal
@@ -173,7 +171,6 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Data
         column="Timedelta",
         value=(df["DateTime"] - start_date_time).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
-    df.insert(loc=2, column="Bin", value=(df["Timedelta"] / timedelta).round().astype("UInt64"))
 
     # Sort variables by name
     variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))
@@ -232,6 +229,9 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Data
 
     # Clean up old variables
     cleanup_variables(dataset)
+
+    # Set factors
+    dataset.set_factors(dataset.factors)
 
     return dataset
 

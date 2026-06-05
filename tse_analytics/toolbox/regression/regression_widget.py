@@ -4,7 +4,6 @@ from PySide6.QtWidgets import QLabel, QToolBar, QWidget
 
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.utils import get_figsize_from_widget
-from tse_analytics.core.utils.data import get_columns_by_grouping_settings
 from tse_analytics.toolbox.regression.processor import get_regression_result
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
@@ -14,7 +13,7 @@ from tse_analytics.views.misc.variable_selector import VariableSelector
 
 @dataclass
 class RegressionWidgetSettings:
-    group_by: str = "Total"
+    group_by: str = "LightCycle"
     covariate_variable: str | None = None
     response_variable: str | None = None
 
@@ -50,8 +49,6 @@ class RegressionWidget(ToolboxWidgetBase):
             toolbar,
             self.datatable,
             selected_mode=self._settings.group_by,
-            disable_run_mode=True,
-            disable_animal_mode=True,
         )
         toolbar.addWidget(self.group_by_selector)
 
@@ -65,23 +62,16 @@ class RegressionWidget(ToolboxWidgetBase):
     def _update(self):
         self.report_view.clear()
 
-        grouping_settings = self.group_by_selector.get_grouping_settings()
+        factor_name = self.group_by_selector.currentText()
 
         covariate = self.covariateVariableSelector.get_selected_variable()
         response = self.responseVariableSelector.get_selected_variable()
 
-        variable_columns = [response.name] if response.name == covariate.name else [response.name, covariate.name]
-        columns = get_columns_by_grouping_settings(grouping_settings, variable_columns)
-        if "Animal" not in columns:
-            columns.append("Animal")
-        df = self.datatable.get_filtered_df(columns)
-
         result = get_regression_result(
-            self.datatable.dataset,
-            df,
+            self.datatable,
             covariate,
             response,
-            grouping_settings,
+            factor_name,
             get_figsize_from_widget(self.report_view),
         )
 

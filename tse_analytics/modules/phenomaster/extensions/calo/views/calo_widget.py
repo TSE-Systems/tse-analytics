@@ -10,7 +10,6 @@ from PySide6.QtWidgets import QMessageBox, QToolBar, QWidget
 from tse_analytics.core import messaging
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.modules.phenomaster.data.processor import append_fitting_results
 from tse_analytics.modules.phenomaster.extensions.calo.calo_settings import CaloSettings
 from tse_analytics.modules.phenomaster.extensions.calo.data.calo_box import CaloBox
 from tse_analytics.modules.phenomaster.extensions.calo.fitting_params import FittingParams
@@ -170,7 +169,8 @@ class CaloWidget(QWidget):
             QMessageBox.question(self, "Append Data", "Do you want to append fitting results to Main table?")
             == QMessageBox.StandardButton.Yes
         ):
-            append_fitting_results(self.calo_datatable.dataset, self.fitting_results)
+            # TODO: disabled until fixed
+            # append_fitting_results(self.calo_datatable.dataset, self.fitting_results)
             messaging.broadcast(messaging.DatasetChangedMessage(self, self.calo_datatable.dataset))
 
     def _calculate(self):

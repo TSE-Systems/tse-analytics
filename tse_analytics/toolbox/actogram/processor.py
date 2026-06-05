@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from tse_analytics.core import color_manager
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.utils import get_html_image_from_figure, time_to_float
 from tse_analytics.core.utils.data import normalize_nd_array
@@ -52,6 +52,87 @@ def dataframe_to_actogram(
     return activity_array, unique_days
 
 
+def _draw_double_plotted_bars(
+    ax,
+    activity_data,
+    binsize=None,
+    highlight_periods=None,
+    bar_color="black",
+    day_labels=None,
+):
+    """Render double-plotted actogram bars, ticks and dark-period highlights into an existing Axes."""
+    if activity_data.ndim == 1:
+        bins_per_day = len(activity_data) // 2
+        days_count = 2
+        activity_data = activity_data.reshape(days_count, bins_per_day)
+    else:
+        days_count, bins_per_day = activity_data.shape
+
+    if day_labels is None:
+        day_labels = [f"Day {i + 1}" for i in range(days_count)]
+
+    if binsize:
+        time_labels = [f"{i}" for i in range(0, 26, 2)]
+        xticks = np.linspace(0, bins_per_day, len(time_labels))
+    else:
+        time_labels = [f"{i}h" for i in range(0, 24, 4)]
+        xticks = np.linspace(0, bins_per_day, len(time_labels))
+
+    if highlight_periods:
+        for period in highlight_periods:
+            start_bin = int(period["start"] / 24 * bins_per_day)
+            end_bin = int(period["end"] / 24 * bins_per_day)
+            ax.axvspan(start_bin, end_bin, color=period["color"], alpha=period.get("alpha", 0.2), zorder=1)
+            ax.axvspan(
+                start_bin + bins_per_day,
+                end_bin + bins_per_day,
+                color=period["color"],
+                alpha=period.get("alpha", 0.2),
+                zorder=1,
+            )
+
+    for i in range(days_count):
+        if i > 0:
+            ax.bar(
+                np.arange(bins_per_day),
+                activity_data[i - 1],
+                width=1,
+                color=bar_color,
+                align="center",
+                bottom=days_count - i,
+                alpha=1,
+                zorder=3,
+                edgecolor="none",
+            )
+        ax.bar(
+            np.arange(bins_per_day, 2 * bins_per_day),
+            activity_data[i],
+            width=1,
+            color=bar_color,
+            align="center",
+            bottom=days_count - i,
+            alpha=1,
+            zorder=3,
+            edgecolor="none",
+        )
+
+    ax.set_xticks(np.concatenate([xticks, xticks + bins_per_day]))
+    ax.set_xticklabels(time_labels + time_labels)
+    # Hide every other tick label
+    [label.set_visible(False) for (i, label) in enumerate(ax.xaxis.get_ticklabels()) if i % 2 != 0]
+    ax.set_yticks(np.arange(1, days_count + 1))
+    ax.set_yticklabels(day_labels[::-1])
+
+    ax.set_xlim(0, 2 * bins_per_day)
+    ax.set_ylim(0, days_count + 1)
+
+    ax.set_xlabel("Time (hours)")
+    ax.set_ylabel("Day")
+
+    ax.axvline(bins_per_day, color="gray", linestyle="-", alpha=0.7, zorder=2)
+    ax.grid(True, axis="x", alpha=0.3)
+
+
 def plot_enhanced_actogram(
     activity_data,
     figsize: tuple[float, float],
@@ -83,100 +164,18 @@ def plot_enhanced_actogram(
         - 'color': highlight color (str)
         - 'alpha': transparency (float)
     """
-    if activity_data.ndim == 1:
-        # Convert to 2D if 1D array is provided
-        bins_per_day = len(activity_data) // 2  # Assuming the data spans 2 days
-        days_count = 2
-        activity_data = activity_data.reshape(days_count, bins_per_day)
-    else:
-        days_count, bins_per_day = activity_data.shape
-
-    # Create day labels if not provided
-    if days is None:
-        days = [f"Day {i + 1}" for i in range(days_count)]
-
-    # Create time labels if binsize is provided
-    if binsize:
-        # time_labels = [f"{int(i * binsize)}:00" for i in range(0, 24, int(binsize * 2))]
-        # time_labels = [f"{i * binsize}" for i in range(0, 24, int(binsize * 2))]
-        # TODO: check if there is a nicer solution
-        time_labels = [f"{i}" for i in range(0, 26, 2)]
-        xticks = np.linspace(0, bins_per_day, len(time_labels))
-    else:
-        time_labels = [f"{i}h" for i in range(0, 24, 4)]
-        xticks = np.linspace(0, bins_per_day, len(time_labels))
-
-    # Create the figure
     figure = plt.Figure(figsize=figsize, layout="tight")
     ax = figure.subplots()
 
-    # Add highlight periods if specified
-    if highlight_periods:
-        for period in highlight_periods:
-            start_bin = int(period["start"] / 24 * bins_per_day)
-            end_bin = int(period["end"] / 24 * bins_per_day)
-
-            # Add highlight for both copies
-            ax.axvspan(start_bin, end_bin, color=period["color"], alpha=period.get("alpha", 0.2), zorder=1)
-            ax.axvspan(
-                start_bin + bins_per_day,
-                end_bin + bins_per_day,
-                color=period["color"],
-                alpha=period.get("alpha", 0.2),
-                zorder=1,
-            )
-
-    # For double plotting, we duplicate each row and offset it
-    for i in range(days_count):
-        # First day's data
-        if i > 0:  # Skip first day for better alignment
-            ax.bar(
-                np.arange(bins_per_day),
-                activity_data[i - 1],
-                width=1,
-                color=bar_color,
-                align="center",
-                bottom=days_count - i,
-                alpha=1,
-                zorder=3,
-                edgecolor="none",
-                # rasterized=True,
-            )
-
-        # Second day's data (offset to continue after first day)
-        ax.bar(
-            np.arange(bins_per_day, 2 * bins_per_day),
-            activity_data[i],
-            width=1,
-            color=bar_color,
-            align="center",
-            bottom=days_count - i,
-            alpha=1,
-            zorder=3,
-            edgecolor="none",
-            # rasterized=True,
-        )
-
-    # Set ticks and labels
-    ax.set_xticks(np.concatenate([xticks, xticks + bins_per_day]))
-    ax.set_xticklabels(time_labels + time_labels)
-    ax.set_yticks(np.arange(1, days_count + 1))
-    ax.set_yticklabels(days[::-1])  # Reverse to have day 1 at the top
-
-    # Set plot limits
-    ax.set_xlim(0, 2 * bins_per_day)
-    ax.set_ylim(0, days_count + 1)
-
-    # Labels and title
-    ax.set_xlabel("Time (hours)")
-    ax.set_ylabel("Day")
+    _draw_double_plotted_bars(
+        ax,
+        activity_data,
+        binsize=binsize,
+        highlight_periods=highlight_periods,
+        bar_color=bar_color,
+        day_labels=days,
+    )
     ax.set_title(title)
-
-    # Add vertical lines to separate days
-    ax.axvline(bins_per_day, color="gray", linestyle="-", alpha=0.7, zorder=2)
-
-    # Add grid for better readability
-    ax.grid(True, axis="x", alpha=0.3)
 
     return figure, ax
 
@@ -187,13 +186,15 @@ class ActogramResult:
 
 
 def get_actogram_result(
-    dataset: Dataset,
-    df: pd.DataFrame,
+    datatable: Datatable,
     variable: Variable,
     bins_per_hour: int,
     figsize: tuple[float, float] | None = None,
 ) -> ActogramResult:
-    settings = dataset.binning_settings.time_cycles_settings
+    columns = ["Animal", "DateTime", variable.name]
+    df = datatable.get_filtered_df(columns)
+
+    light_cycles = datatable.dataset.light_cycles
 
     # Convert DataFrame to actogram format
     activity_array, unique_days = dataframe_to_actogram(df, variable, 24 * bins_per_hour)
@@ -204,11 +205,11 @@ def get_actogram_result(
     # Create day labels
     day_labels = [d.strftime("%Y-%m-%d") for d in unique_days]
 
-    if settings.dark_cycle_start < settings.light_cycle_start:
+    if light_cycles.dark_cycle_start < light_cycles.light_cycle_start:
         periods = [
             {
-                "start": time_to_float(settings.dark_cycle_start),
-                "end": time_to_float(settings.light_cycle_start),
+                "start": time_to_float(light_cycles.dark_cycle_start),
+                "end": time_to_float(light_cycles.light_cycle_start),
                 "color": "gray",
                 "alpha": 0.2,
             }
@@ -217,12 +218,12 @@ def get_actogram_result(
         periods = [
             {
                 "start": 0,
-                "end": time_to_float(settings.light_cycle_start),
+                "end": time_to_float(light_cycles.light_cycle_start),
                 "color": "gray",
                 "alpha": 0.2,
             },
             {
-                "start": time_to_float(settings.dark_cycle_start),
+                "start": time_to_float(light_cycles.dark_cycle_start),
                 "end": 24,
                 "color": "gray",
                 "alpha": 0.2,

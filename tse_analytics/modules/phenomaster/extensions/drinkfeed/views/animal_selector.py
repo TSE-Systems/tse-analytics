@@ -46,7 +46,7 @@ class AnimalSelector(QTableView):
             for animal_id in animal_ids:
                 x = items[animal_id]
                 x.factors[factor.name] = None
-                for level in factor.levels:
+                for level in factor.levels.values():
                     if animal_id in level.animal_ids:
                         x.factors[factor.name] = level.name
                         break

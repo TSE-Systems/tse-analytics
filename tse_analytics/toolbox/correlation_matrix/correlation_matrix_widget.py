@@ -56,11 +56,8 @@ class CorrelationMatrixWidget(ToolboxWidgetBase):
 
         selected_variables = self.variables_table_widget.get_selected_variable_names()
 
-        df = self.datatable.get_filtered_df(selected_variables)
-
         result = get_correlation_matrix_result(
-            self.datatable.dataset,
-            df,
+            self.datatable,
             selected_variables,
             get_figsize_from_widget(self.report_view),
         )

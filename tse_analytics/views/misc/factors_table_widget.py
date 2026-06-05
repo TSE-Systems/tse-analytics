@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QAbstractItemView, QTableWidget, QTableWidgetItem
+from PySide6.QtWidgets import QAbstractItemView, QAbstractScrollArea, QTableWidget, QTableWidgetItem
 
-from tse_analytics.core.data.shared import Factor
+from tse_analytics.core.data.shared import Factor, FactorRole
 from tse_analytics.core.utils.ui import set_inactive_palette
 
 
@@ -14,22 +14,29 @@ class FactorsTableWidget(QTableWidget):
 
     _COLUMN_NUMBER = 2
 
-    def __init__(self, parent=None):
-        """
-        Initialize the FactorsTableWidget.
+    def __init__(
+        self,
+        factors: dict[str, Factor],
+        selected_factors: list[str],
+        show_role: FactorRole | None,
+        parent=None,
+    ):
+        if show_role is not None:
+            factors = {name: factor for name, factor in factors.items() if factor.role == show_role}
 
-        Args:
-            parent: The parent widget. Default is None.
-        """
-        super().__init__(parent)
+        super().__init__(
+            parent,
+            rowCount=len(factors),
+            columnCount=self._COLUMN_NUMBER,
+        )
 
         self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
         self.setHorizontalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
+        self.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
         self.setSortingEnabled(True)
-        self.setColumnCount(self._COLUMN_NUMBER)
         self.setHorizontalHeaderLabels(["Name", "Levels"])
         self.verticalHeader().setVisible(False)
         self.verticalHeader().setMinimumSectionSize(20)
@@ -37,38 +44,13 @@ class FactorsTableWidget(QTableWidget):
 
         set_inactive_palette(self)
 
-    def set_selection_mode(self, mode: QAbstractItemView.SelectionMode) -> None:
-        """
-        Set the selection mode for the table.
-
-        Args:
-            mode: The selection mode to use (e.g., SingleSelection, MultiSelection).
-        """
-        self.setSelectionMode(mode)
-
-    def set_data(self, factors: dict[str, Factor], selected_factors: list[str] = None) -> None:
-        """
-        Populate the table with factor data.
-
-        This method clears any existing data and fills the table with the provided factors,
-        displaying their names and levels.
-        """
-        self.setRowCount(len(factors))
         for i, factor in enumerate(factors.values()):
             self.setItem(i, 0, QTableWidgetItem(factor.name))
-            level_names = [level.name for level in factor.levels]
+            level_names = factor.levels.keys()
             self.setItem(i, 1, QTableWidgetItem(f"{', '.join(level_names)}"))
             if selected_factors is not None:
                 if factor.name in selected_factors:
                     self.selectRow(i)
-
-    def clear_data(self) -> None:
-        """
-        Clear all data from the table.
-
-        This method removes all rows from the table, effectively clearing all factor data.
-        """
-        self.setRowCount(0)
 
     def get_selected_factor_names(self) -> list[str]:
         """

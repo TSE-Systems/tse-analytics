@@ -40,11 +40,8 @@ class CorrelationMatrixNode(PipelineNode):
             invalid = ", ".join(invalid_variables)
             return PipelinePacket.inactive(reason=f"Invalid variable(s): {invalid}")
 
-        df = datatable.get_filtered_df(variable_names)
-
         result = get_correlation_matrix_result(
-            datatable.dataset,
-            df,
+            datatable,
             variable_names,
             figsize=None,
         )

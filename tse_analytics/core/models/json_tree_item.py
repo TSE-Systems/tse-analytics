@@ -1,4 +1,4 @@
-class TreeItem:
+class JsonTreeItem:
     """
     A tree item representing a node in a JSON data structure.
 
@@ -8,7 +8,7 @@ class TreeItem:
     JSON data in a tree view.
     """
 
-    def __init__(self, parent: TreeItem | None = None):
+    def __init__(self, parent: JsonTreeItem | None = None):
         """
         Initialize a tree item with the given parent.
 
@@ -19,17 +19,17 @@ class TreeItem:
         self._key: str | int = ""
         self._value = ""
         self._value_type = None
-        self._children: list[TreeItem] = []
+        self._children: list[JsonTreeItem] = []
 
-    def appendChild(self, item: TreeItem):
+    def appendChild(self, item: JsonTreeItem):
         """Add item as a child"""
         self._children.append(item)
 
-    def child(self, row: int) -> TreeItem:
+    def child(self, row: int) -> JsonTreeItem:
         """Return the child of the current item from the given row"""
         return self._children[row]
 
-    def parent(self) -> TreeItem | None:
+    def parent(self) -> JsonTreeItem | None:
         """Return the parent of the current item"""
         return self._parent
 
@@ -72,7 +72,7 @@ class TreeItem:
         self._value_type = value
 
     @classmethod
-    def load(cls, value: list | dict, parent: TreeItem | None = None, sort=True) -> TreeItem:
+    def load(cls, value: list | dict, parent: JsonTreeItem | None = None, sort=True) -> JsonTreeItem:
         """
         Create a tree structure from a nested list or dictionary.
 
@@ -96,7 +96,7 @@ class TreeItem:
         Returns:
             TreeItem: The root item of the created tree structure.
         """
-        rootItem = TreeItem(parent)
+        rootItem = JsonTreeItem(parent)
         rootItem.key = "root"
 
         if isinstance(value, dict):

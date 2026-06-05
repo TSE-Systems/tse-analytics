@@ -57,10 +57,6 @@ class MixedAnovaNode(PipelineNode):
         if datatable is None or not isinstance(datatable, Datatable):
             return PipelinePacket.inactive(reason="Invalid input datatable")
 
-        # Check if binning is applied
-        if "Bin" not in datatable.df.columns:
-            return PipelinePacket.inactive(reason="Please apply a proper binning first")
-
         # Get configuration properties
         variable_name = str(self.get_property("variable")).strip()
         if not variable_name:
@@ -88,14 +84,9 @@ class MixedAnovaNode(PipelineNode):
         effect_size = EFFECT_SIZE.get(effect_size_label, "hedges")
         p_adjustment = P_ADJUSTMENT.get(p_adjustment_label, "none")
 
-        columns = ["Animal", "Bin", factor_name, variable.name]
-        df = datatable.get_filtered_df(columns)
-        df.dropna(inplace=True)
-
         # Perform Mixed-ANOVA analysis
         result = get_mixed_anova_result(
-            datatable.dataset,
-            df,
+            datatable,
             variable,
             factor_name,
             do_pairwise_tests,

@@ -5,8 +5,7 @@ from datetime import time
 import numpy as np
 import pandas as pd
 
-from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
-from tse_analytics.core.data.shared import Animal, Variable
+from tse_analytics.core.data.shared import Animal
 
 _dtypes_name_mapping = {
     "int8": "Int8",
@@ -23,33 +22,6 @@ _dtypes_name_mapping = {
     "bool": "boolean",
     "str": "string",
 }
-
-
-def get_group_by_params(group_by_str: str) -> GroupingSettings:
-    # Convert group_by string to GroupingSettings
-    match group_by_str:
-        case GroupingMode.ANIMAL.value:
-            return GroupingSettings(mode=GroupingMode.ANIMAL)
-        case GroupingMode.RUN.value:
-            return GroupingSettings(mode=GroupingMode.RUN)
-        case GroupingMode.TOTAL.value:
-            return GroupingSettings(mode=GroupingMode.TOTAL)
-        case GroupingMode.FACTOR.value:
-            return GroupingSettings(mode=GroupingMode.FACTOR, factor_name=group_by_str)
-        case _:
-            raise ValueError(f"Invalid group_by value: {group_by_str}")
-
-
-def get_columns_by_grouping_settings(grouping_settings: GroupingSettings, variable_names: list[str]) -> list[str]:
-    match grouping_settings.mode:
-        case GroupingMode.ANIMAL:
-            return variable_names + ["Animal"]
-        case GroupingMode.RUN:
-            return variable_names + ["Run"]
-        case GroupingMode.FACTOR:
-            return variable_names + [grouping_settings.factor_name]
-        case GroupingMode.TOTAL:
-            return variable_names
 
 
 def time_to_float(value: time) -> float:
@@ -110,47 +82,39 @@ def rename_animal_df(df: pd.DataFrame, old_id: str, animal: Animal) -> pd.DataFr
     return df
 
 
-def reassign_df_timedelta_and_bin(
-    df: pd.DataFrame, sample_interval: pd.Timedelta, merging_mode: str | None
-) -> pd.DataFrame:
+def reassign_df_timedelta(df: pd.DataFrame, merging_mode: str | None) -> pd.DataFrame:
     """
-    Reassign timedelta and bin values in a DataFrame.
+    Reassign timedelta values in a DataFrame.
 
-    This function recalculates timedelta values based on the merging mode and
-    reassigns bin numbers based on the sampling interval.
+    This function recalculates timedelta values based on the merging mode.
 
     Parameters
     ----------
     df : pd.DataFrame
         The DataFrame to process.
-    sample_interval : pd.Timedelta or None
-        The sampling interval for bin calculation.
     merging_mode : str or None
         The merging mode, which affects how timedeltas are calculated.
 
     Returns
     -------
     pd.DataFrame
-        The DataFrame with reassigned timedelta and bin values.
+        The DataFrame with reassigned timedelta values.
     """
     df.reset_index(inplace=True, drop=True)
 
     if merging_mode == "overlap":
-        # Get unique runs numbers
-        runs = df["Run"].unique().tolist()
+        # Get unique experiment numbers
+        experiments = df["Experiment"].unique().tolist()
 
         # Reassign timedeltas
-        for run in runs:
-            # Get start timestamp per run
-            start_date_time = df[df["Run"] == run]["DateTime"].iloc[0]
-            df.loc[df["Run"] == run, "Timedelta"] = df["DateTime"] - start_date_time
+        for experiment in experiments:
+            # Get start timestamp per experiment
+            start_date_time = df[df["Experiment"] == experiment]["DateTime"].iloc[0]
+            df.loc[df["Experiment"] == experiment, "Timedelta"] = df["DateTime"] - start_date_time
     else:
         start_date_time = df["DateTime"].iloc[0]
         df["Timedelta"] = df["DateTime"] - start_date_time
 
-    # Reassign bins numbers
-    if sample_interval is not None:
-        df["Bin"] = (df["Timedelta"] / sample_interval).round().astype("UInt64")
     return df
 
 
@@ -171,27 +135,3 @@ def normalize_nd_array(input: np.ndarray):
     min_value = np.min(input)
     max_value = np.max(input)
     return (input - min_value) / (max_value - min_value)
-
-
-def group_df_by_animal(
-    df: pd.DataFrame,
-    variables: dict[str, Variable],
-) -> pd.DataFrame:
-    if df.empty:
-        return df
-
-    default_columns = ["Animal"]
-    agg = {}
-    for column in df.columns:
-        if column not in default_columns:
-            if df.dtypes[column].name != "category":
-                if column in variables:
-                    agg[column] = variables[column].aggregation
-            else:
-                # Include categorical data fields
-                agg[column] = "first"
-
-    result = df.groupby("Animal", dropna=False, observed=False).aggregate(agg)
-    result.reset_index(inplace=True, drop=False)
-
-    return result

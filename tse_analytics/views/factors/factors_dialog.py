@@ -1,10 +1,127 @@
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QDialog, QInputDialog, QListWidgetItem, QWidget
+from datetime import timedelta
+
+from PySide6.QtCore import Qt, QTime
+from PySide6.QtWidgets import (
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QFormLayout,
+    QHeaderView,
+    QInputDialog,
+    QLineEdit,
+    QListWidgetItem,
+    QMessageBox,
+    QVBoxLayout,
+    QWidget,
+)
 
 from tse_analytics.core.color_manager import get_factor_level_color_hex
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.shared import Factor, FactorLevel
+from tse_analytics.core.data.shared import (
+    ByAnimalConfig,
+    ByAnimalPropertyConfig,
+    ByColumnConfig,
+    ByElapsedTimeConfig,
+    ByTimeIntervalConfig,
+    ByTimeOfDayConfig,
+    Factor,
+    FactorLevel,
+    FactorRole,
+    FactorSource,
+)
+from tse_analytics.core.models.factor_time_phases_model import FactorTimePhasesModel
 from tse_analytics.views.factors.factors_dialog_ui import Ui_FactorsDialog
+
+# Sources the user can create directly via "Add Factor". BY_TIME_OF_DAY is
+# excluded because the dataset auto-creates a single LightCycle factor that
+# the user can edit but not duplicate.
+_USER_CREATABLE_SOURCES: dict[FactorSource, str] = {
+    FactorSource.BY_ANIMAL: "Animal-based",
+    FactorSource.BY_ANIMAL_PROPERTY: "Animal property",
+    FactorSource.BY_ELAPSED_TIME: "Time phases",
+    FactorSource.BY_COLUMN: "Column",
+    FactorSource.BY_TIME_INTERVAL: "Time interval",
+}
+
+# Maps every source to the index of its config page in stackedWidgetConfig
+# (page order defined in factors_dialog.ui).
+_PAGE_INDEX: dict[FactorSource, int] = {
+    FactorSource.BY_ANIMAL: 0,
+    FactorSource.BY_TIME_OF_DAY: 1,
+    FactorSource.BY_ELAPSED_TIME: 2,
+    FactorSource.BY_ANIMAL_PROPERTY: 3,
+    FactorSource.BY_COLUMN: 4,
+    FactorSource.BY_TIME_INTERVAL: 5,
+}
+
+_STANDARD_DF_COLUMNS = frozenset({"Animal", "DateTime", "Timedelta"})
+
+# Bin width unit options for the BY_TIME_INTERVAL page. Each entry maps the
+# label shown in the combo box to the corresponding ``timedelta`` keyword
+# argument used to compose the final interval.
+_INTERVAL_UNITS: dict[str, str] = {
+    # "second(s)": "seconds",
+    # "minute(s)": "minutes",
+    "hour(s)": "hours",
+    "day(s)": "days",
+}
+
+
+def _factor_source(factor: Factor) -> FactorSource:
+    """Return the FactorSource of a factor, coercing the discriminator string back to enum."""
+    source = factor.config.source
+    return source if isinstance(source, FactorSource) else FactorSource(source)
+
+
+def _split_timedelta_to_value_and_unit(interval: timedelta) -> tuple[int, str]:
+    """Express ``interval`` as (value, unit_label) using the largest unit that
+    divides it evenly. Falls back to seconds for sub-second components."""
+    total_seconds = int(interval.total_seconds())
+    if total_seconds <= 0:
+        return 1, "hour(s)"
+    if total_seconds % 86400 == 0:
+        return total_seconds // 86400, "day(s)"
+    if total_seconds % 3600 == 0:
+        return total_seconds // 3600, "hour(s)"
+    if total_seconds % 60 == 0:
+        return total_seconds // 60, "minute(s)"
+    return total_seconds, "second(s)"
+
+
+class _AddFactorDialog(QDialog):
+    """Small dialog asking for a new factor's name and source."""
+
+    def __init__(self, parent: QWidget | None = None):
+        super().__init__(parent)
+        self.setWindowTitle("Add Factor")
+
+        self._name_edit = QLineEdit(self)
+        self._source_combo = QComboBox(self)
+        for source, label in _USER_CREATABLE_SOURCES.items():
+            self._source_combo.addItem(label, source)
+
+        form = QFormLayout()
+        form.addRow("Name:", self._name_edit)
+        form.addRow("Kind:", self._source_combo)
+
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel,
+            parent=self,
+        )
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+
+        layout = QVBoxLayout(self)
+        layout.addLayout(form)
+        layout.addWidget(buttons)
+
+    @property
+    def factor_name(self) -> str:
+        return self._name_edit.text().strip()
+
+    @property
+    def factor_source(self) -> FactorSource:
+        return self._source_combo.currentData()
 
 
 class FactorsDialog(QDialog, Ui_FactorsDialog):
@@ -14,12 +131,19 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
 
         self.dataset = dataset
 
-        if len(self.dataset.animals) > 0:
-            animal_properties = next(iter(self.dataset.animals.values())).properties
-            self.comboBoxFields.addItems(list(animal_properties.keys()))
+        animal_property_keys = self._available_animal_property_keys()
+        self.comboBoxFields.addItems(animal_property_keys)
+        self.comboBoxAnimalProperty.addItems(animal_property_keys)
+        self.comboBoxColumn.addItems(self._available_column_names())
+        self.comboBoxIntervalUnit.addItems(_INTERVAL_UNITS.keys())
 
         self.factors = list(self.dataset.factors.values()).copy()
         self.listWidgetFactors.addItems([factor.name for factor in self.factors])
+
+        self.phases_model = FactorTimePhasesModel(parent=self)
+        self.tableViewPhases.setModel(self.phases_model)
+        header = self.tableViewPhases.horizontalHeader()
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
 
         self.pushButtonAddFactor.clicked.connect(self.add_factor)
         self.pushButtonDeleteFactor.clicked.connect(self.delete_factor)
@@ -32,15 +156,97 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
         self.listWidgetLevels.currentTextChanged.connect(self.current_group_text_changed)
         self.listWidgetAnimals.itemChanged.connect(self.animal_item_changed)
 
+        self.timeEditLightStart.editingFinished.connect(self._light_cycle_start_changed)
+        self.timeEditDarkStart.editingFinished.connect(self._dark_cycle_start_changed)
+
+        self.toolButtonAddPhase.clicked.connect(self._add_phase)
+        self.toolButtonDeletePhase.clicked.connect(self._delete_phase)
+
+        self.comboBoxAnimalProperty.currentTextChanged.connect(self._animal_property_changed)
+        self.comboBoxColumn.currentTextChanged.connect(self._column_changed)
+
+        self.spinBoxIntervalValue.valueChanged.connect(self._interval_changed)
+        self.comboBoxIntervalUnit.currentTextChanged.connect(self._interval_changed)
+
         self.selected_factor: Factor | None = None
         self.selected_level: FactorLevel | None = None
 
+    def _available_animal_property_keys(self) -> list[str]:
+        if not self.dataset.animals:
+            return []
+        first_animal = next(iter(self.dataset.animals.values()))
+        return list(first_animal.properties.keys())
+
+    def _available_column_names(self) -> list[str]:
+        if not self.dataset.datatables:
+            return []
+        first_dt = next(iter(self.dataset.datatables.values()))
+        factor_names = {f.name for f in self.dataset.factors.values()}
+        return [
+            c
+            for c in first_dt.df.columns
+            if (c not in _STANDARD_DF_COLUMNS and c not in factor_names) or c == "Experiment"
+        ]
+
     def add_factor(self):
-        text, result = QInputDialog.getText(self, "Add Factor", "Please enter unique factor name:")
-        if result:
-            factor = Factor(name=text)
-            self.factors.append(factor)
-            self.listWidgetFactors.addItem(text)
+        dlg = _AddFactorDialog(self)
+        if dlg.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        name = dlg.factor_name
+        source = dlg.factor_source
+        if not name:
+            return
+        if any(f.name == name for f in self.factors):
+            QMessageBox.warning(self, "Add Factor", f"A factor named '{name}' already exists.")
+            return
+
+        factor = self._create_factor(name, source)
+        self.factors.append(factor)
+        self.listWidgetFactors.addItem(name)
+
+    def _create_factor(self, name: str, source: FactorSource) -> Factor:
+        if source == FactorSource.BY_ANIMAL:
+            return Factor(
+                name=name,
+                role=FactorRole.BETWEEN_SUBJECT,
+                config=ByAnimalConfig(),
+            )
+        if source == FactorSource.BY_ANIMAL_PROPERTY:
+            keys = self._available_animal_property_keys()
+            factor = Factor(
+                name=name,
+                role=FactorRole.BETWEEN_SUBJECT,
+                config=ByAnimalPropertyConfig(property_key=keys[0] if keys else ""),
+            )
+            self._refresh_animal_property_levels(factor)
+            return factor
+        if source == FactorSource.BY_ELAPSED_TIME:
+            return Factor(
+                name=name,
+                role=FactorRole.WITHIN_SUBJECT,
+                config=ByElapsedTimeConfig(),
+            )
+        if source == FactorSource.BY_COLUMN:
+            columns = self._available_column_names()
+            # BY_COLUMN can be either role; default to BETWEEN_SUBJECT and let
+            # users edit the role explicitly in a future iteration.
+            factor = Factor(
+                name=name,
+                role=FactorRole.BETWEEN_SUBJECT,
+                config=ByColumnConfig(column=columns[0] if columns else ""),
+            )
+            self._refresh_column_levels(factor)
+            return factor
+        if source == FactorSource.BY_TIME_INTERVAL:
+            factor = Factor(
+                name=name,
+                role=FactorRole.WITHIN_SUBJECT,
+                config=ByTimeIntervalConfig(interval=timedelta(hours=1)),
+            )
+            self._refresh_time_interval_levels(factor)
+            return factor
+        raise ValueError(f"Unsupported factor source: {source}")
 
     def delete_factor(self):
         for item in self.listWidgetFactors.selectedItems():
@@ -50,66 +256,144 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
             self.listWidgetFactors.takeItem(self.listWidgetFactors.row(item))
 
     def add_level(self):
-        if self.selected_factor is not None:
-            text, result = QInputDialog.getText(self, "Add Level", "Please enter unique level name:")
-            if result:
-                level = FactorLevel(
-                    name=text,
-                    color=get_factor_level_color_hex(len(self.selected_factor.levels)),
-                )
-                self.selected_factor.levels.append(level)
-                self.listWidgetLevels.addItem(text)
+        if self.selected_factor is None or not isinstance(self.selected_factor.config, ByAnimalConfig):
+            return
+        text, result = QInputDialog.getText(self, "Add Level", "Please enter unique level name:")
+        if result:
+            level = FactorLevel(
+                name=text,
+                color=get_factor_level_color_hex(len(self.selected_factor.levels)),
+            )
+            self.selected_factor.levels[level.name] = level
+            self.listWidgetLevels.addItem(text)
 
     def delete_level(self):
+        if self.selected_factor is None or not isinstance(self.selected_factor.config, ByAnimalConfig):
+            return
         for item in self.listWidgetLevels.selectedItems():
-            level = next((x for x in self.selected_factor.levels if x.name == item.text()), None)
+            level = self.selected_factor.levels.get(item.text(), None)
             if level is not None:
-                self.selected_factor.levels.remove(level)
+                self.selected_factor.levels.pop(level.name, None)
             self.listWidgetLevels.takeItem(self.listWidgetLevels.row(item))
 
     def extract_levels(self):
+        if self.selected_factor is None or not isinstance(self.selected_factor.config, ByAnimalConfig):
+            return
         selected_field = self.comboBoxFields.currentText()
         if selected_field is not None:
             levels = self.dataset.extract_levels_from_property(selected_field)
-            self.selected_factor.levels = list(levels.values())
+            self.selected_factor.levels = levels
             self.listWidgetLevels.clear()
-            self.listWidgetLevels.addItems([level.name for level in self.selected_factor.levels])
+            self.listWidgetLevels.addItems(self.selected_factor.levels.keys())
 
     def current_factor_text_changed(self, text: str):
         self.listWidgetLevels.clear()
         self.listWidgetAnimals.clear()
         self.selected_factor = next((x for x in self.factors if x.name == text), None)
-        self.pushButtonDeleteFactor.setEnabled(self.selected_factor is not None)
-        self.pushButtonAddLevel.setEnabled(self.selected_factor is not None)
-        self.pushButtonExtractLevels.setEnabled(self.selected_factor is not None)
-        self.comboBoxFields.setEnabled(self.selected_factor is not None)
-        if self.selected_factor is not None:
-            self.listWidgetLevels.addItems([level.name for level in self.selected_factor.levels])
+        self.selected_level = None
+
+        if self.selected_factor is None:
+            self.pushButtonDeleteFactor.setEnabled(False)
+            self.pushButtonAddLevel.setEnabled(False)
+            self.pushButtonDeleteLevel.setEnabled(False)
+            self.pushButtonExtractLevels.setEnabled(False)
+            self.comboBoxFields.setEnabled(False)
+            self.stackedWidgetConfig.setCurrentIndex(0)
+            self.phases_model.set_factor(None)
+            return
+
+        config = self.selected_factor.config
+        is_by_animal = isinstance(config, ByAnimalConfig)
+        is_by_time_of_day = isinstance(config, ByTimeOfDayConfig)
+        is_by_experiment = isinstance(config, ByColumnConfig) and config.column == "Experiment"
+
+        self.pushButtonDeleteFactor.setDisabled(is_by_time_of_day or is_by_experiment)
+        self.pushButtonAddLevel.setEnabled(is_by_animal)
+        self.pushButtonDeleteLevel.setEnabled(False)
+        self.pushButtonExtractLevels.setEnabled(is_by_animal)
+        self.comboBoxFields.setEnabled(is_by_animal)
+
+        self.stackedWidgetConfig.setCurrentIndex(_PAGE_INDEX[_factor_source(self.selected_factor)])
+
+        self.listWidgetLevels.addItems(self.selected_factor.levels.keys())
+        self._sync_config_page(self.selected_factor)
+
+    def _sync_config_page(self, factor: Factor) -> None:
+        config = factor.config
+        if isinstance(config, ByTimeOfDayConfig):
+            self.timeEditLightStart.blockSignals(True)
+            self.timeEditDarkStart.blockSignals(True)
+            self.timeEditLightStart.setTime(QTime(config.light_cycle_start))
+            self.timeEditDarkStart.setTime(QTime(config.dark_cycle_start))
+            self.timeEditLightStart.blockSignals(False)
+            self.timeEditDarkStart.blockSignals(False)
+            self.phases_model.set_factor(None)
+        elif isinstance(config, ByElapsedTimeConfig):
+            self.phases_model.set_factor(factor)
+        elif isinstance(config, ByAnimalPropertyConfig):
+            self.comboBoxAnimalProperty.blockSignals(True)
+            if config.property_key:
+                self.comboBoxAnimalProperty.setCurrentText(config.property_key)
+            self.comboBoxAnimalProperty.blockSignals(False)
+            self.phases_model.set_factor(None)
+        elif isinstance(config, ByColumnConfig):
+            self.comboBoxColumn.blockSignals(True)
+            if config.column:
+                self.comboBoxColumn.setCurrentText(config.column)
+            self.comboBoxColumn.blockSignals(False)
+            self.phases_model.set_factor(None)
+        elif isinstance(config, ByTimeIntervalConfig):
+            self._sync_time_interval_page(factor)
+            self.phases_model.set_factor(None)
+        else:
+            self.phases_model.set_factor(None)
+
+    def _sync_time_interval_page(self, factor: Factor) -> None:
+        config = factor.config
+        assert isinstance(config, ByTimeIntervalConfig)
+
+        value, unit_label = _split_timedelta_to_value_and_unit(config.interval)
+
+        self.spinBoxIntervalValue.blockSignals(True)
+        self.comboBoxIntervalUnit.blockSignals(True)
+        self.spinBoxIntervalValue.setValue(value)
+        self.comboBoxIntervalUnit.setCurrentText(unit_label)
+        self.spinBoxIntervalValue.blockSignals(False)
+        self.comboBoxIntervalUnit.blockSignals(False)
 
     def current_group_text_changed(self, text: str):
         self.listWidgetAnimals.clear()
-        self.selected_level = next((x for x in self.selected_factor.levels if x.name == text), None)
-        self.pushButtonDeleteLevel.setEnabled(self.selected_level is not None)
-        if self.selected_level is not None:
-            animals_ids = list(self.dataset.animals.keys())
-            animals_ids.sort()
-            for animal_id in animals_ids:
-                item = QListWidgetItem(str(animal_id))
-                item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled)
-                if animal_id in self.selected_level.animal_ids:
-                    item.setCheckState(Qt.CheckState.Checked)
-                else:
-                    item.setCheckState(Qt.CheckState.Unchecked)
+        if self.selected_factor is None:
+            return
+        self.selected_level = self.selected_factor.levels.get(text, None)
 
-                for level in self.selected_factor.levels:
-                    if level != self.selected_level:
-                        if animal_id in level.animal_ids:
-                            item.setFlags(~Qt.ItemFlag.ItemIsEnabled)
-                            break
+        is_by_animal = isinstance(self.selected_factor.config, ByAnimalConfig)
+        self.pushButtonDeleteLevel.setEnabled(is_by_animal and self.selected_level is not None)
 
-                self.listWidgetAnimals.addItem(item)
+        if not is_by_animal or self.selected_level is None:
+            return
+
+        animals_ids = list(self.dataset.animals.keys())
+        animals_ids.sort()
+        for animal_id in animals_ids:
+            item = QListWidgetItem(str(animal_id))
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled)
+            if animal_id in self.selected_level.animal_ids:
+                item.setCheckState(Qt.CheckState.Checked)
+            else:
+                item.setCheckState(Qt.CheckState.Unchecked)
+
+            for level in self.selected_factor.levels.values():
+                if level != self.selected_level:
+                    if animal_id in level.animal_ids:
+                        item.setFlags(~Qt.ItemFlag.ItemIsEnabled)
+                        break
+
+            self.listWidgetAnimals.addItem(item)
 
     def animal_item_changed(self, item: QListWidgetItem):
+        if self.selected_level is None:
+            return
         animal_id = next(
             (animal.id for animal in self.dataset.animals.values() if animal.id == item.text()),
             None,
@@ -119,3 +403,97 @@ class FactorsDialog(QDialog, Ui_FactorsDialog):
                 self.selected_level.animal_ids.append(animal_id)
             else:
                 self.selected_level.animal_ids.remove(animal_id)
+
+    def _light_cycle_start_changed(self):
+        if self.selected_factor is None or not isinstance(self.selected_factor.config, ByTimeOfDayConfig):
+            return
+        self.selected_factor.config.light_cycle_start = self.timeEditLightStart.time().toPython()
+
+    def _dark_cycle_start_changed(self):
+        if self.selected_factor is None or not isinstance(self.selected_factor.config, ByTimeOfDayConfig):
+            return
+        self.selected_factor.config.dark_cycle_start = self.timeEditDarkStart.time().toPython()
+
+    def _animal_property_changed(self, text: str):
+        if self.selected_factor is None or not isinstance(self.selected_factor.config, ByAnimalPropertyConfig):
+            return
+        self.selected_factor.config.property_key = text
+        self._refresh_animal_property_levels(self.selected_factor)
+        self.listWidgetLevels.clear()
+        self.listWidgetLevels.addItems(self.selected_factor.levels.keys())
+
+    def _refresh_animal_property_levels(self, factor: Factor) -> None:
+        config = factor.config
+        assert isinstance(config, ByAnimalPropertyConfig)
+        if not config.property_key:
+            factor.levels = {}
+            return
+        levels = self.dataset.extract_levels_from_property(config.property_key)
+        factor.levels = levels
+
+    def _column_changed(self, text: str):
+        if self.selected_factor is None or not isinstance(self.selected_factor.config, ByColumnConfig):
+            return
+        self.selected_factor.config.column = text
+        self._refresh_column_levels(self.selected_factor)
+        self.listWidgetLevels.clear()
+        self.listWidgetLevels.addItems(self.selected_factor.levels.keys())
+
+    def _refresh_column_levels(self, factor: Factor) -> None:
+        config = factor.config
+        assert isinstance(config, ByColumnConfig)
+        if not config.column:
+            factor.levels = {}
+            return
+        levels = self.dataset.extract_levels_from_column(config.column)
+        factor.levels = levels
+
+    def _interval_changed(self, *_args) -> None:
+        if self.selected_factor is None or not isinstance(self.selected_factor.config, ByTimeIntervalConfig):
+            return
+        value = self.spinBoxIntervalValue.value()
+        unit_label = self.comboBoxIntervalUnit.currentText()
+        kwarg = _INTERVAL_UNITS.get(unit_label)
+        if kwarg is None:
+            return
+        self.selected_factor.config.interval = timedelta(**{kwarg: value})
+        self._refresh_time_interval_levels(self.selected_factor)
+        self.listWidgetLevels.clear()
+        self.listWidgetLevels.addItems(self.selected_factor.levels.keys())
+
+    def _refresh_time_interval_levels(self, factor: Factor) -> None:
+        config = factor.config
+        assert isinstance(config, ByTimeIntervalConfig)
+        levels = self.dataset.extract_levels_from_time_interval(config.interval)
+        factor.levels = levels
+
+    def _add_phase(self):
+        if self.selected_factor is None or not isinstance(self.selected_factor.config, ByElapsedTimeConfig):
+            return
+        text, result = QInputDialog.getText(self, "Add Phase", "Please enter unique phase name:")
+        if not result or not text.strip():
+            return
+        name = text.strip()
+
+        start_timestamp = timedelta(0)
+        if self.phases_model.items:
+            start_timestamp = self.phases_model.items[-1].start_timestamp + timedelta(hours=1)
+
+        if not self.phases_model.add_phase(name, start_timestamp):
+            QMessageBox.warning(self, "Add Phase", f"A phase named '{name}' already exists.")
+            return
+
+        self.listWidgetLevels.clear()
+        self.listWidgetLevels.addItems(self.selected_factor.levels.keys())
+
+    def _delete_phase(self):
+        if self.selected_factor is None or not isinstance(self.selected_factor.config, ByElapsedTimeConfig):
+            return
+        indexes = self.tableViewPhases.selectedIndexes()
+        if not indexes:
+            return
+        self.phases_model.delete_phase(indexes[0])
+        self.tableViewPhases.clearSelection()
+
+        self.listWidgetLevels.clear()
+        self.listWidgetLevels.addItems(self.selected_factor.levels.keys())

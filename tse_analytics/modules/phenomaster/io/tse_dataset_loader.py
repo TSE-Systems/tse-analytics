@@ -6,7 +6,6 @@ import connectorx as cx
 import pandas as pd
 from loguru import logger
 
-from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
@@ -105,6 +104,9 @@ def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportS
     # Clean up old variables
     cleanup_variables(dataset)
 
+    # Set factors
+    dataset.set_factors(dataset.factors)
+
     logger.info(f"Import complete in {(timeit.default_timer() - tic):.3f} sec: {path}")
 
     return dataset
@@ -122,6 +124,9 @@ def _read_metadata(path: Path) -> dict:
     # Convert animal IDs to strings
     for item in metadata["animals"].values():
         item["id"] = str(item["id"])
+
+    # Sort animals by ID
+    metadata["animals"] = dict(sorted(metadata["animals"].items()))
 
     # Add standard data fields
     metadata["source_path"] = str(path)
@@ -161,13 +166,9 @@ def _get_animals(data: dict) -> dict[str, Animal]:
 
         animal = Animal(
             id=str(item["id"]),
-            color=get_color_hex(index),
             properties=properties,
         )
         animals[animal.id] = animal
-
-    # Sort animals by ID
-    animals = dict(sorted(animals.items()))
 
     return animals
 
@@ -219,13 +220,12 @@ def _read_main_table(
     df.sort_values(by=["DateTime", "Animal"], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    # Add Timedelta and Bin columns
+    # Add Timedelta column.
     df.insert(
         loc=1,
         column="Timedelta",
         value=(df["DateTime"] - dataset.experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
-    df.insert(loc=2, column="Bin", value=(df["Timedelta"] / sample_interval).round().astype("UInt64"))
 
     # Sort variables by name
     variables = dict(sorted(variables.items(), key=lambda x: x[0].lower()))

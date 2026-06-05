@@ -8,17 +8,25 @@ excluding time ranges, resampling, and applying factors.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 from uuid import uuid7
 
 import pandas as pd
+from loguru import logger
 
 from tse_analytics.core import messaging
+from tse_analytics.core.data.factor_appliers import FACTOR_APPLIERS
 from tse_analytics.core.data.operators.outliers_pipe_operator import process_outliers
 from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings
-from tse_analytics.core.data.shared import Animal, Factor, Variable
-from tse_analytics.core.utils.data import exclude_animals_from_df, reassign_df_timedelta_and_bin, rename_animal_df
+from tse_analytics.core.data.shared import (
+    Animal,
+    Factor,
+    FactorRole,
+    Variable,
+)
+from tse_analytics.core.utils.data import exclude_animals_from_df, reassign_df_timedelta, rename_animal_df
 
 if TYPE_CHECKING:
     from tse_analytics.core.data.dataset import Dataset
@@ -71,9 +79,6 @@ class Datatable:
 
         self.outliers_settings = OutliersSettings()
 
-        self.parent_table: Datatable | None = None
-        self.derived_tables: dict[str, Datatable] = {}
-
     @property
     def extension_name(self) -> str | None:
         return self.metadata.get("extension_name", None)
@@ -96,8 +101,7 @@ class Datatable:
         pd.Timestamp
             The timestamp of the first row in the datatable.
         """
-        first_value = self.df.at[0, "DateTime"]
-        return first_value
+        return self.df["DateTime"].iloc[0]
 
     @property
     def end_timestamp(self) -> pd.Timestamp:
@@ -109,8 +113,7 @@ class Datatable:
         pd.Timestamp
             The timestamp of the last row in the datatable.
         """
-        last_value = self.df.at[self.df.index[-1], "DateTime"]
-        return last_value
+        return self.df["DateTime"].iloc[-1]
 
     @property
     def duration(self) -> pd.Timedelta:
@@ -133,8 +136,7 @@ class Datatable:
         str or None
             The merging mode if it exists in the dataset metadata, otherwise None.
         """
-        merging_mode = self.dataset.metadata["merging_mode"] if "merging_mode" in self.dataset.metadata else None
-        return merging_mode
+        return self.dataset.metadata.get("merging_mode")
 
     def get_default_columns(self) -> list[str]:
         """
@@ -143,17 +145,13 @@ class Datatable:
         Returns
         -------
         list[str]
-            List of default column names, including "Bin" and "Run" if they exist.
+            List of default column names.
         """
         columns = ["Animal"]
         if "DateTime" in self.df.columns:
             columns.append("DateTime")
         if "Timedelta" in self.df.columns:
             columns.append("Timedelta")
-        if "Bin" in self.df.columns:
-            columns.append("Bin")
-        if "Run" in self.df.columns:
-            columns.append("Run")
         return columns
 
     def get_categorical_columns(self) -> list[str]:
@@ -170,9 +168,7 @@ class Datatable:
 
     def get_group_by_columns(
         self,
-        disable_total_mode=False,
-        disable_run_mode=False,
-        disable_animal_mode=False,
+        show_role: FactorRole | None = None,
     ) -> list[str]:
         """
         Get the columns that can be used for grouping data.
@@ -182,15 +178,9 @@ class Datatable:
         list[str]
             List of column names that can be used for grouping data.
         """
-        modes = ["Animal"] if not disable_animal_mode else []
-        if not disable_total_mode:
-            modes.append("Total")
-        if not disable_run_mode and "Run" in self.df.columns:
-            modes.append("Run")
-        if len(self.dataset.factors) > 0:
-            for factor in self.dataset.factors.keys():
-                modes.append(factor)
-        return modes
+        if show_role is None:
+            return list(self.dataset.factors.keys())
+        return [name for name, f in self.dataset.factors.items() if f.role == show_role]
 
     def apply_outliers(self, settings: OutliersSettings) -> None:
         """
@@ -232,6 +222,10 @@ class Datatable:
         if "Animal" in self.df.columns:
             self.df = exclude_animals_from_df(self.df, animal_ids)
 
+    def _filter_by_time_mask(self, mask: pd.Series) -> None:
+        self.df = self.df[mask]
+        self.df = reassign_df_timedelta(self.df, self.get_merging_mode())
+
     def exclude_time(self, range_start: datetime, range_end: datetime) -> None:
         """
         Exclude a time range from the datatable.
@@ -243,9 +237,7 @@ class Datatable:
         range_end : datetime
             End of the time range to exclude.
         """
-        self.df = self.df[(self.df["DateTime"] < range_start) | (self.df["DateTime"] > range_end)]
-        merging_mode = self.get_merging_mode()
-        self.df = reassign_df_timedelta_and_bin(self.df, self.sample_interval, merging_mode)
+        self._filter_by_time_mask((self.df["DateTime"] < range_start) | (self.df["DateTime"] > range_end))
 
     def trim_time(self, range_start: datetime, range_end: datetime) -> None:
         """
@@ -258,9 +250,7 @@ class Datatable:
         range_end : datetime
             New end time for the datatable.
         """
-        self.df = self.df[(self.df["DateTime"] >= range_start) & (self.df["DateTime"] <= range_end)]
-        merging_mode = self.get_merging_mode()
-        self.df = reassign_df_timedelta_and_bin(self.df, self.sample_interval, merging_mode)
+        self._filter_by_time_mask((self.df["DateTime"] >= range_start) & (self.df["DateTime"] <= range_end))
 
     def resample(self, resample_interval: pd.Timedelta) -> None:
         """
@@ -274,50 +264,52 @@ class Datatable:
         resample_interval : pd.Timedelta
             The time interval to resample the data to.
         """
-        agg = {
-            "DateTime": "first",
-        }
-
-        if "Run" in self.df.columns:
-            agg["Run"] = "first"
-
+        default_cols = set(self.get_default_columns())
+        agg: dict[str, Any] = {"DateTime": "first"}
         for column in self.df.columns:
-            if column not in self.get_default_columns():
-                if self.df.dtypes[column].name != "category" and column in self.variables:
-                    agg[column] = self.variables[column].aggregation
+            if column in default_cols:
+                continue
+            if self.df.dtypes[column].name == "category":
+                agg[column] = "first"
+            elif column in self.variables:
+                agg[column] = self.variables[column].aggregation
 
         result = self.df.groupby(["Animal"], dropna=False, observed=False)
         result = result.resample(resample_interval, on="Timedelta", origin=self.dataset.experiment_started).agg(agg)
-        result.reset_index(inplace=True, drop=False)
 
         # Drop empty entries
-        result.dropna(subset=["DateTime"], inplace=True)
+        result = result[result["DateTime"].notna()].reset_index(drop=False)
 
-        # Assign new bins numbers
-        result["Bin"] = (result["Timedelta"] / resample_interval).round().astype("UInt64")
+        # TODO: check if done properly: align timedelta to the resampling resolution
+        result["Timedelta"] = result["Timedelta"].dt.round(resample_interval)
 
         result.sort_values(by=["Timedelta", "Animal"], inplace=True)
         result.reset_index(inplace=True, drop=True)
 
-        if "Run" in result.columns:
-            result = result.astype({
-                "Run": "UInt8",
-            })
-
         self.metadata["sample_interval"] = resample_interval
         self.df = result
 
-    def set_factors(self, factors: dict[str, Factor], old_factors: dict[str, Factor] | None = None) -> None:
+    def set_factors(
+        self,
+        factors: dict[str, Factor],
+        old_factor_names: Iterable[str] | None = None,
+    ) -> None:
         """
         Set the factors for the datatable.
 
-        This method updates the active dataframe with factor columns based on the
-        provided factors dictionary.
+        Each factor is materialized as a categorical column on the active
+        dataframe by dispatching on the type of ``factor.config``. The
+        dispatch table is ``FACTOR_APPLIERS``; adding a new factor source
+        requires only a new config type and a new applier function — no
+        changes to this method.
 
         Parameters
         ----------
         factors : dict[str, Factor]
             Dictionary mapping factor names to Factor objects.
+        old_factor_names : Iterable[str] | None
+            Names of previously applied factors; their columns are dropped
+            before re-applying. ``"Animal"`` and ``"Experiment"`` are preserved.
         """
         if "Animal" not in self.df.columns:
             return
@@ -325,28 +317,21 @@ class Datatable:
         # TODO: should be copy?
         df = self.df.copy()
 
-        # Drop old factors
-        if old_factors is not None:
-            df.drop(columns=old_factors.keys(), inplace=True, errors="ignore")
-
-        animal_ids = df["Animal"].unique()
+        # Drop old factors but ignore "Animal" and "Experiment"
+        if old_factor_names is not None:
+            cols_to_drop = [n for n in old_factor_names if n not in ("Animal", "Experiment")]
+            df.drop(columns=cols_to_drop, inplace=True, errors="ignore")
 
         for factor in factors.values():
-            animal_factor_map: dict[str, Any] = {}
-            for animal_id in animal_ids:
-                animal_factor_map[animal_id] = pd.NA
-
-            for level in factor.levels:
-                for animal_id in level.animal_ids:
-                    animal_factor_map[animal_id] = level.name
-
-            df[factor.name] = df["Animal"].astype("string")
-            df.replace({factor.name: animal_factor_map}, inplace=True)
-            df[factor.name] = df[factor.name].astype("category")
-
-            # Sort levels alphabetically
-            order = sorted(df[factor.name].cat.categories.tolist(), key=str.lower)
-            df[factor.name] = df[factor.name].cat.reorder_categories(order)
+            config = factor.config
+            if config is None:
+                logger.debug(f"Skipping factor {factor.name!r}: no config")
+                continue
+            applier = FACTOR_APPLIERS.get(type(config))
+            if applier is None:
+                logger.debug(f"Skipping factor {factor.name!r}: no applier registered for {type(config).__name__}")
+                continue
+            applier(df, factor, self.dataset)
 
         self.df = df
 
@@ -370,8 +355,7 @@ class Datatable:
         pd.DataFrame
             A filtered dataframe containing the specified columns.
         """
-        # TODO: Should use the copy?
-        df = self.df[columns]
+        df = self.df[columns].copy()
 
         # Outliers removal
         if self.outliers_settings.mode == OutliersMode.REMOVE:
@@ -397,7 +381,7 @@ class Datatable:
     def rename_variables(self, variable_name_map: dict[str, str]) -> None:
         for old_name, new_name in variable_name_map.items():
             if old_name in self.variables:
-                self.variables[new_name] = self.variables.pop(old_name, None)
+                self.variables[new_name] = self.variables.pop(old_name)
                 self.variables[new_name].name = new_name
 
         # Sort variables by name
@@ -418,7 +402,3 @@ class Datatable:
             self.df.copy(),
             self.metadata.copy(),
         )
-
-    def add_derived_table(self, derived_table: Datatable) -> None:
-        derived_table.parent_table = self
-        self.derived_tables[derived_table.name] = derived_table

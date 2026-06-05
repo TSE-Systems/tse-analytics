@@ -6,8 +6,11 @@ factors, and datatables. It supports operations like renaming animals, excluding
 and applying binning.
 """
 
+from __future__ import annotations
+
+from collections.abc import Iterable, Iterator
 from copy import deepcopy
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Literal
 from uuid import uuid7
 
@@ -15,23 +18,35 @@ import pandas as pd
 
 from tse_analytics.core import messaging
 from tse_analytics.core.color_manager import get_factor_level_color_hex
-from tse_analytics.core.data.binning import BinningSettings
+from tse_analytics.core.data.dafault_factor_builders import DEFAULT_FACTOR_BUILDERS
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
-from tse_analytics.core.data.shared import Animal, Factor, FactorLevel
+from tse_analytics.core.data.shared import (
+    Animal,
+    ByTimeOfDayConfig,
+    Factor,
+    FactorLevel,
+)
 from tse_analytics.core.models.dataset_tree_item import DatasetTreeItem
 from tse_analytics.core.models.datatable_tree_item import DatatableTreeItem
 from tse_analytics.core.models.report_tree_item import ReportTreeItem
 from tse_analytics.core.models.tree_item import TreeItem
-from tse_analytics.core.utils.dataset import (
-    exclude_animals_recursively,
-    exclude_time_recursively,
-    rename_animal_recursively,
-    set_factors_recursively,
-    trim_time_recursively,
-)
 
 DatasetType = Literal["PhenoMaster", "IntelliMaze", "IntelliCage"]
+
+
+def _time_interval_level_prefix(interval: timedelta) -> str:
+    """Return the level-name prefix derived from the largest unit that
+    divides ``interval`` evenly (``"Day"`` / ``"Hour"`` / ``"Minute"`` /
+    ``"Second"``)."""
+    total_seconds = int(interval.total_seconds())
+    if total_seconds > 0 and total_seconds % 86400 == 0:
+        return "Day"
+    if total_seconds > 0 and total_seconds % 3600 == 0:
+        return "Hour"
+    if total_seconds > 0 and total_seconds % 60 == 0:
+        return "Minute"
+    return "Second"
 
 
 class Dataset:
@@ -48,7 +63,7 @@ class Dataset:
         name: str,
         description: str,
         dataset_type: DatasetType,
-        metadata: dict[str, Any] | list[dict],
+        metadata: dict[str, Any],
         animals: dict[str, Animal],
     ):
         """
@@ -56,11 +71,13 @@ class Dataset:
 
         Parameters
         ----------
-        name: str
+        name : str
             Name of the dataset.
         description : str
             Description of the dataset.
-        metadata : dict or list[dict]
+        dataset_type : DatasetType
+            Source platform of the dataset (PhenoMaster / IntelliMaze / IntelliCage).
+        metadata : dict[str, Any]
             Metadata describing the dataset, including name, description, and experiment times.
         animals : dict[str, Animal]
             Dictionary mapping animal IDs to Animal objects.
@@ -72,13 +89,27 @@ class Dataset:
         self.metadata = metadata
         self.animals = animals
 
+        # Subject column for repeated-measures stats (pingouin's ``subject=``); loaders may override.
+        self.subject_id_column: str = "Animal"
+
         self.datatables: dict[str, Datatable] = {}
         self.raw_datatables: dict[str, dict[str, Datatable]] = {}
 
         self.factors: dict[str, Factor] = {}
+        self._ensure_default_factors()
+
         self.reports: dict[str, Report] = {}
 
-        self.binning_settings = BinningSettings()
+    @property
+    def light_cycles(self) -> ByTimeOfDayConfig:
+        """Configuration for the dataset's light/dark cycle.
+
+        Returns the LightCycle factor's ``ByTimeOfDayConfig``. Consumers read
+        ``light_cycle_start`` and ``dark_cycle_start``.
+        """
+        factor = self.factors["LightCycle"]
+        assert isinstance(factor.config, ByTimeOfDayConfig)
+        return factor.config
 
     @property
     def source_path(self) -> str:
@@ -93,11 +124,11 @@ class Dataset:
         return self.metadata.get("source_path", "")
 
     @property
-    def runs(self) -> int:
+    def experiments(self) -> int:
         """
-        Get the number of runs in the dataset.
+        Get the number of experiments in the dataset.
         """
-        return len(self.metadata["runs"]) if "runs" in self.metadata else 1
+        return len(self.metadata["experiments"]) if "experiments" in self.metadata else 1
 
     @property
     def experiment_started(self) -> pd.Timestamp:
@@ -135,6 +166,18 @@ class Dataset:
         """
         return self.experiment_stopped - self.experiment_started
 
+    def _iter_all_datatables(self) -> Iterator[Datatable]:
+        """Yield every datatable owned by this dataset (regular first, then raw)."""
+        yield from self.datatables.values()
+        for extension_datatables in self.raw_datatables.values():
+            yield from extension_datatables.values()
+
+    def _ensure_default_factors(self) -> None:
+        """Add any missing built-in factors (Animal / Total / LightCycle)."""
+        for name, build in DEFAULT_FACTOR_BUILDERS.items():
+            if name not in self.factors:
+                self.factors[name] = build(self)
+
     def add_datatable(self, datatable: Datatable) -> None:
         """
         Add a datatable to the dataset.
@@ -164,29 +207,17 @@ class Dataset:
 
     def remove_datatable(self, datatable: Datatable) -> None:
         """
-        Remove a datatable and its derived subtree from the dataset.
-
-        Uses the datatable's parent_table reference to remove it directly
-        from either the top-level datatables or its parent's derived_tables,
-        then recursively cleans up the entire subtree.
+        Remove a datatable from the dataset.
 
         Parameters
         ----------
         datatable : Datatable
             The datatable to remove from the dataset.
         """
-        if datatable.extension_name:
-            # Remove raw datatable
-            if datatable.parent_table is None:
-                self.raw_datatables[datatable.extension_name].pop(datatable.name)
-            else:
-                datatable.parent_table.derived_tables.pop(datatable.name)
+        if datatable.extension_name is not None:
+            self.raw_datatables[datatable.extension_name].pop(datatable.name)
         else:
-            # Remove regular datatable
-            if datatable.parent_table is None:
-                self.datatables.pop(datatable.name)
-            else:
-                datatable.parent_table.derived_tables.pop(datatable.name)
+            self.datatables.pop(datatable.name)
 
     def rename(self, name: str) -> None:
         """
@@ -203,8 +234,9 @@ class Dataset:
         """
         Extract factor levels from an animal property.
 
-        This method creates factor levels based on the values of a specific property
-        across all animals in the dataset.
+        Animals lacking ``property_name`` are bucketed into a synthetic
+        ``"Missing"`` level. If no animal has the property, an empty dict is
+        returned.
 
         Parameters
         ----------
@@ -214,30 +246,119 @@ class Dataset:
         Returns
         -------
         dict[str, FactorLevel]
-            A dictionary mapping level names to FactorLevel objects.
+            A dictionary mapping level names to FactorLevel objects, sorted
+            case-insensitively by name.
         """
         levels_dict: dict[str, list[str]] = {}
-        levels: dict[str, FactorLevel] = {}
+        missing_ids: list[str] = []
         for animal in self.animals.values():
             if property_name not in animal.properties:
-                return levels
+                missing_ids.append(animal.id)
+                continue
             level_name = str(animal.properties[property_name])
-            if level_name not in levels_dict:
-                levels_dict[level_name] = []
-            levels_dict[level_name].append(animal.id)
+            levels_dict.setdefault(level_name, []).append(animal.id)
 
-        index = 0
-        for key, value in levels_dict.items():
-            level = FactorLevel(
+        if not levels_dict:
+            return {}
+
+        if missing_ids:
+            levels_dict["Missing"] = missing_ids
+
+        levels: dict[str, FactorLevel] = {}
+        for index, (key, value) in enumerate(levels_dict.items()):
+            levels[key] = FactorLevel(
                 name=key,
                 color=get_factor_level_color_hex(index),
                 animal_ids=value,
             )
-            levels[level.name] = level
-            index += 1
 
-        # Sort levels by name
+        return dict(sorted(levels.items(), key=lambda x: x[0].lower()))
+
+    def extract_levels_from_column(self, column_name: str) -> dict[str, FactorLevel]:
+        """
+        Extract factor levels from the unique values of a datatable column.
+
+        Levels are derived from the first datatable that contains the column. NA
+        values are dropped, and remaining values are coerced to strings to form
+        level names.
+
+        Parameters
+        ----------
+        column_name : str
+            Name of the column to extract levels from.
+
+        Returns
+        -------
+        dict[str, FactorLevel]
+            A dictionary mapping level names to FactorLevel objects, sorted
+            case-insensitively by name. Empty if no datatable contains the column.
+        """
+        levels: dict[str, FactorLevel] = {}
+        for datatable in self.datatables.values():
+            if column_name in datatable.df.columns:
+                series = datatable.df[column_name].dropna()
+                unique_values = (
+                    series.unique().tolist() if series.dtype.name != "category" else list(series.cat.categories)
+                )
+                for index, value in enumerate(unique_values):
+                    level_name = str(value)
+                    levels[level_name] = FactorLevel(
+                        name=level_name,
+                        color=get_factor_level_color_hex(index),
+                    )
+                break
+
         levels = dict(sorted(levels.items(), key=lambda x: x[0].lower()))
+        return levels
+
+    def extract_levels_from_time_interval(self, interval: timedelta) -> dict[str, FactorLevel]:
+        """
+        Build factor levels for a ``BY_TIME_INTERVAL`` factor.
+
+        One level is generated per bin spanned by the dataset's ``Timedelta``
+        range at the requested ``interval``. Level names use a unit-derived
+        prefix (``"Day"``, ``"Hour"``, ``"Minute"``, ``"Second"``) followed by
+        the zero-based bin index, e.g. ``"Day 0"``, ``"Day 1"``. Colors are
+        assigned sequentially via ``get_factor_level_color_hex``.
+
+        Parameters
+        ----------
+        interval : timedelta
+            The width of each bin. Must be positive.
+
+        Returns
+        -------
+        dict[str, FactorLevel]
+            Mapping of level name to FactorLevel, in numeric (insertion) order.
+            Empty if ``interval`` is non-positive or no datatable exposes a
+            usable ``Timedelta`` column.
+        """
+        levels: dict[str, FactorLevel] = {}
+        interval_td = pd.Timedelta(interval)
+        if interval_td <= pd.Timedelta(0):
+            return levels
+
+        max_timedelta: pd.Timedelta | None = None
+        for datatable in self.datatables.values():
+            if "Timedelta" not in datatable.df.columns:
+                continue
+            series = datatable.df["Timedelta"].dropna()
+            if series.empty:
+                continue
+            max_timedelta = pd.Timedelta(series.max())
+            break
+
+        if max_timedelta is None or max_timedelta < pd.Timedelta(0):
+            return levels
+
+        num_bins = int(max_timedelta // interval_td) + 1
+        prefix = _time_interval_level_prefix(interval)
+        for index in range(num_bins):
+            level_name = f"{prefix} {index}"
+            levels[level_name] = FactorLevel(
+                name=level_name,
+                color=get_factor_level_color_hex(index),
+            )
         return levels
 
     def rename_animal(self, old_id: str, animal: Animal) -> None:
@@ -254,16 +375,12 @@ class Dataset:
             The animal object with the new ID.
         """
 
-        for datatable in self.datatables.values():
-            rename_animal_recursively(datatable, old_id, animal)
-
-        for extension_datatables in self.raw_datatables.values():
-            for datatable in extension_datatables.values():
-                rename_animal_recursively(datatable, old_id, animal)
+        for datatable in self._iter_all_datatables():
+            datatable.rename_animal(old_id, animal)
 
         # Rename animal in factor's levels definitions
         for factor in self.factors.values():
-            for level in factor.levels:
+            for level in factor.levels.values():
                 for i, animal_id in enumerate(level.animal_ids):
                     if animal_id == old_id:
                         level.animal_ids[i] = animal.id
@@ -280,7 +397,7 @@ class Dataset:
         self.animals.pop(old_id)
         self.animals[animal.id] = animal
 
-        messaging.broadcast(messaging.DatasetChangedMessage(self, self))
+        messaging.broadcast(messaging.DatasetChangedMessage(sender=self, dataset=self))
 
     def exclude_animals(self, animal_ids: set[str]) -> None:
         """
@@ -296,7 +413,7 @@ class Dataset:
         """
         # Remove animals from factor's levels definitions
         for factor in self.factors.values():
-            for level in factor.levels:
+            for level in factor.levels.values():
                 level_set = set(level.animal_ids)
                 filtered_set = level_set.difference(animal_ids)
                 level.animal_ids = list(filtered_set)
@@ -311,14 +428,8 @@ class Dataset:
                     new_meta_animals[item["id"]] = item
             self.metadata["animals"] = new_meta_animals
 
-        # Exclude animals from regular datatables
-        for datatable in self.datatables.values():
-            exclude_animals_recursively(datatable, animal_ids)
-
-        # Exclude animals from raw datatables
-        for extension_datatables in self.raw_datatables.values():
-            for datatable in extension_datatables.values():
-                exclude_animals_recursively(datatable, animal_ids)
+        for datatable in self._iter_all_datatables():
+            datatable.exclude_animals(animal_ids)
 
     def exclude_time(self, range_start: datetime, range_end: datetime) -> None:
         """
@@ -339,12 +450,12 @@ class Dataset:
         if range_start < self.experiment_stopped <= range_end:
             self.metadata["experiment_stopped"] = str(range_start)
 
-        for datatable in self.datatables.values():
-            exclude_time_recursively(datatable, range_start, range_end)
+        for datatable in self._iter_all_datatables():
+            datatable.exclude_time(range_start, range_end)
 
-        for extension_datatables in self.raw_datatables.values():
-            for datatable in extension_datatables.values():
-                exclude_time_recursively(datatable, range_start, range_end)
+        # Re-materialize factor columns whose values depend on Timedelta
+        # (Bin via ByTimeIntervalConfig, named phases via ByElapsedTimeConfig).
+        self.set_factors(self.factors)
 
     def trim_time(self, range_start: datetime, range_end: datetime) -> None:
         """
@@ -363,12 +474,11 @@ class Dataset:
         self.metadata["experiment_started"] = str(range_start)
         self.metadata["experiment_stopped"] = str(range_end)
 
-        for datatable in self.datatables.values():
-            trim_time_recursively(datatable, range_start, range_end)
+        for datatable in self._iter_all_datatables():
+            datatable.trim_time(range_start, range_end)
 
-        for extension_datatables in self.raw_datatables.values():
-            for datatable in extension_datatables.values():
-                trim_time_recursively(datatable, range_start, range_end)
+        # Re-materialize factor columns whose values depend on Timedelta.
+        self.set_factors(self.factors)
 
     def resample(self, resample_interval: pd.Timedelta) -> None:
         """
@@ -385,7 +495,11 @@ class Dataset:
         for datatable in self.datatables.values():
             datatable.resample(resample_interval)
 
-    def set_factors(self, factors: dict[str, Factor], old_factors: dict[str, Factor] | None = None) -> None:
+    def set_factors(
+        self,
+        factors: dict[str, Factor],
+        old_factor_names: Iterable[str] | None = None,
+    ) -> None:
         """
         Set the factors for the dataset.
 
@@ -395,22 +509,56 @@ class Dataset:
         ----------
         factors : dict[str, Factor]
             Dictionary mapping factor names to Factor objects.
+        old_factor_names : Iterable[str] | None
+            Names of previously applied factors; their materialized columns are
+            dropped from each datatable before re-applying. ``"Animal"`` and
+            ``"Experiment"`` are preserved by ``Datatable.set_factors``.
         """
         self.factors = factors
+        self._ensure_default_factors()
 
         for datatable in self.datatables.values():
-            set_factors_recursively(datatable, factors, old_factors)
+            datatable.set_factors(factors, old_factor_names)
 
-    def clone(self):
+    def clone(self) -> Dataset:
         """
         Create a deep copy of the dataset.
+
+        Uses ``Datatable.clone()`` (which uses pandas' ``df.copy()``) for each
+        datatable instead of ``copy.deepcopy``, which is significantly faster
+        for large dataframes.
 
         Returns
         -------
         Dataset
             A new Dataset instance that is a deep copy of this dataset.
         """
-        return deepcopy(self)
+        new = Dataset(
+            name=self.name,
+            description=self.description,
+            dataset_type=self.dataset_type,
+            metadata=deepcopy(self.metadata),
+            animals=deepcopy(self.animals),
+        )
+        new.subject_id_column = self.subject_id_column
+        new.factors = deepcopy(self.factors)
+        new.reports = deepcopy(self.reports)
+
+        new.datatables = {}
+        for name, dt in self.datatables.items():
+            cloned = dt.clone()
+            cloned.dataset = new
+            new.datatables[name] = cloned
+
+        new.raw_datatables = {}
+        for ext, tables in self.raw_datatables.items():
+            new.raw_datatables[ext] = {}
+            for name, dt in tables.items():
+                cloned = dt.clone()
+                cloned.dataset = new
+                new.raw_datatables[ext][name] = cloned
+
+        return new
 
     def add_children_tree_items(self, dataset_tree_item: DatasetTreeItem) -> None:
         """
@@ -429,7 +577,6 @@ class Dataset:
         # Add datatables nodes
         for datatable in self.datatables.values():
             datatable_tree_item = DatatableTreeItem(datatable)
-            self._add_derived_tables(datatable_tree_item, datatable)
             dataset_tree_item.add_child(datatable_tree_item)
 
         # Add raw datatables nodes
@@ -442,7 +589,6 @@ class Dataset:
                     raw_datatables_node.add_child(extension_node)
                     for datatable in extension_datatables.values():
                         raw_datatable_tree_item = DatatableTreeItem(datatable)
-                        self._add_derived_tables(raw_datatable_tree_item, datatable)
                         extension_node.add_child(raw_datatable_tree_item)
 
         # Add reports nodes
@@ -451,12 +597,6 @@ class Dataset:
             dataset_tree_item.add_child(reports_node)
             for report in self.reports.values():
                 reports_node.add_child(ReportTreeItem(report))
-
-    def _add_derived_tables(self, parent_tree_item: DatatableTreeItem, datatable: Datatable) -> None:
-        for derived_table in datatable.derived_tables.values():
-            derived_table_tree_item = DatatableTreeItem(derived_table)
-            self._add_derived_tables(derived_table_tree_item, derived_table)
-            parent_tree_item.add_child(derived_table_tree_item)
 
     def add_report(self, report: Report) -> None:
         if report.name in self.reports:

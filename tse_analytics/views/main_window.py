@@ -33,7 +33,6 @@ from tse_analytics.views.logs.log_widget import LogWidget
 from tse_analytics.views.main_window_ui import Ui_MainWindow
 from tse_analytics.views.misc.toolbox_button import ToolboxButton
 from tse_analytics.views.pipeline.pipeline_editor_widget import PipelineEditorWidget
-from tse_analytics.views.settings.binning_settings_widget import BinningSettingsWidget
 from tse_analytics.views.settings.settings_dialog import SettingsDialog
 
 
@@ -113,12 +112,6 @@ class MainWindow(QMainWindow):
         selector_dock_area = LayoutManager.add_dock_widget_to_area(
             PySide6QtAds.BottomDockWidgetArea, factors_dock_widget, animals_dock_area
         )
-
-        binning_dock_widget = LayoutManager.register_dock_widget(
-            BinningSettingsWidget(), "Time Binning", QIcon(":/icons/binning.png")
-        )
-        LayoutManager.add_dock_widget_tab_to_area(binning_dock_widget, selector_dock_area)
-        selector_dock_area.setCurrentIndex(0)
 
         self.ui.actionImportDataset.triggered.connect(self._import_dataset_dialog)
         self.ui.actionNewWorkspace.triggered.connect(self._new_workspace)
@@ -289,7 +282,7 @@ class MainWindow(QMainWindow):
     def _import_dataset_dialog(self) -> None:
         filter = (
             "Data Files (*.tse *.csv *.zip);;TSE Datasets (*.tse);;CSV Files (*.csv);;IntelliMaze Datasets (*.zip)"
-            if globals.CSV_IMPORT_ENABLED
+            if globals.INTERNAL_ENABLED
             else "Data Files (*.tse *.zip);;TSE Datasets (*.tse);;IntelliMaze Datasets (*.zip)"
         )
         filename, _ = QFileDialog.getOpenFileName(
@@ -375,10 +368,10 @@ class MainWindow(QMainWindow):
         LayoutManager.open_perspective("Temporary")
 
     def _enable_internal_features(self):
-        globals.CSV_IMPORT_ENABLED = True
-        globals.PIPELINE_ENABLED = True
+        globals.INTERNAL_ENABLED = True
         self.dataset_widget.import_action.setVisible(True)
         self.ui.actionPipelineEditor.setVisible(True)
+        self.toolbox_button.enable_internal_tools(True)
         logger.info("Internal features enabled")
 
     def closeEvent(self, event: QCloseEvent) -> None:

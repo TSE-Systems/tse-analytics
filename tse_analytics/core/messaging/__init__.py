@@ -2,9 +2,6 @@ from tse_analytics.core.messaging.messages import (
     AddToReportMessage as AddToReportMessage,
 )
 from tse_analytics.core.messaging.messages import (
-    BinningMessage as BinningMessage,
-)
-from tse_analytics.core.messaging.messages import (
     DataChangedMessage as DataChangedMessage,
 )
 from tse_analytics.core.messaging.messages import (

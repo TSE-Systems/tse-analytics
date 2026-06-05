@@ -15,8 +15,10 @@ import pytest
 from tse_analytics.core.data.shared import (
     Aggregation,
     Animal,
+    ByAnimalConfig,
     Factor,
     FactorLevel,
+    FactorRole,
     Variable,
 )
 
@@ -25,9 +27,9 @@ from tse_analytics.core.data.shared import (
 def sample_animals():
     """3 animals: A1 and A2 enabled, A3 disabled."""
     return {
-        "A1": Animal(id="A1", color="#FF0000", properties={"group": "Control"}),
-        "A2": Animal(id="A2", color="#00FF00", properties={"group": "Treatment"}),
-        "A3": Animal(id="A3", color="#0000FF", properties={"group": "Treatment"}),
+        "A1": Animal(id="A1", properties={"group": "Control"}),
+        "A2": Animal(id="A2", properties={"group": "Treatment"}),
+        "A3": Animal(id="A3", properties={"group": "Treatment"}),
     }
 
 
@@ -59,10 +61,12 @@ def sample_factor():
     """Factor with 2 levels: Control (A1) and Treatment (A2, A3)."""
     return Factor(
         name="Group",
-        levels=[
-            FactorLevel(name="Control", color="#FF0000", animal_ids=["A1"]),
-            FactorLevel(name="Treatment", color="#00FF00", animal_ids=["A2", "A3"]),
-        ],
+        config=ByAnimalConfig(),
+        role=FactorRole.BETWEEN_SUBJECT,
+        levels={
+            "Control": FactorLevel(name="Control", color="#FF0000", animal_ids=["A1"]),
+            "Treatment": FactorLevel(name="Treatment", color="#00FF00", animal_ids=["A2", "A3"]),
+        },
     )
 
 
@@ -79,7 +83,6 @@ def sample_df():
                 "Animal": animal,
                 "DateTime": base_time + i * interval,
                 "Timedelta": i * interval,
-                "Bin": i,
                 "Weight": 25.0 + i * 0.5 + (hash(animal) % 3),
                 "Speed": 1.0 + i * 0.1 + (hash(animal) % 2) * 0.5,
             })

@@ -2,10 +2,10 @@ from dataclasses import asdict
 
 import pandas as pd
 
-from tse_analytics.core import color_manager
+from tse_analytics.core.color_manager import get_factor_level_color_hex
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import Animal
+from tse_analytics.core.data.shared import Animal, ByColumnConfig, Factor, FactorLevel, FactorRole
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
 
 
@@ -63,8 +63,6 @@ def merge_datasets(
                         datatable.df["Animal"] = datatable.df["Animal"].astype("category")
 
     merged_animals = _merge_animals(datasets)
-    for index, animal in enumerate(merged_animals.values()):
-        animal.color = color_manager.get_color_hex(index)
 
     merging_mode = "continuous" if continuous_mode else "overlap"
     merged_metadata = _merge_metadata(new_dataset_name, merging_mode, merged_animals, datasets)
@@ -84,22 +82,28 @@ def merge_datasets(
             if datatable_name in dataset.datatables:
                 dataframes.append(dataset.datatables[datatable_name].df)
 
-        # Assign run number
+        # Assign experiment number
         if not single_run:
-            for run, df in enumerate(dataframes):
-                df["Run"] = run + 1
+            for experiment, df in enumerate(dataframes):
+                df["Experiment"] = f"Experiment {experiment}"
 
         new_df = pd.concat(dataframes, ignore_index=True)
 
         if single_run:
-            if "Run" in new_df.columns:
-                new_df = new_df.drop(columns=["Run"])
+            if "Experiment" in new_df.columns:
+                new_df = new_df.drop(columns=["Experiment"])
         else:
-            new_df["Run"] = new_df["Run"].astype("UInt8")
-
-        # Drop "Bin" column
-        if "Bin" in new_df.columns:
-            new_df = new_df.drop(columns=["Bin"])
+            new_df["Experiment"] = new_df["Experiment"].astype("category")
+            levels = {}
+            for i, experiment in enumerate(new_df["Experiment"].unique()):
+                levels[experiment] = FactorLevel(name=experiment, color=get_factor_level_color_hex(i))
+            factor = Factor(
+                name="Experiment",
+                role=FactorRole.WITHIN_SUBJECT if continuous_mode else FactorRole.BETWEEN_SUBJECT,
+                config=ByColumnConfig(column="Experiment"),
+                levels=levels,
+            )
+            merged_dataset.factors[factor.name] = factor
 
         if continuous_mode:
             # Reassign timedelta column
@@ -113,6 +117,14 @@ def merge_datasets(
         # Sort dataframe
         new_df = new_df.sort_values(by=["Timedelta", "Animal"]).reset_index(drop=True)
 
+        # Preserve sample_interval from the source so the merged datatable
+        # remains a regular timeseries and Dataset.set_factors auto-creates
+        # the Bin factor for it.
+        source_metadata = first_dataset.datatables[datatable_name].metadata
+        new_metadata: dict = {}
+        if "sample_interval" in source_metadata:
+            new_metadata["sample_interval"] = source_metadata["sample_interval"]
+
         new_variables = first_dataset.datatables[datatable_name].variables
         datatable = Datatable(
             merged_dataset,
@@ -120,11 +132,14 @@ def merge_datasets(
             f"Merged {datatable_name} datatable",
             new_variables,
             new_df,
-            {},
+            new_metadata,
         )
         merged_dataset.add_datatable(datatable)
 
     _merge_raw_datatables(merged_dataset, datasets, continuous_mode)
+
+    # Materialize factor columns on the merged datatables.
+    merged_dataset.set_factors(merged_dataset.factors)
 
     return merged_dataset
 
@@ -232,10 +247,10 @@ def _merge_metadata(
         "experiment_started": str(experiment_started),
         "experiment_stopped": str(experiment_stopped),
         "animals": {k: asdict(v) for (k, v) in merged_animals.items()},
-        "runs": {},
+        "experiments": {},
     }
     for i, dataset in enumerate(datasets):
-        result["runs"][str(i + 1)] = dataset.metadata
+        result["experiments"][f"Experiment {i}"] = dataset.metadata
     return result
 
 

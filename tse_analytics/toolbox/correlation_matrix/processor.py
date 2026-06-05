@@ -1,12 +1,11 @@
 from dataclasses import dataclass
 
 import numpy as np
-import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
 from matplotlib import rcParams
 
-from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.utils import get_great_table, get_html_image_from_figure
 
 
@@ -16,13 +15,11 @@ class CorrelationMatrixResult:
 
 
 def get_correlation_matrix_result(
-    dataset: Dataset,
-    df: pd.DataFrame,
+    datatable: Datatable,
     variables: list[str],
     figsize: tuple[float, float] | None = None,
 ) -> CorrelationMatrixResult:
-    if figsize is None:
-        figsize = rcParams["figure.figsize"]
+    df = datatable.get_filtered_df(variables)
 
     # Compute the correlation matrix
     correlation_df = df[variables].corr()
@@ -31,6 +28,8 @@ def get_correlation_matrix_result(
     mask = np.triu(np.ones_like(correlation_df, dtype=bool))
 
     # Set up the matplotlib figure
+    if figsize is None:
+        figsize = rcParams["figure.figsize"]
     figure, ax = plt.subplots(figsize=(figsize[0] / 2, figsize[0] / 2))
 
     # Generate a custom diverging colormap

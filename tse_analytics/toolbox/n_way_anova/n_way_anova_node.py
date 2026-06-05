@@ -74,14 +74,9 @@ class NWayAnovaNode(PipelineNode):
         effect_size = EFFECT_SIZE.get(effect_size_label, "none")
         p_adjustment = P_ADJUSTMENT.get(p_adjustment_label, "none")
 
-        # Get filtered dataframe with necessary columns
-        columns = datatable.get_default_columns() + list(datatable.dataset.factors) + [variable_name]
-        df = datatable.get_filtered_df(columns)
-
         # Perform N-way ANOVA analysis
         result = get_n_way_anova_result(
-            datatable.dataset,
-            df,
+            datatable,
             variable,
             factor_names,
             effect_size,

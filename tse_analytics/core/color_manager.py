@@ -9,7 +9,7 @@ and factor levels to colors.
 import seaborn as sns
 from matplotlib.colors import rgb2hex
 
-from tse_analytics.core.data.shared import Animal, Factor
+from tse_analytics.core.data.shared import Factor
 
 colormap_name = "tab20"
 cmap = sns.color_palette(colormap_name, as_cmap=True)
@@ -50,13 +50,13 @@ def get_color_hex(index: int) -> str:
 def get_factor_level_color_hex(index: int) -> str:
     palette = sns.color_palette("deep")
     n_colors = len(palette)
-    if index > n_colors:
+    if index >= n_colors:
         index = index - (n_colors * (index // n_colors))
     color_tuple = palette[index]
     return rgb2hex(color_tuple)
 
 
-def get_animal_to_color_dict(animals: dict[str, Animal]) -> dict[str, str]:
+def get_animal_to_color_dict(factor: Factor) -> dict[str, str]:
     """
     Create a dictionary mapping animal IDs to their colors.
 
@@ -67,29 +67,26 @@ def get_animal_to_color_dict(animals: dict[str, Animal]) -> dict[str, str]:
         A dictionary mapping animal IDs to color strings.
     """
     result = {}
-    for animal in animals.values():
-        result[animal.id] = animal.color
+    for level in factor.levels.values():
+        result[level.name] = level.color
     return result
 
 
-def get_level_to_color_dict(factor: Factor) -> dict[str, str]:
+def get_level_to_color_dict(factor: Factor) -> dict[str, str] | str:
     """
-    Create a dictionary mapping factor level names to their colors.
+    Map factor level names to colors.
+
+    Returns a single hex color as a fallback when the factor has no levels.
+    seaborn and plotnine palettes, accept a single color string and apply it
+    to every group.
 
     Args:
         factor: A Factor object containing levels.
 
     Returns:
-        A dictionary mapping level names to color strings.
+        A dict mapping level names to colors when levels are populated, or a
+        single hex color string otherwise.
     """
-    result = {}
-    for level in factor.levels:
-        result[level.name] = level.color
-    return result
-
-
-def get_run_to_color_dict(number_of_runs: int) -> dict[int, str]:
-    result = {}
-    for run in range(number_of_runs):
-        result[run + 1] = get_factor_level_color_hex(run)
-    return result
+    if not factor.levels:
+        return get_factor_level_color_hex(0)
+    return {level.name: level.color for level in factor.levels.values()}

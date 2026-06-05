@@ -27,3 +27,11 @@ class Report:
     name: str
     content: str
     timestamp: datetime = field(default_factory=datetime.now)
+
+    def clone(self):
+        return Report(
+            dataset=self.dataset,
+            name=self.name,
+            content=self.content,
+            timestamp=self.timestamp,
+        )

@@ -3,11 +3,11 @@ from dataclasses import dataclass
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn.objects as so
+from matplotlib import rcParams
 from sklearn.preprocessing import StandardScaler
 
 from tse_analytics.core import color_manager
-from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.utils import get_html_image_from_figure
 
 
@@ -17,10 +17,9 @@ class UmapResult:
 
 
 def get_umap_result(
-    dataset: Dataset,
-    df: pd.DataFrame,
+    datatable: Datatable,
     variables: list[str],
-    grouping_settings: GroupingSettings,
+    factor_name: str,
     n_neighbors: int,
     n_components: int,
     metric: str,
@@ -30,22 +29,11 @@ def get_umap_result(
     # Lazy module import
     from umap import UMAP
 
+    columns = [factor_name] + variables
+    df = datatable.get_filtered_df(columns)
+
     # Cleaning
     df.dropna(inplace=True)
-
-    match grouping_settings.mode:
-        case GroupingMode.ANIMAL:
-            by = "Animal"
-            palette = color_manager.get_animal_to_color_dict(dataset.animals)
-        case GroupingMode.RUN:
-            by = "Run"
-            palette = color_manager.get_run_to_color_dict(dataset.runs)
-        case GroupingMode.FACTOR:
-            by = grouping_settings.factor_name
-            palette = color_manager.get_level_to_color_dict(dataset.factors[by])
-        case _:
-            by = None
-            palette = color_manager.colormap_name
 
     # Standardize the data
     scaler = StandardScaler()
@@ -59,14 +47,17 @@ def get_umap_result(
     )
     data = umap.fit_transform(scaled_data)
 
+    if figsize is None:
+        figsize = rcParams["figure.figsize"]
+
+    palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[factor_name])
     match n_components:
         case 1:
             title = "UMAP (1D)"
 
             result_df = pd.DataFrame(data=data, columns=["UMAP1"])
             result_df = pd.concat([result_df, pd.Series(range(len(result_df)), name="N")], axis=1)
-            if by is not None:
-                result_df[by] = df[by].values
+            result_df[factor_name] = df[factor_name].values
 
             # Create a figure with a tight layout
             figure = plt.Figure(figsize=figsize, layout="tight")
@@ -76,7 +67,7 @@ def get_umap_result(
                     result_df,
                     x="UMAP1",
                     y="N",
-                    color=by,
+                    color=factor_name,
                 )
                 .add(so.Dot(pointsize=3))
                 .scale(color=palette)
@@ -91,8 +82,7 @@ def get_umap_result(
                 "UMAP1": data[:, 0],
                 "UMAP2": data[:, 1],
             })
-            if by is not None:
-                result_df[by] = df[by].values
+            result_df[factor_name] = df[factor_name].values
 
             # Create a figure with a tight layout
             figure = plt.Figure(figsize=figsize, layout="tight")
@@ -102,7 +92,7 @@ def get_umap_result(
                     result_df,
                     x="UMAP1",
                     y="UMAP2",
-                    color=by,
+                    color=factor_name,
                 )
                 .add(so.Dot(pointsize=3))
                 .scale(color=palette)
@@ -118,8 +108,7 @@ def get_umap_result(
                 "UMAP2": data[:, 1],
                 "UMAP3": data[:, 2],
             })
-            if by is not None:
-                result_df[by] = df[by].values
+            result_df[factor_name] = df[factor_name].values
 
             figure, ax = plt.subplots(
                 1,
@@ -129,24 +118,16 @@ def get_umap_result(
                 subplot_kw={"projection": "3d"},
             )
 
-            if by is not None:
-                for group, c in palette.items():
-                    group_df = result_df[result_df[by] == group]
-                    ax.scatter(
-                        group_df["UMAP1"],
-                        group_df["UMAP2"],
-                        group_df["UMAP3"],
-                        c=c,
-                        label=group,
-                    )
-                ax.legend(title=by)
-            else:
+            for group, c in palette.items():
+                group_df = result_df[result_df[factor_name] == group]
                 ax.scatter(
-                    data=result_df,
-                    xs="UMAP1",
-                    ys="UMAP2",
-                    zs="UMAP3",
+                    group_df["UMAP1"],
+                    group_df["UMAP2"],
+                    group_df["UMAP3"],
+                    c=c,
+                    label=group,
                 )
+            ax.legend(title=factor_name)
 
             ax.set(
                 xlabel="UMAP1",

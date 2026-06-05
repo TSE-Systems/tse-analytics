@@ -91,12 +91,8 @@ class AncovaNode(PipelineNode):
         if p_adjustment is None:
             return PipelinePacket.inactive(reason="Invalid p-adjustment selection")
 
-        columns = datatable.get_default_columns() + list(datatable.dataset.factors) + [dependent_name, covariate_name]
-        df = datatable.get_filtered_df(columns)
-
         result = get_ancova_result(
-            datatable.dataset,
-            df,
+            datatable,
             dependent_variable,
             covariate_variable,
             factor_name,

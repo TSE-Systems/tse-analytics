@@ -65,7 +65,7 @@ class IntervalsPlotWidget(QWidget):
         else:
             y_label = "Weight [g]"
 
-        color = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
+        color = color_manager.get_animal_to_color_dict(self.datatable.dataset.factors["Animal"])
 
         self.canvas.clear(False)
         (

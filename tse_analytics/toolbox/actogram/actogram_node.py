@@ -51,12 +51,8 @@ class ActogramNode(PipelineNode):
         if not 1 <= bins_per_hour <= 60:
             return PipelinePacket.inactive(reason="Bins per hour must be between 1 and 60")
 
-        columns = ["Animal", "DateTime", variable.name]
-        df = datatable.get_filtered_df(columns)
-
         result = get_actogram_result(
-            datatable.dataset,
-            df,
+            datatable,
             variable,
             bins_per_hour,
             figsize=None,

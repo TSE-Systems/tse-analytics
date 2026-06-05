@@ -1,17 +1,14 @@
 from dataclasses import dataclass
 
 import matplotlib.pyplot as plt
-import pandas as pd
 import pingouin as pg
 import seaborn.objects as so
 from matplotlib import rcParams
 
 from tse_analytics.core import color_manager
-from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.grouping import GroupingMode, GroupingSettings
+from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.utils import get_great_table, get_html_image_from_figure
-from tse_analytics.core.utils.data import group_df_by_animal
 
 
 @dataclass
@@ -20,41 +17,34 @@ class RegressionResult:
 
 
 def get_regression_result(
-    dataset: Dataset,
-    df: pd.DataFrame,
+    datatable: Datatable,
     covariate: Variable,
     response: Variable,
-    grouping_settings: GroupingSettings,
+    factor_name: str,
     figsize: tuple[float, float] | None = None,
 ) -> RegressionResult:
-    if figsize is None:
-        figsize = rcParams["figure.figsize"]
-
-    # Create a figure with a tight layout
-    figure = plt.Figure(figsize=figsize, layout="tight")
-
-    # Group by animal
-    df = group_df_by_animal(
-        df,
-        {
-            covariate.name: covariate,
-            response.name: response,
-        },
+    columns = [response.name] if response.name == covariate.name else [covariate.name, response.name]
+    columns = ["Animal", factor_name] + columns
+    df = datatable.get_filtered_df(columns)
+    df = (
+        df
+        .groupby(
+            ["Animal", factor_name],
+            dropna=False,
+            observed=True,
+        )
+        .aggregate({
+            covariate.name: covariate.aggregation,
+            response.name: response.aggregation,
+        })
+        .reset_index()
     )
 
-    match grouping_settings.mode:
-        case GroupingMode.ANIMAL:
-            by = "Animal"
-            palette = color_manager.get_animal_to_color_dict(dataset.animals)
-        case GroupingMode.RUN:
-            by = "Run"
-            palette = color_manager.get_run_to_color_dict(dataset.runs)
-        case GroupingMode.FACTOR:
-            by = grouping_settings.factor_name
-            palette = color_manager.get_level_to_color_dict(dataset.factors[by])
-        case _:
-            by = None
-            palette = color_manager.colormap_name
+    palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[factor_name])
+
+    if figsize is None:
+        figsize = rcParams["figure.figsize"]
+    figure = plt.Figure(figsize=figsize, layout="tight")
 
     (
         so
@@ -62,7 +52,7 @@ def get_regression_result(
             df,
             x=covariate.name,
             y=response.name,
-            color=by,
+            color=factor_name,
         )
         .add(so.Dot())
         .add(
@@ -74,39 +64,17 @@ def get_regression_result(
         .plot(True)
     )
 
-    match grouping_settings.mode:
-        case GroupingMode.ANIMAL:
-            output = ""
-        case GroupingMode.FACTOR:
-            output = ""
-            for level in df[grouping_settings.factor_name].unique().tolist():
-                data = df[df[grouping_settings.factor_name] == level]
-                output = (
-                    output
-                    + get_great_table(
-                        pg.linear_regression(data[covariate.name], data[response.name], remove_na=True),
-                        f"Level: {level}",
-                    ).as_raw_html(inline_css=True)
-                    + "<p>"
-                )
-        case GroupingMode.RUN:
-            output = ""
-            for run in df["Run"].unique().tolist():
-                data = df[df["Run"] == run]
-                output = (
-                    output
-                    + get_great_table(
-                        pg.linear_regression(data[covariate.name], data[response.name], remove_na=True),
-                        f"Run: {run}",
-                    ).as_raw_html(inline_css=True)
-                    + "<p>"
-                )
-        case _:
-            data = df
-            output = get_great_table(
+    output = ""
+    for level in df[factor_name].unique().tolist():
+        data = df[df[factor_name] == level]
+        output = (
+            output
+            + get_great_table(
                 pg.linear_regression(data[covariate.name], data[response.name], remove_na=True),
-                "Total",
+                f"Level: {level}",
             ).as_raw_html(inline_css=True)
+            + "<p>"
+        )
 
     report = f"""
     {output}

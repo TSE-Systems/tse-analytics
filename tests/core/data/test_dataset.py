@@ -1,6 +1,7 @@
 """Tests for tse_analytics.core.data.dataset module."""
 
 import pickle
+from datetime import timedelta
 from unittest.mock import patch
 
 import pandas as pd
@@ -30,11 +31,15 @@ class TestDatasetInit:
             )
         assert ds.datatables == {}
 
-    def test_initializes_empty_factors(self, sample_dataset):
-        assert sample_dataset.factors == {}
-
     def test_initializes_empty_reports(self, sample_dataset):
         assert sample_dataset.reports == {}
+
+    def test_subject_id_column_defaults_to_animal(self, sample_dataset):
+        assert sample_dataset.subject_id_column == "Animal"
+
+    def test_subject_id_column_is_overridable(self, sample_dataset):
+        sample_dataset.subject_id_column = "Cage"
+        assert sample_dataset.subject_id_column == "Cage"
 
 
 class TestDatasetProperties:
@@ -70,23 +75,6 @@ class TestDatasetDatatablesCRUD:
     def test_remove_datatable(self, sample_dataset, sample_datatable):
         sample_dataset.remove_datatable(sample_datatable)
         assert "Main" not in sample_dataset.datatables
-
-    def test_remove_derived_datatable(self, sample_dataset, sample_datatable, sample_variables, sample_df):
-        from tse_analytics.core.data.datatable import Datatable
-
-        derived = Datatable(
-            dataset=sample_dataset,
-            name="Derived",
-            description="Derived table",
-            variables=sample_variables,
-            df=sample_df.copy(),
-            metadata={},
-        )
-        sample_datatable.add_derived_table(derived)
-        assert derived.name in sample_datatable.derived_tables
-
-        sample_dataset.remove_datatable(derived)
-        assert derived.name not in sample_datatable.derived_tables
 
     def test_add_multiple_datatables(self, sample_dataset, sample_datatable, sample_variables, sample_df):
         from tse_analytics.core.data.datatable import Datatable
@@ -131,13 +119,52 @@ class TestExtractLevelsFromProperty:
         levels = sample_dataset.extract_levels_from_property("nonexistent")
         assert levels == {}
 
+    def test_partial_coverage_buckets_missing_animals(self, sample_dataset):
+        # A2 lacks "diet" while A1 and A3 have it.
+        sample_dataset.animals["A1"].properties["diet"] = "low_fat"
+        sample_dataset.animals["A3"].properties["diet"] = "high_fat"
+
+        levels = sample_dataset.extract_levels_from_property("diet")
+
+        assert "Missing" in levels
+        assert levels["Missing"].animal_ids == ["A2"]
+        assert "low_fat" in levels
+        assert levels["low_fat"].animal_ids == ["A1"]
+        assert "high_fat" in levels
+        assert levels["high_fat"].animal_ids == ["A3"]
+
+
+class TestExtractLevelsFromTimeInterval:
+    """Tests for Dataset.extract_levels_from_time_interval."""
+
+    def test_one_hour_interval_produces_per_hour_levels(self, sample_dataset, sample_datatable):
+        levels = sample_dataset.extract_levels_from_time_interval(timedelta(hours=1))
+        assert list(levels.keys()) == ["Hour 0", "Hour 1", "Hour 2", "Hour 3", "Hour 4"]
+
+    def test_one_day_interval_produces_single_day_level(self, sample_dataset, sample_datatable):
+        levels = sample_dataset.extract_levels_from_time_interval(timedelta(days=1))
+        assert list(levels.keys()) == ["Day 0"]
+
+    def test_levels_have_distinct_colors(self, sample_dataset, sample_datatable):
+        levels = sample_dataset.extract_levels_from_time_interval(timedelta(hours=1))
+        colors = [lvl.color for lvl in levels.values()]
+        assert len(set(colors)) == len(colors)
+
+    def test_no_datatables_returns_empty(self, sample_dataset):
+        levels = sample_dataset.extract_levels_from_time_interval(timedelta(hours=1))
+        assert levels == {}
+
+    def test_non_positive_interval_returns_empty(self, sample_dataset, sample_datatable):
+        levels = sample_dataset.extract_levels_from_time_interval(timedelta(0))
+        assert levels == {}
+
 
 class TestRenameAnimal:
     """Tests for Dataset.rename_animal."""
 
     def test_renames_in_animals_dict(self, sample_dataset, sample_datatable):
         old_animal = sample_dataset.animals["A1"]
-        new_animal = Animal(id="NewA1", color=old_animal.color, properties=old_animal.properties)
+        new_animal = Animal(id="NewA1", properties=old_animal.properties)
 
         sample_dataset.rename_animal("A1", new_animal)
 
@@ -146,7 +173,7 @@ class TestRenameAnimal:
 
     def test_renames_in_metadata(self, sample_dataset, sample_datatable):
         old_animal = sample_dataset.animals["A1"]
-        new_animal = Animal(id="NewA1", color=old_animal.color, properties=old_animal.properties)
+        new_animal = Animal(id="NewA1", properties=old_animal.properties)
 
         sample_dataset.rename_animal("A1", new_animal)
 
@@ -156,11 +183,11 @@ class TestRenameAnimal:
         sample_dataset.factors = {"Group": sample_factor}
 
         old_animal = sample_dataset.animals["A1"]
-        new_animal = Animal(id="NewA1", color=old_animal.color, properties=old_animal.properties)
+        new_animal = Animal(id="NewA1", properties=old_animal.properties)
 
         sample_dataset.rename_animal("A1", new_animal)
 
-        control_level = sample_factor.levels[0]
+        control_level = sample_factor.levels["Control"]
         assert "NewA1" in control_level.animal_ids
         assert "A1" not in control_level.animal_ids
 
@@ -182,7 +209,7 @@ class TestExcludeAnimals:
 
         sample_dataset.exclude_animals({"A1"})
 
-        control_level = sample_factor.levels[0]
+        control_level = sample_factor.levels["Control"]
         assert "A1" not in control_level.animal_ids
 
 

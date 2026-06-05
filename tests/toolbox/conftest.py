@@ -15,8 +15,10 @@ from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import (
     Aggregation,
     Animal,
+    ByAnimalConfig,
     Factor,
     FactorLevel,
+    FactorRole,
     Variable,
 )
 
@@ -29,7 +31,6 @@ def analysis_animals():
         group = "Control" if i <= 3 else "Treatment"
         animals[f"M{i}"] = Animal(
             id=f"M{i}",
-            color=f"#{'FF' if i <= 3 else '00'}0000",
             properties={"group": group},
         )
     return animals
@@ -63,10 +64,12 @@ def analysis_factor():
     """Factor with Control and Treatment levels."""
     return Factor(
         name="Group",
-        levels=[
-            FactorLevel(name="Control", color="#FF0000", animal_ids=["M1", "M2", "M3"]),
-            FactorLevel(name="Treatment", color="#00FF00", animal_ids=["M4", "M5", "M6"]),
-        ],
+        config=ByAnimalConfig(),
+        role=FactorRole.BETWEEN_SUBJECT,
+        levels={
+            "Control": FactorLevel(name="Control", color="#FF0000", animal_ids=["M1", "M2", "M3"]),
+            "Treatment": FactorLevel(name="Treatment", color="#00FF00", animal_ids=["M4", "M5", "M6"]),
+        },
     )
 
 
@@ -90,7 +93,6 @@ def analysis_df(analysis_animals, analysis_factor):
                 "Animal": animal_id,
                 "DateTime": base_time + i * interval,
                 "Timedelta": i * interval,
-                "Bin": i,
                 "Metabolism": base_metabolism + rng.normal(0, 0.5),
                 "Activity": base_activity + rng.normal(0, 10),
                 "Group": group,
@@ -100,7 +102,7 @@ def analysis_df(analysis_animals, analysis_factor):
     df["Animal"] = df["Animal"].astype("category")
     df["Timedelta"] = pd.to_timedelta(df["Timedelta"])
     df["Group"] = df["Group"].astype("category")
-    df["Run"] = pd.Categorical([1] * len(df))
+    df["Experiment"] = pd.Categorical([1] * len(df))
     return df
 
 

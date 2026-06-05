@@ -12,7 +12,6 @@ from pathlib import Path
 import pandas as pd
 import xmltodict
 
-from tse_analytics.core.color_manager import get_color_hex
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import Animal
@@ -121,7 +120,6 @@ def _import_animals(path: Path) -> dict:
         }
         animal = Animal(
             id=str(row["Name"]),
-            color=get_color_hex(index),
             properties=properties,
         )
         animals[animal.id] = animal

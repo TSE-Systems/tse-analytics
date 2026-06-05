@@ -276,7 +276,7 @@ def preprocess_main_table(dataset: Dataset) -> None:
     # df = pd.concat(preprocessed_animal_df, ignore_index=True, sort=False)
     #
     # # Add Run column
-    # df.insert(loc=5, column="Run", value=1)
+    # df.insert(loc=5, column="Experiment", value=1)
     #
     # # Convert to categorical types
     # df = df.astype({
@@ -345,13 +345,12 @@ def _preprocess_animal(
 
     result.reset_index(drop=False, inplace=True, names=["DateTime"])
 
-    # Add Timedelta and Bin columns
+    # Add Timedelta column
     result.insert(
         loc=1,
         column="Timedelta",
         value=(result["DateTime"] - experiment_started).dt.as_unit(TIME_RESOLUTION_UNIT),
     )
-    result.insert(loc=2, column="Bin", value=(result["Timedelta"] / sample_interval).round().astype("UInt64"))
 
     # Put back animal into dataframe
     result.insert(loc=3, column="Animal", value=animal_id)

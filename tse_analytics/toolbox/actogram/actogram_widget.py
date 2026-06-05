@@ -12,11 +12,11 @@ from tse_analytics.views.misc.variable_selector import VariableSelector
 
 @dataclass
 class ActogramWidgetSettings:
-    selected_variable: str = None
+    variable: str = None
     bins_per_hour: int = 6
 
 
-@toolbox_plugin(category="Circadian Analysis", label="Actogram", icon=":/icons/icons8-barcode-16.png", order=0)
+@toolbox_plugin(category="Chronobiology", label="Actogram", icon=":/icons/icons8-barcode-16.png", order=1)
 class ActogramWidget(ToolboxWidgetBase):
     """Widget for visualizing activity patterns over time in a double-plotted actogram format.
 
@@ -36,7 +36,7 @@ class ActogramWidget(ToolboxWidgetBase):
 
     def _create_toolbar_items(self, toolbar: QToolBar) -> None:
         self.variableSelector = VariableSelector(toolbar)
-        self.variableSelector.set_data(self.datatable.variables, selected_variable=self._settings.selected_variable)
+        self.variableSelector.set_data(self.datatable.variables, selected_variable=self._settings.variable)
         toolbar.addWidget(self.variableSelector)
 
         toolbar.addWidget(QLabel("Bins per hour:"))
@@ -58,15 +58,9 @@ class ActogramWidget(ToolboxWidgetBase):
     def _update(self):
         self.report_view.clear()
 
-        variable = self.variableSelector.get_selected_variable()
-
-        columns = ["Animal", "DateTime", variable.name]
-        df = self.datatable.get_filtered_df(columns)
-
         result = get_actogram_result(
-            self.datatable.dataset,
-            df,
-            variable,
+            self.datatable,
+            self.variableSelector.get_selected_variable(),
             self.bins_spin_box.value(),
             get_figsize_from_widget(self.report_view),
         )

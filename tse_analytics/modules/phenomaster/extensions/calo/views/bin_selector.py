@@ -2,8 +2,8 @@ from PySide6.QtCore import QItemSelection, QSortFilterProxyModel, Qt
 from PySide6.QtWidgets import QAbstractItemView, QTableView, QWidget
 
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.models.bins_model import BinsModel
 from tse_analytics.core.utils.ui import set_inactive_palette
+from tse_analytics.modules.phenomaster.extensions.calo.data.bins_model import BinsModel
 from tse_analytics.modules.phenomaster.io.tse_import_settings import CALO_BIN_TABLE
 
 

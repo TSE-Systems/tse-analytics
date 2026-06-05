@@ -19,15 +19,14 @@ from PySide6.QtWidgets import (
 
 from tse_analytics.core import color_manager, manager
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.grouping import GroupingMode
 from tse_analytics.core.data.report import Report
+from tse_analytics.core.data.shared import FactorRole
 from tse_analytics.core.utils import (
     get_h_spacer_widget,
     get_html_image_from_figure,
     get_widget_tool_button,
-    time_to_float,
 )
-from tse_analytics.toolbox.data_plot.processor import ERROR_BAR_TYPE
+from tse_analytics.toolbox.data_plot.processor import ERROR_BAR_TYPE, compute_dark_band_spans
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
 from tse_analytics.views.misc.MplCanvas import MplCanvas
@@ -42,7 +41,7 @@ class DataPlotWidgetSettings:
     line_width: float = 1.0
 
 
-@toolbox_plugin(category="Data", label="Plot", icon=":/icons/plot.png", order=2)
+@toolbox_plugin(category="Data", label="Line Plot", icon=":/icons/plot.png", order=3)
 class DataPlotWidget(QWidget):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(parent)
@@ -52,7 +51,10 @@ class DataPlotWidget(QWidget):
 
         # Settings management
         settings = QSettings()
-        self._settings: DataPlotWidgetSettings = settings.value(self.__class__.__name__, DataPlotWidgetSettings())
+        try:
+            self._settings: DataPlotWidgetSettings = settings.value(self.__class__.__name__, DataPlotWidgetSettings())
+        except Exception:
+            self._settings = DataPlotWidgetSettings()
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -94,10 +96,7 @@ class DataPlotWidget(QWidget):
         toolbar.addWidget(QLabel("Error Bar:"))
         self.comboBoxErrorBar = QComboBox(toolbar)
         self.comboBoxErrorBar.addItems(ERROR_BAR_TYPE.keys())
-        if "Bin" in self.datatable.df.columns:
-            self.comboBoxErrorBar.setCurrentText(self._settings.error_bar)
-        else:
-            self.comboBoxErrorBar.setCurrentText(ERROR_BAR_TYPE["None"])
+        self.comboBoxErrorBar.setCurrentText(self._settings.error_bar)
         toolbar.addWidget(self.comboBoxErrorBar)
 
         toolbar.addSeparator()
@@ -144,24 +143,13 @@ class DataPlotWidget(QWidget):
         if len(selected_variable_names) == 0:
             return
 
-        grouping_settings = self.group_by_selector.get_grouping_settings()
+        factor_name = self.group_by_selector.currentText()
         error_bar = ERROR_BAR_TYPE[self.comboBoxErrorBar.currentText()]
 
-        match grouping_settings.mode:
-            case GroupingMode.ANIMAL:
-                by = "Animal"
-                palette = color_manager.get_animal_to_color_dict(self.datatable.dataset.animals)
-            case GroupingMode.RUN:
-                by = "Run"
-                palette = color_manager.get_run_to_color_dict(self.datatable.dataset.runs)
-            case GroupingMode.FACTOR:
-                by = grouping_settings.factor_name
-                palette = color_manager.get_level_to_color_dict(self.datatable.dataset.factors[by])
-            case _:
-                by = None
-                palette = color_manager.colormap_name
+        columns = ["Timedelta", factor_name] + selected_variable_names
+        factor = self.datatable.dataset.factors[factor_name]
+        palette = color_manager.get_level_to_color_dict(factor)
 
-        columns = self.datatable.get_default_columns() + list(self.datatable.dataset.factors) + selected_variable_names
         df = self.datatable.get_filtered_df(columns)
         df["Hours"] = df["Timedelta"] / pd.Timedelta(1, "h")
 
@@ -173,7 +161,7 @@ class DataPlotWidget(QWidget):
             .Plot(
                 df,
                 x="Hours",
-                color=by,
+                color=factor_name,
             )
             .pair(y=selected_variable_names)
             .add(so.Line(linewidth=self.linewidth_spin_box.value()), so.Agg(func="mean"))
@@ -182,32 +170,22 @@ class DataPlotWidget(QWidget):
         if error_bar is not None:
             plot = plot.add(so.Band(alpha=0.15), so.Est(errorbar=error_bar))
 
-        (
-            plot
-            .scale(
-                color=so.Nominal(palette, order=df[by].cat.categories.tolist())
-                if (grouping_settings.mode == GroupingMode.ANIMAL or grouping_settings.mode == GroupingMode.FACTOR)
-                else palette,
+        if factor.role != FactorRole.WITHIN_SUBJECT:
+            plot = plot.scale(
+                color=so.Nominal(palette, order=df[factor_name].cat.categories.tolist()),
             )
-            .on(self.canvas.figure)
-            .plot(True)
-        )
+
+        (plot.on(self.canvas.figure).plot(True))
 
         # Draw light/dark bands
-        settings = self.datatable.dataset.binning_settings.time_cycles_settings
-
-        dark_start = time_to_float(settings.dark_cycle_start)
-        dark_end = time_to_float(settings.light_cycle_start)
-        dark_duration = abs(dark_end - dark_start)
-        max_hours = df["Hours"].max()
-
-        experiment_started_time = time_to_float(self.datatable.dataset.experiment_started.time())
-        time_shift = abs(experiment_started_time - dark_start)
-        start = time_shift
-        while start < max_hours:
+        dark_band_spans = compute_dark_band_spans(
+            self.datatable.dataset.light_cycles,
+            self.datatable.dataset.experiment_started,
+            df["Hours"].max(),
+        )
+        for band_start, band_end in dark_band_spans:
             for ax in self.canvas.figure.axes:
-                ax.axvspan(start, start + dark_duration, color="gray", alpha=0.15)
-            start = 24 + start
+                ax.axvspan(band_start, band_end, color="gray", alpha=0.15)
 
         self.canvas.figure.tight_layout()
         self.canvas.draw()

@@ -16,7 +16,7 @@ import xmltodict
 from loguru import logger
 
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.shared import Factor
+from tse_analytics.core.data.shared import ByAnimalConfig, Factor, FactorRole
 from tse_analytics.modules.intellicage.io.dataset_loader_v1 import import_intellicage_dataset_v1
 from tse_analytics.modules.intellicage.io.dataset_loader_v2 import import_intellicage_dataset_v2
 
@@ -80,8 +80,7 @@ def import_intellicage_dataset(path: Path) -> Dataset | None:
         if factor is not None:
             factors[factor.name] = factor
 
-    if len(factors) > 0:
-        dataset.set_factors(factors)
+    dataset.set_factors(factors)
 
     logger.info(f"Import complete in {(timeit.default_timer() - tic):.3f} sec: {path}")
 
@@ -142,6 +141,11 @@ def _extract_factor(factor_name: str, factors: dict[str, Factor], dataset: Datas
     """
     levels = dataset.extract_levels_from_property(factor_name)
     if len(levels) > 0:
-        return Factor(factor_name, list(levels.values()))
+        return Factor(
+            name=factor_name,
+            config=ByAnimalConfig(),
+            role=FactorRole.BETWEEN_SUBJECT,
+            levels=levels,
+        )
     else:
         return None

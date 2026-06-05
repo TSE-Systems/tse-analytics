@@ -2,7 +2,7 @@ from typing import Any
 
 from PySide6.QtCore import QAbstractItemModel, QModelIndex, QObject, QPersistentModelIndex, Qt
 
-from tse_analytics.core.models.json_tree_item import TreeItem
+from tse_analytics.core.models.json_tree_item import JsonTreeItem
 
 
 class JsonModel(QAbstractItemModel):
@@ -23,7 +23,7 @@ class JsonModel(QAbstractItemModel):
         """
         super().__init__(parent)
 
-        self._rootItem = TreeItem()
+        self._rootItem = JsonTreeItem()
         self._headers = ("key", "value")
 
     def clear(self):
@@ -43,7 +43,7 @@ class JsonModel(QAbstractItemModel):
 
         self.beginResetModel()
 
-        self._rootItem = TreeItem.load(document)
+        self._rootItem = JsonTreeItem.load(document)
         self._rootItem.value_type = type(document)
 
         self.endResetModel()
