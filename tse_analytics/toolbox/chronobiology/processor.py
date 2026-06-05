@@ -3,6 +3,18 @@
 Composes a multi-section HTML report combining zeitgeber-time conversion,
 Lomb-Scargle period detection, single-component cosinor, activity onset/offset
 detection, a double-plotted actogram.
+
+Statistics notes
+----------------
+- Cosinor fits use ordinary least squares on a ``[1, cos(ωt), sin(ωt)]`` design.
+  The reported single-component parameters are aggregated **per animal** within
+  each group (mean ± SEM, circular mean for acrophase), which is the more
+  defensible level of inference than a single fit on the pooled/averaged series.
+- The per-fit F-test p-value assumes independent residuals and is therefore
+  anti-conservative for serially-correlated time series; treat it as a screening
+  statistic and rely on the between-animal aggregation.
+- Acrophases and activity onset/offset are reported in **Zeitgeber time (ZT)**
+  (ZT 0 = lights on) for biological interpretability.
 """
 
 import math
@@ -48,16 +60,44 @@ def _compute_zeitgeber_time(dt: pd.Series, light_cycle_start: time) -> pd.Series
     return ((sec_of_day - ls_seconds) % 86400) / 3600.0
 
 
+def _zeitgeber_offset(reference: pd.Timestamp, light_cycle_start: time) -> float:
+    """Zeitgeber time (hours) of a single timestamp — the ZT of elapsed-hour 0."""
+    sec_of_day = reference.hour * 3600 + reference.minute * 60 + reference.second
+    ls_seconds = light_cycle_start.hour * 3600 + light_cycle_start.minute * 60 + light_cycle_start.second
+    return ((sec_of_day - ls_seconds) % 86400) / 3600.0
+
+
 def _to_hours_since_start(dt: pd.Series, reference: pd.Timestamp) -> np.ndarray:
     return ((dt - reference).dt.total_seconds() / 3600.0).to_numpy(dtype=float)
+
+
+def _sem(values: np.ndarray) -> float:
+    """Standard error of the mean; 0.0 for a single value, NaN for none."""
+    n = values.size
+    if n == 0:
+        return float("nan")
+    if n == 1:
+        return 0.0
+    return float(np.std(values, ddof=1) / math.sqrt(n))
+
+
+def _circular_mean_hours(hours: np.ndarray, period_hours: float) -> float:
+    """Circular mean of phase values expressed in hours within ``period_hours``."""
+    hours = np.asarray(hours, dtype=float)
+    hours = hours[np.isfinite(hours)]
+    if hours.size == 0 or period_hours <= 0:
+        return float("nan")
+    angles = 2 * np.pi * hours / period_hours
+    mean_angle = math.atan2(float(np.mean(np.sin(angles))), float(np.mean(np.cos(angles))))
+    return float((mean_angle * period_hours / (2 * np.pi)) % period_hours)
 
 
 def _fit_cosinor(t_hours: np.ndarray, y: np.ndarray, period_hours: float = 24.0) -> dict[str, float]:
     """Single-component cosinor via OLS on the [1, cos(ωt), sin(ωt)] design.
 
-    Returns MESOR, amplitude, acrophase (hours), percent rhythm (R²), and an
-    F-test p-value vs. the intercept-only model. NaNs are returned when the
-    series is degenerate.
+    Returns MESOR, amplitude, acrophase (elapsed hours), percent rhythm (R²),
+    and an F-test p-value vs. the intercept-only model. NaNs are returned when
+    the series is degenerate.
     """
     t = np.asarray(t_hours, dtype=float)
     y = np.asarray(y, dtype=float)
@@ -112,9 +152,10 @@ def _fit_two_component_cosinor(
 ) -> dict[str, float]:
     """Two-component cosinor via OLS on [1, cos(ω₁t), sin(ω₁t), cos(ω₂t), sin(ω₂t)].
 
-    Returns MESOR, amplitude/acrophase per component, combined percent
-    rhythm (R²), and an F-test p-value vs. the intercept-only model
-    (df1=4, df2=n-5). NaNs on degenerate series.
+    Returns MESOR, amplitude/acrophase per component (elapsed hours), combined
+    percent rhythm (R²), and an F-test p-value vs. the intercept-only model
+    (df1=4, df2=n-5). NaNs on degenerate series (including equal periods, which
+    make the design matrix singular).
     """
     t = np.asarray(t_hours, dtype=float)
     y = np.asarray(y, dtype=float)
@@ -131,7 +172,7 @@ def _fit_two_component_cosinor(
         "p_value": float("nan"),
         "N": float(n),
     }
-    if n < 6 or np.ptp(y) == 0 or period1_hours <= 0 or period2_hours <= 0:
+    if n < 6 or np.ptp(y) == 0 or period1_hours <= 0 or period2_hours <= 0 or period1_hours == period2_hours:
         return nan_result
 
     omega1 = 2 * np.pi / period1_hours
@@ -195,29 +236,124 @@ def _lombscargle_period(
     return period, power, float(period[int(np.argmax(power))])
 
 
+def _per_animal_fits(
+    group_df: pd.DataFrame,
+    variable_name: str,
+    reference: pd.Timestamp,
+    period_hours: float,
+) -> tuple[list[dict[str, float]], list[float]]:
+    """Fit a single-component cosinor and Lomb-Scargle period for each animal.
+
+    Iterates per ``Animal`` when the column is present, otherwise treats the
+    whole group as a single series. Returns the list of finite cosinor parameter
+    dicts and the list of finite dominant periods.
+    """
+    if "Animal" in group_df.columns:
+        iterator = [g for _, g in group_df.groupby("Animal", observed=True)]
+    else:
+        iterator = [group_df]
+
+    params: list[dict[str, float]] = []
+    periods: list[float] = []
+    for animal_df in iterator:
+        t = _to_hours_since_start(animal_df["DateTime"], reference)
+        y = animal_df[variable_name].to_numpy(dtype=float)
+        fit = _fit_cosinor(t, y, period_hours)
+        if np.isfinite(fit["MESOR"]):
+            params.append(fit)
+        _, _, dominant = _lombscargle_period(t, y)
+        if np.isfinite(dominant):
+            periods.append(dominant)
+    return params, periods
+
+
+def _summarize_cosinor(
+    label: str,
+    params: list[dict[str, float]],
+    period_hours: float,
+    zt_offset: float,
+) -> dict:
+    """Aggregate per-animal cosinor parameters into a single group row."""
+    n = len(params)
+    if n == 0:
+        return {
+            "Group": label,
+            "N animals": 0,
+            "MESOR": float("nan"),
+            "MESOR SEM": float("nan"),
+            "Amplitude": float("nan"),
+            "Amplitude SEM": float("nan"),
+            "Acrophase (ZT h)": float("nan"),
+            "Mean PR": float("nan"),
+            "Rhythmic (p<0.05)": 0,
+        }
+    mesor = np.array([p["MESOR"] for p in params])
+    amplitude = np.array([p["Amplitude"] for p in params])
+    acrophase = np.array([p["Acrophase_h"] for p in params])
+    pr = np.array([p["PR"] for p in params])
+    pvals = np.array([p["p_value"] for p in params])
+    acro_zt = _circular_mean_hours((acrophase + zt_offset) % period_hours, period_hours)
+    return {
+        "Group": label,
+        "N animals": n,
+        "MESOR": float(np.mean(mesor)),
+        "MESOR SEM": _sem(mesor),
+        "Amplitude": float(np.mean(amplitude)),
+        "Amplitude SEM": _sem(amplitude),
+        "Acrophase (ZT h)": acro_zt,
+        "Mean PR": float(np.mean(pr)),
+        "Rhythmic (p<0.05)": int(np.sum(pvals < 0.05)),
+    }
+
+
+def _summarize_periods(label: str, periods: list[float]) -> dict:
+    """Aggregate per-animal dominant periods into a single group row."""
+    if not periods:
+        return {"Group": label, "N animals": 0, "Dominant period (h)": float("nan"), "SD (h)": float("nan")}
+    arr = np.array(periods, dtype=float)
+    return {
+        "Group": label,
+        "N animals": int(arr.size),
+        "Dominant period (h)": float(np.mean(arr)),
+        "SD (h)": float(np.std(arr, ddof=1)) if arr.size > 1 else 0.0,
+    }
+
+
 def _detect_onset_offset(
     df_animal: pd.DataFrame,
     variable_name: str,
     threshold_pct: float,
+    light_cycle_start: time,
 ) -> pd.DataFrame:
-    """Per-day onset/offset times using a per-day percentile threshold."""
+    """Per-circadian-day onset/offset in Zeitgeber time.
+
+    The day boundary is aligned to lights-on (ZT 0) by shifting timestamps by
+    ``-light_cycle_start`` before grouping, so activity that spans midnight is
+    not split across two calendar days. Onset/offset are the first/last samples
+    crossing the per-day percentile threshold, reported as ZT hours.
+    """
     df_animal = df_animal[["DateTime", variable_name]].dropna().copy()
-    df_animal["Date"] = df_animal["DateTime"].dt.date
+    ls = pd.Timedelta(
+        hours=light_cycle_start.hour,
+        minutes=light_cycle_start.minute,
+        seconds=light_cycle_start.second,
+    )
+    df_animal["CircDay"] = (df_animal["DateTime"] - ls).dt.date
+    df_animal["ZT"] = _compute_zeitgeber_time(df_animal["DateTime"], light_cycle_start)
     rows: list[dict] = []
-    for date, group in df_animal.groupby("Date", sort=True):
+    for day, group in df_animal.groupby("CircDay", sort=True):
         if group[variable_name].nunique() < 2:
             continue
         threshold = float(np.nanpercentile(group[variable_name].to_numpy(), threshold_pct))
-        above = group[group[variable_name] >= threshold]
+        above = group[group[variable_name] >= threshold].sort_values("DateTime")
         if above.empty:
             continue
-        onset = above["DateTime"].iloc[0]
-        offset = above["DateTime"].iloc[-1]
+        alpha = (above["DateTime"].iloc[-1] - above["DateTime"].iloc[0]).total_seconds() / 3600.0
         rows.append({
-            "Date": str(date),
-            "Onset": onset.strftime("%H:%M"),
-            "Offset": offset.strftime("%H:%M"),
-            "Alpha_h": (offset - onset).total_seconds() / 3600.0,
+            "Day": str(day),
+            "Onset (ZT)": float(above["ZT"].iloc[0]),
+            "Offset (ZT)": float(above["ZT"].iloc[-1]),
+            "Alpha_h": alpha,
         })
     return pd.DataFrame(rows)
 
@@ -231,8 +367,9 @@ def _plot_zt_profile(
     df: pd.DataFrame,
     variable: Variable,
     light_cycle_start: time,
+    dark_zt: float,
     group_col: str | None,
-    palette: dict[str, str] | dict[int, str] | None,
+    palette: dict[str, str] | None,
     figsize: tuple[float, float] | None,
 ) -> plt.Figure:
     df = df.copy()
@@ -255,7 +392,8 @@ def _plot_zt_profile(
         ax.plot(agg["ZT_bin"], agg["mean"], color=color)
         ax.fill_between(agg["ZT_bin"], agg["mean"] - agg["sem"], agg["mean"] + agg["sem"], alpha=0.2, color=color)
 
-    ax.axvspan(12, 24, color="gray", alpha=0.15, zorder=0)
+    # Shade the dark phase using the configured light/dark cycle (ZT 0 = lights on).
+    ax.axvspan(dark_zt, 24, color="gray", alpha=0.15, zorder=0)
     ax.set_xlabel("Zeitgeber time (h)")
     ax.set_ylabel(f"{variable.name} ({variable.unit})" if variable.unit else variable.name)
     ax.set_title(f"Zeitgeber-time profile — {variable.name}")
@@ -268,7 +406,7 @@ def _plot_zt_profile(
 def _plot_periodogram(
     series: dict[str, tuple[np.ndarray, np.ndarray, float]],
     variable: Variable,
-    palette: dict[str, str] | dict[int, str] | None,
+    palette: dict[str, str] | None,
     figsize: tuple[float, float] | None,
 ) -> plt.Figure:
     figure = plt.Figure(figsize=figsize, layout="tight")
@@ -291,7 +429,8 @@ def _plot_cosinor_fits(
     fits: dict[str, tuple[np.ndarray, np.ndarray, dict[str, float]]],
     variable: Variable,
     period_hours: float,
-    palette: dict[str, str] | dict[int, str] | None,
+    zt_offset: float,
+    palette: dict[str, str] | None,
     figsize: tuple[float, float] | None,
 ) -> plt.Figure:
     figure = plt.Figure(figsize=figsize, layout="tight")
@@ -301,18 +440,18 @@ def _plot_cosinor_fits(
         if not np.isfinite(params.get("MESOR", np.nan)):
             continue
         color = (palette or {}).get(str(label), color_manager.get_color_hex(i))
-        phase = t % period_hours
-        order = np.argsort(phase)
-        ax.scatter(phase, y, alpha=0.25, s=8, color=color)
-        t_grid = np.linspace(0, period_hours, 200)
-        y_fit = params["MESOR"] + params["Amplitude"] * np.cos(omega * t_grid - omega * params["Acrophase_h"])
-        ax.plot(
-            t_grid, y_fit, color=color, label=f"{label} (A={params['Amplitude']:.2f}, φ={params['Acrophase_h']:.1f} h)"
+        zt_phase = (t + zt_offset) % period_hours
+        ax.scatter(zt_phase, y, alpha=0.25, s=8, color=color)
+        zt_grid = np.linspace(0, period_hours, 200)
+        y_fit = params["MESOR"] + params["Amplitude"] * np.cos(
+            omega * (zt_grid - zt_offset) - omega * params["Acrophase_h"]
         )
-        _ = order  # (phase ordering retained for potential line overlay)
-    ax.set_xlabel(f"Phase within {period_hours:g}-h period")
+        acro_zt = (params["Acrophase_h"] + zt_offset) % period_hours
+        ax.plot(zt_grid, y_fit, color=color, label=f"{label} (A={params['Amplitude']:.2f}, φ={acro_zt:.1f} ZT)")
+    ax.set_xlabel("Zeitgeber time (h)")
     ax.set_ylabel(f"{variable.name} ({variable.unit})" if variable.unit else variable.name)
     ax.set_title(f"Cosinor fits — {variable.name}")
+    ax.set_xlim(0, period_hours)
     ax.legend(fontsize="small")
     ax.grid(True, alpha=0.3)
     return figure
@@ -323,7 +462,8 @@ def _plot_two_component_fits(
     variable: Variable,
     period1_hours: float,
     period2_hours: float,
-    palette: dict[str, str] | dict[int, str] | None,
+    zt_offset: float,
+    palette: dict[str, str] | None,
     figsize: tuple[float, float] | None,
 ) -> plt.Figure:
     figure = plt.Figure(figsize=figsize, layout="tight")
@@ -334,23 +474,25 @@ def _plot_two_component_fits(
         if not np.isfinite(params.get("MESOR", np.nan)):
             continue
         color = (palette or {}).get(str(label), color_manager.get_color_hex(i))
-        phase = t % period1_hours
-        ax.scatter(phase, y, alpha=0.25, s=8, color=color)
-        t_grid = np.linspace(0, period1_hours, 400)
+        zt_phase = (t + zt_offset) % period1_hours
+        ax.scatter(zt_phase, y, alpha=0.25, s=8, color=color)
+        zt_grid = np.linspace(0, period1_hours, 400)
+        t_grid = zt_grid - zt_offset
         y_fit = (
             params["MESOR"]
             + params["Amplitude_1"] * np.cos(omega1 * t_grid - omega1 * params["Acrophase_1_h"])
             + params["Amplitude_2"] * np.cos(omega2 * t_grid - omega2 * params["Acrophase_2_h"])
         )
         ax.plot(
-            t_grid,
+            zt_grid,
             y_fit,
             color=color,
             label=f"{label} (A₁={params['Amplitude_1']:.2f}, A₂={params['Amplitude_2']:.2f})",
         )
-    ax.set_xlabel(f"Phase within {period1_hours:g}-h period")
+    ax.set_xlabel("Zeitgeber time (h)")
     ax.set_ylabel(f"{variable.name} ({variable.unit})" if variable.unit else variable.name)
     ax.set_title(f"Two-component cosinor fits — {variable.name}")
+    ax.set_xlim(0, period1_hours)
     ax.legend(fontsize="small")
     ax.grid(True, alpha=0.3)
     return figure
@@ -358,7 +500,7 @@ def _plot_two_component_fits(
 
 def _plot_onset_offset(
     onsets: dict[str, pd.DataFrame],
-    palette: dict[str, str] | dict[int, str] | None,
+    palette: dict[str, str] | None,
     figsize: tuple[float, float] | None,
 ) -> plt.Figure:
     figure = plt.Figure(figsize=figsize, layout="tight")
@@ -367,20 +509,12 @@ def _plot_onset_offset(
         if df.empty:
             continue
         color = (palette or {}).get(str(label), color_manager.get_color_hex(i))
-        onset_h = (
-            pd.to_datetime(df["Onset"], format="%H:%M").dt.hour
-            + pd.to_datetime(df["Onset"], format="%H:%M").dt.minute / 60.0
-        )
-        offset_h = (
-            pd.to_datetime(df["Offset"], format="%H:%M").dt.hour
-            + pd.to_datetime(df["Offset"], format="%H:%M").dt.minute / 60.0
-        )
         days = np.arange(1, len(df) + 1)
-        ax.plot(onset_h, days, marker="o", linestyle="-", color=color, label=f"{label} onset")
-        ax.plot(offset_h, days, marker="s", linestyle="--", color=color, label=f"{label} offset")
-    ax.set_xlabel("Clock time (h)")
-    ax.set_ylabel("Day")
-    ax.set_title("Activity onset / offset per day")
+        ax.plot(df["Onset (ZT)"], days, marker="o", linestyle="-", color=color, label=f"{label} onset")
+        ax.plot(df["Offset (ZT)"], days, marker="s", linestyle="--", color=color, label=f"{label} offset")
+    ax.set_xlabel("Zeitgeber time (h)")
+    ax.set_ylabel("Circadian day")
+    ax.set_title("Activity onset / offset per circadian day")
     ax.set_xlim(0, 24)
     ax.set_xticks(range(0, 25, 4))
     ax.legend(fontsize="small", ncol=2)
@@ -509,16 +643,19 @@ def get_chronobiology_result(
     onset_threshold_pct: float = 50.0,
     figsize: tuple[float, float] | None = None,
 ) -> ChronobiologyResult:
-    columns = ["DateTime", factor_name, variable.name]
-    df = datatable.get_filtered_df(columns)
-    df = df.dropna()
-
     dataset = datatable.dataset
+    has_datetime = "DateTime" in datatable.df.columns
+
+    # Always fetch Animal (so animal counts and per-animal cosinor are correct);
+    # de-duplicate so a "group by Animal" request doesn't select the column twice.
+    wanted = (["DateTime"] if has_datetime else []) + ["Animal", factor_name, variable.name]
+    columns = list(dict.fromkeys(c for c in wanted if c in datatable.df.columns))
+    df = datatable.get_filtered_df(columns).dropna()
+
     time_cycles = dataset.light_cycles
     light_cycle_start = time_cycles.light_cycle_start
     dark_cycle_start = time_cycles.dark_cycle_start
 
-    has_datetime = "DateTime" in df.columns
     sections: list[str] = []
 
     # --- Section 1: summary table -----------------------------------------
@@ -562,169 +699,166 @@ def get_chronobiology_result(
         return ChronobiologyResult(report="\n<p>\n".join(sections))
 
     # Common reference and group column resolution -------------------------
-    reference_time = datatable.dataset.experiment_started
+    reference_time = dataset.experiment_started
+    zt_offset = _zeitgeber_offset(reference_time, light_cycle_start)
+    dark_zt = (time_to_float(dark_cycle_start) - time_to_float(light_cycle_start)) % 24.0
     group_col = factor_name
-    palette = color_manager.get_level_to_color_dict(datatable.dataset.factors[factor_name])
 
-    # Build grouped df for visualisations (ZT profile / actogram)
+    palette = color_manager.get_level_to_color_dict(dataset.factors[factor_name])
+    if not isinstance(palette, dict):
+        palette = {}
+
+    # Group-mean series (per factor level × DateTime) for visualisations.
+    # The raw per-animal ``df`` is kept for the per-animal cosinor aggregation.
     if factor_name != "Animal":
         grouped_df = (
             df
             .copy()
             .groupby([factor_name, "DateTime"], dropna=False, observed=False)
-            .aggregate({
-                variable.name: "mean",
-            })
+            .aggregate({variable.name: "mean"})
             .reset_index()
         )
     else:
         grouped_df = df.copy()
 
+    key_col = group_col
+
     # --- Section 2: ZT profile --------------------------------------------
     sections.append("<h3>Zeitgeber-time profile</h3>")
     sections.append(
         get_html_image_from_figure(
-            _plot_zt_profile(grouped_df, variable, light_cycle_start, group_col, palette, figsize)
+            _plot_zt_profile(grouped_df, variable, light_cycle_start, dark_zt, group_col, palette, figsize)
         )
     )
 
-    # --- Section 3: Lomb–Scargle periodogram ------------------------------
-    # Iterate over animals (ANIMAL mode) or group levels (everything else).
+    # --- Per-group computation (single pass over group-mean series) -------
     ls_series: dict[str, tuple[np.ndarray, np.ndarray, float]] = {}
+    cosinor_fits: dict[str, tuple[np.ndarray, np.ndarray, dict[str, float]]] = {}
+    two_comp_fits: dict[str, tuple[np.ndarray, np.ndarray, dict[str, float]]] = {}
+    two_comp_rows: list[dict] = []
+    for label, g in grouped_df.groupby(key_col, observed=True):
+        label = str(label)
+        t = _to_hours_since_start(g["DateTime"], reference_time)
+        y = g[variable.name].to_numpy(dtype=float)
+
+        ls_series[label] = _lombscargle_period(t, y)
+        cosinor_fits[label] = (t, y, _fit_cosinor(t, y, period_hours))
+
+        tc_params = _fit_two_component_cosinor(t, y, period_hours, period2_hours)
+        two_comp_fits[label] = (t, y, tc_params)
+        two_comp_rows.append({
+            "Group": label,
+            "MESOR": tc_params["MESOR"],
+            "Amplitude 1": tc_params["Amplitude_1"],
+            "Acrophase 1 (ZT h)": (tc_params["Acrophase_1_h"] + zt_offset) % period_hours,
+            "Amplitude 2": tc_params["Amplitude_2"],
+            "Acrophase 2 (ZT h)": (tc_params["Acrophase_2_h"] + zt_offset) % period2_hours,
+            "PR": tc_params["PR"],
+            "p_value": tc_params["p_value"],
+            "N": tc_params["N"],
+        })
+
+    # Per-animal aggregation (single-component cosinor + dominant period).
+    cosinor_rows: list[dict] = []
     ls_table_rows: list[dict] = []
-    iter_df = grouped_df
-    key_col = group_col if group_col and group_col in grouped_df.columns else None
+    for label, g in df.groupby(key_col, observed=True):
+        label = str(label)
+        animal_params, animal_periods = _per_animal_fits(g, variable.name, reference_time, period_hours)
+        cosinor_rows.append(_summarize_cosinor(label, animal_params, period_hours, zt_offset))
+        ls_table_rows.append(_summarize_periods(label, animal_periods))
 
-    if key_col is None:
-        t = _to_hours_since_start(iter_df["DateTime"], reference_time)
-        y = iter_df[variable.name].to_numpy(dtype=float)
-        period, power, dominant = _lombscargle_period(t, y)
-        ls_series["Total"] = (period, power, dominant)
-        ls_table_rows.append({"Group": "Total", "Dominant period (h)": dominant, "N samples": int(t.size)})
-    else:
-        for label, g in iter_df.groupby(key_col, observed=True):
-            t = _to_hours_since_start(g["DateTime"], reference_time)
-            y = g[variable.name].to_numpy(dtype=float)
-            period, power, dominant = _lombscargle_period(t, y)
-            ls_series[str(label)] = (period, power, dominant)
-            ls_table_rows.append({"Group": str(label), "Dominant period (h)": dominant, "N samples": int(t.size)})
-
+    # --- Section 3: Lomb–Scargle periodogram ------------------------------
     sections.append("<h3>Lomb–Scargle periodogram</h3>")
     sections.append(get_html_image_from_figure(_plot_periodogram(ls_series, variable, palette, figsize)))
-    sections.append(get_great_table(pd.DataFrame(ls_table_rows), "Dominant periods").as_raw_html(inline_css=True))
-
-    # --- Section 4: single-component cosinor ------------------------------
-    cosinor_rows: list[dict] = []
-    cosinor_fits: dict[str, tuple[np.ndarray, np.ndarray, dict[str, float]]] = {}
-    if key_col is None:
-        t = _to_hours_since_start(iter_df["DateTime"], reference_time)
-        y = iter_df[variable.name].to_numpy(dtype=float)
-        params = _fit_cosinor(t, y, period_hours)
-        cosinor_fits["Total"] = (t, y, params)
-        cosinor_rows.append({"Group": "Total", **params})
-    else:
-        for label, g in iter_df.groupby(key_col, observed=True):
-            t = _to_hours_since_start(g["DateTime"], reference_time)
-            y = g[variable.name].to_numpy(dtype=float)
-            params = _fit_cosinor(t, y, period_hours)
-            cosinor_fits[str(label)] = (t, y, params)
-            cosinor_rows.append({"Group": str(label), **params})
-
-    sections.append(f"<h3>Single-component cosinor (period = {period_hours:g} h)</h3>")
-    sections.append(get_great_table(pd.DataFrame(cosinor_rows), "Cosinor parameters").as_raw_html(inline_css=True))
     sections.append(
-        get_html_image_from_figure(_plot_cosinor_fits(cosinor_fits, variable, period_hours, palette, figsize))
+        get_great_table(pd.DataFrame(ls_table_rows), "Dominant periods (per-animal mean)").as_raw_html(inline_css=True)
     )
 
-    # --- Section 4b: two-component cosinor --------------------------------
-    two_comp_rows: list[dict] = []
-    two_comp_fits: dict[str, tuple[np.ndarray, np.ndarray, dict[str, float]]] = {}
-    if key_col is None:
-        t = _to_hours_since_start(iter_df["DateTime"], reference_time)
-        y = iter_df[variable.name].to_numpy(dtype=float)
-        params = _fit_two_component_cosinor(t, y, period_hours, period2_hours)
-        two_comp_fits["Total"] = (t, y, params)
-        two_comp_rows.append({"Group": "Total", **params})
-    else:
-        for label, g in iter_df.groupby(key_col, observed=True):
-            t = _to_hours_since_start(g["DateTime"], reference_time)
-            y = g[variable.name].to_numpy(dtype=float)
-            params = _fit_two_component_cosinor(t, y, period_hours, period2_hours)
-            two_comp_fits[str(label)] = (t, y, params)
-            two_comp_rows.append({"Group": str(label), **params})
-
-    sections.append(f"<h3>Two-component cosinor (periods = {period_hours:g} h + {period2_hours:g} h)</h3>")
+    # --- Section 4: single-component cosinor ------------------------------
+    sections.append(f"<h3>Single-component cosinor (period = {period_hours:g} h)</h3>")
     sections.append(
-        get_great_table(pd.DataFrame(two_comp_rows), "Two-component cosinor parameters").as_raw_html(inline_css=True)
+        get_great_table(pd.DataFrame(cosinor_rows), "Cosinor parameters (per-animal mean ± SEM)").as_raw_html(
+            inline_css=True
+        )
+    )
+    sections.append(
+        "<p><em>p-values assume independent residuals and are anti-conservative for autocorrelated "
+        "series; the between-animal aggregation (N animals, SEM, rhythmic count) is the more reliable "
+        "indicator. Curves show the cosinor fit on the group-mean series.</em></p>"
     )
     sections.append(
         get_html_image_from_figure(
-            _plot_two_component_fits(two_comp_fits, variable, period_hours, period2_hours, palette, figsize)
+            _plot_cosinor_fits(cosinor_fits, variable, period_hours, zt_offset, palette, figsize)
+        )
+    )
+
+    # --- Section 4b: two-component cosinor --------------------------------
+    sections.append(f"<h3>Two-component cosinor (periods = {period_hours:g} h + {period2_hours:g} h)</h3>")
+    sections.append(
+        get_great_table(
+            pd.DataFrame(two_comp_rows), "Two-component cosinor parameters (group-mean series)"
+        ).as_raw_html(inline_css=True)
+    )
+    sections.append(
+        get_html_image_from_figure(
+            _plot_two_component_fits(two_comp_fits, variable, period_hours, period2_hours, zt_offset, palette, figsize)
         )
     )
 
     # --- Section 5: activity onset / offset -------------------------------
     onset_tables: dict[str, pd.DataFrame] = {}
     onset_combined_rows: list[dict] = []
-    if key_col is not None:
-        for label, g in grouped_df.groupby(key_col, observed=True):
-            table = _detect_onset_offset(g, variable.name, onset_threshold_pct)
-            if not table.empty:
-                onset_tables[str(label)] = table
-                for _, row in table.iterrows():
-                    onset_combined_rows.append({key_col: str(label), **row.to_dict()})
-    else:
-        table = _detect_onset_offset(grouped_df, variable.name, onset_threshold_pct)
+    for label, g in grouped_df.groupby(key_col, observed=True):
+        label = str(label)
+        table = _detect_onset_offset(g, variable.name, onset_threshold_pct, light_cycle_start)
         if not table.empty:
-            onset_tables["Total"] = table
+            onset_tables[label] = table
             for _, row in table.iterrows():
-                onset_combined_rows.append({"Group": "Total", **row.to_dict()})
+                onset_combined_rows.append({key_col: label, **row.to_dict()})
 
     sections.append(f"<h3>Activity onset / offset (threshold = {onset_threshold_pct:g}th percentile)</h3>")
     if onset_combined_rows:
         sections.append(
-            get_great_table(pd.DataFrame(onset_combined_rows), "Daily onset / offset").as_raw_html(inline_css=True)
+            get_great_table(pd.DataFrame(onset_combined_rows), "Daily onset / offset (ZT)").as_raw_html(inline_css=True)
         )
         sections.append(get_html_image_from_figure(_plot_onset_offset(onset_tables, palette, figsize)))
     else:
         sections.append("<p><em>Not enough data to detect daily onset / offset.</em></p>")
 
     # --- Section 6: double-plotted actogram -------------------------------
+    sections.append("<h3>Double-plotted actogram</h3>")
     if duration is None or duration < pd.Timedelta(hours=48):
         sections.append("<p><em>Experiment shorter than 48 h — actogram skipped.</em></p>")
     else:
         periods = _build_actogram_periods(light_cycle_start, dark_cycle_start)
         bins_per_day = 24 * bins_per_hour
-        if key_col is None:
-            activity_array, unique_days = dataframe_to_actogram(grouped_df, variable, bins_per_day)
-            if activity_array.size and np.ptp(activity_array) > 0:
-                activity_array = normalize_nd_array(activity_array)
+        groups_data, shared_days = _collect_group_actograms(grouped_df, key_col, variable, bins_per_day)
+        if len(groups_data) == 1:
+            label, activity_array = next(iter(groups_data.items()))
             figure, _ = plot_enhanced_actogram(
                 activity_array,
                 figsize,
-                [d.strftime("%Y-%m-%d") for d in unique_days],
+                [d.strftime("%Y-%m-%d") for d in shared_days],
                 binsize=1 / bins_per_hour,
                 highlight_periods=periods,
-                bar_color=color_manager.get_color_hex(0),
-                title=f"Actogram — {variable.name} (Total)",
+                bar_color=palette.get(label, color_manager.get_color_hex(0)),
+                title=f"Actogram — {variable.name} ({label})",
             )
             sections.append(get_html_image_from_figure(figure))
-        else:
-            groups_data, shared_days = _collect_group_actograms(iter_df, key_col, variable, bins_per_day)
-            if len(groups_data) >= 2:
-                sections.append(
-                    get_html_image_from_figure(
-                        plot_combined_actograms_grid(
-                            groups_data,
-                            shared_days,
-                            figsize,
-                            binsize=1 / bins_per_hour,
-                            highlight_periods=periods,
-                            palette=palette,
-                            title=f"Actograms grid — {variable.name}",
-                        )
+        elif len(groups_data) >= 2:
+            sections.append(
+                get_html_image_from_figure(
+                    plot_combined_actograms_grid(
+                        groups_data,
+                        shared_days,
+                        figsize,
+                        binsize=1 / bins_per_hour,
+                        highlight_periods=periods,
+                        palette=palette,
+                        title=f"Actograms grid — {variable.name}",
                     )
                 )
+            )
 
     report = "\n<p>\n".join(sections)
     return ChronobiologyResult(report=report)

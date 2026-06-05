@@ -135,7 +135,7 @@ def _draw_double_plotted_bars(
 
 def plot_enhanced_actogram(
     activity_data,
-    figsize: tuple[float, float],
+    figsize: tuple[float, float] | None,
     days=None,
     binsize=None,
     title="Actogram",

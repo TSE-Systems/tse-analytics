@@ -1,11 +1,15 @@
 from dataclasses import dataclass
 
+from pyqttoast import ToastPreset
 from PySide6.QtWidgets import QDoubleSpinBox, QLabel, QSpinBox, QToolBar, QWidget
 
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import FactorRole
+from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_figsize_from_widget
-from tse_analytics.toolbox.chronobiology.processor import get_chronobiology_result
+from tse_analytics.core.workers.task_manager import TaskManager
+from tse_analytics.core.workers.worker import Worker
+from tse_analytics.toolbox.chronobiology.processor import ChronobiologyResult, get_chronobiology_result
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
 from tse_analytics.toolbox.toolbox_widget_base import ToolboxWidgetBase
 from tse_analytics.views.misc.group_by_selector import GroupBySelector
@@ -15,7 +19,7 @@ from tse_analytics.views.misc.variable_selector import VariableSelector
 @dataclass
 class ChronobiologyWidgetSettings:
     group_by: str = "Animal"
-    selected_variable: str = None
+    selected_variable: str | None = None
     period_hours: float = 24.0
     period2_hours: float = 12.0
     bins_per_hour: int = 6
@@ -109,10 +113,27 @@ class ChronobiologyWidget(ToolboxWidgetBase):
     def _update(self):
         self.report_view.clear()
 
-        factor_name = self.group_by_selector.currentText()
         variable = self.variableSelector.get_selected_variable()
+        if variable is None:
+            make_toast(
+                self,
+                self.title,
+                "Please select a variable.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
+            return
 
-        result = get_chronobiology_result(
+        self.update_action.setEnabled(False)
+
+        factor_name = self.group_by_selector.currentText()
+
+        self.toast = make_toast(self, self.title, "Processing...")
+        self.toast.show()
+
+        worker = Worker(
+            get_chronobiology_result,
             self.datatable,
             variable,
             factor_name,
@@ -122,5 +143,13 @@ class ChronobiologyWidget(ToolboxWidgetBase):
             onset_threshold_pct=self.onset_threshold_spin_box.value(),
             figsize=get_figsize_from_widget(self.report_view),
         )
+        worker.signals.result.connect(self._result)
+        worker.signals.finished.connect(self._finished)
+        TaskManager.start_task(worker)
 
+    def _result(self, result: ChronobiologyResult):
         self.report_view.set_content(result.report)
+
+    def _finished(self):
+        self.toast.hide()
+        self.update_action.setEnabled(True)
