@@ -5,6 +5,7 @@ by :class:`ToolboxButton` at construction time so the registry is populated
 before the menus are built.
 """
 
+import tse_analytics.modules.intellicage.toolbox.learning_curve.learning_curve_widget  # noqa: F401
 import tse_analytics.modules.intellicage.toolbox.place_preference.place_preference_widget  # noqa: F401
 import tse_analytics.modules.intellicage.toolbox.transitions.transitions_widget  # noqa: F401
 import tse_analytics.toolbox.actogram.actogram_widget  # noqa: F401
