@@ -11,6 +11,7 @@ import tse_analytics.toolbox.actogram.actogram_widget  # noqa: F401
 import tse_analytics.toolbox.ai_agent.ai_agent_widget  # noqa: F401
 import tse_analytics.toolbox.ancova.ancova_widget  # noqa: F401
 import tse_analytics.toolbox.chronobiology.chronobiology_widget  # noqa: F401
+import tse_analytics.toolbox.composite_score.composite_score_widget  # noqa: F401
 import tse_analytics.toolbox.correlation.correlation_widget  # noqa: F401
 import tse_analytics.toolbox.correlation_matrix.correlation_matrix_widget  # noqa: F401
 import tse_analytics.toolbox.data_plot.data_plot_widget  # noqa: F401
