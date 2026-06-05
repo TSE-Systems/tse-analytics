@@ -64,9 +64,20 @@ def get_regression_result(
         .plot(True)
     )
 
+    analysis_columns = [covariate.name] if covariate.name == response.name else [covariate.name, response.name]
+
+    columns_note = ""
+    if covariate.name == response.name:
+        columns_note = (
+            "<p><i>Covariate and response are the same variable; the regression is degenerate (slope 1, R² 1).</i></p>"
+        )
+
     output = ""
     for level in df[factor_name].unique().tolist():
-        data = df[df[factor_name] == level]
+        data = df[df[factor_name] == level].dropna(subset=analysis_columns)
+        if len(data) < 2:
+            output += f"<p>Level: {level} — not enough data for regression.</p>"
+            continue
         output = (
             output
             + get_great_table(
@@ -77,6 +88,7 @@ def get_regression_result(
         )
 
     report = f"""
+    {columns_note}
     {output}
     <p>
     {get_html_image_from_figure(figure)}

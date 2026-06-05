@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 
+from pyqttoast import ToastPreset
 from PySide6.QtWidgets import QLabel, QToolBar, QWidget
 
 from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.toaster import make_toast
 from tse_analytics.core.utils import get_figsize_from_widget
 from tse_analytics.toolbox.regression.processor import get_regression_result
 from tse_analytics.toolbox.toolbox_registry import toolbox_plugin
@@ -62,10 +64,20 @@ class RegressionWidget(ToolboxWidgetBase):
     def _update(self):
         self.report_view.clear()
 
-        factor_name = self.group_by_selector.currentText()
-
         covariate = self.covariateVariableSelector.get_selected_variable()
         response = self.responseVariableSelector.get_selected_variable()
+        if covariate is None or response is None:
+            make_toast(
+                self,
+                self.title,
+                "Please select covariate and response variables.",
+                duration=2000,
+                preset=ToastPreset.WARNING,
+                show_duration_bar=True,
+            ).show()
+            return
+
+        factor_name = self.group_by_selector.currentText()
 
         result = get_regression_result(
             self.datatable,

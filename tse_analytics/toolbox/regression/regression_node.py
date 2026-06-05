@@ -55,9 +55,9 @@ class RegressionNode(PipelineNode):
         if datatable is None or not isinstance(datatable, Datatable):
             return PipelinePacket.inactive(reason="Invalid input datatable")
 
-        covariate_name = str(self.get_property("covariate_variable"))
-        response_name = str(self.get_property("response_variable"))
-        factor_name = str(self.get_property("group_by"))
+        covariate_name = str(self.get_property("covariate_variable")).strip()
+        response_name = str(self.get_property("response_variable")).strip()
+        factor_name = str(self.get_property("group_by")).strip()
 
         if not covariate_name:
             return PipelinePacket.inactive(reason="No covariate variable selected")
@@ -72,6 +72,9 @@ class RegressionNode(PipelineNode):
         response = datatable.variables.get(response_name)
         if response is None:
             return PipelinePacket.inactive(reason="Invalid response variable")
+
+        if factor_name not in datatable.dataset.factors:
+            return PipelinePacket.inactive(reason="Invalid factor selected")
 
         result = get_regression_result(
             datatable,

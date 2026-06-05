@@ -92,11 +92,11 @@ class ToolboxButton(QToolButton):
             self.intellicage_menu.menuAction().setVisible(True)
 
             if hasattr(self, "intellicage_transitions_action"):
-                self.intellicage_transitions_action.setVisible(datatable is not None and datatable.name == "Visits")
+                self.intellicage_transitions_action.setVisible(datatable is not None and "Visits" in datatable.name)
 
             if hasattr(self, "intellicage_place_preference_action"):
                 self.intellicage_place_preference_action.setVisible(
-                    datatable is not None and datatable.name == "Visits"
+                    datatable is not None and "Visits" in datatable.name
                 )
         else:
             self.intellicage_menu.menuAction().setVisible(False)
