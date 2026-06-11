@@ -1,203 +1,150 @@
 # Contributing to TSE Analytics
 
-Thank you for your interest in contributing to TSE Analytics! This document provides guidelines and instructions for developers working on this project.
+Thank you for your interest in contributing to **TSE Analytics** — the desktop application for
+analyzing TSE PhenoMaster, IntelliCage, and IntelliMaze experimental data. This guide covers the
+development setup, project layout, code style, and workflow. For an overview of what the
+application does, see the [README](README.md).
+
+---
+
+## Table of Contents
+
+- [Development Setup](#development-setup)
+- [Project Structure](#project-structure)
+- [Documentation](#documentation)
+- [Code Style & Quality](#code-style--quality)
+- [Development Workflow](#development-workflow)
+- [Testing](#testing)
+- [Git Workflow](#git-workflow)
+- [Dependency Management](#dependency-management)
+- [Building & Deployment](#building--deployment)
+- [Getting Help](#getting-help)
+- [License](#license)
+
+---
 
 ## Development Setup
 
 ### Prerequisites
 
-- **Python 3.14.3** (exact version required)
-- **uv** package manager ([installation guide](https://github.com/astral-sh/uv))
-- **Task** task runner ([installation guide](https://taskfile.dev/installation/))
-- Git for version control
+- **Python 3.14.5** — the exact version pinned in `pyproject.toml` (`requires-python = "==3.14.5"`).
+- **[uv](https://docs.astral.sh/uv/)** — package & environment manager.
+- **[Task](https://taskfile.dev/)** — task runner used for all build/test commands.
+- **Git** — version control.
 
 ### Initial Setup
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/TSE-Systems/tse-analytics.git
-   cd tse-analytics
-   ```
-
-2. Create and activate virtual environment with uv:
-   ```bash
-   uv sync
-   ```
-
-3. Verify installation:
-   ```bash
-   task test
-   ```
-
-## Code Style and Quality
-
-### Code Formatting
-
-This project uses **Ruff** for both linting and formatting:
-
-- **Line length**: 120 characters
-- **Target version**: Python 3.14
-- **Docstring convention**: Google style
-- **Indentation**: 4 spaces (configured in `.editorconfig`)
-- **Line endings**: LF (Unix-style)
-- **Character encoding**: UTF-8
-
-### Linting and Type Checking
-
-The project uses multiple tools for code quality:
-
-- **Ruff**: Primary linter and formatter
-- **ty**: Type analysis
-- **pyrefly**: Project-specific type checking
-
-### Running Quality Checks
-
 ```bash
-# Format code
-task ruff-format
+# 1. Clone the repository
+git clone https://github.com/TSE-Systems/tse-analytics.git
+cd tse-analytics
 
-# Check for issues
-task ruff-check
+# 2. Create the environment and install dependencies
+uv sync
 
-# Auto-fix issues
-task ruff-fix
-
-# Run type checking
-task pyrefly
-task ty
-
-# Run all tests
+# 3. Verify the installation by running the test suite
 task test
 ```
+
+---
 
 ## Project Structure
 
 ```
 tse-analytics/
 ├── tse_analytics/          # Main source code
-│   ├── core/              # Core functionality
-│   ├── modules/           # Feature modules (phenomaster, intellicage, intellimaze)
-│   ├── toolbox/           # Analysis tools (ANOVA, PCA, etc.)
-│   ├── views/             # UI components
-│   └── styles/            # UI styles (SCSS/QSS)
-├── tests/                 # Test suite
-├── docs/                  # Documentation
-├── resources/             # Application resources
-├── scripts/               # Utility scripts
-├── setup/                 # Deployment configuration
-├── pyproject.toml         # Project configuration
-├── Taskfile.yml           # Task definitions
-└── .editorconfig          # Editor configuration
+│   ├── core/               # Domain models, messaging, services, workers, io, layouts, utils
+│   ├── modules/            # Self-contained data-source modules (phenomaster, intellicage, intellimaze)
+│   ├── toolbox/            # Analysis widgets (histogram, ANOVA, PCA, regression, …)
+│   ├── pipeline/           # Node-based visual data processing (NodeGraphQt)
+│   ├── views/              # Shared UI components, dialogs, and the main window
+│   └── styles/             # SCSS source → compiled QSS stylesheets
+├── tests/                  # pytest suite (mirrors the source structure)
+├── dev-docs/               # Developer reference (architecture, subsystems, extending cookbook)
+├── docs/                   # Generated end-user documentation site
+├── resources/              # Application resources (icons, images, .qrc)
+├── scripts/                # Python equivalents of the Task commands
+├── setup/                  # Deployment configuration (PyInstaller spec, Inno Setup)
+├── pyproject.toml          # Project configuration & dependencies
+├── Taskfile.yml            # Task runner definitions
+└── .editorconfig           # Editor configuration
 ```
 
-### Important Notes
+### Important notes
 
-- **Do NOT commit auto-generated files**: Files ending with `*_ui.py` and `*_rc.py` are generated from Qt Designer `.ui` files and resource files. They are excluded from version control.
-- **Module organization**: Each module (phenomaster, intellicage, intellimaze) is self-contained with its own data, views, and models.
+- **Do NOT commit auto-generated files.** Files ending in `*_ui.py` (compiled from Qt Designer
+  `.ui` files) and `*_rc.py` (compiled from `.qrc` resource files) are excluded from version
+  control. Rebuild them with `task build-ui` / `task build-resources` after editing the sources.
+- **Modules are self-contained.** Each module (`phenomaster`, `intellicage`, `intellimaze`) bundles
+  its own data, views, io, and models.
 
-## Development Workflow
+---
 
-### Working with PySide6 UI Files
+## Documentation
 
-UI files are created in Qt Designer and must be compiled to Python:
+- **Developer reference** — architecture diagrams, subsystem walkthroughs, the full
+  toolbox/pipeline catalog, and an extending cookbook: [`dev-docs/`](dev-docs/README.md)
+  (`dev-docs/README.md` is the index).
+- **Canonical conventions** — the auto-loaded rules under `.claude/rules/`: `code-style.md`,
+  `commands.md`, `project-structure.md`, `testing.md`, `toolbox-widget-pattern.md`. The project
+  overview for AI/contributor tooling lives in [`.claude/CLAUDE.md`](.claude/CLAUDE.md).
+- **End-user documentation** — the generated site under [`docs/`](docs/).
+
+---
+
+## Code Style & Quality
+
+### Formatting
+
+The project uses **[Ruff](https://docs.astral.sh/ruff/)** for both linting and formatting:
+
+- **Line length:** 120 characters
+- **Target version:** Python 3.14 (`py314`)
+- **Docstring convention:** Google style
+- **Indentation / endings / encoding:** 4 spaces, LF, UTF-8 (configured in `.editorconfig`)
+
+### Type checking
+
+The project runs **two** static type checkers — both should pass:
+
+- **[pyrefly](https://pypi.org/project/pyrefly/)** — `task pyrefly`
+- **[ty](https://pypi.org/project/ty/)** — `task ty`
+
+(There is no `mypy` task; the legacy `[tool.mypy]` block in `pyproject.toml` is not part of the
+standard workflow.)
+
+### Quality commands
 
 ```bash
-# Build all UI files
-task build-ui
-
-# Build specific module UI files
-task build-ui:views
-task build-ui:toolbox
-task build-ui:phenomaster
-task build-ui:intellicage
-task build-ui:intellimaze
+task ruff-format   # format code
+task ruff-check    # lint
+task ruff-fix      # auto-fix lint issues
+task pyrefly       # type check (pyrefly)
+task ty            # type check (ty)
+task test          # run the test suite
+task coverage      # run tests with coverage
 ```
 
-### Building Resources
+### Conventions
 
-After modifying resources (icons, images, etc.):
+1. **Imports** — standard library → third-party → local (`tse_analytics.*`); sorted by isort
+   (via Ruff). Use absolute imports.
+2. **Naming** — `PascalCase` classes, `snake_case` functions/methods, `UPPER_SNAKE_CASE`
+   constants, `_prefix` for private members.
+3. **Docstrings** — Google style; document public classes, methods, and functions with
+   `Args` / `Returns` / `Raises` sections where applicable.
+4. **Type hints** — modern Python 3.14 syntax (`list[str]`, `dict[str, int]`, `X | None`).
+5. **Logging** — use `loguru`, not the stdlib `logging`: `from loguru import logger`.
+6. **pandas dtypes** — always use numpy-nullable dtypes (`Int64`, `Float64`, `string`, …); data is
+   normalized in `tse_analytics/core/utils/data.py`.
 
-```bash
-task build-resources
-```
-
-### Building Stylesheets
-
-After modifying SCSS files:
-
-```bash
-task qss
-```
-
-### Running the Application
-
-```bash
-# Using uv
-uv run tse-analytics
-
-# Or using the installed script
-tse-analytics
-```
-
-## Testing
-
-### Running Tests
-
-```bash
-# Run all tests
-task test
-
-# Run tests with coverage
-task coverage
-
-# Run specific test file
-pytest tests/test_specific.py
-```
-
-### Writing Tests
-
-- Place tests in the `tests/` directory
-- Follow pytest conventions
-- Aim for meaningful test coverage
-- Mock external dependencies when appropriate
-
-## Code Guidelines
-
-### Python Code Style
-
-1. **Imports**:
-   - Standard library imports first
-   - Third-party imports second
-   - Local imports last
-   - Use absolute imports from `tse_analytics`
-
-2. **Naming Conventions**:
-   - Classes: `PascalCase`
-   - Functions/methods: `snake_case`
-   - Constants: `UPPER_SNAKE_CASE`
-   - Private members: prefix with `_`
-
-3. **Docstrings**:
-   - Use Google-style docstrings
-   - Document all public classes, methods, and functions
-   - Include Args, Returns, and Raises sections where applicable
-
-4. **Type Hints**:
-   - Use type hints for function parameters and return values
-   - Use modern Python 3.14 type syntax (e.g., `list[str]` instead of `List[str]`)
-
-5. **Logging**:
-   - Use `loguru` for logging (not standard `logging`)
-   - Import: `from loguru import logger`
-   - Use appropriate log levels: `debug`, `info`, `warning`, `error`, `critical`
-
-### Example Code
+### Example
 
 ```python
 from pathlib import Path
+from typing import Any
 
 from loguru import logger
-from PySide6.QtWidgets import QWidget
 
 
 class DataProcessor:
@@ -222,7 +169,7 @@ class DataProcessor:
         self.cache_enabled = cache_enabled
         logger.debug(f"DataProcessor initialized with path: {data_path}")
 
-    def process_dataset(self, dataset_id: str) -> dict[str, any]:
+    def process_dataset(self, dataset_id: str) -> dict[str, Any]:
         """Process a single dataset.
 
         Args:
@@ -233,7 +180,6 @@ class DataProcessor:
 
         Raises:
             ValueError: If dataset_id is invalid.
-            FileNotFoundError: If dataset files are missing.
         """
         if not dataset_id:
             raise ValueError("Dataset ID cannot be empty")
@@ -243,18 +189,99 @@ class DataProcessor:
         return {}
 ```
 
+---
+
+## Development Workflow
+
+### Working with PySide6 UI files
+
+UI files are designed in Qt Designer (`.ui`) and must be compiled to Python after editing:
+
+```bash
+# Build all UI files
+task build-ui
+
+# Build a specific group of UI files
+task build-ui:views
+task build-ui:toolbox
+task build-ui:phenomaster
+task build-ui:intellicage
+task build-ui:intellimaze
+```
+
+### Building resources
+
+After modifying resources (icons, images, …):
+
+```bash
+task build-resources
+```
+
+### Building stylesheets
+
+After modifying the SCSS sources under `tse_analytics/styles/scss`:
+
+```bash
+task qss
+```
+
+### Running the application
+
+```bash
+uv run tse-analytics
+```
+
+### Extending the app
+
+The developer docs include a full cookbook in
+[`dev-docs/12-extending.md`](dev-docs/12-extending.md); the short version:
+
+- **Add a toolbox analysis widget** — subclass `ToolboxWidgetBase`
+  (`tse_analytics/toolbox/toolbox_widget_base.py`), register it with the `@toolbox_plugin`
+  decorator, and add an import in `tse_analytics/toolbox/__init__.py` so the decorator runs at
+  startup. See `.claude/rules/toolbox-widget-pattern.md`.
+- **Add a pipeline node** — subclass `PipelineNode` (`tse_analytics/pipeline/pipeline_node.py`),
+  implement `process(packet)`, and register it in
+  `tse_analytics/views/pipeline/pipeline_editor_widget.py`.
+- **Add a module extension** — create `modules/<module>/extensions/<ext>/` and register the
+  raw-table → widget mapping in that module's `extensions/extensions_registry.py`.
+
+---
+
+## Testing
+
+- **Framework:** [pytest](https://docs.pytest.org/).
+- **Location:** tests live in `tests/` and mirror the source structure.
+- **Fixtures:** shared fixtures live in `conftest.py` files.
+
+```bash
+# Run all tests
+task test
+
+# Run tests with coverage
+task coverage
+
+# Run a single test file
+uv run pytest tests/test_specific.py
+```
+
+Aim for meaningful coverage, follow pytest conventions, and mock external dependencies where
+appropriate.
+
+---
+
 ## Git Workflow
 
-### Branching Strategy
+### Branching
 
-- `main`: Stable production code
-- Feature branches: `feature/description`
-- Bug fixes: `bugfix/description`
-- Releases: `release/version`
+- `main` — stable production code.
+- Feature branches — `feature/description`.
+- Bug fixes — `bugfix/description`.
+- Releases — `release/version`.
 
-### Commit Messages
+### Commit messages
 
-Write clear, descriptive commit messages:
+Write clear, descriptive messages:
 
 ```
 Short summary (50 chars or less)
@@ -262,89 +289,85 @@ Short summary (50 chars or less)
 More detailed explanation if needed. Wrap at 72 characters.
 Explain what changed and why, not how.
 
-- Bullet points are acceptable
-- Use present tense ("Add feature" not "Added feature")
-- Reference issues/PRs if applicable
+- Use the present tense ("Add feature", not "Added feature")
+- Reference issues/PRs where applicable
 ```
 
-### Before Committing
+### Before committing
 
-1. Run code formatting:
-   ```bash
-   task ruff-format
-   ```
+```bash
+task ruff-format   # format
+task ruff-check    # lint
+task pyrefly       # type check
+task ty            # type check
+task test          # run tests
+task build-ui      # only if you edited .ui files
+```
 
-2. Check for issues:
-   ```bash
-   task ruff-check
-   task mypy
-   ```
+### Pull request guidelines
 
-3. Run tests:
-   ```bash
-   task test
-   ```
-
-4. Build UI files if modified:
-   ```bash
-   task build-ui
-   ```
-
-### Pull Request Guidelines
-
-1. **Title**: Clear and descriptive
-2. **Description**: Explain what changed and why
-3. **Testing**: Describe how you tested the changes
-4. **Screenshots**: Include for UI changes
-5. **Checklist**:
-   - [ ] Code follows style guidelines
+1. **Title** — clear and descriptive.
+2. **Description** — explain what changed and why.
+3. **Testing** — describe how you verified the change.
+4. **Screenshots** — include them for UI changes.
+5. **Checklist:**
+   - [ ] Code follows the style guidelines
    - [ ] Tests added/updated
    - [ ] Documentation updated if needed
    - [ ] All tests pass
-   - [ ] No linting errors
+   - [ ] No linting or type-checking errors
+   - [ ] No generated `*_ui.py` / `*_rc.py` files committed
+
+---
 
 ## Dependency Management
 
-### Adding Dependencies
+### Adding dependencies
 
-1. Add to `pyproject.toml` under `dependencies` or `dependency-groups.dev`
-2. Run `uv sync` to install
-3. Commit both `pyproject.toml` and `uv.lock`
+1. Add the package to `pyproject.toml` under `dependencies` (runtime) or
+   `dependency-groups.dev` (development).
+2. Run `uv sync` to install.
+3. Commit both `pyproject.toml` and `uv.lock`.
 
-### Updating Dependencies
+### Updating dependencies
 
 ```bash
-# Update all dependencies
+# Update uv, lockfile, and environment
 task update
 
-# Update specific package
+# Update a specific package
 uv add package@latest
 ```
 
-## Building and Deployment
+---
 
-### Creating a Distribution
+## Building & Deployment
 
 ```bash
-# Using PyInstaller
+# Standalone build with PyInstaller
 task deploy
 
-# Using PySide6 deployment
+# Build with PySide6 deployment
 task deploy-pyside
-```
 
-### Cleaning Build Artifacts
-
-```bash
+# Remove build, test, and coverage artifacts
 task clean
 ```
 
+---
+
 ## Getting Help
 
-- **Issues**: Report bugs and request features on [GitHub Issues](https://github.com/TSE-Systems/tse-analytics/issues)
-- **Documentation**: See the `docs/` directory
-- **Code Questions**: Review existing code and tests for examples
+- **Issues** — report bugs and request features on
+  [GitHub Issues](https://github.com/TSE-Systems/tse-analytics/issues).
+- **Developer questions** — start with the developer reference in [`dev-docs/`](dev-docs/README.md)
+  and the conventions under `.claude/rules/`.
+- **End-user documentation** — see the generated site under [`docs/`](docs/).
+
+---
 
 ## License
 
-By contributing to TSE Analytics, you agree that your contributions will be licensed under the GPL-3.0-or-later license.
+By contributing to TSE Analytics, you agree that your contributions will be licensed under the
+**GNU General Public License v3.0 or later** (GPL-3.0-or-later). See [LICENSE](LICENSE) for the
+full text.
