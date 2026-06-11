@@ -9,11 +9,11 @@ from multiprocessing import freeze_support
 
 from loguru import logger
 from PySide6.QtCore import QSettings
-from PySide6.QtGui import QIcon, Qt
+from PySide6.QtGui import QFont, QIcon, Qt
 from PySide6.QtWidgets import QApplication
 
 from tse_analytics.core.workers.task_manager import TaskManager
-from tse_analytics.globals import get_resource_base, init_global_settings
+from tse_analytics.globals import IS_FLATPAK, get_resource_base, init_global_settings
 from tse_analytics.views.main_window import MainWindow
 
 
@@ -42,12 +42,16 @@ class App(QApplication):
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
 
         self.setStyle("fusion")
+
         self.setOrganizationName("TSE Systems")
         self.setOrganizationDomain("https://www.tse-systems.com")
         self.setApplicationName("TSE Analytics")
-        # Bind to the installed .desktop file so the window maps to the correct
-        # taskbar icon and application grouping (notably inside Flatpak / on Wayland).
-        self.setDesktopFileName("io.github.TSE_Systems.tse_analytics")
+        # Bind to the installed .desktop file so the window maps to the correct taskbar
+        # icon and application grouping. Only meaningful inside Flatpak, where the .desktop
+        # file is installed; setting it elsewhere (e.g. a dev checkout) makes Qt's
+        # xdg-portal registration warn that no app info exists for this app ID.
+        if IS_FLATPAK:
+            self.setDesktopFileName("io.github.TSE_Systems.tse_analytics")
         self.setWindowIcon(QIcon(":/icons/app.ico"))
 
         # Force the light mode
@@ -101,6 +105,14 @@ def main() -> None:
         # Force xcb (X11 / XWayland) for reliable rendering, incl. inside Flatpak.
         # setdefault keeps any explicit override (e.g. QT_QPA_PLATFORM=wayland).
         os.environ.setdefault("QT_QPA_PLATFORM", "xcb")
+
+        # Ignore the desktop's UI settings (font, palette, …) so dev rendering matches
+        # the sandboxed Flatpak, which can't read dconf. Without this the GTK/GNOME
+        # platform theme injects the desktop font ("Adwaita Sans 11") per widget class
+        # (menus, headers, buttons, …), making the UI look heavier/larger than the
+        # Flatpak. Must be called before the QApplication is constructed. The light
+        # color scheme and the app's own QSS are applied explicitly in App.__init__.
+        QApplication.setDesktopSettingsAware(False)
 
     # See: https://github.com/pyinstaller/pyinstaller/issues/7334#issuecomment-1357447176
     if sys.stdout is None:

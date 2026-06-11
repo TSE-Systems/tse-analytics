@@ -15,6 +15,9 @@ from PySide6.QtCore import QSettings
 
 IS_RELEASE = getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS")
 
+# True when running inside a Flatpak sandbox (/.flatpak-info is always present there).
+IS_FLATPAK = Path("/.flatpak-info").exists()
+
 
 def get_resource_base() -> Path:
     """Absolute base directory for bundled resource folders (styles, docs, ...).
