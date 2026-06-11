@@ -13,7 +13,7 @@ from PySide6.QtGui import QIcon, Qt
 from PySide6.QtWidgets import QApplication
 
 from tse_analytics.core.workers.task_manager import TaskManager
-from tse_analytics.globals import IS_RELEASE, init_global_settings
+from tse_analytics.globals import get_resource_base, init_global_settings
 from tse_analytics.views.main_window import MainWindow
 
 
@@ -45,6 +45,9 @@ class App(QApplication):
         self.setOrganizationName("TSE Systems")
         self.setOrganizationDomain("https://www.tse-systems.com")
         self.setApplicationName("TSE Analytics")
+        # Bind to the installed .desktop file so the window maps to the correct
+        # taskbar icon and application grouping (notably inside Flatpak / on Wayland).
+        self.setDesktopFileName("io.github.TSE_Systems.tse_analytics")
         self.setWindowIcon(QIcon(":/icons/app.ico"))
 
         # Force the light mode
@@ -55,10 +58,7 @@ class App(QApplication):
         # Set the selected stylesheet
         settings = QSettings()
         appStyle = settings.value("appStyle", "tse-light")
-        if IS_RELEASE:
-            style_file = os.path.join(os.path.dirname(sys.executable), f"_internal/styles/qss/{appStyle}.css")
-        else:
-            style_file = os.path.join(os.path.dirname(__file__), f"styles/qss/{appStyle}.css")
+        style_file = get_resource_base() / "styles" / "qss" / f"{appStyle}.css"
         with open(style_file) as file:
             self.setStyleSheet(file.read())
 
@@ -85,9 +85,22 @@ def handle_exception(exc_type, exc_value, exc_traceback) -> None:
     logger.opt(exception=(exc_type, exc_value, exc_traceback)).critical("Uncaught exception")
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """
+    Console-script entry point for TSE Analytics (see ``[project.scripts]``).
+
+    Configures process-level settings, logging and the global exception hook,
+    then constructs the application and main window and runs the Qt event loop.
+    """
     # See https://docs.python.org/3/library/multiprocessing.html#multiprocessing.freeze_support
     freeze_support()
+
+    if platform.system() == "Linux":
+        # Qt selects its platform plugin when QApplication is constructed (below),
+        # so this is set in time even though PySide6 is imported at module level.
+        # Force xcb (X11 / XWayland) for reliable rendering, incl. inside Flatpak.
+        # setdefault keeps any explicit override (e.g. QT_QPA_PLATFORM=wayland).
+        os.environ.setdefault("QT_QPA_PLATFORM", "xcb")
 
     # See: https://github.com/pyinstaller/pyinstaller/issues/7334#issuecomment-1357447176
     if sys.stdout is None:
@@ -106,3 +119,7 @@ if __name__ == "__main__":
     main_window.show()
 
     sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    main()

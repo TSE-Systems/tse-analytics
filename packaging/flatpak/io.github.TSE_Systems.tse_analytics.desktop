@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=TSE Analytics
+Comment=Analyze TSE PhenoMaster, IntelliCage and IntelliMaze experimental data
+Exec=tse-analytics
+Icon=io.github.TSE_Systems.tse_analytics
+Terminal=false
+Categories=Science;DataVisualization;
+StartupNotify=true
+StartupWMClass=tse-analytics

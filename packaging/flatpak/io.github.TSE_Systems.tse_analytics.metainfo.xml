@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.TSE_Systems.tse_analytics</id>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+
+  <name>TSE Analytics</name>
+  <summary>Analyze PhenoMaster, IntelliCage and IntelliMaze experimental data</summary>
+
+  <developer id="io.github.tse_systems">
+    <name>TSE Systems</name>
+  </developer>
+
+  <description>
+    <p>
+      TSE Analytics is a desktop application for analyzing data from TSE Systems
+      experimental platforms — PhenoMaster, IntelliCage and IntelliMaze.
+    </p>
+    <p>
+      It provides data import, an interactive analysis toolbox (histograms, ANOVA,
+      PCA, regression, time-series and chronobiology tools, and more), and a
+      node-based visual data-processing pipeline.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">io.github.TSE_Systems.tse_analytics.desktop</launchable>
+
+  <url type="homepage">https://github.com/TSE-Systems/tse-analytics</url>
+  <url type="bugtracker">https://github.com/TSE-Systems/tse-analytics/issues</url>
+
+  <content_rating type="oars-1.1" />
+
+  <releases>
+    <release version="2.0.0beta5" date="2026-06-11" />
+  </releases>
+</component>

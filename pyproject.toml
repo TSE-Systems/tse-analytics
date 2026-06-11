@@ -54,7 +54,7 @@ dev = [
 ]
 
 [project.scripts]
-tse-analytics = "tse_analytics:main"
+tse-analytics = "tse_analytics.main:main"
 
 [build-system]
 requires = ["hatchling"]

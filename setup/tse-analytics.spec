@@ -1,6 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 import os
+import sys
 from PyInstaller.utils.hooks import collect_all, collect_data_files, collect_submodules, copy_metadata
 
 pathex = os.path.abspath(os.path.join(SPECPATH, '..'))
@@ -21,13 +22,16 @@ datas += collect_data_files('faicons')
 
 hiddenimports = ["umap"]
 
+# The bundled CPython interpreter is only required for multiprocessing on Windows.
+binaries = [('../.venv/Scripts/python.exe', '.')] if sys.platform == "win32" else []
+
 a = Analysis(
     ['../tse_analytics/main.py'],
     pathex=[pathex],
-    binaries=[('../.venv/Scripts/python.exe', '.'),],
+    binaries=binaries,
     datas=datas,
     hiddenimports=hiddenimports,
-    hookspath=['setup/hooks'],
+    hookspath=[],
     hooksconfig={
         'matplotlib': {
             'backends': ['QtAgg', 'SVG', 'PDF'],
