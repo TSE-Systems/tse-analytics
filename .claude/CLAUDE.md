@@ -15,8 +15,8 @@ TSE Analytics — PySide6 desktop app for analyzing TSE PhenoMaster, IntelliCage
 ## Developer Documentation
 
 For deeper reference than these rules — architecture diagrams, subsystem walkthroughs, the full
-toolbox/pipeline-node catalogs, and an extending cookbook — see the developer docs in `dev-docs/`
-(`dev-docs/README.md` is the index). They expand on this file and `.claude/rules/` with rationale
+toolbox/pipeline-node catalogs, and an extending cookbook — see the developer docs in `docs/dev/`
+(`docs/dev/README.md` is the index). They expand on this file and `.claude/rules/` with rationale
 and detail; they are **not** auto-loaded, so consult them when the canonical rules aren't enough.
 
 Map: `01-architecture`, `02-messaging`, `03-services-manager`, `04-threading-workers`,
@@ -167,5 +167,5 @@ run `task qss`.
 
 Detailed rules live in `.claude/rules/` (auto-loaded — don't duplicate them here):
 `code-style.md`, `commands.md`, `project-structure.md`, `testing.md`, `toolbox-widget-pattern.md`.
-The expanded developer reference (rationale, diagrams, full catalogs) lives in `dev-docs/` — see the
+The expanded developer reference (rationale, diagrams, full catalogs) lives in `docs/dev/` — see the
 [Developer Documentation](#developer-documentation) section above.

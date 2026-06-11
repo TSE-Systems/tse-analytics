@@ -25,7 +25,7 @@ def show_offline_help():
     Open the offline help documentation in the default web browser.
     """
     base = get_resource_base()
-    # Frozen: docs are bundled at <base>/docs; source: at the repo root (one level above the package).
-    docs_directory = base / "docs" if IS_RELEASE else base.parent / "docs"
+    # Frozen: docs are bundled at <base>/docs/user; source: at the repo root (one level above the package).
+    docs_directory = base / "docs" / "user" if IS_RELEASE else base.parent / "docs" / "user"
     help_index = docs_directory / "index.html"
     QDesktopServices.openUrl(QUrl.fromLocalFile(help_index))

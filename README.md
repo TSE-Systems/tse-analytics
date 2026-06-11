@@ -12,7 +12,7 @@
 statistical and visualization analyses, and a node-based processing pipeline — all aimed at making
 experimental results reproducible, shareable, and easy to explore.
 
-![TSE Analytics Screenshot](docs/images/main.png)
+![TSE Analytics Screenshot](docs/user/images/main.png)
 
 ---
 
@@ -62,7 +62,7 @@ experimental results reproducible, shareable, and easy to explore.
 
 | Datasets & workspace | Adding an analysis |
 |----------------------|--------------------|
-| ![Datasets view](docs/images/datasets-view.png) | ![Add analysis menu](docs/images/add-widget-menu.png) |
+| ![Datasets view](docs/user/images/datasets-view.png) | ![Add analysis menu](docs/user/images/add-widget-menu.png) |
 
 ---
 
@@ -270,8 +270,8 @@ A typical workflow looks like this:
 ## Documentation
 
 - **Developer reference** — architecture, subsystem walkthroughs, the full toolbox/pipeline catalog,
-  and an extending cookbook: [`dev-docs/`](dev-docs/README.md).
-- **End-user documentation** — see the generated site under [`docs/`](docs/).
+  and an extending cookbook: [`docs/dev/`](docs/dev/README.md).
+- **End-user documentation** — see the generated site under [`docs/user/`](docs/user/).
 
 ---
 

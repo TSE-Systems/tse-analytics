@@ -6,7 +6,7 @@ This document covers how TSE Analytics is built into a distributable application
 two targets — a **Windows installer** and a **Linux Flatpak** — and both wrap the same
 **PyInstaller** bundle of the app. It is a developer overview that points at the canonical
 sources rather than duplicating them; the detailed Flatpak guide lives in
-[`packaging/flatpak/README.md`](../packaging/flatpak/README.md).
+[`packaging/flatpak/README.md`](../../packaging/flatpak/README.md).
 
 **Source:** `packaging/` (specs + Flatpak assets) and the deploy / flatpak tasks in
 `Taskfile.yml`.
@@ -115,7 +115,7 @@ script), which is the reliable path for the bundled Qt inside the sandbox.
 
 > Full prerequisites (Flatpak tooling, runtime install), troubleshooting (e.g. a missing
 > `xcb` plugin library), and icon regeneration live in
-> [`packaging/flatpak/README.md`](../packaging/flatpak/README.md).
+> [`packaging/flatpak/README.md`](../../packaging/flatpak/README.md).
 
 ---
 

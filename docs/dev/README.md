@@ -5,7 +5,7 @@ the patterns that hold the app together, the coding rules and conventions, and a
 of the analysis toolbox. It is aimed at contributors who need to understand the code or extend it.
 
 > For **end-user** documentation (installation, usage walkthroughs, predefined variables) see the
-> generated site under `docs/`. This `dev-docs/` set is purely for developers and is plain Markdown
+> generated site under `docs/user/`. This `docs/dev/` set is purely for developers and is plain Markdown
 > (no build step) — Mermaid diagrams render natively on GitHub.
 
 ---
@@ -116,4 +116,4 @@ flowchart TB
   Windows installer and the Linux Flatpak build.
 
 > The canonical, always-loaded rules live in `.claude/CLAUDE.md` and `.claude/rules/*.md`. These
-> dev-docs expand on them with rationale, diagrams, and reference detail; they do not replace them.
+> `docs/dev/` docs expand on them with rationale, diagrams, and reference detail; they do not replace them.

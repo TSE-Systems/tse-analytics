@@ -7,7 +7,7 @@ from PyInstaller.utils.hooks import collect_all, collect_data_files, collect_sub
 pathex = os.path.abspath(os.path.join(SPECPATH, '..'))
 
 datas = [
-    ('../docs', 'docs'),
+    ('../docs/user', 'docs/user'),
     ('../tse_analytics/styles', 'styles'),
     ('../tse_analytics/resources_rc.py', '.'),
     ('../tse_analytics/views/about/*.md', 'tse_analytics/views/about'),
