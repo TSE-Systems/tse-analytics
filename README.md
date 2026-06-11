@@ -2,8 +2,8 @@
 
 [![Python](https://img.shields.io/badge/python-3.14-blue.svg)](https://www.python.org/)
 [![License: GPL v3](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.0.0--beta-orange.svg)](CHANGELOG.md)
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20desktop-lightgrey.svg)](#installation)
+[![Version](https://img.shields.io/badge/version-2.0.0--beta5-orange.svg)](CHANGELOG.md)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-lightgrey.svg)](#installation)
 [![UI: PySide6](https://img.shields.io/badge/UI-PySide6-41cd52.svg)](https://doc.qt.io/qtforpython/)
 
 **TSE Analytics** is a desktop application for analyzing experimental data produced by
@@ -90,10 +90,48 @@ uv run tse-analytics
 
 ### Build a distributable
 
-A standalone build can be produced with PyInstaller:
+All packaging configuration lives under [`packaging/`](packaging/) — the PyInstaller spec, the
+Windows Inno Setup script, and the Linux Flatpak manifest.
+
+**Windows / host-native** — produce a standalone build with PyInstaller (uses
+`packaging/tse-analytics.spec`):
 
 ```bash
-task deploy
+task deploy          # PyInstaller standalone build
+task deploy-pyside   # alternative: pyside6-deploy
+```
+
+On Windows, the installer is built from `packaging/tse-analytics.iss` (Inno Setup).
+
+**Linux (Flatpak)** — the bundle is built in two steps. The PyInstaller stage runs inside a
+manylinux container (requires `podman` or `docker`) so the result is portable across glibc
+versions:
+
+```bash
+task flatpak-dist    # build the PyInstaller bundle inside a manylinux container
+task flatpak         # build & install the Flatpak locally (user)
+flatpak run io.github.TSE_Systems.tse_analytics
+```
+
+Produce a single-file bundle for distribution:
+
+```bash
+task flatpak-bundle  # -> dist/tse-analytics.flatpak
+```
+
+> **Note:** the Flatpak is intended for **direct / private distribution** (a `.flatpak` bundle or
+> self-hosted repo), not Flathub. Do **not** use `task deploy` for the Flatpak — it links the
+> host's glibc and the bundle will fail inside the runtime. See
+> [`packaging/flatpak/README.md`](packaging/flatpak/README.md) for full prerequisites (the
+> `org.freedesktop.Platform//25.08` runtime/SDK and a container engine) and troubleshooting.
+
+### Install on Linux
+
+End users can install the prebuilt bundle on any machine that has the freedesktop **25.08**
+runtime available:
+
+```bash
+flatpak install --user dist/tse-analytics.flatpak
 ```
 
 Pre-built releases (when available) are published on the

@@ -63,8 +63,7 @@ tse-analytics/
 ├── dev-docs/               # Developer reference (architecture, subsystems, extending cookbook)
 ├── docs/                   # Generated end-user documentation site
 ├── resources/              # Application resources (icons, images, .qrc)
-├── scripts/                # Python equivalents of the Task commands
-├── setup/                  # Deployment configuration (PyInstaller spec, Inno Setup)
+├── packaging/              # Installation/deployment configs (PyInstaller spec, Inno Setup, Flatpak)
 ├── pyproject.toml          # Project configuration & dependencies
 ├── Taskfile.yml            # Task runner definitions
 └── .editorconfig           # Editor configuration

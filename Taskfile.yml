@@ -88,7 +88,7 @@ tasks:
   deploy:
     cmds:
       - uv sync
-      - pyinstaller --clean setup/tse-analytics.spec
+      - pyinstaller --clean packaging/tse-analytics.spec
 
   deploy-pyside:
     cmds:

@@ -23,6 +23,8 @@ large toolbox of statistical / visualization widgets plus a node-based visual pi
 - **UI:** PySide6 (Qt 6), docking via `pyside6-qtads`, node graph via `NodeGraphQt`
 - **Data:** pandas (numpy-nullable dtypes), DuckDB persistence, scientific stack (scipy,
   statsmodels, scikit-learn, pingouin, seaborn, matplotlib, …)
+- **Distribution:** Windows installer (PyInstaller + Inno Setup) and Linux Flatpak —
+  see [13-packaging-deployment.md](13-packaging-deployment.md)
 
 ---
 
@@ -96,6 +98,7 @@ flowchart TB
 | 10 | [10-modules-extensions.md](10-modules-extensions.md) | The three data-source modules + the extensions pattern |
 | 11 | [11-conventions.md](11-conventions.md) | Code style, commands, generated files, deps, testing |
 | 12 | [12-extending.md](12-extending.md) | Cookbook: add a widget / node / extension / message / task |
+| 13 | [13-packaging-deployment.md](13-packaging-deployment.md) | Windows installer (PyInstaller + Inno Setup) & Linux Flatpak build |
 
 ---
 
@@ -109,6 +112,8 @@ flowchart TB
   and [06-persistence.md](06-persistence.md).
 - **Just need the rules?** [11-conventions.md](11-conventions.md) distills the project's coding
   standards and commands.
+- **Shipping a build?** [13-packaging-deployment.md](13-packaging-deployment.md) covers the
+  Windows installer and the Linux Flatpak build.
 
 > The canonical, always-loaded rules live in `.claude/CLAUDE.md` and `.claude/rules/*.md`. These
 > dev-docs expand on them with rationale, diagrams, and reference detail; they do not replace them.

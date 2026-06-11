@@ -76,7 +76,7 @@ SYS_LIBS="
     uv sync --frozen
 
     echo ">> Running PyInstaller ..."
-    uv run pyinstaller --clean --noconfirm setup/tse-analytics.spec
+    uv run pyinstaller --clean --noconfirm packaging/tse-analytics.spec
   '
 
 echo ">> Done. Bundle at: $PROJECT_DIR/dist/tse-analytics"
