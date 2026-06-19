@@ -1,6 +1,6 @@
 [project]
 name = "tse-analytics"
-version = "2.0.0beta5"
+version = "2.0.0beta6"
 description = "TSE Analytics data analysys"
 license = "GPL-3.0-or-later"
 readme = "README.md"
@@ -9,19 +9,19 @@ authors = [
 ]
 homepage = "https://github.com/TSE-Systems/tse-analytics"
 repository = "https://github.com/TSE-Systems/tse-analytics"
-requires-python = "==3.14.5"
+requires-python = "==3.14.6"
 dependencies = [
-    "anthropic==0.105.2",
-    "astropy==7.2.0",
+    "anthropic==0.111.0",
+    "astropy==8.0.0",
     "connectorx==0.4.5",
-    "css-inline==0.20.2",
-    "duckdb==1.5.3",
-    "great-tables==0.21.0",
+    "css-inline==0.21.0",
+    "duckdb==1.5.4",
+    "great-tables==0.22.0",
     "jinja2==3.1.6",
     "lmfit==1.3.4",
     "lmstudio==1.5.0",
     "loguru==0.7.3",
-    "matplotlib==3.10.9",
+    "matplotlib==3.11.0",
     "nodegraphqt==0.6.44",
     "openpyxl==3.1.5",
     "pandas==3.0.3",
@@ -34,7 +34,7 @@ dependencies = [
     "pyside6==6.11.1",
     "pyside6-qtads==4.5.0.5",
     "scikit-learn==1.9.0",
-    "scipy==1.17.1",
+    "scipy==1.18.0",
     "seaborn==0.13.2",
     "statsmodels==0.14.6",
     "traja==25.0.1",
@@ -44,13 +44,13 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "pyinstaller==6.20.0",
+    "pyinstaller==6.21.0",
     "pyinstrument==5.1.2",
-    "pyrefly==1.0.0",
-    "pytest==9.0.3",
+    "pyrefly==1.1.1",
+    "pytest==9.1.1",
     "qtsass==0.4.0",
-    "ruff==0.15.16",
-    "ty==0.0.44",
+    "ruff==0.15.18",
+    "ty==0.0.51",
 ]
 
 [project.scripts]
