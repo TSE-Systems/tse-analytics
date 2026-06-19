@@ -12,6 +12,17 @@ TSE Analytics — PySide6 desktop app for analyzing TSE PhenoMaster, IntelliCage
 - Data analysis pipeline editor is based on the NodeGraphQt library.
 - With Pandas always use numpy-nullable data types (`Int64`, `Float64`, `string`, …).
 
+## Developer Documentation
+
+For deeper reference than these rules — architecture diagrams, subsystem walkthroughs, the full
+toolbox/pipeline-node catalogs, and an extending cookbook — see the developer docs in `dev-docs/`
+(`dev-docs/README.md` is the index). They expand on this file and `.claude/rules/` with rationale
+and detail; they are **not** auto-loaded, so consult them when the canonical rules aren't enough.
+
+Map: `01-architecture`, `02-messaging`, `03-services-manager`, `04-threading-workers`,
+`05-data-model`, `06-persistence`, `07-layouts-ui`, `08-toolbox`, `09-pipeline`,
+`10-modules-extensions`, `11-conventions`, `12-extending`.
+
 ## Architecture
 
 Package layout under `tse_analytics/`:
@@ -53,7 +64,7 @@ messaging.broadcast(messaging.DatasetChangedMessage(self, dataset))
 ### Service facade
 
 `core/manager.py` wires the four singleton services from `core/services/`
-(`selection_service`, `workspace_service`, `dataset_service`, `import_service`) and re-exports
+(`selection_service`, `workspace_service`, `dataset_service`, `importer_service`) and re-exports
 their methods as module-level functions. **Call `manager.*` (e.g. `manager.add_dataset(...)`,
 `manager.set_selected_dataset(...)`) — do not instantiate services yourself.** Services broadcast
 messages on state changes.
@@ -109,6 +120,10 @@ Categories (`CATEGORY_ORDER`): AI, Data, Exploration, Bivariate, ANOVA, Factor A
 Chronobiology, Time Series, IntelliCage. Full method contract:
 `.claude/rules/toolbox-widget-pattern.md`.
 
+Module-specific widgets may instead live under `modules/<module>/toolbox/` (e.g. IntelliCage's
+`learning_curve`, `place_preference`, `transitions`); they are registered the same way — by adding
+their import to `toolbox/__init__.py`.
+
 ### Add a pipeline node
 
 Subclass `PipelineNode` (`pipeline/pipeline_node.py`), implement
@@ -152,3 +167,5 @@ run `task qss`.
 
 Detailed rules live in `.claude/rules/` (auto-loaded — don't duplicate them here):
 `code-style.md`, `commands.md`, `project-structure.md`, `testing.md`, `toolbox-widget-pattern.md`.
+The expanded developer reference (rationale, diagrams, full catalogs) lives in `dev-docs/` — see the
+[Developer Documentation](#developer-documentation) section above.

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -6,35 +6,42 @@ import pandas as pd
 import seaborn as sns
 from scipy.stats import chi2
 
-from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.utils import get_html_image_from_figure
 
 
 @dataclass
 class IntelliCageTransitionsResult:
     report: str
+    # Per-animal transition matrices, keyed by animal id then matrix name
+    # ("Observed", "Expected", "Chi-Square", "P-Values", "Ratio").
+    matrices: dict[str, dict[str, pd.DataFrame]] = field(default_factory=dict)
 
 
 def get_intellicage_transitions_result(
-    dataset: Dataset,
     df: pd.DataFrame,
-    animal_ids: list[str],
     alpha: float = 0.05,
+    include_diagonal: bool = True,
     figsize: tuple[float, float] | None = None,
 ) -> IntelliCageTransitionsResult:
     report = "<h1>Chi-Square Analysis of Corner Transitions</h1><br>"
-    for animal_id in animal_ids:
-        animal_report = _process_animal(
+    matrices: dict[str, dict[str, pd.DataFrame]] = {}
+
+    for animal_id in sorted(df["Animal"].dropna().unique()):
+        result = _process_animal(
             df,
             animal_id,
             alpha,
+            include_diagonal,
             figsize,
         )
-        if animal_report is not None:
+        if result is not None:
+            animal_report, animal_matrices = result
             report += animal_report + "<br>"
+            matrices[str(animal_id)] = animal_matrices
 
     return IntelliCageTransitionsResult(
         report=report,
+        matrices=matrices,
     )
 
 
@@ -42,13 +49,12 @@ def _process_animal(
     df: pd.DataFrame,
     animal_id: str,
     alpha: float,
-    figsize: tuple[float, float],
-) -> str | None:
+    include_diagonal: bool,
+    figsize: tuple[float, float] | None,
+) -> tuple[str, dict[str, pd.DataFrame]] | None:
     animal_df = df[df["Animal"] == animal_id].copy()
     if animal_df.empty:
         return None
-
-    animal_df.reset_index(drop=True, inplace=True)
 
     # Sort by timestamp to get the sequence of visits
     animal_df.sort_values("Timedelta", inplace=True)
@@ -59,39 +65,59 @@ def _process_animal(
     # Remove the last row as it doesn't have a next corner
     animal_df = animal_df.dropna(subset=["NextCorner"])
 
+    # Optionally drop self-transitions (consecutive visits to the same corner)
+    if not include_diagonal:
+        animal_df = animal_df[animal_df["Corner"] != animal_df["NextCorner"]]
+
+    if animal_df.empty:
+        return None
+
     # Convert corner numbers to integers if they aren't already
     animal_df["NextCorner"] = animal_df["NextCorner"].astype("UInt8")
 
     # Create a transition matrix
     observed_matrix = pd.crosstab(animal_df["Corner"], animal_df["NextCorner"])
+    if observed_matrix.empty:
+        return None
+
+    # Square the matrix so "From" and "To" axes share the same corner labels,
+    # making the diagonal and the heatmaps directly comparable.
+    corners = sorted(set(observed_matrix.index) | set(observed_matrix.columns))
+    observed_matrix = observed_matrix.reindex(index=corners, columns=corners, fill_value=0)
+
+    total = observed_matrix.values.sum()
+    if total == 0:
+        return None
 
     # Calculate expected transition matrix
     # Expected counts = (row sum * column sum) / total
     row_sums = observed_matrix.sum(axis=1)
     col_sums = observed_matrix.sum(axis=0)
-    total = observed_matrix.values.sum()
 
     expected = np.outer(row_sums, col_sums) / total
     expected_matrix = pd.DataFrame(expected, index=observed_matrix.index, columns=observed_matrix.columns)
 
-    # Chi-square test for each cell
-    chi_square = (observed_matrix - expected_matrix) ** 2 / expected_matrix
+    # Corners that are only ever a source (or only ever a destination) have a zero
+    # margin and therefore a zero expected count; mask those cells so they render
+    # blank instead of producing inf/0-division artifacts.
+    zero_expected = expected_matrix == 0
 
-    # Calculate p-values
+    # Chi-square test for each cell
+    with np.errstate(divide="ignore", invalid="ignore"):
+        chi_square = (observed_matrix - expected_matrix) ** 2 / expected_matrix
+        ratio = observed_matrix / expected_matrix
+    chi_square = chi_square.mask(zero_expected)
+    ratio = ratio.replace([np.inf, -np.inf], np.nan).mask(zero_expected)
+
+    # Calculate p-values (df=1 for each cell)
     p_values = pd.DataFrame(
-        chi2.sf(chi_square.values, df=1),  # df=1 for each cell
+        chi2.sf(chi_square.values, df=1),
         index=observed_matrix.index,
         columns=observed_matrix.columns,
-    )
+    ).mask(zero_expected)
 
-    # Highlight significant transitions
-    # Create a mask for significant transitions (p < alpha)
+    # Highlight significant transitions (p < alpha); NaN cells are treated as not significant.
     significant = p_values < alpha
-
-    # Create a ratio matrix (observed/expected)
-    ratio = observed_matrix / expected
-    # Replace inf values with NaN
-    ratio = ratio.replace([np.inf, -np.inf], np.nan)
 
     # Create a figure with a tight layout
     figure = plt.Figure(figsize=figsize, layout="tight")
@@ -157,4 +183,12 @@ def _process_animal(
 
     figure.suptitle(f"Animal: {animal_id}")
 
-    return get_html_image_from_figure(figure)
+    animal_matrices = {
+        "Observed": observed_matrix,
+        "Expected": expected_matrix,
+        "Chi-Square": chi_square,
+        "P-Values": p_values,
+        "Ratio": ratio,
+    }
+
+    return get_html_image_from_figure(figure), animal_matrices
