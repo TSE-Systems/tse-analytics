@@ -4,7 +4,22 @@ from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.pipeline import PipelineNode
 from tse_analytics.pipeline.pipeline_packet import PipelinePacket
-from tse_analytics.toolbox.tsne.processor import get_tsne_result
+from tse_analytics.toolbox.umap.processor import get_umap_result
+
+METRICS = [
+    "euclidean",
+    "manhattan",
+    "chebyshev",
+    "minkowski",
+    "canberra",
+    "braycurtis",
+    "haversine",
+    "mahalanobis",
+    "wminkowski",
+    "seuclidean",
+    "cosine",
+    "correlation",
+]
 
 
 class UmapNode(PipelineNode):
@@ -32,19 +47,34 @@ class UmapNode(PipelineNode):
         )
 
         self.add_text_input(
-            "perplexity",
-            "Perplexity",
-            "30.0",
-            "Perplexity",
-            "Perplexity parameter (5-50)",
+            "n_neighbors",
+            "n_neighbors",
+            "15",
+            "n_neighbors",
+            "Number of neighbors (1-100)",
         )
 
         self.add_text_input(
-            "max_iterations",
-            "Max Iterations",
-            "1000",
-            "Max Iterations",
-            "Maximum iterations (250-10000)",
+            "n_components",
+            "n_components",
+            "2",
+            "n_components",
+            "Number of components (1-3)",
+        )
+
+        self.add_combo_menu(
+            "metric",
+            "Metric",
+            items=METRICS,
+            tooltip="Distance metric",
+        )
+
+        self.add_text_input(
+            "min_dist",
+            "min_dist",
+            "0.1",
+            "min_dist",
+            "Minimum distance (0.001-0.5)",
         )
 
     def initialize(self, dataset: Dataset, datatable: Datatable):
@@ -80,29 +110,41 @@ class UmapNode(PipelineNode):
         # Parse group_by
         factor_name = str(self.get_property("group_by"))
 
-        # Parse perplexity
+        # Parse n_neighbors
         try:
-            perplexity = float(self.get_property("perplexity"))
-            if perplexity < 5 or perplexity > 50:
-                return PipelinePacket.inactive(reason="Perplexity must be between 5 and 50")
+            n_neighbors = int(self.get_property("n_neighbors"))
+            if n_neighbors < 1 or n_neighbors > 100:
+                return PipelinePacket.inactive(reason="n_neighbors must be between 1 and 100")
         except ValueError, TypeError:
-            return PipelinePacket.inactive(reason="Invalid perplexity value")
+            return PipelinePacket.inactive(reason="Invalid n_neighbors value")
 
-        # Parse max_iterations
+        # Parse n_components
         try:
-            max_iterations = int(self.get_property("max_iterations"))
-            if max_iterations < 250 or max_iterations > 10000:
-                return PipelinePacket.inactive(reason="Max iterations must be between 250 and 10000")
+            n_components = int(self.get_property("n_components"))
+            if n_components < 1 or n_components > 3:
+                return PipelinePacket.inactive(reason="n_components must be between 1 and 3")
         except ValueError, TypeError:
-            return PipelinePacket.inactive(reason="Invalid max iterations value")
+            return PipelinePacket.inactive(reason="Invalid n_components value")
 
-        # Perform t-SNE analysis
-        result = get_tsne_result(
+        # Parse min_dist
+        try:
+            min_dist = float(self.get_property("min_dist"))
+            if min_dist < 0.001 or min_dist > 0.5:
+                return PipelinePacket.inactive(reason="min_dist must be between 0.001 and 0.5")
+        except ValueError, TypeError:
+            return PipelinePacket.inactive(reason="Invalid min_dist value")
+
+        metric = str(self.get_property("metric"))
+
+        # Perform UMAP analysis
+        result = get_umap_result(
             datatable,
             variable_names,
             factor_name,
-            perplexity,
-            max_iterations,
+            n_neighbors,
+            n_components,
+            metric,
+            min_dist,
         )
 
         return PipelinePacket(datatable, report=result.report)

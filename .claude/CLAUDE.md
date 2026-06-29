@@ -37,7 +37,7 @@ and detail; they are **not** auto-loaded, so consult them when the canonical rul
 
 Map: `01-architecture`, `02-messaging`, `03-services-manager`, `04-threading-workers`,
 `05-data-model`, `06-persistence`, `07-layouts-ui`, `08-toolbox`, `09-pipeline`,
-`10-modules-extensions`, `11-conventions`, `12-extending`.
+`10-modules-extensions`, `11-conventions`, `12-extending`, `13-packaging-deployment`.
 
 ## Architecture
 
@@ -46,10 +46,14 @@ Package layout under `tse_analytics/`:
 - `core/` — domain models (`data/`, `models/`), persistence (`io/`), `messaging/`, `services/`,
   `workers/`, `layouts/`, `utils/`. Service facade in `core/manager.py`.
 - `modules/` — self-contained data-source modules: `phenomaster`, `intellicage`, `intellimaze`.
-- `toolbox/` — analysis widgets (histogram, ANOVA, PCA, regression, AI agent, facet plots, …).
+- `toolbox/` — analysis widgets (histogram, ANOVA, PCA, regression, AI agent, facet plots, …). The
+  AI agent (`toolbox/ai_agent/`) supports two backends: the Anthropic Claude API (`anthropic`) and
+  local models via LM Studio (`lmstudio`).
 - `pipeline/` — node-based visual data processing (NodeGraphQt).
 - `views/` — shared UI components, dialogs, and the main window.
-- `styles/` — SCSS source compiled to QSS. `resources/` — icons/images compiled to `*_rc.py`.
+- `styles/` — SCSS source compiled to QSS (in-package). Note: app `resources/` (icons/images,
+  `resources.qrc`) live at the **repo root**, not under the package, and compile to
+  `tse_analytics/resources_rc.py`.
 
 ### Bootstrap
 
@@ -81,7 +85,9 @@ messaging.broadcast(messaging.DatasetChangedMessage(self, dataset))
 
 `core/manager.py` wires the four singleton services from `core/services/`
 (`selection_service`, `workspace_service`, `dataset_service`, `importer_service`) and re-exports
-their methods as module-level functions. **Call `manager.*` (e.g. `manager.add_dataset(...)`,
+their methods as module-level functions. (The `importer_service` singleton is an `ImportService`
+from `import_service.py` — the only one whose module name differs from the singleton name.)
+**Call `manager.*` (e.g. `manager.add_dataset(...)`,
 `manager.set_selected_dataset(...)`) — do not instantiate services yourself.** Services broadcast
 messages on state changes.
 
@@ -149,21 +155,17 @@ matching `*_node.py` variant.
 
 ### Add a module extension
 
-For `phenomaster` / `intellimaze`, create `modules/<module>/extensions/<ext>/`
-(views / data / io / processor / settings) and register the raw-table → widget mapping in that
-module's `extensions/extensions_registry.py`.
+Create `modules/<module>/extensions/<ext>/` (views / data / io / processor / settings). The two
+modules wire extensions differently:
 
-## Plan persistence
-
-After completing implementation of a plan (whether produced via Plan Mode or
-ad-hoc), save the final plan to `./.claude/plans/` in this project as a Markdown file.
-
-- Filename format: `YYYY-MM-DD-<kebab-case-summary>.md`
-- Include: the original task statement, the executed plan, files touched,
-  and any follow-ups or known limitations.
-- Do this before ending the turn that completes the implementation.
-- Never write plans to `~/.claude/plans/` for this project — always use
-  `./.claude/plans/` so the plan is committed alongside the code.
+- **phenomaster** uses a formal registry: add an entry to the `EXTENSIONS_REGISTRY` dict in
+  `modules/phenomaster/extensions/extensions_registry.py`, mapping a raw-table name →
+  `{"icon": ..., "widget": ...}` (consumed in `views/datasets/datasets_widget.py`).
+- **intellimaze** has no registry file: each extension exposes an `EXTENSION_NAME` constant
+  (e.g. `extensions/running_wheel/data/processor.py`) and is wired via per-feature dicts keyed on
+  that name in `modules/intellimaze/io/dataset_loader.py` and
+  `views/export_merged_csv/export_merged_csv_dialog.py`; register the extension package by importing
+  it in `modules/intellimaze/extensions/__init__.py`.
 
 ## Generated Files — Do Not Edit or Commit
 
@@ -178,6 +180,12 @@ run `task qss`.
 - Add deps in `pyproject.toml` under `dependencies` or `dependency-groups.dev`
 - Run `uv sync` to install; commit both `pyproject.toml` and `uv.lock`
 - Update all: `task update`
+
+## Packaging & Deployment
+
+- PyInstaller bundle: `task deploy` (see also `task deploy-pyside`).
+- Linux packaging is via **Flatpak**: `task flatpak` / `task flatpak-dist` / `task flatpak-bundle`.
+- See `docs/dev/13-packaging-deployment.md` for the full deployment/packaging walkthrough.
 
 ## Conventions
 

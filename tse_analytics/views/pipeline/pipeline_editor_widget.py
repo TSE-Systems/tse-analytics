@@ -18,6 +18,7 @@ from tse_analytics.pipeline.nodes import (
 from tse_analytics.toolbox.actogram.actogram_node import ActogramNode
 from tse_analytics.toolbox.ancova.ancova_node import AncovaNode
 from tse_analytics.toolbox.correlation.correlation_node import CorrelationNode
+from tse_analytics.toolbox.correlation_matrix.correlation_matrix_node import CorrelationMatrixNode
 from tse_analytics.toolbox.data_plot.data_plot_node import DataPlotNode
 from tse_analytics.toolbox.distribution.distribution_node import DistributionNode
 from tse_analytics.toolbox.histogram.histogram_node import HistogramNode
@@ -31,6 +32,7 @@ from tse_analytics.toolbox.regression.regression_node import RegressionNode
 from tse_analytics.toolbox.report.report_node import ReportNode
 from tse_analytics.toolbox.rm_anova.rm_anova_node import RmAnovaNode
 from tse_analytics.toolbox.tsne.tsne_node import TsneNode
+from tse_analytics.toolbox.umap.umap_node import UmapNode
 from tse_analytics.views.pipeline.hotkeys import hotkeys
 
 
@@ -115,6 +117,7 @@ class PipelineEditorWidget(QWidget):
             ActogramNode,
             AncovaNode,
             CheckboxNode,
+            CorrelationMatrixNode,
             CorrelationNode,
             DataPlotNode,
             DatatableInputNode,
@@ -135,6 +138,7 @@ class PipelineEditorWidget(QWidget):
             RmAnovaNode,
             TransformationNode,
             TsneNode,
+            UmapNode,
         ])
 
         # Get the graph widget and add it to the layout
