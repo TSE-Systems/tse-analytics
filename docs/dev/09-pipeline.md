@@ -41,7 +41,7 @@ class PipelineNode(BaseNode):
         return PipelinePacket.inactive(reason="Not implemented")
 ```
 
-- `process(*input_packets)` consumes upstream packet(s) and returns either a **single**
+- `process(packet)` consumes the upstream `PipelinePacket` and returns either a **single**
   `PipelinePacket` (sent to all output ports) or a **`dict[port_name, PipelinePacket]`** to route
   different packets to different output ports (used for branching/conditional nodes).
 - A node may also define `initialize(dataset, datatable)`, called before execution so it can read
@@ -92,13 +92,9 @@ flowchart LR
 Many toolbox analyses ship a node variant wrapping the same `processor.py`. The editor currently
 **registers** these toolbox nodes (in `views/pipeline/pipeline_editor_widget.py`):
 
-`ActogramNode`, `AncovaNode`, `CorrelationNode`, `DataPlotNode`, `DistributionNode`,
-`HistogramNode`, `MatrixPlotNode`, `MdsNode`, `MixedAnovaNode`, `NWayAnovaNode`, `OneWayAnovaNode`,
-`PcaNode`, `RegressionNode`, `ReportNode`, `RmAnovaNode`, `TsneNode`.
-
-> Note: `correlation_matrix_node.py` and `umap_node.py` exist in the toolbox but are **not**
-> currently registered in the editor's `register_nodes([...])` list. To expose them, add the import
-> and list entry (see [12-extending.md](12-extending.md)).
+`ActogramNode`, `AncovaNode`, `CorrelationMatrixNode`, `CorrelationNode`, `DataPlotNode`,
+`DistributionNode`, `HistogramNode`, `MatrixPlotNode`, `MdsNode`, `MixedAnovaNode`, `NWayAnovaNode`,
+`OneWayAnovaNode`, `PcaNode`, `RegressionNode`, `ReportNode`, `RmAnovaNode`, `TsneNode`, `UmapNode`.
 
 ---
 

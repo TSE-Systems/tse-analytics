@@ -111,7 +111,10 @@ PhenoMaster extensions present:
 
 IntelliMaze extensions are **loaders**, not viewers: they parse one device's data into the dataset
 and have no `extensions_registry.py` and (mostly) no `views/`. Folders contain just `data/` and
-`io/`. The package's `__init__.py` imports the active ones.
+`io/`. Each extension is wired by the per-feature dicts (keyed on its `EXTENSION_NAME`) in
+`io/dataset_loader.py` and `views/export_merged_csv/export_merged_csv_dialog.py`, which import all of
+them directly. The package's `extensions/__init__.py` is a non-load-bearing convenience listing and
+currently imports only a subset.
 
 Extensions present: `actor`, `animal_gate`, `consumption_scale`, `intellicage`, `operant_device`,
 `running_wheel`.

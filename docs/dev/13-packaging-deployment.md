@@ -61,7 +61,7 @@ the Flatpak (see the next section for why).
 
 The Flatpak packages the app for **direct / private distribution** (a single `.flatpak`
 bundle or a self-hosted repo). It is **not Flathub-eligible**: Flathub requires building
-from source, and the app pins Python `3.14.5` plus a heavy scientific / Rust dependency
+from source, and the app pins Python `3.14.6` plus a heavy scientific / Rust dependency
 stack that no stock Flatpak runtime can reproduce offline. So the Flatpak wraps a
 pre-built PyInstaller bundle.
 

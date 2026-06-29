@@ -164,8 +164,9 @@ modules wire extensions differently:
 - **intellimaze** has no registry file: each extension exposes an `EXTENSION_NAME` constant
   (e.g. `extensions/running_wheel/data/processor.py`) and is wired via per-feature dicts keyed on
   that name in `modules/intellimaze/io/dataset_loader.py` and
-  `views/export_merged_csv/export_merged_csv_dialog.py`; register the extension package by importing
-  it in `modules/intellimaze/extensions/__init__.py`.
+  `views/export_merged_csv/export_merged_csv_dialog.py` (both import the extensions directly). The
+  `modules/intellimaze/extensions/__init__.py` is only a convenience listing (currently a partial
+  subset), not the load-bearing registration point.
 
 ## Generated Files — Do Not Edit or Commit
 

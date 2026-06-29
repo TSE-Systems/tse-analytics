@@ -17,7 +17,7 @@ A **PySide6 desktop application** for analyzing experimental data produced by TS
 in-memory domain model, lets the user define grouping factors and clean the data, and provides a
 large toolbox of statistical / visualization widgets plus a node-based visual pipeline editor.
 
-- **Language / runtime:** Python `==3.14.5`
+- **Language / runtime:** Python `==3.14.6`
 - **Package manager:** [`uv`](https://docs.astral.sh/uv/) (`uv sync`)
 - **Task runner:** [`task`](https://taskfile.dev/) (see `Taskfile.yml`)
 - **UI:** PySide6 (Qt 6), docking via `pyside6-qtads`, node graph via `NodeGraphQt`

@@ -108,15 +108,13 @@ module functions):
 
 **Source:** `core/messaging/messenger_listener.py`
 
-Any object that subscribes must be a `MessengerListener`. The contract:
+Any object that subscribes must be a `MessengerListener`. In practice widgets subscribe directly in
+`__init__`:
 
 ```python
 class MyWidget(QWidget, MessengerListener):
-    def __init__(self, ...):
-        super().__init__(...)
-        self.register_to_messenger()           # do your subscribe() calls here
-
-    def register_to_messenger(self):
+    def __init__(self, parent=None):
+        super().__init__(parent)
         messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
         messaging.subscribe(self, messaging.DatatableChangedMessage, self._on_datatable_changed)
 
@@ -126,9 +124,11 @@ class MyWidget(QWidget, MessengerListener):
     # notify() is the default handler when subscribe() is called without an explicit handler.
 ```
 
-- `register_to_messenger()` — convention for grouping your `subscribe` calls.
+- `register_to_messenger(self, messenger)` — base-class hook (raises `NotImplementedError` by
+  default). The messenger invokes it as `listener.register_to_messenger(self)`; most widgets skip it
+  and call `messaging.subscribe(...)` directly in `__init__` as shown above.
 - `notify(message)` — default handler when no explicit `handler` is given to `subscribe`.
-- `unregister()` — calls `unsubscribe_all(self)`.
+- `unregister(messenger)` — calls `messenger.unsubscribe_all(self)`.
 
 The weak-reference container (`messenger_callback_container.py`) keeps weak refs to both the
 subscriber and the bound handler, reconstructing the bound method on dispatch and pruning dead
@@ -146,9 +146,6 @@ from tse_analytics.core.messaging.messenger_listener import MessengerListener
 class AnimalCountLabel(QLabel, MessengerListener):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.register_to_messenger()
-
-    def register_to_messenger(self):
         messaging.subscribe(self, messaging.DatasetChangedMessage, self._update)
 
     def _update(self, message: messaging.DatasetChangedMessage):

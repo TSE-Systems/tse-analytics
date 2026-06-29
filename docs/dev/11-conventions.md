@@ -10,7 +10,7 @@ explained companion.
 
 ## Environment
 
-- **Python:** pinned to `==3.14.5` (`pyproject.toml`, `requires-python`).
+- **Python:** pinned to `==3.14.6` (`pyproject.toml`, `requires-python`).
 - **Package manager:** [`uv`](https://docs.astral.sh/uv/). Install/sync deps with `uv sync`. Run
   the app with `uv run tse-analytics`.
 - **Task runner:** [`task`](https://taskfile.dev/) — see `Taskfile.yml`.

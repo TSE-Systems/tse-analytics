@@ -126,8 +126,8 @@ A typical widget folder (`toolbox/<tool>/`) contains:
 ## Widget catalog
 
 Grouped by category. "Node" = a matching `*_node.py` exists; "**registered**" = it is also wired
-into the pipeline editor (`views/pipeline/pipeline_editor_widget.py`). A few node files exist but
-are not currently registered — noted explicitly.
+into the pipeline editor (`views/pipeline/pipeline_editor_widget.py`). Where a node file exists but
+is not wired into the editor, that is noted explicitly.
 
 ### AI
 | Widget | What it does | Files |
@@ -170,12 +170,12 @@ are not currently registered — noted explicitly.
 ### Factor Analysis
 | Widget | What it does | Files | Node |
 |--------|--------------|-------|------|
-| **Correlation Matrix** | Heatmap of pairwise correlations over selected variables. | `toolbox/correlation_matrix/` | Node file exists (*not registered*) |
+| **Correlation Matrix** | Heatmap of pairwise correlations over selected variables. | `toolbox/correlation_matrix/` | Node (**registered**) |
 | **Matrix Plot** | Seaborn pairplot (scatter/kde/hist) with group coloring. | `toolbox/matrix_plot/` | Node (**registered**) |
 | **PCA** | Principal component analysis: scree plot, biplot, loadings, group coloring. | `toolbox/pca/` (+ `plots.py`) | Node (**registered**) |
 | **t-SNE** | t-distributed stochastic neighbor embedding (2D/3D), configurable perplexity/metric. | `toolbox/tsne/` | Node (**registered**) |
 | **MDS** | Multidimensional scaling, configurable distance metric, 2D/3D. | `toolbox/mds/` | Node (**registered**) |
-| **UMAP** | UMAP manifold projection, configurable neighbors/min_dist/metric. | `toolbox/umap/` | Node file exists (*not registered*) |
+| **UMAP** | UMAP manifold projection, configurable neighbors/min_dist/metric. | `toolbox/umap/` | Node (**registered**) |
 
 ### Chronobiology
 | Widget | What it does | Files | Node |

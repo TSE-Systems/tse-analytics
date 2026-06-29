@@ -67,8 +67,7 @@ dialog). Full contract: [08-toolbox.md](08-toolbox.md).
 
    Add input/output ports in `__init__` (NodeGraphQt API) and reuse the widget's `processor.py`.
 2. **Register it in the editor:** import the node and add it to the `register_nodes([...])` list in
-   `views/pipeline/pipeline_editor_widget.py`. (This is also how you'd surface the currently
-   unregistered `correlation_matrix_node` / `umap_node`.)
+   `views/pipeline/pipeline_editor_widget.py`.
 
 Return a single `PipelinePacket` for a normal node, or a `dict[port_name, PipelinePacket]` to route
 to multiple output ports. Set `active=False` (or return `PipelinePacket.inactive(...)`) to stop a
@@ -81,8 +80,10 @@ downstream branch.
 **Goal:** handle a new sub-device data stream from a data source.
 
 **Import-only (IntelliMaze style):** create `modules/<module>/extensions/<ext>/{data,io}`, implement
-the loader in `io/`, call it from the module's main `io/` dataset loader, and import the extension in
-`extensions/__init__.py`. Its table lands in `Dataset.raw_datatables`.
+the loader in `io/`, expose an `EXTENSION_NAME` constant, and wire it into the per-feature dicts in
+`io/dataset_loader.py` and `views/export_merged_csv/export_merged_csv_dialog.py` (which import the
+extension directly). Its table lands in `Dataset.raw_datatables`. (`extensions/__init__.py` is only
+a convenience listing — it is not what activates the extension.)
 
 **Full extension with a viewer (PhenoMaster style):**
 1. Scaffold `modules/phenomaster/extensions/<ext>/` with `data/`, `io/data_loader.py`,
