@@ -5,6 +5,7 @@ for the TSE Analytics application.
 """
 
 import sys
+from pathlib import Path
 
 import matplotlib as mpl
 import seaborn as sns
@@ -13,6 +14,23 @@ from pyqtgraph import setConfigOptions
 from PySide6.QtCore import QSettings
 
 IS_RELEASE = getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS")
+
+# True when running inside a Flatpak sandbox (/.flatpak-info is always present there).
+IS_FLATPAK = Path("/.flatpak-info").exists()
+
+
+def get_resource_base() -> Path:
+    """Absolute base directory for bundled resource folders (styles, docs, ...).
+
+    Returns ``<executable dir>/_internal`` for a frozen PyInstaller build, and the
+    ``tse_analytics`` package directory for a source checkout. Resources must be resolved
+    against this rather than the current working directory, which is undefined at runtime
+    (e.g. ``/`` inside a Flatpak sandbox).
+    """
+    if IS_RELEASE:
+        return Path(sys.executable).parent / "_internal"
+    return Path(__file__).parent
+
 
 INTERNAL_ENABLED = False
 

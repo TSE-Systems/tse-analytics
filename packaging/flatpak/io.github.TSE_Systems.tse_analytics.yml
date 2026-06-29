@@ -1,0 +1,46 @@
+id: io.github.TSE_Systems.tse_analytics
+runtime: org.freedesktop.Platform
+runtime-version: '25.08'
+sdk: org.freedesktop.Sdk
+command: tse-analytics
+
+finish-args:
+  # Qt is forced onto the xcb platform plugin (see --env below), which needs X11.
+  - --socket=x11
+  # X11 MIT-SHM, used by Qt for efficient window updates.
+  - --share=ipc
+  # AI agent reaches the Anthropic API / a local LM Studio server.
+  - --share=network
+  # GPU access for OpenGL / accelerated rendering.
+  - --device=dri
+  # Importing experimental data and saving .duckdb / .workspace files.
+  # Can be tightened to XDG portals / specific dirs once usage is confirmed.
+  - --filesystem=home
+  - --env=QT_QPA_PLATFORM=xcb
+
+modules:
+  - name: tse-analytics
+    buildsystem: simple
+    build-commands:
+      - mkdir -p /app/lib/tse-analytics
+      - cp -a tse-analytics/. /app/lib/tse-analytics/
+      - install -Dm755 tse-analytics.sh /app/bin/tse-analytics
+      - install -Dm644 io.github.TSE_Systems.tse_analytics.desktop
+        /app/share/applications/io.github.TSE_Systems.tse_analytics.desktop
+      - install -Dm644 io.github.TSE_Systems.tse_analytics.metainfo.xml
+        /app/share/metainfo/io.github.TSE_Systems.tse_analytics.metainfo.xml
+      - install -Dm644 io.github.TSE_Systems.tse_analytics.png
+        /app/share/icons/hicolor/256x256/apps/io.github.TSE_Systems.tse_analytics.png
+    sources:
+      # PyInstaller onedir output produced by `task deploy` (run on Linux).
+      - type: dir
+        path: ../../dist/tse-analytics
+        dest: tse-analytics
+      - type: file
+        path: tse-analytics.sh
+      - type: file
+        path: io.github.TSE_Systems.tse_analytics.desktop
+      - type: file
+        path: io.github.TSE_Systems.tse_analytics.metainfo.xml
+      - type: file
+        path: io.github.TSE_Systems.tse_analytics.png

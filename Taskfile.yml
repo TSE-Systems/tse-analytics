@@ -88,12 +88,28 @@ tasks:
   deploy:
     cmds:
       - uv sync
-      - pyinstaller --clean setup/tse-analytics.spec
+      - pyinstaller --clean packaging/tse-analytics.spec
 
   deploy-pyside:
     cmds:
       - uv sync
       - pyside6-deploy -c pysidedeploy.spec
+
+  flatpak-dist:
+    desc: Build the PyInstaller bundle inside a manylinux container (portable, glibc-compatible with the runtime)
+    cmds:
+      - packaging/flatpak/build-dist-in-manylinux.sh
+
+  flatpak:
+    desc: Build & install the Flatpak locally (Linux; run `task flatpak-dist` first to produce dist/)
+    cmds:
+      - flatpak-builder --force-clean --user --install build/flatpak packaging/flatpak/io.github.TSE_Systems.tse_analytics.yml
+
+  flatpak-bundle:
+    desc: Build a single-file .flatpak bundle for distribution (Linux; run `task flatpak-dist` first)
+    cmds:
+      - flatpak-builder --force-clean --repo=build/flatpak-repo build/flatpak packaging/flatpak/io.github.TSE_Systems.tse_analytics.yml
+      - flatpak build-bundle build/flatpak-repo dist/tse-analytics.flatpak io.github.TSE_Systems.tse_analytics
 
   pyrefly:
     cmds:

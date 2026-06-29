@@ -222,4 +222,4 @@ cython_debug/
 .claude/plans/
 
 # Inno Setup Output
-setup/Output
+packaging/Output

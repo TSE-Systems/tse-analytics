@@ -57,11 +57,17 @@ computations should stay consistent so persistence round-trips cleanly
 | `task build-ui` | Compile **all** `.ui` → `*_ui.py` (per-area subtasks: views/toolbox/phenomaster/intellicage/intellimaze) |
 | `task build-resources` | Compile `resources/resources.qrc` → `tse_analytics/resources_rc.py` |
 | `task qss` | Compile `styles/scss` → `styles/qss` (qtsass) |
-| `task deploy` | `uv sync` + PyInstaller build (`setup/tse-analytics.spec`) |
+| `task deploy` | `uv sync` + PyInstaller build (`packaging/tse-analytics.spec`) |
 | `task deploy-pyside` | `pyside6-deploy` build (`pysidedeploy.spec`) |
+| `task flatpak-dist` | Build the PyInstaller bundle inside a manylinux container (portable) |
+| `task flatpak` | Build & install the Flatpak locally (Linux) |
+| `task flatpak-bundle` | Build a single-file `.flatpak` for distribution |
 | `task update` | Update uv + upgrade lockfile + sync |
 | `task clean` | Remove build/test artifacts and generated `*_ui.py` / `*_rc.py` |
 | `uv run tse-analytics` | Run the app in development |
+
+The deploy/flatpak tasks are explained in full — including the two-stage manylinux Flatpak
+build — in [13-packaging-deployment.md](13-packaging-deployment.md).
 
 ---
 

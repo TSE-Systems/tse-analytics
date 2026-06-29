@@ -148,7 +148,7 @@ class MainWindow(QMainWindow):
                 self._load_workspace(str(workspace_path))
 
     def _set_style(self, name: str) -> None:
-        style_file = f"_internal/styles/qss/{name}.css" if globals.IS_RELEASE else f"styles/qss/{name}.css"
+        style_file = globals.get_resource_base() / "styles" / "qss" / f"{name}.css"
         with open(style_file) as file:
             # Set global stylesheet
             QApplication.instance().setStyleSheet(file.read())

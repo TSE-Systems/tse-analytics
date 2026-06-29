@@ -4,7 +4,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QToolBar, QVBoxLayout, QWidget
 
 from tse_analytics.core import manager
-from tse_analytics.globals import IS_RELEASE
+from tse_analytics.globals import IS_RELEASE, get_resource_base
 from tse_analytics.pipeline import PipelineNodeGraph
 from tse_analytics.pipeline.nodes import (
     CheckboxNode,
@@ -107,9 +107,8 @@ class PipelineEditorWidget(QWidget):
         # Create the node graph
         self.graph = PipelineNodeGraph(self)
 
-        self.graph.set_context_menu(
-            "graph", hotkeys, "_internal/tse_analytics/views/pipeline" if IS_RELEASE else "views/pipeline"
-        )
+        hotkeys_dir = get_resource_base() / ("tse_analytics/views/pipeline" if IS_RELEASE else "views/pipeline")
+        self.graph.set_context_menu("graph", hotkeys, str(hotkeys_dir))
 
         # Register all custom nodes
         self.graph.register_nodes([

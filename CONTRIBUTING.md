@@ -60,11 +60,11 @@ tse-analytics/
 │   ├── views/              # Shared UI components, dialogs, and the main window
 │   └── styles/             # SCSS source → compiled QSS stylesheets
 ├── tests/                  # pytest suite (mirrors the source structure)
-├── dev-docs/               # Developer reference (architecture, subsystems, extending cookbook)
-├── docs/                   # Generated end-user documentation site
+├── docs/                   # Documentation
+│   ├── user/               # Generated end-user documentation site
+│   └── dev/                # Developer reference (architecture, subsystems, extending cookbook)
 ├── resources/              # Application resources (icons, images, .qrc)
-├── scripts/                # Python equivalents of the Task commands
-├── setup/                  # Deployment configuration (PyInstaller spec, Inno Setup)
+├── packaging/              # Installation/deployment configs (PyInstaller spec, Inno Setup, Flatpak)
 ├── pyproject.toml          # Project configuration & dependencies
 ├── Taskfile.yml            # Task runner definitions
 └── .editorconfig           # Editor configuration
@@ -83,12 +83,12 @@ tse-analytics/
 ## Documentation
 
 - **Developer reference** — architecture diagrams, subsystem walkthroughs, the full
-  toolbox/pipeline catalog, and an extending cookbook: [`dev-docs/`](dev-docs/README.md)
-  (`dev-docs/README.md` is the index).
+  toolbox/pipeline catalog, and an extending cookbook: [`docs/dev/`](docs/dev/README.md)
+  (`docs/dev/README.md` is the index).
 - **Canonical conventions** — the auto-loaded rules under `.claude/rules/`: `code-style.md`,
   `commands.md`, `project-structure.md`, `testing.md`, `toolbox-widget-pattern.md`. The project
   overview for AI/contributor tooling lives in [`.claude/CLAUDE.md`](.claude/CLAUDE.md).
-- **End-user documentation** — the generated site under [`docs/`](docs/).
+- **End-user documentation** — the generated site under [`docs/user/`](docs/user/).
 
 ---
 
@@ -234,7 +234,7 @@ uv run tse-analytics
 ### Extending the app
 
 The developer docs include a full cookbook in
-[`dev-docs/12-extending.md`](dev-docs/12-extending.md); the short version:
+[`docs/dev/12-extending.md`](docs/dev/12-extending.md); the short version:
 
 - **Add a toolbox analysis widget** — subclass `ToolboxWidgetBase`
   (`tse_analytics/toolbox/toolbox_widget_base.py`), register it with the `@toolbox_plugin`
@@ -360,9 +360,9 @@ task clean
 
 - **Issues** — report bugs and request features on
   [GitHub Issues](https://github.com/TSE-Systems/tse-analytics/issues).
-- **Developer questions** — start with the developer reference in [`dev-docs/`](dev-docs/README.md)
+- **Developer questions** — start with the developer reference in [`docs/dev/`](docs/dev/README.md)
   and the conventions under `.claude/rules/`.
-- **End-user documentation** — see the generated site under [`docs/`](docs/).
+- **End-user documentation** — see the generated site under [`docs/user/`](docs/user/).
 
 ---
 
