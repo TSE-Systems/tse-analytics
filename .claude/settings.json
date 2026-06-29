@@ -1,6 +1,11 @@
 {
+  "plansDirectory": "./.claude/plans",
   "permissions": {
-    "defaultMode": "plan",
-    "planDirectory": "./.claude/plans"
+    "defaultMode": "plan"
+  },
+  "enabledPlugins": {
+    "claude-code-setup@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "context7@claude-plugins-official": true
   }
 }

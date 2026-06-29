@@ -2,9 +2,25 @@
 
 TSE Analytics — PySide6 desktop app for analyzing TSE PhenoMaster, IntelliCage and IntelliMaze experimental data.
 
+## When in doubt, ask
+
+When this file, `docs/`, or a code comment disagrees with what the source actually contains — a described file, type, function, constant, flag,
+or data-flow that the code contradicts or no longer has — **stop and ask a follow-up question instead of guessing or silently picking a side**.
+The same applies when a request is ambiguous, a claim can't be confirmed in the code, or two sources conflict: surface the discrepancy and ask which is authoritative before acting.
+Use the `AskUserQuestion` tool for these clarifications. Don't ask about trivial choices that have a sensible default — reserve questions for genuine discrepancies and genuine ambiguity.
+
+## Plan persistence
+
+**Always** save all plans to `./.claude/plans/` project folder as a Markdown file and **follow these rules**:
+
+- Filename format: `YYYY-MM-DD-<kebab-case-summary>.md`
+- Include: the original task statement, the executed plan, files touched, and any follow-ups or known limitations.
+- Do this before ending the turn that completes the implementation.
+- Never write plans to `~/.claude/plans/` for this project — always use `./.claude/plans/` so the plan is committed alongside the code.
+
 ## Quick Start
 
-- Python version must be 3.14 (pinned to `==3.14.5` in `pyproject.toml`).
+- Python version must be 3.14 (pinned to `==3.14.6` in `pyproject.toml`).
 - Use `uv` for environment and dependencies: `uv sync`.
 - Task runner is `task` (see `Taskfile.yml` and `.claude/rules/commands.md`).
 - Run the app: `uv run tse-analytics`.

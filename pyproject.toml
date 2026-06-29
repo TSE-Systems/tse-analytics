@@ -1,6 +1,6 @@
 [project]
 name = "tse-analytics"
-version = "2.0.0beta6"
+version = "2.0.0beta7"
 description = "TSE Analytics data analysys"
 license = "GPL-3.0-or-later"
 readme = "README.md"
@@ -11,7 +11,7 @@ homepage = "https://github.com/TSE-Systems/tse-analytics"
 repository = "https://github.com/TSE-Systems/tse-analytics"
 requires-python = "==3.14.6"
 dependencies = [
-    "anthropic==0.111.0",
+    "anthropic==0.112.0",
     "astropy==8.0.0",
     "connectorx==0.4.5",
     "css-inline==0.21.0",
@@ -24,7 +24,7 @@ dependencies = [
     "matplotlib==3.11.0",
     "nodegraphqt==0.6.44",
     "openpyxl==3.1.5",
-    "pandas==3.0.3",
+    "pandas==3.0.4",
     "pingouin==0.6.1",
     "psutil==7.2.2",
     "ptitprince==0.3.1",
@@ -49,8 +49,8 @@ dev = [
     "pyrefly==1.1.1",
     "pytest==9.1.1",
     "qtsass==0.4.0",
-    "ruff==0.15.18",
-    "ty==0.0.51",
+    "ruff==0.15.20",
+    "ty==0.0.55",
 ]
 
 [project.scripts]
