@@ -301,3 +301,103 @@ class TestGetChronobiologyResult:
         )
         result = get_chronobiology_result(datatable, chrono_variable["Activity"], "Group", figsize=(8, 6))
         assert "time-series sections skipped" in result.report
+
+
+class TestResultTables:
+    """The ``tables`` payload used by the widget's 'Add Datatable' feature.
+
+    Tables are only exposed when grouping by Animal (so every table has an
+    "Animal" id column and is ANOVA-ready); grouping by a factor offers nothing.
+    """
+
+    def test_no_tables_when_grouping_by_factor(self, chrono_dataset, chrono_variable):
+        result = get_chronobiology_result(
+            chrono_dataset.datatables["Main"],
+            chrono_variable["Activity"],
+            "Group",
+            figsize=(8, 6),
+        )
+        # Grouping by a factor produces per-group aggregates that are not ANOVA-able,
+        # so no result tables are offered.
+        assert result.tables == {}
+
+    def test_expected_tables_present_when_grouping_by_animal(self, chrono_dataset, chrono_variable):
+        result = get_chronobiology_result(
+            chrono_dataset.datatables["Main"],
+            chrono_variable["Activity"],
+            "Animal",
+            figsize=(8, 6),
+        )
+        assert "Per-animal parameters" in result.tables
+        assert "Dominant periods" in result.tables
+        assert "Cosinor parameters" in result.tables
+        assert "Two-component cosinor" in result.tables
+        # Summary is intentionally NOT addable (it is transposed metadata).
+        assert "Summary" not in result.tables
+        # Every exposed table carries an "Animal" id column.
+        for rt in result.tables.values():
+            assert rt.id_column == "Animal"
+            assert "Animal" in rt.df.columns
+
+    def test_per_animal_table_is_one_row_per_animal(self, chrono_dataset, chrono_variable):
+        result = get_chronobiology_result(
+            chrono_dataset.datatables["Main"],
+            chrono_variable["Activity"],
+            "Animal",
+            figsize=(8, 6),
+        )
+        rt = result.tables["Per-animal parameters"]
+        assert rt.id_column == "Animal"
+        assert "Animal" in rt.df.columns
+        assert len(rt.df) == 6  # 6 animals, one row each
+        assert set(rt.df["Animal"]) == {"M1", "M2", "M3", "M4", "M5", "M6"}
+        for col in ("MESOR", "Amplitude", "Acrophase (ZT h)", "Dominant period (h)", "PR", "p_value"):
+            assert col in rt.df.columns
+
+    def test_per_group_id_column_renamed_from_group(self, chrono_dataset, chrono_variable):
+        # When grouping by Animal, the per-group "Group" column becomes "Animal"
+        # so the added table has an Animal column and is ANOVA-ready.
+        result = get_chronobiology_result(
+            chrono_dataset.datatables["Main"],
+            chrono_variable["Activity"],
+            "Animal",
+            figsize=(8, 6),
+        )
+        rt = result.tables["Cosinor parameters"]
+        assert rt.id_column == "Animal"
+        assert "Animal" in rt.df.columns
+        assert "Group" not in rt.df.columns
+
+    def test_to_datatable_builds_variables_and_attaches_factors(self, chrono_dataset, chrono_variable):
+        result = get_chronobiology_result(
+            chrono_dataset.datatables["Main"],
+            chrono_variable["Activity"],
+            "Animal",
+            figsize=(8, 6),
+        )
+        datatable = result.tables["Per-animal parameters"].to_datatable(chrono_dataset, "Chrono per-animal")
+
+        assert isinstance(datatable, Datatable)
+        # Numeric parameter columns become Variable metadata; the id column does not.
+        assert "Animal" not in datatable.variables
+        for col in ("MESOR", "Amplitude", "Acrophase (ZT h)", "Dominant period (h)", "PR", "p_value"):
+            assert col in datatable.variables
+        # Nullable dtypes + categorical id (house rule).
+        assert datatable.df["Animal"].dtype.name == "category"
+        # Dataset factors are attached (the "Group" factor column is materialized);
+        # the time-based LightCycle factor is skipped because there is no DateTime column.
+        assert "Group" in datatable.df.columns
+
+    def test_no_tables_without_datetime(self, chrono_dataset, chrono_variable, chrono_df):
+        # Even when grouping by Animal, a datatable without DateTime yields no tables.
+        df = chrono_df.drop(columns=["DateTime"])
+        datatable = Datatable(
+            dataset=chrono_dataset,
+            name="NoDateTime",
+            description="No DateTime",
+            variables=chrono_variable,
+            df=df,
+            metadata={},
+        )
+        result = get_chronobiology_result(datatable, chrono_variable["Activity"], "Animal", figsize=(8, 6))
+        assert result.tables == {}

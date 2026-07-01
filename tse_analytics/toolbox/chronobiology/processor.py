@@ -18,7 +18,7 @@ Statistics notes
 """
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import time
 
 import matplotlib.pyplot as plt
@@ -28,8 +28,9 @@ from astropy.timeseries import LombScargle
 from scipy.stats import f as f_dist
 
 from tse_analytics.core import color_manager
+from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import Variable
+from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.core.utils import (
     get_great_table,
     get_html_image_from_figure,
@@ -44,8 +45,47 @@ from tse_analytics.toolbox.actogram.processor import (
 
 
 @dataclass
+class ResultTable:
+    """A chronobiology result table that can be materialized as a dataset ``Datatable``.
+
+    ``id_column`` is the non-variable identifier column: ``"Animal"`` for the per-animal
+    parameter table, or the group-by factor name for the per-group summary tables.
+    """
+
+    df: pd.DataFrame
+    id_column: str
+
+    def to_datatable(self, dataset: Dataset, name: str) -> Datatable:
+        """Build a dataset ``Datatable`` from this result table.
+
+        Numeric columns (other than ``id_column``) become ``Variable`` metadata so the
+        table can be used in further analyses (e.g. ANOVA). Dataset factors are attached
+        via ``set_factors`` — a no-op unless the table has an ``"Animal"`` column.
+        """
+        df = self.df.copy().convert_dtypes()
+        if self.id_column in df.columns:
+            df[self.id_column] = df[self.id_column].astype("category")
+        variables = {
+            col: Variable(col, "", col, str(df[col].dtype), Aggregation.MEAN, False)
+            for col in df.columns
+            if col != self.id_column and pd.api.types.is_numeric_dtype(df[col])
+        }
+        datatable = Datatable(
+            dataset,
+            name,
+            f"Chronobiology result: {name}",
+            variables,
+            df,
+            {"origin": "Chronobiology"},
+        )
+        datatable.set_factors(dataset.factors)
+        return datatable
+
+
+@dataclass
 class ChronobiologyResult:
     report: str
+    tables: dict[str, ResultTable] = field(default_factory=dict)
 
 
 # ---------------------------------------------------------------------------
@@ -265,6 +305,38 @@ def _per_animal_fits(
         if np.isfinite(dominant):
             periods.append(dominant)
     return params, periods
+
+
+def _per_animal_table(
+    df: pd.DataFrame,
+    variable_name: str,
+    reference: pd.Timestamp,
+    period_hours: float,
+    zt_offset: float,
+) -> pd.DataFrame:
+    """One row per animal with its single-component cosinor and dominant-period fit.
+
+    Unlike ``_per_animal_fits`` (which discards the animal id and aggregates to a group
+    row), this keeps the ``Animal`` id so the result is a tidy, ANOVA-ready table: one
+    observation per animal, with dataset factors attachable via ``set_factors``.
+    """
+    rows: list[dict] = []
+    for animal, g in df.groupby("Animal", observed=True):
+        t = _to_hours_since_start(g["DateTime"], reference)
+        y = g[variable_name].to_numpy(dtype=float)
+        fit = _fit_cosinor(t, y, period_hours)
+        _, _, dominant = _lombscargle_period(t, y)
+        rows.append({
+            "Animal": str(animal),
+            "MESOR": fit["MESOR"],
+            "Amplitude": fit["Amplitude"],
+            "Acrophase (ZT h)": (fit["Acrophase_h"] + zt_offset) % period_hours,
+            "Dominant period (h)": dominant,
+            "PR": fit["PR"],
+            "p_value": fit["p_value"],
+            "Rhythmic (p<0.05)": bool(fit["p_value"] < 0.05),
+        })
+    return pd.DataFrame(rows)
 
 
 def _summarize_cosinor(
@@ -547,6 +619,12 @@ def get_chronobiology_result(
     dark_cycle_start = time_cycles.dark_cycle_start
 
     sections: list[str] = []
+    tables: dict[str, ResultTable] = {}
+    # Result tables are only exposed for the "Add Datatable" feature when grouping by
+    # Animal, so every table carries an "Animal" id column and is directly usable for
+    # further per-animal analysis (e.g. ANOVA). Grouping by a factor yields per-group
+    # aggregates (one row per group) that are not ANOVA-able, so nothing is offered.
+    expose_tables = factor_name == "Animal"
 
     # --- Section 1: summary table -----------------------------------------
     sample_interval = datatable.sample_interval
@@ -586,7 +664,7 @@ def get_chronobiology_result(
 
     if not has_datetime:
         sections.append("<p><em>DateTime column not available — time-series sections skipped.</em></p>")
-        return ChronobiologyResult(report="\n<p>\n".join(sections))
+        return ChronobiologyResult(report="\n<p>\n".join(sections), tables=tables)
 
     # Common reference and group column resolution -------------------------
     reference_time = dataset.experiment_started
@@ -657,20 +735,28 @@ def get_chronobiology_result(
         cosinor_rows.append(_summarize_cosinor(label, animal_params, period_hours, zt_offset))
         ls_table_rows.append(_summarize_periods(label, animal_periods))
 
+    # Per-animal parameter table (one row per animal) — the ANOVA-ready result.
+    if expose_tables and "Animal" in df.columns:
+        per_animal_df = _per_animal_table(df, variable.name, reference_time, period_hours, zt_offset)
+        if not per_animal_df.empty:
+            tables["Per-animal parameters"] = ResultTable(per_animal_df, "Animal")
+
     # --- Section 3: Lomb–Scargle periodogram ------------------------------
     sections.append("<h3>Lomb–Scargle periodogram</h3>")
     sections.append(get_html_image_from_figure(_plot_periodogram(ls_series, variable, palette, figsize)))
-    sections.append(
-        get_great_table(pd.DataFrame(ls_table_rows), "Dominant periods (per-animal mean)").as_raw_html(inline_css=True)
-    )
+    ls_table_df = pd.DataFrame(ls_table_rows)
+    sections.append(get_great_table(ls_table_df, "Dominant periods (per-animal mean)").as_raw_html(inline_css=True))
+    if expose_tables:
+        tables["Dominant periods"] = ResultTable(ls_table_df.rename(columns={"Group": factor_name}), factor_name)
 
     # --- Section 4: single-component cosinor ------------------------------
     sections.append(f"<h3>Single-component cosinor (period = {period_hours:g} h)</h3>")
+    cosinor_df = pd.DataFrame(cosinor_rows)
     sections.append(
-        get_great_table(pd.DataFrame(cosinor_rows), "Cosinor parameters (per-animal mean ± SEM)").as_raw_html(
-            inline_css=True
-        )
+        get_great_table(cosinor_df, "Cosinor parameters (per-animal mean ± SEM)").as_raw_html(inline_css=True)
     )
+    if expose_tables:
+        tables["Cosinor parameters"] = ResultTable(cosinor_df.rename(columns={"Group": factor_name}), factor_name)
     sections.append(
         "<p><em>p-values assume independent residuals and are anti-conservative for autocorrelated "
         "series; the between-animal aggregation (N animals, SEM, rhythmic count) is the more reliable "
@@ -684,11 +770,14 @@ def get_chronobiology_result(
 
     # --- Section 4b: two-component cosinor --------------------------------
     sections.append(f"<h3>Two-component cosinor (periods = {period_hours:g} h + {period2_hours:g} h)</h3>")
+    two_comp_df = pd.DataFrame(two_comp_rows)
     sections.append(
-        get_great_table(
-            pd.DataFrame(two_comp_rows), "Two-component cosinor parameters (group-mean series)"
-        ).as_raw_html(inline_css=True)
+        get_great_table(two_comp_df, "Two-component cosinor parameters (group-mean series)").as_raw_html(
+            inline_css=True
+        )
     )
+    if expose_tables:
+        tables["Two-component cosinor"] = ResultTable(two_comp_df.rename(columns={"Group": factor_name}), factor_name)
     sections.append(
         get_html_image_from_figure(
             _plot_two_component_fits(two_comp_fits, variable, period_hours, period2_hours, zt_offset, palette, figsize)
@@ -708,9 +797,10 @@ def get_chronobiology_result(
 
     sections.append(f"<h3>Activity onset / offset (threshold = {onset_threshold_pct:g}th percentile)</h3>")
     if onset_combined_rows:
-        sections.append(
-            get_great_table(pd.DataFrame(onset_combined_rows), "Daily onset / offset (ZT)").as_raw_html(inline_css=True)
-        )
+        onset_df = pd.DataFrame(onset_combined_rows)
+        sections.append(get_great_table(onset_df, "Daily onset / offset (ZT)").as_raw_html(inline_css=True))
+        if expose_tables:
+            tables["Activity onset / offset"] = ResultTable(onset_df, key_col)
         sections.append(get_html_image_from_figure(_plot_onset_offset(onset_tables, palette, figsize)))
     else:
         sections.append("<p><em>Not enough data to detect daily onset / offset.</em></p>")
@@ -751,4 +841,4 @@ def get_chronobiology_result(
             )
 
     report = "\n<p>\n".join(sections)
-    return ChronobiologyResult(report=report)
+    return ChronobiologyResult(report=report, tables=tables)

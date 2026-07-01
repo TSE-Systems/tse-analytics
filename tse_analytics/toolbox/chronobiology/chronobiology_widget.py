@@ -1,8 +1,13 @@
 from dataclasses import dataclass
+from datetime import datetime
+from functools import partial
 
 from pyqttoast import ToastPreset
-from PySide6.QtWidgets import QDoubleSpinBox, QLabel, QSpinBox, QToolBar, QWidget
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QDoubleSpinBox, QLabel, QMenu, QSpinBox, QToolBar, QToolButton, QWidget
 
+from tse_analytics.core import manager
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.shared import FactorRole
 from tse_analytics.core.toaster import make_toast
@@ -22,7 +27,7 @@ class ChronobiologyWidgetSettings:
     selected_variable: str | None = None
     period_hours: float = 24.0
     period2_hours: float = 12.0
-    bins_per_hour: int = 6
+    bins_per_hour: int = 1
     onset_threshold_pct: float = 50.0
 
 
@@ -40,6 +45,7 @@ class ChronobiologyWidget(ToolboxWidgetBase):
             title="Chronobiology",
             parent=parent,
         )
+        self._last_result: ChronobiologyResult | None = None
 
     def _create_toolbar_items(self, toolbar: QToolBar) -> None:
         self.variableSelector = VariableSelector(toolbar)
@@ -100,6 +106,20 @@ class ChronobiologyWidget(ToolboxWidgetBase):
         )
         toolbar.addWidget(self.onset_threshold_spin_box)
 
+        toolbar.addSeparator()
+        self.add_datatable_button = QToolButton(toolbar)
+        self.add_datatable_button.setText("Add Datatable")
+        self.add_datatable_button.setIcon(QIcon(":/icons/icons8-insert-table-16.png"))
+        self.add_datatable_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.add_datatable_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+        self.add_datatable_button.setToolTip(
+            "Add a result table to the dataset as a new datatable (available when grouping by Animal)"
+        )
+        self.add_datatable_menu = QMenu(self.add_datatable_button)
+        self.add_datatable_button.setMenu(self.add_datatable_menu)
+        self.add_datatable_button.setEnabled(False)
+        toolbar.addWidget(self.add_datatable_button)
+
     def _get_settings_value(self):
         return ChronobiologyWidgetSettings(
             self.group_by_selector.currentText(),
@@ -149,7 +169,36 @@ class ChronobiologyWidget(ToolboxWidgetBase):
 
     def _result(self, result: ChronobiologyResult):
         self.report_view.set_content(result.report)
+        self._last_result = result
+
+        self.add_datatable_menu.clear()
+        for label in result.tables:
+            action = self.add_datatable_menu.addAction(label)
+            action.triggered.connect(partial(self._add_datatable, label))
+        self.add_datatable_button.setEnabled(len(result.tables) > 0)
 
     def _finished(self):
         self.toast.hide()
         self.update_action.setEnabled(True)
+
+    def _add_datatable(self, label: str, _checked: bool = False):
+        # ``_checked`` absorbs the bool emitted by QAction.triggered (delivered to
+        # the functools.partial slot).
+        if self._last_result is None or label not in self._last_result.tables:
+            return
+
+        now_string = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        datatable = self._last_result.tables[label].to_datatable(
+            self.datatable.dataset,
+            f"Chronobiology {label} [{now_string}]",
+        )
+        manager.add_datatable(datatable)
+
+        make_toast(
+            self,
+            self.title,
+            f"'{label}' table added.",
+            duration=2000,
+            preset=ToastPreset.INFORMATION,
+            show_duration_bar=True,
+        ).show()
