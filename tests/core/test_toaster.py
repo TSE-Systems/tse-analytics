@@ -4,19 +4,9 @@ Unit tests for tse_analytics.core.toaster module.
 
 from unittest.mock import patch
 
-import pytest
 from pyqttoast import Toast, ToastPosition, ToastPreset
-from PySide6.QtWidgets import QApplication, QWidget
+from PySide6.QtWidgets import QWidget
 from tse_analytics.core.toaster import make_toast
-
-
-@pytest.fixture(scope="module")
-def qapp():
-    """Create QApplication instance for Qt-based tests."""
-    app = QApplication.instance()
-    if app is None:
-        app = QApplication([])
-    yield app
 
 
 class TestMakeToast:
@@ -104,7 +94,7 @@ class TestMakeToast:
     def test_echo_to_logger_information(self, mock_logger, qapp):
         """Test that information messages are logged when echo_to_logger=True."""
         parent = QWidget()
-        toast = make_toast(parent, "Info", "Test info message", preset=ToastPreset.INFORMATION, echo_to_logger=True)
+        make_toast(parent, "Info", "Test info message", preset=ToastPreset.INFORMATION, echo_to_logger=True)
 
         mock_logger.info.assert_called_once_with("Test info message")
 
@@ -112,7 +102,7 @@ class TestMakeToast:
     def test_echo_to_logger_warning(self, mock_logger, qapp):
         """Test that warning messages are logged when echo_to_logger=True."""
         parent = QWidget()
-        toast = make_toast(parent, "Warning", "Test warning message", preset=ToastPreset.WARNING, echo_to_logger=True)
+        make_toast(parent, "Warning", "Test warning message", preset=ToastPreset.WARNING, echo_to_logger=True)
 
         mock_logger.warning.assert_called_once_with("Test warning message")
 
@@ -120,7 +110,7 @@ class TestMakeToast:
     def test_echo_to_logger_error(self, mock_logger, qapp):
         """Test that error messages are logged when echo_to_logger=True."""
         parent = QWidget()
-        toast = make_toast(parent, "Error", "Test error message", preset=ToastPreset.ERROR, echo_to_logger=True)
+        make_toast(parent, "Error", "Test error message", preset=ToastPreset.ERROR, echo_to_logger=True)
 
         mock_logger.error.assert_called_once_with("Test error message")
 
@@ -128,7 +118,7 @@ class TestMakeToast:
     def test_echo_to_logger_success(self, mock_logger, qapp):
         """Test that success messages are logged when echo_to_logger=True."""
         parent = QWidget()
-        toast = make_toast(parent, "Success", "Test success message", preset=ToastPreset.SUCCESS, echo_to_logger=True)
+        make_toast(parent, "Success", "Test success message", preset=ToastPreset.SUCCESS, echo_to_logger=True)
 
         mock_logger.success.assert_called_once_with("Test success message")
 
@@ -136,7 +126,7 @@ class TestMakeToast:
     def test_no_logging_when_echo_false(self, mock_logger, qapp):
         """Test that messages are not logged when echo_to_logger=False."""
         parent = QWidget()
-        toast = make_toast(parent, "Title", "Test message", preset=ToastPreset.INFORMATION, echo_to_logger=False)
+        make_toast(parent, "Title", "Test message", preset=ToastPreset.INFORMATION, echo_to_logger=False)
 
         mock_logger.info.assert_not_called()
         mock_logger.warning.assert_not_called()

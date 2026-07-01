@@ -103,6 +103,9 @@ def analysis_df(analysis_animals, analysis_factor):
     df["Timedelta"] = pd.to_timedelta(df["Timedelta"])
     df["Group"] = df["Group"].astype("category")
     df["Experiment"] = pd.Categorical([1] * len(df))
+    # Match the app-wide numpy-nullable dtype convention for numeric variables.
+    df["Metabolism"] = df["Metabolism"].astype("Float64")
+    df["Activity"] = df["Activity"].astype("Float64")
     return df
 
 

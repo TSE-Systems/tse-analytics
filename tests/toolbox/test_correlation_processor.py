@@ -38,3 +38,4 @@ class TestCorrelation:
             figsize=(8, 6),
         )
         assert isinstance(result, CorrelationResult)
+        assert "<img" in result.report  # scatter/regression figure embedded

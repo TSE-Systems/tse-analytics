@@ -11,7 +11,7 @@ import pytest
 from matplotlib.figure import Figure
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QApplication, QSizePolicy, QToolButton, QWidget
+from PySide6.QtWidgets import QSizePolicy, QToolButton, QWidget
 from tse_analytics.core.utils import (
     get_available_sqlite_tables,
     get_figsize_from_widget,
@@ -21,15 +21,6 @@ from tse_analytics.core.utils import (
     get_widget_tool_button,
     time_to_float,
 )
-
-
-@pytest.fixture(scope="module")
-def qapp():
-    """Create QApplication instance for Qt-based tests."""
-    app = QApplication.instance()
-    if app is None:
-        app = QApplication([])
-    yield app
 
 
 class TestGetHtmlImageFromFigure:

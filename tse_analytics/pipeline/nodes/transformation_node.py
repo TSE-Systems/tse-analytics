@@ -69,7 +69,9 @@ class TransformationNode(PipelineNode):
 
         result_datatable.df[transformed_variable] = transformed_data
 
-        tooltip = f"<h3>Transformation</h3>Method: {method}<br>Lambda: {lambda_opt:.5f}"
+        # Log / Log10 have no optimized lambda parameter.
+        lambda_str = f"{lambda_opt:.5f}" if lambda_opt is not None else "N/A"
+        tooltip = f"<h3>Transformation</h3>Method: {method}<br>Lambda: {lambda_str}"
         self.view.setToolTip(tooltip)
 
         return PipelinePacket(result_datatable, report=tooltip, meta={"lambda": lambda_opt})

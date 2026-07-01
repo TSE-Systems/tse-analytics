@@ -76,6 +76,10 @@ def sample_df():
     base_time = pd.Timestamp("2024-01-01 00:00:00")
     interval = pd.Timedelta("1h")
 
+    # Deterministic per-animal offset (``hash()`` is salted per interpreter run,
+    # which would make Weight/Speed non-reproducible across runs).
+    animal_offset = {"A1": 0, "A2": 1, "A3": 2}
+
     rows = []
     for i in range(5):
         for animal in ["A1", "A2", "A3"]:
@@ -83,13 +87,16 @@ def sample_df():
                 "Animal": animal,
                 "DateTime": base_time + i * interval,
                 "Timedelta": i * interval,
-                "Weight": 25.0 + i * 0.5 + (hash(animal) % 3),
-                "Speed": 1.0 + i * 0.1 + (hash(animal) % 2) * 0.5,
+                "Weight": 25.0 + i * 0.5 + (animal_offset[animal] % 3),
+                "Speed": 1.0 + i * 0.1 + (animal_offset[animal] % 2) * 0.5,
             })
 
     df = pd.DataFrame(rows)
     df["Animal"] = df["Animal"].astype("category")
     df["Timedelta"] = pd.to_timedelta(df["Timedelta"])
+    # Match the app-wide numpy-nullable dtype convention for numeric variables.
+    df["Weight"] = df["Weight"].astype("Float64")
+    df["Speed"] = df["Speed"].astype("Float64")
     return df
 
 

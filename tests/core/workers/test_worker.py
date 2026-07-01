@@ -7,18 +7,7 @@ contract can be asserted deterministically without an event loop.
 
 from unittest.mock import patch
 
-import pytest
-from PySide6.QtWidgets import QApplication
 from tse_analytics.core.workers.worker import Worker
-
-
-@pytest.fixture(scope="module")
-def qapp():
-    """Create a QApplication instance for Qt-based tests."""
-    app = QApplication.instance()
-    if app is None:
-        app = QApplication([])
-    yield app
 
 
 class TestWorkerSuccess:

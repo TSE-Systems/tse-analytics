@@ -17,3 +17,4 @@ class TestHistogram:
             figsize=(8, 6),
         )
         assert isinstance(result, HistogramResult)
+        assert isinstance(result.report, str) and "<img" in result.report  # figure embedded

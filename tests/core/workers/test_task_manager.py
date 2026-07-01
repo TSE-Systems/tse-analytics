@@ -6,18 +6,8 @@ import threading
 
 import pytest
 from PySide6.QtCore import QObject
-from PySide6.QtWidgets import QApplication
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
-
-
-@pytest.fixture(scope="module")
-def qapp():
-    """Create a QApplication instance for Qt-based tests."""
-    app = QApplication.instance()
-    if app is None:
-        app = QApplication([])
-    yield app
 
 
 @pytest.fixture

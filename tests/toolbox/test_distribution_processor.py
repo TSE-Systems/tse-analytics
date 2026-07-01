@@ -20,6 +20,7 @@ class TestDistribution:
             figsize=(8, 6),
         )
         assert isinstance(result, DistributionResult)
+        assert "<img" in result.report  # figure embedded even without strip points
 
     def test_with_strip_points(self, analysis_dataset):
         result = get_distribution_result(

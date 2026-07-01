@@ -1,168 +1,222 @@
-import sys
+"""Tests for :class:`ToolboxButton` — menu construction and the metadata-driven
+visibility logic (``_refresh_visibility`` / ``set_enabled_actions`` /
+``enable_internal_tools``) plus the ``_add_widget`` dispatch and its error path.
+
+These drive the *real* ``ToolboxButton`` and the *real* ``ToolboxPluginInfo`` /
+``registry`` (only ``registry.get_plugins`` is patched to inject controlled test
+plugins), so the actual ``is_applicable`` gating is exercised rather than a
+re-declared mock copy that could drift from the source.
+"""
+
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
-from PySide6.QtWidgets import QApplication, QWidget
+import tse_analytics.views.misc.toolbox_button as toolbox_button
+from tse_analytics.toolbox.toolbox_registry import ToolboxPluginInfo, registry, validate_registry
+from tse_analytics.views.misc.toolbox_button import ToolboxButton
+
+# --- controlled test plugins (built with the REAL ToolboxPluginInfo) ---------
+# One unrestricted tool, one IntelliCage Visits-gated tool, one internal tool —
+# enough to cover every branch of ``_refresh_visibility``.
+OPEN = ToolboxPluginInfo("Exploration", "Histogram", ":/icons/h.png", MagicMock())
+VISITS = ToolboxPluginInfo(
+    "IntelliCage",
+    "Transitions",
+    ":/icons/t.png",
+    MagicMock(),
+    dataset_types=("IntelliCage", "IntelliMaze"),
+    required_datatable_name="Visits",
+)
+AI = ToolboxPluginInfo("AI", "AI Agent", ":/icons/ai.png", MagicMock(), internal=True)
+PLUGINS = {"AI": [AI], "Exploration": [OPEN], "IntelliCage": [VISITS]}
 
 
-# Fixture to mock dependencies
-@pytest.fixture(autouse=True)
-def mock_dependencies():
-    mocks = {
-        "tse_analytics.core": MagicMock(),
-        "tse_analytics.core.manager": MagicMock(),
-        "tse_analytics.core.data.dataset": MagicMock(),
-        "tse_analytics.core.data.datatable": MagicMock(),
-        "tse_analytics.core.layouts.layout_manager": MagicMock(),
-        "tse_analytics.modules.intellicage.data.intellicage_dataset": MagicMock(),
-        "tse_analytics.modules.intellimaze.data.intellimaze_dataset": MagicMock(),
-        "tse_analytics.toolbox.data_table.data_table_widget": MagicMock(),
-    }
+def _ds(dataset_type: str):
+    return SimpleNamespace(dataset_type=dataset_type)
 
-    # Remove cached view modules so each test reimports with fresh mocks.
-    # Without this, the toolbox_button module retains stale mock bindings
-    # (e.g. manager) from a previous test's patch.dict context.
-    for key in list(sys.modules.keys()):
-        if key.startswith("tse_analytics.views.misc"):
-            del sys.modules[key]
 
-    with patch.dict("sys.modules", mocks):
-        yield
+def _dt(name: str):
+    return SimpleNamespace(name=name)
+
+
+def _make_button(qapp, plugins=None):
+    """Build a ToolboxButton, keeping its Qt parent alive.
+
+    The parent is stashed on the button so Python does not GC it — otherwise Qt
+    deletes the whole child tree (menus/actions) out from under the test.
+    ``plugins=None`` builds against the real, populated registry.
+    """
+    from PySide6.QtWidgets import QWidget
+
+    parent = QWidget()
+    if plugins is None:
+        button = ToolboxButton(parent)
+    else:
+        with patch.object(registry, "get_plugins", return_value=plugins):
+            button = ToolboxButton(parent)
+    button._keepalive_parent = parent
+    return button
 
 
 @pytest.fixture
-def mock_registry():
-    # We mock the registry object inside the actual module
-    # But since we are importing ToolboxButton inside the test, and it imports registry...
-    # We can mock the module 'tse_analytics.toolbox.toolbox_registry' before import
-
-    mock_reg_module = MagicMock()
-    mock_registry_instance = MagicMock()
-    # Mirror the real ToolboxPluginInfo dataclass (including the optional
-    # applicability fields + is_applicable that ToolboxButton._refresh_visibility
-    # now reads). Redeclared locally to keep this test isolated from the real
-    # toolbox package import.
-    from dataclasses import dataclass
-    from typing import Any
-
-    @dataclass(frozen=True)
-    class ToolboxPluginInfo:
-        category: str
-        label: str
-        icon: str
-        widget_class: type = MagicMock()
-        order: int = 0
-        dataset_types: tuple[str, ...] | None = None
-        required_datatable_name: str | None = None
-        internal: bool = False
-        tooltip: str | None = None
-
-        def is_applicable(self, dataset: Any, datatable: Any | None) -> bool:
-            if self.dataset_types is not None and dataset.dataset_type not in self.dataset_types:
-                return False
-            if self.required_datatable_name is not None:
-                if datatable is None or datatable.name != self.required_datatable_name:
-                    return False
-            return True
-
-    mock_reg_module.ToolboxPluginInfo = ToolboxPluginInfo
-    mock_reg_module.registry = mock_registry_instance
-    mock_reg_module.validate_registry.return_value = []
-
-    with patch.dict("sys.modules", {"tse_analytics.toolbox.toolbox_registry": mock_reg_module}):
-        yield mock_registry_instance
+def button(qapp):
+    """A ToolboxButton built from the controlled PLUGINS set."""
+    return _make_button(qapp, PLUGINS)
 
 
-@pytest.fixture(scope="session")
-def qapp():
-    app = QApplication.instance()
-    if app is None:
-        app = QApplication(sys.argv)
-    yield app
+# --- menu construction -------------------------------------------------------
 
 
-def test_toolbox_button_structure(qapp, mock_registry):
-    """Test that ToolboxButton dynamically builds menus from registry."""
-    from tse_analytics.toolbox.toolbox_registry import ToolboxPluginInfo
-
-    # Setup mock registry data
-    mock_plugin1 = ToolboxPluginInfo(category="TestCat1", label="Widget1", icon="icon1.png", widget_class=MagicMock())
-    mock_plugin2 = ToolboxPluginInfo(category="TestCat1", label="Widget2", icon="icon2.png", widget_class=MagicMock())
-    mock_plugin3 = ToolboxPluginInfo(category="TestCat2", label="Widget3", icon="icon3.png", widget_class=MagicMock())
-
-    mock_registry.get_plugins.return_value = {"TestCat1": [mock_plugin1, mock_plugin2], "TestCat2": [mock_plugin3]}
-
-    # Import ToolboxButton NOW, so it uses the mocked modules
-    from PySide6.QtWidgets import QWidget
-    from tse_analytics.views.misc.toolbox_button import ToolboxButton
-
-    # Instantiate
-    parent = QWidget()
-    button = ToolboxButton(parent)
-
-    # Verify menus
-    assert "TestCat1" in button._menus
-    assert "TestCat2" in button._menus
-
-    menu1 = button._menus["TestCat1"]
-    actions1 = menu1.actions()
-    assert len(actions1) == 2
-    assert actions1[0].text() == "Widget1"
-    assert actions1[1].text() == "Widget2"
-
-    menu2 = button._menus["TestCat2"]
-    actions2 = menu2.actions()
-    assert len(actions2) == 1
-    assert actions2[0].text() == "Widget3"
-
-    # Verify action keys
-    assert "TestCat1.Widget1" in button._actions
-    assert "TestCat2.Widget3" in button._actions
+def test_builds_menus_from_registry(button):
+    assert set(button._menus) == {"AI", "Exploration", "IntelliCage"}
+    assert [a.text() for a in button._menus["Exploration"].actions()] == ["Histogram"]
+    assert set(button._actions) == {"AI.AI Agent", "Exploration.Histogram", "IntelliCage.Transitions"}
 
 
-def test_add_widget_trigger(qapp, mock_registry, capsys):
-    """Test that triggering an action calls _add_widget."""
-    from tse_analytics.toolbox.toolbox_registry import ToolboxPluginInfo
+# --- visibility logic --------------------------------------------------------
 
-    mock_widget_class = MagicMock()
-    # Mock title for the widget instance
-    mock_widget_instance = mock_widget_class.return_value
-    mock_widget_instance.title = "Widget Title"
 
-    mock_plugin = ToolboxPluginInfo(category="TestCat", label="Widget", icon="icon.png", widget_class=mock_widget_class)
+def test_initial_visibility_hides_internal_and_dataset_restricted(button):
+    """No dataset selected: unrestricted tools show, restricted + internal hide."""
+    assert button._actions["Exploration.Histogram"].isVisible()
+    assert not button._actions["IntelliCage.Transitions"].isVisible()
+    assert not button._actions["AI.AI Agent"].isVisible()
+    # A category submenu is visible iff it has a visible action.
+    assert button._menus["Exploration"].menuAction().isVisible()
+    assert not button._menus["IntelliCage"].menuAction().isVisible()
+    assert not button._menus["AI"].menuAction().isVisible()
 
-    mock_registry.get_plugins.return_value = {"TestCat": [mock_plugin]}
 
-    # Import
-    from tse_analytics.views.misc import toolbox_button as toolbox_button_module
-    from tse_analytics.views.misc.toolbox_button import ToolboxButton
+def test_set_enabled_actions_shows_matching_gated_tool(button):
+    button.set_enabled_actions(_ds("IntelliCage"), _dt("Visits"))
+    assert button._actions["IntelliCage.Transitions"].isVisible()
+    assert button._actions["Exploration.Histogram"].isVisible()
+    assert button._menus["IntelliCage"].menuAction().isVisible()
 
-    mock_datatable = MagicMock()
-    mock_datatable.configure_mock(name="TestDataset")
 
-    mock_manager = MagicMock()
-    mock_manager.get_selected_datatable.return_value = mock_datatable
+@pytest.mark.parametrize(
+    "dataset_type, datatable_name",
+    [
+        ("PhenoMaster", "Visits"),  # wrong dataset type
+        ("IntelliCage", "Nosepokes"),  # wrong datatable name
+        ("IntelliCage", None),  # required datatable missing
+    ],
+)
+def test_set_enabled_actions_hides_nonmatching_gated_tool(button, dataset_type, datatable_name):
+    datatable = _dt(datatable_name) if datatable_name is not None else None
+    button.set_enabled_actions(_ds(dataset_type), datatable)
+    assert not button._actions["IntelliCage.Transitions"].isVisible()
+    # An unrestricted tool is visible whenever any dataset is selected.
+    assert button._actions["Exploration.Histogram"].isVisible()
 
-    with patch.object(toolbox_button_module, "manager", mock_manager):
-        parent = QWidget()
-        button = ToolboxButton(parent)
 
-        # Trigger action
-        action = button._actions["TestCat.Widget"]
-        action.trigger()
+def test_enable_internal_tools_toggles_internal_action(button):
+    assert not button._actions["AI.AI Agent"].isVisible()
+    button.enable_internal_tools(True)
+    assert button._actions["AI.AI Agent"].isVisible()
+    assert button._menus["AI"].menuAction().isVisible()
+    button.enable_internal_tools(False)
+    assert not button._actions["AI.AI Agent"].isVisible()
+    assert not button._menus["AI"].menuAction().isVisible()
 
-        # Check for exceptions/prints
-        captured = capsys.readouterr()
-        if captured.out:
-            print(f"Stdout: {captured.out}")
-        if captured.err:
-            print(f"Stderr: {captured.err}")
 
-        # Verify widget instantiation
-        mock_widget_class.assert_called_once_with(mock_datatable)
+# --- _add_widget dispatch ----------------------------------------------------
 
-        # Verify LayoutManager call
-        toolbox_button_module.LayoutManager.add_widget_to_central_area.assert_called_once()
-        args = toolbox_button_module.LayoutManager.add_widget_to_central_area.call_args
-        assert args[0][1] == mock_widget_instance
-        assert args[0][2] == "Widget Title - TestDataset"
+
+def _build_button(qapp, plugin):
+    return _make_button(qapp, {plugin.category: [plugin]})
+
+
+def test_add_widget_instantiates_and_docks(qapp):
+    widget_cls = MagicMock()
+    widget_cls.return_value.title = "Histogram Chart"
+    plugin = ToolboxPluginInfo("Exploration", "HistogramTool", ":/icons/h.png", widget_cls)
+    datatable = SimpleNamespace(name="Main", dataset=object())
+    button = _build_button(qapp, plugin)
+
+    with (
+        patch.object(toolbox_button.manager, "get_selected_datatable", return_value=datatable),
+        patch.object(toolbox_button.LayoutManager, "add_widget_to_central_area") as add_mock,
+    ):
+        button._actions["Exploration.HistogramTool"].trigger()
+
+    widget_cls.assert_called_once_with(datatable)
+    add_mock.assert_called_once()
+    dataset_arg, widget_arg, title_arg, _icon = add_mock.call_args.args
+    assert dataset_arg is datatable.dataset
+    assert widget_arg is widget_cls.return_value
+    assert title_arg == "Histogram Chart - Main"  # widget.title wins
+
+
+def test_add_widget_title_falls_back_to_label(qapp):
+    widget_cls = MagicMock()
+    widget_cls.return_value = object()  # no ``title`` attribute
+    plugin = ToolboxPluginInfo("Exploration", "HistogramTool", ":/icons/h.png", widget_cls)
+    datatable = SimpleNamespace(name="Main", dataset=object())
+    button = _build_button(qapp, plugin)
+
+    with (
+        patch.object(toolbox_button.manager, "get_selected_datatable", return_value=datatable),
+        patch.object(toolbox_button.LayoutManager, "add_widget_to_central_area") as add_mock,
+    ):
+        button._actions["Exploration.HistogramTool"].trigger()
+
+    assert add_mock.call_args.args[2] == "HistogramTool - Main"  # plugin label fallback
+
+
+def test_add_widget_noop_without_selected_datatable(qapp):
+    widget_cls = MagicMock()
+    plugin = ToolboxPluginInfo("Exploration", "HistogramTool", ":/icons/h.png", widget_cls)
+    button = _build_button(qapp, plugin)
+
+    with (
+        patch.object(toolbox_button.manager, "get_selected_datatable", return_value=None),
+        patch.object(toolbox_button.LayoutManager, "add_widget_to_central_area") as add_mock,
+    ):
+        button._actions["Exploration.HistogramTool"].trigger()
+
+    widget_cls.assert_not_called()
+    add_mock.assert_not_called()
+
+
+def test_add_widget_swallows_instantiation_error(qapp):
+    """A widget whose constructor raises must not crash the menu or dock anything."""
+    widget_cls = MagicMock(side_effect=RuntimeError("boom"))
+    plugin = ToolboxPluginInfo("Exploration", "BadWidget", ":/icons/b.png", widget_cls)
+    datatable = SimpleNamespace(name="Main", dataset=object())
+    button = _build_button(qapp, plugin)
+
+    with (
+        patch.object(toolbox_button.manager, "get_selected_datatable", return_value=datatable),
+        patch.object(toolbox_button.LayoutManager, "add_widget_to_central_area") as add_mock,
+    ):
+        button._actions["Exploration.BadWidget"].trigger()  # must not raise
+
+    add_mock.assert_not_called()
+
+
+# --- misc presentation -------------------------------------------------------
+
+
+def test_set_state_toggles_enabled(button):
+    button.set_state(True)
+    assert button.isEnabled()
+    button.set_state(False)
+    assert not button.isEnabled()
+
+
+def test_action_tooltip_is_applied(qapp):
+    plugin = ToolboxPluginInfo("Exploration", "Tip", ":/icons/h.png", MagicMock(), tooltip="Helpful hint")
+    button = _build_button(qapp, plugin)
+    assert button._actions["Exploration.Tip"].toolTip() == "Helpful hint"
+
+
+# --- integration against the real, populated registry ------------------------
+
+
+def test_real_registry_builds_valid_button(qapp):
+    """Constructing against the real registry populates menus and reports no issues."""
+    button = _make_button(qapp)
+    assert validate_registry() == []
+    assert len(button._action_plugins) == sum(len(v) for v in registry.get_plugins().values())

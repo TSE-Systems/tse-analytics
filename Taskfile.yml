@@ -83,7 +83,7 @@ tasks:
   coverage:
     desc: check code coverage
     cmds:
-      - pytest --cov=$(SOURCE_DIR) tests/
+      - pytest --cov={{.SOURCE_DIR}} --cov-report=term-missing tests/
 
   deploy:
     cmds:

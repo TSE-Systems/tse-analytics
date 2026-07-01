@@ -13,6 +13,7 @@ import re
 from collections import Counter
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import patch
 
 import pytest
 
@@ -32,6 +33,13 @@ _DECORATOR_RE = re.compile(r"@toolbox_plugin\b")
 
 def _all_plugins() -> list[ToolboxPluginInfo]:
     return [plugin for plugins in registry.get_plugins().values() for plugin in plugins]
+
+
+def _plugin_by(category: str, label: str) -> ToolboxPluginInfo:
+    for plugin in _all_plugins():
+        if plugin.category == category and plugin.label == label:
+            return plugin
+    raise AssertionError(f"No registered plugin {category!r}.{label!r}")
 
 
 def _decorated_widget_files() -> set[Path]:
@@ -134,3 +142,41 @@ def test_is_applicable_default_applies_everywhere():
     plugin = ToolboxPluginInfo("Exploration", "Histogram", ":/icons/x.png", object)
     assert plugin.is_applicable(_dataset("PhenoMaster"), None)
     assert plugin.is_applicable(_dataset("IntelliCage"), _datatable("Visits"))
+
+
+def test_is_applicable_dataset_type_only():
+    """``dataset_types`` set with no datatable requirement (the Learning Curve pattern)."""
+    plugin = ToolboxPluginInfo(
+        "IntelliCage",
+        "Learning Curve",
+        ":/icons/x.png",
+        object,
+        dataset_types=("IntelliCage", "IntelliMaze"),
+    )
+    # Gated by dataset type, but applies regardless of the datatable (incl. None).
+    assert plugin.is_applicable(_dataset("IntelliCage"), None)
+    assert plugin.is_applicable(_dataset("IntelliMaze"), _datatable("Anything"))
+    assert not plugin.is_applicable(_dataset("PhenoMaster"), _datatable("Visits"))
+
+
+def test_intellicage_widgets_declare_expected_metadata():
+    """The three IntelliCage tools carry the applicability metadata the menu relies on."""
+    for label in ("Transitions", "Place Preference"):
+        plugin = _plugin_by("IntelliCage", label)
+        assert plugin.dataset_types == ("IntelliCage", "IntelliMaze")
+        assert plugin.required_datatable_name == "Visits"
+
+    learning = _plugin_by("IntelliCage", "Learning Curve")
+    assert learning.dataset_types == ("IntelliCage", "IntelliMaze")
+    assert learning.required_datatable_name is None  # applies to any datatable
+
+
+def test_validate_registry_detects_duplicates_and_empty_icons():
+    """The positive path: malformed plugins are reported (never raised)."""
+    dup_a = ToolboxPluginInfo("Cat", "Dup", ":/icons/x.png", object)
+    dup_b = ToolboxPluginInfo("Cat", "Dup", ":/icons/x.png", object)  # duplicate (category, label)
+    no_icon = ToolboxPluginInfo("Cat", "NoIcon", "", object)  # empty icon
+    with patch.object(registry, "get_plugins", return_value={"Cat": [dup_a, dup_b, no_icon]}):
+        issues = validate_registry()
+    assert any("Duplicate" in issue and "Dup" in issue for issue in issues)
+    assert any("empty icon" in issue and "NoIcon" in issue for issue in issues)
