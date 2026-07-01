@@ -18,7 +18,9 @@ def process_drinkfeed_intervals(
         seconds=settings.fixed_interval.second,
     )
 
-    agg = {}
+    agg = {
+        "DateTime": "first",
+    }
     for variable in datatable.variables.values():
         agg[variable.name] = variable.aggregation
 

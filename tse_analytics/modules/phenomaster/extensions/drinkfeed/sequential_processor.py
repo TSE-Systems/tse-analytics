@@ -11,8 +11,8 @@ def process_drinkfeed_sequences(
     diets_dict: dict[str, float],
 ) -> tuple[Datatable, Datatable]:
     long_df = pd.melt(
-        datatable.df[datatable.df.columns.difference(["DateTime"])],
-        id_vars=["Timedelta", "Animal", "Box"],
+        datatable.df,
+        id_vars=["DateTime", "Timedelta", "Animal", "Box"],
         var_name="Sensor",
         value_name="Value",
     )
@@ -214,6 +214,7 @@ def _extract_sensor_episodes(
     if valid_events.empty:
         return pd.DataFrame(
             columns=[
+                "DateTime",
                 "Timedelta",
                 "Animal",
                 "Sensor",
@@ -228,6 +229,7 @@ def _extract_sensor_episodes(
         )
 
     grouped = valid_events.groupby("EpisodeId", sort=False).agg(
+        DateTime=("DateTime", "first"),
         Start=("Timedelta", "first"),
         End=("Timedelta", "last"),
         Quantity=("Value", "sum"),
@@ -235,6 +237,7 @@ def _extract_sensor_episodes(
     )
 
     episodes = pd.DataFrame({
+        "DateTime": grouped["DateTime"],
         "Timedelta": grouped["Start"],
         "Animal": animal_id,
         "Sensor": sensor,
