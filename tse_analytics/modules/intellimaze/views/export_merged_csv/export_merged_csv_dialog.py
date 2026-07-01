@@ -146,7 +146,7 @@ class ExportMergedCsvDialog(QDialog):
         new_list = sorted(csvDataRows, key=lambda x: x[0], reverse=False)
         lines = [f"{delimiter.join(items)}\n" for items in new_list]
 
-        with open(filename, "w") as f:
+        with open(filename, "w", encoding="utf-8") as f:
             f.writelines([
                 f"{delimiter.join(headers1)}\n",
                 f"{delimiter.join(headers2)}\n",

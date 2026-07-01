@@ -9,7 +9,7 @@ class GroupBySelector(QComboBox):
         self,
         parent: QWidget,
         datatable: Datatable,
-        selected_mode: str = None,
+        selected_mode: str | None = None,
         show_role: FactorRole | None = None,
     ):
         super().__init__(parent)

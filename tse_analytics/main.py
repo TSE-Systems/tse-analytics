@@ -63,7 +63,7 @@ class App(QApplication):
         settings = QSettings()
         appStyle = settings.value("appStyle", "tse-light")
         style_file = get_resource_base() / "styles" / "qss" / f"{appStyle}.css"
-        with open(style_file) as file:
+        with open(style_file, encoding="utf-8") as file:
             self.setStyleSheet(file.read())
 
         # TaskManager singleton initialization

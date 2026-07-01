@@ -2,7 +2,7 @@
 
 This directory packages TSE Analytics as a Flatpak for **direct / private distribution**
 (a single `.flatpak` bundle or a self-hosted repo). It wraps the PyInstaller build rather than
-building from source, because the project pins Python `3.14.5` and a heavy scientific / Rust
+building from source, because the project pins Python `3.14.6` and a heavy scientific / Rust
 dependency stack that no stock Flatpak runtime can reproduce offline.
 
 > Not Flathub-eligible — Flathub requires building from source, not bundling a pre-built binary.

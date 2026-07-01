@@ -202,7 +202,7 @@ def _import_animals_v5(animals_file_path: Path) -> dict | None:
                 present_fields.append(field)
 
     animals = {}
-    for index, item in enumerate(animals_json["ArrayOfAnimal"]["Animal"]):
+    for item in animals_json["ArrayOfAnimal"]["Animal"]:
         properties = {
             "Tag": item["Tag"],
             "PMBoxNr": int(item["PMBoxNr"]),
@@ -278,7 +278,7 @@ def _import_animals_v6(animals_file_path: Path, groups_file_path: Path) -> dict 
                 present_fields.append(field)
 
     animals: dict[str, Animal] = {}
-    for index, item in enumerate(animals_json["ArrayOfAnimal"]["Animal"]):
+    for item in animals_json["ArrayOfAnimal"]["Animal"]:
         properties = {
             "Tag": item["Tag"],
             "PMBoxNr": int(item["PMBoxNr"]),

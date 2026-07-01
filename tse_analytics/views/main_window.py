@@ -109,9 +109,7 @@ class MainWindow(QMainWindow):
         factors_dock_widget = LayoutManager.register_dock_widget(
             FactorsWidget(), "Factors", QIcon(":/icons/factors.png")
         )
-        selector_dock_area = LayoutManager.add_dock_widget_to_area(
-            PySide6QtAds.BottomDockWidgetArea, factors_dock_widget, animals_dock_area
-        )
+        LayoutManager.add_dock_widget_to_area(PySide6QtAds.BottomDockWidgetArea, factors_dock_widget, animals_dock_area)
 
         self.ui.actionImportDataset.triggered.connect(self._import_dataset_dialog)
         self.ui.actionNewWorkspace.triggered.connect(self._new_workspace)
@@ -149,7 +147,7 @@ class MainWindow(QMainWindow):
 
     def _set_style(self, name: str) -> None:
         style_file = globals.get_resource_base() / "styles" / "qss" / f"{name}.css"
-        with open(style_file) as file:
+        with open(style_file, encoding="utf-8") as file:
             # Set global stylesheet
             QApplication.instance().setStyleSheet(file.read())
         self.settings.setValue("appStyle", name)
@@ -163,7 +161,7 @@ class MainWindow(QMainWindow):
         self.ui.menuOpenRecent.clear()
         # Step 2. Dynamically create the actions
         actions = []
-        filenames = list(self.settings.value("recentFilesList", []))
+        filenames = list(self.settings.value("recentFilesList", [], type=list))
         for filename in filenames:
             action = QAction(filename, self)
             action.triggered.connect(partial(self._load_workspace, filename))
@@ -172,7 +170,7 @@ class MainWindow(QMainWindow):
         self.ui.menuOpenRecent.addActions(actions)
 
     def _load_workspace(self, filename: str):
-        filenames = list(self.settings.value("recentFilesList", []))
+        filenames = list(self.settings.value("recentFilesList", [], type=list))
         try:
             filenames.remove(filename)
         except ValueError:

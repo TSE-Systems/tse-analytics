@@ -15,7 +15,7 @@ class FactorSelector(QComboBox):
         self,
         parent: QWidget,
         factors: dict[str, Factor],
-        selected_factor: str = None,
+        selected_factor: str | None = None,
         show_role: FactorRole | None = None,
     ):
         super().__init__(parent)

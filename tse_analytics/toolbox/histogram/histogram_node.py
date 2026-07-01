@@ -34,10 +34,8 @@ class HistogramNode(PipelineNode):
     def initialize(self, dataset: Dataset, datatable: Datatable):
         # Initialize variable selector
         if datatable is None:
-            variable_names = ["No variables"]
             group_by_options = ["Animal"]
         else:
-            variable_names = list(datatable.variables.keys())
             group_by_options = datatable.get_group_by_columns()
 
         # variable_widget: NodeComboBox = self.get_widget("variable")

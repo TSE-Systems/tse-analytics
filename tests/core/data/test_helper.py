@@ -61,7 +61,7 @@ class TestReassignDfTimedelta:
         df = pd.DataFrame({
             "DateTime": [base1, base1 + pd.Timedelta("1h"), base2, base2 + pd.Timedelta("1h")],
             "Timedelta": [pd.Timedelta(0)] * 4,
-            "Experiment": [1, 1, 2, 2],
+            "Trial": [1, 1, 2, 2],
         })
 
         result = reassign_df_timedelta(df, "overlap")

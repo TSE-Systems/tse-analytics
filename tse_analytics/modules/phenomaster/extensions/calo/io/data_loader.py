@@ -145,7 +145,7 @@ def import_calo_csv_data(
         return None
 
     columns_line = None
-    with open(path) as f:
+    with open(path, encoding="utf-8-sig") as f:
         lines = f.readlines()
 
         header_template = "Date;Time;"

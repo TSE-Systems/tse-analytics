@@ -75,7 +75,7 @@ def import_actimot_csv_data(
     if not path.is_file() or path.suffix.lower() != ".csv":
         return None
 
-    with open(path) as f:
+    with open(path, encoding="utf-8-sig") as f:
         lines = f.readlines()
 
         header_template = "Rel. [s];BoxNr;"

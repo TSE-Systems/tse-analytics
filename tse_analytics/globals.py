@@ -43,9 +43,11 @@ TIME_RESOLUTION_UNIT = "ms"
 def init_global_settings():
     settings = QSettings()
 
-    dpi = settings.value("DPI", 96)
-    figure_width = settings.value("FigureWidth", 13.0)
-    figure_height = settings.value("FigureHeight", 9.5)
+    # Pass explicit type= so values round-trip as numbers on Linux, where the QSettings INI
+    # backend returns everything as strings (unlike the typed Windows registry backend).
+    dpi = settings.value("DPI", 96, type=int)
+    figure_width = settings.value("FigureWidth", 13.0, type=float)
+    figure_height = settings.value("FigureHeight", 9.5, type=float)
 
     # Global PyQtGraph settings
     setConfigOptions(

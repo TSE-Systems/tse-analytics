@@ -89,7 +89,7 @@ class JsonTreeItem:
                                   Defaults to True.
 
         Examples:
-            with open("file.json") as file:
+            with open("file.json", encoding="utf-8") as file:
                 data = json.load(file)
                 root = TreeItem.load(data)
 

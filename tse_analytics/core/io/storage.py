@@ -312,7 +312,7 @@ def _load_datatables_for_dataset(
 
     for (
         datatable_id,
-        parent_datatable_id,
+        _parent_datatable_id,
         name,
         description,
         duckdb_table_name,

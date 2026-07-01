@@ -1,4 +1,4 @@
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import QTextEdit
 
 
@@ -11,7 +11,9 @@ class ReportEdit(QTextEdit):
             lineWrapMode=QTextEdit.LineWrapMode.NoWrap,
         )
 
-        self.document().setDefaultFont(QFont("Segoe UI", 10))
+        font = QFontDatabase.systemFont(QFontDatabase.SystemFont.GeneralFont)
+        font.setPointSize(10)
+        self.document().setDefaultFont(font)
         # self.document().setDefaultStyleSheet(style_descriptive_table)
 
     def set_content(self, content: str) -> None:

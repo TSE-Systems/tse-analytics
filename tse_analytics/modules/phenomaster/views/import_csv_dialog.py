@@ -19,7 +19,7 @@ class ImportCsvDialog(QDialog):
             "CsvImportSettings", CsvImportSettings.get_default()
         )
 
-        with open(path) as f:
+        with open(path, encoding="utf-8-sig") as f:
             content = f.read(1024 * 1024)
             self.ui.plainTextEditOverview.setPlainText(content)
 

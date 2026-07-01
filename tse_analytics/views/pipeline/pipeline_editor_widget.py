@@ -222,7 +222,7 @@ class PipelineEditorWidget(QWidget):
 
         dataset = manager.get_selected_dataset()
         datatable = manager.get_selected_datatable()
-        if dataset is not None:
+        if dataset is not None and datatable is not None:
             self.graph.initialize_pipeline(dataset, datatable)
 
     def _execute_pipeline(self):

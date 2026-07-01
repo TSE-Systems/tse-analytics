@@ -211,7 +211,7 @@ def _import_nosepokes_df(folder_path: Path) -> pd.DataFrame:
     if not file_path.is_file():
         raise FileNotFoundError(f"Nosepokes file not found: {file_path}")
 
-    with open(file_path) as file:
+    with open(file_path, encoding="utf-8-sig") as file:
         first_line = file.readline()
         lick_start_time_column = "LickStartTime" in first_line
 

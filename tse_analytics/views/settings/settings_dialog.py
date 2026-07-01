@@ -20,13 +20,13 @@ class SettingsDialog(QDialog):
         else:
             self.ui.radioButtonOffline.setChecked(True)
 
-        dpi = float(settings.value("DPI", 96))
+        dpi = settings.value("DPI", 96, type=int)
         self.ui.dpiSpinBox.setValue(dpi)
 
-        figure_width = float(settings.value("FigureWidth", 6.4))
+        figure_width = settings.value("FigureWidth", 6.4, type=float)
         self.ui.figureWidthInchesDoubleSpinBox.setValue(figure_width)
 
-        figure_height = float(settings.value("FigureHeight", 4.8))
+        figure_height = settings.value("FigureHeight", 4.8, type=float)
         self.ui.figureHeightInchesDoubleSpinBox.setValue(figure_height)
 
         if globals.INTERNAL_ENABLED:

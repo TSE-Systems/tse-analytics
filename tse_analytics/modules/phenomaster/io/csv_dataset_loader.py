@@ -49,7 +49,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Data
     Returns:
         Dataset | None: A dataset containing the loaded data, or None if loading failed
     """
-    with open(path) as f:
+    with open(path, encoding="utf-8-sig") as f:
         lines = f.readlines()
 
     # lines = [line.strip().rstrip(DELIMITER) for line in lines]
@@ -71,7 +71,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Data
     animals: dict[str, Animal] = {}
     variables: dict[str, Variable] = {}
 
-    for index, line in enumerate(animal_section.lines[1:]):
+    for line in animal_section.lines[1:]:
         elements = line.split(csv_import_settings.delimiter)
         properties = {
             "Box": int(elements[0]),

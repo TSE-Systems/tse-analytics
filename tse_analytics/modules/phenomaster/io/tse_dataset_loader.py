@@ -147,7 +147,7 @@ def _read_metadata(path: Path) -> dict:
 
 def _get_animals(data: dict) -> dict[str, Animal]:
     animals: dict[str, Animal] = {}
-    for index, item in enumerate(data.values()):
+    for item in data.values():
         properties = {
             "Box": int(item["box"]),
             "Weight": float(item["weight"]),

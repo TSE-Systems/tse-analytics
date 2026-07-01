@@ -187,7 +187,7 @@ def import_drinkfeed_bin_csv_data(
     if not path.is_file() or path.suffix.lower() != ".csv":
         return None
 
-    with open(path) as f:
+    with open(path, encoding="utf-8-sig") as f:
         lines = f.readlines()
 
         header_template = "Date;Time;"

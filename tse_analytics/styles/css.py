@@ -21,7 +21,8 @@ td {
 """
 
 
-DEFAULT_GREAT_TABLE_FONT = "Segoe UI"
+# Cross-platform font stack: Segoe UI on Windows, the system UI font / a sans fallback elsewhere.
+DEFAULT_GREAT_TABLE_FONT = "Segoe UI, Roboto, Helvetica, Arial, sans-serif"
 
 
 def gt_theme_tse(gt: GT) -> GT:
