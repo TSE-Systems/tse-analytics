@@ -1,12 +1,12 @@
 import pandas as pd
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QFileDialog, QInputDialog, QMenu, QToolBar, QToolButton, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QInputDialog, QMenu, QToolBar, QToolButton, QVBoxLayout, QWidget
 
 from tse_analytics.core import manager
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.report import Report
-from tse_analytics.core.utils import get_great_table
+from tse_analytics.core.utils import get_great_table, get_save_file_name
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.views.misc.pandas_table_view import PandasTableView
@@ -89,7 +89,7 @@ class PandasWidget(QWidget):
         """
         if self.df is None:
             return
-        filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "", "CSV Files (*.csv)")
+        filename = get_save_file_name(self, "Export to CSV", "", "CSV Files (*.csv)")
         if filename:
             self.df.to_csv(filename, sep=";", index=False)
 
@@ -102,7 +102,7 @@ class PandasWidget(QWidget):
         """
         if self.df is None:
             return
-        filename, _ = QFileDialog.getSaveFileName(self, "Export to Excel", "", "Excel Files (*.xlsx)")
+        filename = get_save_file_name(self, "Export to Excel", "", "Excel Files (*.xlsx)")
         if filename:
             with pd.ExcelWriter(filename) as writer:
                 self.df.to_excel(writer, sheet_name=self.title)

@@ -7,7 +7,6 @@ from PySide6.QtCore import QByteArray, QSettings, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QAbstractItemView,
-    QFileDialog,
     QInputDialog,
     QLabel,
     QLineEdit,
@@ -25,7 +24,7 @@ from tse_analytics.core import manager, messaging
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.models.pandas_model import PandasModel
-from tse_analytics.core.utils import get_great_table, get_h_spacer_widget, get_widget_tool_button
+from tse_analytics.core.utils import get_great_table, get_h_spacer_widget, get_save_file_name, get_widget_tool_button
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.toolbox.data_table.variables.variables_widget import VariablesWidget
@@ -181,12 +180,12 @@ class DataTableWidget(QWidget, messaging.MessengerListener):
         TaskManager.start_task(worker)
 
     def _export_csv(self):
-        filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "", "CSV Files (*.csv)")
+        filename = get_save_file_name(self, "Export to CSV", "", "CSV Files (*.csv)")
         if filename:
             self.df.to_csv(filename, sep=";", index=False)
 
     def _export_excel(self):
-        filename, _ = QFileDialog.getSaveFileName(self, "Export to Excel", "", "Excel Files (*.xlsx)")
+        filename = get_save_file_name(self, "Export to Excel", "", "Excel Files (*.xlsx)")
         if filename:
             with pd.ExcelWriter(filename) as writer:
                 self.df.to_excel(writer, sheet_name=self.datatable.name)

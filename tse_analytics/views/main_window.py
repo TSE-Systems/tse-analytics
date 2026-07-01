@@ -16,6 +16,7 @@ from tse_analytics.core import help_manager, manager
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.layouts.layout_manager import LayoutManager
 from tse_analytics.core.toaster import make_toast
+from tse_analytics.core.utils import get_save_file_name
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.intellicage.io.dataset_loader import import_intellicage_dataset
@@ -234,7 +235,7 @@ class MainWindow(QMainWindow):
             self._load_workspace(file_path)
 
     def _save_workspace_dialog(self) -> None:
-        filename, _ = QFileDialog.getSaveFileName(
+        filename = get_save_file_name(
             self,
             "Save TSE Analytics Workspace",
             "",

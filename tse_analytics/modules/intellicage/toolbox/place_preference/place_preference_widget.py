@@ -4,11 +4,11 @@ from enum import Enum
 import pandas as pd
 from pyqttoast import ToastPreset
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QFileDialog, QToolBar, QWidget
+from PySide6.QtWidgets import QToolBar, QWidget
 
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.core.utils import get_figsize_from_widget, get_widget_tool_button
+from tse_analytics.core.utils import get_figsize_from_widget, get_save_file_name, get_widget_tool_button
 from tse_analytics.core.workers import TaskManager, Worker
 from tse_analytics.modules.intellicage.toolbox.place_preference.place_preference_settings_widget_ui import (
     Ui_PlacePreferencesSettingsWidget,
@@ -167,7 +167,7 @@ class PlacePreferenceWidget(ToolboxWidgetBase):
     def _export_to_excel(self) -> None:
         if self.datatable is None or self.visit_counts is None:
             return
-        filename, _ = QFileDialog.getSaveFileName(self, "Export to Excel", "", "Excel Files (*.xlsx)")
+        filename = get_save_file_name(self, "Export to Excel", "", "Excel Files (*.xlsx)")
         if filename:
             with pd.ExcelWriter(filename) as writer:
                 self.visit_counts.to_excel(writer, sheet_name="Visit Counts")

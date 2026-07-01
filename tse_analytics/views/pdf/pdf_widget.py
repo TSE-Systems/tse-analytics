@@ -4,7 +4,9 @@ from PySide6.QtCore import QBuffer, QByteArray, QIODevice, QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtPdf import QPdfDocument
 from PySide6.QtPdfWidgets import QPdfView
-from PySide6.QtWidgets import QFileDialog, QToolBar, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QToolBar, QVBoxLayout, QWidget
+
+from tse_analytics.core.utils import get_save_file_name
 
 
 class PdfWidget(QWidget):
@@ -49,7 +51,7 @@ class PdfWidget(QWidget):
         self._layout.addWidget(self.pdf_view)
 
     def _export_pdf(self):
-        file_path, _ = QFileDialog.getSaveFileName(self, "Export PDF", "", "PDF Files (*.pdf)")
+        file_path = get_save_file_name(self, "Export PDF", "", "PDF Files (*.pdf)")
         if file_path:
             with open(file_path, "wb") as file:
                 self.buffer.seek(0)

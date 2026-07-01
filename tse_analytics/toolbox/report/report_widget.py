@@ -1,9 +1,10 @@
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QAction, QActionGroup, QFont, QIcon, QKeySequence, Qt
 from PySide6.QtPrintSupport import QPrintDialog
-from PySide6.QtWidgets import QComboBox, QFileDialog, QFontComboBox, QToolBar, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QComboBox, QFontComboBox, QToolBar, QVBoxLayout, QWidget
 
 from tse_analytics.core.data.report import Report
+from tse_analytics.core.utils import get_save_file_name
 from tse_analytics.views.misc.custom_text_edit import CustomTextEdit
 
 FONT_SIZES = [
@@ -238,7 +239,7 @@ class ReportWidget(QWidget):
             self.editor.document().print_(dlg.printer())
 
     def _save_report(self):
-        filename, _ = QFileDialog.getSaveFileName(self, "Save Report", "", "HTML Files (*.html)")
+        filename = get_save_file_name(self, "Save Report", "", "HTML Files (*.html)")
         if filename:
             with open(filename, "w", encoding="utf-8") as file:
                 file.write(self.editor.document().toHtml())

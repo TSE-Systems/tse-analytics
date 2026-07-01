@@ -1,10 +1,11 @@
 import pandas as pd
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QFileDialog, QMenu, QToolBar, QToolButton, QWidget
+from PySide6.QtWidgets import QMenu, QToolBar, QToolButton, QWidget
 
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.models.pandas_simple_model import PandasSimpleModel
+from tse_analytics.core.utils import get_save_file_name
 from tse_analytics.core.workers.task_manager import TaskManager
 from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.phenomaster.extensions.grouphousing.views.preprocessed_data.preprocessed_data_widget_ui import (
@@ -96,13 +97,13 @@ class PreprocessedDataWidget(QWidget):
         TaskManager.start_task(worker)
 
     def _export_csv(self):
-        filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "", "CSV Files (*.csv)")
+        filename = get_save_file_name(self, "Export to CSV", "", "CSV Files (*.csv)")
         if filename:
             df = self._get_filtered_df()
             df.to_csv(filename, sep=";", index=False)
 
     def _export_excel(self):
-        filename, _ = QFileDialog.getSaveFileName(self, "Export to Excel", "", "Excel Files (*.xlsx)")
+        filename = get_save_file_name(self, "Export to Excel", "", "Excel Files (*.xlsx)")
         if filename:
             selected_table = self.ui.listWidgetTables.selectedItems()[0].text()
             df = self._get_filtered_df()

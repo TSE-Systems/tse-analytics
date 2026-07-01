@@ -4,6 +4,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QToolBar, QVBoxLayout, QWidget
 
 from tse_analytics.core import manager
+from tse_analytics.core.utils import get_save_file_name
 from tse_analytics.globals import IS_RELEASE, get_resource_base
 from tse_analytics.pipeline import PipelineNodeGraph
 from tse_analytics.pipeline.nodes import (
@@ -183,7 +184,7 @@ class PipelineEditorWidget(QWidget):
 
     def _save_pipeline_as(self):
         """Save the current pipeline with a new name."""
-        file_path, _ = QFileDialog.getSaveFileName(
+        file_path = get_save_file_name(
             self,
             "Save Pipeline",
             "",

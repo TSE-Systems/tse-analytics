@@ -1,7 +1,10 @@
 """Qt/widget utility helpers."""
 
+import re
+from pathlib import Path
+
 from PySide6.QtGui import QIcon, QPalette, Qt
-from PySide6.QtWidgets import QSizePolicy, QToolButton, QWidget, QWidgetAction
+from PySide6.QtWidgets import QFileDialog, QMessageBox, QSizePolicy, QToolButton, QWidget, QWidgetAction
 
 
 def get_widget_tool_button(parent: QWidget, widget: QWidget, text: str, icon: QIcon) -> QToolButton:
@@ -32,6 +35,59 @@ def get_widget_tool_button(parent: QWidget, widget: QWidget, text: str, icon: QI
     widget_action.setDefaultWidget(widget)
     button.addAction(widget_action)
     return button
+
+
+def get_save_file_name(parent: QWidget, caption: str, directory: str, filter_string: str) -> str:
+    """Show a "save file" dialog, ensuring the selected filter's extension is appended.
+
+    Wraps ``QFileDialog.getSaveFileName``. On Linux the native dialog does not append the
+    default suffix from the chosen filter (unlike Windows), so this helper appends it when the
+    user-entered name has no extension. Multi-filter strings are supported: the extension is
+    taken from the filter the user actually selected.
+
+    Because the extension is appended *after* the dialog closes, the dialog's own overwrite
+    confirmation (which checks the pre-suffix name) is suppressed and replaced with a single
+    confirmation against the final path. Declining the confirmation cancels the operation.
+
+    Args:
+        parent: The parent widget for the dialog.
+        caption: The dialog title.
+        directory: The initial directory or suggested filename.
+        filter_string: File type filter(s), e.g. ``"CSV Files (*.csv)"`` or
+            ``"Workspace (*.workspace);;DuckDB (*.duckdb)"``.
+
+    Returns:
+        The chosen filename with the appropriate extension appended, or an empty string if the
+        dialog was cancelled or the user declined to overwrite an existing file.
+    """
+    filename, selected_filter = QFileDialog.getSaveFileName(
+        parent,
+        caption,
+        directory,
+        filter_string,
+        options=QFileDialog.Option.DontConfirmOverwrite,
+    )
+    if not filename:
+        return ""
+    # Append the selected filter's extension when the user typed none (skips "*.*"/"*").
+    if not Path(filename).suffix:
+        match = re.search(r"\*(\.\w[\w.]*)", selected_filter)
+        if match:
+            filename += match.group(1)
+    # We disabled the dialog's own confirmation (it checks the pre-suffix name on Linux), so
+    # confirm an overwrite against the final path here — once, on every platform.
+    if Path(filename).exists() and (
+        QMessageBox.question(
+            parent,
+            caption,
+            f'"{filename}" already exists.\nDo you want to replace it?',
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        != QMessageBox.StandardButton.Yes
+    ):
+        return ""
+    return filename
 
 
 def get_h_spacer_widget(parent: QWidget) -> QWidget:

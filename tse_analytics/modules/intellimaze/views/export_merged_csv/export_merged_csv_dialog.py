@@ -1,8 +1,9 @@
 import pandas as pd
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QDialog, QFileDialog, QListWidgetItem, QWidget
+from PySide6.QtWidgets import QDialog, QListWidgetItem, QWidget
 
 from tse_analytics.core.data.dataset import Dataset
+from tse_analytics.core.utils import get_save_file_name
 from tse_analytics.modules.intellimaze.extensions import (
     actor,
     animal_gate,
@@ -42,7 +43,7 @@ class ExportMergedCsvDialog(QDialog):
         self.ui.buttonBox.accepted.connect(self._export)
 
     def _export(self):
-        filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "", "CSV Files (*.csv)")
+        filename = get_save_file_name(self, "Export to CSV", "", "CSV Files (*.csv)")
         if filename:
             if self.ui.radioButtonDelimiterSemicolon.isChecked():
                 delimiter = ";"

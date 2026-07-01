@@ -2,8 +2,9 @@ import pandas as pd
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QAction, Qt
-from PySide6.QtWidgets import QFileDialog, QLabel, QToolBar, QToolButton, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QLabel, QToolBar, QToolButton, QVBoxLayout, QWidget
 
+from tse_analytics.core.utils import get_save_file_name
 from tse_analytics.modules.phenomaster.extensions.calo.processor import calculate_fit_v2, curve_fitting_func
 from tse_analytics.modules.phenomaster.extensions.calo.views.settings.settings_widget import SettingsWidget
 from tse_analytics.views.misc.MplCanvas import MplCanvas
@@ -80,7 +81,7 @@ class TestFitWidget(QWidget):
         )
         training_data = training_data[["Offset", gas_name]]
 
-        filename, _ = QFileDialog.getSaveFileName(self, "Export to CSV", "TrainingData", "CSV Files (*.csv)")
+        filename = get_save_file_name(self, "Export to CSV", "TrainingData", "CSV Files (*.csv)")
         if filename:
             training_data.to_csv(filename, sep=";", index=False, header=False)
 

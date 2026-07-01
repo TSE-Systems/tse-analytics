@@ -3,11 +3,11 @@ from dataclasses import dataclass
 import pandas as pd
 from pyqttoast import ToastPreset
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QCheckBox, QDoubleSpinBox, QFileDialog, QLabel, QToolBar, QWidget
+from PySide6.QtWidgets import QCheckBox, QDoubleSpinBox, QLabel, QToolBar, QWidget
 
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.toaster import make_toast
-from tse_analytics.core.utils import get_figsize_from_widget
+from tse_analytics.core.utils import get_figsize_from_widget, get_save_file_name
 from tse_analytics.core.workers import TaskManager, Worker
 from tse_analytics.modules.intellicage.toolbox.transitions.processor import (
     IntelliCageTransitionsResult,
@@ -143,7 +143,7 @@ class TransitionsWidget(ToolboxWidgetBase):
     def _export_to_excel(self) -> None:
         if not self.matrices:
             return
-        filename, _ = QFileDialog.getSaveFileName(self, "Export to Excel", "", "Excel Files (*.xlsx)")
+        filename = get_save_file_name(self, "Export to Excel", "", "Excel Files (*.xlsx)")
         if not filename:
             return
 

@@ -11,13 +11,14 @@ import pytest
 from matplotlib.figure import Figure
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QSizePolicy, QToolButton, QWidget
+from PySide6.QtWidgets import QFileDialog, QMessageBox, QSizePolicy, QToolButton, QWidget
 from tse_analytics.core.utils import (
     get_available_sqlite_tables,
     get_figsize_from_widget,
     get_h_spacer_widget,
     get_html_image_from_figure,
     get_html_table,
+    get_save_file_name,
     get_widget_tool_button,
     time_to_float,
 )
@@ -255,6 +256,85 @@ class TestTimeToFloat:
         """Test conversion of single minute."""
         result = time_to_float(time(5, 1))
         assert result == pytest.approx(5.016666, rel=1e-5)
+
+
+class TestGetSaveFileName:
+    """Tests for get_save_file_name function (the QFileDialog.getSaveFileName wrapper)."""
+
+    DIALOG = "tse_analytics.core.utils.ui.QFileDialog.getSaveFileName"
+    EXISTS = "tse_analytics.core.utils.ui.Path.exists"
+    QUESTION = "tse_analytics.core.utils.ui.QMessageBox.question"
+
+    def _patch(self, return_value, exists=False):
+        """Patch the dialog to return a fixed (name, selected_filter) tuple and Path.exists."""
+        return patch(self.DIALOG, return_value=return_value), patch(self.EXISTS, return_value=exists)
+
+    def test_appends_extension_when_missing(self):
+        """A name without an extension gets the selected filter's extension appended."""
+        dialog, exists = self._patch(("/tmp/export", "CSV Files (*.csv)"))
+        with dialog, exists:
+            assert get_save_file_name(None, "Export", "", "CSV Files (*.csv)") == "/tmp/export.csv"
+
+    def test_keeps_existing_matching_extension(self):
+        """A name that already ends with the expected extension is returned unchanged."""
+        dialog, exists = self._patch(("/tmp/export.csv", "CSV Files (*.csv)"))
+        with dialog, exists:
+            assert get_save_file_name(None, "Export", "", "CSV Files (*.csv)") == "/tmp/export.csv"
+
+    def test_respects_user_typed_other_extension(self):
+        """Any extension the user typed is respected (no double-suffix), mirroring Qt/Windows."""
+        dialog, exists = self._patch(("/tmp/export.txt", "CSV Files (*.csv)"))
+        with dialog, exists:
+            assert get_save_file_name(None, "Export", "", "CSV Files (*.csv)") == "/tmp/export.txt"
+
+    def test_multi_filter_uses_selected_filter(self):
+        """With a multi-filter string, the extension comes from the filter the user selected."""
+        filter_string = "Workspace (*.workspace);;DuckDB (*.duckdb)"
+        dialog, exists = self._patch(("/tmp/ws", "DuckDB (*.duckdb)"))
+        with dialog, exists:
+            assert get_save_file_name(None, "Save", "", filter_string) == "/tmp/ws.duckdb"
+        dialog, exists = self._patch(("/tmp/ws", "Workspace (*.workspace)"))
+        with dialog, exists:
+            assert get_save_file_name(None, "Save", "", filter_string) == "/tmp/ws.workspace"
+
+    def test_cancelled_returns_empty_string(self):
+        """Cancelling the dialog (empty filename) returns an empty string."""
+        dialog, exists = self._patch(("", ""))
+        with dialog, exists:
+            assert get_save_file_name(None, "Export", "", "CSV Files (*.csv)") == ""
+
+    def test_all_files_filter_appends_nothing(self):
+        """An 'All Files (*.*)' filter has no concrete extension, so nothing is appended."""
+        dialog, exists = self._patch(("/tmp/export", "All Files (*.*)"))
+        with dialog, exists:
+            assert get_save_file_name(None, "Export", "", "All Files (*.*)") == "/tmp/export"
+
+    def test_no_prompt_when_target_absent(self):
+        """When the final path does not exist, no overwrite prompt is shown."""
+        dialog, exists = self._patch(("/tmp/export", "CSV Files (*.csv)"), exists=False)
+        with dialog, exists, patch(self.QUESTION) as question:
+            assert get_save_file_name(None, "Export", "", "CSV Files (*.csv)") == "/tmp/export.csv"
+            question.assert_not_called()
+
+    def test_existing_target_confirmed_is_returned(self):
+        """When the final path exists and the user confirms, it is returned."""
+        dialog, exists = self._patch(("/tmp/export.csv", "CSV Files (*.csv)"), exists=True)
+        with dialog, exists, patch(self.QUESTION, return_value=QMessageBox.StandardButton.Yes) as question:
+            assert get_save_file_name(None, "Export", "", "CSV Files (*.csv)") == "/tmp/export.csv"
+            question.assert_called_once()
+
+    def test_existing_target_declined_cancels(self):
+        """When the final path exists and the user declines, the operation is cancelled."""
+        dialog, exists = self._patch(("/tmp/export.csv", "CSV Files (*.csv)"), exists=True)
+        with dialog, exists, patch(self.QUESTION, return_value=QMessageBox.StandardButton.No):
+            assert get_save_file_name(None, "Export", "", "CSV Files (*.csv)") == ""
+
+    def test_dialog_own_overwrite_confirmation_is_suppressed(self):
+        """The dialog is invoked with DontConfirmOverwrite so it does not double-prompt."""
+        dialog, exists = self._patch(("", ""))
+        with dialog as mock_dialog, exists:
+            get_save_file_name(None, "Export", "", "CSV Files (*.csv)")
+        assert mock_dialog.call_args.kwargs["options"] == QFileDialog.Option.DontConfirmOverwrite
 
 
 class TestGetFigsizeFromWidget:

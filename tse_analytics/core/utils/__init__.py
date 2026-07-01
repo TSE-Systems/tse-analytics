@@ -14,7 +14,12 @@ from tse_analytics.core.utils.formatting import (
     get_html_table,
     get_plot_layout,
 )
-from tse_analytics.core.utils.ui import get_figsize_from_widget, get_h_spacer_widget, get_widget_tool_button
+from tse_analytics.core.utils.ui import (
+    get_figsize_from_widget,
+    get_h_spacer_widget,
+    get_save_file_name,
+    get_widget_tool_button,
+)
 
 __all__ = [
     "get_available_sqlite_tables",
@@ -25,6 +30,7 @@ __all__ = [
     "get_html_table",
     "get_great_table",
     "get_plot_layout",
+    "get_save_file_name",
     "get_widget_tool_button",
     "time_to_float",
 ]
