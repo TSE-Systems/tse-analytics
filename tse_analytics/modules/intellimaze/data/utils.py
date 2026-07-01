@@ -238,66 +238,6 @@ def preprocess_main_table(dataset: Dataset) -> None:
     )
     dataset.add_datatable(main_datatable)
 
-    # animal_to_box_map = {}
-    # for animal in dataset.animals.values():
-    #     animal_to_box_map[animal.id] = animal.properties["PMBoxNr"]
-    #
-    # experiment_started = dataset.experiment_started
-    # experiment_stopped = dataset.experiment_stopped
-    #
-    # datetime_range = pd.date_range(
-    #     experiment_started.round("Min"), experiment_stopped.round("Min"), freq=sample_interval
-    # )
-    #
-    # default_columns = ["DateTime", "Animal"]
-    # agg = {}
-    # for column in df.columns:
-    #     if column not in default_columns:
-    #         if df.dtypes[column].name != "category":
-    #             agg[column] = variables[column].aggregation
-    #         else:
-    #             agg[column] = "first"
-    #
-    # preprocessed_animal_df = []
-    # animal_ids = df["Animal"].unique().tolist()
-    # for i, animal_id in enumerate(animal_ids):
-    #     animal_data = df[df["Animal"] == animal_id]
-    #     preprocessed_df = _preprocess_animal(
-    #         animal_id,
-    #         animal_to_box_map[animal_id],
-    #         animal_data,
-    #         datetime_range,
-    #         experiment_started,
-    #         sample_interval,
-    #         agg,
-    #     )
-    #     preprocessed_animal_df.append(preprocessed_df)
-    #
-    # df = pd.concat(preprocessed_animal_df, ignore_index=True, sort=False)
-    #
-    # # Add Run column
-    # df.insert(loc=5, column="Experiment", value=1)
-    #
-    # # Convert to categorical types
-    # df = df.astype({
-    #     "Animal": "category",
-    # })
-    #
-    # df.sort_values(by=["DateTime", "Animal"], inplace=True)
-    # df.reset_index(drop=True, inplace=True)
-    #
-    # dataset.df = df
-    # dataset.sample_interval = sample_interval
-    #
-    # dataset.variables = variables
-    #
-    # # Remove absent animals
-    # animals = {}
-    # for animal in dataset.animals.values():
-    #     if animal.id in animal_ids:
-    #         animals[animal.id] = animal
-    # dataset.animals = animals
-
 
 def _preprocess_animal(
     animal_id: str,

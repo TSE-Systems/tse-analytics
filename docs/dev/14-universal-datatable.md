@@ -80,7 +80,9 @@ per-group tables that have no `"Animal"` column):
 ```python
 def to_datatable(self, dataset: Dataset, name: str) -> Datatable:
     return Datatable.from_dataframe(
-        dataset, name, self.df,
+        dataset,
+        name,
+        self.df,
         origin="Chronobiology",
         description=f"Chronobiology result: {name}",
         id_column=self.id_column,
@@ -94,13 +96,15 @@ regular time series via `sample_interval=`, and keeps its explicit dtypes:
 
 ```python
 return Datatable.from_dataframe(
-    datatable.dataset, "DrinkFeedIntervals", intervals_df,
+    datatable.dataset,
+    "DrinkFeedIntervals",
+    intervals_df,
     origin="DrinkFeedIntervals",
     description="Drink/Feed intervals datatable",
-    variables=variables,          # full dict incl. caloric cols; keeps Bin out of variables
-    sample_interval=timedelta,    # regular time series
+    variables=variables,  # full dict incl. caloric cols; keeps Bin out of variables
+    sample_interval=timedelta,  # regular time series
     apply_factors=False,
-    normalize_dtypes=False,       # preserve Bin=UInt64 and the existing nullable dtypes
+    normalize_dtypes=False,  # preserve Bin=UInt64 and the existing nullable dtypes
 )
 ```
 
@@ -173,7 +177,7 @@ The builder returns a detached datatable. To make it part of the workspace, go t
 from tse_analytics.core import manager
 
 datatable = Datatable.from_dataframe(dataset, name, df, origin="MyTool")
-manager.add_datatable(datatable)   # -> dataset.datatables[name]; broadcasts WorkspaceChangedMessage
+manager.add_datatable(datatable)  # -> dataset.datatables[name]; broadcasts WorkspaceChangedMessage
 ```
 
 `manager.add_datatable` keys the table by `name` in `dataset.datatables` (a duplicate name

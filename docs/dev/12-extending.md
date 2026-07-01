@@ -25,9 +25,12 @@ follow the links for the underlying detail.
        def __init__(self, datatable, parent=None):
            super().__init__(datatable, MyToolSettings, parent=parent)
 
-       def _create_toolbar_items(self, toolbar): ...   # selectors, spinboxes
-       def _get_settings_value(self): return MyToolSettings(...)
-       def _update(self): self.report_view.setHtml(run(self.datatable.get_filtered_df([...]), self._settings))
+       def _create_toolbar_items(self, toolbar): ...  # selectors, spinboxes
+       def _get_settings_value(self):
+           return MyToolSettings(...)
+
+       def _update(self):
+           self.report_view.setHtml(run(self.datatable.get_filtered_df([...]), self._settings))
    ```
 
    - `category` must be one of `CATEGORY_ORDER` (or it's appended alphabetically).
@@ -60,12 +63,12 @@ dialog). Full contract: [08-toolbox.md](08-toolbox.md).
    class MyToolNode(PipelineNode):
        NODE_NAME = "My Tool"
 
-       def initialize(self, dataset, datatable):   # optional: bind context
+       def initialize(self, dataset, datatable):  # optional: bind context
            ...
 
        def process(self, packet):
            df = packet.value
-           result = run(df, self._settings)        # reuse processor.py
+           result = run(df, self._settings)  # reuse processor.py
            return PipelinePacket(value=result, report=html)
    ```
 
@@ -129,11 +132,11 @@ subscription wins. See [02-messaging.md](02-messaging.md).
 ## Run a long task without freezing the UI
 
 ```python
-worker = Worker(expensive_fn, *args)         # core/workers/worker.py
+worker = Worker(expensive_fn, *args)  # core/workers/worker.py
 worker.signals.result.connect(self._on_result)
 worker.signals.error.connect(self._on_error)
 worker.signals.finished.connect(self._on_finished)
-TaskManager.start_task(worker)               # shared pool, initialized at bootstrap
+TaskManager.start_task(worker)  # shared pool, initialized at bootstrap
 ```
 
 Do the compute in `expensive_fn` (off-thread), return plain data, and touch widgets only in the

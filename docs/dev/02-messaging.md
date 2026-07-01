@@ -118,8 +118,7 @@ class MyWidget(QWidget, MessengerListener):
         messaging.subscribe(self, messaging.DatasetChangedMessage, self._on_dataset_changed)
         messaging.subscribe(self, messaging.DatatableChangedMessage, self._on_datatable_changed)
 
-    def _on_dataset_changed(self, message: messaging.DatasetChangedMessage):
-        ...  # message.dataset
+    def _on_dataset_changed(self, message: messaging.DatasetChangedMessage): ...  # message.dataset
 
     # notify() is the default handler when subscribe() is called without an explicit handler.
 ```

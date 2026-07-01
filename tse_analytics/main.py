@@ -9,7 +9,7 @@ from multiprocessing import freeze_support
 
 from loguru import logger
 from PySide6.QtCore import QSettings
-from PySide6.QtGui import QFont, QIcon, Qt
+from PySide6.QtGui import QIcon, Qt
 from PySide6.QtWidgets import QApplication
 
 from tse_analytics.core.workers.task_manager import TaskManager

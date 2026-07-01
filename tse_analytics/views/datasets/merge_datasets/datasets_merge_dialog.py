@@ -67,7 +67,9 @@ class DatasetsMergeDialog(QDialog):
 
     def _accepted(self):
         new_dataset_name = self.ui.lineEditName.text()
-        single_run = self.ui.checkBoxSingleRun.isChecked()
+        single_trial = self.ui.checkBoxSingleTrial.isChecked()
         continuous_mode = self.ui.radioButtonContinuousMode.isChecked()
         generate_new_animal_names = self.ui.checkBoxGenerateAnimalNames.isChecked()
-        manager.merge_datasets(new_dataset_name, self.datasets, single_run, continuous_mode, generate_new_animal_names)
+        manager.merge_datasets(
+            new_dataset_name, self.datasets, single_trial, continuous_mode, generate_new_animal_names
+        )

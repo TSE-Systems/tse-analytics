@@ -94,10 +94,10 @@ class Ui_DatasetsMergeDialog(object):
 
         self.verticalLayout_2.addWidget(self.checkBoxGenerateAnimalNames)
 
-        self.checkBoxSingleRun = QCheckBox(self.widgetSettings)
-        self.checkBoxSingleRun.setObjectName(u"checkBoxSingleRun")
+        self.checkBoxSingleTrial = QCheckBox(self.widgetSettings)
+        self.checkBoxSingleTrial.setObjectName(u"checkBoxSingleTrial")
 
-        self.verticalLayout_2.addWidget(self.checkBoxSingleRun)
+        self.verticalLayout_2.addWidget(self.checkBoxSingleTrial)
 
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
@@ -130,10 +130,7 @@ class Ui_DatasetsMergeDialog(object):
         self.groupBoxMergingMode.setTitle(QCoreApplication.translate("DatasetsMergeDialog", u"Merging Mode", None))
         self.radioButtonContinuousMode.setText(QCoreApplication.translate("DatasetsMergeDialog", u"Continuous", None))
         self.radioButtonOverlapMode.setText(QCoreApplication.translate("DatasetsMergeDialog", u"Overlap", None))
-        self.checkBoxGenerateAnimalNames.setText(QCoreApplication.translate("DatasetsMergeDialog", u"Add run number as suffix in animal names ", None))
-#if QT_CONFIG(tooltip)
-        self.checkBoxSingleRun.setToolTip(QCoreApplication.translate("DatasetsMergeDialog", u"Merged dataset will have a Run number for all records assigned to 1", None))
-#endif // QT_CONFIG(tooltip)
-        self.checkBoxSingleRun.setText(QCoreApplication.translate("DatasetsMergeDialog", u"Merge as a single run", None))
+        self.checkBoxGenerateAnimalNames.setText(QCoreApplication.translate("DatasetsMergeDialog", u"Add trial number as suffix in animal names ", None))
+        self.checkBoxSingleTrial.setText(QCoreApplication.translate("DatasetsMergeDialog", u"Merge as a single trial", None))
     # retranslateUi
 

@@ -103,14 +103,14 @@ def reassign_df_timedelta(df: pd.DataFrame, merging_mode: str | None) -> pd.Data
     df.reset_index(inplace=True, drop=True)
 
     if merging_mode == "overlap":
-        # Get unique experiment numbers
-        experiments = df["Experiment"].unique().tolist()
+        # Get unique trial numbers
+        trials = df["Trial"].unique().tolist()
 
         # Reassign timedeltas
-        for experiment in experiments:
+        for trial in trials:
             # Get start timestamp per experiment
-            start_date_time = df[df["Experiment"] == experiment]["DateTime"].iloc[0]
-            df.loc[df["Experiment"] == experiment, "Timedelta"] = df["DateTime"] - start_date_time
+            start_date_time = df[df["Trial"] == trial]["DateTime"].iloc[0]
+            df.loc[df["Trial"] == trial, "Timedelta"] = df["DateTime"] - start_date_time
     else:
         start_date_time = df["DateTime"].iloc[0]
         df["Timedelta"] = df["DateTime"] - start_date_time

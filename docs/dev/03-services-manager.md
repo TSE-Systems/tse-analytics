@@ -26,13 +26,13 @@ manager.add_report(report)
 ```python
 selection_service = SelectionService()
 workspace_service = WorkspaceService(selection_service)
-dataset_service   = DatasetService(workspace_service, selection_service)
-importer_service  = ImportService(selection_service, dataset_service, workspace_service)
+dataset_service = DatasetService(workspace_service, selection_service)
+importer_service = ImportService(selection_service, dataset_service, workspace_service)
 
 # …then every public method is re-exported, e.g.:
 get_selected_dataset = selection_service.get_selected_dataset
-add_dataset          = dataset_service.add_dataset
-import_csv_dataset   = importer_service.import_csv_dataset
+add_dataset = dataset_service.add_dataset
+import_csv_dataset = importer_service.import_csv_dataset
 # …and so on.
 ```
 

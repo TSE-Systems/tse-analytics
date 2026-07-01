@@ -66,7 +66,7 @@ def _heavy_compute(df, settings):
 
 
 worker = Worker(_heavy_compute, self.datatable.get_filtered_df(cols), self._settings)
-worker.signals.result.connect(self._on_result)     # runs on the GUI thread
+worker.signals.result.connect(self._on_result)  # runs on the GUI thread
 worker.signals.error.connect(self._on_error)
 worker.signals.finished.connect(self._on_finished)
 TaskManager.start_task(worker)

@@ -71,8 +71,7 @@ class MyToolWidget(ToolboxWidgetBase):
         super().__init__(datatable, MyToolSettings, parent=parent)
         self._build_controls()
 
-    def _create_toolbar_items(self, toolbar):
-        ...  # add variable selector etc.
+    def _create_toolbar_items(self, toolbar): ...  # add variable selector etc.
 
     def _get_settings_value(self):
         return MyToolSettings(variable=self._variable_selector.currentText())

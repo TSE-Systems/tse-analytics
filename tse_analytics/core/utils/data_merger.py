@@ -12,7 +12,7 @@ from tse_analytics.globals import TIME_RESOLUTION_UNIT
 def merge_datasets(
     new_dataset_name: str,
     datasets: list[Dataset],
-    single_run: bool,
+    single_trial: bool,
     continuous_mode: bool,
     generate_new_animal_names: bool,
 ) -> Dataset | None:
@@ -20,15 +20,15 @@ def merge_datasets(
     Merge multiple PhenoMaster datasets into a single dataset.
 
     This function serves as the main entry point for merging PhenoMaster datasets.
-    It supports two merging modes: continuous (for sequential experiments) and
-    overlap (for parallel experiments with potentially overlapping data).
+    It supports two merging modes: continuous (for sequential trials) and
+    overlap (for parallel trials with potentially overlapping data).
 
     Args:
         new_dataset_name (str): Name for the merged dataset
         datasets (list[Dataset]): List of datasets to merge
-        single_run (bool): If True, all data will be treated as a single experimental run
-        continuous_mode (bool): If True, datasets are merged as sequential experiments;
-                               if False, datasets are merged as parallel experiments
+        single_trial (bool): If True, all data will be treated as a single trial run
+        continuous_mode (bool): If True, datasets are merged as sequential trials;
+                               if False, datasets are merged as parallel trials
         generate_new_animal_names (bool): If True, animal IDs will be modified to ensure uniqueness
                                          across datasets (only used in overlap mode)
 
@@ -40,11 +40,11 @@ def merge_datasets(
 
     if not continuous_mode and generate_new_animal_names:
         for index, dataset in enumerate(datasets):
-            run_number = index + 1
+            trial_number = index + 1
             new_animals = {}
             name_map = {}
             for animal in dataset.animals.values():
-                new_animal_id = f"{animal.id}_{run_number}"
+                new_animal_id = f"{animal.id}_{trial_number}"
                 name_map[animal.id] = new_animal_id
                 animal.id = new_animal_id
                 new_animals[new_animal_id] = animal
@@ -82,25 +82,25 @@ def merge_datasets(
             if datatable_name in dataset.datatables:
                 dataframes.append(dataset.datatables[datatable_name].df)
 
-        # Assign experiment number
-        if not single_run:
-            for experiment, df in enumerate(dataframes):
-                df["Experiment"] = f"Experiment {experiment}"
+        # Assign trial number
+        if not single_trial:
+            for trial, df in enumerate(dataframes):
+                df["Trial"] = f"Trial {trial}"
 
         new_df = pd.concat(dataframes, ignore_index=True)
 
-        if single_run:
-            if "Experiment" in new_df.columns:
-                new_df = new_df.drop(columns=["Experiment"])
+        if single_trial:
+            if "Trial" in new_df.columns:
+                new_df = new_df.drop(columns=["Trial"])
         else:
-            new_df["Experiment"] = new_df["Experiment"].astype("category")
+            new_df["Trial"] = new_df["Trial"].astype("category")
             levels = {}
-            for i, experiment in enumerate(new_df["Experiment"].unique()):
-                levels[experiment] = FactorLevel(name=experiment, color=get_factor_level_color_hex(i))
+            for i, trial in enumerate(new_df["Trial"].unique()):
+                levels[trial] = FactorLevel(name=trial, color=get_factor_level_color_hex(i))
             factor = Factor(
-                name="Experiment",
+                name="Trial",
                 role=FactorRole.WITHIN_SUBJECT if continuous_mode else FactorRole.BETWEEN_SUBJECT,
-                config=ByColumnConfig(column="Experiment"),
+                config=ByColumnConfig(column="Trial"),
                 levels=levels,
             )
             merged_dataset.factors[factor.name] = factor
@@ -247,10 +247,10 @@ def _merge_metadata(
         "experiment_started": str(experiment_started),
         "experiment_stopped": str(experiment_stopped),
         "animals": {k: asdict(v) for (k, v) in merged_animals.items()},
-        "experiments": {},
+        "trials": {},
     }
     for i, dataset in enumerate(datasets):
-        result["experiments"][f"Experiment {i}"] = dataset.metadata
+        result["trials"][f"Trial {i}"] = dataset.metadata
     return result
 
 

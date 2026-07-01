@@ -82,11 +82,11 @@ The **registry** wires a raw-table name to the widget that displays it.
 
 ```python
 EXTENSIONS_REGISTRY = {
-    CALO_BIN_TABLE:      {"icon": QIcon(":/icons/icons8-gauge-16.png"),            "widget": CaloWidget},
-    DRINKFEED_BIN_TABLE: {"icon": QIcon(":/icons/icons8-bottle-of-water-16.png"),  "widget": DrinkFeedWidget},
-    DRINKFEED_RAW_TABLE: {"icon": QIcon(":/icons/icons8-bottle-of-water-16.png"),  "widget": DrinkFeedWidget},
-    ACTIMOT_RAW_TABLE:   {"icon": QIcon(":/icons/icons8-grid-16.png"),             "widget": ActimotWidget},
-    GROUP_HOUSING_TABLE: {"icon": QIcon(":/icons/icons8-structural-16.png"),       "widget": GroupHousingWidget},
+    CALO_BIN_TABLE: {"icon": QIcon(":/icons/icons8-gauge-16.png"), "widget": CaloWidget},
+    DRINKFEED_BIN_TABLE: {"icon": QIcon(":/icons/icons8-bottle-of-water-16.png"), "widget": DrinkFeedWidget},
+    DRINKFEED_RAW_TABLE: {"icon": QIcon(":/icons/icons8-bottle-of-water-16.png"), "widget": DrinkFeedWidget},
+    ACTIMOT_RAW_TABLE: {"icon": QIcon(":/icons/icons8-grid-16.png"), "widget": ActimotWidget},
+    GROUP_HOUSING_TABLE: {"icon": QIcon(":/icons/icons8-structural-16.png"), "widget": GroupHousingWidget},
 }
 ```
 

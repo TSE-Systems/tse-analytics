@@ -110,17 +110,14 @@
            <bool>false</bool>
           </property>
           <property name="text">
-           <string>Add run number as suffix in animal names </string>
+           <string>Add trial number as suffix in animal names </string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBoxSingleRun">
-          <property name="toolTip">
-           <string>Merged dataset will have a Run number for all records assigned to 1</string>
-          </property>
+         <widget class="QCheckBox" name="checkBoxSingleTrial">
           <property name="text">
-           <string>Merge as a single run</string>
+           <string>Merge as a single trial</string>
           </property>
          </widget>
         </item>

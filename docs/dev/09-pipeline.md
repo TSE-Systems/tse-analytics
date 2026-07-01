@@ -19,10 +19,10 @@ The immutable unit of data passed between nodes:
 ```python
 @dataclass(frozen=True)
 class PipelinePacket:
-    value: Any = None                 # the payload (often a DataFrame or result object)
-    report: str | None = None         # optional HTML/text to surface in a report
-    active: bool = True               # False = this branch should not execute downstream
-    meta: Mapping[str, Any] = {}      # routing / diagnostic metadata
+    value: Any = None  # the payload (often a DataFrame or result object)
+    report: str | None = None  # optional HTML/text to surface in a report
+    active: bool = True  # False = this branch should not execute downstream
+    meta: Mapping[str, Any] = {}  # routing / diagnostic metadata
 ```
 
 Helpers: `PipelinePacket.inactive(**meta)` (builds an inactive packet, logging a `reason` if given)

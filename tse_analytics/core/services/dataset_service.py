@@ -74,7 +74,7 @@ class DatasetService:
         self,
         new_dataset_name: str,
         datasets: list[Dataset],
-        single_run: bool,
+        single_trial: bool,
         continuous_mode: bool,
         generate_new_animal_names: bool,
     ) -> None:
@@ -86,14 +86,14 @@ class DatasetService:
         Args:
             new_dataset_name: The name for the new merged dataset.
             datasets: A list of datasets to merge.
-            single_run: Whether to treat all datasets as a single run.
+            single_trial: Whether to treat all datasets as a single trial.
             continuous_mode: Whether to use continuous mode for merging.
             generate_new_animal_names: Whether to generate new animal names.
         """
         merged_dataset = data_merger.merge_datasets(
             new_dataset_name,
             datasets,
-            single_run,
+            single_trial,
             continuous_mode,
             generate_new_animal_names,
         )

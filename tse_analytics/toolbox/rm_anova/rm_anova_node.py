@@ -27,7 +27,7 @@ class RmAnovaNode(PipelineNode):
             "Animal",
             "",
             "Group by",
-            "Group by mode (Animal, Run, or factor name)",
+            "Group by mode",
         )
 
         self.add_combo_menu(
