@@ -2,7 +2,7 @@
 
 [![Python](https://img.shields.io/badge/python-3.14-blue.svg)](https://www.python.org/)
 [![License: GPL v3](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.0.0--beta5-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.0.0--beta7-orange.svg)](CHANGELOG.md)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-lightgrey.svg)](#installation)
 [![UI: PySide6](https://img.shields.io/badge/UI-PySide6-41cd52.svg)](https://doc.qt.io/qtforpython/)
 
@@ -70,7 +70,7 @@ experimental results reproducible, shareable, and easy to explore.
 
 ### Prerequisites
 
-- **Python 3.14.5** (the exact version pinned in `pyproject.toml`)
+- **Python 3.14.6** (the exact version pinned in `pyproject.toml`)
 - **[uv](https://docs.astral.sh/uv/)** — package & environment manager
 - **[Task](https://taskfile.dev/)** — task runner (used for build/test commands)
 
@@ -277,8 +277,9 @@ A typical workflow looks like this:
 
 ## Contributing
 
-Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for full setup, code-style, and
-workflow guidelines. Quick start:
+Contributions are welcome! Development setup, code-style, and workflow guidance live in the
+developer reference under [`docs/dev/`](docs/dev/README.md) and the canonical conventions in
+[`.claude/CLAUDE.md`](.claude/CLAUDE.md). Quick start:
 
 ```bash
 uv sync          # install dependencies
