@@ -31,7 +31,12 @@ class TransitionsWidgetSettings:
 
 
 @toolbox_plugin(
-    category="IntelliCage", label="Transitions", icon=":/icons/icons8-transition-both-directions-16.png", order=0
+    category="IntelliCage",
+    label="Transitions",
+    icon=":/icons/icons8-transition-both-directions-16.png",
+    order=0,
+    dataset_types=("IntelliCage", "IntelliMaze"),
+    required_datatable_name="Visits",
 )
 class TransitionsWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):

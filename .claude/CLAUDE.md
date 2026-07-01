@@ -22,7 +22,7 @@ Use the `AskUserQuestion` tool for these clarifications. Don't ask about trivial
 
 - Python version must be 3.14 (pinned to `==3.14.6` in `pyproject.toml`).
 - Use `uv` for environment and dependencies: `uv sync`.
-- Task runner is `task` (see `Taskfile.yml` and `.claude/rules/commands.md`).
+- Task runner is `task` (see `Taskfile.yml` and the [Commands](#commands) section below).
 - Run the app: `uv run tse-analytics`.
 - UI is built with PySide6; docking via `pyside6-qtads`.
 - Data analysis pipeline editor is based on the NodeGraphQt library.
@@ -32,14 +32,26 @@ Use the `AskUserQuestion` tool for these clarifications. Don't ask about trivial
 
 For deeper reference than these rules — architecture diagrams, subsystem walkthroughs, the full
 toolbox/pipeline-node catalogs, and an extending cookbook — see the developer docs in `docs/dev/`
-(`docs/dev/README.md` is the index). They expand on this file and `.claude/rules/` with rationale
-and detail; they are **not** auto-loaded, so consult them when the canonical rules aren't enough.
+(`docs/dev/README.md` is the index). They expand on this file with rationale and detail; they are
+**not** auto-loaded, so consult them when this file isn't enough.
 
 Map: `01-architecture`, `02-messaging`, `03-services-manager`, `04-threading-workers`,
 `05-data-model`, `06-persistence`, `07-layouts-ui`, `08-toolbox`, `09-pipeline`,
 `10-modules-extensions`, `11-conventions`, `12-extending`, `13-packaging-deployment`.
 
 ## Architecture
+
+```
+tse_analytics/
+├── core/           # domain models, messaging, services, workers
+├── modules/        # self-contained modules: phenomaster, intellicage, intellimaze
+├── toolbox/        # analysis widgets (histogram, ANOVA, PCA, regression, etc.)
+├── pipeline/       # node-based visual data processing (NodeGraphQt)
+├── views/          # shared UI components and dialogs
+└── styles/         # SCSS source → compiled QSS
+resources/          # app resources (icons, images) — at the repo root, NOT under the package
+tests/              # pytest suite mirroring source structure
+```
 
 Package layout under `tse_analytics/`:
 
@@ -135,12 +147,26 @@ Subclass `ToolboxWidgetBase` (`toolbox/toolbox_widget_base.py`) and register wit
 
 ```python
 @toolbox_plugin(category="Exploration", label="Histogram", icon=":/icons/...", order=0)
-class HistogramWidget(ToolboxWidgetBase): ...
+class HistogramWidget(ToolboxWidgetBase):
+    def __init__(self, datatable, parent=None):
+        super().__init__(datatable, SettingsDataclass, title="...", parent=parent)
+
+    def _create_toolbar_items(self, toolbar):  # add UI controls
+    def _get_settings_value(self):             # return current settings
+    def _update(self):                         # perform analysis + update display
 ```
 
 Categories (`CATEGORY_ORDER`): AI, Data, Exploration, Bivariate, ANOVA, Factor Analysis,
-Chronobiology, Time Series, IntelliCage. Full method contract:
-`.claude/rules/toolbox-widget-pattern.md`.
+Chronobiology, Time Series, IntelliCage. See `toolbox/histogram/` and `toolbox/ancova/` for
+reference implementations.
+
+The registry's real requirement is structural (constructable as `widget_class(datatable)`; `title`
+optional) — captured by the `ToolboxWidget` `Protocol`, so a few data-viewer widgets subclass plain
+`QWidget` instead of `ToolboxWidgetBase`. Optional keyword-only decorator args drive menu
+applicability declaratively (`dataset_types`, `required_datatable_name`, `internal`, `tooltip`);
+`ToolboxButton` gates visibility generically via `ToolboxPluginInfo.is_applicable()` with no per-tool
+special-casing. `tests/toolbox/test_toolbox_registry.py` fails if a decorated widget is missing from
+the `toolbox/__init__.py` manifest.
 
 Module-specific widgets may instead live under `modules/<module>/toolbox/` (e.g. IntelliCage's
 `learning_curve`, `place_preference`, `transitions`); they are registered the same way — by adding
@@ -188,9 +214,45 @@ run `task qss`.
 - Linux packaging is via **Flatpak**: `task flatpak` / `task flatpak-dist` / `task flatpak-bundle`.
 - See `docs/dev/13-packaging-deployment.md` for the full deployment/packaging walkthrough.
 
+## Commands
+
+All commands use the [Task](https://taskfile.dev/) runner (see `Taskfile.yml`):
+
+```
+task test              # run pytest
+task ruff-format       # format code
+task ruff-check        # lint
+task ruff-fix          # auto-fix lint issues
+task pyrefly           # type check (pyrefly)
+task ty                # type check (ty)
+task build-ui          # compile all .ui → *_ui.py
+task build-resources   # compile .qrc → *_rc.py
+task qss               # compile SCSS → QSS stylesheets
+task deploy            # PyInstaller build
+uv run tse-analytics   # run the app
+```
+
+Package manager is **uv** — `uv sync` installs dependencies.
+
+## Code Style
+
+- **Formatter/Linter**: Ruff — line length 120, target Python 3.14
+- **Docstrings**: Google convention
+- **Type hints**: modern syntax (`list[str]`, `dict[str, int]`, `X | None`)
+- **Logging**: `from loguru import logger` (not stdlib `logging`)
+- **Naming**: `PascalCase` classes, `snake_case` functions, `UPPER_SNAKE_CASE` constants, `_prefix` for private
+- **Imports**: stdlib → third-party → local (`tse_analytics.*`); sorted by `isort` (via ruff)
+
+## Testing
+
+- Framework: pytest
+- Tests live in `tests/`, organized by module, mirroring the source structure
+- Shared fixtures in `conftest.py` files
+- Run: `task test`
+
 ## Conventions
 
-Detailed rules live in `.claude/rules/` (auto-loaded — don't duplicate them here):
-`code-style.md`, `commands.md`, `project-structure.md`, `testing.md`, `toolbox-widget-pattern.md`.
-The expanded developer reference (rationale, diagrams, full catalogs) lives in `docs/dev/` — see the
-[Developer Documentation](#developer-documentation) section above.
+The sections above (Code Style, Commands, Testing, the Architecture/Project Structure tree, and the
+toolbox-widget pattern under "Add a toolbox analysis widget") are the canonical, auto-loaded house
+rules. The expanded developer reference (rationale, diagrams, full catalogs) lives in `docs/dev/` —
+see the [Developer Documentation](#developer-documentation) section above.

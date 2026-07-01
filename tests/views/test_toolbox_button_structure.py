@@ -17,7 +17,6 @@ def mock_dependencies():
         "tse_analytics.modules.intellicage.data.intellicage_dataset": MagicMock(),
         "tse_analytics.modules.intellimaze.data.intellimaze_dataset": MagicMock(),
         "tse_analytics.toolbox.data_table.data_table_widget": MagicMock(),
-        "tse_analytics.toolbox.fast_data_plot.fast_data_plot_widget": MagicMock(),
     }
 
     # Remove cached view modules so each test reimports with fresh mocks.
@@ -39,8 +38,12 @@ def mock_registry():
 
     mock_reg_module = MagicMock()
     mock_registry_instance = MagicMock()
-    # Setup ToolboxPluginInfo as a real dataclass or mock
+    # Mirror the real ToolboxPluginInfo dataclass (including the optional
+    # applicability fields + is_applicable that ToolboxButton._refresh_visibility
+    # now reads). Redeclared locally to keep this test isolated from the real
+    # toolbox package import.
     from dataclasses import dataclass
+    from typing import Any
 
     @dataclass(frozen=True)
     class ToolboxPluginInfo:
@@ -49,9 +52,22 @@ def mock_registry():
         icon: str
         widget_class: type = MagicMock()
         order: int = 0
+        dataset_types: tuple[str, ...] | None = None
+        required_datatable_name: str | None = None
+        internal: bool = False
+        tooltip: str | None = None
+
+        def is_applicable(self, dataset: Any, datatable: Any | None) -> bool:
+            if self.dataset_types is not None and dataset.dataset_type not in self.dataset_types:
+                return False
+            if self.required_datatable_name is not None:
+                if datatable is None or datatable.name != self.required_datatable_name:
+                    return False
+            return True
 
     mock_reg_module.ToolboxPluginInfo = ToolboxPluginInfo
     mock_reg_module.registry = mock_registry_instance
+    mock_reg_module.validate_registry.return_value = []
 
     with patch.dict("sys.modules", {"tse_analytics.toolbox.toolbox_registry": mock_reg_module}):
         yield mock_registry_instance

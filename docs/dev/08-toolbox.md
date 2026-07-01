@@ -15,8 +15,10 @@ registry. This document covers that infrastructure and then catalogs every widge
 
 **Source:** `toolbox/toolbox_widget_base.py`
 
-All toolbox widgets subclass `ToolboxWidgetBase` (a `QWidget`). The base provides the common shell
-so each widget only implements its own logic.
+Most toolbox widgets subclass `ToolboxWidgetBase` (a `QWidget`). The base provides the common shell
+so each widget only implements its own logic. (The registry's real requirement is structural — see
+[Plugin registry & discovery](#plugin-registry--discovery) — so a few data-viewer widgets satisfy it
+directly on `QWidget` instead.)
 
 ```python
 class ToolboxWidgetBase(QWidget):
@@ -97,13 +99,29 @@ class HistogramWidget(ToolboxWidgetBase): ...
 ```
 
 - Each registration stores a frozen `ToolboxPluginInfo(category, label, icon, widget_class, order)`
-  in the module-level `registry` singleton.
+  in the module-level `registry` singleton. Four **optional** fields carry declarative applicability:
+  `dataset_types` (dataset types the tool applies to, `None` = any), `required_datatable_name` (a
+  datatable the tool needs, e.g. `"Visits"`), `internal` (gated behind developer/internal features,
+  e.g. the AI menu), and `tooltip`. `ToolboxPluginInfo.is_applicable(dataset, datatable)` evaluates
+  the first two. The matching keyword-only decorator args default to the historical behavior (applies
+  everywhere, non-internal), so existing decorations are unaffected.
+- **The widget contract is structural, not `ToolboxWidgetBase`.** The registry only requires a class
+  constructable as `widget_class(datatable)`; a `title` attribute is optional (the menu falls back to
+  the plugin label). This is documented by the `ToolboxWidget` `typing.Protocol` in
+  `toolbox_registry.py`. Most widgets get this for free from `ToolboxWidgetBase`, but the four
+  **Data** widgets (`DataTableWidget`, `DataPlotWidget`, `FactorsPlotWidget`, `FastLinePlotWidget`)
+  satisfy it directly on `QWidget`.
 - **Discovery:** `toolbox/__init__.py` imports every widget module (and the IntelliCage toolbox
   widgets) so their decorators run at startup, populating the registry **before** menus are built.
-  If you add a widget, add its import here or it won't appear.
+  If you add a widget, add its import here or it won't appear —
+  `tests/toolbox/test_toolbox_registry.py` is a drift guard that fails if a decorated widget is
+  missing from the manifest (and also checks duplicate labels, unique `order` per category, and the
+  structural contract). `validate_registry()` logs the cheap subset (duplicate labels / empty icons)
+  at startup.
 - `ToolboxButton` (`views/misc/toolbox_button.py`) reads `registry.get_plugins()` to build the
   categorized "add analysis" menu. Categories follow `CATEGORY_ORDER`; widgets within a category are
-  sorted by `order`.
+  sorted by `order`. Menu/action visibility is computed generically from each plugin's metadata
+  (`is_applicable()` + `internal`) in `_refresh_visibility()` — there is no per-tool string-matching.
 
 **`CATEGORY_ORDER`:**
 `AI` · `Data` · `Exploration` · `Bivariate` · `ANOVA` · `Factor Analysis` · `Chronobiology` ·
@@ -192,7 +210,9 @@ is not wired into the editor, that is noted explicitly.
 
 ### IntelliCage
 These ship under `modules/intellicage/toolbox/` (registered in the toolbox the same way, with
-category `IntelliCage`), because they operate on IntelliCage-specific tables.
+category `IntelliCage`), because they operate on IntelliCage-specific tables. Their decorators
+declare `dataset_types=("IntelliCage", "IntelliMaze")` (and Transitions / Place Preference also
+`required_datatable_name="Visits"`), so the menu only offers them for the matching selection.
 
 | Widget | What it does | Files |
 |--------|--------------|-------|

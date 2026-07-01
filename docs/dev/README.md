@@ -115,5 +115,5 @@ flowchart TB
 - **Shipping a build?** [13-packaging-deployment.md](13-packaging-deployment.md) covers the
   Windows installer and the Linux Flatpak build.
 
-> The canonical, always-loaded rules live in `.claude/CLAUDE.md` and `.claude/rules/*.md`. These
-> `docs/dev/` docs expand on them with rationale, diagrams, and reference detail; they do not replace them.
+> The canonical, always-loaded rules live in `.claude/CLAUDE.md`. These `docs/dev/` docs expand on
+> them with rationale, diagrams, and reference detail; they do not replace them.

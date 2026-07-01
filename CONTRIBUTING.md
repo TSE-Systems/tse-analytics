@@ -85,9 +85,9 @@ tse-analytics/
 - **Developer reference** — architecture diagrams, subsystem walkthroughs, the full
   toolbox/pipeline catalog, and an extending cookbook: [`docs/dev/`](docs/dev/README.md)
   (`docs/dev/README.md` is the index).
-- **Canonical conventions** — the auto-loaded rules under `.claude/rules/`: `code-style.md`,
-  `commands.md`, `project-structure.md`, `testing.md`, `toolbox-widget-pattern.md`. The project
-  overview for AI/contributor tooling lives in [`.claude/CLAUDE.md`](.claude/CLAUDE.md).
+- **Canonical conventions** — the auto-loaded project guide [`.claude/CLAUDE.md`](.claude/CLAUDE.md),
+  which consolidates the code style, commands, project structure, testing, and toolbox-widget
+  conventions inline (alongside the architecture and extending reference).
 - **End-user documentation** — the generated site under [`docs/user/`](docs/user/).
 
 ---
@@ -239,7 +239,8 @@ The developer docs include a full cookbook in
 - **Add a toolbox analysis widget** — subclass `ToolboxWidgetBase`
   (`tse_analytics/toolbox/toolbox_widget_base.py`), register it with the `@toolbox_plugin`
   decorator, and add an import in `tse_analytics/toolbox/__init__.py` so the decorator runs at
-  startup. See `.claude/rules/toolbox-widget-pattern.md`.
+  startup. See the "Add a toolbox analysis widget" section in
+  [`.claude/CLAUDE.md`](.claude/CLAUDE.md) (and `docs/dev/08-toolbox.md` for the full walkthrough).
 - **Add a pipeline node** — subclass `PipelineNode` (`tse_analytics/pipeline/pipeline_node.py`),
   implement `process(packet)`, and register it in
   `tse_analytics/views/pipeline/pipeline_editor_widget.py`.
@@ -361,7 +362,7 @@ task clean
 - **Issues** — report bugs and request features on
   [GitHub Issues](https://github.com/TSE-Systems/tse-analytics/issues).
 - **Developer questions** — start with the developer reference in [`docs/dev/`](docs/dev/README.md)
-  and the conventions under `.claude/rules/`.
+  and the conventions in [`.claude/CLAUDE.md`](.claude/CLAUDE.md).
 - **End-user documentation** — see the generated site under [`docs/user/`](docs/user/).
 
 ---

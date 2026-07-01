@@ -1,5 +1,6 @@
 import functools
 
+from loguru import logger
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QMenu, QToolButton, QWidget
@@ -8,7 +9,7 @@ from tse_analytics.core import manager
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
 from tse_analytics.core.layouts.layout_manager import LayoutManager
-from tse_analytics.toolbox.toolbox_registry import ToolboxPluginInfo, registry
+from tse_analytics.toolbox.toolbox_registry import ToolboxPluginInfo, registry, validate_registry
 
 
 class ToolboxButton(QToolButton):
@@ -23,45 +24,38 @@ class ToolboxButton(QToolButton):
 
         self._toolbox_menu = QMenu("ToolboxMenu", self)
 
-        # Keep track of menus and actions for enabling/disabling
+        # Keep track of menus and actions for enabling/disabling.
         self._menus: dict[str, QMenu] = {}
         self._actions: dict[str, QAction] = {}
+        # (action, plugin) pairs drive metadata-based visibility – no per-tool special-casing.
+        self._action_plugins: list[tuple[QAction, ToolboxPluginInfo]] = []
 
-        """Dynamically populate the menu from the registry."""
-        plugins_by_category = registry.get_plugins()
+        # Current selection / feature state used by ``_refresh_visibility``.
+        self._internal_enabled: bool = False
+        self._current_dataset: Dataset | None = None
+        self._current_datatable: Datatable | None = None
 
-        for category, plugins in plugins_by_category.items():
-            # Create or get submenu for the category
+        # Surface any registry inconsistencies without breaking the menu.
+        for issue in validate_registry():
+            logger.warning(f"Toolbox registry: {issue}")
+
+        # Dynamically populate the menu from the registry.
+        for category, plugins in registry.get_plugins().items():
             if category not in self._menus:
                 self._menus[category] = self._toolbox_menu.addMenu(category)
             submenu = self._menus[category]
 
             for plugin in plugins:
                 action = submenu.addAction(QIcon(plugin.icon), plugin.label)
-                # Store action with a unique key (e.g., "Category.Label") for future reference if needed
-                # For IntelliCage logic, we might need specific keys or just check category
+                if plugin.tooltip:
+                    action.setToolTip(plugin.tooltip)
                 key = f"{category}.{plugin.label}"
                 self._actions[key] = action
-
-                # Connect action to the generic add_widget method
-                # We use functools.partial to pass the plugin info
+                self._action_plugins.append((action, plugin))
                 action.triggered.connect(functools.partial(self._add_widget, plugin))
 
-                # Special handling for IntelliCage actions to store them in attributes
-                # for backward compatibility or easier access in set_enabled_actions
-                if category == "IntelliCage":
-                    if plugin.label == "Transitions":
-                        self.intellicage_transitions_action = action
-                    elif plugin.label == "Place Preference":
-                        self.intellicage_place_preference_action = action
-
-        if "IntelliCage" in self._menus:
-            self.intellicage_menu = self._menus["IntelliCage"]
-            self.intellicage_menu.menuAction().setVisible(False)
-
-        if "AI" in self._menus:
-            self.ai_menu = self._menus["AI"]
-            self.ai_menu.menuAction().setVisible(False)
+        # Apply the initial visibility (hides internal + dataset-specific tools).
+        self._refresh_visibility()
 
         self.setMenu(self._toolbox_menu)
 
@@ -74,32 +68,41 @@ class ToolboxButton(QToolButton):
         self.setEnabled(state)
 
     def enable_internal_tools(self, state: bool) -> None:
-        """Enable or disable internal toolbox buttons."""
-        self.ai_menu.menuAction().setVisible(state)
+        """Enable or disable internal toolbox tools (e.g. the AI menu)."""
+        self._internal_enabled = state
+        self._refresh_visibility()
 
     def set_enabled_actions(self, dataset: Dataset, datatable: Datatable | None) -> None:
-        """Enable or disable specific actions based on the selected dataset and datatable.
+        """Update which actions are available for the selected dataset/datatable.
 
-        This method controls which analysis tools are available based on the type of dataset
-        and datatable that are currently selected.
+        Visibility is computed entirely from each plugin's declarative metadata
+        (``dataset_types`` / ``required_datatable_name`` / ``internal``), so no
+        tool needs to be special-cased here.
 
         Args:
             dataset: The currently selected dataset.
             datatable: The currently selected datatable, or None if no datatable is selected.
         """
-        # Example logic for IntelliCage (needs to be adapted if registry keys change)
-        if dataset.dataset_type == "IntelliCage" or dataset.dataset_type == "IntelliMaze":
-            self.intellicage_menu.menuAction().setVisible(True)
+        self._current_dataset = dataset
+        self._current_datatable = datatable
+        self._refresh_visibility()
 
-            if hasattr(self, "intellicage_transitions_action"):
-                self.intellicage_transitions_action.setVisible(datatable is not None and datatable.name == "Visits")
+    def _refresh_visibility(self) -> None:
+        """Recompute action and category-submenu visibility from current state."""
+        for action, plugin in self._action_plugins:
+            if plugin.internal and not self._internal_enabled:
+                visible = False
+            elif self._current_dataset is not None:
+                visible = plugin.is_applicable(self._current_dataset, self._current_datatable)
+            else:
+                # No dataset selected yet: dataset-restricted tools stay hidden;
+                # unrestricted tools (incl. enabled internal ones) are shown.
+                visible = plugin.dataset_types is None
+            action.setVisible(visible)
 
-            if hasattr(self, "intellicage_place_preference_action"):
-                self.intellicage_place_preference_action.setVisible(
-                    datatable is not None and datatable.name == "Visits"
-                )
-        else:
-            self.intellicage_menu.menuAction().setVisible(False)
+        # A category submenu is visible iff it has at least one visible action.
+        for menu in self._menus.values():
+            menu.menuAction().setVisible(any(a.isVisible() for a in menu.actions()))
 
     def _add_widget(self, plugin_info: ToolboxPluginInfo):
         """Generic method to add a widget to the central area.
@@ -111,17 +114,14 @@ class ToolboxButton(QToolButton):
         if datatable is None:
             return
 
-        # If the widget class is in the registry, we use it.
         widget_class = plugin_info.widget_class
         try:
             widget = widget_class(datatable)
         except Exception as e:
-            # Fallback or error logging if instantiation fails
-            print(f"Failed to instantiate {plugin_info.label}: {e}")
+            logger.exception(f"Failed to instantiate {plugin_info.label}: {e}")
             return
 
-        # Determine title and icon
-        # Use widget.title if available, otherwise plugin label
+        # Use widget.title if available, otherwise fall back to the plugin label.
         title = getattr(widget, "title", plugin_info.label)
         final_title = f"{title} - {datatable.name}"
 

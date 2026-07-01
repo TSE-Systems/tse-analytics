@@ -3,8 +3,7 @@
 [← Back to index](README.md)
 
 This document distills the project's coding standards, build commands, and house rules. The
-canonical, always-loaded versions live in `.claude/CLAUDE.md` and `.claude/rules/*.md`; this is the
-explained companion.
+canonical, always-loaded version lives in `.claude/CLAUDE.md`; this is the explained companion.
 
 ---
 

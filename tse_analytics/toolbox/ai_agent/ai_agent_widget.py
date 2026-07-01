@@ -101,6 +101,7 @@ def _run_code(code: str, df: pd.DataFrame) -> Any:
     label="TSE Assistant",
     icon=":/icons/icons8-analyze-16.png",
     order=0,
+    internal=True,
 )
 class AIAgentWidget(ToolboxWidgetBase):
     """Natural-language pandas agent for a :class:`Datatable`."""

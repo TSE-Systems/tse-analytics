@@ -33,9 +33,13 @@ follow the links for the underlying detail.
    - `category` must be one of `CATEGORY_ORDER` (or it's appended alphabetically).
    - Use an icon from `:/icons/...`; add new icons via `resources/` + `task build-resources`.
    - Settings is a `@dataclass`; the base persists/loads it under the class name automatically.
+   - To restrict the tool to specific datasets/tables, pass the optional keyword-only decorator args
+     `dataset_types=(...)`, `required_datatable_name="..."`, or `internal=True`; `ToolboxButton`
+     hides the action when they don't match the current selection.
 3. **Register for discovery:** add an import line in `toolbox/__init__.py`
    (`import tse_analytics.toolbox.<tool>.<tool>_widget  # noqa: F401`). Without this the decorator
-   never runs and the widget won't show.
+   never runs and the widget won't show — `tests/toolbox/test_toolbox_registry.py` fails if a
+   decorated widget is missing from this manifest.
 4. **(Optional) offload heavy work** to a [`Worker`](04-threading-workers.md) in `_update` and show
    a toast; update the report view in the `result` slot.
 5. **Test** the `processor.py` under `tests/toolbox/<tool>/test_processor.py`.

@@ -15,8 +15,9 @@ Add a new analysis widget to the app as **one cohesive package** under `tse_anal
 `tse_analytics/toolbox/__init__.py`**. This skill drives the build in the documented order and ends
 on a verification gate.
 
-> **IMPORTANT:** the authoritative pattern is **`.claude/rules/toolbox-widget-pattern.md`** and the
-> deeper walkthrough is **`docs/dev/08-toolbox.md`** — read them; this skill orchestrates them, it is
+> **IMPORTANT:** the authoritative pattern is the **"Add a toolbox analysis widget" section in
+> `.claude/CLAUDE.md`** and the deeper walkthrough is **`docs/dev/08-toolbox.md`** — read them; this
+> skill orchestrates them, it is
 > not a replacement. **Copy the closest existing widget wholesale** as your template rather than
 > writing from scratch: `tse_analytics/toolbox/histogram/` (simple: variable + group-by selectors,
 > `processor.py`) or `tse_analytics/toolbox/ancova/` (with a generated `.ui` settings dialog).
@@ -49,8 +50,9 @@ When invoked (`/toolbox-widget-scaffold [<widget-name>] [--module …]`):
    `effect_size`); if absent, ask. Pick its **category** from `CATEGORY_ORDER` and a `label`/`icon`
    (reuse an existing category icon such as `:/icons/exploration.png`). `--module <m>` ⇒ create the
    package under `tse_analytics/modules/<m>/toolbox/<name>/`; default ⇒ `tse_analytics/toolbox/<name>/`.
-   If the package already exists, stop and ask — this skill is not idempotent. **Read
-   `.claude/rules/toolbox-widget-pattern.md` and the chosen template before editing.**
+   If the package already exists, stop and ask — this skill is not idempotent. **Read the
+   "Add a toolbox analysis widget" section in `.claude/CLAUDE.md` and the chosen template before
+   editing.**
 2. **Copy the template.** Duplicate `toolbox/histogram/` (or `ancova/` if you need a `.ui` settings
    dialog) into the new package, then rename files/classes.
 3. **Settings dataclass.** At the top of `<name>_widget.py`, define
@@ -93,5 +95,5 @@ When invoked (`/toolbox-widget-scaffold [<widget-name>] [--module …]`):
 - **Pass the settings *type*** to `super().__init__`, not an instance — the base constructs it.
 - **numpy-nullable dtypes only** (`Int64`, `Float64`, `string`); keep Qt out of `processor.py`.
 - **Don't invent categories** — use one of `CATEGORY_ORDER`; `order` controls position within it.
-- **Always re-read the code at run time.** `docs/`/rules are a guide to verify, not ground truth;
-  the source wins — note any drift and ask if it's load-bearing.
+- **Always re-read the code at run time.** `docs/` and CLAUDE.md are a guide to verify, not ground
+  truth; the source wins — note any drift and ask if it's load-bearing.

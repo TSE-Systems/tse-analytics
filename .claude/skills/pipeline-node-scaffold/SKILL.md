@@ -85,5 +85,5 @@ When invoked (`/pipeline-node-scaffold [--audit | <node-name>]`):
   don't duplicate analysis logic between node and widget.
 - **Keep lists alphabetized** in `pipeline_editor_widget.py` to match the existing style and minimize
   diff churn.
-- **Always re-read the code at run time.** `docs/`/rules are a guide to verify, not ground truth; the
-  source wins — note any drift and ask if it's load-bearing.
+- **Always re-read the code at run time.** `docs/` and CLAUDE.md are a guide to verify, not ground
+  truth; the source wins — note any drift and ask if it's load-bearing.

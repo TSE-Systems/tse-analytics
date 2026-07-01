@@ -41,7 +41,13 @@ class LearningCurveWidgetSettings:
     group_by: str = "Animal"
 
 
-@toolbox_plugin(category="IntelliCage", label="Learning Curve", icon=":/icons/icons8-analyze-16.png", order=2)
+@toolbox_plugin(
+    category="IntelliCage",
+    label="Learning Curve",
+    icon=":/icons/icons8-analyze-16.png",
+    order=2,
+    dataset_types=("IntelliCage", "IntelliMaze"),
+)
 class LearningCurveWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(

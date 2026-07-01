@@ -37,7 +37,14 @@ class PlacePreferenceWidgetSettings:
     only_visits_with_licks: bool = False
 
 
-@toolbox_plugin(category="IntelliCage", label="Place Preference", icon=":/icons/icons8-corner-16.png", order=1)
+@toolbox_plugin(
+    category="IntelliCage",
+    label="Place Preference",
+    icon=":/icons/icons8-corner-16.png",
+    order=1,
+    dataset_types=("IntelliCage", "IntelliMaze"),
+    required_datatable_name="Visits",
+)
 class PlacePreferenceWidget(ToolboxWidgetBase):
     def __init__(self, datatable: Datatable, parent: QWidget | None = None):
         super().__init__(
