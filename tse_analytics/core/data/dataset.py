@@ -19,7 +19,7 @@ import pandas as pd
 from tse_analytics.core import messaging
 from tse_analytics.core.color_manager import get_factor_level_color_hex
 from tse_analytics.core.data.dafault_factor_builders import DEFAULT_FACTOR_BUILDERS
-from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.datatable import META_EXTENSION_NAME, Datatable
 from tse_analytics.core.data.report import Report
 from tse_analytics.core.data.shared import (
     Animal,
@@ -200,7 +200,7 @@ class Dataset:
         datatable : Datatable
             The raw datatable to add to the dataset.
         """
-        datatable.metadata["extension_name"] = extension_name
+        datatable.metadata[META_EXTENSION_NAME] = extension_name
         if extension_name not in self.raw_datatables:
             self.raw_datatables[extension_name] = {}
         self.raw_datatables[extension_name][datatable.name] = datatable

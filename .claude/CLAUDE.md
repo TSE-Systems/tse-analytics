@@ -37,7 +37,8 @@ toolbox/pipeline-node catalogs, and an extending cookbook — see the developer 
 
 Map: `01-architecture`, `02-messaging`, `03-services-manager`, `04-threading-workers`,
 `05-data-model`, `06-persistence`, `07-layouts-ui`, `08-toolbox`, `09-pipeline`,
-`10-modules-extensions`, `11-conventions`, `12-extending`, `13-packaging-deployment`.
+`10-modules-extensions`, `11-conventions`, `12-extending`, `13-packaging-deployment`,
+`14-universal-datatable`.
 
 ## Architecture
 

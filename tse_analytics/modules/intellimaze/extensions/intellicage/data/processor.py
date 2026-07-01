@@ -1,7 +1,7 @@
 import pandas as pd
 
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.datatable import META_ORIGIN, Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.intellimaze.data.utils import get_tag_to_name_map, get_variables_csv_data
@@ -183,7 +183,7 @@ def _get_visits_datatable(
         variables,
         df,
         {
-            "origin": "Visits",
+            META_ORIGIN: "Visits",
         },
     )
 
@@ -485,7 +485,7 @@ def _get_nosepokes_datatable(
         variables,
         df,
         {
-            "origin": "Nosepokes",
+            META_ORIGIN: "Nosepokes",
         },
     )
 

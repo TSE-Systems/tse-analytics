@@ -4,7 +4,7 @@ from datetime import datetime
 import pandas as pd
 
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.datatable import META_ORIGIN, Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.modules.phenomaster.extensions.grouphousing.trafficage_config import TRAFFICAGE_POSITIONS
 
@@ -51,7 +51,7 @@ def preprocess_trafficage_datatable(dataset: Dataset, df: pd.DataFrame) -> Datat
         variables,
         df,
         {
-            "origin": "TraffiCage",
+            META_ORIGIN: "TraffiCage",
         },
     )
 

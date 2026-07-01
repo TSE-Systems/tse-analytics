@@ -47,16 +47,16 @@ def process_drinkfeed_intervals(
     # Sort by Timedelta column
     # intervals_df = intervals_df.sort_values(by=["Timedelta", "Animal"]).reset_index(drop=True)
 
-    intervals_datatable = Datatable(
+    intervals_datatable = Datatable.from_dataframe(
         datatable.dataset,
         "DrinkFeedIntervals",
-        "Drink/Feed intervals datatable",
-        variables,
         intervals_df,
-        {
-            "origin": "DrinkFeedIntervals",
-            "samping_interval": timedelta,
-        },
+        origin="DrinkFeedIntervals",
+        description="Drink/Feed intervals datatable",
+        variables=variables,  # full dict incl. caloric cols; keeps Bin out of variables
+        sample_interval=timedelta,  # regular time series (was the mistyped "samping_interval")
+        apply_factors=False,
+        normalize_dtypes=False,  # preserve Bin=UInt64 and the existing nullable dtypes
     )
 
     return intervals_datatable

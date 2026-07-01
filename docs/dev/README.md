@@ -99,6 +99,7 @@ flowchart TB
 | 11 | [11-conventions.md](11-conventions.md) | Code style, commands, generated files, deps, testing |
 | 12 | [12-extending.md](12-extending.md) | Cookbook: add a widget / node / extension / message / task |
 | 13 | [13-packaging-deployment.md](13-packaging-deployment.md) | Windows installer (PyInstaller + Inno Setup) & Linux Flatpak build |
+| 14 | [14-universal-datatable.md](14-universal-datatable.md) | Generating `Datatable`s for downstream analysis: `Datatable.from_dataframe`, the metadata contract, time-series vs cross-sectional guards |
 
 ---
 
@@ -107,7 +108,8 @@ flowchart TB
 - **New to the codebase?** Read [01-architecture.md](01-architecture.md), then the four pattern
   docs (02–05) in order.
 - **Adding an analysis tool?** Jump to [08-toolbox.md](08-toolbox.md) and the
-  [extending cookbook](12-extending.md).
+  [extending cookbook](12-extending.md). If the tool should emit a result table for further
+  analysis, see [14-universal-datatable.md](14-universal-datatable.md).
 - **Working with import / persistence?** See [10-modules-extensions.md](10-modules-extensions.md)
   and [06-persistence.md](06-persistence.md).
 - **Just need the rules?** [11-conventions.md](11-conventions.md) distills the project's coding

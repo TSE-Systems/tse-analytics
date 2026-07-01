@@ -1,7 +1,7 @@
 import pandas as pd
 
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.datatable import META_ORIGIN, Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
 
@@ -173,7 +173,7 @@ def get_visits_datatable(dataset: Dataset) -> Datatable:
         variables,
         df,
         {
-            "origin": "Visits",
+            META_ORIGIN: "Visits",
         },
     )
 
@@ -489,7 +489,7 @@ def get_nosepokes_datatable(dataset: Dataset, visits_datatable: Datatable) -> Da
         variables,
         df,
         {
-            "origin": "Nosepokes",
+            META_ORIGIN: "Nosepokes",
         },
     )
 

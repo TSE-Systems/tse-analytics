@@ -23,7 +23,7 @@ import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.datatable import META_ORIGIN, META_SAMPLE_INTERVAL, Datatable
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.phenomaster.data.predefined_variables import assign_predefined_values
@@ -200,7 +200,7 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Data
         "tables": {
             "main_table": {
                 "id": "main_table",
-                "sample_interval": str(timedelta),
+                META_SAMPLE_INTERVAL: str(timedelta),
                 "columns": {k: asdict(v) for (k, v) in variables.items()},
             }
         },
@@ -221,8 +221,8 @@ def load_csv_dataset(path: Path, csv_import_settings: CsvImportSettings) -> Data
         variables,
         df,
         {
-            "origin": "Main",
-            "samping_interval": timedelta,
+            META_ORIGIN: "Main",
+            META_SAMPLE_INTERVAL: timedelta,
         },
     )
     dataset.add_datatable(datatable)

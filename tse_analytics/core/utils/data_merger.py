@@ -4,7 +4,7 @@ import pandas as pd
 
 from tse_analytics.core.color_manager import get_factor_level_color_hex
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.datatable import META_ORIGIN_PATH, META_SAMPLE_INTERVAL, Datatable
 from tse_analytics.core.data.shared import Animal, ByColumnConfig, Factor, FactorLevel, FactorRole
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
 
@@ -122,8 +122,8 @@ def merge_datasets(
         # the Bin factor for it.
         source_metadata = first_dataset.datatables[datatable_name].metadata
         new_metadata: dict = {}
-        if "sample_interval" in source_metadata:
-            new_metadata["sample_interval"] = source_metadata["sample_interval"]
+        if META_SAMPLE_INTERVAL in source_metadata:
+            new_metadata[META_SAMPLE_INTERVAL] = source_metadata[META_SAMPLE_INTERVAL]
 
         new_variables = first_dataset.datatables[datatable_name].variables
         datatable = Datatable(
@@ -195,7 +195,7 @@ def _merge_raw_datatables(merged_dataset: Dataset, datasets: list[Dataset], cont
                 new_df = new_df.sort_values(by=sort_keys).reset_index(drop=True)
 
             # Copy metadata from the reference version, drop the stale origin_path
-            new_metadata = {k: v for k, v in reference_datatable.metadata.items() if k != "origin_path"}
+            new_metadata = {k: v for k, v in reference_datatable.metadata.items() if k != META_ORIGIN_PATH}
 
             # Recompute animal_ids if present (e.g. GroupHousing) so it reflects the merged data
             if "animal_ids" in new_metadata and "Animal" in new_df.columns:

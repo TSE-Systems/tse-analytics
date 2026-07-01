@@ -58,6 +58,23 @@ def test_roundtrip_preserves_reports(tmp_path, make_dataset):
     assert loaded_ds.reports["R1"].content == "<p>report</p>"
 
 
+def test_roundtrip_normalizes_sample_interval_to_timedelta(tmp_path, make_dataset):
+    import pandas as pd
+    from tse_analytics.core.data.datatable import META_SAMPLE_INTERVAL
+
+    dataset = make_dataset()
+    dataset.datatables["Main"].metadata[META_SAMPLE_INTERVAL] = pd.Timedelta("5min")
+
+    loaded = _save_and_load(tmp_path, _workspace_with(dataset))
+    loaded_dt = next(iter(loaded.datasets.values())).datatables["Main"]
+
+    # Metadata round-trips through a DuckDB JSON column (Timedelta serializes to a str); the
+    # sample_interval property re-normalizes it back to a pd.Timedelta.
+    assert isinstance(loaded_dt.sample_interval, pd.Timedelta)
+    assert loaded_dt.sample_interval == pd.Timedelta("5min")
+    assert loaded_dt.is_regular_timeseries is True
+
+
 def test_save_overwrites_existing_file(tmp_path, make_dataset):
     dataset = make_dataset()
     ws = _workspace_with(dataset)

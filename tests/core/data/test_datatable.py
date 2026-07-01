@@ -3,11 +3,14 @@
 from datetime import timedelta
 
 import pandas as pd
+import pytest
 from tse_analytics.core.data.shared import (
+    Aggregation,
     Animal,
     ByTimeIntervalConfig,
     Factor,
     FactorRole,
+    Variable,
 )
 
 
@@ -202,6 +205,25 @@ class TestDatatableClone:
         clone.df.iloc[0, clone.df.columns.get_loc("Weight")] = 999.0
         assert sample_datatable.df.iloc[0, sample_datatable.df.columns.get_loc("Weight")] != 999.0
 
+    def test_assigns_fresh_id(self, sample_datatable):
+        clone = sample_datatable.clone()
+        assert clone.id != sample_datatable.id
+
+    def test_preserves_outliers_settings(self, sample_datatable):
+        from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings
+
+        sample_datatable.outliers_settings = OutliersSettings(mode=OutliersMode.REMOVE)
+        clone = sample_datatable.clone()
+        assert clone.outliers_settings.mode == OutliersMode.REMOVE
+
+    def test_outliers_settings_are_independent(self, sample_datatable):
+        from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings
+
+        sample_datatable.outliers_settings = OutliersSettings(mode=OutliersMode.REMOVE)
+        clone = sample_datatable.clone()
+        clone.outliers_settings.mode = OutliersMode.OFF
+        assert sample_datatable.outliers_settings.mode == OutliersMode.REMOVE
+
 
 class TestApplyByTimeInterval:
     """Tests for the BY_TIME_INTERVAL factor applier."""
@@ -262,3 +284,164 @@ class TestApplyByTimeInterval:
         sample_datatable.set_factors({"Hour": factor})
         assert "Hour" in sample_datatable.df.columns
         assert sample_datatable.df["Hour"].dtype.name == "category"
+
+
+class TestFromDataframe:
+    """Tests for the Datatable.from_dataframe universal builder."""
+
+    @pytest.fixture
+    def result_df(self):
+        """A cross-sectional result frame: one row per animal, no DateTime/Timedelta.
+
+        MESOR is deliberately non-integer so convert_dtypes() keeps it Float64 (whole-number
+        floats would be downcast to Int64), while N exercises the nullable-int path.
+        """
+        return pd.DataFrame({
+            "Animal": ["A1", "A2", "A3"],
+            "MESOR": [1.5, 2.5, 3.5],
+            "Amplitude": [0.5, 0.6, 0.7],
+            "N": [10, 20, 30],
+        })
+
+    def test_auto_generates_variables_for_numeric_non_id_columns(self, sample_dataset, result_df):
+        from tse_analytics.core.data.datatable import Datatable
+
+        dt = Datatable.from_dataframe(sample_dataset, "Chrono", result_df, origin="Chronobiology")
+        assert set(dt.variables.keys()) == {"MESOR", "Amplitude", "N"}
+        assert "Animal" not in dt.variables
+
+    def test_casts_id_column_to_category(self, sample_dataset, result_df):
+        from tse_analytics.core.data.datatable import Datatable
+
+        dt = Datatable.from_dataframe(sample_dataset, "Chrono", result_df, origin="Chronobiology")
+        assert dt.df["Animal"].dtype.name == "category"
+
+    def test_records_origin_metadata(self, sample_dataset, result_df):
+        from tse_analytics.core.data.datatable import META_ORIGIN, Datatable
+
+        dt = Datatable.from_dataframe(sample_dataset, "Chrono", result_df, origin="Chronobiology")
+        assert dt.metadata[META_ORIGIN] == "Chronobiology"
+
+    def test_normalizes_to_nullable_dtypes(self, sample_dataset, result_df):
+        from tse_analytics.core.data.datatable import Datatable
+
+        dt = Datatable.from_dataframe(sample_dataset, "Chrono", result_df, origin="Chronobiology")
+        assert dt.df["MESOR"].dtype.name == "Float64"
+        assert dt.df["N"].dtype.name == "Int64"
+
+    def test_default_description(self, sample_dataset, result_df):
+        from tse_analytics.core.data.datatable import Datatable
+
+        dt = Datatable.from_dataframe(sample_dataset, "Chrono", result_df, origin="Chronobiology")
+        assert dt.description == "Chronobiology result: Chrono"
+
+    def test_does_not_mutate_source_df(self, sample_dataset, result_df):
+        from tse_analytics.core.data.datatable import Datatable
+
+        Datatable.from_dataframe(sample_dataset, "Chrono", result_df, origin="Chronobiology")
+        # The caller's frame is untouched — the id column was not cast to category in place.
+        assert result_df["Animal"].dtype.name != "category"
+
+    def test_explicit_variables_used_verbatim(self, sample_dataset):
+        """A helper column (e.g. Bin) must NOT become a variable when variables= is given."""
+        from tse_analytics.core.data.datatable import Datatable
+
+        df = pd.DataFrame({
+            "Animal": ["A1", "A2"],
+            "Bin": pd.array([0, 1], dtype="UInt64"),
+            "Feed": pd.array([1.0, 2.0], dtype="Float64"),
+        })
+        variables = {"Feed": Variable("Feed", "g", "Feed", "Float64", Aggregation.SUM, False)}
+        dt = Datatable.from_dataframe(sample_dataset, "DF", df, origin="X", variables=variables, apply_factors=False)
+        assert set(dt.variables.keys()) == {"Feed"}
+        assert "Bin" not in dt.variables
+
+    def test_normalize_dtypes_false_preserves_dtypes(self, sample_dataset):
+        from tse_analytics.core.data.datatable import Datatable
+
+        df = pd.DataFrame({"Animal": ["A1"], "Bin": pd.array([0], dtype="UInt64")})
+        dt = Datatable.from_dataframe(
+            sample_dataset, "DF", df, origin="X", variables={}, apply_factors=False, normalize_dtypes=False
+        )
+        assert dt.df["Bin"].dtype.name == "UInt64"
+
+    def test_sample_interval_marks_regular_timeseries(self, sample_dataset):
+        from tse_analytics.core.data.datatable import Datatable
+
+        base = pd.Timestamp("2024-01-01")
+        df = pd.DataFrame({
+            "Animal": ["A1", "A1"],
+            "DateTime": [base, base + pd.Timedelta("1h")],
+            "Timedelta": [pd.Timedelta(0), pd.Timedelta("1h")],
+            "Value": [1.0, 2.0],
+        })
+        dt = Datatable.from_dataframe(
+            sample_dataset, "TS", df, origin="X", sample_interval=pd.Timedelta("1h"), apply_factors=False
+        )
+        assert dt.is_regular_timeseries is True
+        assert isinstance(dt.sample_interval, pd.Timedelta)
+        assert dt.sample_interval == pd.Timedelta("1h")
+
+    def test_cross_sectional_is_not_regular_timeseries(self, sample_dataset, result_df):
+        from tse_analytics.core.data.datatable import Datatable
+
+        dt = Datatable.from_dataframe(sample_dataset, "Chrono", result_df, origin="Chronobiology")
+        assert dt.is_regular_timeseries is False
+
+    def test_apply_factors_materializes_group_when_animal_present(self, sample_dataset, sample_factor, result_df):
+        from tse_analytics.core.data.datatable import Datatable
+
+        sample_dataset.factors["Group"] = sample_factor
+        dt = Datatable.from_dataframe(sample_dataset, "Chrono", result_df, origin="Chronobiology", apply_factors=True)
+        assert "Group" in dt.df.columns
+
+    def test_apply_factors_false_skips_factor_columns(self, sample_dataset, sample_factor, result_df):
+        from tse_analytics.core.data.datatable import Datatable
+
+        sample_dataset.factors["Group"] = sample_factor
+        dt = Datatable.from_dataframe(sample_dataset, "Chrono", result_df, origin="Chronobiology", apply_factors=False)
+        assert "Group" not in dt.df.columns
+
+
+class TestTimeseriesGuards:
+    """Tests for is_timeseries and the time-column guards on cross-sectional datatables."""
+
+    @pytest.fixture
+    def cross_sectional_datatable(self, sample_dataset):
+        from tse_analytics.core.data.datatable import Datatable
+
+        df = pd.DataFrame({"Animal": ["A1", "A2"], "MESOR": [1.0, 2.0]})
+        return Datatable.from_dataframe(sample_dataset, "Cross", df, origin="X", apply_factors=False)
+
+    def test_is_timeseries_true_for_timeseries(self, sample_datatable):
+        assert sample_datatable.is_timeseries is True
+
+    def test_is_timeseries_false_for_cross_sectional(self, cross_sectional_datatable):
+        assert cross_sectional_datatable.is_timeseries is False
+
+    def test_start_timestamp_raises_off_timeseries(self, cross_sectional_datatable):
+        with pytest.raises(ValueError):
+            _ = cross_sectional_datatable.start_timestamp
+
+    def test_end_timestamp_raises_off_timeseries(self, cross_sectional_datatable):
+        with pytest.raises(ValueError):
+            _ = cross_sectional_datatable.end_timestamp
+
+    def test_duration_raises_off_timeseries(self, cross_sectional_datatable):
+        with pytest.raises(ValueError):
+            _ = cross_sectional_datatable.duration
+
+    def test_exclude_time_is_noop_off_timeseries(self, cross_sectional_datatable):
+        before = cross_sectional_datatable.df.copy()
+        cross_sectional_datatable.exclude_time(pd.Timestamp("2024-01-01"), pd.Timestamp("2024-01-02"))
+        pd.testing.assert_frame_equal(cross_sectional_datatable.df, before)
+
+    def test_trim_time_is_noop_off_timeseries(self, cross_sectional_datatable):
+        before = cross_sectional_datatable.df.copy()
+        cross_sectional_datatable.trim_time(pd.Timestamp("2024-01-01"), pd.Timestamp("2024-01-02"))
+        pd.testing.assert_frame_equal(cross_sectional_datatable.df, before)
+
+    def test_resample_is_noop_off_timeseries(self, cross_sectional_datatable):
+        before = cross_sectional_datatable.df.copy()
+        cross_sectional_datatable.resample(pd.Timedelta("1h"))
+        pd.testing.assert_frame_equal(cross_sectional_datatable.df, before)

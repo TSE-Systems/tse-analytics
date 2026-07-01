@@ -6,7 +6,7 @@ import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.datatable import META_ORIGIN_PATH, META_SAMPLE_INTERVAL, Datatable
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.phenomaster.io.tse_import_settings import ACTIMOT_RAW_TABLE
 
@@ -58,8 +58,8 @@ def read_actimot_raw(path: Path, dataset: Dataset) -> Datatable:
         {},
         df,
         {
-            "origin_path": str(path),
-            "sample_interval": sample_interval,
+            META_ORIGIN_PATH: str(path),
+            META_SAMPLE_INTERVAL: sample_interval,
         },
     )
 
@@ -168,8 +168,8 @@ def import_actimot_csv_data(
         {},
         df,
         {
-            "origin_path": str(path),
-            "sample_interval": sample_interval,
+            META_ORIGIN_PATH: str(path),
+            META_SAMPLE_INTERVAL: sample_interval,
         },
     )
 

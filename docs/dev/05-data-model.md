@@ -103,6 +103,13 @@ A `Datatable` wraps a pandas `DataFrame` (`.df`) and adds the metadata analyses 
 - `set_factors(factors, old_factor_names)` — (re)materializes factor columns via the appliers.
 - `apply_outliers(settings)` — recompute outliers and broadcast `OutliersChangedMessage`.
 - `rename_animal`, `exclude_animals`, `exclude_time`, `trim_time`, `resample`, `clone`.
+- `Datatable.from_dataframe(...)` — the classmethod any toolbox widget/extension uses to **generate**
+  a new datatable from a result DataFrame. → [14-universal-datatable.md](14-universal-datatable.md).
+- `is_timeseries` — whether the table has a `DateTime` axis. Cross-sectional tables (e.g. per-animal
+  chronobiology parameters) have none, so the time-based members are guarded: `start_timestamp` /
+  `end_timestamp` / `duration` **raise**, and `exclude_time` / `trim_time` / `resample` are **no-ops**.
+- `sample_interval` normalizes its stored value back to a `pd.Timedelta` (metadata round-trips
+  through JSON and would otherwise come back as a `str`).
 
 ---
 

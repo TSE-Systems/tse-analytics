@@ -30,7 +30,7 @@ from scipy.stats import f as f_dist
 from tse_analytics.core import color_manager
 from tse_analytics.core.data.dataset import Dataset
 from tse_analytics.core.data.datatable import Datatable
-from tse_analytics.core.data.shared import Aggregation, Variable
+from tse_analytics.core.data.shared import Variable
 from tse_analytics.core.utils import (
     get_great_table,
     get_html_image_from_figure,
@@ -62,24 +62,14 @@ class ResultTable:
         table can be used in further analyses (e.g. ANOVA). Dataset factors are attached
         via ``set_factors`` — a no-op unless the table has an ``"Animal"`` column.
         """
-        df = self.df.copy().convert_dtypes()
-        if self.id_column in df.columns:
-            df[self.id_column] = df[self.id_column].astype("category")
-        variables = {
-            col: Variable(col, "", col, str(df[col].dtype), Aggregation.MEAN, False)
-            for col in df.columns
-            if col != self.id_column and pd.api.types.is_numeric_dtype(df[col])
-        }
-        datatable = Datatable(
+        return Datatable.from_dataframe(
             dataset,
             name,
-            f"Chronobiology result: {name}",
-            variables,
-            df,
-            {"origin": "Chronobiology"},
+            self.df,
+            origin="Chronobiology",
+            description=f"Chronobiology result: {name}",
+            id_column=self.id_column,
         )
-        datatable.set_factors(dataset.factors)
-        return datatable
 
 
 @dataclass

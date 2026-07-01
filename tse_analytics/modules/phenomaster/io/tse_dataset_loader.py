@@ -7,7 +7,7 @@ import pandas as pd
 from loguru import logger
 
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.datatable import META_ORIGIN, META_SAMPLE_INTERVAL, Datatable
 from tse_analytics.core.data.shared import Aggregation, Animal, Variable
 from tse_analytics.core.utils.data import sanitize_dtypes
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
@@ -66,8 +66,8 @@ def load_tse_dataset(path: Path, import_settings: tse_import_settings.TseImportS
         main_table_vars,
         main_table_df,
         {
-            "origin": "Main",
-            "sample_interval": main_table_sample_interval,
+            META_ORIGIN: "Main",
+            META_SAMPLE_INTERVAL: main_table_sample_interval,
         },
     )
     dataset.add_datatable(datatable)

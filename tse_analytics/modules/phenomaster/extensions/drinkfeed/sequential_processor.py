@@ -62,11 +62,13 @@ def process_drinkfeed_sequences(
     events_df = events_df.sort_values(by=["Timedelta"]).reset_index(drop=True)
     episodes_df = episodes_df.sort_values(by=["Timedelta"]).reset_index(drop=True)
 
-    events_datatable = Datatable(
+    events_datatable = Datatable.from_dataframe(
         datatable.dataset,
         "DrinkFeedEvents",
-        "DrinkFeed events datatable",
-        {
+        events_df,
+        origin="DrinkFeedEvents",
+        description="DrinkFeed events datatable",
+        variables={
             "Value": Variable(
                 "Value",
                 "",
@@ -76,15 +78,17 @@ def process_drinkfeed_sequences(
                 False,
             ),
         },
-        events_df,
-        {},
+        apply_factors=False,
+        normalize_dtypes=False,
     )
 
-    episodes_datatable = Datatable(
+    episodes_datatable = Datatable.from_dataframe(
         datatable.dataset,
         "DrinkFeedEpisodes",
-        "DrinkFeed episodes datatable",
-        {
+        episodes_df,
+        origin="DrinkFeedEpisodes",
+        description="DrinkFeed episodes datatable",
+        variables={
             "Duration[minutes]": Variable(
                 "Duration[minutes]",
                 "minutes",
@@ -126,8 +130,8 @@ def process_drinkfeed_sequences(
                 False,
             ),
         },
-        episodes_df,
-        {},
+        apply_factors=False,
+        normalize_dtypes=False,
     )
 
     return events_datatable, episodes_datatable

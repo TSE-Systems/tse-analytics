@@ -5,7 +5,7 @@ import pandas as pd
 
 from tse_analytics.core.csv_import_settings import CsvImportSettings
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.datatable import META_ORIGIN_PATH, META_SAMPLE_INTERVAL, Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.core.utils.data import sanitize_dtypes
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
@@ -84,8 +84,8 @@ def read_drinkfeed_bin(path: Path, dataset: Dataset) -> Datatable:
         variables,
         df,
         {
-            "origin_path": str(path),
-            "sample_interval": sample_interval,
+            META_ORIGIN_PATH: str(path),
+            META_SAMPLE_INTERVAL: sample_interval,
         },
     )
 
@@ -171,7 +171,7 @@ def read_drinkfeed_raw(path: Path, dataset: Dataset) -> Datatable:
         variables,
         df,
         {
-            "origin_path": str(path),
+            META_ORIGIN_PATH: str(path),
         },
     )
 
@@ -308,8 +308,8 @@ def import_drinkfeed_bin_csv_data(
         variables,
         new_df,
         {
-            "origin_path": str(path),
-            "sample_interval": sample_interval,
+            META_ORIGIN_PATH: str(path),
+            META_SAMPLE_INTERVAL: sample_interval,
         },
     )
 

@@ -1,7 +1,7 @@
 import pandas as pd
 
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.datatable import META_ORIGIN, Datatable
 from tse_analytics.core.data.shared import Animal
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
 
@@ -233,7 +233,7 @@ def preprocess_main_table(dataset: Dataset) -> None:
         variables,
         df,
         {
-            "origin": "Main",
+            META_ORIGIN: "Main",
         },
     )
     dataset.add_datatable(main_datatable)

@@ -8,6 +8,7 @@ excluding time ranges, resampling, and applying factors.
 
 from __future__ import annotations
 
+import copy
 from collections.abc import Iterable
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
@@ -21,6 +22,7 @@ from tse_analytics.core.data.factor_appliers import FACTOR_APPLIERS
 from tse_analytics.core.data.operators.outliers_pipe_operator import process_outliers
 from tse_analytics.core.data.outliers import OutliersMode, OutliersSettings
 from tse_analytics.core.data.shared import (
+    Aggregation,
     Animal,
     Factor,
     FactorRole,
@@ -30,6 +32,20 @@ from tse_analytics.core.utils.data import exclude_animals_from_df, reassign_df_t
 
 if TYPE_CHECKING:
     from tse_analytics.core.data.dataset import Dataset
+
+# Canonical metadata dict keys. Prefer these constants over string literals so the metadata contract
+# is discoverable and typo-proof (see docs/dev/14-universal-datatable.md).
+META_ORIGIN = "origin"
+"""Provenance label of the producing feature (e.g. ``"Chronobiology"``, ``"DrinkFeedIntervals"``)."""
+
+META_ORIGIN_PATH = "origin_path"
+"""Source file path a raw datatable was loaded from."""
+
+META_SAMPLE_INTERVAL = "sample_interval"
+"""Regular sampling interval (``pd.Timedelta``); its presence marks a regular time series."""
+
+META_EXTENSION_NAME = "extension_name"
+"""Owning extension name; set automatically by ``Dataset.add_raw_datatable``."""
 
 
 class Datatable:
@@ -79,17 +95,129 @@ class Datatable:
 
         self.outliers_settings = OutliersSettings()
 
+    @classmethod
+    def from_dataframe(
+        cls,
+        dataset: Dataset,
+        name: str,
+        df: pd.DataFrame,
+        *,
+        origin: str,
+        description: str | None = None,
+        id_column: str | None = "Animal",
+        variables: dict[str, Variable] | None = None,
+        aggregation: Aggregation = Aggregation.MEAN,
+        unit: str = "",
+        sample_interval: pd.Timedelta | None = None,
+        extra_metadata: dict[str, Any] | None = None,
+        normalize_dtypes: bool = True,
+        apply_factors: bool = True,
+    ) -> Datatable:
+        """Build a universal :class:`Datatable` from a result DataFrame.
+
+        This is the shared entry point any toolbox widget or extension should use to turn an
+        analysis result into a dataset datatable for downstream analysis. It normalizes dtypes,
+        casts the identifier column to ``category``, builds :class:`Variable` metadata, records the
+        provenance, and (optionally) materializes the dataset factors — replacing the boilerplate
+        that used to be duplicated at each generation site. See
+        ``docs/dev/14-universal-datatable.md``.
+
+        Parameters
+        ----------
+        dataset : Dataset
+            The dataset the new datatable belongs to.
+        name : str
+            The datatable name (its key in ``dataset.datatables``).
+        df : pd.DataFrame
+            The source data. It is copied; the caller's frame is not mutated.
+        origin : str
+            Provenance label, stored in ``metadata[META_ORIGIN]`` (e.g. ``"Chronobiology"``).
+        description : str | None
+            Human-readable description; defaults to ``f"{origin} result: {name}"``.
+        id_column : str | None
+            Identifier column (default ``"Animal"``). If present it is cast to ``category`` and
+            excluded from auto-generated variables. Pass ``None`` to disable this handling.
+        variables : dict[str, Variable] | None
+            When given, used verbatim (full control — auto-generation is skipped). This lets callers
+            keep helper columns (e.g. ``Bin``) out of the variable set.
+        aggregation : Aggregation
+            Default aggregation for auto-generated variables.
+        unit : str
+            Default unit for auto-generated variables.
+        sample_interval : pd.Timedelta | None
+            When given, stored in ``metadata[META_SAMPLE_INTERVAL]`` so the table is treated as a
+            regular time series.
+        extra_metadata : dict[str, Any] | None
+            Additional metadata entries merged into the datatable metadata. Values must be
+            JSON-native to survive persistence (see the persistence note in the dev docs).
+        normalize_dtypes : bool
+            When ``True`` (default) run ``df.convert_dtypes()`` to obtain numpy-nullable dtypes
+            (the house rule). Set ``False`` to preserve dtypes the caller already controls.
+        apply_factors : bool
+            When ``True`` (default) call :meth:`set_factors` with the dataset factors — a no-op
+            unless the frame has an ``"Animal"`` column.
+
+        Returns
+        -------
+        Datatable
+            The constructed datatable (not yet added to the dataset — call
+            ``manager.add_datatable(...)``).
+        """
+        df = df.copy()
+        if normalize_dtypes:
+            df = df.convert_dtypes()
+
+        if id_column is not None and id_column in df.columns:
+            df[id_column] = df[id_column].astype("category")
+
+        if variables is None:
+            variables = {}
+            for col in df.columns:
+                if col == id_column or not pd.api.types.is_numeric_dtype(df[col]):
+                    continue
+                variables[col] = Variable(col, unit, col, str(df[col].dtype), aggregation, False)
+
+        metadata: dict[str, Any] = {META_ORIGIN: origin}
+        if sample_interval is not None:
+            metadata[META_SAMPLE_INTERVAL] = sample_interval
+        if extra_metadata:
+            metadata.update(extra_metadata)
+
+        datatable = cls(
+            dataset,
+            name,
+            description if description is not None else f"{origin} result: {name}",
+            variables,
+            df,
+            metadata,
+        )
+        if apply_factors:
+            datatable.set_factors(dataset.factors)
+        return datatable
+
     @property
     def extension_name(self) -> str | None:
-        return self.metadata.get("extension_name", None)
+        return self.metadata.get(META_EXTENSION_NAME, None)
 
     @property
     def sample_interval(self) -> pd.Timedelta | None:
-        return self.metadata.get("sample_interval", None)
+        # Normalize to a pd.Timedelta: metadata round-trips through a DuckDB JSON column, so a stored
+        # Timedelta comes back as a string after a save/load cycle. pd.Timedelta(...) is idempotent.
+        value = self.metadata.get(META_SAMPLE_INTERVAL, None)
+        return None if value is None else pd.Timedelta(value)
 
     @property
     def is_regular_timeseries(self) -> bool:
         return self.sample_interval is not None
+
+    @property
+    def is_timeseries(self) -> bool:
+        """Whether this datatable carries a time axis (a ``DateTime`` column).
+
+        Cross-sectional tables generated by the toolbox (e.g. per-animal chronobiology parameters)
+        have no ``DateTime`` column; the time-based members are guarded against that case.
+        """
+        return "DateTime" in self.df.columns
 
     @property
     def start_timestamp(self) -> pd.Timestamp:
@@ -100,7 +228,14 @@ class Datatable:
         -------
         pd.Timestamp
             The timestamp of the first row in the datatable.
+
+        Raises
+        ------
+        ValueError
+            If the datatable has no ``DateTime`` column (not a time series).
         """
+        if not self.is_timeseries:
+            raise ValueError(f"Datatable {self.name!r} has no DateTime column (not a time series).")
         return self.df["DateTime"].iloc[0]
 
     @property
@@ -112,7 +247,14 @@ class Datatable:
         -------
         pd.Timestamp
             The timestamp of the last row in the datatable.
+
+        Raises
+        ------
+        ValueError
+            If the datatable has no ``DateTime`` column (not a time series).
         """
+        if not self.is_timeseries:
+            raise ValueError(f"Datatable {self.name!r} has no DateTime column (not a time series).")
         return self.df["DateTime"].iloc[-1]
 
     @property
@@ -236,7 +378,14 @@ class Datatable:
             Start of the time range to exclude.
         range_end : datetime
             End of the time range to exclude.
+
+        Notes
+        -----
+        No-op on cross-sectional datatables (no ``DateTime`` column); this method is driven by
+        dataset-wide loops that must skip non-time-series tables.
         """
+        if not self.is_timeseries:
+            return
         self._filter_by_time_mask((self.df["DateTime"] < range_start) | (self.df["DateTime"] > range_end))
 
     def trim_time(self, range_start: datetime, range_end: datetime) -> None:
@@ -249,7 +398,14 @@ class Datatable:
             New start time for the datatable.
         range_end : datetime
             New end time for the datatable.
+
+        Notes
+        -----
+        No-op on cross-sectional datatables (no ``DateTime`` column); this method is driven by
+        dataset-wide loops that must skip non-time-series tables.
         """
+        if not self.is_timeseries:
+            return
         self._filter_by_time_mask((self.df["DateTime"] >= range_start) & (self.df["DateTime"] <= range_end))
 
     def resample(self, resample_interval: pd.Timedelta) -> None:
@@ -263,7 +419,15 @@ class Datatable:
         ----------
         resample_interval : pd.Timedelta
             The time interval to resample the data to.
+
+        Notes
+        -----
+        No-op unless the datatable has the ``Animal``/``DateTime``/``Timedelta`` columns; this method
+        is driven by dataset-wide loops that must skip non-time-series tables.
         """
+        if not {"Animal", "DateTime", "Timedelta"} <= set(self.df.columns):
+            return
+
         default_cols = set(self.get_default_columns())
         agg: dict[str, Any] = {"DateTime": "first"}
         for column in self.df.columns:
@@ -286,7 +450,7 @@ class Datatable:
         result.sort_values(by=["Timedelta", "Animal"], inplace=True)
         result.reset_index(inplace=True, drop=True)
 
-        self.metadata["sample_interval"] = resample_interval
+        self.metadata[META_SAMPLE_INTERVAL] = resample_interval
         self.df = result
 
     def set_factors(
@@ -394,7 +558,9 @@ class Datatable:
         self.df = df
 
     def clone(self):
-        return Datatable(
+        # A fresh id is intentional: the persisted DuckDB df-table name is keyed on
+        # dataset.id + datatable.id, so a duplicated id would collide (see core/io/storage.py).
+        cloned = Datatable(
             self.dataset,
             self.name,
             self.description,
@@ -402,3 +568,5 @@ class Datatable:
             self.df.copy(),
             self.metadata.copy(),
         )
+        cloned.outliers_settings = copy.deepcopy(self.outliers_settings)
+        return cloned

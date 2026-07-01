@@ -9,7 +9,7 @@ ExtensionData class to handle AnimalGate specific data.
 import pandas as pd
 
 from tse_analytics.core.data.dataset import Dataset
-from tse_analytics.core.data.datatable import Datatable
+from tse_analytics.core.data.datatable import META_ORIGIN, Datatable
 from tse_analytics.core.data.shared import Aggregation, Variable
 from tse_analytics.globals import TIME_RESOLUTION_UNIT
 from tse_analytics.modules.intellimaze.data.utils import get_tag_to_name_map, get_variables_csv_data
@@ -90,7 +90,7 @@ def preprocess_data(
         variables,
         df,
         {
-            "origin": EXTENSION_NAME,
+            META_ORIGIN: EXTENSION_NAME,
         },
     )
 
