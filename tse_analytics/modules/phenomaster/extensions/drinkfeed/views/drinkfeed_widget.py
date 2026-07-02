@@ -16,7 +16,10 @@ from tse_analytics.core.workers.worker import Worker
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.data.drinkfeed_animal_item import DrinkFeedAnimalItem
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.drinkfeed_settings import DrinkFeedSettings
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.interval_processor import process_drinkfeed_intervals
-from tse_analytics.modules.phenomaster.extensions.drinkfeed.sequential_processor import process_drinkfeed_sequences
+from tse_analytics.modules.phenomaster.extensions.drinkfeed.sequential_processor import (
+    build_wide_episodes_datatable,
+    process_drinkfeed_sequences,
+)
 from tse_analytics.modules.phenomaster.extensions.drinkfeed.views.animal_selector import (
     AnimalSelector,
 )
@@ -275,12 +278,10 @@ class DrinkFeedWidget(QWidget):
         now_string = now.strftime("%Y-%m-%d %H:%M:%S")
 
         if settings.sequential_analysis_type and self.episodes_datatable is not None:
-            datatable = self.episodes_datatable.clone()
-
-            # Drop unnecessary columns
-            datatable.df.drop(columns=["Id"], inplace=True)
-
-            datatable.name = f"DrinkFeedEpisodes [{now_string}]"
+            datatable = build_wide_episodes_datatable(
+                self.episodes_datatable,
+                f"DrinkFeedEpisodes [{now_string}]",
+            )
             datatable.set_factors(self.datatable.dataset.factors)
             manager.add_datatable(datatable)
 

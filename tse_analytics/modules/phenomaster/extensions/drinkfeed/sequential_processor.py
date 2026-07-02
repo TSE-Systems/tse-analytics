@@ -137,6 +137,79 @@ def process_drinkfeed_sequences(
     return events_datatable, episodes_datatable
 
 
+# (metric column, unit, description, aggregation) for the per-sensor episode variables.
+# A unit of None is resolved per sensor (ml / ml/min for Drink*, g / g/min for Feed*).
+_EPISODE_METRICS: list[tuple[str, str | None, str, Aggregation]] = [
+    ("Duration[minutes]", "minutes", "Episode duration", Aggregation.SUM),
+    ("Interval[minutes]", "minutes", "Inter-meal interval", Aggregation.MEAN),
+    ("Quantity", None, "Consumed quantity", Aggregation.SUM),
+    ("Quantity[kcal]", "kcal", "Quantity in kilocalories", Aggregation.SUM),
+    ("Rate", None, "Consumption rate per minute", Aggregation.MEAN),
+]
+
+
+def build_wide_episodes_datatable(episodes_datatable: Datatable, name: str) -> Datatable:
+    """Reshape the long, per-sensor DrinkFeed episodes table into a wide datatable.
+
+    Instead of a ``Sensor`` column plus generic metric columns (``Quantity``, ``Rate``, …), every
+    metric becomes a per-sensor column (e.g. ``Drink1Quantity``, ``Feed2Rate``). Each episode
+    remains its own row keyed by ``DateTime``/``Timedelta``/``Animal``; only the row's own sensor
+    columns are filled, the rest are ``<NA>``.
+
+    Args:
+        episodes_datatable: The long episodes datatable returned by
+            :func:`process_drinkfeed_sequences`.
+        name: Name for the resulting datatable.
+
+    Returns:
+        A new wide per-sensor episodes ``Datatable``.
+    """
+    wide_df, variables = _reshape_episodes_to_wide(episodes_datatable.df)
+    return Datatable.from_dataframe(
+        episodes_datatable.dataset,
+        name,
+        wide_df,
+        origin="DrinkFeedEpisodes",
+        description="DrinkFeed episodes datatable (per-sensor)",
+        variables=variables,
+        apply_factors=False,
+        normalize_dtypes=False,
+    )
+
+
+def _reshape_episodes_to_wide(long_df: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, Variable]]:
+    """Spread a long per-episode frame into per-sensor metric columns (one row per episode)."""
+    id_cols = ["DateTime", "Timedelta", "Animal"]
+
+    if long_df.empty:
+        return long_df[id_cols].copy(), {}
+
+    src = long_df.reset_index(drop=True)
+    wide = src[id_cols].copy()
+    variables: dict[str, Variable] = {}
+
+    for sensor in sorted(src["Sensor"].dropna().unique()):
+        mask = src["Sensor"] == sensor
+        is_drink = "Drink" in sensor
+        for metric, unit, description, aggregation in _EPISODE_METRICS:
+            column = f"{sensor}{metric}"
+            wide[column] = src[metric].where(mask)
+            if unit is None:
+                resolved_unit = ("ml/min" if is_drink else "g/min") if metric == "Rate" else ("ml" if is_drink else "g")
+            else:
+                resolved_unit = unit
+            variables[column] = Variable(
+                column,
+                resolved_unit,
+                f"{sensor} {description}",
+                "Float64",
+                aggregation,
+                False,
+            )
+
+    return wide, variables
+
+
 def _process_animal(
     animal_id: str,
     df: pd.DataFrame,

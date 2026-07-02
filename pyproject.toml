@@ -11,7 +11,7 @@ homepage = "https://github.com/TSE-Systems/tse-analytics"
 repository = "https://github.com/TSE-Systems/tse-analytics"
 requires-python = "==3.14.6"
 dependencies = [
-    "anthropic==0.115.0",
+    "anthropic==0.115.1",
     "astropy==8.0.0",
     "connectorx==0.4.5",
     "css-inline==0.21.0",
@@ -51,7 +51,7 @@ dev = [
     "pytest-cov==7.1.0",
     "qtsass==0.4.0",
     "ruff==0.15.20",
-    "ty==0.0.55",
+    "ty==0.0.56",
 ]
 
 [project.scripts]
